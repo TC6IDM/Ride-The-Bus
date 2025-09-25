@@ -6,11 +6,11 @@
   let isProcessing = false;
 
   interface Card {
-    suit: 'hearts' | 'diamonds' | 'clubs' | 'spades';
+    suit: '♥' | '♦' | '♣' | '♠';
     rank: 'A'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'|'J'|'Q'|'K';
   }
 
-  const suits: Card['suit'][] = ['hearts','diamonds','clubs','spades'];
+  const suits: Card['suit'][] = ['♥','♦','♣','♠'];
   const ranks: Card['rank'][] = ['A','2','3','4','5','6','7','8','9' ,'10','J' ,'Q' ,'K'];
   const rankValue: Record<Card['rank'],number> = {
     'A':1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13
@@ -18,7 +18,6 @@
 
   let deck: Card[] = [];
   let currentIndex = 0;
-  let previousCard: Card | null = null;
 
   // Store cards revealed so far (max 4)
   let revealedCards: (Card | null)[] = [null, null, null, null];
@@ -43,7 +42,6 @@
   function startGame() {
     deck = shuffleDeck(createDeck());
     currentIndex = 0;
-    previousCard = null;
     revealedCards = [null, null, null, null];
     gameState = 'playing';
     isProcessing = false;
@@ -54,39 +52,128 @@
     return deck[currentIndex++];
   }
 
-  function guessColor(color: 'red'|'black') {
-    if(isProcessing || currentIndex >= 4) return;
-    isProcessing = true;
+  function Cashout() {
+	if(gameState !== 'playing') return;
+	gameState = 'won';
+	}
 
-    const card = drawCard();
-    if(!card) return;
-
-    revealedCards[currentIndex-1] = card; // store card in correct block
-
-    const cardColor = card.suit === 'hearts' || card.suit === 'diamonds' ? 'red' : 'black';
-    if(cardColor !== color) gameState = 'lost';
-
-    previousCard = card;
-    isProcessing = false;
+  function revealAllCards() {
+	for (let i = 0; i < revealedCards.length; i++) {
+		if (!revealedCards[i] && deck[i]) {
+		revealedCards[i] = deck[i];
+		}
+	}
   }
 
-  function guessHigherLower(guess: 'higher'|'lower') {
-    if(isProcessing || !previousCard || currentIndex >= 4) return;
+  function guessColor(color: 'red'|'black') {
+    if(isProcessing) return;
+    isProcessing = true;
+
+    const card = drawCard();
+    if(!card) {
+      isProcessing = false;
+      return;
+    }
+
+    revealedCards[currentIndex-1] = card;
+    const cardColor = card.suit === '♥' || card.suit === '♦' ? 'red' : 'black';
+    const correct = cardColor === color;
+
+    if(!correct) {
+      revealAllCards();
+      isProcessing = false;
+      gameState = 'lost';
+      return;
+    }
+
+    isProcessing = false;
+
+  }
+
+  function guessHigherLower(guess: 'higher'|'lower'|'equal') {
+    if(isProcessing) return;
+    isProcessing = true;
+
+    const card = drawCard();
+    if(!card) {
+      isProcessing = false;
+      return;
+    }
+
+    revealedCards[currentIndex-1] = card;
+    const firstCard = revealedCards[0];
+    const correct = firstCard && (
+      (guess === 'higher' && rankValue[card.rank] > rankValue[firstCard.rank]) ||
+      (guess === 'lower' && rankValue[card.rank] < rankValue[firstCard.rank]) ||
+      (guess === 'equal' && rankValue[card.rank] === rankValue[firstCard.rank])
+    );
+
+    if(!correct) {
+      revealAllCards();
+      isProcessing = false;
+      gameState = 'lost';
+      return;
+    }
+
+    isProcessing = false;
+
+  }
+
+  function guessInsideOutside(guess: 'inside'|'outside'|'equal') {
+    if(isProcessing) return;
+    isProcessing = true;
+
+    const card = drawCard();
+    if(!card) {
+      isProcessing = false;
+      return;
+    }
+
+    revealedCards[currentIndex-1] = card;
+    const firstCard = revealedCards[0];
+    const secondCard = revealedCards[1];
+    const correct = firstCard && secondCard && (
+      (guess === 'inside' && ((rankValue[card.rank] > rankValue[firstCard.rank] && rankValue[card.rank] < rankValue[secondCard.rank]) || (rankValue[card.rank] > rankValue[secondCard.rank] && rankValue[card.rank] < rankValue[firstCard.rank]))) ||
+      (guess === 'outside' && ((rankValue[card.rank] < rankValue[firstCard.rank] && rankValue[card.rank] < rankValue[secondCard.rank]) || (rankValue[card.rank] > rankValue[secondCard.rank] && rankValue[card.rank] > rankValue[firstCard.rank]))) ||
+      (guess === 'equal' && (rankValue[card.rank] === rankValue[secondCard.rank] || rankValue[card.rank] === rankValue[firstCard.rank]))
+    );
+
+    if(!correct) {
+      revealAllCards();
+      isProcessing = false;
+      gameState = 'lost';
+      return;
+    }
+
+    isProcessing = false;
+
+  }
+
+  function guessSuit(guess: '♦'|'♣'|'♥'|'♠') {
+    if(isProcessing) return;
     isProcessing = true;
 
     const card = drawCard();
     if(!card) return;
 
-    revealedCards[currentIndex-1] = card; // store in block
+    revealedCards[currentIndex-1] = card;
+    const correct = (
+      (guess === '♦' && card.suit == '♦') ||
+      (guess === '♣' && card.suit == '♣') ||
+      (guess === '♥' && card.suit == '♥') ||
+      (guess === '♠' && card.suit == '♠')
+    );
 
-    const correct =
-      (guess === 'higher' && rankValue[card.rank] > rankValue[previousCard.rank]) ||
-      (guess === 'lower' && rankValue[card.rank] < rankValue[previousCard.rank]);
+    if(!correct) {
+      revealAllCards();
+      isProcessing = false;
+      gameState = 'lost';
+      return;
+    }
 
-    if(!correct) gameState = 'lost';
-
-    previousCard = card;
+    gameState = 'won';
     isProcessing = false;
+
   }
 </script>
 
@@ -101,15 +188,31 @@
     {#each revealedCards as card, index}
       <div class="card-block">
         {#if card}
-          <p>{card.rank} of {card.suit}</p>
+          <p class={card.suit === '♥' || card.suit === '♦' ? 'red-card' : 'black-card'}>{card.rank} {card.suit}</p>
         {:else}
           <p>?</p>
         {/if}
       </div>
     {/each}
   </div>
-  <p>You lost! The card was revealed above.</p>
+  <p>You lost! The cards are revealed above.</p>
   <button on:click={startGame}>Retry</button>
+{/if}
+
+{#if gameState === 'won'}
+  <div class="card-row">
+    {#each revealedCards as card, index}
+      <div class="card-block">
+        {#if card}
+          <p class={card.suit === '♥' || card.suit === '♦' ? 'red-card' : 'black-card'}>{card.rank} {card.suit}</p>
+        {:else}
+          <p>?</p>
+        {/if}
+      </div>
+    {/each}
+  </div>
+  <h2>Congratulations! You won!</h2>
+  <button on:click={startGame}>Play Again</button>
 {/if}
 
 {#if gameState === 'playing'}
@@ -117,7 +220,7 @@
     {#each revealedCards as card, index}
       <div class="card-block">
         {#if card}
-          <p>{card.rank} of {card.suit}</p>
+          <p class={card.suit === '♥' || card.suit === '♦' ? 'red-card' : 'black-card'}>{card.rank} {card.suit}</p>
         {:else}
           <p>?</p>
         {/if}
@@ -125,15 +228,32 @@
     {/each}
   </div>
 
-  {#if !previousCard}
+  {#if !revealedCards[0]}
     <p>Guess the color of the first card:</p>
     <button on:click={() => guessColor('red')}>Red</button>
     <button on:click={() => guessColor('black')}>Black</button>
-  {:else}
-    <p>Previous card: {previousCard.rank} of {previousCard.suit}</p>
+  {:else if !revealedCards[1]}
     <p>Will the next card be higher or lower?</p>
     <button on:click={() => guessHigherLower('higher')}>Higher</button>
     <button on:click={() => guessHigherLower('lower')}>Lower</button>
+    <button on:click={() => guessHigherLower('equal')}>Equal</button>
+	<button on:click={() => Cashout()}>Cashout</button>
+
+  {:else if !revealedCards[2]}
+	<p>Will the next card be in between or outside?</p>
+	<button on:click={() => guessInsideOutside('inside')}>Inside</button>
+	<button on:click={() => guessInsideOutside('outside')}>Outside</button>
+	<button on:click={() => guessInsideOutside('equal')}>Equal</button>
+	<button on:click={() => Cashout()}>Cashout</button>
+
+  {:else if !revealedCards[3]}
+	<p>Guess the suit of the final card:</p>
+	<button on:click={() => guessSuit('♥')}>♥</button>
+	<button on:click={() => guessSuit('♦')}>♦</button>
+	<button on:click={() => guessSuit('♣')}>♣</button>
+	<button on:click={() => guessSuit('♠')}>♠</button>
+	<button on:click={() => Cashout()}>Cashout</button>
+
   {/if}
 {/if}
 
@@ -157,5 +277,16 @@
     border-radius: 10px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     letter-spacing: 1px;
+  }
+  .card-block p {
+    margin: 0;
+    font-size: 20px;
+    font-weight: bold;
+  }
+  .red-card {
+    color: #ff4d4d;
+  }
+  .black-card {
+    color: #fff;
   }
 </style>
