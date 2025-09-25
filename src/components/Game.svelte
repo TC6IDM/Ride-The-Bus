@@ -1,136 +1,116 @@
 <script lang="ts">
-	  import './app.css';
-		import { getContext } from '../game/context';
-		import EnableGameActor from './EnableGameActor.svelte';
-		import { waitForTimeout } from 'utils-shared/wait';
+  import './app.css';
+  import { waitForTimeout } from 'utils-shared/wait';
 
-		const context = getContext();
+  type State = 'start' | 'playing' | 'won' | 'lost' | 'finished';
+  let gameState: State = 'start';
+  let isProcessing = false;
+  let deck: Card[] = [];
+  let currentIndex = 0;
+  let currentCard: Card | null = null;
+  let previousCard: Card | null = null;
 
-    type State = 'start' | 'playing' | 'won' | 'lost';
+  interface Card {
+    suit: 'hearts' | 'diamonds' | 'clubs' | 'spades';
+    rank: 'A'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'|'J'|'Q'|'K';
+  }
 
-    let gameState: State = 'start';
-    let isProcessing = false;
-    let won = false;
-    let eventDict: mainEvent | null = null;
-    let winDict: winEvent | null = null;
-    let targetValue: number = 10;
-    let currentValue: number | null = null;
+  const suits: Card['suit'][] = ['hearts','diamonds','clubs','spades'];
+  const ranks: Card['rank'][] = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+  const rankValue: Record<Card['rank'],number> = {
+    'A':1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13
+  };
 
-    interface mainEvent {
-        index: number
-        type: string,
-        numberRolled: number,
-        totalWin: number 
+  // Create a deck
+  function createDeck(): Card[] {
+    const d: Card[] = [];
+    for(const suit of suits) {
+      for(const rank of ranks) d.push({suit, rank});
     }
-    interface winEvent {
-        index: number,
-        type: string,
-        amount: number
+    return d;
+  }
+
+  // Shuffle
+  function shuffleDeck(d: Card[]): Card[] {
+    const shuffled = [...d];
+    for(let i = shuffled.length-1; i>0; i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [shuffled[i],shuffled[j]] = [shuffled[j],shuffled[i]];
     }
+    return shuffled;
+  }
 
-		let flickering = false;
+  // Start game
+  function startGame() {
+    deck = shuffleDeck(createDeck());
+    currentIndex = 0;
+    previousCard = null;
+    currentCard = null;
+    gameState = 'playing';
+  }
 
-		const flicker = async (duration = 1000) => {
-			const startTime = Date.now();
-			flickering = true;
+  // Draw next card
+  function drawCard(): Card | null {
+    if(currentIndex >= deck.length) return null;
+    return deck[currentIndex++];
+  }
 
-			while(flickering && Date.now() - startTime < duration) {
-				currentValue = Math.floor(Math.random() * 11); // 0-10
-				await waitForTimeout(80);
-			}
+  // Player guess functions
+  function guessColor(color: 'red' | 'black') {
+    if(isProcessing) return;
+    isProcessing = true;
 
-			// Stop flickering
-			flickering = false;
+    const card = drawCard();
+    if(!card) return;
+    currentCard = card;
 
-			// Final roll
-			currentValue = Math.floor(Math.random() * 11);
+    const cardColor = card.suit === 'hearts' || card.suit === 'diamonds' ? 'red' : 'black';
+    if(cardColor === color) gameState = 'playing'; // correct
+    else gameState = 'lost'; // wrong
 
-			// Check if player won
-			won = currentValue === targetValue;
-			gameState = won ? 'won' : 'lost';
-			isProcessing = false;
-		};
+    previousCard = card;
+    isProcessing = false;
+  }
 
-    function playGame() {
-        if(isProcessing) return;
+  function guessHigherLower(guess: 'higher' | 'lower') {
+    if(isProcessing || !previousCard) return;
+    isProcessing = true;
 
-        isProcessing = true;
-        gameState = 'playing';
-        currentValue = null;
-        eventDict = null;
-        winDict = null;
-        won = false;
+    const card = drawCard();
+    if(!card) return;
+    currentCard = card;
 
-        // let result = getResult(); // result AKA a book
-				context.eventEmitter.broadcast({ type: 'bet' });
+    const correct =
+      (guess === 'higher' && rankValue[card.rank] > rankValue[previousCard.rank]) ||
+      (guess === 'lower' && rankValue[card.rank] < rankValue[previousCard.rank]);
 
-				flickering = true;
-				flicker();
-    }
+    gameState = correct ? 'playing' : 'lost';
+    previousCard = card;
+    isProcessing = false;
+  }
 
-		context.eventEmitter.subscribeOnMount({
-			winInfo: ({ data }) => {
-				flickering = false;
-
-				eventDict = data;
-				currentValue = eventDict ? eventDict.numberRolled : null;
-			},
-			finalWin: ({ data }) => {
-				winDict = data
-				won = !!(winDict && winDict.amount > 0);
-
-				gameState = won ? 'won' : 'lost';
-		isProcessing = false;
-			},
-		});
 </script>
 
-<EnableGameActor />
+<h1>Ride the Bus</h1>
 
-{#if gameState === 'start'}
-	<h1>Number Picker</h1>
-	<button class="play-style" on:click={playGame}>Play</button>
+{#if gameState === 'start' || gameState === 'lost' || gameState === 'finished'}
+  <button on:click={startGame}>Start Game</button>
+  {#if gameState === 'lost'}<p>You lost! Try again.</p>{/if}
 {/if}
 
-{#if gameState == 'playing'}
-	<div class="game-container">
-		<div class="target box">
-			<h2>Target</h2>
-			<p>{targetValue}</p>
-		</div>
-		<div class="reveal box">
-			<h2>Rolled</h2>
-			<p>{currentValue !== null ? currentValue : '-'}</p>
-		</div>
-	</div>
-{/if}
+{#if gameState === 'playing'}
+  {#if !previousCard}
+    <p>Guess the color of the first card:</p>
+    <button on:click={() => guessColor('red')}>Red</button>
+    <button on:click={() => guessColor('black')}>Black</button>
+  {:else}
+    <p>Previous card: {previousCard.rank} of {previousCard.suit}</p>
+    <p>Will the next card be higher or lower?</p>
+    <button on:click={() => guessHigherLower('higher')}>Higher</button>
+    <button on:click={() => guessHigherLower('lower')}>Lower</button>
+  {/if}
 
-{#if gameState == 'won'}
-	<div class="game-container">
-		<div class="target box">
-			<h2>Target</h2>
-			<p>{targetValue}</p>
-		</div>
-		<div class="reveal box">
-			<h2>Rolled</h2>
-			<p>{currentValue !== null ? currentValue : '-'}</p>
-		</div>
-	</div>
-	<h2>You Won!</h2>
-	<button class="play-style" on:click={playGame}>Bet Again?</button>
-{/if}
-
-{#if gameState == 'lost'}
-	<div class="game-container">
-		<div class="target box">
-			<h2>Target</h2>
-			<p>{targetValue}</p>
-		</div>
-		<div class="reveal box">
-			<h2>Rolled</h2>
-			<p>{currentValue !== null ? currentValue : '-'}</p>
-		</div>
-	</div>
-	<h2>You Lost</h2>
-	<button class="play-style" on:click={playGame} disabled={isProcessing}> Bet Again? </button>
+  {#if currentCard}
+    <p>Current card: {currentCard.rank} of {currentCard.suit}</p>
+  {/if}
 {/if}
