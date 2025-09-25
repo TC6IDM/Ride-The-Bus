@@ -30,14 +30,25 @@
 
 		let flickering = false;
 
-		const flicker = async () => {
-			if(!flickering) return;
+		const flicker = async (duration = 1000) => {
+			const startTime = Date.now();
+			flickering = true;
 
-			currentValue = Math.floor(Math.random() * (10+1));
-			
-			await waitForTimeout(80);
+			while(flickering && Date.now() - startTime < duration) {
+				currentValue = Math.floor(Math.random() * 11); // 0-10
+				await waitForTimeout(80);
+			}
 
-			flicker();
+			// Stop flickering
+			flickering = false;
+
+			// Final roll
+			currentValue = Math.floor(Math.random() * 11);
+
+			// Check if player won
+			won = currentValue === targetValue;
+			gameState = won ? 'won' : 'lost';
+			isProcessing = false;
 		};
 
     function playGame() {
@@ -61,15 +72,15 @@
 			winInfo: ({ data }) => {
 				flickering = false;
 
-			 	eventDict = data
-				currentValue = eventDict.numberRolled;
+				eventDict = data;
+				currentValue = eventDict ? eventDict.numberRolled : null;
 			},
 			finalWin: ({ data }) => {
 				winDict = data
-				won = winDict.amount > 0;
+				won = !!(winDict && winDict.amount > 0);
 
 				gameState = won ? 'won' : 'lost';
-        isProcessing = false;
+		isProcessing = false;
 			},
 		});
 </script>
