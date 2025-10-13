@@ -1,4 +1,6 @@
 <script lang="ts">
+  // cd C:\Users\tcand\OneDrive\Desktop\Stake Game\web-sdk\apps\Ride-The-Bus>  
+  // npm run dev
   import './app.css';
 
   type State = 'start' | 'playing' | 'won' | 'lost';
