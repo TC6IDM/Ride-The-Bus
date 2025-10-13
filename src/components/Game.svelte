@@ -108,8 +108,8 @@
     if(isProcessing) return;
     isProcessing = true;
 
-    // const payouts = calculatePayoutsHigherLower();
-    // cashoutAmount = initialBet * (color === 'red' ? payouts.red : payouts.black);
+    const payouts = calculatePayoutsHigherLower();
+    cashoutAmount = cashoutAmount * (guess === 'higher' ? payouts.higher : guess === 'lower' ? payouts.lower : payouts.equal);
 
     const card = drawCard();
     if(!card) {
@@ -139,6 +139,9 @@
     if(isProcessing) return;
     isProcessing = true;
 
+    const payouts = calculatePayoutsInsideOutside();
+    cashoutAmount = cashoutAmount * (guess === 'inside' ? payouts.inside : guess === 'outside' ? payouts.outside : payouts.equal);
+
     const card = drawCard();
     if(!card) {
       isProcessing = false;
@@ -148,11 +151,19 @@
     revealedCards[currentIndex-1] = card;
     const firstCard = revealedCards[0];
     const secondCard = revealedCards[1];
-    const correct = firstCard && secondCard && (
-      (guess === 'inside' && ((rankValue[card.rank] > rankValue[firstCard.rank] && rankValue[card.rank] < rankValue[secondCard.rank]) || (rankValue[card.rank] > rankValue[secondCard.rank] && rankValue[card.rank] < rankValue[firstCard.rank]))) ||
-      (guess === 'outside' && ((rankValue[card.rank] < rankValue[firstCard.rank] && rankValue[card.rank] < rankValue[secondCard.rank]) || (rankValue[card.rank] > rankValue[secondCard.rank] && rankValue[card.rank] > rankValue[firstCard.rank]))) ||
-      (guess === 'equal' && (rankValue[card.rank] === rankValue[secondCard.rank] || rankValue[card.rank] === rankValue[firstCard.rank]))
-    );
+    if (!firstCard || !secondCard) {
+      isProcessing = false;
+      return;
+    }
+    const firstCardValue = rankValue[firstCard.rank];
+    const secondCardValue = rankValue[secondCard.rank];
+    const minVal = Math.min(firstCardValue, secondCardValue);
+    const maxVal = Math.max(firstCardValue, secondCardValue);
+    
+    const correct =
+      (guess === 'inside' && ((rankValue[card.rank] > minVal && rankValue[card.rank] < maxVal))) ||
+      (guess === 'outside' && ((rankValue[card.rank] < minVal) || (rankValue[card.rank] > maxVal))) ||
+      (guess === 'equal' && (rankValue[card.rank] === rankValue[secondCard.rank] || rankValue[card.rank] === rankValue[firstCard.rank]));
 
     if(!correct) {
       revealAllCards();
@@ -168,6 +179,9 @@
   function guessSuit(guess: '♦'|'♣'|'♥'|'♠') {
     if(isProcessing) return;
     isProcessing = true;
+
+    const payouts = calculatePayoutsSuit();
+    cashoutAmount = cashoutAmount * (guess === '♦' ? payouts.diamond : guess === '♣' ? payouts.club : guess === '♥' ? payouts.heart : payouts.spade);
 
     const card = drawCard();
     if(!card) return;
@@ -213,6 +227,76 @@
     }
     return { red: 0, black: 0 };
   }
+
+  function calculatePayoutsHigherLower() {
+    const remainingCards = deck.slice(currentIndex);
+    const totalRemaining = remainingCards.length;
+    const houseEdge = 0.02;
+
+    if (revealedCards[0] && !revealedCards[1]) {
+      const firstCard = revealedCards[0];
+      if (!firstCard) return { higher: 0, lower: 0, equal: 0 };
+      const firstCardValue = rankValue[firstCard.rank];
+      const higherProb = remainingCards.filter(card => rankValue[card.rank] > firstCardValue).length / totalRemaining;
+      const lowerProb = remainingCards.filter(card => rankValue[card.rank] < firstCardValue).length / totalRemaining;
+      const equalProb = remainingCards.filter(card => rankValue[card.rank] === firstCardValue).length / totalRemaining;
+
+      return {
+        higher: (1 - houseEdge) / higherProb,
+        lower: (1 - houseEdge) / lowerProb,
+        equal: (1 - houseEdge) / equalProb
+      };
+    }
+    return { higher: 0, lower: 0, equal: 0 };
+  }
+
+  function calculatePayoutsInsideOutside() {
+    const remainingCards = deck.slice(currentIndex);
+    const totalRemaining = remainingCards.length;
+    const houseEdge = 0.02;
+
+    if (revealedCards[0] && revealedCards[1] && !revealedCards[2]) {
+      const firstCard = revealedCards[0];
+      const secondCard = revealedCards[1];
+      if (!firstCard && !secondCard) return { inside: 0, outside: 0, equal: 0 };
+      const firstCardValue = rankValue[firstCard.rank];
+      const secondCardValue = rankValue[secondCard.rank];
+      const minVal = Math.min(firstCardValue, secondCardValue);
+      const maxVal = Math.max(firstCardValue, secondCardValue);
+
+      const insideProb = remainingCards.filter(card => rankValue[card.rank] > minVal && rankValue[card.rank] < maxVal).length / totalRemaining;
+      const outsideProb = remainingCards.filter(card => rankValue[card.rank] < minVal || rankValue[card.rank] > maxVal).length / totalRemaining;
+      const equalProb = remainingCards.filter(card => rankValue[card.rank] === minVal || rankValue[card.rank] === maxVal).length / totalRemaining;
+
+      return {
+        inside: (1 - houseEdge) / insideProb,
+        outside: (1 - houseEdge) / outsideProb,
+        equal: (1 - houseEdge) / equalProb
+      };
+    }
+    return { inside: 0, outside: 0, equal: 0 };
+  }
+  
+  function calculatePayoutsSuit(){
+    const remainingCards = deck.slice(currentIndex);
+    const totalRemaining = remainingCards.length;
+    const houseEdge = 0.02;
+
+    if (revealedCards[0] && revealedCards[1] && revealedCards[2] && !revealedCards[3]) {
+      const heartProb = remainingCards.filter(card => card.suit === '♥').length / totalRemaining;
+      const diamondProb = remainingCards.filter(card => card.suit === '♦').length / totalRemaining;
+      const spadeProb = remainingCards.filter(card => card.suit === '♠').length / totalRemaining;
+      const clubProb = remainingCards.filter(card => card.suit === '♣').length / totalRemaining;
+      return {
+        heart: (1 - houseEdge) / heartProb,
+        diamond: (1 - houseEdge) / diamondProb,
+        spade: (1 - houseEdge) / spadeProb,
+        club: (1 - houseEdge) / clubProb
+      };
+    }
+    return { heart: 0 , diamond: 0, spade: 0, club: 0 };
+  }
+
 </script>
 
 <h1>Ride the Bus</h1>
@@ -292,10 +376,10 @@
       <p>Guess the color of the first card:</p>
       <div class="button-group">
         <button class="red-button" on:click={() => guessColor('red')}>Red
-          <div class="multiplier-winnings">x{calculatePayoutsColor().red} (${(initialBet * calculatePayoutsColor().red).toFixed(2)})</div>
+          <div class="multiplier-winnings">x{calculatePayoutsColor().red.toFixed(2)} (${(initialBet * calculatePayoutsColor().red).toFixed(2)})</div>
         </button>
         <button class="black-button" on:click={() => guessColor('black')}>Black
-          <div class="multiplier-winnings">x{calculatePayoutsColor().black} (${(initialBet * calculatePayoutsColor().black).toFixed(2)})</div>
+          <div class="multiplier-winnings">x{calculatePayoutsColor().black.toFixed(2)} (${(initialBet * calculatePayoutsColor().black).toFixed(2)})</div>
         </button>
       </div>
     </div>
@@ -303,9 +387,15 @@
     <div class="game-stage">
       <p>Will the next card be higher or lower?</p>
       <div class="button-group">
-        <button class="higher-button" on:click={() => guessHigherLower('higher')}>Higher</button>
-        <button class="lower-button" on:click={() => guessHigherLower('lower')}>Lower</button>
-        <button class="equal-button" on:click={() => guessHigherLower('equal')}>Equal</button>
+        <button class="higher-button" on:click={() => guessHigherLower('higher')}>Higher
+          <div class="multiplier-winnings">x{calculatePayoutsHigherLower().higher.toFixed(2)} (${(initialBet * calculatePayoutsHigherLower().higher).toFixed(2)})</div>
+        </button>
+        <button class="lower-button" on:click={() => guessHigherLower('lower')}>Lower
+          <div class="multiplier-winnings">x{calculatePayoutsHigherLower().lower.toFixed(2)} (${(initialBet * calculatePayoutsHigherLower().lower).toFixed(2)})</div>
+        </button>
+        <button class="equal-button" on:click={() => guessHigherLower('equal')}>Equal
+          <div class="multiplier-winnings">x{calculatePayoutsHigherLower().equal.toFixed(2)} (${(initialBet * calculatePayoutsHigherLower().equal).toFixed(2)})</div>
+        </button>
         <button class="cashout-button" on:click={() => Cashout()}>Cashout
           <div class="multiplier-winnings">${cashoutAmount.toFixed(2)}</div>
         </button>
@@ -315,21 +405,39 @@
     <div class="game-stage">
       <p>Will the next card be in between or outside?</p>
       <div class="button-group">
-        <button class="inside-button" on:click={() => guessInsideOutside('inside')}>Inside</button>
-        <button class="outside-button" on:click={() => guessInsideOutside('outside')}>Outside</button>
-        <button class="equal-button" on:click={() => guessInsideOutside('equal')}>Equal</button>
-        <button class="cashout-button" on:click={() => Cashout()}>Cashout</button>
+        <button class="inside-button" on:click={() => guessInsideOutside('inside')}>Inside
+          <div class="multiplier-winnings">x{calculatePayoutsInsideOutside().inside.toFixed(2)} (${(initialBet * calculatePayoutsInsideOutside().inside).toFixed(2)})</div>
+        </button>
+        <button class="outside-button" on:click={() => guessInsideOutside('outside')}>Outside
+          <div class="multiplier-winnings">x{calculatePayoutsInsideOutside().outside.toFixed(2)} (${(initialBet * calculatePayoutsInsideOutside().outside).toFixed(2)})</div>
+        </button>
+        <button class="equal-button" on:click={() => guessInsideOutside('equal')}>Equal
+          <div class="multiplier-winnings">x{calculatePayoutsInsideOutside().equal.toFixed(2)} (${(initialBet * calculatePayoutsInsideOutside().equal).toFixed(2)})</div>
+        </button>
+        <button class="cashout-button" on:click={() => Cashout()}>Cashout
+          <div class="multiplier-winnings">${cashoutAmount.toFixed(2)}</div>
+        </button>
       </div>
     </div>
   {:else if !revealedCards[3]}
     <div class="game-stage">
       <p>Guess the suit of the final card:</p>
       <div class="button-group">
-        <button class="suit-button heart" aria-label="Heart" on:click={() => guessSuit('♥')}></button>
-        <button class="suit-button diamond" aria-label="Diamond" on:click={() => guessSuit('♦')}></button>
-        <button class="suit-button club" aria-label="Club" on:click={() => guessSuit('♣')}></button>
-        <button class="suit-button spade" aria-label="Spade" on:click={() => guessSuit('♠')}></button>
-        <button class="cashout-button" on:click={() => Cashout()}>Cashout</button>
+        <button class="suit-button heart" on:click={() => guessSuit('♥')}>♥
+          <div class="multiplier-winnings">x{calculatePayoutsSuit().heart.toFixed(2)} (${(initialBet * calculatePayoutsSuit().heart).toFixed(2)})</div>
+        </button>
+        <button class="suit-button diamond" on:click={() => guessSuit('♦')}>♦
+          <div class="multiplier-winnings">x{calculatePayoutsSuit().diamond.toFixed(2)} (${(initialBet * calculatePayoutsSuit().diamond).toFixed(2)})</div>
+        </button>
+        <button class="suit-button club" on:click={() => guessSuit('♣')}>♣
+          <div class="multiplier-winnings">x{calculatePayoutsSuit().club.toFixed(2)} (${(initialBet * calculatePayoutsSuit().club).toFixed(2)})</div>
+        </button>
+        <button class="suit-button spade" on:click={() => guessSuit('♠')}>♠
+          <div class="multiplier-winnings">x{calculatePayoutsSuit().spade.toFixed(2)} (${(initialBet * calculatePayoutsSuit().spade).toFixed(2)})</div>
+        </button>
+        <button class="cashout-button" on:click={() => Cashout()}>Cashout
+          <div class="multiplier-winnings">${cashoutAmount.toFixed(2)}</div>
+        </button>
       </div>
     </div>
   {/if}
@@ -498,42 +606,28 @@
 
   /* Styles for suit buttons */
   .suit-button {
-    width: 50px;
-    height: 50px;
-    margin: 10px;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 24px;
+    padding: 0px 10px;
+    margin: 15px;
+    font-size: 50px; /* Increase size */
     font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
     transition: transform 0.2s;
+  }
+
+  .suit-button.heart,
+  .suit-button.diamond {
+    color: red; /* Red for hearts and diamonds */
+  }
+
+  .suit-button.club,
+  .suit-button.spade {
+    color: rgb(71, 71, 71); /* Black for clubs and spades */
   }
 
   .suit-button:hover {
     transform: scale(1.1);
-  }
-
-  .heart {
-    background-color: #ff4d4d;
-    clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 50% 82%, 18% 100%, 0% 38%);
-  }
-
-  .diamond {
-    background-color: #ff4d4d;
-    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-  }
-
-  .club {
-    background-color: #333;
-    clip-path: path('M25 5a10 10 0 1 1 0 20a10 10 0 1 1-10-10a10 10 0 1 1 20 0z');
-  }
-
-  .spade {
-    background-color: #333;
-    clip-path: path('M25 0L50 50H0z');
   }
 
   .multiplier-winnings {
