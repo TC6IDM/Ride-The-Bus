@@ -25,6 +25,9 @@
   // Store cards revealed so far (max 4)
   let revealedCards: (Card | null)[] = [null, null, null, null];
 
+  let initialBet = 0; // Variable to hold the initial bet
+  let betInput = ""; // Temporary variable to hold the user's input
+
   function createDeck(): Card[] {
     const d: Card[] = [];
     for(const suit of suits){
@@ -43,6 +46,11 @@
   }
 
   function startGame() {
+    if (isNaN(Number(betInput)) || Number(betInput) <= 0) {
+      alert("Invalid bet. Please enter a positive number.");
+      return;
+    }
+    initialBet = Number(betInput); // Convert to a number
     deck = shuffleDeck(createDeck());
     currentIndex = 0;
     revealedCards = [null, null, null, null];
@@ -178,15 +186,17 @@
     isProcessing = false;
 
   }
+
+  function retryGame() {
+    gameState = 'start';
+    betInput = initialBet.toString(); // Save the initial bet as the previous bet
+    revealedCards = [null, null, null, null]; // Reset all cards to '?'
+  }
 </script>
 
 <h1>Ride the Bus</h1>
 
 {#if gameState === 'start'}
-  <button on:click={startGame}>Start Game</button>
-{/if}
-
-{#if gameState === 'lost'}
   <div class="card-row">
     {#each revealedCards as card, index}
       <div class="card-block">
@@ -198,8 +208,33 @@
       </div>
     {/each}
   </div>
-  <p>You lost! The cards are revealed above.</p>
-  <button on:click={startGame}>Retry</button>
+  <div class="game-stage">
+    <label for="bet">Enter your initial bet:</label>
+    <input id="bet" type="number" bind:value={betInput} min="1" />
+    <div class="button-group">
+      <button on:click={startGame}>Start Game</button>
+    </div>
+  </div>
+{/if}
+
+{#if gameState === 'lost'}
+  <div class="card-row">
+      {#each revealedCards as card, index}
+        <div class="card-block">
+          {#if card}
+            <p class={card.suit === '♥' || card.suit === '♦' ? 'red-card' : 'black-card'}>{card.rank} {card.suit}</p>
+          {:else}
+            <p>?</p>
+          {/if}
+        </div>
+      {/each}
+  </div>
+  <div class="game-stage">
+    <p>You lost! The cards are revealed above.</p>
+    <div class="button-group">
+      <button on:click={retryGame}>Retry</button>
+    </div>
+  </div>
 {/if}
 
 {#if gameState === 'won'}
@@ -232,40 +267,190 @@
   </div>
 
   {#if !revealedCards[0]}
-    <p>Guess the color of the first card:</p>
-    <button on:click={() => guessColor('red')}>Red</button>
-    <button on:click={() => guessColor('black')}>Black</button>
+    <div class="game-stage">
+      <p>Guess the color of the first card:</p>
+      <div class="button-group">
+        <button class="red-button" on:click={() => guessColor('red')}>Red</button>
+        <button class="black-button" on:click={() => guessColor('black')}>Black</button>
+      </div>
+    </div>
   {:else if !revealedCards[1]}
-    <p>Will the next card be higher or lower?</p>
-    <button on:click={() => guessHigherLower('higher')}>Higher</button>
-    <button on:click={() => guessHigherLower('lower')}>Lower</button>
-    <button on:click={() => guessHigherLower('equal')}>Equal</button>
-	<button on:click={() => Cashout()}>Cashout</button>
-
+    <div class="game-stage">
+      <p>Will the next card be higher or lower?</p>
+      <div class="button-group">
+        <button class="higher-button" on:click={() => guessHigherLower('higher')}>Higher</button>
+        <button class="lower-button" on:click={() => guessHigherLower('lower')}>Lower</button>
+        <button class="equal-button" on:click={() => guessHigherLower('equal')}>Equal</button>
+        <button class="cashout-button"on:click={() => Cashout()}>Cashout</button>
+      </div>
+    </div>
   {:else if !revealedCards[2]}
-	<p>Will the next card be in between or outside?</p>
-	<button on:click={() => guessInsideOutside('inside')}>Inside</button>
-	<button on:click={() => guessInsideOutside('outside')}>Outside</button>
-	<button on:click={() => guessInsideOutside('equal')}>Equal</button>
-	<button on:click={() => Cashout()}>Cashout</button>
-
+    <div class="game-stage">
+      <p>Will the next card be in between or outside?</p>
+      <div class="button-group">
+        <button class="inside-button" on:click={() => guessInsideOutside('inside')}>Inside</button>
+        <button class="outside-button" on:click={() => guessInsideOutside('outside')}>Outside</button>
+        <button class="equal-button" on:click={() => guessInsideOutside('equal')}>Equal</button>
+        <button class="cashout-button" on:click={() => Cashout()}>Cashout</button>
+      </div>
+    </div>
   {:else if !revealedCards[3]}
-	<p>Guess the suit of the final card:</p>
-	<button on:click={() => guessSuit('♥')}>♥</button>
-	<button on:click={() => guessSuit('♦')}>♦</button>
-	<button on:click={() => guessSuit('♣')}>♣</button>
-	<button on:click={() => guessSuit('♠')}>♠</button>
-	<button on:click={() => Cashout()}>Cashout</button>
-
+    <div class="game-stage">
+      <p>Guess the suit of the final card:</p>
+      <div class="button-group">
+        <button class="suit-button heart" aria-label="Heart" on:click={() => guessSuit('♥')}></button>
+        <button class="suit-button diamond" aria-label="Diamond" on:click={() => guessSuit('♦')}></button>
+        <button class="suit-button club" aria-label="Club" on:click={() => guessSuit('♣')}></button>
+        <button class="suit-button spade" aria-label="Spade" on:click={() => guessSuit('♠')}></button>
+        <button class="cashout-button" on:click={() => Cashout()}>Cashout</button>
+      </div>
+    </div>
   {/if}
 {/if}
 
 <style>
+
+  /* Add styles for buttons */
+  button {
+    padding: 10px 20px;
+    margin: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+  }
+
+  button:hover {
+    transform: scale(1.05);
+  }
+
+  button:active {
+    transform: scale(0.95);
+  }
+
+  /* Specific styles for red and black buttons */
+  .red-button {
+    background-color: #ff4d4d;
+    color: white;
+  }
+
+  .red-button:hover {
+    background-color: #e63939;
+  }
+
+  .black-button {
+    background-color: #333;
+    color: white;
+  }
+
+  .black-button:hover {
+    background-color: #555;
+  }
+
+  /* Styles for higher, lower, and equal buttons */
+  .higher-button {
+    background-color: #4caf50;
+    color: white;
+  }
+
+  .higher-button:hover {
+    background-color: #45a049;
+  }
+
+  .lower-button {
+    background-color: #2196f3;
+    color: white;
+  }
+
+  .lower-button:hover {
+    background-color: #1e88e5;
+  }
+
+  .equal-button {
+    background-color: #ff9800;
+    color: white;
+  }
+
+  .equal-button:hover {
+    background-color: #fb8c00;
+  }
+
+  /* Styles for inside, outside, equal, and cashout buttons */
+  .inside-button {
+    background-color: #8e44ad;
+    color: white;
+  }
+
+  .inside-button:hover {
+    background-color: #732d91;
+  }
+
+  .outside-button {
+    background-color: #16a085;
+    color: white;
+  }
+
+  .outside-button:hover {
+    background-color: #12876f;
+  }
+
+  .equal-button {
+    background-color: #ff9800;
+    color: white;
+  }
+
+  .equal-button:hover {
+    background-color: #fb8c00;
+  }
+
+  .cashout-button {
+    background-color: #c0392b;
+    color: white;
+  }
+
+  .cashout-button:hover {
+    background-color: #a93226;
+  }
+
   .card-row {
     display: flex;
+    justify-content: center;
+    align-items: center;
     gap: 20px;
-    margin: 20px 0;
+    margin: 10px 0; /* Adjust spacing for consistency */
   }
+  .game-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 130px; /* Ensures consistent height */
+  }
+
+  .game-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* Ensure consistent height for end-of-game screen */
+    box-sizing: border-box;
+  }
+
+  .game-stage p {
+    text-align: center;
+    margin-bottom: 0px; /* Reduce gap */
+  }
+
+  .button-group {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+  }
+
   .card-block {
     width: 80px;
     height: 120px;
@@ -291,5 +476,58 @@
   }
   .black-card {
     color: #fff;
+  }
+
+  /* Styles for suit buttons */
+  .suit-button {
+    width: 50px;
+    height: 50px;
+    margin: 10px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+    transition: transform 0.2s;
+  }
+
+  .suit-button:hover {
+    transform: scale(1.1);
+  }
+
+  .heart {
+    background-color: #ff4d4d;
+    clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 50% 82%, 18% 100%, 0% 38%);
+  }
+
+  .diamond {
+    background-color: #ff4d4d;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  }
+
+  .club {
+    background-color: #333;
+    clip-path: path('M25 5a10 10 0 1 1 0 20a10 10 0 1 1-10-10a10 10 0 1 1 20 0z');
+  }
+
+  .spade {
+    background-color: #333;
+    clip-path: path('M25 0L50 50H0z');
+  }
+
+  .lost-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 100vh; /* Full viewport height for centering */
+  }
+
+  .lost-screen p {
+    margin: 10px 0; /* Adjust spacing */
   }
 </style>
