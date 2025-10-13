@@ -27,6 +27,7 @@
 
   let initialBet = 0; // Variable to hold the initial bet
   let betInput = ""; // Temporary variable to hold the user's input
+  let cashoutAmount = 0; // Variable to hold the cashout amount
 
   function createDeck(): Card[] {
     const d: Card[] = [];
@@ -80,6 +81,9 @@
     if(isProcessing) return;
     isProcessing = true;
 
+    const payouts = calculatePayoutsColor();
+    cashoutAmount = initialBet * (color === 'red' ? payouts.red : payouts.black);
+
     const card = drawCard();
     if(!card) {
       isProcessing = false;
@@ -98,12 +102,14 @@
     }
 
     isProcessing = false;
-
   }
 
   function guessHigherLower(guess: 'higher'|'lower'|'equal') {
     if(isProcessing) return;
     isProcessing = true;
+
+    // const payouts = calculatePayoutsHigherLower();
+    // cashoutAmount = initialBet * (color === 'red' ? payouts.red : payouts.black);
 
     const card = drawCard();
     if(!card) {
@@ -127,7 +133,6 @@
     }
 
     isProcessing = false;
-
   }
 
   function guessInsideOutside(guess: 'inside'|'outside'|'equal') {
@@ -191,6 +196,22 @@
     gameState = 'start';
     betInput = initialBet.toString(); // Save the initial bet as the previous bet
     revealedCards = [null, null, null, null]; // Reset all cards to '?'
+  }
+
+  function calculatePayoutsColor() {
+    const remainingCards = deck.slice(currentIndex);
+    const totalRemaining = remainingCards.length;
+    const houseEdge = 0.02;
+
+    if (!revealedCards[0]) {
+      const redProb = remainingCards.filter(card => card.suit === '♥' || card.suit === '♦').length / totalRemaining;
+      const blackProb = remainingCards.filter(card => card.suit === '♠' || card.suit === '♣').length / totalRemaining;
+      return {
+        red: (1 - houseEdge) / redProb,
+        black: (1 - houseEdge) / blackProb
+      };
+    }
+    return { red: 0, black: 0 };
   }
 </script>
 
@@ -270,8 +291,12 @@
     <div class="game-stage">
       <p>Guess the color of the first card:</p>
       <div class="button-group">
-        <button class="red-button" on:click={() => guessColor('red')}>Red</button>
-        <button class="black-button" on:click={() => guessColor('black')}>Black</button>
+        <button class="red-button" on:click={() => guessColor('red')}>Red
+          <div class="multiplier-winnings">x{calculatePayoutsColor().red} (${(initialBet * calculatePayoutsColor().red).toFixed(2)})</div>
+        </button>
+        <button class="black-button" on:click={() => guessColor('black')}>Black
+          <div class="multiplier-winnings">x{calculatePayoutsColor().black} (${(initialBet * calculatePayoutsColor().black).toFixed(2)})</div>
+        </button>
       </div>
     </div>
   {:else if !revealedCards[1]}
@@ -281,7 +306,9 @@
         <button class="higher-button" on:click={() => guessHigherLower('higher')}>Higher</button>
         <button class="lower-button" on:click={() => guessHigherLower('lower')}>Lower</button>
         <button class="equal-button" on:click={() => guessHigherLower('equal')}>Equal</button>
-        <button class="cashout-button"on:click={() => Cashout()}>Cashout</button>
+        <button class="cashout-button" on:click={() => Cashout()}>Cashout
+          <div class="multiplier-winnings">${cashoutAmount.toFixed(2)}</div>
+        </button>
       </div>
     </div>
   {:else if !revealedCards[2]}
@@ -314,8 +341,8 @@
   button {
     padding: 10px 20px;
     margin: 10px;
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 22px;
+    /* font-weight: bold; */
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -430,15 +457,6 @@
     min-height: 130px; /* Ensures consistent height */
   }
 
-  .game-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh; /* Ensure consistent height for end-of-game screen */
-    box-sizing: border-box;
-  }
-
   .game-stage p {
     text-align: center;
     margin-bottom: 0px; /* Reduce gap */
@@ -518,16 +536,11 @@
     clip-path: path('M25 0L50 50H0z');
   }
 
-  .lost-screen {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+  .multiplier-winnings {
+    font-size: 12px;
+    color: #fff;
+    margin-top: 5px;
     text-align: center;
-    min-height: 100vh; /* Full viewport height for centering */
   }
 
-  .lost-screen p {
-    margin: 10px 0; /* Adjust spacing */
-  }
 </style>
