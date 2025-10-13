@@ -1,5 +1,6 @@
 <script lang="ts">
   // cd C:\Users\tcand\OneDrive\Desktop\Stake Game\web-sdk\apps\Ride-The-Bus>  
+  // cd C:\Users\Owner\Desktop\Stake Engine Game\web-sdk\apps\ride-the-bus> 
   // npm run dev
   import './app.css';
 
