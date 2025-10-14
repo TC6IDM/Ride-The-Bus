@@ -354,8 +354,13 @@
       </div>
     {/each}
   </div>
-  <h2>Congratulations! You won!</h2>
-  <button on:click={startGame}>Play Again</button>
+  <div class="game-stage">
+    <h2>Congratulations!</h2>
+    <p class="win-amount">You won: ${cashoutAmount.toFixed(2)}</p>
+    <div class="button-group">
+      <button on:click={retryGame}>Back to Start</button>
+    </div>
+  </div>
 {/if}
 
 {#if gameState === 'playing'}
@@ -388,13 +393,13 @@
       <p>Will the next card be higher or lower?</p>
       <div class="button-group">
         <button class="higher-button" on:click={() => guessHigherLower('higher')}>Higher
-          <div class="multiplier-winnings">x{calculatePayoutsHigherLower().higher.toFixed(2)} (${(initialBet * calculatePayoutsHigherLower().higher).toFixed(2)})</div>
+          <div class="multiplier-winnings">x{calculatePayoutsHigherLower().higher.toFixed(2)} (${(cashoutAmount * calculatePayoutsHigherLower().higher).toFixed(2)})</div>
         </button>
         <button class="lower-button" on:click={() => guessHigherLower('lower')}>Lower
-          <div class="multiplier-winnings">x{calculatePayoutsHigherLower().lower.toFixed(2)} (${(initialBet * calculatePayoutsHigherLower().lower).toFixed(2)})</div>
+          <div class="multiplier-winnings">x{calculatePayoutsHigherLower().lower.toFixed(2)} (${(cashoutAmount * calculatePayoutsHigherLower().lower).toFixed(2)})</div>
         </button>
         <button class="equal-button" on:click={() => guessHigherLower('equal')}>Equal
-          <div class="multiplier-winnings">x{calculatePayoutsHigherLower().equal.toFixed(2)} (${(initialBet * calculatePayoutsHigherLower().equal).toFixed(2)})</div>
+          <div class="multiplier-winnings">x{calculatePayoutsHigherLower().equal.toFixed(2)} (${(cashoutAmount * calculatePayoutsHigherLower().equal).toFixed(2)})</div>
         </button>
         <button class="cashout-button" on:click={() => Cashout()}>Cashout
           <div class="multiplier-winnings">${cashoutAmount.toFixed(2)}</div>
@@ -406,13 +411,13 @@
       <p>Will the next card be in between or outside?</p>
       <div class="button-group">
         <button class="inside-button" on:click={() => guessInsideOutside('inside')}>Inside
-          <div class="multiplier-winnings">x{calculatePayoutsInsideOutside().inside.toFixed(2)} (${(initialBet * calculatePayoutsInsideOutside().inside).toFixed(2)})</div>
+          <div class="multiplier-winnings">x{calculatePayoutsInsideOutside().inside.toFixed(2)} (${(cashoutAmount * calculatePayoutsInsideOutside().inside).toFixed(2)})</div>
         </button>
         <button class="outside-button" on:click={() => guessInsideOutside('outside')}>Outside
-          <div class="multiplier-winnings">x{calculatePayoutsInsideOutside().outside.toFixed(2)} (${(initialBet * calculatePayoutsInsideOutside().outside).toFixed(2)})</div>
+          <div class="multiplier-winnings">x{calculatePayoutsInsideOutside().outside.toFixed(2)} (${(cashoutAmount * calculatePayoutsInsideOutside().outside).toFixed(2)})</div>
         </button>
         <button class="equal-button" on:click={() => guessInsideOutside('equal')}>Equal
-          <div class="multiplier-winnings">x{calculatePayoutsInsideOutside().equal.toFixed(2)} (${(initialBet * calculatePayoutsInsideOutside().equal).toFixed(2)})</div>
+          <div class="multiplier-winnings">x{calculatePayoutsInsideOutside().equal.toFixed(2)} (${(cashoutAmount * calculatePayoutsInsideOutside().equal).toFixed(2)})</div>
         </button>
         <button class="cashout-button" on:click={() => Cashout()}>Cashout
           <div class="multiplier-winnings">${cashoutAmount.toFixed(2)}</div>
@@ -424,16 +429,16 @@
       <p>Guess the suit of the final card:</p>
       <div class="button-group">
         <button class="suit-button heart" on:click={() => guessSuit('♥')}>♥
-          <div class="multiplier-winnings">x{calculatePayoutsSuit().heart.toFixed(2)} (${(initialBet * calculatePayoutsSuit().heart).toFixed(2)})</div>
+          <div class="multiplier-winnings">x{calculatePayoutsSuit().heart.toFixed(2)} (${(cashoutAmount * calculatePayoutsSuit().heart).toFixed(2)})</div>
         </button>
         <button class="suit-button diamond" on:click={() => guessSuit('♦')}>♦
-          <div class="multiplier-winnings">x{calculatePayoutsSuit().diamond.toFixed(2)} (${(initialBet * calculatePayoutsSuit().diamond).toFixed(2)})</div>
+          <div class="multiplier-winnings">x{calculatePayoutsSuit().diamond.toFixed(2)} (${(cashoutAmount * calculatePayoutsSuit().diamond).toFixed(2)})</div>
         </button>
         <button class="suit-button club" on:click={() => guessSuit('♣')}>♣
-          <div class="multiplier-winnings">x{calculatePayoutsSuit().club.toFixed(2)} (${(initialBet * calculatePayoutsSuit().club).toFixed(2)})</div>
+          <div class="multiplier-winnings">x{calculatePayoutsSuit().club.toFixed(2)} (${(cashoutAmount * calculatePayoutsSuit().club).toFixed(2)})</div>
         </button>
         <button class="suit-button spade" on:click={() => guessSuit('♠')}>♠
-          <div class="multiplier-winnings">x{calculatePayoutsSuit().spade.toFixed(2)} (${(initialBet * calculatePayoutsSuit().spade).toFixed(2)})</div>
+          <div class="multiplier-winnings">x{calculatePayoutsSuit().spade.toFixed(2)} (${(cashoutAmount * calculatePayoutsSuit().spade).toFixed(2)})</div>
         </button>
         <button class="cashout-button" on:click={() => Cashout()}>Cashout
           <div class="multiplier-winnings">${cashoutAmount.toFixed(2)}</div>
@@ -562,7 +567,7 @@
     align-items: center;
     justify-content: center;
     text-align: center;
-    min-height: 130px; /* Ensures consistent height */
+    min-height: 150px; /* Ensures consistent height */
   }
 
   .game-stage p {
@@ -635,6 +640,24 @@
     color: #fff;
     margin-top: 5px;
     text-align: center;
+  }
+
+  /* Win screen specific styles */
+  .win-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 20px;
+    min-height: 240px; /* keep win screen height fixed so layout doesn't jump */
+  }
+
+  .win-amount {
+    font-size: 28px;
+    font-weight: 700;
+    color: #ffd700; /* gold */
+    margin: 0;
   }
 
 </style>
