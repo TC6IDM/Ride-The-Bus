@@ -1,8 +1,9 @@
 <script lang="ts">
-  // cd C:\Users\tcand\OneDrive\Desktop\Stake Game\web-sdk\apps\Ride-The-Bus>  
-  // cd C:\Users\Owner\Desktop\Stake Engine Game\web-sdk\apps\ride-the-bus> 
-  // npm run dev
   import './app.css';
+  import './common.css';
+  import LostScreen from './LostScreen.svelte';
+  import WinScreen from './WinScreen.svelte';
+  import StartScreen from './StartScreen.svelte';
 
   type State = 'start' | 'playing' | 'won' | 'lost';
   let gameState: State = 'start';
@@ -267,7 +268,6 @@
       const insideProb = remainingCards.filter(card => rankValue[card.rank] > minVal && rankValue[card.rank] < maxVal).length / totalRemaining;
       const outsideProb = remainingCards.filter(card => rankValue[card.rank] < minVal || rankValue[card.rank] > maxVal).length / totalRemaining;
       const equalProb = remainingCards.filter(card => rankValue[card.rank] === minVal || rankValue[card.rank] === maxVal).length / totalRemaining;
-
       return {
         inside: (1 - houseEdge) / insideProb,
         outside: (1 - houseEdge) / outsideProb,
@@ -302,65 +302,15 @@
 <h1>Ride the Bus</h1>
 
 {#if gameState === 'start'}
-  <div class="card-row">
-    {#each revealedCards as card, index}
-      <div class="card-block">
-        {#if card}
-          <p class={card.suit === '♥' || card.suit === '♦' ? 'red-card' : 'black-card'}>{card.rank} {card.suit}</p>
-        {:else}
-          <p>?</p>
-        {/if}
-      </div>
-    {/each}
-  </div>
-  <div class="game-stage">
-    <label for="bet">Enter your initial bet:</label>
-    <input id="bet" type="number" bind:value={betInput} min="1" />
-    <div class="button-group">
-      <button on:click={startGame}>Start Game</button>
-    </div>
-  </div>
+  <StartScreen {revealedCards} bind:betInput {startGame} />
 {/if}
 
 {#if gameState === 'lost'}
-  <div class="card-row">
-      {#each revealedCards as card, index}
-        <div class="card-block">
-          {#if card}
-            <p class={card.suit === '♥' || card.suit === '♦' ? 'red-card' : 'black-card'}>{card.rank} {card.suit}</p>
-          {:else}
-            <p>?</p>
-          {/if}
-        </div>
-      {/each}
-  </div>
-  <div class="game-stage">
-    <p>You lost! The cards are revealed above.</p>
-    <div class="button-group">
-      <button on:click={retryGame}>Retry</button>
-    </div>
-  </div>
+  <LostScreen {revealedCards} {retryGame} />
 {/if}
 
 {#if gameState === 'won'}
-  <div class="card-row">
-    {#each revealedCards as card, index}
-      <div class="card-block">
-        {#if card}
-          <p class={card.suit === '♥' || card.suit === '♦' ? 'red-card' : 'black-card'}>{card.rank} {card.suit}</p>
-        {:else}
-          <p>?</p>
-        {/if}
-      </div>
-    {/each}
-  </div>
-  <div class="game-stage">
-    <h2>Congratulations!</h2>
-    <p class="win-amount">You won: ${cashoutAmount.toFixed(2)}</p>
-    <div class="button-group">
-      <button on:click={retryGame}>Back to Start</button>
-    </div>
-  </div>
+  <WinScreen {revealedCards} {cashoutAmount} {retryGame} />
 {/if}
 
 {#if gameState === 'playing'}
@@ -447,8 +397,8 @@
     </div>
   {/if}
 {/if}
-
 <style>
+@import './common.css';
 
   /* Add styles for buttons */
   button {
@@ -554,22 +504,6 @@
     background-color: #a93226;
   }
 
-  .card-row {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    margin: 10px 0; /* Adjust spacing for consistency */
-  }
-  .game-stage {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    min-height: 150px; /* Ensures consistent height */
-  }
-
   .game-stage p {
     text-align: center;
     margin-bottom: 0px; /* Reduce gap */
@@ -642,22 +576,5 @@
     text-align: center;
   }
 
-  /* Win screen specific styles */
-  .win-stage {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 20px;
-    min-height: 240px; /* keep win screen height fixed so layout doesn't jump */
-  }
-
-  .win-amount {
-    font-size: 28px;
-    font-weight: 700;
-    color: #ffd700; /* gold */
-    margin: 0;
-  }
 
 </style>
