@@ -25,8 +25,8 @@ body {
 	padding: 2rem;
 	font-family: 'Poppins', sans-serif;
 	color: var(--txt-1);
-	background: url('/backdrop.png') no-repeat center center fixed;
-	background-size: 50%;
+	background: url('/backdrop.png') no-repeat center 30% fixed;
+	background-size: 0%;
 }
 
 h1 {
