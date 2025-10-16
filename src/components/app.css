@@ -25,7 +25,8 @@ body {
 	padding: 2rem;
 	font-family: 'Poppins', sans-serif;
 	color: var(--txt-1);
-	background-color: var(--bg-1);
+	background: url('/backdrop.png') no-repeat center center fixed;
+	background-size: 50%;
 }
 
 h1 {
@@ -86,4 +87,4 @@ button {
 	font-size: 2rem;
 	font-weight: bold;
 	color: #222;
-} 
+}

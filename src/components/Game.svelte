@@ -4,21 +4,19 @@
   import LostScreen from './LostScreen.svelte';
   import WinScreen from './WinScreen.svelte';
   import StartScreen from './StartScreen.svelte';
+  import {
+    createDeck,
+    shuffleDeck,
+    calculatePayoutsColor,
+    calculatePayoutsHigherLower,
+    calculatePayoutsInsideOutside,
+    calculatePayoutsSuit
+  } from './gameLogic';
+  import type { Card } from './gameLogic';
 
   type State = 'start' | 'playing' | 'won' | 'lost';
   let gameState: State = 'start';
   let isProcessing = false;
-
-  interface Card {
-    suit: '♥' | '♦' | '♣' | '♠';
-    rank: 'A'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'|'J'|'Q'|'K';
-  }
-
-  const suits: Card['suit'][] = ['♥','♦','♣','♠'];
-  const ranks: Card['rank'][] = ['A','2','3','4','5','6','7','8','9' ,'10','J' ,'Q' ,'K'];
-  const rankValue: Record<Card['rank'],number> = {
-    'A':1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13
-  };
 
   let deck: Card[] = [];
   let currentIndex = 0;
@@ -30,22 +28,11 @@
   let betInput = ""; // Temporary variable to hold the user's input
   let cashoutAmount = 0; // Variable to hold the cashout amount
 
-  function createDeck(): Card[] {
-    const d: Card[] = [];
-    for(const suit of suits){
-      for(const rank of ranks) d.push({suit, rank});
-    }
-    return d;
-  }
-
-  function shuffleDeck(d: Card[]): Card[] {
-    const shuffled = [...d];
-    for(let i = shuffled.length-1; i>0; i--){
-      const j = Math.floor(Math.random()*(i+1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  }
+  // Map card ranks to their numeric values
+  const rankValue: { [key: string]: number } = {
+    '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10,
+    'J': 11, 'Q': 12, 'K': 13, 'A': 14
+  };
 
   function startGame() {
     if (isNaN(Number(betInput)) || Number(betInput) <= 0) {
@@ -61,41 +48,41 @@
   }
 
   function drawCard(): Card | null {
-    if(currentIndex >= deck.length) return null;
+    if (currentIndex >= deck.length) return null;
     return deck[currentIndex++];
   }
 
   function Cashout() {
-	if(gameState !== 'playing') return;
-	gameState = 'won';
-	}
-
-  function revealAllCards() {
-	for (let i = 0; i < revealedCards.length; i++) {
-		if (!revealedCards[i] && deck[i]) {
-		revealedCards[i] = deck[i];
-		}
-	}
+    if (gameState !== 'playing') return;
+    gameState = 'won';
   }
 
-  function guessColor(color: 'red'|'black') {
-    if(isProcessing) return;
+  function revealAllCards() {
+    for (let i = 0; i < revealedCards.length; i++) {
+      if (!revealedCards[i] && deck[i]) {
+        revealedCards[i] = deck[i];
+      }
+    }
+  }
+
+  function guessColor(color: 'red' | 'black') {
+    if (isProcessing) return;
     isProcessing = true;
 
-    const payouts = calculatePayoutsColor();
+    const payouts = calculatePayoutsColor(deck, currentIndex);
     cashoutAmount = initialBet * (color === 'red' ? payouts.red : payouts.black);
 
     const card = drawCard();
-    if(!card) {
+    if (!card) {
       isProcessing = false;
       return;
     }
 
-    revealedCards[currentIndex-1] = card;
+    revealedCards[currentIndex - 1] = card;
     const cardColor = card.suit === '♥' || card.suit === '♦' ? 'red' : 'black';
     const correct = cardColor === color;
 
-    if(!correct) {
+    if (!correct) {
       revealAllCards();
       isProcessing = false;
       gameState = 'lost';
@@ -105,28 +92,32 @@
     isProcessing = false;
   }
 
-  function guessHigherLower(guess: 'higher'|'lower'|'equal') {
-    if(isProcessing) return;
+  function guessHigherLower(guess: 'higher' | 'lower' | 'equal') {
+    if (isProcessing) return;
     isProcessing = true;
 
-    const payouts = calculatePayoutsHigherLower();
+    const firstCard = revealedCards[0];
+    if (!firstCard) {
+      isProcessing = false;
+      return;
+    }
+
+    const payouts = calculatePayoutsHigherLower(deck, currentIndex, firstCard);
     cashoutAmount = cashoutAmount * (guess === 'higher' ? payouts.higher : guess === 'lower' ? payouts.lower : payouts.equal);
 
     const card = drawCard();
-    if(!card) {
+    if (!card) {
       isProcessing = false;
       return;
     }
 
-    revealedCards[currentIndex-1] = card;
-    const firstCard = revealedCards[0];
-    const correct = firstCard && (
-      (guess === 'higher' && rankValue[card.rank] > rankValue[firstCard.rank]) ||
-      (guess === 'lower' && rankValue[card.rank] < rankValue[firstCard.rank]) ||
-      (guess === 'equal' && rankValue[card.rank] === rankValue[firstCard.rank])
-    );
+    revealedCards[currentIndex - 1] = card;
+    const correct =
+      (guess === 'higher' && card.rank > firstCard.rank) ||
+      (guess === 'lower' && card.rank < firstCard.rank) ||
+      (guess === 'equal' && card.rank === firstCard.rank);
 
-    if(!correct) {
+    if (!correct) {
       revealAllCards();
       isProcessing = false;
       gameState = 'lost';
@@ -136,37 +127,38 @@
     isProcessing = false;
   }
 
-  function guessInsideOutside(guess: 'inside'|'outside'|'equal') {
-    if(isProcessing) return;
+  function guessInsideOutside(guess: 'inside' | 'outside' | 'equal') {
+    if (isProcessing) return;
     isProcessing = true;
 
-    const payouts = calculatePayoutsInsideOutside();
-    cashoutAmount = cashoutAmount * (guess === 'inside' ? payouts.inside : guess === 'outside' ? payouts.outside : payouts.equal);
-
-    const card = drawCard();
-    if(!card) {
-      isProcessing = false;
-      return;
-    }
-
-    revealedCards[currentIndex-1] = card;
     const firstCard = revealedCards[0];
     const secondCard = revealedCards[1];
     if (!firstCard || !secondCard) {
       isProcessing = false;
       return;
     }
+
+    const payouts = calculatePayoutsInsideOutside(deck, currentIndex, firstCard, secondCard);
+    cashoutAmount = cashoutAmount * (guess === 'inside' ? payouts.inside : guess === 'outside' ? payouts.outside : payouts.equal);
+
+    const card = drawCard();
+    if (!card) {
+      isProcessing = false;
+      return;
+    }
+
+    revealedCards[currentIndex - 1] = card;
     const firstCardValue = rankValue[firstCard.rank];
     const secondCardValue = rankValue[secondCard.rank];
     const minVal = Math.min(firstCardValue, secondCardValue);
     const maxVal = Math.max(firstCardValue, secondCardValue);
-    
-    const correct =
-      (guess === 'inside' && ((rankValue[card.rank] > minVal && rankValue[card.rank] < maxVal))) ||
-      (guess === 'outside' && ((rankValue[card.rank] < minVal) || (rankValue[card.rank] > maxVal))) ||
-      (guess === 'equal' && (rankValue[card.rank] === rankValue[secondCard.rank] || rankValue[card.rank] === rankValue[firstCard.rank]));
 
-    if(!correct) {
+    const correct =
+      (guess === 'inside' && rankValue[card.rank] > minVal && rankValue[card.rank] < maxVal) ||
+      (guess === 'outside' && (rankValue[card.rank] < minVal || rankValue[card.rank] > maxVal)) ||
+      (guess === 'equal' && (rankValue[card.rank] === minVal || rankValue[card.rank] === maxVal));
+
+    if (!correct) {
       revealAllCards();
       isProcessing = false;
       gameState = 'lost';
@@ -174,28 +166,22 @@
     }
 
     isProcessing = false;
-
   }
 
-  function guessSuit(guess: '♦'|'♣'|'♥'|'♠') {
-    if(isProcessing) return;
+  function guessSuit(guess: '♦' | '♣' | '♥' | '♠') {
+    if (isProcessing) return;
     isProcessing = true;
 
-    const payouts = calculatePayoutsSuit();
+    const payouts = calculatePayoutsSuit(deck, currentIndex);
     cashoutAmount = cashoutAmount * (guess === '♦' ? payouts.diamond : guess === '♣' ? payouts.club : guess === '♥' ? payouts.heart : payouts.spade);
 
     const card = drawCard();
-    if(!card) return;
+    if (!card) return;
 
-    revealedCards[currentIndex-1] = card;
-    const correct = (
-      (guess === '♦' && card.suit == '♦') ||
-      (guess === '♣' && card.suit == '♣') ||
-      (guess === '♥' && card.suit == '♥') ||
-      (guess === '♠' && card.suit == '♠')
-    );
+    revealedCards[currentIndex - 1] = card;
+    const correct = card.suit === guess;
 
-    if(!correct) {
+    if (!correct) {
       revealAllCards();
       isProcessing = false;
       gameState = 'lost';
@@ -204,7 +190,6 @@
 
     gameState = 'won';
     isProcessing = false;
-
   }
 
   function retryGame() {
@@ -212,91 +197,6 @@
     betInput = initialBet.toString(); // Save the initial bet as the previous bet
     revealedCards = [null, null, null, null]; // Reset all cards to '?'
   }
-
-  function calculatePayoutsColor() {
-    const remainingCards = deck.slice(currentIndex);
-    const totalRemaining = remainingCards.length;
-    const houseEdge = 0.02;
-
-    if (!revealedCards[0]) {
-      const redProb = remainingCards.filter(card => card.suit === '♥' || card.suit === '♦').length / totalRemaining;
-      const blackProb = remainingCards.filter(card => card.suit === '♠' || card.suit === '♣').length / totalRemaining;
-      return {
-        red: (1 - houseEdge) / redProb,
-        black: (1 - houseEdge) / blackProb
-      };
-    }
-    return { red: 0, black: 0 };
-  }
-
-  function calculatePayoutsHigherLower() {
-    const remainingCards = deck.slice(currentIndex);
-    const totalRemaining = remainingCards.length;
-    const houseEdge = 0.02;
-
-    if (revealedCards[0] && !revealedCards[1]) {
-      const firstCard = revealedCards[0];
-      if (!firstCard) return { higher: 0, lower: 0, equal: 0 };
-      const firstCardValue = rankValue[firstCard.rank];
-      const higherProb = remainingCards.filter(card => rankValue[card.rank] > firstCardValue).length / totalRemaining;
-      const lowerProb = remainingCards.filter(card => rankValue[card.rank] < firstCardValue).length / totalRemaining;
-      const equalProb = remainingCards.filter(card => rankValue[card.rank] === firstCardValue).length / totalRemaining;
-
-      return {
-        higher: (1 - houseEdge) / higherProb,
-        lower: (1 - houseEdge) / lowerProb,
-        equal: (1 - houseEdge) / equalProb
-      };
-    }
-    return { higher: 0, lower: 0, equal: 0 };
-  }
-
-  function calculatePayoutsInsideOutside() {
-    const remainingCards = deck.slice(currentIndex);
-    const totalRemaining = remainingCards.length;
-    const houseEdge = 0.02;
-
-    if (revealedCards[0] && revealedCards[1] && !revealedCards[2]) {
-      const firstCard = revealedCards[0];
-      const secondCard = revealedCards[1];
-      if (!firstCard && !secondCard) return { inside: 0, outside: 0, equal: 0 };
-      const firstCardValue = rankValue[firstCard.rank];
-      const secondCardValue = rankValue[secondCard.rank];
-      const minVal = Math.min(firstCardValue, secondCardValue);
-      const maxVal = Math.max(firstCardValue, secondCardValue);
-
-      const insideProb = remainingCards.filter(card => rankValue[card.rank] > minVal && rankValue[card.rank] < maxVal).length / totalRemaining;
-      const outsideProb = remainingCards.filter(card => rankValue[card.rank] < minVal || rankValue[card.rank] > maxVal).length / totalRemaining;
-      const equalProb = remainingCards.filter(card => rankValue[card.rank] === minVal || rankValue[card.rank] === maxVal).length / totalRemaining;
-      return {
-        inside: (1 - houseEdge) / insideProb,
-        outside: (1 - houseEdge) / outsideProb,
-        equal: (1 - houseEdge) / equalProb
-      };
-    }
-    return { inside: 0, outside: 0, equal: 0 };
-  }
-  
-  function calculatePayoutsSuit(){
-    const remainingCards = deck.slice(currentIndex);
-    const totalRemaining = remainingCards.length;
-    const houseEdge = 0.02;
-
-    if (revealedCards[0] && revealedCards[1] && revealedCards[2] && !revealedCards[3]) {
-      const heartProb = remainingCards.filter(card => card.suit === '♥').length / totalRemaining;
-      const diamondProb = remainingCards.filter(card => card.suit === '♦').length / totalRemaining;
-      const spadeProb = remainingCards.filter(card => card.suit === '♠').length / totalRemaining;
-      const clubProb = remainingCards.filter(card => card.suit === '♣').length / totalRemaining;
-      return {
-        heart: (1 - houseEdge) / heartProb,
-        diamond: (1 - houseEdge) / diamondProb,
-        spade: (1 - houseEdge) / spadeProb,
-        club: (1 - houseEdge) / clubProb
-      };
-    }
-    return { heart: 0 , diamond: 0, spade: 0, club: 0 };
-  }
-
 </script>
 
 <h1>Ride the Bus</h1>
@@ -331,10 +231,10 @@
       <p>Guess the color of the first card:</p>
       <div class="button-group">
         <button class="red-button" on:click={() => guessColor('red')}>Red
-          <div class="multiplier-winnings">x{calculatePayoutsColor().red.toFixed(2)} (${(initialBet * calculatePayoutsColor().red).toFixed(2)})</div>
+          <div class="multiplier-winnings">x{calculatePayoutsColor(deck, currentIndex).red.toFixed(2)} (${(initialBet * calculatePayoutsColor(deck, currentIndex).red).toFixed(2)})</div>
         </button>
         <button class="black-button" on:click={() => guessColor('black')}>Black
-          <div class="multiplier-winnings">x{calculatePayoutsColor().black.toFixed(2)} (${(initialBet * calculatePayoutsColor().black).toFixed(2)})</div>
+          <div class="multiplier-winnings">x{calculatePayoutsColor(deck, currentIndex).black.toFixed(2)} (${(initialBet * calculatePayoutsColor(deck, currentIndex).black).toFixed(2)})</div>
         </button>
       </div>
     </div>
@@ -343,13 +243,13 @@
       <p>Will the next card be higher or lower?</p>
       <div class="button-group">
         <button class="higher-button" on:click={() => guessHigherLower('higher')}>Higher
-          <div class="multiplier-winnings">x{calculatePayoutsHigherLower().higher.toFixed(2)} (${(cashoutAmount * calculatePayoutsHigherLower().higher).toFixed(2)})</div>
+          <div class="multiplier-winnings">x{calculatePayoutsHigherLower(deck, currentIndex, revealedCards[0]!).higher.toFixed(2)} (${(cashoutAmount * calculatePayoutsHigherLower(deck, currentIndex, revealedCards[0]!).higher).toFixed(2)})</div>
         </button>
         <button class="lower-button" on:click={() => guessHigherLower('lower')}>Lower
-          <div class="multiplier-winnings">x{calculatePayoutsHigherLower().lower.toFixed(2)} (${(cashoutAmount * calculatePayoutsHigherLower().lower).toFixed(2)})</div>
+          <div class="multiplier-winnings">x{calculatePayoutsHigherLower(deck, currentIndex, revealedCards[0]!).lower.toFixed(2)} (${(cashoutAmount * calculatePayoutsHigherLower(deck, currentIndex, revealedCards[0]!).lower).toFixed(2)})</div>
         </button>
         <button class="equal-button" on:click={() => guessHigherLower('equal')}>Equal
-          <div class="multiplier-winnings">x{calculatePayoutsHigherLower().equal.toFixed(2)} (${(cashoutAmount * calculatePayoutsHigherLower().equal).toFixed(2)})</div>
+          <div class="multiplier-winnings">x{calculatePayoutsHigherLower(deck, currentIndex, revealedCards[0]!).equal.toFixed(2)} (${(cashoutAmount * calculatePayoutsHigherLower(deck, currentIndex, revealedCards[0]!).equal).toFixed(2)})</div>
         </button>
         <button class="cashout-button" on:click={() => Cashout()}>Cashout
           <div class="multiplier-winnings">${cashoutAmount.toFixed(2)}</div>
@@ -361,13 +261,13 @@
       <p>Will the next card be in between or outside?</p>
       <div class="button-group">
         <button class="inside-button" on:click={() => guessInsideOutside('inside')}>Inside
-          <div class="multiplier-winnings">x{calculatePayoutsInsideOutside().inside.toFixed(2)} (${(cashoutAmount * calculatePayoutsInsideOutside().inside).toFixed(2)})</div>
+          <div class="multiplier-winnings">x{calculatePayoutsInsideOutside(deck, currentIndex, revealedCards[0]!, revealedCards[1]!).inside.toFixed(2)} (${(cashoutAmount * calculatePayoutsInsideOutside(deck, currentIndex, revealedCards[0]!, revealedCards[1]!).inside).toFixed(2)})</div>
         </button>
         <button class="outside-button" on:click={() => guessInsideOutside('outside')}>Outside
-          <div class="multiplier-winnings">x{calculatePayoutsInsideOutside().outside.toFixed(2)} (${(cashoutAmount * calculatePayoutsInsideOutside().outside).toFixed(2)})</div>
+          <div class="multiplier-winnings">x{calculatePayoutsInsideOutside(deck, currentIndex, revealedCards[0]!, revealedCards[1]!).outside.toFixed(2)} (${(cashoutAmount * calculatePayoutsInsideOutside(deck, currentIndex, revealedCards[0]!, revealedCards[1]!).outside).toFixed(2)})</div>
         </button>
         <button class="equal-button" on:click={() => guessInsideOutside('equal')}>Equal
-          <div class="multiplier-winnings">x{calculatePayoutsInsideOutside().equal.toFixed(2)} (${(cashoutAmount * calculatePayoutsInsideOutside().equal).toFixed(2)})</div>
+          <div class="multiplier-winnings">x{calculatePayoutsInsideOutside(deck, currentIndex, revealedCards[0]!, revealedCards[1]!).equal.toFixed(2)} (${(cashoutAmount * calculatePayoutsInsideOutside(deck, currentIndex, revealedCards[0]!, revealedCards[1]!).equal).toFixed(2)})</div>
         </button>
         <button class="cashout-button" on:click={() => Cashout()}>Cashout
           <div class="multiplier-winnings">${cashoutAmount.toFixed(2)}</div>
@@ -379,16 +279,16 @@
       <p>Guess the suit of the final card:</p>
       <div class="button-group">
         <button class="suit-button heart" on:click={() => guessSuit('♥')}>♥
-          <div class="multiplier-winnings">x{calculatePayoutsSuit().heart.toFixed(2)} (${(cashoutAmount * calculatePayoutsSuit().heart).toFixed(2)})</div>
+          <div class="multiplier-winnings">x{calculatePayoutsSuit(deck, currentIndex).heart.toFixed(2)} (${(cashoutAmount * calculatePayoutsSuit(deck, currentIndex).heart).toFixed(2)})</div>
         </button>
         <button class="suit-button diamond" on:click={() => guessSuit('♦')}>♦
-          <div class="multiplier-winnings">x{calculatePayoutsSuit().diamond.toFixed(2)} (${(cashoutAmount * calculatePayoutsSuit().diamond).toFixed(2)})</div>
+          <div class="multiplier-winnings">x{calculatePayoutsSuit(deck, currentIndex).diamond.toFixed(2)} (${(cashoutAmount * calculatePayoutsSuit(deck, currentIndex).diamond).toFixed(2)})</div>
         </button>
         <button class="suit-button club" on:click={() => guessSuit('♣')}>♣
-          <div class="multiplier-winnings">x{calculatePayoutsSuit().club.toFixed(2)} (${(cashoutAmount * calculatePayoutsSuit().club).toFixed(2)})</div>
+          <div class="multiplier-winnings">x{calculatePayoutsSuit(deck, currentIndex).club.toFixed(2)} (${(cashoutAmount * calculatePayoutsSuit(deck, currentIndex).club).toFixed(2)})</div>
         </button>
         <button class="suit-button spade" on:click={() => guessSuit('♠')}>♠
-          <div class="multiplier-winnings">x{calculatePayoutsSuit().spade.toFixed(2)} (${(cashoutAmount * calculatePayoutsSuit().spade).toFixed(2)})</div>
+          <div class="multiplier-winnings">x{calculatePayoutsSuit(deck, currentIndex).spade.toFixed(2)} (${(cashoutAmount * calculatePayoutsSuit(deck, currentIndex).spade).toFixed(2)})</div>
         </button>
         <button class="cashout-button" on:click={() => Cashout()}>Cashout
           <div class="multiplier-winnings">${cashoutAmount.toFixed(2)}</div>
@@ -398,14 +298,14 @@
   {/if}
 {/if}
 <style>
-@import './common.css';
+  @import './common.css';
+  @import './app.css';
 
   /* Add styles for buttons */
   button {
     padding: 10px 20px;
     margin: 10px;
     font-size: 22px;
-    /* font-weight: bold; */
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -575,6 +475,5 @@
     margin-top: 5px;
     text-align: center;
   }
-
 
 </style>
