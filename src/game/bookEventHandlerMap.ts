@@ -5,7 +5,8 @@ import { stateBet } from 'state-shared';
 import { sequence } from 'utils-shared/sequence';
 
 import { eventEmitter } from './eventEmitter';
-import { playBookEvent } from './utils';
+import { playBookEvent, playBookEvents } from './utils';
+import { waitForChoice } from './engineChoice';
 import { winLevelMap, type WinLevel, type WinLevelData } from './winLevelMap';
 import { stateGame, stateGameDerived } from './stateGame.svelte';
 import type { BookEvent, BookEventOfType, BookEventContext } from './typesBookEvent';
@@ -44,6 +45,35 @@ const animateSymbols = async ({ positions }: { positions: Position[] }) => {
 };
 
 export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContext> = {
+
+	reveal: async (bookEvent: BookEventOfType<'reveal'>, { bookEvents }: BookEventContext) => {
+		const isBonusGame = checkIsMultipleRevealEvents({ bookEvents });
+		if (isBonusGame) {
+			eventEmitter.broadcast({ type: 'stopButtonEnable' });
+			recordBookEvent({ bookEvent });
+		}
+
+		// broadcast raw reveal so UI can update
+		await eventEmitter.broadcastAsync({ type: 'engineReveal', data: bookEvent });
+
+		// if the reveal requires player input (server indicates via awaitChoice flag), wait for it
+		// NOTE: 'awaitChoice' is an optional flag in bookEvent schema used by interactive books
+		if ((bookEvent as any).awaitChoice) {
+			eventEmitter.broadcast({ type: 'engineAwaitChoice', data: { index: bookEvent.index, payouts: (bookEvent as any).payouts ?? (bookEvent as any).multipliers ?? (bookEvent as any).options } });
+			const choice = await waitForChoice(bookEvent.index);
+			// record the player's input event with the server so the engine advances and return any new state
+			const res = await recordBookEvent({ bookEvent, choice });
+			// If the engine returned an updated round/state, continue playing those events
+			if (res) {
+				const anyRes: any = res;
+				const maybeActionState = anyRes?.action?.state || anyRes?.round?.state || anyRes?.state;
+				if (Array.isArray(maybeActionState) && maybeActionState.length > 0) {
+					await playBookEvents(maybeActionState as any);
+				}
+			}
+		}
+	},
+
 	winInfo: async (bookEvent: BookEventOfType<'reveal'>, { bookEvents }: BookEventContext) => {
 		await eventEmitter.broadcastAsync({ type: 'winInfo', data: bookEvent });
 	},
