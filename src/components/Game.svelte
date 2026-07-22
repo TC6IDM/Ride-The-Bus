@@ -169,7 +169,9 @@
       return;
     }
 
-    // local deterministic fallback (dev)
+    // local deterministic fallback (dev): simulate the debit a real
+    // /wallet/play call would make, so balance behaves like prod.
+    stateBet.balanceAmount -= initialBet;
     enginePayouts = null;
     const round = createRoundContract(`${roundSeedData.seed}:${roundSequence}`);
     roundSequence += 1;
@@ -186,6 +188,14 @@
     isProcessing = false;
   }
 
+  // Simulate the credit a real /wallet/end-round call would make, only for
+  // local-fallback rounds (the engine path gets its credit from the real
+  // requestEndRound response in endEngineRound()).
+  function creditLocalBalance(amount: number) {
+    if (isEngineRound()) return;
+    stateBet.balanceAmount += amount;
+  }
+
   function drawCard(): Card | null {
     if(currentIndex >= deck.length) return null;
     return deck[currentIndex++];
@@ -197,6 +207,7 @@
     wonAmount = cashoutAmount || initialBet;
     endMode = 'cashout';
     gameState = 'cashed';
+    creditLocalBalance(wonAmount);
     endEngineRound();
   }
 
@@ -340,6 +351,7 @@
     endMode = 'full-win';
     gameState = 'cashed';
     isProcessing = false;
+    creditLocalBalance(wonAmount);
     endEngineRound();
 
   }
