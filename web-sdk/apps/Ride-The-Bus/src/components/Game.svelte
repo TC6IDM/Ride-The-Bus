@@ -1,4 +1,5 @@
 <script lang="ts">
+  //
   import { base } from '$app/paths';
   import './app.css';
   import { createRoundContract, rankValue, type Card } from '../game/roundContract';
@@ -63,6 +64,13 @@
     const authenticatedRoundId = stateBet.betToResume?.roundID;
     if (authenticatedRoundId !== undefined && authenticatedRoundId !== null && `${authenticatedRoundId}`.trim()) {
       return { seed: `${authenticatedRoundId}`, source: 'engine-auth' as const };
+    }
+
+    // A real Stake Engine launch always provides sessionID/rgs_url, even for
+    // a brand-new round with nothing to resume - route those through the
+    // engine too. betToResume above only covers reconnecting mid-round.
+    if (stateUrlDerived.sessionID() && stateUrlDerived.rgsUrl()) {
+      return { seed: 'new-round', source: 'engine-auth' as const };
     }
 
     if (IS_PROD) return { seed: null as unknown as string, source: 'none' as const };
