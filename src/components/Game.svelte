@@ -849,12 +849,15 @@
 
   .wager-field {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    gap: 6px 10px;
   }
 
   .wager-field label {
+    flex-basis: 100%;
+    text-align: center;
     font-size: 0.85rem;
     letter-spacing: 0.16em;
     text-transform: uppercase;
