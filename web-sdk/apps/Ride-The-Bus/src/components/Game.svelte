@@ -1,10 +1,10 @@
 <script lang="ts">
-  //
   import { base } from '$app/paths';
   import './app.css';
   import { createRoundContract, rankValue, type Card } from '../game/roundContract';
-  import { stateBet, stateUrlDerived } from 'state-shared';
+  import { stateBet, stateBetDerived, stateUrlDerived } from 'state-shared';
   import { requestBet, requestEndRound } from 'rgs-requests';
+  import { numberToCurrencyString } from 'utils-shared/amount';
 
   type State = 'start' | 'playing' | 'won' | 'lost' | 'cashed';
   type EndMode = 'cashout' | 'full-win';
@@ -122,12 +122,23 @@
     }
   }
 
-  function startGame() {
-    if (isNaN(Number(betInput)) || Number(betInput) <= 0) {
+  function setBet() {
+    const value = Number(betInput);
+    if (isNaN(value) || value <= 0) {
       alert("Invalid bet. Please enter a positive number.");
       return;
     }
-    initialBet = Number(betInput);
+    stateBetDerived.setBetAmount(value);
+    // reflect the clamped (balance-limited) value back into the input
+    betInput = stateBet.betAmount.toString();
+  }
+
+  function startGame() {
+    if (stateBet.betAmount <= 0) {
+      alert("Set a bet amount first.");
+      return;
+    }
+    initialBet = stateBet.betAmount;
     const roundSeedData = resolveRoundSeed();
 
     // If the resolved seed says the engine (server) should drive the round,
@@ -437,6 +448,11 @@
     <span>Deck preview: {roundDeckPreview || 'n/a'}</span>
   </div>
 
+  <div class="wallet-bar" aria-live="polite">
+    <span>Balance: {numberToCurrencyString(stateBet.balanceAmount)}</span>
+    <span>Current Bet: {numberToCurrencyString(stateBet.betAmount)}</span>
+  </div>
+
   {#if gameState === 'start'}
   <div class="card-row">
     {#each revealedCards as card, index}
@@ -455,11 +471,12 @@
   </div>
   <div class="start-panel">
     <div class="start-stack">
-      <button class="start-button" onclick={startGame} disabled={IS_PROD && resolveRoundSeed().source === 'none'}>Start</button>
       <div class="wager-field">
         <label for="bet">Wager</label>
         <input id="bet" class="bet-input" type="number" bind:value={betInput} min="1" placeholder="e.g. 10" />
+        <button class="secondary-button" onclick={setBet}>Set Bet</button>
       </div>
+      <button class="start-button" onclick={startGame} disabled={(IS_PROD && resolveRoundSeed().source === 'none') || stateBet.betAmount <= 0}>Start</button>
     </div>
   </div>
 {/if}
@@ -757,6 +774,21 @@
     color: #fff4d5;
     font-size: 0.8rem;
     letter-spacing: 0.04em;
+  }
+
+  .wallet-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 24px;
+    margin-bottom: 16px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: rgba(7, 14, 24, 0.65);
+    color: #ffd77e;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
   }
 
   /* Start panel styles */
