@@ -65,7 +65,10 @@ class GameState(GameStateOverride):
                     break
                 running_multiplier *= payouts[guess]
 
-            win_amount = round(running_multiplier, 2)
+            # Quantize to the nearest 0.1x: the product of several 0.1x-quantized
+            # per-stage payouts isn't itself guaranteed to land on a 0.1x step,
+            # but the RGS requires the book's payoutMultiplier to be one.
+            win_amount = round(running_multiplier * 10) / 10 if running_multiplier > 0 else 0.0
             self.win_manager.update_spinwin(win_amount)
             self.win_manager.update_gametype_wins(self.gametype)
 
