@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
+	import { base } from '$app/paths';
 	import { GlobalStyle } from 'components-ui-html';
 	import { Authenticate, LoaderStakeEngine, LoaderExample, LoadI18n } from 'components-shared';
 	import Game from '../components/Game.svelte';
@@ -13,8 +14,8 @@
 
 	let showYourLoader = $state(false);
 
-	const loaderUrlStakeEngine = '/stake-engine-loader.gif';
-	const loaderUrl = '/loader.gif';
+	const loaderUrlStakeEngine = `${base}/stake-engine-loader.gif`;
+	const loaderUrl = `${base}/loader.gif`;
 
 	setContext();
 </script>
