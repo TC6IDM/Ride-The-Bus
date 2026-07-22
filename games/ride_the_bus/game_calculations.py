@@ -22,10 +22,18 @@ class GameCalculations(Executables):
     """Fair-odds table calculations, shared with the frontend's local formulas."""
 
     def fair_multiplier(self, probability: float) -> float:
-        """(1 - house_edge) / true probability, rounded to 2dp; 0 if impossible."""
+        """
+        (1 - house_edge) / true probability, quantized to the nearest 0.1x.
+        Stake's RGS only accepts non-zero payout multipliers in 0.1x
+        increments (payoutMultiplier, stored as integer cents x100, must be
+        a multiple of 10) - see utils/rgs_verification.py:verify_lookup_format.
+        0 if impossible.
+        """
         if probability <= 0:
             return 0.0
-        return round((1 - self.config.house_edge) / probability, 4)
+        raw = (1 - self.config.house_edge) / probability
+        quantized = round(raw * 10) / 10
+        return quantized if quantized > 0 else 0.1
 
     def color_payouts(self, remaining: list) -> dict:
         total = len(remaining)
