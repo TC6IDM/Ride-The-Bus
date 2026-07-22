@@ -3,13 +3,26 @@
   import './app.css';
   import { createRoundContract, rankValue, type Card } from '../game/roundContract';
   import { stateBet, stateBetDerived, stateUrlDerived } from 'state-shared';
-  import { requestBet, requestEndRound } from 'rgs-requests';
+  import { requestBet } from 'rgs-requests';
   import { numberToCurrencyString } from 'utils-shared/amount';
   import { API_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
 
-  type State = 'start' | 'playing' | 'won' | 'lost' | 'cashed';
-  type EndMode = 'cashout' | 'full-win';
+  // Stake Engine requires every bet to be a single, independent, stateless
+  // outcome - no continuation, no early cashout (Key Restrictions in Stake's
+  // approval docs). So the player picks all 4 guesses up front; pressing
+  // Start places ONE bet (mode encodes the full choice combination - see
+  // math-sdk games/ride_the_bus/game_calculations.py:mode_name) that
+  // resolves completely in a single /wallet/play call. Everything after
+  // that is just animating the already-fully-determined result.
+
+  type State = 'start' | 'playing' | 'lost' | 'won';
+  type ColorChoice = 'red' | 'black' | null;
+  type HigherLowerChoice = 'higher' | 'lower' | 'equal' | null;
+  type InsideOutsideChoice = 'inside' | 'outside' | 'equal' | null;
+  type SuitChoice = 'heart' | 'diamond' | 'club' | 'spade' | null;
+  type RevealEvent = { stage: number; card: Card; choice: string; correct: boolean; payout: number };
   type Props = { roundSeed?: string };
+
   const fallbackRoundSeed = 'ride-the-bus-local-round';
   let { roundSeed = fallbackRoundSeed }: Props = $props();
 
@@ -24,45 +37,28 @@
   }
 
   let gameState = $state<State>('start');
-  let endMode = $state<EndMode>('cashout');
   let isProcessing = $state(false);
 
-  let deck = $state<Card[]>([]);
-  // Fair-odds payout tables for each of the 4 stages, sourced straight from
-  // the RGS's book (one entry per stage). null in local-fallback mode, where
-  // odds are instead computed client-side from the local deck below.
-  let enginePayouts = $state<Record<string, number>[] | null>(null);
-  let currentIndex = $state(0);
-  let roundSequence = $state(0);
+  let colorChoice = $state<ColorChoice>(null);
+  let hlChoice = $state<HigherLowerChoice>(null);
+  let ioChoice = $state<InsideOutsideChoice>(null);
+  let suitChoice = $state<SuitChoice>(null);
 
-  // Store cards revealed so far (max 4)
+  let revealEvents = $state<RevealEvent[]>([]);
   let revealedCards = $state<(Card | null)[]>([null, null, null, null]);
+  let bustedIndex = $state<number | null>(null);
 
-  let initialBet = $state(0); // Variable to hold the initial bet
-  let betInput = $state(""); // Temporary variable to hold the user's input
-  let cashoutAmount = $state(0); // Variable to hold the cashout amount
-  let wonAmount = $state(0); // amount shown on cashout/win screen
+  let initialBet = $state(0);
+  let betInput = $state('');
+  let wonAmount = $state(0);
   let lastRoundId = $state('');
   let roundSource = $state<'engine-auth' | 'engine-replay' | 'local-fallback' | 'none'>('local-fallback');
   let roundDeckPreview = $state('');
-  let inputsEnabled = $state(true);
+  let roundSequence = $state(0);
 
+  const allChoicesMade = () => Boolean(colorChoice && hlChoice && ioChoice && suitChoice);
   const isEngineRound = () => roundSource !== 'local-fallback' && roundSource !== 'none';
-
-  const endEngineRound = async () => {
-    if (!isEngineRound()) return;
-    try {
-      const data = await requestEndRound({
-        rgsUrl: stateUrlDerived.rgsUrl(),
-        sessionID: stateUrlDerived.sessionID(),
-      });
-      if (data?.balance?.amount !== undefined) {
-        stateBet.balanceAmount = data.balance.amount / API_AMOUNT_MULTIPLIER;
-      }
-    } catch (err) {
-      console.error('end-round failed', err);
-    }
-  };
+  const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
   const resolveRoundSeed = () => {
     if (roundSeed !== fallbackRoundSeed) {
@@ -81,9 +77,6 @@
       return { seed: `${authenticatedRoundId}`, source: 'engine-auth' as const };
     }
 
-    // A real Stake Engine launch always provides sessionID/rgs_url, even for
-    // a brand-new round with nothing to resume - route those through the
-    // engine too. betToResume above only covers reconnecting mid-round.
     if (stateUrlDerived.sessionID() && stateUrlDerived.rgsUrl()) {
       return { seed: 'new-round', source: 'engine-auth' as const };
     }
@@ -93,14 +86,50 @@
     return { seed: fallbackRoundSeed, source: 'local-fallback' as const };
   };
 
+  function setBet() {
+    const value = Number(betInput);
+    if (isNaN(value) || value <= 0) {
+      alert('Invalid bet. Please enter a positive number.');
+      return;
+    }
+    stateBetDerived.setBetAmount(value);
+    betInput = stateBet.betAmount.toString();
+  }
+
+  async function playRevealSequence() {
+    for (let i = 0; i < revealEvents.length; i++) {
+      await wait(650);
+      revealedCards[i] = revealEvents[i].card;
+      if (!revealEvents[i].correct) {
+        bustedIndex = i;
+        await wait(900);
+        revealedCards = revealEvents.map((event) => event.card);
+        gameState = 'lost';
+        return;
+      }
+    }
+
+    await wait(300);
+    const multiplier = Math.floor(revealEvents.reduce((acc, event) => acc * event.payout, 1) * 10) / 10;
+    wonAmount = multiplier * initialBet;
+    // Local-fallback has no server to credit it - the engine path's balance
+    // was already settled by the /wallet/play response in
+    // startGameEngineFlow (a single atomic bet, no separate end-round).
+    if (!isEngineRound()) {
+      stateBet.balanceAmount += wonAmount;
+    }
+    gameState = 'won';
+  }
+
   async function startGameEngineFlow(roundSeedData: { seed: string; source: 'engine-auth' | 'engine-replay' }) {
     isProcessing = true;
     try {
+      const mode = `${colorChoice}_${hlChoice}_${ioChoice}_${suitChoice}`;
       const data = await requestBet({
         rgsUrl: stateUrlDerived.rgsUrl(),
         sessionID: stateUrlDerived.sessionID(),
         currency: stateBet.currency || 'USD',
-        mode: stateBet.activeBetModeKey || 'BASE',
+        mode,
         amount: initialBet,
       });
 
@@ -113,26 +142,26 @@
         throw new Error('Empty round/state from play API');
       }
 
-      const revealEvents = events.filter((event: any) => event.type === 'reveal');
-      if (revealEvents.length < 4) {
+      const reveals = events.filter((event: any) => event.type === 'reveal');
+      if (reveals.length < 4) {
         throw new Error('Round did not contain all 4 reveal stages');
       }
 
-      // The whole round (all 4 cards + each stage's fair-odds table) is
-      // delivered upfront by the RGS in one book. We only reveal/consume it
-      // stage-by-stage as the player actually guesses, via drawCard()/
-      // getPayouts*() below - same flow as the local-fallback deck.
-      deck = revealEvents.map((event: any) => event.card as Card);
-      enginePayouts = revealEvents.map((event: any) => event.payouts as Record<string, number>);
+      revealEvents = reveals.map((event: any) => ({
+        stage: event.stage,
+        card: event.card as Card,
+        choice: event.choice,
+        correct: Boolean(event.correct),
+        payout: event.payout,
+      }));
 
       lastRoundId = `${data?.round?.roundID ?? ''}`;
       roundSource = roundSeedData.source;
-      currentIndex = 0;
       revealedCards = [null, null, null, null];
-      cashoutAmount = initialBet;
+      bustedIndex = null;
       wonAmount = 0;
-      endMode = 'cashout';
       gameState = 'playing';
+      playRevealSequence();
     } catch (err) {
       console.error(err);
       alert('Engine play failed: ' + ((err as any)?.message || String(err)));
@@ -141,27 +170,19 @@
     }
   }
 
-  function setBet() {
-    const value = Number(betInput);
-    if (isNaN(value) || value <= 0) {
-      alert("Invalid bet. Please enter a positive number.");
-      return;
-    }
-    stateBetDerived.setBetAmount(value);
-    // reflect the clamped (balance-limited) value back into the input
-    betInput = stateBet.betAmount.toString();
-  }
-
   function startGame() {
     if (stateBet.betAmount <= 0) {
-      alert("Set a bet amount first.");
+      alert('Set a bet amount first.');
       return;
     }
+    if (!allChoicesMade()) {
+      alert('Pick all four options first.');
+      return;
+    }
+
     initialBet = stateBet.betAmount;
     const roundSeedData = resolveRoundSeed();
 
-    // If the resolved seed says the engine (server) should drive the round,
-    // hand off to the engine flow which requests the round from the RGS.
     if (roundSeedData.source === 'engine-auth' || roundSeedData.source === 'engine-replay') {
       startGameEngineFlow(roundSeedData).catch((err) => {
         console.error('Engine flow failed', err);
@@ -172,195 +193,28 @@
     // local deterministic fallback (dev): simulate the debit a real
     // /wallet/play call would make, so balance behaves like prod.
     stateBet.balanceAmount -= initialBet;
-    enginePayouts = null;
     const round = createRoundContract(`${roundSeedData.seed}:${roundSequence}`);
     roundSequence += 1;
     lastRoundId = round.roundId;
     roundSource = roundSeedData.source;
     roundDeckPreview = round.deck.slice(0, 4).map((card) => `${card.rank}${card.suit}`).join(' ');
-    deck = round.deck;
-    currentIndex = 0;
+    revealEvents = buildLocalRevealEvents(round.deck);
     revealedCards = [null, null, null, null];
-    cashoutAmount = initialBet;
+    bustedIndex = null;
     wonAmount = 0;
-    endMode = 'cashout';
     gameState = 'playing';
-    isProcessing = false;
-  }
-
-  // Simulate the credit a real /wallet/end-round call would make, only for
-  // local-fallback rounds (the engine path gets its credit from the real
-  // requestEndRound response in endEngineRound()).
-  function creditLocalBalance(amount: number) {
-    if (isEngineRound()) return;
-    stateBet.balanceAmount += amount;
-  }
-
-  function drawCard(): Card | null {
-    if(currentIndex >= deck.length) return null;
-    return deck[currentIndex++];
-  }
-
-  function Cashout() {
-    if(gameState !== 'playing') return;
-
-    wonAmount = cashoutAmount || initialBet;
-    endMode = 'cashout';
-    gameState = 'cashed';
-    creditLocalBalance(wonAmount);
-    endEngineRound();
-  }
-
-  function revealAllCards() {
-	for (let i = 0; i < revealedCards.length; i++) {
-		if (!revealedCards[i] && deck[i]) {
-		revealedCards[i] = deck[i];
-		}
-	}
-  }
-
-  function guessColor(color: 'red'|'black') {
-    if(isProcessing) return;
-    isProcessing = true;
-
-    const payouts = getPayoutsColor();
-    cashoutAmount = initialBet * (color === 'red' ? payouts.red : payouts.black);
-
-    const card = drawCard();
-    if(!card) {
-      isProcessing = false;
-      return;
-    }
-
-    revealedCards[currentIndex-1] = card;
-    const cardColor = card.suit === '♥' || card.suit === '♦' ? 'red' : 'black';
-    const correct = cardColor === color;
-
-    if(!correct) {
-      revealAllCards();
-      isProcessing = false;
-      gameState = 'lost';
-      endEngineRound();
-      return;
-    }
-
-    isProcessing = false;
-  }
-
-  function guessHigherLower(guess: 'higher'|'lower'|'equal') {
-    if(isProcessing) return;
-    isProcessing = true;
-
-    const payouts = getPayoutsHigherLower();
-    cashoutAmount = cashoutAmount * (guess === 'higher' ? payouts.higher : guess === 'lower' ? payouts.lower : payouts.equal);
-
-    const card = drawCard();
-    if(!card) {
-      isProcessing = false;
-      return;
-    }
-
-    revealedCards[currentIndex-1] = card;
-    const firstCard = revealedCards[0];
-    const correct = firstCard && (
-      (guess === 'higher' && rankValue[card.rank] > rankValue[firstCard.rank]) ||
-      (guess === 'lower' && rankValue[card.rank] < rankValue[firstCard.rank]) ||
-      (guess === 'equal' && rankValue[card.rank] === rankValue[firstCard.rank])
-    );
-
-    if(!correct) {
-      revealAllCards();
-      isProcessing = false;
-      gameState = 'lost';
-      endEngineRound();
-      return;
-    }
-
-    isProcessing = false;
-  }
-
-  function guessInsideOutside(guess: 'inside'|'outside'|'equal') {
-    if(isProcessing) return;
-    isProcessing = true;
-
-    const payouts = getPayoutsInsideOutside();
-    cashoutAmount = cashoutAmount * (guess === 'inside' ? payouts.inside : guess === 'outside' ? payouts.outside : payouts.equal);
-
-    const card = drawCard();
-    if(!card) {
-      isProcessing = false;
-      return;
-    }
-
-    revealedCards[currentIndex-1] = card;
-    const firstCard = revealedCards[0];
-    const secondCard = revealedCards[1];
-    if (!firstCard || !secondCard) {
-      isProcessing = false;
-      return;
-    }
-    const firstCardValue = rankValue[firstCard.rank];
-    const secondCardValue = rankValue[secondCard.rank];
-    const minVal = Math.min(firstCardValue, secondCardValue);
-    const maxVal = Math.max(firstCardValue, secondCardValue);
-
-    const correct =
-      (guess === 'inside' && ((rankValue[card.rank] > minVal && rankValue[card.rank] < maxVal))) ||
-      (guess === 'outside' && ((rankValue[card.rank] < minVal) || (rankValue[card.rank] > maxVal))) ||
-      (guess === 'equal' && (rankValue[card.rank] === rankValue[secondCard.rank] || rankValue[card.rank] === rankValue[firstCard.rank]));
-
-    if(!correct) {
-      revealAllCards();
-      isProcessing = false;
-      gameState = 'lost';
-      endEngineRound();
-      return;
-    }
-
-    isProcessing = false;
-
-  }
-
-  function guessSuit(guess: '♦'|'♣'|'♥'|'♠') {
-    if(isProcessing) return;
-    isProcessing = true;
-
-    const payouts = getPayoutsSuit();
-    cashoutAmount = cashoutAmount * (guess === '♦' ? payouts.diamond : guess === '♣' ? payouts.club : guess === '♥' ? payouts.heart : payouts.spade);
-
-    const card = drawCard();
-    if(!card) return;
-
-    revealedCards[currentIndex-1] = card;
-    const correct = (
-      (guess === '♦' && card.suit == '♦') ||
-      (guess === '♣' && card.suit == '♣') ||
-      (guess === '♥' && card.suit == '♥') ||
-      (guess === '♠' && card.suit == '♠')
-    );
-
-    if(!correct) {
-      revealAllCards();
-      isProcessing = false;
-      gameState = 'lost';
-      endEngineRound();
-      return;
-    }
-
-    wonAmount = cashoutAmount || initialBet;
-    endMode = 'full-win';
-    gameState = 'cashed';
-    isProcessing = false;
-    creditLocalBalance(wonAmount);
-    endEngineRound();
-
+    playRevealSequence();
   }
 
   function retryGame() {
     gameState = 'start';
-    betInput = initialBet.toString(); // Save the initial bet as the previous bet
-    revealedCards = [null, null, null, null]; // Reset all cards to '?'
-    endMode = 'cashout';
+    revealedCards = [null, null, null, null];
+    revealEvents = [];
+    bustedIndex = null;
+    colorChoice = null;
+    hlChoice = null;
+    ioChoice = null;
+    suitChoice = null;
   }
 
   // Mirrors games/ride_the_bus/game_calculations.py:fair_multiplier - must
@@ -373,110 +227,105 @@
     return quantized > 0 ? quantized : 0.1;
   }
 
-  function calculatePayoutsColor() {
-    const remainingCards = deck.slice(currentIndex);
-    const totalRemaining = remainingCards.length;
-    if (!revealedCards[0]) {
-      const redProb = remainingCards.filter(card => card.suit === '♥' || card.suit === '♦').length / totalRemaining || 0;
-      const blackProb = remainingCards.filter(card => card.suit === '♠' || card.suit === '♣').length / totalRemaining || 0;
-      return {
-        red: fairMultiplier(redProb),
-        black: fairMultiplier(blackProb),
-      };
+  function localColorPayouts(remaining: Card[]) {
+    const total = remaining.length;
+    const red = remaining.filter((card) => card.suit === '♥' || card.suit === '♦').length;
+    const black = total - red;
+    return { red: fairMultiplier(red / total), black: fairMultiplier(black / total) };
+  }
+
+  function localHigherLowerPayouts(remaining: Card[], ref: number) {
+    const total = remaining.length;
+    const higher = remaining.filter((card) => rankValue[card.rank] > ref).length;
+    const lower = remaining.filter((card) => rankValue[card.rank] < ref).length;
+    const equal = total - higher - lower;
+    return {
+      higher: fairMultiplier(higher / total),
+      lower: fairMultiplier(lower / total),
+      equal: fairMultiplier(equal / total),
+    };
+  }
+
+  function localInsideOutsidePayouts(remaining: Card[], a: number, b: number) {
+    const total = remaining.length;
+    const minVal = Math.min(a, b);
+    const maxVal = Math.max(a, b);
+    const inside = remaining.filter((card) => rankValue[card.rank] > minVal && rankValue[card.rank] < maxVal).length;
+    const outside = remaining.filter((card) => rankValue[card.rank] < minVal || rankValue[card.rank] > maxVal).length;
+    const equal = total - inside - outside;
+    return {
+      inside: fairMultiplier(inside / total),
+      outside: fairMultiplier(outside / total),
+      equal: fairMultiplier(equal / total),
+    };
+  }
+
+  function localSuitPayouts(remaining: Card[]) {
+    const total = remaining.length;
+    const counts = { heart: 0, diamond: 0, club: 0, spade: 0 };
+    for (const card of remaining) {
+      if (card.suit === '♥') counts.heart += 1;
+      else if (card.suit === '♦') counts.diamond += 1;
+      else if (card.suit === '♣') counts.club += 1;
+      else counts.spade += 1;
     }
-    return { red: 0, black: 0 };
+    return {
+      heart: fairMultiplier(counts.heart / total),
+      diamond: fairMultiplier(counts.diamond / total),
+      club: fairMultiplier(counts.club / total),
+      spade: fairMultiplier(counts.spade / total),
+    };
   }
 
-  function getPayoutsColor(): { red: number; black: number } {
-    if (enginePayouts) return enginePayouts[0] as { red: number; black: number };
-    return calculatePayoutsColor();
-  }
+  const SUIT_NAME_MAP: Record<string, string> = { '♥': 'heart', '♦': 'diamond', '♣': 'club', '♠': 'spade' };
 
-  function calculatePayoutsHigherLower() {
-    const remainingCards = deck.slice(currentIndex);
-    const totalRemaining = remainingCards.length;
-    if (revealedCards[0] && !revealedCards[1]) {
-      const firstCard = revealedCards[0];
-      if (!firstCard) return { higher: 0, lower: 0, equal: 0 };
-      const firstCardValue = rankValue[firstCard.rank];
-      const higherProb = remainingCards.filter(card => rankValue[card.rank] > firstCardValue).length / totalRemaining || 0;
-      const lowerProb = remainingCards.filter(card => rankValue[card.rank] < firstCardValue).length / totalRemaining || 0;
-      const equalProb = remainingCards.filter(card => rankValue[card.rank] === firstCardValue).length / totalRemaining || 0;
-
-      return {
-        higher: fairMultiplier(higherProb),
-        lower: fairMultiplier(lowerProb),
-        equal: fairMultiplier(equalProb),
-      };
+  function isCorrectGuess(stageIndex: number, choice: string, card: Card, ranks: number[]): boolean {
+    const value = rankValue[card.rank];
+    if (stageIndex === 0) {
+      const color = card.suit === '♥' || card.suit === '♦' ? 'red' : 'black';
+      return choice === color;
     }
-    return { higher: 0, lower: 0, equal: 0 };
-  }
-
-  function getPayoutsHigherLower(): { higher: number; lower: number; equal: number } {
-    if (enginePayouts) return enginePayouts[1] as { higher: number; lower: number; equal: number };
-    return calculatePayoutsHigherLower();
-  }
-
-  function calculatePayoutsInsideOutside() {
-    const remainingCards = deck.slice(currentIndex);
-    const totalRemaining = remainingCards.length;
-    if (revealedCards[0] && revealedCards[1] && !revealedCards[2]) {
-      const firstCard = revealedCards[0];
-      const secondCard = revealedCards[1];
-      if (!firstCard && !secondCard) return { inside: 0, outside: 0, equal: 0 };
-      const firstCardValue = rankValue[firstCard.rank];
-      const secondCardValue = rankValue[secondCard.rank];
-      const minVal = Math.min(firstCardValue, secondCardValue);
-      const maxVal = Math.max(firstCardValue, secondCardValue);
-
-      const insideProb = remainingCards.filter(card => rankValue[card.rank] > minVal && rankValue[card.rank] < maxVal).length / totalRemaining || 0;
-      const outsideProb = remainingCards.filter(card => rankValue[card.rank] < minVal || rankValue[card.rank] > maxVal).length / totalRemaining || 0;
-      const equalProb = remainingCards.filter(card => rankValue[card.rank] === minVal || rankValue[card.rank] === maxVal).length / totalRemaining || 0;
-
-      return {
-        inside: fairMultiplier(insideProb),
-        outside: fairMultiplier(outsideProb),
-        equal: fairMultiplier(equalProb),
-      };
+    if (stageIndex === 1) {
+      const ref = ranks[0];
+      if (value === ref) return choice === 'equal';
+      return choice === (value > ref ? 'higher' : 'lower');
     }
-    return { inside: 0, outside: 0, equal: 0 };
-  }
-
-  function getPayoutsInsideOutside(): { inside: number; outside: number; equal: number } {
-    if (enginePayouts) return enginePayouts[2] as { inside: number; outside: number; equal: number };
-    return calculatePayoutsInsideOutside();
-  }
-  
-  function calculatePayoutsSuit(){
-    const remainingCards = deck.slice(currentIndex);
-    const totalRemaining = remainingCards.length;
-
-    if (revealedCards[0] && revealedCards[1] && revealedCards[2] && !revealedCards[3]) {
-      const heartProb = remainingCards.filter(card => card.suit === '♥').length / totalRemaining || 0;
-      const diamondProb = remainingCards.filter(card => card.suit === '♦').length / totalRemaining || 0;
-      const spadeProb = remainingCards.filter(card => card.suit === '♠').length / totalRemaining || 0;
-      const clubProb = remainingCards.filter(card => card.suit === '♣').length / totalRemaining || 0;
-      return {
-        heart: fairMultiplier(heartProb),
-        diamond: fairMultiplier(diamondProb),
-        spade: fairMultiplier(spadeProb),
-        club: fairMultiplier(clubProb),
-      };
+    if (stageIndex === 2) {
+      const minVal = Math.min(ranks[0], ranks[1]);
+      const maxVal = Math.max(ranks[0], ranks[1]);
+      if (value === minVal || value === maxVal) return choice === 'equal';
+      return choice === (value > minVal && value < maxVal ? 'inside' : 'outside');
     }
-    return { heart: 0 , diamond: 0, spade: 0, club: 0 };
+    return choice === SUIT_NAME_MAP[card.suit];
   }
 
-  function getPayoutsSuit(): { heart: number; diamond: number; club: number; spade: number } {
-    if (enginePayouts) return enginePayouts[3] as { heart: number; diamond: number; club: number; spade: number };
-    return calculatePayoutsSuit();
-  }
+  // Mirrors games/ride_the_bus/gamestate.py:run_spin - draws the same 4
+  // cards from a deterministic local deck and resolves them against the
+  // player's pre-selected choices, exactly like the real math-sdk book does.
+  function buildLocalRevealEvents(deck: Card[]): RevealEvent[] {
+    const drawn = deck.slice(0, 4);
+    const ranks = drawn.map((card) => rankValue[card.rank]);
+    const choices = [colorChoice as string, hlChoice as string, ioChoice as string, suitChoice as string];
+    const stagePayouts = [
+      localColorPayouts(deck.slice(0)),
+      localHigherLowerPayouts(deck.slice(1), ranks[0]),
+      localInsideOutsidePayouts(deck.slice(2), ranks[0], ranks[1]),
+      localSuitPayouts(deck.slice(3)),
+    ] as Record<string, number>[];
 
-  function getBaseAmount() {
-    return (cashoutAmount && cashoutAmount > 0) ? cashoutAmount : initialBet;
+    return drawn.map((card, index) => {
+      const choice = choices[index];
+      return {
+        stage: index + 1,
+        card,
+        choice,
+        correct: isCorrectGuess(index, choice, card, ranks),
+        payout: stagePayouts[index][choice],
+      };
+    });
   }
 
   const backdropUrl = `${base}/backdrop.png`;
-
 </script>
 
 <div class="game-container" style={`--backdrop-url: url(${backdropUrl})`}>
@@ -494,37 +343,74 @@
   </div>
 
   {#if gameState === 'start'}
-  <div class="card-row">
-    {#each revealedCards as card, index}
-      <div class="card-block" class:revealed={card}>
-        {#if card}
-          <div class="card-face" class:red-card={card.suit === '♥' || card.suit === '♦'} class:black-card={card.suit === '♠' || card.suit === '♣'}>
-            <div class="rank top">{card.rank}</div>
-            <div class="suit center">{card.suit}</div>
-            <div class="rank bottom">{card.rank}</div>
-          </div>
-        {:else}
+    <div class="card-row">
+      {#each revealedCards as _card}
+        <div class="card-block">
           <div class="card-back" aria-hidden="true"></div>
-        {/if}
-      </div>
-    {/each}
-  </div>
-  <div class="start-panel">
-    <div class="start-stack">
-      <div class="wager-field">
-        <label for="bet">Wager</label>
-        <input id="bet" class="bet-input" type="number" bind:value={betInput} min="1" placeholder="e.g. 10" />
-        <button class="secondary-button" onclick={setBet}>Set Bet</button>
-      </div>
-      <button class="start-button" onclick={startGame} disabled={(IS_PROD && resolveRoundSeed().source === 'none') || stateBet.betAmount <= 0}>Start</button>
+        </div>
+      {/each}
     </div>
-  </div>
-{/if}
 
-{#if gameState === 'lost'}
-  <div class="card-row">
+    <div class="choice-row">
+      <div class="choice-column">
+        <span class="choice-label">Color</span>
+        <div class="choice-square color-square" role="group" aria-label="Pick a color">
+          <button type="button" class="half-btn black-half" class:selected={colorChoice === 'black'} onclick={() => (colorChoice = 'black')} aria-label="Black"></button>
+          <button type="button" class="half-btn red-half" class:selected={colorChoice === 'red'} onclick={() => (colorChoice = 'red')} aria-label="Red"></button>
+        </div>
+      </div>
+
+      <div class="choice-column">
+        <span class="choice-label">Higher / Lower</span>
+        <div class="choice-square hl-square" role="group" aria-label="Higher, lower, or equal">
+          <button type="button" class="third-btn higher-third" class:selected={hlChoice === 'higher'} onclick={() => (hlChoice = 'higher')} aria-label="Higher">▲</button>
+          <button type="button" class="third-btn lower-third" class:selected={hlChoice === 'lower'} onclick={() => (hlChoice = 'lower')} aria-label="Lower">▼</button>
+          <button type="button" class="equal-btn" class:selected={hlChoice === 'equal'} onclick={() => (hlChoice = 'equal')} aria-label="Equal">=</button>
+        </div>
+      </div>
+
+      <div class="choice-column">
+        <span class="choice-label">Inside / Outside</span>
+        <div class="choice-square io-square" role="group" aria-label="Inside, outside, or equal">
+          <button type="button" class="half-btn inside-half" class:selected={ioChoice === 'inside'} onclick={() => (ioChoice = 'inside')} aria-label="Inside">→←</button>
+          <button type="button" class="half-btn outside-half" class:selected={ioChoice === 'outside'} onclick={() => (ioChoice = 'outside')} aria-label="Outside">←→</button>
+          <button type="button" class="equal-btn" class:selected={ioChoice === 'equal'} onclick={() => (ioChoice = 'equal')} aria-label="Equal">=</button>
+        </div>
+      </div>
+
+      <div class="choice-column">
+        <span class="choice-label">Suit</span>
+        <div class="choice-square suit-square" role="group" aria-label="Pick a suit">
+          <button type="button" class="quad-btn red-suit" class:selected={suitChoice === 'heart'} onclick={() => (suitChoice = 'heart')} aria-label="Heart">♥</button>
+          <button type="button" class="quad-btn" class:selected={suitChoice === 'spade'} onclick={() => (suitChoice = 'spade')} aria-label="Spade">♠</button>
+          <button type="button" class="quad-btn" class:selected={suitChoice === 'club'} onclick={() => (suitChoice = 'club')} aria-label="Club">♣</button>
+          <button type="button" class="quad-btn red-suit" class:selected={suitChoice === 'diamond'} onclick={() => (suitChoice = 'diamond')} aria-label="Diamond">♦</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="start-panel">
+      <div class="start-stack">
+        <div class="wager-field">
+          <label for="bet">Wager</label>
+          <input id="bet" class="bet-input" type="number" bind:value={betInput} min="1" placeholder="e.g. 10" />
+          <button class="secondary-button" onclick={setBet}>Set Bet</button>
+        </div>
+        <button
+          class="start-button"
+          onclick={startGame}
+          disabled={(IS_PROD && resolveRoundSeed().source === 'none') || stateBet.betAmount <= 0 || !allChoicesMade() || isProcessing}
+        >
+          Start
+        </button>
+      </div>
+    </div>
+  {/if}
+
+  {#if gameState === 'playing'}
+    <div class="card-row">
       {#each revealedCards as card, index}
-        <div class="card-block" class:revealed={card}>
+        <div class="card-block" class:revealed={card} class:busted={index === bustedIndex}>
           {#if card}
             <div class="card-face" class:red-card={card.suit === '♥' || card.suit === '♦'} class:black-card={card.suit === '♠' || card.suit === '♣'}>
               <div class="rank top">{card.rank}</div>
@@ -536,238 +422,62 @@
           {/if}
         </div>
       {/each}
-  </div>
-  <div class="game-stage">
-    <p>You lost! The cards are revealed above.</p>
-    <div class="button-group">
-      <button class="secondary-button" onclick={retryGame}>Retry</button>
     </div>
-  </div>
-{/if}
-
-{#if gameState === 'won' || gameState === 'cashed'}
-  <div class="result-screen">
-    <div class="result-hero">
-      <p class="result-kicker">{endMode === 'cashout' ? 'Cashed Out' : 'Game Won'}</p>
-      <h2>{endMode === 'cashout' ? 'You Secured Your Winnings' : 'Congratulations! Full Game Win'}</h2>
-      <p class="result-copy">
-        {endMode === 'cashout'
-          ? 'You locked in your winnings and are walking away with:'
-          : 'You completed all four levels and won the full game!'}
-      </p>
-      <div class="result-total">x{initialBet > 0 ? (wonAmount / initialBet).toFixed(2) : '0.00'} — ${wonAmount.toFixed(2)}</div>
+    <div class="game-stage">
+      <p>Revealing your cards…</p>
     </div>
+  {/if}
 
-    <div class="result-actions">
-      <button class="secondary-button" onclick={() => { gameState = 'start'; betInput = initialBet.toString(); revealedCards = [null, null, null, null]; cashoutAmount = 0; }}>Play Again</button>
-    </div>
-  </div>
-{/if}
-
-{#if gameState === 'playing'}
-  <div class="card-row">
-    {#each revealedCards as card, index}
-      <div class="card-block" class:revealed={card}>
-        {#if card}
+  {#if gameState === 'lost'}
+    <div class="card-row">
+      {#each revealedCards as card, index}
+        <div class="card-block" class:revealed={card} class:busted={index === bustedIndex}>
+          {#if card}
             <div class="card-face" class:red-card={card.suit === '♥' || card.suit === '♦'} class:black-card={card.suit === '♠' || card.suit === '♣'}>
-            <div class="rank top">{card.rank}</div>
-            <div class="suit center">{card.suit}</div>
-            <div class="rank bottom">{card.rank}</div>
-          </div>
-        {:else}
-          <div class="card-back" aria-hidden="true"></div>
-        {/if}
-      </div>
-    {/each}
-  </div>
-
-  {#if !revealedCards[0]}
-    <div class="game-stage">
-      <p>Guess the color of the first card:</p>
-      <div class="button-group">
-        <button class="red-button" onclick={() => guessColor('red')} disabled={!inputsEnabled}>Red
-          <div class="multiplier-winnings">x{getPayoutsColor().red.toFixed(2)} (${(getBaseAmount() * getPayoutsColor().red).toFixed(2)})</div>
-        </button>
-        <button class="black-button" onclick={() => guessColor('black')} disabled={!inputsEnabled}>Black
-          <div class="multiplier-winnings">x{getPayoutsColor().black.toFixed(2)} (${(getBaseAmount() * getPayoutsColor().black).toFixed(2)})</div>
-        </button>
-      </div>
+              <div class="rank top">{card.rank}</div>
+              <div class="suit center">{card.suit}</div>
+              <div class="rank bottom">{card.rank}</div>
+            </div>
+          {:else}
+            <div class="card-back" aria-hidden="true"></div>
+          {/if}
+        </div>
+      {/each}
     </div>
-  {:else if !revealedCards[1]}
     <div class="game-stage">
-      <p>Will the next card be higher or lower?</p>
+      <p>You lost! The cards are revealed above.</p>
       <div class="button-group">
-        <button class="higher-button" onclick={() => guessHigherLower('higher')} disabled={!inputsEnabled}>Higher
-          <div class="multiplier-winnings">x{getPayoutsHigherLower().higher.toFixed(2)} (${(getBaseAmount() * getPayoutsHigherLower().higher).toFixed(2)})</div>
-        </button>
-        <button class="lower-button" onclick={() => guessHigherLower('lower')} disabled={!inputsEnabled}>Lower
-          <div class="multiplier-winnings">x{getPayoutsHigherLower().lower.toFixed(2)} (${(getBaseAmount() * getPayoutsHigherLower().lower).toFixed(2)})</div>
-        </button>
-        <button class="equal-button" onclick={() => guessHigherLower('equal')} disabled={!inputsEnabled}>Equal
-          <div class="multiplier-winnings">x{getPayoutsHigherLower().equal.toFixed(2)} (${(getBaseAmount() * getPayoutsHigherLower().equal).toFixed(2)})</div>
-        </button>
-        <button class="cashout-button" onclick={() => Cashout()} disabled={!inputsEnabled}>Cashout
-          <div class="multiplier-winnings">${cashoutAmount.toFixed(2)}</div>
-        </button>
-      </div>
-    </div>
-  {:else if !revealedCards[2]}
-    <div class="game-stage">
-      <p>Will the next card be in between or outside?</p>
-      <div class="button-group">
-        <button class="inside-button" onclick={() => guessInsideOutside('inside')} disabled={!inputsEnabled}>Inside
-          <div class="multiplier-winnings">x{getPayoutsInsideOutside().inside.toFixed(2)} (${(getBaseAmount() * getPayoutsInsideOutside().inside).toFixed(2)})</div>
-        </button>
-        <button class="outside-button" onclick={() => guessInsideOutside('outside')} disabled={!inputsEnabled}>Outside
-          <div class="multiplier-winnings">x{getPayoutsInsideOutside().outside.toFixed(2)} (${(getBaseAmount() * getPayoutsInsideOutside().outside).toFixed(2)})</div>
-        </button>
-        <button class="equal-button" onclick={() => guessInsideOutside('equal')} disabled={!inputsEnabled}>Equal
-          <div class="multiplier-winnings">x{getPayoutsInsideOutside().equal.toFixed(2)} (${(getBaseAmount() * getPayoutsInsideOutside().equal).toFixed(2)})</div>
-        </button>
-        <button class="cashout-button" onclick={() => Cashout()} disabled={!inputsEnabled}>Cashout
-          <div class="multiplier-winnings">${cashoutAmount.toFixed(2)}</div>
-        </button>
-      </div>
-    </div>
-  {:else if !revealedCards[3]}
-    <div class="game-stage">
-      <p>Guess the suit of the final card:</p>
-      <div class="button-group">
-        <button class="suit-button heart" onclick={() => guessSuit('♥')} disabled={!inputsEnabled}>♥
-          <div class="multiplier-winnings">x{getPayoutsSuit().heart.toFixed(2)} (${(getBaseAmount() * getPayoutsSuit().heart).toFixed(2)})</div>
-        </button>
-        <button class="suit-button diamond" onclick={() => guessSuit('♦')} disabled={!inputsEnabled}>♦
-          <div class="multiplier-winnings">x{getPayoutsSuit().diamond.toFixed(2)} (${(getBaseAmount() * getPayoutsSuit().diamond).toFixed(2)})</div>
-        </button>
-        <button class="suit-button club" onclick={() => guessSuit('♣')} disabled={!inputsEnabled}>♣
-          <div class="multiplier-winnings">x{getPayoutsSuit().club.toFixed(2)} (${(getBaseAmount() * getPayoutsSuit().club).toFixed(2)})</div>
-        </button>
-        <button class="suit-button spade" onclick={() => guessSuit('♠')} disabled={!inputsEnabled}>♠
-          <div class="multiplier-winnings">x{getPayoutsSuit().spade.toFixed(2)} (${(getBaseAmount() * getPayoutsSuit().spade).toFixed(2)})</div>
-        </button>
-        <button class="cashout-button" onclick={() => Cashout()}>Cashout
-          <div class="multiplier-winnings">${cashoutAmount.toFixed(2)}</div>
-        </button>
+        <button class="secondary-button" onclick={retryGame}>Retry</button>
       </div>
     </div>
   {/if}
-{/if}
 
+  {#if gameState === 'won'}
+    <div class="result-screen">
+      <div class="result-hero">
+        <p class="result-kicker">Game Won</p>
+        <h2>Congratulations! Full Game Win</h2>
+        <p class="result-copy">You correctly guessed all four cards!</p>
+        <div class="result-total">x{initialBet > 0 ? (wonAmount / initialBet).toFixed(2) : '0.00'} — ${wonAmount.toFixed(2)}</div>
+      </div>
+
+      <div class="result-actions">
+        <button class="secondary-button" onclick={retryGame}>Play Again</button>
+      </div>
+    </div>
+  {/if}
 </div>
 
 <style>
-
-  /* Add styles for buttons */
-  button {
-    padding: 10px 20px;
-    margin: 10px;
-    font-size: 22px;
-    /* font-weight: bold; */
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.2s;
-  }
-
-  button:hover {
-    transform: scale(1.05);
-  }
-
-  button:active {
-    transform: scale(0.95);
-  }
-
-  /* Specific styles for red and black buttons */
-  .red-button {
-    background-color: #ff4d4d;
-    color: white;
-  }
-
-  .red-button:hover {
-    background-color: #e63939;
-  }
-
-  .black-button {
-    background-color: #333;
-    color: white;
-  }
-
-  .black-button:hover {
-    background-color: #555;
-  }
-
-  /* Styles for higher, lower, and equal buttons */
-  .higher-button {
-    background-color: #4caf50;
-    color: white;
-  }
-
-  .higher-button:hover {
-    background-color: #45a049;
-  }
-
-  .lower-button {
-    background-color: #2196f3;
-    color: white;
-  }
-
-  .lower-button:hover {
-    background-color: #1e88e5;
-  }
-
-  .equal-button {
-    background-color: #ff9800;
-    color: white;
-  }
-
-  .equal-button:hover {
-    background-color: #fb8c00;
-  }
-
-  /* Styles for inside, outside, equal, and cashout buttons */
-  .inside-button {
-    background-color: #8e44ad;
-    color: white;
-  }
-
-  .inside-button:hover {
-    background-color: #732d91;
-  }
-
-  .outside-button {
-    background-color: #16a085;
-    color: white;
-  }
-
-  .outside-button:hover {
-    background-color: #12876f;
-  }
-
-  .equal-button {
-    background-color: #ff9800;
-    color: white;
-  }
-
-  .equal-button:hover {
-    background-color: #fb8c00;
-  }
-
-  .cashout-button {
-    background-color: #c0392b;
-    color: white;
-  }
-
-  .cashout-button:hover {
-    background-color: #a93226;
-  }
-
   .card-row {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     align-items: center;
     gap: 30px;
     margin: 26px 0 18px;
   }
+
   :global(html, body) {
     height: 100%;
     margin: 0;
@@ -831,13 +541,155 @@
     letter-spacing: 0.03em;
   }
 
+  /* Choice squares */
+  .choice-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 22px;
+    margin: 6px 0 10px;
+  }
+
+  .choice-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .choice-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #fff6df;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+  }
+
+  .choice-square {
+    position: relative;
+    width: 92px;
+    height: 92px;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35), 0 0 0 2px rgba(255, 255, 255, 0.25);
+  }
+
+  .half-btn,
+  .third-btn,
+  .quad-btn {
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    font-weight: 800;
+    line-height: 1;
+    transition: filter 0.15s, transform 0.15s;
+  }
+
+  .half-btn.selected,
+  .third-btn.selected,
+  .quad-btn.selected {
+    filter: brightness(1.3);
+    box-shadow: inset 0 0 0 3px #fff, inset 0 0 16px rgba(255, 255, 255, 0.5);
+  }
+
+  /* All choice squares use CSS Grid (not flexbox) so adjacent cells share
+     exact pixel boundaries - flex:1 splits can leave a subpixel seam where
+     the square's background shows through between segments. */
+
+  /* Color square: left/right halves */
+  .color-square {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .black-half {
+    background: #16181c;
+  }
+  .red-half {
+    background: #c0392b;
+  }
+
+  /* Higher/Lower square: top/bottom halves + center equal square */
+  .hl-square {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+  }
+  .higher-third {
+    background: #2ecc71;
+  }
+  .lower-third {
+    background: #c0392b;
+  }
+
+  /* Inside/Outside square: left/right halves */
+  .io-square {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .io-square .half-btn {
+    font-size: 1rem;
+  }
+  .inside-half {
+    background: #00bcd4;
+  }
+  .outside-half {
+    background: #d81ce0;
+  }
+
+  /* Shared small "equal" square, centered over hl/io squares */
+  .equal-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1c40f;
+    border: 2px solid rgba(0, 0, 0, 0.45);
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    line-height: 1;
+    color: #16181c;
+    cursor: pointer;
+    z-index: 2;
+  }
+  .equal-btn.selected {
+    box-shadow: 0 0 0 3px #fff, 0 0 12px rgba(255, 255, 255, 0.7);
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+
+  /* Suit square: 2x2 grid */
+  .suit-square {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+  .quad-btn {
+    background: #16181c;
+    font-size: 1.6rem;
+  }
+  .quad-btn.red-suit {
+    color: #e74c3c;
+  }
+
   /* Start panel styles */
   .start-panel {
     display: flex;
     justify-content: center;
     width: 100%;
     margin-top: 6px;
-    transform: translateY(-8px);
   }
 
   .start-stack {
@@ -893,6 +745,11 @@
     box-shadow: 0 8px 18px rgba(199, 44, 65, 0.38);
     text-transform: uppercase;
     letter-spacing: 0.08em;
+  }
+
+  .start-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   .start-button:hover { transform: translateY(-2px) scale(1.03); }
@@ -967,6 +824,7 @@
     color: #fff4d5;
     border: 1px solid rgba(255, 244, 213, 0.28);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.22);
+    cursor: pointer;
   }
 
   .game-stage {
@@ -975,12 +833,11 @@
     align-items: center;
     justify-content: center;
     text-align: center;
-    min-height: 130px; /* Ensures consistent height */
+    min-height: 60px;
   }
 
   .game-stage p {
     text-align: center;
-    margin-bottom: 0px;
     color: #fff4d5;
     font-size: 18px;
     font-weight: 600;
@@ -991,6 +848,7 @@
 
   .button-group {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     gap: 15px;
     margin-top: 20px;
@@ -999,73 +857,39 @@
   .card-block {
     width: 102px;
     height: 152px;
-    border: 2px solid #333;
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 18px;
-     background: linear-gradient(135deg, #1a5f7a 0%, #0d3a52 50%, #1a5f7a 100%);
     color: #fff;
     font-weight: bold;
     border-radius: 10px;
-     box-shadow: 0 4px 8px rgba(0,0,0,0.3), inset 0 1px 3px rgba(255,255,255,0.2);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3), inset 0 1px 3px rgba(255,255,255,0.2);
     letter-spacing: 1px;
-     position: relative;
-     overflow: hidden;
-     border: 3px solid #8b7355;
-     background-color: #1a5f7a;
+    position: relative;
+    overflow: hidden;
+    border: 3px solid #8b7355;
+    background-color: #1a5f7a;
   }
 
-    .card-block::before {
-     content: '';
-     position: absolute;
-     width: 60%;
-     height: 80%;
-     border: 1px solid rgba(255,255,255,0.1);
-     border-radius: 4px;
-     top: 50%;
-     left: 50%;
-     transform: translate(-50%, -50%);
-     pointer-events: none;
-    }
+  .card-block::before {
+    content: '';
+    position: absolute;
+    width: 60%;
+    height: 80%;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
   .red-card {
     color: #ff4d4d;
   }
   .black-card {
     color: #fff;
-  }
-
-  /* Styles for suit buttons */
-  .suit-button {
-    padding: 0px 10px;
-    margin: 15px;
-    font-size: 50px; /* Increase size */
-    font-weight: bold;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: transform 0.2s;
-  }
-
-  .suit-button.heart,
-  .suit-button.diamond {
-    color: red; /* Red for hearts and diamonds */
-  }
-
-  .suit-button.club,
-  .suit-button.spade {
-    color: rgb(71, 71, 71); /* Black for clubs and spades */
-  }
-
-  .suit-button:hover {
-    transform: scale(1.1);
-  }
-
-  .multiplier-winnings {
-    font-size: 12px;
-    color: #fff;
-    margin-top: 5px;
-    text-align: center;
   }
 
   /* Revealed (face-up) card styling */
@@ -1079,6 +903,20 @@
   .card-block.revealed .card-back,
   .card-block.revealed::before {
     display: none;
+  }
+
+  .card-block.busted::after {
+    content: '✕';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 64px;
+    font-weight: 900;
+    color: #ff3b3b;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.35);
   }
 
   .card-face {
@@ -1128,5 +966,4 @@
     background: linear-gradient(135deg, #1a5f7a 0%, #0d3a52 50%, #1a5f7a 100%);
     border-radius: 6px;
   }
-
 </style>
