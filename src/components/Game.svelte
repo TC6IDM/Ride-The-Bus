@@ -5,6 +5,7 @@
   import { stateBet, stateBetDerived, stateUrlDerived } from 'state-shared';
   import { requestBet, requestEndRound } from 'rgs-requests';
   import { numberToCurrencyString } from 'utils-shared/amount';
+  import { API_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
 
   type State = 'start' | 'playing' | 'won' | 'lost' | 'cashed';
   type EndMode = 'cashout' | 'full-win';
@@ -48,12 +49,19 @@
 
   const isEngineRound = () => roundSource !== 'local-fallback' && roundSource !== 'none';
 
-  const endEngineRound = () => {
+  const endEngineRound = async () => {
     if (!isEngineRound()) return;
-    requestEndRound({
-      rgsUrl: stateUrlDerived.rgsUrl(),
-      sessionID: stateUrlDerived.sessionID(),
-    }).catch((err) => console.error('end-round failed', err));
+    try {
+      const data = await requestEndRound({
+        rgsUrl: stateUrlDerived.rgsUrl(),
+        sessionID: stateUrlDerived.sessionID(),
+      });
+      if (data?.balance?.amount !== undefined) {
+        stateBet.balanceAmount = data.balance.amount / API_AMOUNT_MULTIPLIER;
+      }
+    } catch (err) {
+      console.error('end-round failed', err);
+    }
   };
 
   const resolveRoundSeed = () => {
@@ -95,6 +103,10 @@
         mode: stateBet.activeBetModeKey || 'BASE',
         amount: initialBet,
       });
+
+      if (data?.balance?.amount !== undefined) {
+        stateBet.balanceAmount = data.balance.amount / API_AMOUNT_MULTIPLIER;
+      }
 
       const events = data?.round?.state;
       if (!Array.isArray(events) || events.length === 0) {
@@ -339,6 +351,16 @@
     endMode = 'cashout';
   }
 
+  // Mirrors games/ride_the_bus/game_calculations.py:fair_multiplier - must
+  // floor (never round up/nearest) to the same 0.1x steps the real math-sdk
+  // book uses, so local-fallback testing matches production odds exactly.
+  function fairMultiplier(probability: number): number {
+    if (probability <= 0) return 0;
+    const raw = (1 - HOUSE_EDGE) / probability;
+    const quantized = Math.floor(raw * 10) / 10;
+    return quantized > 0 ? quantized : 0.1;
+  }
+
   function calculatePayoutsColor() {
     const remainingCards = deck.slice(currentIndex);
     const totalRemaining = remainingCards.length;
@@ -346,8 +368,8 @@
       const redProb = remainingCards.filter(card => card.suit === '♥' || card.suit === '♦').length / totalRemaining || 0;
       const blackProb = remainingCards.filter(card => card.suit === '♠' || card.suit === '♣').length / totalRemaining || 0;
       return {
-        red: redProb > 0 ? (1 - HOUSE_EDGE) / redProb : 0,
-        black: blackProb > 0 ? (1 - HOUSE_EDGE) / blackProb : 0,
+        red: fairMultiplier(redProb),
+        black: fairMultiplier(blackProb),
       };
     }
     return { red: 0, black: 0 };
@@ -370,9 +392,9 @@
       const equalProb = remainingCards.filter(card => rankValue[card.rank] === firstCardValue).length / totalRemaining || 0;
 
       return {
-        higher: higherProb > 0 ? (1 - HOUSE_EDGE) / higherProb : 0,
-        lower: lowerProb > 0 ? (1 - HOUSE_EDGE) / lowerProb : 0,
-        equal: equalProb > 0 ? (1 - HOUSE_EDGE) / equalProb : 0,
+        higher: fairMultiplier(higherProb),
+        lower: fairMultiplier(lowerProb),
+        equal: fairMultiplier(equalProb),
       };
     }
     return { higher: 0, lower: 0, equal: 0 };
@@ -400,9 +422,9 @@
       const equalProb = remainingCards.filter(card => rankValue[card.rank] === minVal || rankValue[card.rank] === maxVal).length / totalRemaining || 0;
 
       return {
-        inside: insideProb > 0 ? (1 - HOUSE_EDGE) / insideProb : 0,
-        outside: outsideProb > 0 ? (1 - HOUSE_EDGE) / outsideProb : 0,
-        equal: equalProb > 0 ? (1 - HOUSE_EDGE) / equalProb : 0,
+        inside: fairMultiplier(insideProb),
+        outside: fairMultiplier(outsideProb),
+        equal: fairMultiplier(equalProb),
       };
     }
     return { inside: 0, outside: 0, equal: 0 };
@@ -416,7 +438,6 @@
   function calculatePayoutsSuit(){
     const remainingCards = deck.slice(currentIndex);
     const totalRemaining = remainingCards.length;
-    const houseEdge = 0.02;
 
     if (revealedCards[0] && revealedCards[1] && revealedCards[2] && !revealedCards[3]) {
       const heartProb = remainingCards.filter(card => card.suit === '♥').length / totalRemaining || 0;
@@ -424,10 +445,10 @@
       const spadeProb = remainingCards.filter(card => card.suit === '♠').length / totalRemaining || 0;
       const clubProb = remainingCards.filter(card => card.suit === '♣').length / totalRemaining || 0;
       return {
-        heart: heartProb > 0 ? (1 - HOUSE_EDGE) / heartProb : 0,
-        diamond: diamondProb > 0 ? (1 - HOUSE_EDGE) / diamondProb : 0,
-        spade: spadeProb > 0 ? (1 - HOUSE_EDGE) / spadeProb : 0,
-        club: clubProb > 0 ? (1 - HOUSE_EDGE) / clubProb : 0,
+        heart: fairMultiplier(heartProb),
+        diamond: fairMultiplier(diamondProb),
+        spade: fairMultiplier(spadeProb),
+        club: fairMultiplier(clubProb),
       };
     }
     return { heart: 0 , diamond: 0, spade: 0, club: 0 };
