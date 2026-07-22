@@ -1,15 +1,9 @@
 <script lang="ts">
-  // cd C:\Users\tcand\OneDrive\Desktop\Stake Game\web-sdk\apps\Ride-The-Bus>  
-  // cd C:\Users\Owner\Desktop\Stake Engine Game\web-sdk\apps\ride-the-bus> 
-  // npm run dev
+  import { base } from '$app/paths';
   import './app.css';
   import { createRoundContract, rankValue, type Card } from '../game/roundContract';
   import { stateBet, stateUrlDerived } from 'state-shared';
-  import { requestBet } from 'rgs-requests';
-  import { playBet } from '../game/utils';
-  import { eventEmitter } from '../game/eventEmitter';
-  import { BOOK_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
-  import { sendChoice } from '../game/engineChoice';
+  import { requestBet, requestEndRound } from 'rgs-requests';
 
   type State = 'start' | 'playing' | 'won' | 'lost' | 'cashed';
   type EndMode = 'cashout' | 'full-win';
@@ -18,12 +12,17 @@
   let { roundSeed = fallbackRoundSeed }: Props = $props();
 
   const IS_PROD = Boolean((import.meta as any).env?.PROD);
+  const HOUSE_EDGE = 0.02;
 
   let gameState = $state<State>('start');
   let endMode = $state<EndMode>('cashout');
   let isProcessing = $state(false);
 
   let deck = $state<Card[]>([]);
+  // Fair-odds payout tables for each of the 4 stages, sourced straight from
+  // the RGS's book (one entry per stage). null in local-fallback mode, where
+  // odds are instead computed client-side from the local deck below.
+  let enginePayouts = $state<Record<string, number>[] | null>(null);
   let currentIndex = $state(0);
   let roundSequence = $state(0);
 
@@ -38,10 +37,16 @@
   let roundSource = $state<'engine-auth' | 'engine-replay' | 'local-fallback' | 'none'>('local-fallback');
   let roundDeckPreview = $state('');
   let inputsEnabled = $state(true);
-  let currentAwaitIndex = $state<number | null>(null);
-  const HOUSE_EDGE = 0.02;
-  let engineMultipliers = $state<any>({});
-  let lastMultiplier = $state<number | null>(null);
+
+  const isEngineRound = () => roundSource !== 'local-fallback' && roundSource !== 'none';
+
+  const endEngineRound = () => {
+    if (!isEngineRound()) return;
+    requestEndRound({
+      rgsUrl: stateUrlDerived.rgsUrl(),
+      sessionID: stateUrlDerived.sessionID(),
+    }).catch((err) => console.error('end-round failed', err));
+  };
 
   const resolveRoundSeed = () => {
     if (roundSeed !== fallbackRoundSeed) {
@@ -76,20 +81,31 @@
         amount: initialBet,
       });
 
-      if (!data || !data.round || !data.round.state || data.round.state.length === 0) {
+      const events = data?.round?.state;
+      if (!Array.isArray(events) || events.length === 0) {
         throw new Error('Empty round/state from play API');
       }
 
-      // set identifying fields for UI
-      lastRoundId = `${data.round.roundID ?? ''}`;
+      const revealEvents = events.filter((event: any) => event.type === 'reveal');
+      if (revealEvents.length < 4) {
+        throw new Error('Round did not contain all 4 reveal stages');
+      }
+
+      // The whole round (all 4 cards + each stage's fair-odds table) is
+      // delivered upfront by the RGS in one book. We only reveal/consume it
+      // stage-by-stage as the player actually guesses, via drawCard()/
+      // getPayouts*() below - same flow as the local-fallback deck.
+      deck = revealEvents.map((event: any) => event.card as Card);
+      enginePayouts = revealEvents.map((event: any) => event.payouts as Record<string, number>);
+
+      lastRoundId = `${data?.round?.roundID ?? ''}`;
       roundSource = roundSeedData.source;
-
-      // Hand off to shared play runner (will dispatch book events)
-      await playBet(data.round as any);
-
-      // After play completes, mark state appropriately.
-      // playBet/book handlers should update global state; we simply ensure UI isn't stuck.
-      gameState = 'cashed';
+      currentIndex = 0;
+      revealedCards = [null, null, null, null];
+      cashoutAmount = initialBet;
+      wonAmount = 0;
+      endMode = 'cashout';
+      gameState = 'playing';
     } catch (err) {
       console.error(err);
       alert('Engine play failed: ' + ((err as any)?.message || String(err)));
@@ -97,83 +113,6 @@
       isProcessing = false;
     }
   }
-
-  // subscribe to book/game events so engine-driven plays update UI
-  eventEmitter.subscribeOnMount({
-    winInfo: (ev: any) => {
-      const totalWin = ev?.data?.totalWin;
-      if (totalWin !== undefined && totalWin !== null) {
-        wonAmount = totalWin / BOOK_AMOUNT_MULTIPLIER;
-      }
-      // capture payout multiplier if provided
-      const pm = ev?.data?.payoutMultiplier ?? ev?.data?.multiplier ?? ev?.data?.payouts ?? null;
-      if (pm !== null && pm !== undefined) {
-        lastMultiplier = pm as number;
-      }
-    },
-    finalWin: (ev: any) => {
-      const amount = ev?.amount;
-      if (amount !== undefined && amount !== null) {
-        wonAmount = amount / BOOK_AMOUNT_MULTIPLIER;
-      }
-      // capture payout multiplier if provided on final win
-      if (ev?.payoutMultiplier !== undefined && ev?.payoutMultiplier !== null) {
-        lastMultiplier = ev.payoutMultiplier as number;
-      }
-      endMode = 'full-win';
-      gameState = 'cashed';
-    },
-    engineReveal: (ev: any) => {
-      const bookEvent = ev?.data;
-      if (!bookEvent) return;
-      const board = bookEvent.board ?? bookEvent.cards ?? null;
-      if (Array.isArray(board)) {
-        const flat = board.flat();
-        flat.forEach((sym: any, i: number) => {
-          if (!sym) return;
-          if (typeof sym === 'object' && 'rank' in sym && 'suit' in sym) {
-            revealedCards[i] = { rank: `${sym.rank}`, suit: `${sym.suit}` } as Card;
-          } else if (typeof sym === 'string') {
-            const m = /^([0-9]+|[JQKA])([♠♥♦♣SHDC])$/i.exec(sym);
-            if (m) {
-              let rank = m[1];
-              let suit = m[2];
-              if (suit.toUpperCase() === 'S') suit = '♠';
-              if (suit.toUpperCase() === 'H') suit = '♥';
-              if (suit.toUpperCase() === 'D') suit = '♦';
-              if (suit.toUpperCase() === 'C') suit = '♣';
-              revealedCards[i] = { rank, suit } as Card;
-            }
-          }
-        });
-      }
-      // capture any multiplier/payout information provided by server in reveal events
-      const pm = bookEvent.payouts ?? bookEvent.multipliers ?? bookEvent.options ?? bookEvent;
-      if (pm) {
-        // map common shapes into engineMultipliers
-        if (pm.red !== undefined && pm.black !== undefined) engineMultipliers = { ...engineMultipliers, color: { red: pm.red, black: pm.black } };
-        if (pm.higher !== undefined || pm.lower !== undefined || pm.equal !== undefined) engineMultipliers = { ...engineMultipliers, higherLower: { higher: pm.higher ?? 0, lower: pm.lower ?? 0, equal: pm.equal ?? 0 } };
-        if (pm.inside !== undefined || pm.outside !== undefined || pm.equal !== undefined) engineMultipliers = { ...engineMultipliers, insideOutside: { inside: pm.inside ?? 0, outside: pm.outside ?? 0, equal: pm.equal ?? 0 } };
-        if (pm.heart !== undefined || pm.diamond !== undefined || pm.club !== undefined || pm.spade !== undefined) engineMultipliers = { ...engineMultipliers, suit: { heart: pm.heart ?? 0, diamond: pm.diamond ?? 0, club: pm.club ?? 0, spade: pm.spade ?? 0 } };
-        if (pm.payoutMultiplier !== undefined || pm.multiplier !== undefined) lastMultiplier = (pm.payoutMultiplier ?? pm.multiplier) as number;
-      }
-    },
-    engineAwaitChoice: (ev: any) => {
-      const idx = ev?.data?.index;
-      currentAwaitIndex = idx ?? null;
-      inputsEnabled = true;
-      isProcessing = false;
-      // server may provide choices' multipliers when awaiting a choice
-      const pm = ev?.data?.payouts ?? ev?.data?.multipliers ?? ev?.data?.options ?? ev?.data;
-      if (pm) {
-        if (pm.red !== undefined && pm.black !== undefined) engineMultipliers = { ...engineMultipliers, color: { red: pm.red, black: pm.black } };
-        if (pm.higher !== undefined || pm.lower !== undefined || pm.equal !== undefined) engineMultipliers = { ...engineMultipliers, higherLower: { higher: pm.higher ?? 0, lower: pm.lower ?? 0, equal: pm.equal ?? 0 } };
-        if (pm.inside !== undefined || pm.outside !== undefined || pm.equal !== undefined) engineMultipliers = { ...engineMultipliers, insideOutside: { inside: pm.inside ?? 0, outside: pm.outside ?? 0, equal: pm.equal ?? 0 } };
-        if (pm.heart !== undefined || pm.diamond !== undefined || pm.club !== undefined || pm.spade !== undefined) engineMultipliers = { ...engineMultipliers, suit: { heart: pm.heart ?? 0, diamond: pm.diamond ?? 0, club: pm.club ?? 0, spade: pm.spade ?? 0 } };
-        if (pm.payoutMultiplier !== undefined || pm.multiplier !== undefined) lastMultiplier = (pm.payoutMultiplier ?? pm.multiplier) as number;
-      }
-    },
-  });
 
   function startGame() {
     if (isNaN(Number(betInput)) || Number(betInput) <= 0) {
@@ -186,7 +125,6 @@
     // If the resolved seed says the engine (server) should drive the round,
     // hand off to the engine flow which requests the round from the RGS.
     if (roundSeedData.source === 'engine-auth' || roundSeedData.source === 'engine-replay') {
-      // start the server-driven flow which will play events via playBet
       startGameEngineFlow(roundSeedData).catch((err) => {
         console.error('Engine flow failed', err);
       });
@@ -194,6 +132,7 @@
     }
 
     // local deterministic fallback (dev)
+    enginePayouts = null;
     const round = createRoundContract(`${roundSeedData.seed}:${roundSequence}`);
     roundSequence += 1;
     lastRoundId = round.roundId;
@@ -217,17 +156,10 @@
   function Cashout() {
     if(gameState !== 'playing') return;
 
-    if (roundSource !== 'local-fallback' && currentAwaitIndex !== null) {
-      // send cashout choice to engine
-      sendChoice(currentAwaitIndex, { type: 'cashout' });
-      inputsEnabled = false;
-      isProcessing = true;
-      return;
-    }
-
     wonAmount = cashoutAmount || initialBet;
     endMode = 'cashout';
     gameState = 'cashed';
+    endEngineRound();
   }
 
   function revealAllCards() {
@@ -240,18 +172,9 @@
 
   function guessColor(color: 'red'|'black') {
     if(isProcessing) return;
-
-    // engine-driven flow: send choice and let book handlers continue
-    if (roundSource !== 'local-fallback' && currentAwaitIndex !== null) {
-      inputsEnabled = false;
-      isProcessing = true;
-      sendChoice(currentAwaitIndex, { type: 'guessColor', value: color });
-      return;
-    }
-
     isProcessing = true;
 
-    const payouts = (roundSource !== 'local-fallback') ? getPayoutsColor() : calculatePayoutsColor();
+    const payouts = getPayoutsColor();
     cashoutAmount = initialBet * (color === 'red' ? payouts.red : payouts.black);
 
     const card = drawCard();
@@ -268,6 +191,7 @@
       revealAllCards();
       isProcessing = false;
       gameState = 'lost';
+      endEngineRound();
       return;
     }
 
@@ -276,17 +200,9 @@
 
   function guessHigherLower(guess: 'higher'|'lower'|'equal') {
     if(isProcessing) return;
-
-    if (roundSource !== 'local-fallback' && currentAwaitIndex !== null) {
-      inputsEnabled = false;
-      isProcessing = true;
-      sendChoice(currentAwaitIndex, { type: 'guessHigherLower', value: guess });
-      return;
-    }
-
     isProcessing = true;
 
-    const payouts = (roundSource !== 'local-fallback') ? getPayoutsHigherLower() : calculatePayoutsHigherLower();
+    const payouts = getPayoutsHigherLower();
     cashoutAmount = cashoutAmount * (guess === 'higher' ? payouts.higher : guess === 'lower' ? payouts.lower : payouts.equal);
 
     const card = drawCard();
@@ -307,6 +223,7 @@
       revealAllCards();
       isProcessing = false;
       gameState = 'lost';
+      endEngineRound();
       return;
     }
 
@@ -315,17 +232,9 @@
 
   function guessInsideOutside(guess: 'inside'|'outside'|'equal') {
     if(isProcessing) return;
-
-    if (roundSource !== 'local-fallback' && currentAwaitIndex !== null) {
-      inputsEnabled = false;
-      isProcessing = true;
-      sendChoice(currentAwaitIndex, { type: 'guessInsideOutside', value: guess });
-      return;
-    }
-
     isProcessing = true;
 
-    const payouts = (roundSource !== 'local-fallback') ? getPayoutsInsideOutside() : calculatePayoutsInsideOutside();
+    const payouts = getPayoutsInsideOutside();
     cashoutAmount = cashoutAmount * (guess === 'inside' ? payouts.inside : guess === 'outside' ? payouts.outside : payouts.equal);
 
     const card = drawCard();
@@ -345,7 +254,7 @@
     const secondCardValue = rankValue[secondCard.rank];
     const minVal = Math.min(firstCardValue, secondCardValue);
     const maxVal = Math.max(firstCardValue, secondCardValue);
-    
+
     const correct =
       (guess === 'inside' && ((rankValue[card.rank] > minVal && rankValue[card.rank] < maxVal))) ||
       (guess === 'outside' && ((rankValue[card.rank] < minVal) || (rankValue[card.rank] > maxVal))) ||
@@ -355,6 +264,7 @@
       revealAllCards();
       isProcessing = false;
       gameState = 'lost';
+      endEngineRound();
       return;
     }
 
@@ -364,17 +274,9 @@
 
   function guessSuit(guess: '♦'|'♣'|'♥'|'♠') {
     if(isProcessing) return;
-
-    if (roundSource !== 'local-fallback' && currentAwaitIndex !== null) {
-      inputsEnabled = false;
-      isProcessing = true;
-      sendChoice(currentAwaitIndex, { type: 'guessSuit', value: guess });
-      return;
-    }
-
     isProcessing = true;
 
-    const payouts = (roundSource !== 'local-fallback') ? getPayoutsSuit() : calculatePayoutsSuit();
+    const payouts = getPayoutsSuit();
     cashoutAmount = cashoutAmount * (guess === '♦' ? payouts.diamond : guess === '♣' ? payouts.club : guess === '♥' ? payouts.heart : payouts.spade);
 
     const card = drawCard();
@@ -392,6 +294,7 @@
       revealAllCards();
       isProcessing = false;
       gameState = 'lost';
+      endEngineRound();
       return;
     }
 
@@ -399,6 +302,7 @@
     endMode = 'full-win';
     gameState = 'cashed';
     isProcessing = false;
+    endEngineRound();
 
   }
 
@@ -423,8 +327,8 @@
     return { red: 0, black: 0 };
   }
 
-  function getPayoutsColor() {
-    if (roundSource !== 'local-fallback' && engineMultipliers?.color) return engineMultipliers.color;
+  function getPayoutsColor(): { red: number; black: number } {
+    if (enginePayouts) return enginePayouts[0] as { red: number; black: number };
     return calculatePayoutsColor();
   }
 
@@ -448,8 +352,8 @@
     return { higher: 0, lower: 0, equal: 0 };
   }
 
-  function getPayoutsHigherLower() {
-    if (roundSource !== 'local-fallback' && engineMultipliers?.higherLower) return engineMultipliers.higherLower;
+  function getPayoutsHigherLower(): { higher: number; lower: number; equal: number } {
+    if (enginePayouts) return enginePayouts[1] as { higher: number; lower: number; equal: number };
     return calculatePayoutsHigherLower();
   }
 
@@ -478,8 +382,8 @@
     return { inside: 0, outside: 0, equal: 0 };
   }
 
-  function getPayoutsInsideOutside() {
-    if (roundSource !== 'local-fallback' && engineMultipliers?.insideOutside) return engineMultipliers.insideOutside;
+  function getPayoutsInsideOutside(): { inside: number; outside: number; equal: number } {
+    if (enginePayouts) return enginePayouts[2] as { inside: number; outside: number; equal: number };
     return calculatePayoutsInsideOutside();
   }
   
@@ -503,8 +407,8 @@
     return { heart: 0 , diamond: 0, spade: 0, club: 0 };
   }
 
-  function getPayoutsSuit() {
-    if (roundSource !== 'local-fallback' && engineMultipliers?.suit) return engineMultipliers.suit;
+  function getPayoutsSuit(): { heart: number; diamond: number; club: number; spade: number } {
+    if (enginePayouts) return enginePayouts[3] as { heart: number; diamond: number; club: number; spade: number };
     return calculatePayoutsSuit();
   }
 
@@ -512,9 +416,11 @@
     return (cashoutAmount && cashoutAmount > 0) ? cashoutAmount : initialBet;
   }
 
+  const backdropUrl = `${base}/backdrop.png`;
+
 </script>
 
-<div class="game-container">
+<div class="game-container" style={`--backdrop-url: url(${backdropUrl})`}>
   <h1>Ride the Bus</h1>
 
   <div class="round-debug" aria-live="polite">
@@ -803,8 +709,7 @@
   }
 
   :global(body) {
-    background: url('/backdrop.png') center/cover no-repeat fixed;
-    background-size: cover;
+    background: #000;
     background-color: transparent;
     min-height: 100vh;
   }
@@ -814,7 +719,7 @@
     width: 100vw;
     padding: 24px;
     box-sizing: border-box;
-    background: transparent;
+    background: var(--backdrop-url) center/cover no-repeat fixed;
     display: flex;
     flex-direction: column;
     align-items: center;

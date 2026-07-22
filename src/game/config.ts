@@ -1,26 +1,24 @@
 export default {
 	providerName: 'sample_provider',
-	gameName: 'sample_lines',
-	gameID: '0_0_ways',
-	rtp: 0.97,
+	gameName: 'Ride The Bus',
+	gameID: 'ride_the_bus',
+	rtp: 0.98,
 	numReels: 5,
 	numRows: [3, 3, 3, 3, 3],
+	houseEdge: 0.02,
 	betModes: {
 		base: {
 			cost: 1.0,
 			feature: true,
 			buyBonus: false,
-			rtp: 0.97,
-			max_win: 5000,
-		},
-		bonus: {
-			cost: 100.0,
-			feature: false,
-			buyBonus: true,
-			rtp: 0.97,
-			max_win: 5000,
+			rtp: 0.98,
+			max_win: 500,
 		},
 	},
+	// NOTE: symbols/paddingReels below are unused leftovers from the slot
+	// template this app was forked from. Ride The Bus has no board/reels;
+	// they're kept only because game/types.ts derives SymbolName/GameType
+	// from them and other dead slot-scaffolding files reference those types.
 	symbols: {
 		W: {
 			paytable: null,

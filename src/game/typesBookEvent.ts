@@ -1,21 +1,37 @@
 import type { BetType } from 'rgs-requests';
 
-import type { SymbolName, RawSymbol, GameType, Position } from './types';
+export type Card = { rank: string; suit: '♥' | '♦' | '♣' | '♠' };
 
-// book events shared with scatter game
-type BookEventReveal = {
+type BookEventRevealStage1 = {
 	index: number;
 	type: 'reveal';
-	board: RawSymbol[][];
-	paddingPositions: number[];
-	anticipation: number[];
-	gameType: GameType;
+	stage: 1;
+	card: Card;
+	payouts: { red: number; black: number };
 };
 
-type BookEventSetTotalWin = {
+type BookEventRevealStage2 = {
 	index: number;
-	type: 'setTotalWin';
-	amount: number;
+	type: 'reveal';
+	stage: 2;
+	card: Card;
+	payouts: { higher: number; lower: number; equal: number };
+};
+
+type BookEventRevealStage3 = {
+	index: number;
+	type: 'reveal';
+	stage: 3;
+	card: Card;
+	payouts: { inside: number; outside: number; equal: number };
+};
+
+type BookEventRevealStage4 = {
+	index: number;
+	type: 'reveal';
+	stage: 4;
+	card: Card;
+	payouts: { heart: number; diamond: number; club: number; spade: number };
 };
 
 type BookEventFinalWin = {
@@ -24,72 +40,12 @@ type BookEventFinalWin = {
 	amount: number;
 };
 
-type BookEventFreeSpinTrigger = {
-	index: number;
-	type: 'freeSpinTrigger';
-	totalFs: number;
-	positions: Position[];
-};
-
-type BookEventUpdateFreeSpin = {
-	index: number;
-	type: 'updateFreeSpin';
-	amount: number;
-	total: number;
-};
-
-type BookEventSetWin = {
-	index: number;
-	type: 'setWin';
-	amount: number;
-	winLevel: number;
-};
-
-type BookEventFreeSpinEnd = {
-	index: number;
-	type: 'freeSpinEnd';
-	amount: number;
-	winLevel: number;
-};
-
-type BookEventWinInfo = {
-	index: number;
-	type: 'winInfo';
-	totalWin: number;
-	wins: {
-		symbol: SymbolName;
-		kind: number;
-		win: number;
-		positions: Position[];
-		meta: {
-			lineIndex: number;
-			multiplier: number;
-			winWithoutMult: number;
-			globalMult: number;
-			lineMultiplier: number;
-		};
-	}[];
-};
-
-// customised
-type BookEventCreateBonusSnapshot = {
-	index: number;
-	type: 'createBonusSnapshot';
-	bookEvents: BookEvent[];
-};
-
 export type BookEvent =
-	| BookEventReveal
-	| BookEventWinInfo
-	| BookEventSetTotalWin
-	| BookEventFreeSpinTrigger
-	| BookEventUpdateFreeSpin
-	| BookEventCreateBonusSnapshot
-	| BookEventFinalWin
-	| BookEventSetWin
-	| BookEventFreeSpinEnd
-	// customised
-	| BookEventCreateBonusSnapshot;
+	| BookEventRevealStage1
+	| BookEventRevealStage2
+	| BookEventRevealStage3
+	| BookEventRevealStage4
+	| BookEventFinalWin;
 
 export type Bet = BetType<BookEvent>;
 export type BookEventOfType<T> = Extract<BookEvent, { type: T }>;
