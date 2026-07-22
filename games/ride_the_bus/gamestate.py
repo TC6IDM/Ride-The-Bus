@@ -4,7 +4,7 @@ import math
 import random
 
 from game_override import GameStateOverride
-from game_calculations import build_deck, rank_value
+from game_calculations import build_deck, rank_value, parse_mode_name
 from src.events.events import *
 
 
@@ -17,60 +17,57 @@ class GameState(GameStateOverride):
         while self.repeat:
             self.reset_book()
 
+            # The bet mode name IS the player's full pre-selected 4-stage
+            # choice combination (see game_calculations.mode_name) - chosen
+            # before this round was ever played, so the outcome below is a
+            # single, independent, stateless resolution against a choice
+            # that's already fixed, not something discovered mid-round.
+            color_choice, hl_choice, io_choice, suit_choice = parse_mode_name(self.betmode)
+            choices = [color_choice, hl_choice, io_choice, suit_choice]
+
             deck = build_deck()
             random.shuffle(deck)
             drawn = deck[:4]
             drawn_ranks = [rank_value(rank) for rank, _ in drawn]
 
-            # Stage 1: color, guessed against the full remaining deck.
             stage_payouts = [
                 self.color_payouts(deck[0:]),
                 self.higher_lower_payouts(deck[1:], drawn_ranks[0]),
                 self.inside_outside_payouts(deck[2:], drawn_ranks[0], drawn_ranks[1]),
                 self.suit_payouts(deck[3:]),
             ]
-            stage_choice_keys = [
-                ("red", "black"),
-                ("higher", "lower", "equal"),
-                ("inside", "outside", "equal"),
-                ("heart", "diamond", "club", "spade"),
-            ]
 
+            running_multiplier = 1.0
+            busted = False
             for stage_index in range(4):
                 rank, suit = drawn[stage_index]
+                payouts = stage_payouts[stage_index]
+                choice = choices[stage_index]
+                correct = (
+                    not busted
+                    and self._is_correct_guess(stage_index, choice, rank, suit, drawn_ranks)
+                )
+                if not busted and correct:
+                    running_multiplier *= payouts[choice]
+                elif not busted:
+                    busted = True
+
                 event = {
                     "index": len(self.book.events),
                     "type": EventConstants.REVEAL.value,
                     "stage": stage_index + 1,
                     "card": {"rank": rank, "suit": suit},
-                    "payouts": stage_payouts[stage_index],
+                    "choice": choice,
+                    "correct": correct,
+                    "payout": payouts[choice],
                 }
                 self.book.add_event(event)
 
-            # Simulate a representative playthrough (uniform-random guesses,
-            # excluding guesses that are impossible given cards already
-            # revealed, e.g. "lower" when the reference card is an Ace) purely
-            # to produce a payoutMultiplier / RTP figure for this book. Actual
-            # gameplay payout is resolved live client-side from the payouts/card
-            # data above, not from this simulated path.
-            running_multiplier = 1.0
-            for stage_index in range(4):
-                rank, suit = drawn[stage_index]
-                payouts = stage_payouts[stage_index]
-                choice_keys = stage_choice_keys[stage_index]
-                viable_keys = [key for key in choice_keys if payouts[key] > 0]
-                guess = random.choice(viable_keys)
-                correct = self._is_correct_guess(stage_index, guess, rank, suit, drawn_ranks)
-                if not correct:
-                    running_multiplier = 0.0
-                    break
-                running_multiplier *= payouts[guess]
-
-            # Quantize down to the nearest 0.1x (never up - see fair_multiplier):
-            # the product of several 0.1x-quantized per-stage payouts isn't
-            # itself guaranteed to land on a 0.1x step, but the RGS requires
-            # the book's payoutMultiplier to be one.
-            win_amount = math.floor(running_multiplier * 10) / 10 if running_multiplier > 0 else 0.0
+            # Quantize down to the nearest 0.1x (never up - see
+            # fair_multiplier): the product of several 0.1x-quantized
+            # per-stage payouts isn't itself guaranteed to land on a 0.1x
+            # step, but the RGS requires the book's payoutMultiplier to be one.
+            win_amount = math.floor(running_multiplier * 10) / 10 if not busted else 0.0
             self.win_manager.update_spinwin(win_amount)
             self.win_manager.update_gametype_wins(self.gametype)
 

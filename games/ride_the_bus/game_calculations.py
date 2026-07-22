@@ -9,6 +9,38 @@ SUITS = ["♥", "♦", "♣", "♠"]
 RED_SUITS = ("♥", "♦")
 BLACK_SUITS = ("♠", "♣")
 
+# Stake Engine requires each bet to be a single, independent, stateless
+# outcome - no continuation, no early cashout (see Key Restrictions in
+# Stake's approval docs). So the player picks all 4 guesses up front, and
+# the whole round is ONE bet mode encoding that exact combination - the book
+# resolves the full outcome deterministically against those fixed choices.
+COLOR_CHOICES = ["red", "black"]
+HIGHER_LOWER_CHOICES = ["higher", "lower", "equal"]
+INSIDE_OUTSIDE_CHOICES = ["inside", "outside", "equal"]
+SUIT_CHOICES = ["heart", "diamond", "club", "spade"]
+
+SUIT_NAME_TO_SYMBOL = {"heart": "♥", "diamond": "♦", "club": "♣", "spade": "♠"}
+
+
+def all_mode_combinations():
+    """Every (color, higher_lower, inside_outside, suit) choice combination."""
+    for color in COLOR_CHOICES:
+        for higher_lower in HIGHER_LOWER_CHOICES:
+            for inside_outside in INSIDE_OUTSIDE_CHOICES:
+                for suit in SUIT_CHOICES:
+                    yield (color, higher_lower, inside_outside, suit)
+
+
+def mode_name(color: str, higher_lower: str, inside_outside: str, suit: str) -> str:
+    """Bet mode name encoding one full pre-selected 4-stage choice combination."""
+    return f"{color}_{higher_lower}_{inside_outside}_{suit}"
+
+
+def parse_mode_name(name: str) -> tuple:
+    """Inverse of mode_name(): '<color>_<higher_lower>_<inside_outside>_<suit>' -> tuple."""
+    color, higher_lower, inside_outside, suit = name.split("_")
+    return color, higher_lower, inside_outside, suit
+
 
 def rank_value(rank: str) -> int:
     """Ace-low rank value, matching the frontend's rankValue map."""

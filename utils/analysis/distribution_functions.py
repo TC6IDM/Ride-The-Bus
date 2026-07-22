@@ -71,9 +71,15 @@ def get_distribution_moments(dist: dict, bet_cost: float) -> float:
     for win, weight in dist.items():
         skewness += ((win - av_win) ** 3) * weight
         kurtosis += ((win - av_win) ** 4) * weight
-    skewness /= (standard_dev) ** 3
-    kurtosis /= (standard_dev) ** 4
-    kurtosis -= 3
+    if standard_dev > 0:
+        # A distribution can legitimately have zero variance (e.g. a bet
+        # mode/combination that's mathematically guaranteed to always lose -
+        # skewness/kurtosis are undefined there, not just hard to compute.
+        skewness /= (standard_dev) ** 3
+        kurtosis /= (standard_dev) ** 4
+        kurtosis -= 3
+    else:
+        skewness, kurtosis = 0.0, 0.0
 
     return variance, norm_std_dev, skewness, kurtosis
 
@@ -177,6 +183,11 @@ def non_zero_hitrate(dist: dict, total_weight=None):
         total_weight = sum(list(dist.values()))
 
     if min(dist.keys()) == 0:
+        # dist[0] == total_weight means every outcome is a loss (e.g. a bet
+        # mode/combination that's mathematically guaranteed to always lose) -
+        # "1 in N chance of a non-zero win" is 1 in infinity, not undefined.
+        if dist[0] >= total_weight:
+            return float("inf")
         return 1 / (1 - dist[0] / total_weight)
     else:
         return 1
@@ -196,4 +207,8 @@ def min_dist_difference(dist: dict):
     for i in range(len(wins) - 2):
         if diff is None or (diff > abs(wins[i + 1]) - wins[i]):
             diff = abs(wins[i + 1]) - wins[i]
+    # A single-outcome distribution (e.g. a bet mode/combination that's
+    # mathematically guaranteed to always lose) has no pairwise difference.
+    if diff is None:
+        return 0
     return int(round(diff * 100))
