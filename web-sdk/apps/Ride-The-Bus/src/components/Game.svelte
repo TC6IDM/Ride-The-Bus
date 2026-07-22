@@ -15,6 +15,13 @@
   const IS_PROD = Boolean((import.meta as any).env?.PROD);
   const HOUSE_EDGE = 0.02;
 
+  // Local dev only: there's no real RGS session to report a balance, so
+  // Set Bet always clamps to 0 without this. On the real site, Authenticate
+  // populates stateBet.balanceAmount from the RGS - never override that.
+  if (!IS_PROD && stateBet.balanceAmount === 0) {
+    stateBet.balanceAmount = 1_000_000;
+  }
+
   let gameState = $state<State>('start');
   let endMode = $state<EndMode>('cashout');
   let isProcessing = $state(false);
