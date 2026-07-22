@@ -1,5 +1,7 @@
 """Card-odds helper functions for Ride The Bus."""
 
+import math
+
 from src.executables.executables import Executables
 
 RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
@@ -23,16 +25,18 @@ class GameCalculations(Executables):
 
     def fair_multiplier(self, probability: float) -> float:
         """
-        (1 - house_edge) / true probability, quantized to the nearest 0.1x.
-        Stake's RGS only accepts non-zero payout multipliers in 0.1x
+        (1 - house_edge) / true probability, quantized DOWN to the nearest
+        0.1x. Stake's RGS only accepts non-zero payout multipliers in 0.1x
         increments (payoutMultiplier, stored as integer cents x100, must be
         a multiple of 10) - see utils/rgs_verification.py:verify_lookup_format.
-        0 if impossible.
+        Must floor (never round up/nearest): e.g. a fair 50/50 payout is
+        1.96x - rounding to nearest would give 2.0x, wiping out the house
+        edge entirely. Floor keeps the edge intact. 0 if impossible.
         """
         if probability <= 0:
             return 0.0
         raw = (1 - self.config.house_edge) / probability
-        quantized = round(raw * 10) / 10
+        quantized = math.floor(raw * 10) / 10
         return quantized if quantized > 0 else 0.1
 
     def color_payouts(self, remaining: list) -> dict:
