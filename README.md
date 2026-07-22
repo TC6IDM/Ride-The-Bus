@@ -1,0 +1,105 @@
+# Ride The Bus
+
+A Stake Engine casino game: the classic 4-stage card-guessing drinking game
+(Red/Black → Higher/Lower → Inside/Outside → Guess Suit), with a compounding
+multiplier and the option to cash out after any stage.
+
+The project has two halves, matching Stake Engine's split between frontend
+and math/RGS backend:
+
+- **`web-sdk/`** — the game client (Svelte 5 + PixiJS), forked from
+  [StakeEngine/web-sdk](https://github.com/StakeEngine/web-sdk). The game
+  itself lives at `web-sdk/apps/Ride-The-Bus`.
+- **`math-sdk/`** — the math/RGS backend (Python), forked from
+  [StakeEngine/math-sdk](https://github.com/StakeEngine/math-sdk). The game
+  itself lives at `math-sdk/games/ride_the_bus`.
+
+Both halves must be built and published to Stake Engine for the game to run
+there — publishing only one half is why you'll see a black screen / 404s if
+you skip a step.
+
+## Prerequisites
+
+- Node 22.16.0 and pnpm 10.5.0 (for `web-sdk`)
+- Python 3.x (for `math-sdk`)
+
+## Build & publish: math-sdk (RGS backend)
+
+```
+cd math-sdk
+
+# first time only
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv\Scripts\python.exe -m pip install -e .
+
+# generate books/paytables
+.venv\Scripts\python.exe games\ride_the_bus\run.py
+```
+
+This writes everything under `math-sdk\games\ride_the_bus\library\`. **Upload
+the contents of `math-sdk\games\ride_the_bus\library\publish_files\`**
+(`books_base.jsonl.zst`, `index.json`, `lookUpTable_base_0.csv`) to Stake
+Engine's Files page, under the Math/RGS section for this game.
+
+To sanity-check a build before uploading (catches payout-format issues like
+`ERR_MATH_OUTSIDE_RANGE` locally instead of on the dashboard):
+
+```
+.venv\Scripts\python.exe -c "from utils.rgs_verification import execute_all_tests, load_game_config; execute_all_tests(load_game_config('ride_the_bus'))"
+```
+
+Should print `[FAST PATH] base: SHA-256 OK, payout hash OK, ...` with no
+assertion errors.
+
+## Build & publish: web-sdk (frontend)
+
+```
+cd web-sdk
+pnpm install   # first time only
+pnpm run build --filter=ride-the-bus
+```
+
+**Upload the contents of `web-sdk\apps\Ride-The-Bus\build\`** to Stake
+Engine's Files page, under the Front End section.
+
+Then on the dashboard: **Publish Game** → publish both Math/RGS and Front
+End (publishing only one half leaves the other stale and the game won't run).
+
+## Run locally
+
+```
+cd web-sdk
+pnpm run dev --filter=ride-the-bus
+```
+
+Opens at `http://localhost:3001`. Without a live RGS session, the game falls
+back to a local deterministic mode (`roundContract.ts`) so the UI is still
+playable — this does **not** exercise the real math backend.
+
+To test against the real RGS locally: start a session from Stake Engine's
+**Developer** page (Start game session → Launch in New Tab), copy the query
+string from the launched URL, and append it to `localhost:3001`, e.g.:
+
+```
+http://localhost:3001/?sessionID=...&rgs_url=...&currency=USD&...
+```
+
+That routes play through the real math backend instead of the local
+fallback.
+
+## Project structure notes
+
+- Each SDK folder is a full fork (framework + all sample apps/games from
+  Stake Engine, not trimmed) — both need their shared framework code
+  (`web-sdk/packages/*`, `math-sdk/src/*`) to build.
+- `web-sdk/apps/Ride-The-Bus` keeps its own commit history from before this
+  repo was restructured (see `git log` — the "Add 'web-sdk/apps/Ride-The-Bus/'
+  from commit ..." merge commit and its second parent chain).
+- Round model: the math backend generates one full book per bet — the fixed
+  4-card sequence plus each stage's fair-odds payout table (based on true
+  remaining-deck probability minus a 2% house edge, quantized to 0.1x steps
+  per Stake's RGS requirements). The client resolves each guess against that
+  data locally, matching how Stake Engine's documented RGS API works (one
+  `/wallet/play` call returns the whole round; there's no live per-decision
+  endpoint).
