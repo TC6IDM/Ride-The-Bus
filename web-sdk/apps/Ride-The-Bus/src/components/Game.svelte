@@ -392,222 +392,320 @@
   const backdropUrl = `${base}/backdrop.png`;
 </script>
 
-<div class="game-container" style={`--backdrop-url: url(${backdropUrl})`}>
-  <h1>Ride the Bus</h1>
+<div class="game-layout" style={`--backdrop-url: url(${backdropUrl})`}>
+  <aside class="sidebar">
+    <div class="sidebar-title">Ride the Bus</div>
 
-  <div class="round-debug" aria-live="polite">
-    <span>Round source: {roundSource}</span>
-    <span>Round ID: {lastRoundId || 'not started'}</span>
-    <span>Deck preview: {roundDeckPreview || 'n/a'}</span>
-  </div>
-
-  <div class="wallet-bar" aria-live="polite">
-    <span>Balance: {numberToCurrencyString(stateBet.balanceAmount)}</span>
-    <span>Current Bet: {numberToCurrencyString(stateBet.betAmount)}</span>
-  </div>
-
-  {#if gameState === 'start'}
-    <div class="card-row">
-      {#each revealedCards as _card}
-        <div class="card-block">
-          <div class="card-back" aria-hidden="true"></div>
-        </div>
-      {/each}
-    </div>
-
-    <div class="choice-row">
-      <div class="choice-column">
-        <span class="choice-label">Color</span>
-        <div class="choice-square color-square" role="group" aria-label="Pick a color">
-          <button type="button" class="half-btn black-half" class:selected={colorChoice === 'black'} onclick={() => (colorChoice = 'black')} aria-label="Black"></button>
-          <button type="button" class="half-btn red-half" class:selected={colorChoice === 'red'} onclick={() => (colorChoice = 'red')} aria-label="Red"></button>
-        </div>
-      </div>
-
-      <div class="choice-column">
-        <span class="choice-label">Higher / Lower</span>
-        <div class="choice-square hl-square" role="group" aria-label="Higher, lower, or equal">
-          <button type="button" class="third-btn higher-third" class:selected={hlChoice === 'higher'} onclick={() => (hlChoice = 'higher')} aria-label="Higher">▲</button>
-          <button type="button" class="third-btn lower-third" class:selected={hlChoice === 'lower'} onclick={() => (hlChoice = 'lower')} aria-label="Lower">▼</button>
-          <button type="button" class="equal-btn" class:selected={hlChoice === 'equal'} onclick={() => (hlChoice = 'equal')} aria-label="Equal">=</button>
-        </div>
-      </div>
-
-      <div class="choice-column">
-        <span class="choice-label">Inside / Outside</span>
-        <div class="choice-square io-square" role="group" aria-label="Inside, outside, or equal">
-          <button type="button" class="half-btn inside-half" class:selected={ioChoice === 'inside'} onclick={() => (ioChoice = 'inside')} aria-label="Inside">→←</button>
-          <button type="button" class="half-btn outside-half" class:selected={ioChoice === 'outside'} onclick={() => (ioChoice = 'outside')} aria-label="Outside">←→</button>
-          <button type="button" class="equal-btn" class:selected={ioChoice === 'equal'} onclick={() => (ioChoice = 'equal')} aria-label="Equal">=</button>
-        </div>
-      </div>
-
-      <div class="choice-column">
-        <span class="choice-label">Suit</span>
-        <div class="choice-square suit-square" role="group" aria-label="Pick a suit">
-          <button type="button" class="quad-btn red-suit" class:selected={suitChoice === 'heart'} onclick={() => (suitChoice = 'heart')} aria-label="Heart">♥</button>
-          <button type="button" class="quad-btn" class:selected={suitChoice === 'spade'} onclick={() => (suitChoice = 'spade')} aria-label="Spade">♠</button>
-          <button type="button" class="quad-btn" class:selected={suitChoice === 'club'} onclick={() => (suitChoice = 'club')} aria-label="Club">♣</button>
-          <button type="button" class="quad-btn red-suit" class:selected={suitChoice === 'diamond'} onclick={() => (suitChoice = 'diamond')} aria-label="Diamond">♦</button>
-        </div>
+    <div class="control-group">
+      <span class="control-label">Bet Amount</span>
+      <div class="bet-row">
+        <input class="bet-input" type="number" bind:value={betInput} min="1" placeholder="0.00" />
+        <button class="set-bet-btn" onclick={setBet}>Set</button>
       </div>
     </div>
 
-    <div class="start-panel">
-      <div class="start-stack">
-        <div class="wager-field">
-          <label for="bet">Wager</label>
-          <input id="bet" class="bet-input" type="number" bind:value={betInput} min="1" placeholder="e.g. 10" />
-          <button class="secondary-button" onclick={setBet}>Set Bet</button>
+    {#if gameState === 'start'}
+      <button
+        class="action-button"
+        onclick={startGame}
+        disabled={(IS_PROD && resolveRoundSeed().source === 'none') || stateBet.betAmount <= 0 || !allChoicesMade() || isProcessing}
+      >
+        {#if !allChoicesMade()}Pick all 4 guesses{:else if stateBet.betAmount <= 0}Enter a bet{:else}Start{/if}
+      </button>
+    {:else if gameState === 'playing'}
+      <button class="action-button" disabled>Revealing…</button>
+    {:else}
+      <button class="action-button replay" onclick={retryGame}>Play Again</button>
+    {/if}
+
+    <div class="control-group">
+      <span class="control-label">Total Profit ({initialBet > 0 && wonAmount > 0 ? (wonAmount / initialBet).toFixed(2) : '0.00'}×)</span>
+      <div class="profit-display">{numberToCurrencyString(wonAmount)}</div>
+    </div>
+
+    <div class="wallet-info">
+      <div><span>Balance</span><strong>{numberToCurrencyString(stateBet.balanceAmount)}</strong></div>
+      <div><span>Current Bet</span><strong>{numberToCurrencyString(stateBet.betAmount)}</strong></div>
+    </div>
+
+    <div class="round-debug" aria-live="polite">
+      <span>Source: {roundSource}</span>
+      <span>Round: {lastRoundId || 'not started'}</span>
+    </div>
+  </aside>
+
+  <main class="game-main">
+    {#if gameState === 'start'}
+      <div class="choice-row">
+        <div class="choice-column">
+          <span class="choice-label">Color</span>
+          <div class="choice-square color-square" role="group" aria-label="Pick a color">
+            <button type="button" class="half-btn black-half" class:selected={colorChoice === 'black'} onclick={() => (colorChoice = 'black')} aria-label="Black"></button>
+            <button type="button" class="half-btn red-half" class:selected={colorChoice === 'red'} onclick={() => (colorChoice = 'red')} aria-label="Red"></button>
+          </div>
         </div>
-        <button
-          class="start-button"
-          onclick={startGame}
-          disabled={(IS_PROD && resolveRoundSeed().source === 'none') || stateBet.betAmount <= 0 || !allChoicesMade() || isProcessing}
-        >
-          Start
-        </button>
+
+        <div class="choice-column">
+          <span class="choice-label">Higher / Lower</span>
+          <div class="choice-square hl-square" role="group" aria-label="Higher, lower, or equal">
+            <button type="button" class="third-btn higher-third" class:selected={hlChoice === 'higher'} onclick={() => (hlChoice = 'higher')} aria-label="Higher">▲</button>
+            <button type="button" class="third-btn lower-third" class:selected={hlChoice === 'lower'} onclick={() => (hlChoice = 'lower')} aria-label="Lower">▼</button>
+            <button type="button" class="equal-btn" class:selected={hlChoice === 'equal'} onclick={() => (hlChoice = 'equal')} aria-label="Equal">=</button>
+          </div>
+        </div>
+
+        <div class="choice-column">
+          <span class="choice-label">Inside / Outside</span>
+          <div class="choice-square io-square" role="group" aria-label="Inside, outside, or equal">
+            <button type="button" class="half-btn inside-half" class:selected={ioChoice === 'inside'} onclick={() => (ioChoice = 'inside')} aria-label="Inside">→←</button>
+            <button type="button" class="half-btn outside-half" class:selected={ioChoice === 'outside'} onclick={() => (ioChoice = 'outside')} aria-label="Outside">←→</button>
+            <button type="button" class="equal-btn" class:selected={ioChoice === 'equal'} onclick={() => (ioChoice = 'equal')} aria-label="Equal">=</button>
+          </div>
+        </div>
+
+        <div class="choice-column">
+          <span class="choice-label">Suit</span>
+          <div class="choice-square suit-square" role="group" aria-label="Pick a suit">
+            <button type="button" class="quad-btn red-suit" class:selected={suitChoice === 'heart'} onclick={() => (suitChoice = 'heart')} aria-label="Heart">♥</button>
+            <button type="button" class="quad-btn" class:selected={suitChoice === 'spade'} onclick={() => (suitChoice = 'spade')} aria-label="Spade">♠</button>
+            <button type="button" class="quad-btn" class:selected={suitChoice === 'club'} onclick={() => (suitChoice = 'club')} aria-label="Club">♣</button>
+            <button type="button" class="quad-btn red-suit" class:selected={suitChoice === 'diamond'} onclick={() => (suitChoice = 'diamond')} aria-label="Diamond">♦</button>
+          </div>
+        </div>
       </div>
-    </div>
-  {/if}
+    {/if}
 
-  {#if gameState === 'playing'}
-    <div class="card-row">
-      {#each revealedCards as card, index}
-        <div class="card-block" class:revealed={card} class:busted={index === bustedIndex}>
-          {#if card}
-            <div class="card-face" class:red-card={card.suit === '♥' || card.suit === '♦'} class:black-card={card.suit === '♠' || card.suit === '♣'}>
-              <div class="rank top">{card.rank}</div>
-              <div class="suit center">{card.suit}</div>
-              <div class="rank bottom">{card.rank}</div>
-            </div>
-          {:else}
-            <div class="card-back" aria-hidden="true"></div>
-          {/if}
-        </div>
-      {/each}
-    </div>
-    <div class="game-stage">
-      <p>Revealing your cards…</p>
-    </div>
-  {/if}
-
-  {#if gameState === 'lost'}
-    <div class="card-row">
-      {#each revealedCards as card, index}
-        <div class="card-block" class:revealed={card} class:busted={index === bustedIndex}>
-          {#if card}
-            <div class="card-face" class:red-card={card.suit === '♥' || card.suit === '♦'} class:black-card={card.suit === '♠' || card.suit === '♣'}>
-              <div class="rank top">{card.rank}</div>
-              <div class="suit center">{card.suit}</div>
-              <div class="rank bottom">{card.rank}</div>
-            </div>
-          {:else}
-            <div class="card-back" aria-hidden="true"></div>
-          {/if}
-        </div>
-      {/each}
-    </div>
-    <div class="game-stage">
-      <p>You busted on the first card and lost your bet.</p>
-      <div class="button-group">
-        <button class="secondary-button" onclick={retryGame}>Retry</button>
+    {#if gameState === 'playing' || gameState === 'lost'}
+      <div class="card-row">
+        {#each revealedCards as card, index}
+          <div class="card-block" class:revealed={card} class:busted={index === bustedIndex}>
+            {#if card}
+              <div class="card-face" class:red-card={card.suit === '♥' || card.suit === '♦'} class:black-card={card.suit === '♠' || card.suit === '♣'}>
+                <div class="rank top">{card.rank}</div>
+                <div class="suit center">{card.suit}</div>
+                <div class="rank bottom">{card.rank}</div>
+              </div>
+            {:else}
+              <div class="card-back" aria-hidden="true"></div>
+            {/if}
+          </div>
+        {/each}
       </div>
-    </div>
-  {/if}
-
-  {#if gameState === 'won'}
-    <div class="result-screen">
-      <div class="result-hero">
-        <p class="result-kicker">{bustedIndex === null ? 'Full Game Win' : 'You Rode The Bus'}</p>
-        {#if bustedIndex === null}
-          <h2>Congratulations! Full Game Win</h2>
-          <p class="result-copy">You correctly guessed all four cards!</p>
+      <div class="game-stage">
+        {#if gameState === 'lost'}
+          <p>You busted on the first card and lost your bet.</p>
         {:else}
-          <h2>Banked before the bust!</h2>
-          <p class="result-copy">You missed on card {bustedIndex + 1}, but kept the winnings earned up to there.</p>
+          <p>Revealing your cards…</p>
         {/if}
-        <div class="result-total">x{initialBet > 0 ? (wonAmount / initialBet).toFixed(2) : '0.00'} — ${wonAmount.toFixed(2)}</div>
       </div>
+    {/if}
 
-      <div class="result-actions">
-        <button class="secondary-button" onclick={retryGame}>Play Again</button>
+    {#if gameState === 'won'}
+      <div class="result-screen">
+        <div class="card-row">
+          {#each revealedCards as card, index}
+            <div class="card-block" class:revealed={card} class:busted={index === bustedIndex}>
+              {#if card}
+                <div class="card-face" class:red-card={card.suit === '♥' || card.suit === '♦'} class:black-card={card.suit === '♠' || card.suit === '♣'}>
+                  <div class="rank top">{card.rank}</div>
+                  <div class="suit center">{card.suit}</div>
+                  <div class="rank bottom">{card.rank}</div>
+                </div>
+              {:else}
+                <div class="card-back" aria-hidden="true"></div>
+              {/if}
+            </div>
+          {/each}
+        </div>
+        <div class="result-hero">
+          <p class="result-kicker">{bustedIndex === null ? 'Full Game Win' : 'You Rode The Bus'}</p>
+          {#if bustedIndex === null}
+            <h2>Congratulations! Full Game Win</h2>
+            <p class="result-copy">You correctly guessed all four cards!</p>
+          {:else}
+            <h2>Banked before the bust!</h2>
+            <p class="result-copy">You missed on card {bustedIndex + 1}, but kept the winnings earned up to there.</p>
+          {/if}
+          <div class="result-total">x{initialBet > 0 ? (wonAmount / initialBet).toFixed(2) : '0.00'} — ${wonAmount.toFixed(2)}</div>
+        </div>
       </div>
-    </div>
-  {/if}
+    {/if}
+  </main>
 </div>
 
 <style>
-  .card-row {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 30px;
-    margin: 26px 0 18px;
-  }
-
   :global(html, body) {
     height: 100%;
     margin: 0;
   }
 
   :global(body) {
-    background: #000;
-    background-color: transparent;
+    background: #0b1420;
     min-height: 100vh;
   }
 
-  .game-container {
-    min-height: 100vh;
+  /* Two-column layout: a fixed control sidebar plus a game area that fills the
+     rest of the viewport. The old single-column stack pushed the wager field
+     and Start button off the bottom of the screen at most heights; here the
+     controls live in the always-visible sidebar and the game centres itself
+     in the remaining space. */
+  .game-layout {
+    height: 100vh;
     width: 100vw;
-    padding: 24px;
+    display: flex;
     box-sizing: border-box;
     background: var(--backdrop-url) center/cover no-repeat fixed;
+    overflow: hidden;
+  }
+
+  .sidebar {
+    flex: 0 0 300px;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 18px 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: rgba(8, 15, 24, 0.85);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    overflow-y: auto;
+  }
+
+  .game-main {
+    flex: 1 1 auto;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 24px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
+    gap: 24px;
+    overflow-y: auto;
   }
 
-  .game-container h1 {
-    margin: 34px 0 12px;
-    padding: 10px 22px;
-    border-radius: 999px;
-    background: rgba(10, 18, 28, 0.58);
-    color: #fff2c8;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.78), 0 0 14px rgba(255, 215, 126, 0.25);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  .sidebar-title {
+    font-size: 1.25rem;
+    font-weight: 800;
     letter-spacing: 0.04em;
+    color: #fff2c8;
+    text-align: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
   }
+
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .control-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #93a4b5;
+  }
+
+  .bet-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .set-bet-btn {
+    flex: 0 0 auto;
+    padding: 0 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .set-bet-btn:hover { background: rgba(255, 255, 255, 0.16); }
+
+  .action-button {
+    width: 100%;
+    padding: 14px;
+    font-size: 1.05rem;
+    font-weight: 800;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background: linear-gradient(180deg, #4c9ffe, #1f6fe0);
+    color: #fff;
+    letter-spacing: 0.03em;
+    box-shadow: 0 6px 16px rgba(31, 111, 224, 0.35);
+  }
+  .action-button:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+  .action-button:not(:disabled):hover { filter: brightness(1.08); }
+  .action-button:not(:disabled):active { transform: translateY(1px); }
+  .action-button.replay {
+    background: linear-gradient(180deg, #ffb64c, #e08a1f);
+    box-shadow: 0 6px 16px rgba(224, 138, 31, 0.35);
+  }
+
+  .profit-display {
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: rgba(5, 12, 18, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #ffd77e;
+    font-weight: 700;
+    font-size: 1.05rem;
+  }
+
+  .wallet-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .wallet-info div {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #b9c6d3;
+  }
+  .wallet-info strong { color: #fff; }
 
   .round-debug {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px 16px;
-    margin-bottom: 12px;
-    padding: 8px 12px;
-    border-radius: 999px;
-    background: rgba(7, 14, 24, 0.45);
-    color: #fff4d5;
-    font-size: 0.8rem;
-    letter-spacing: 0.04em;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.68rem;
+    color: #5f7182;
+    word-break: break-all;
   }
 
-  .wallet-bar {
+  .card-row {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 10px 24px;
-    margin-bottom: 16px;
-    padding: 10px 18px;
-    border-radius: 999px;
-    background: rgba(7, 14, 24, 0.65);
-    color: #ffd77e;
-    font-size: 1rem;
-    font-weight: 600;
-    letter-spacing: 0.03em;
+    align-items: center;
+    gap: 24px;
+    margin: 0;
+  }
+
+  /* On narrow screens stack the sidebar above the game instead of beside it. */
+  @media (max-width: 720px) {
+    .game-layout {
+      flex-direction: column;
+      height: auto;
+      min-height: 100vh;
+      overflow: visible;
+    }
+    .sidebar {
+      flex: 0 0 auto;
+      width: 100%;
+      border-right: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .wallet-info { margin-top: 12px; }
+    .game-main { height: auto; }
   }
 
   /* Choice squares */
@@ -616,7 +714,7 @@
     flex-wrap: wrap;
     justify-content: center;
     gap: 22px;
-    margin: 6px 0 10px;
+    margin: 0;
   }
 
   .choice-column {
@@ -753,77 +851,21 @@
     color: #e74c3c;
   }
 
-  /* Start panel styles */
-  .start-panel {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    margin-top: 6px;
-  }
-
-  .start-stack {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .wager-field {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 6px 10px;
-  }
-
-  .wager-field label {
-    flex-basis: 100%;
-    text-align: center;
-    font-size: 0.85rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: #fff6df;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
-  }
-
   .bet-input {
-    font-size: 20px;
-    padding: 10px 14px;
-    border-radius: 999px;
-    border: 2px solid rgba(255, 255, 255, 0.55);
-    width: 180px;
-    text-align: center;
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 16px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
     color: #fff;
-    background: rgba(5, 12, 18, 0.38);
-    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255,255,255,0.14);
+    background: rgba(5, 12, 18, 0.6);
+    box-sizing: border-box;
   }
 
   .bet-input::placeholder {
-    color: rgba(255, 255, 255, 0.55);
+    color: rgba(255, 255, 255, 0.45);
   }
-
-  .start-button {
-    padding: 12px 30px;
-    font-size: 20px;
-    font-weight: 800;
-    background: linear-gradient(180deg, #ff6464, #c72c41);
-    color: #fff;
-    border-radius: 14px;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 8px 18px rgba(199, 44, 65, 0.38);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-
-  .start-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  .start-button:hover { transform: translateY(-2px) scale(1.03); }
-
-  .start-button:active { transform: translateY(0) scale(0.98); }
 
   .result-screen {
     width: min(960px, 100%);
@@ -881,28 +923,13 @@
     letter-spacing: 0.04em;
   }
 
-  .result-actions {
-    display: flex;
-    justify-content: center;
-  }
-
-  .secondary-button {
-    padding: 12px 24px;
-    border-radius: 999px;
-    background: rgba(7, 14, 24, 0.58);
-    color: #fff4d5;
-    border: 1px solid rgba(255, 244, 213, 0.28);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.22);
-    cursor: pointer;
-  }
-
   .game-stage {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
-    min-height: 60px;
+    min-height: 40px;
   }
 
   .game-stage p {
@@ -912,15 +939,7 @@
     font-weight: 600;
     letter-spacing: 0.04em;
     text-shadow: 0 3px 12px rgba(0, 0, 0, 0.6);
-    margin: 0 0 16px 0;
-  }
-
-  .button-group {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 20px;
+    margin: 0;
   }
 
   .card-block {
