@@ -25,10 +25,13 @@ chosen so that
 
 Losses here are exactly the stage-1 (colour) misses, which bust to 0 because
 STAGE_RETENTION[0] == 0 - roughly half of all rounds, so there is always
-plenty of zero-weight to tune with. Because TARGET_RTP (~0.94) is far below
-any mode's win-conditional mean (~2x), w0 is always comfortably positive, i.e.
-we only ever *add* losing weight to pull RTP down to the common line - never
-need to fabricate wins.
+plenty of zero-weight to tune with. w0 comes out relative to K: a mode whose
+raw RTP is ABOVE target gets w0 > K (up-weight losses to pull RTP down, e.g.
+the "equal" jackpot modes), and a mode BELOW target gets w0 < K (down-weight
+losses to lift RTP up, e.g. the structurally-low "inside" modes). w0 stays
+positive for every mode because TARGET_RTP (~0.94) is well under each mode's
+win-conditional mean (~2x), so no mode ever needs losses removed entirely -
+we never have to fabricate wins.
 
 This replaces the pipeline's default behaviour of copying the raw weight-1
 lookup straight into the published _0 file (src/write_data/write_data.py:251,

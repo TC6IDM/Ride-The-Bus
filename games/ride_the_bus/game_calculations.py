@@ -78,11 +78,18 @@ class GameCalculations(Executables):
 
     Instead, partial_multiplier is solved so that, for ANY probability p,
     the expected multiplicative change to the running multiplier is a fixed
-    constant `decay` - a martingale property. Over 4 stages this drives
-    E[final win] to decay**4 == config.target_rtp EXACTLY, independent of
-    each mode's specific per-stage odds - required for Stake's Cross-Mode
-    RTP Consistency check (all 64 modes within 0.5% of each other), which a
-    literal-fair-odds design structurally cannot satisfy.
+    constant `decay` - a martingale property. This pulls every mode's RAW
+    RTP toward roughly decay**4 == config.target_rtp regardless of its own
+    per-stage odds, so the modes start out clustered instead of spread from
+    12% to 100%+ as a literal-fair-odds design does. It is only approximate
+    (a bust applies decay**remaining analytically for the unplayed stages,
+    and an impossible guess - p<=0, chiefly "inside" on rank-adjacent
+    references - pays 0 and so escapes the martingale, dragging those modes
+    low). The EXACT common RTP and Stake's Cross-Mode RTP Consistency check
+    (all 64 modes within 0.5%) are delivered afterwards by reweight_luts.py,
+    which reweights each mode's lookup table onto config.rtp precisely; the
+    martingale's job is just to get close enough that that reweight stays a
+    gentle nudge rather than a distortion.
     """
 
     # Fraction of the banked multiplier kept on a miss, per stage (color,
@@ -104,9 +111,9 @@ class GameCalculations(Executables):
             p*m + (1-p)*retention == decay
         for every possible p, i.e. m = (decay - (1-p)*retention) / p.
         0 if the guess is impossible this round (probability <= 0) - the
-        "correct" branch can never fire then, so this value is never
-        actually applied; only the retention branch fires (see
-        gamestate.run_spin's dead-zone handling for "inside").
+        "correct" branch can never fire then, so this multiplier is never
+        actually applied; the round just busts at this stage and banks the
+        retention fraction like any other miss (gamestate.run_spin).
         """
         if probability <= 0:
             return 0.0
