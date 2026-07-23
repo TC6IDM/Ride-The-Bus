@@ -27,7 +27,22 @@
   let { roundSeed = fallbackRoundSeed }: Props = $props();
 
   const IS_PROD = Boolean((import.meta as any).env?.PROD);
-  const HOUSE_EDGE = 0.02;
+
+  // Payout model mirrors math-sdk games/ride_the_bus/game_calculations.py +
+  // gamestate.py so a local-fallback round pays exactly what the real book
+  // would for the same cards. A miss no longer zeroes the round: it banks
+  // STAGE_RETENTION[stage] of what was earned so far (partial credit). Each
+  // correct-guess multiplier is solved so the expected per-stage change is a
+  // fixed constant DECAY for any probability (see partialMultiplier), so the
+  // per-mode raw RTP tends to the same target regardless of the mode's odds.
+  // NOTE: production then reweights each mode's book frequencies to pin RTP
+  // to a flat 0.94 (reweight_luts.py). The local deck is drawn uniformly and
+  // is NOT reweighted, so its long-run RTP differs from prod's (most for the
+  // structurally-hard "inside" modes) - but any single hand pays identically,
+  // which is what matters for local testing.
+  const TARGET_RTP = 0.99;
+  const DECAY = Math.pow(TARGET_RTP, 0.25);
+  const STAGE_RETENTION = [0, 0.3, 0.3, 0.3];
 
   // Local dev only: there's no real RGS session to report a balance, so
   // Set Bet always clamps to 0 without this. On the real site, Authenticate
@@ -47,6 +62,10 @@
   let revealEvents = $state<RevealEvent[]>([]);
   let revealedCards = $state<(Card | null)[]>([null, null, null, null]);
   let bustedIndex = $state<number | null>(null);
+  // Set from the server's authoritative finalWin event on engine rounds so
+  // the displayed win is exactly what the RGS credited (not a local recompute
+  // that could drift by a floating-point hair). null => compute locally.
+  let engineFinalMultiplier = $state<number | null>(null);
 
   let initialBet = $state(0);
   let betInput = $state('');
@@ -97,20 +116,24 @@
   }
 
   async function playRevealSequence() {
+    // Reveal one card at a time, stopping at the first miss - the round ends
+    // where the player "gets off the bus". Unlike the old all-or-nothing
+    // flow, a miss past stage 1 still banks partial winnings, so a bust is
+    // no longer automatically a loss.
     for (let i = 0; i < revealEvents.length; i++) {
       await wait(650);
       revealedCards[i] = revealEvents[i].card;
       if (!revealEvents[i].correct) {
         bustedIndex = i;
         await wait(900);
-        revealedCards = revealEvents.map((event) => event.card);
-        gameState = 'lost';
-        return;
+        break;
       }
     }
 
     await wait(300);
-    const multiplier = Math.floor(revealEvents.reduce((acc, event) => acc * event.payout, 1) * 10) / 10;
+    // Prefer the server's authoritative payout on engine rounds; fall back to
+    // the local formula (identical maths) when there's no RGS session.
+    const multiplier = engineFinalMultiplier ?? computeFinalMultiplier(revealEvents);
     wonAmount = multiplier * initialBet;
     // Local-fallback has no server to credit it - the engine path's balance
     // was already settled by the /wallet/play response in
@@ -118,7 +141,7 @@
     if (!isEngineRound()) {
       stateBet.balanceAmount += wonAmount;
     }
-    gameState = 'won';
+    gameState = wonAmount > 0 ? 'won' : 'lost';
   }
 
   async function startGameEngineFlow(roundSeedData: { seed: string; source: 'engine-auth' | 'engine-replay' }) {
@@ -154,6 +177,13 @@
         correct: Boolean(event.correct),
         payout: event.payout,
       }));
+
+      // The book's finalWin event carries the authoritative payout the RGS
+      // settled (amount is the multiplier x100 - see math-sdk
+      // src/events/events.py:final_win_event). Use it verbatim so the display
+      // can't disagree with the credited balance.
+      const finalWin = events.find((event: any) => event.type === 'finalWin') as any;
+      engineFinalMultiplier = finalWin ? Number(finalWin.amount) / 100 : null;
 
       lastRoundId = `${data?.round?.roundID ?? ''}`;
       roundSource = roundSeedData.source;
@@ -199,6 +229,7 @@
     roundSource = roundSeedData.source;
     roundDeckPreview = round.deck.slice(0, 4).map((card) => `${card.rank}${card.suit}`).join(' ');
     revealEvents = buildLocalRevealEvents(round.deck);
+    engineFinalMultiplier = null; // local round computes its own payout
     revealedCards = [null, null, null, null];
     bustedIndex = null;
     wonAmount = 0;
@@ -217,21 +248,54 @@
     suitChoice = null;
   }
 
-  // Mirrors games/ride_the_bus/game_calculations.py:fair_multiplier - must
-  // floor (never round up/nearest) to the same 0.1x steps the real math-sdk
-  // book uses, so local-fallback testing matches production odds exactly.
-  function fairMultiplier(probability: number): number {
+  // Mirrors games/ride_the_bus/game_calculations.py:partial_multiplier - the
+  // RAW (unquantized) win multiplier for a correct guess, solved so that for
+  // ANY probability p the expected change to the running multiplier is a
+  // fixed constant DECAY: p*m + (1-p)*retention == DECAY. Returns 0 when the
+  // guess is impossible this round (p<=0), which also flags the dead zone to
+  // computeFinalMultiplier below. NOT floored here - only the final compound
+  // is quantized, exactly like the real book.
+  function partialMultiplier(probability: number, stageIndex: number): number {
     if (probability <= 0) return 0;
-    const raw = (1 - HOUSE_EDGE) / probability;
+    const retention = STAGE_RETENTION[stageIndex];
+    return (DECAY - (1 - probability) * retention) / probability;
+  }
+
+  // Mirrors games/ride_the_bus/game_calculations.py:quantize_multiplier -
+  // floor the final multiplier to the 0.1x steps the RGS lookup uses.
+  function quantizeMultiplier(raw: number): number {
+    if (raw <= 0) return 0;
     const quantized = Math.floor(raw * 10) / 10;
     return quantized > 0 ? quantized : 0.1;
+  }
+
+  // Mirrors games/ride_the_bus/gamestate.py:run_spin exactly - compound the
+  // running multiplier over the streak of correct guesses; on the first miss
+  // bank STAGE_RETENTION[stage] of it, then apply DECAY for each unplayed
+  // stage (so the martingale expectation holds for the stages that never got
+  // drawn), and quantize once. A stage-1 (colour) miss banks
+  // STAGE_RETENTION[0] === 0, i.e. a total loss.
+  function computeFinalMultiplier(events: RevealEvent[]): number {
+    let running = 1;
+    let busted = false;
+    for (let stage = 0; stage < events.length; stage += 1) {
+      const event = events[stage];
+      if (!busted && event.correct) {
+        running *= event.payout;
+      } else if (!busted) {
+        running *= STAGE_RETENTION[stage];
+        running *= DECAY ** (3 - stage);
+        busted = true;
+      }
+    }
+    return quantizeMultiplier(running);
   }
 
   function localColorPayouts(remaining: Card[]) {
     const total = remaining.length;
     const red = remaining.filter((card) => card.suit === '♥' || card.suit === '♦').length;
     const black = total - red;
-    return { red: fairMultiplier(red / total), black: fairMultiplier(black / total) };
+    return { red: partialMultiplier(red / total, 0), black: partialMultiplier(black / total, 0) };
   }
 
   function localHigherLowerPayouts(remaining: Card[], ref: number) {
@@ -240,9 +304,9 @@
     const lower = remaining.filter((card) => rankValue[card.rank] < ref).length;
     const equal = total - higher - lower;
     return {
-      higher: fairMultiplier(higher / total),
-      lower: fairMultiplier(lower / total),
-      equal: fairMultiplier(equal / total),
+      higher: partialMultiplier(higher / total, 1),
+      lower: partialMultiplier(lower / total, 1),
+      equal: partialMultiplier(equal / total, 1),
     };
   }
 
@@ -254,9 +318,9 @@
     const outside = remaining.filter((card) => rankValue[card.rank] < minVal || rankValue[card.rank] > maxVal).length;
     const equal = total - inside - outside;
     return {
-      inside: fairMultiplier(inside / total),
-      outside: fairMultiplier(outside / total),
-      equal: fairMultiplier(equal / total),
+      inside: partialMultiplier(inside / total, 2),
+      outside: partialMultiplier(outside / total, 2),
+      equal: partialMultiplier(equal / total, 2),
     };
   }
 
@@ -270,10 +334,10 @@
       else counts.spade += 1;
     }
     return {
-      heart: fairMultiplier(counts.heart / total),
-      diamond: fairMultiplier(counts.diamond / total),
-      club: fairMultiplier(counts.club / total),
-      spade: fairMultiplier(counts.spade / total),
+      heart: partialMultiplier(counts.heart / total, 3),
+      diamond: partialMultiplier(counts.diamond / total, 3),
+      club: partialMultiplier(counts.club / total, 3),
+      spade: partialMultiplier(counts.spade / total, 3),
     };
   }
 
@@ -445,7 +509,7 @@
       {/each}
     </div>
     <div class="game-stage">
-      <p>You lost! The cards are revealed above.</p>
+      <p>You busted on the first card and lost your bet.</p>
       <div class="button-group">
         <button class="secondary-button" onclick={retryGame}>Retry</button>
       </div>
@@ -455,9 +519,14 @@
   {#if gameState === 'won'}
     <div class="result-screen">
       <div class="result-hero">
-        <p class="result-kicker">Game Won</p>
-        <h2>Congratulations! Full Game Win</h2>
-        <p class="result-copy">You correctly guessed all four cards!</p>
+        <p class="result-kicker">{bustedIndex === null ? 'Full Game Win' : 'You Rode The Bus'}</p>
+        {#if bustedIndex === null}
+          <h2>Congratulations! Full Game Win</h2>
+          <p class="result-copy">You correctly guessed all four cards!</p>
+        {:else}
+          <h2>Banked before the bust!</h2>
+          <p class="result-copy">You missed on card {bustedIndex + 1}, but kept the winnings earned up to there.</p>
+        {/if}
         <div class="result-total">x{initialBet > 0 ? (wonAmount / initialBet).toFixed(2) : '0.00'} — ${wonAmount.toFixed(2)}</div>
       </div>
 

@@ -2,17 +2,18 @@ export default {
 	providerName: 'sample_provider',
 	gameName: 'Ride The Bus',
 	gameID: 'ride_the_bus',
-	rtp: 0.98,
+	// Single published RTP every bet mode is reweighted onto - see math-sdk
+	// games/ride_the_bus/game_config.py:rtp and reweight_luts.py.
+	rtp: 0.94,
 	numReels: 5,
 	numRows: [3, 3, 3, 3, 3],
-	houseEdge: 0.02,
 	betModes: {
 		base: {
 			cost: 1.0,
 			feature: true,
 			buyBonus: false,
-			rtp: 0.98,
-			max_win: 500,
+			rtp: 0.94,
+			max_win: 5000,
 		},
 	},
 	// NOTE: symbols/paddingReels below are unused leftovers from the slot
