@@ -23,10 +23,20 @@ SUIT_NAME_TO_SYMBOL = {"heart": "♥", "diamond": "♦", "club": "♣", "spade":
 
 
 def all_mode_combinations():
-    """Every (color, higher_lower, inside_outside, suit) choice combination."""
+    """
+    Every (color, higher_lower, inside_outside, suit) choice combination that
+    can actually be won. Excludes higher_lower="equal" + inside_outside="inside":
+    if stage 2 ties the reference card's rank exactly, the two reference
+    values for stage 3 are identical, so there's no rank strictly "between"
+    them - "inside" is mathematically impossible, not just rare. A bet mode
+    with a 100% loss rate has zero variance, which Stake's RGS rejects
+    outright ("failed to obtain distribution statistics from lookup table").
+    """
     for color in COLOR_CHOICES:
         for higher_lower in HIGHER_LOWER_CHOICES:
             for inside_outside in INSIDE_OUTSIDE_CHOICES:
+                if higher_lower == "equal" and inside_outside == "inside":
+                    continue
                 for suit in SUIT_CHOICES:
                     yield (color, higher_lower, inside_outside, suit)
 
@@ -53,21 +63,68 @@ def build_deck() -> list:
 
 
 class GameCalculations(Executables):
-    """Fair-odds table calculations, shared with the frontend's local formulas."""
+    """
+    Partial-credit-odds table calculations, shared with the frontend's local
+    formulas.
 
-    def fair_multiplier(self, probability: float) -> float:
+    A bust no longer zeroes the round - it keeps STAGE_RETENTION[stage] of
+    whatever was already banked (see gamestate.run_spin). Paying literal
+    per-stage FAIR odds on top of that turned out to massively overpay (a
+    correct stage-1 guess alone contributes ~1x in expectation even when
+    every later stage is guaranteed to fail, and that compounds - measured
+    RTP hit 230%-360% across modes when tried). It also can't be uniform
+    across modes, since the overpay scales with each mode's own stage-2/3
+    probabilities, which vary a lot (equal/inside picks are rare).
+
+    Instead, partial_multiplier is solved so that, for ANY probability p,
+    the expected multiplicative change to the running multiplier is a fixed
+    constant `decay` - a martingale property. Over 4 stages this drives
+    E[final win] to decay**4 == config.target_rtp EXACTLY, independent of
+    each mode's specific per-stage odds - required for Stake's Cross-Mode
+    RTP Consistency check (all 64 modes within 0.5% of each other), which a
+    literal-fair-odds design structurally cannot satisfy.
+    """
+
+    # Fraction of the banked multiplier kept on a miss, per stage (color,
+    # higher/lower, inside/outside, suit). Stage 0 keeps 0 - failing the
+    # very first guess is still a full loss, matching the classic "you can
+    # bust immediately" feel; stage-1 probability is always exactly 0.5
+    # (first card, full untouched deck) so this branch is already identical
+    # across every mode, costing nothing on cross-mode consistency.
+    STAGE_RETENTION = (0.0, 0.3, 0.3, 0.3)
+
+    def target_rtp_decay(self) -> float:
+        """Per-stage decay constant such that decay**4 == config.target_rtp."""
+        return self.config.target_rtp**0.25
+
+    def partial_multiplier(self, probability: float, stage_index: int) -> float:
         """
-        (1 - house_edge) / true probability, quantized DOWN to the nearest
-        0.1x. Stake's RGS only accepts non-zero payout multipliers in 0.1x
-        increments (payoutMultiplier, stored as integer cents x100, must be
-        a multiple of 10) - see utils/rgs_verification.py:verify_lookup_format.
-        Must floor (never round up/nearest): e.g. a fair 50/50 payout is
-        1.96x - rounding to nearest would give 2.0x, wiping out the house
-        edge entirely. Floor keeps the edge intact. 0 if impossible.
+        Win-multiplier for stage `stage_index` at true win-probability
+        `probability`. Derived from requiring
+            p*m + (1-p)*retention == decay
+        for every possible p, i.e. m = (decay - (1-p)*retention) / p.
+        0 if the guess is impossible this round (probability <= 0) - the
+        "correct" branch can never fire then, so this value is never
+        actually applied; only the retention branch fires (see
+        gamestate.run_spin's dead-zone handling for "inside").
         """
         if probability <= 0:
             return 0.0
-        raw = (1 - self.config.house_edge) / probability
+        retention = self.STAGE_RETENTION[stage_index]
+        decay = self.target_rtp_decay()
+        return (decay - (1 - probability) * retention) / probability
+
+    def quantize_multiplier(self, raw: float) -> float:
+        """
+        Floor a final multiplier DOWN to the nearest 0.1x - Stake's RGS only
+        accepts non-zero payout multipliers in 0.1x increments
+        (payoutMultiplier, stored as integer cents x100, must be a multiple
+        of 10). Must floor (never round up/nearest): e.g. a fair 50/50
+        single-stage payout is 1.96x - rounding to nearest would give 2.0x,
+        wiping out the house edge entirely. Floor keeps the edge intact.
+        """
+        if raw <= 0:
+            return 0.0
         quantized = math.floor(raw * 10) / 10
         return quantized if quantized > 0 else 0.1
 
@@ -76,8 +133,8 @@ class GameCalculations(Executables):
         red = sum(1 for _, suit in remaining if suit in RED_SUITS)
         black = total - red
         return {
-            "red": self.fair_multiplier(red / total),
-            "black": self.fair_multiplier(black / total),
+            "red": self.partial_multiplier(red / total, 0),
+            "black": self.partial_multiplier(black / total, 0),
         }
 
     def higher_lower_payouts(self, remaining: list, ref_value: int) -> dict:
@@ -86,9 +143,9 @@ class GameCalculations(Executables):
         lower = sum(1 for rank, _ in remaining if rank_value(rank) < ref_value)
         equal = total - higher - lower
         return {
-            "higher": self.fair_multiplier(higher / total),
-            "lower": self.fair_multiplier(lower / total),
-            "equal": self.fair_multiplier(equal / total),
+            "higher": self.partial_multiplier(higher / total, 1),
+            "lower": self.partial_multiplier(lower / total, 1),
+            "equal": self.partial_multiplier(equal / total, 1),
         }
 
     def inside_outside_payouts(self, remaining: list, val_a: int, val_b: int) -> dict:
@@ -100,9 +157,9 @@ class GameCalculations(Executables):
         )
         equal = total - inside - outside
         return {
-            "inside": self.fair_multiplier(inside / total),
-            "outside": self.fair_multiplier(outside / total),
-            "equal": self.fair_multiplier(equal / total),
+            "inside": self.partial_multiplier(inside / total, 2),
+            "outside": self.partial_multiplier(outside / total, 2),
+            "equal": self.partial_multiplier(equal / total, 2),
         }
 
     def suit_payouts(self, remaining: list) -> dict:
@@ -111,8 +168,8 @@ class GameCalculations(Executables):
         for _, suit in remaining:
             counts[suit] += 1
         return {
-            "heart": self.fair_multiplier(counts["♥"] / total),
-            "diamond": self.fair_multiplier(counts["♦"] / total),
-            "club": self.fair_multiplier(counts["♣"] / total),
-            "spade": self.fair_multiplier(counts["♠"] / total),
+            "heart": self.partial_multiplier(counts["♥"] / total, 3),
+            "diamond": self.partial_multiplier(counts["♦"] / total, 3),
+            "club": self.partial_multiplier(counts["♣"] / total, 3),
+            "spade": self.partial_multiplier(counts["♠"] / total, 3),
         }

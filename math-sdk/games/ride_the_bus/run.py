@@ -1,8 +1,11 @@
 """Main file for generating results for Ride The Bus."""
 
+import os
+
 from gamestate import GameState
 from game_config import GameConfig
 from game_calculations import all_mode_combinations, mode_name
+from reweight_luts import reweight_all
 from src.state.run_sims import create_books
 from src.write_data.write_configs import generate_configs
 
@@ -14,10 +17,19 @@ if __name__ == "__main__":
     profiling = False
 
     # One entry per bet mode (one per full 4-stage choice combination - see
-    # game_config.py). The rarest combos (multiple "equal" picks) have a true
-    # win probability well under 0.1%, so need a large sample to reliably
-    # land at least a few wins (avoids a zero-variance crash in stats calc).
-    num_sim_args = {mode_name(*combo): int(5e4) for combo in all_mode_combinations()}
+    # game_config.py). Combos with more "equal" picks have a much lower true
+    # win probability (e.g. ~1-in-3600 for two equals), so a flat sim count
+    # per mode either wastes time on the common combos or - worse - isn't
+    # enough to land more than a handful of wins for the rare ones, making
+    # their reported RTP unreliably noisy rather than actually representative.
+    # Scale sims up by how many "equal" choices the combo requires.
+    SIMS_BY_EQUAL_COUNT = {0: int(8e4), 1: int(2e5), 2: int(8e5)}
+
+    def _sim_count(combo):
+        equal_count = sum(1 for choice in combo[1:3] if choice == "equal")
+        return SIMS_BY_EQUAL_COUNT[equal_count]
+
+    num_sim_args = {mode_name(*combo): _sim_count(combo) for combo in all_mode_combinations()}
 
     run_conditions = {"run_sims": True}
 
@@ -35,3 +47,17 @@ if __name__ == "__main__":
             profiling,
         )
     generate_configs(gamestate)
+
+    # Reweight every mode's published _0 lookup table onto the exact common
+    # RTP (config.rtp) - the step that makes the Cross-Mode RTP Consistency
+    # check pass. Must run AFTER generate_configs: the pipeline only writes a
+    # raw weight-1 _0 file when one is absent (write_data.py:251), so this
+    # overwrites it with the properly reweighted table.
+    here = os.path.dirname(os.path.abspath(__file__))
+    stats = reweight_all(here, config.rtp)
+    realized = [s["realized_rtp"] for s in stats]
+    print(
+        f"Reweighted {len(stats)} modes to {config.rtp:.4f}: "
+        f"realized RTP {min(realized)*100:.4f}%-{max(realized)*100:.4f}% "
+        f"(spread {(max(realized)-min(realized))*100:.4f}%)"
+    )

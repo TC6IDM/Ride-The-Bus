@@ -24,9 +24,21 @@ class GameConfig(Config):
         self.game_id = "ride_the_bus"
         self.provider_number = 0
         self.working_name = "Ride The Bus"
-        self.wincap = 500
+        # The rarest combos (multiple "equal" picks) naturally compound to
+        # ~3000-3400x on a win (verified empirically) - a low wincap was
+        # silently capping ~85% of their value away, crushing their RTP
+        # far below target regardless of house_edge. 5000 gives headroom
+        # above the observed max with margin for suit-count variance.
+        self.wincap = 5000
         self.win_type = "other"
-        self.rtp = 0.98
+        # Common RTP every bet mode is reweighted to land on exactly (see
+        # reweight_luts.py). This is the single published/declared RTP for
+        # the game. 0.94 sits centrally inside Stake's 90%-96.70% band, with
+        # margin on both sides for the tiny integer-weight rounding in the
+        # reweighter. Because every mode is pinned to this same value, the
+        # Cross-Mode RTP Consistency check (all modes within +/-0.5%) passes
+        # with a spread of ~0%.
+        self.rtp = 0.94
         self.construct_paths()
 
         # Not a reel game - no board/reels involved.
@@ -39,7 +51,17 @@ class GameConfig(Config):
         self.freespin_triggers = {self.basegame_type: {}, self.freegame_type: {}}
         self.anticipation_triggers = {self.basegame_type: 0, self.freegame_type: 0}
 
-        self.house_edge = 0.02
+        # Target used by game_calculations.partial_multiplier's martingale
+        # formula: decay = target_rtp ** 0.25, chosen so E[final win] ==
+        # target_rtp for EVERY bet mode regardless of its own per-stage
+        # probabilities (see that function's docstring). Kept slightly ABOVE
+        # the published rtp (0.94) so every mode's raw sampled RTP lands a
+        # touch high, leaving the reweighter (reweight_luts.py) headroom to
+        # pull each mode DOWN onto the exact common line by adding losing
+        # weight - the one direction that's always available. The dead-zone
+        # push in gamestate.run_spin is what lets even "inside" modes clear
+        # this, so they reweight cleanly into band like every other mode.
+        self.target_rtp = 0.99
 
         # Stake Engine requires every bet to be a single, independent,
         # stateless outcome (no continuation, no early cashout - see Key
