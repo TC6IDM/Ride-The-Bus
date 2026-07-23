@@ -1,6 +1,5 @@
 """Handles the state and output for a single simulation round of Ride The Bus."""
 
-import math
 import random
 
 from game_override import GameStateOverride
@@ -37,8 +36,22 @@ class GameState(GameStateOverride):
                 self.suit_payouts(deck[3:]),
             ]
 
+            # Partial credit: a miss doesn't zero the round - it keeps
+            # STAGE_RETENTION[stage] of whatever was already banked (see
+            # game_calculations.GameCalculations for the full derivation).
+            # Reveals still stop at the first miss (busted), matching the
+            # UI's bust animation, but the stages that never get played
+            # would each have contributed an expected `decay` factor to the
+            # running multiplier - skipping them silently would under-credit
+            # the round relative to what the martingale formula assumes, so
+            # their expected contribution is applied analytically instead of
+            # simulated (decay**remaining_stages). This is only valid
+            # because decay is a FIXED constant, not derived from this
+            # round's own probabilities - substituting it for stages that
+            # weren't actually drawn preserves the exact same expectation.
             running_multiplier = 1.0
             busted = False
+            decay = self.target_rtp_decay()
             for stage_index in range(4):
                 rank, suit = drawn[stage_index]
                 payouts = stage_payouts[stage_index]
@@ -50,6 +63,8 @@ class GameState(GameStateOverride):
                 if not busted and correct:
                     running_multiplier *= payouts[choice]
                 elif not busted:
+                    running_multiplier *= self.STAGE_RETENTION[stage_index]
+                    running_multiplier *= decay ** (3 - stage_index)
                     busted = True
 
                 event = {
@@ -63,11 +78,11 @@ class GameState(GameStateOverride):
                 }
                 self.book.add_event(event)
 
-            # Quantize down to the nearest 0.1x (never up - see
-            # fair_multiplier): the product of several 0.1x-quantized
-            # per-stage payouts isn't itself guaranteed to land on a 0.1x
-            # step, but the RGS requires the book's payoutMultiplier to be one.
-            win_amount = math.floor(running_multiplier * 10) / 10 if not busted else 0.0
+            # Quantize the FINAL compounded multiplier only (once) - see
+            # game_calculations.quantize_multiplier. No special-casing for a
+            # total loss needed: a stage-1 miss multiplies by
+            # STAGE_RETENTION[0] == 0.0, which already zeroes it out.
+            win_amount = self.quantize_multiplier(running_multiplier)
             self.win_manager.update_spinwin(win_amount)
             self.win_manager.update_gametype_wins(self.gametype)
 
