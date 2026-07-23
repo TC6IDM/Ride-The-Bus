@@ -51,16 +51,17 @@ class GameConfig(Config):
         self.freespin_triggers = {self.basegame_type: {}, self.freegame_type: {}}
         self.anticipation_triggers = {self.basegame_type: 0, self.freegame_type: 0}
 
-        # Target used by game_calculations.partial_multiplier's martingale
-        # formula: decay = target_rtp ** 0.25, chosen so E[final win] ==
-        # target_rtp for EVERY bet mode regardless of its own per-stage
-        # probabilities (see that function's docstring). Kept slightly ABOVE
-        # the published rtp (0.94) so every mode's raw sampled RTP lands a
-        # touch high, leaving the reweighter (reweight_luts.py) headroom to
-        # pull each mode DOWN onto the exact common line by adding losing
-        # weight - the one direction that's always available. The dead-zone
-        # push in gamestate.run_spin is what lets even "inside" modes clear
-        # this, so they reweight cleanly into band like every other mode.
+        # Target for game_calculations.partial_multiplier's martingale
+        # formula: decay = target_rtp ** 0.25. This clusters every mode's raw
+        # RTP near target_rtp (see that function's docstring) so the modes
+        # start close together instead of spread 12%-100%+. It is only
+        # approximate - "inside" modes in particular run low, because a
+        # rank-adjacent reference pair makes the inside guess impossible and
+        # that stage pays 0. The exact common RTP is set afterwards by
+        # reweight_luts.py, which reweights each mode's lookup table onto
+        # self.rtp regardless of whether its raw RTP started above or below.
+        # Keeping this a hair below 1.0 keeps every mode's raw RTP modest so
+        # the reweight is a small adjustment rather than a large distortion.
         self.target_rtp = 0.99
 
         # Stake Engine requires every bet to be a single, independent,
