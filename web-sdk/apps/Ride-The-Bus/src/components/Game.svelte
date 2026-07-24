@@ -2,7 +2,7 @@
   import { base } from '$app/paths';
   import './app.css';
   import { createRoundContract, rankValue, type Card } from '../game/roundContract';
-  import { stateBet, stateBetDerived, stateUrlDerived, stateMeta } from 'state-shared';
+  import { stateBet, stateBetDerived, stateUrlDerived, stateMeta, stateConfig } from 'state-shared';
   import { requestBet, requestEndRound } from 'rgs-requests';
   import { numberToCurrencyString } from 'utils-shared/amount';
   import { API_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
@@ -71,6 +71,18 @@
     }
   });
 
+  // Once the RGS's allowed bet levels arrive (at authenticate), make sure the
+  // current bet amount is actually one of them - otherwise the very first
+  // /wallet/play is rejected with ERR_VAL before the player ever touches the
+  // Set button. Gated on a real session so local dev keeps free amounts.
+  $effect(() => {
+    if (!stateUrlDerived.sessionID()) return;
+    const levels = stateConfig.betAmountOptions;
+    if (levels && levels.length && !levels.includes(stateBet.betAmount)) {
+      stateBet.betAmount = snapToBetLevel(stateBet.betAmount);
+    }
+  });
+
   let gameState = $state<State>('start');
   let isProcessing = $state(false);
 
@@ -131,13 +143,32 @@
     return { seed: fallbackRoundSeed, source: 'local-fallback' as const };
   };
 
+  // Snap a raw amount to the nearest RGS-allowed bet level. The RGS rejects
+  // /wallet/play with ERR_VAL if the amount isn't one of the levels it
+  // returned at authenticate (stateConfig.betAmountOptions). Our free-text
+  // box would otherwise let the player send an unlisted amount - which is
+  // exactly what started failing once the Set-bet crash was fixed and typed
+  // amounts actually took effect. When no levels are known (local dev) the
+  // value passes through unchanged.
+  function snapToBetLevel(value: number): number {
+    // Only constrain to bet levels when there's a real RGS session enforcing
+    // them. In local dev, betAmountOptions holds placeholder defaults, so free
+    // amounts should pass through untouched.
+    const levels = stateConfig.betAmountOptions;
+    if (!stateUrlDerived.sessionID() || !levels || levels.length === 0) return value;
+    return levels.reduce(
+      (best, level) => (Math.abs(level - value) < Math.abs(best - value) ? level : best),
+      levels[0],
+    );
+  }
+
   function setBet() {
     const value = Number(betInput);
     if (isNaN(value) || value <= 0) {
       alert('Invalid bet. Please enter a positive number.');
       return;
     }
-    stateBetDerived.setBetAmount(value);
+    stateBetDerived.setBetAmount(snapToBetLevel(value));
     betInput = stateBet.betAmount.toString();
   }
 
@@ -209,6 +240,17 @@
       // Keep the shared bet state's active mode in sync with what we actually
       // play, so any framework helper that reads activeBetModeKey agrees.
       stateBet.activeBetModeKey = mode;
+      // Diagnostic: log exactly what we send so an RGS ERR_VAL can be traced to
+      // the offending field (mode vs amount vs currency) from the console.
+      console.log('[RideTheBus] /wallet/play request:', {
+        mode,
+        betAmount: stateBet.betAmount,
+        initialBet,
+        amountMicroUnits: initialBet * API_AMOUNT_MULTIPLIER,
+        currency: stateBet.currency,
+        balance: stateBet.balanceAmount,
+        allowedBetLevels: stateConfig.betAmountOptions,
+      });
       const data = await requestBet({
         rgsUrl: stateUrlDerived.rgsUrl(),
         sessionID: stateUrlDerived.sessionID(),
@@ -216,6 +258,7 @@
         mode,
         amount: initialBet,
       });
+      console.log('[RideTheBus] /wallet/play response:', data);
 
       // The RGS returns a failure in the body (status.statusCode !== SUCCESS,
       // and/or an `error` field) rather than throwing; surface the real reason
