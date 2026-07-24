@@ -888,7 +888,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 9px 12px;
+    padding: 6px 12px;
   }
 
   .bet-amount-row {
@@ -1093,10 +1093,10 @@
     .sidebar { padding: 6px 8px; gap: 5px; }
     .sidebar-title { font-size: 0.78rem; padding-bottom: 5px; }
     .control-label { font-size: 0.58rem; }
-    .bet-field { padding: 5px 8px; }
+    .bet-field { padding: 4px 8px; }
     .bet-amount-row { font-size: 14px; }
     .bet-stepper { width: 30px; }
-    .stepper-btn { font-size: 0.6rem; }
+    .stepper-btn { font-size: 0.6rem; padding: 4px 0; }
     .action-button { padding: 6px; font-size: 0.72rem; }
     .profit-display { font-size: 0.8rem; padding: 5px 7px; }
     .wallet-info { gap: 3px; padding-top: 5px; }
@@ -1282,6 +1282,10 @@
   .stepper-btn {
     flex: 1 1 0;
     border: none;
+    /* Override the global `button { padding: 1.5rem }` from app.css, which
+       otherwise makes each arrow button ~59px tall and forces the whole
+       selector (via align-items: stretch) to ~119px. */
+    padding: 9px 0;
     background: rgba(255, 255, 255, 0.07);
     color: #fff;
     font-size: 0.72rem;
