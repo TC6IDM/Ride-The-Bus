@@ -115,7 +115,6 @@
   let wonAmount = $state(0);
   let lastRoundId = $state('');
   let roundSource = $state<'engine-auth' | 'engine-replay' | 'local-fallback' | 'none'>('local-fallback');
-  let roundDeckPreview = $state('');
   let roundSequence = $state(0);
 
   const allChoicesMade = () => Boolean(colorChoice && hlChoice && ioChoice && suitChoice);
@@ -165,14 +164,40 @@
     return Math.round(clamped * 100) / 100;
   }
 
+  // Commit a value as the active bet and reflect it back into the input.
+  function applyBet(value: number) {
+    stateBetDerived.setBetAmount(normalizeBet(value));
+    betInput = stateBet.betAmount.toString();
+  }
+
   function setBet() {
     const value = Number(betInput);
     if (isNaN(value) || value <= 0) {
       alert('Invalid bet. Please enter a positive number.');
       return;
     }
-    stateBetDerived.setBetAmount(normalizeBet(value));
-    betInput = stateBet.betAmount.toString();
+    applyBet(value);
+  }
+
+  // Stake-style +/- stepper: step to the next / previous suggested bet level
+  // (stateConfig.betAmountOptions) relative to whatever is currently shown, so
+  // the increment scales sensibly across the range. Typing any amount still
+  // works - the stepper just gives quick nudges. Falls back to +/-1 when no
+  // levels are known (local dev before authenticate).
+  function stepBet(direction: 1 | -1) {
+    const shown = Number(betInput);
+    const current = !isNaN(shown) && shown > 0 ? shown : stateBet.betAmount;
+    const levels = stateConfig.betAmountOptions;
+    if (levels && levels.length) {
+      const sorted = [...levels].sort((a, b) => a - b);
+      const next =
+        direction > 0
+          ? sorted.find((l) => l > current + 1e-9)
+          : [...sorted].reverse().find((l) => l < current - 1e-9);
+      applyBet(next ?? current);
+    } else {
+      applyBet(Math.max(1, current + direction));
+    }
   }
 
   async function playRevealSequence() {
@@ -370,7 +395,6 @@
     roundSequence += 1;
     lastRoundId = round.roundId;
     roundSource = roundSeedData.source;
-    roundDeckPreview = round.deck.slice(0, 4).map((card) => `${card.rank}${card.suit}`).join(' ');
     revealEvents = buildLocalRevealEvents(round.deck);
     engineFinalMultiplier = null; // local round computes its own payout
     revealedCards = [null, null, null, null];
@@ -545,7 +569,16 @@
     <div class="control-group">
       <span class="control-label">Bet Amount</span>
       <div class="bet-row">
-        <input class="bet-input" type="number" bind:value={betInput} min="1" placeholder="0.00" />
+        <button type="button" class="step-btn" onclick={() => stepBet(-1)} aria-label="Decrease bet">−</button>
+        <input
+          class="bet-input"
+          type="number"
+          bind:value={betInput}
+          min="1"
+          placeholder="0.00"
+          onkeydown={(event) => { if (event.key === 'Enter') setBet(); }}
+        />
+        <button type="button" class="step-btn" onclick={() => stepBet(1)} aria-label="Increase bet">+</button>
         <button class="set-bet-btn" onclick={setBet}>Set</button>
       </div>
     </div>
@@ -774,12 +807,33 @@
 
   .bet-row {
     display: flex;
-    gap: 8px;
+    gap: 6px;
+    align-items: stretch;
   }
+
+  /* Stake-style +/- steppers replacing the native number-input arrows. */
+  .step-btn {
+    flex: 0 0 auto;
+    width: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    user-select: none;
+  }
+  .step-btn:hover { background: rgba(255, 255, 255, 0.16); }
+  .step-btn:active { transform: translateY(1px); }
 
   .set-bet-btn {
     flex: 0 0 auto;
-    padding: 0 16px;
+    padding: 0 14px;
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.18);
     background: rgba(255, 255, 255, 0.08);
@@ -977,6 +1031,7 @@
     .sidebar-title { font-size: 0.78rem; padding-bottom: 5px; }
     .control-label { font-size: 0.58rem; }
     .bet-input { font-size: 12px; padding: 5px 7px; }
+    .step-btn { width: 24px; font-size: 1rem; }
     .set-bet-btn { padding: 0 8px; }
     .action-button { padding: 6px; font-size: 0.72rem; }
     .profit-display { font-size: 0.8rem; padding: 5px 7px; }
@@ -1141,6 +1196,16 @@
     color: #fff;
     background: rgba(5, 12, 18, 0.6);
     box-sizing: border-box;
+    text-align: center;
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  /* Hide the browser's native up/down number spinners - replaced by the
+     custom +/- stepper buttons. */
+  .bet-input::-webkit-outer-spin-button,
+  .bet-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
   }
 
   .bet-input::placeholder {
