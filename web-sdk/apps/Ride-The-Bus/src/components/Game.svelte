@@ -236,6 +236,24 @@
   async function startGameEngineFlow(roundSeedData: { seed: string; source: 'engine-auth' | 'engine-replay' }) {
     isProcessing = true;
     try {
+      // Defensively settle any round still open on this session before starting
+      // a new one. A round left active (a win whose end-round didn't complete,
+      // or one abandoned mid-reveal by a reload) makes the RGS reject the next
+      // /wallet/play with ERR_VAL - which is why that error cleared on a page
+      // refresh (a refresh starts a fresh session). Ending it here lets the
+      // game self-heal on the next Start instead of needing a manual refresh.
+      // Harmless when there's nothing open (the RGS just no-ops / errors, which
+      // we swallow). This game is stateless, so there's never a round we want
+      // to resume rather than close.
+      try {
+        await requestEndRound({
+          rgsUrl: stateUrlDerived.rgsUrl(),
+          sessionID: stateUrlDerived.sessionID(),
+        });
+      } catch {
+        /* no open round to settle - fine */
+      }
+
       const mode = `${colorChoice}_${hlChoice}_${ioChoice}_${suitChoice}`;
       // Keep the shared bet state's active mode in sync with what we actually
       // play, so any framework helper that reads activeBetModeKey agrees.
@@ -679,6 +697,19 @@
      controls live in the always-visible sidebar and the game centres itself
      in the remaining space. */
   .game-layout {
+    /* Sizes are driven by these so the media queries at the bottom can rescale
+       the whole game for small / short / portrait viewports in one place. */
+    --sidebar-w: 300px;
+    --card-w: 102px;
+    --card-h: 152px;
+    --card-radius: 10px;
+    --rank-fs: 17px;
+    --suit-fs: 46px;
+    --choice-size: 92px;
+    --choice-fs: 1.4rem;
+    --quad-fs: 1.6rem;
+    --gap: 24px;
+    --pad: 24px;
     height: 100vh;
     width: 100vw;
     display: flex;
@@ -688,7 +719,7 @@
   }
 
   .sidebar {
-    flex: 0 0 300px;
+    flex: 0 0 var(--sidebar-w);
     height: 100%;
     box-sizing: border-box;
     padding: 18px 18px 16px;
@@ -703,13 +734,14 @@
   .game-main {
     flex: 1 1 auto;
     height: 100%;
+    min-width: 0;
     box-sizing: border-box;
-    padding: 24px;
+    padding: var(--pad);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 24px;
+    gap: var(--gap);
     overflow-y: auto;
   }
 
@@ -815,7 +847,7 @@
     flex-wrap: wrap;
     justify-content: center;
     align-items: flex-end;
-    gap: 24px;
+    gap: var(--gap);
     margin: 0;
   }
 
@@ -868,22 +900,89 @@
     text-shadow: 0 3px 14px rgba(0, 0, 0, 0.65);
   }
 
-  /* On narrow screens stack the sidebar above the game instead of beside it. */
-  @media (max-width: 720px) {
+  /* ---------- Responsive ----------
+     The game has a lot of fixed content (4 cards + 4 choice squares + the
+     control panel), so instead of one breakpoint we rescale the whole thing
+     via the --card/--choice/--sidebar variables per viewport shape:
+       - portrait phones: stack controls on top, shrink cards/choices so all
+         four stay on one row and everything fits without scrolling;
+       - short landscape "popout" windows: keep the sidebar beside the game
+         but shrink both to fit the limited height. */
+
+  /* Portrait (phones): stack the control panel above a compact game area. */
+  @media (orientation: portrait) {
     .game-layout {
       flex-direction: column;
-      height: auto;
-      min-height: 100vh;
-      overflow: visible;
+      --card-w: 60px; --card-h: 88px; --card-radius: 7px;
+      --rank-fs: 11px; --suit-fs: 26px;
+      --choice-size: 62px; --choice-fs: 0.95rem; --quad-fs: 1.05rem;
+      --gap: 12px; --pad: 12px;
     }
     .sidebar {
       flex: 0 0 auto;
+      height: auto;
       width: 100%;
       border-right: none;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 10px 14px;
+      gap: 8px;
     }
-    .wallet-info { margin-top: 12px; }
-    .game-main { height: auto; }
+    .sidebar-title { font-size: 1rem; padding-bottom: 8px; }
+    .action-button { padding: 10px; font-size: 0.95rem; }
+    .wallet-info {
+      margin-top: 8px;
+      padding-top: 8px;
+      flex-direction: row;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .wallet-info div { flex-direction: column; gap: 0; }
+    .round-debug { display: none; }
+    .game-main { min-height: 0; }
+    .choice-label { font-size: 0.6rem; letter-spacing: 0.05em; }
+    .card-mult { font-size: 0.8rem; min-height: 20px; padding: 1px 9px; }
+    .running-win-amount { font-size: 1.5rem; }
+  }
+
+  /* Short landscape (popout windows): keep the row layout, shrink to fit. */
+  @media (orientation: landscape) and (max-height: 520px) {
+    .game-layout {
+      --sidebar-w: 172px;
+      --card-w: 54px; --card-h: 78px; --card-radius: 6px;
+      --rank-fs: 10px; --suit-fs: 24px;
+      --choice-size: 58px; --choice-fs: 0.9rem; --quad-fs: 1rem;
+      --gap: 10px; --pad: 12px;
+    }
+    .sidebar { padding: 10px 12px; gap: 8px; }
+    .sidebar-title { font-size: 0.95rem; padding-bottom: 8px; }
+    .action-button { padding: 9px; font-size: 0.9rem; }
+    .round-debug { display: none; }
+    .card-mult { font-size: 0.8rem; min-height: 20px; }
+    .running-win-amount { font-size: 1.5rem; }
+  }
+
+  /* Tiny popout (e.g. 400x225): minimal control panel + very small game. */
+  @media (orientation: landscape) and (max-height: 320px) {
+    .game-layout {
+      --sidebar-w: 138px;
+      --card-w: 38px; --card-h: 55px; --card-radius: 4px;
+      --rank-fs: 8px; --suit-fs: 17px;
+      --choice-size: 44px; --choice-fs: 0.7rem; --quad-fs: 0.8rem;
+      --gap: 6px; --pad: 8px;
+    }
+    .sidebar { padding: 6px 8px; gap: 5px; }
+    .sidebar-title { font-size: 0.78rem; padding-bottom: 5px; }
+    .control-label { font-size: 0.58rem; }
+    .bet-input { font-size: 12px; padding: 5px 7px; }
+    .set-bet-btn { padding: 0 8px; }
+    .action-button { padding: 6px; font-size: 0.72rem; }
+    .profit-display { font-size: 0.8rem; padding: 5px 7px; }
+    .wallet-info { gap: 3px; padding-top: 5px; }
+    .wallet-info div { font-size: 0.62rem; }
+    .running-win-amount { font-size: 1.1rem; }
+    .running-win-label { font-size: 0.55rem; }
+    .card-mult { font-size: 0.62rem; min-height: 15px; padding: 0 6px; }
+    .equal-btn { width: 13px; height: 13px; font-size: 0.5rem; }
   }
 
   /* Choice squares */
@@ -891,7 +990,7 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 22px;
+    gap: var(--gap);
     margin: 0;
   }
 
@@ -912,8 +1011,8 @@
 
   .choice-square {
     position: relative;
-    width: 92px;
-    height: 92px;
+    width: var(--choice-size);
+    height: var(--choice-size);
     border-radius: 18px;
     overflow: hidden;
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35), 0 0 0 2px rgba(255, 255, 255, 0.25);
@@ -930,7 +1029,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.4rem;
+    font-size: var(--choice-fs);
     font-weight: 800;
     line-height: 1;
     transition: filter 0.15s, transform 0.15s;
@@ -1023,7 +1122,7 @@
   }
   .quad-btn {
     background: #16181c;
-    font-size: 1.6rem;
+    font-size: var(--quad-fs);
   }
   .quad-btn.red-suit {
     color: #e74c3c;
@@ -1121,15 +1220,15 @@
   }
 
   .card-block {
-    width: 102px;
-    height: 152px;
+    width: var(--card-w);
+    height: var(--card-h);
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 18px;
     color: #fff;
     font-weight: bold;
-    border-radius: 10px;
+    border-radius: var(--card-radius);
     box-shadow: 0 4px 8px rgba(0,0,0,0.3), inset 0 1px 3px rgba(255,255,255,0.2);
     letter-spacing: 1px;
     position: relative;
@@ -1197,7 +1296,7 @@
   }
 
   .card-face .rank {
-    font-size: 17px;
+    font-size: var(--rank-fs);
     font-weight: 700;
     line-height: 1;
   }
@@ -1212,7 +1311,7 @@
   }
 
   .card-face .suit.center {
-    font-size: 46px;
+    font-size: var(--suit-fs);
     text-align: center;
     margin: 0 auto;
     line-height: 1;
