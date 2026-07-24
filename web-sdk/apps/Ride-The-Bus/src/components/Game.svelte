@@ -2,7 +2,7 @@
   import { base } from '$app/paths';
   import './app.css';
   import { createRoundContract, rankValue, type Card } from '../game/roundContract';
-  import { stateBet, stateBetDerived, stateUrlDerived, stateMeta, stateConfig } from 'state-shared';
+  import { stateBet, stateUrlDerived, stateMeta, stateConfig } from 'state-shared';
   import { requestBet, requestEndRound } from 'rgs-requests';
   import { numberToCurrencyString } from 'utils-shared/amount';
   import { API_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
@@ -71,23 +71,6 @@
     }
   });
 
-  // Once the RGS's bet range arrives (at authenticate), pull the current bet
-  // into range if it's outside - otherwise the first /wallet/play could be
-  // rejected with ERR_VAL before the player touches the Set button. We only
-  // clamp to the min/max here (not to a level), since any in-range amount is
-  // valid. Gated on a real session so local dev keeps free amounts.
-  $effect(() => {
-    if (!stateUrlDerived.sessionID()) return;
-    const levels = stateConfig.betAmountOptions;
-    if (levels && levels.length) {
-      const lo = Math.min(...levels);
-      const hi = Math.max(...levels);
-      if (stateBet.betAmount < lo || stateBet.betAmount > hi) {
-        stateBet.betAmount = normalizeBet(stateBet.betAmount);
-      }
-    }
-  });
-
   let gameState = $state<State>('start');
   let isProcessing = $state(false);
 
@@ -111,11 +94,104 @@
   let engineFinalMultiplier = $state<number | null>(null);
 
   let initialBet = $state(0);
-  let betInput = $state('');
+  let betInput = $state('1');
   let wonAmount = $state(0);
   let lastRoundId = $state('');
   let roundSource = $state<'engine-auth' | 'engine-replay' | 'local-fallback' | 'none'>('local-fallback');
   let roundSequence = $state(0);
+  let betDefaulted = $state(false);
+  let betRowEl = $state<HTMLElement>();
+
+  // The bet is live now (no Set button): the input + / - drive it directly and
+  // the Start button only enables when the amount is actually playable.
+  const betValue = () => Number(betInput);
+  const betIsValid = () => {
+    const v = betValue();
+    if (!(v > 0) || v > stateBet.balanceAmount) return false;
+    // On a real RGS session, the amount must sit within the allowed range
+    // (min..max of the bet levels). Locally there's nothing to enforce.
+    const levels = stateConfig.betAmountOptions;
+    if (stateUrlDerived.sessionID() && levels && levels.length) {
+      return v >= Math.min(...levels) && v <= Math.max(...levels);
+    }
+    return true;
+  };
+
+  // Keep the shared bet state in sync with the live input so "Current Bet" and
+  // the play call always reflect what's shown.
+  $effect(() => {
+    const raw = `${betInput ?? ''}`.trim();
+    const v = Number(raw);
+    stateBet.betAmount = raw !== '' && !isNaN(v) && v >= 0 ? v : 0;
+  });
+
+  // Auto-fit the "$amount" font to its box so the whole number is always
+  // visible, even a long maximum bet in a narrow sidebar - the currency symbol
+  // and the number share one font-size (set on the row) and shrink together,
+  // down to a floor, only as far as needed to avoid clipping. Re-runs on the
+  // value changing and on the box resizing (responsive breakpoints / window).
+  const MAX_BET_FONT = 20;
+  const MIN_BET_FONT = 9;
+  function fitBetFont() {
+    const el = betRowEl;
+    if (!el || typeof document === 'undefined') return;
+    const text = betDisplay();
+    // Start from the breakpoint's CSS font size (reset the inline override
+    // first so we read the base), capped at MAX, then shrink to fit the width.
+    el.style.fontSize = '';
+    const style = getComputedStyle(el);
+    const avail = el.clientWidth - 4; // small safety margin
+    if (avail <= 0) return;
+    const maxSize = Math.min(MAX_BET_FONT, Math.round(parseFloat(style.fontSize) || MAX_BET_FONT));
+    const canvas = (fitBetFont as any)._c ?? ((fitBetFont as any)._c = document.createElement('canvas'));
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    let size = maxSize;
+    for (; size > MIN_BET_FONT; size -= 1) {
+      ctx.font = `800 ${size}px ${style.fontFamily}`;
+      if (ctx.measureText(text).width <= avail) break;
+    }
+    el.style.fontSize = `${size}px`;
+  }
+  const betDisplay = () => `$${`${betInput ?? ''}`.trim() || '0.00'}`;
+
+  // Tidy the amount to 2 decimals when the field loses focus (so it reads like
+  // "$1.00"); typing is left untouched while the field is focused.
+  function formatBetInput() {
+    const v = Number(`${betInput ?? ''}`.trim());
+    if (`${betInput ?? ''}`.trim() !== '' && !isNaN(v) && v > 0) {
+      betInput = v.toFixed(2);
+    }
+  }
+
+  $effect(() => {
+    betInput; // re-fit whenever the shown amount changes
+    fitBetFont();
+  });
+
+  $effect(() => {
+    const el = betRowEl;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => fitBetFont());
+    ro.observe(el);
+    return () => ro.disconnect();
+  });
+
+  // Once (when the RGS's levels arrive) nudge an out-of-range starting bet to
+  // the nearest valid level, so the player opens on a playable amount.
+  $effect(() => {
+    if (betDefaulted || !stateUrlDerived.sessionID()) return;
+    const levels = stateConfig.betAmountOptions;
+    if (levels && levels.length) {
+      const v = Number(betInput);
+      const lo = Math.min(...levels);
+      const hi = Math.max(...levels);
+      if (!(v >= lo && v <= hi)) {
+        betInput = String(levels.reduce((best, l) => (Math.abs(l - v) < Math.abs(best - v) ? l : best), levels[0]));
+      }
+      betDefaulted = true;
+    }
+  });
 
   const allChoicesMade = () => Boolean(colorChoice && hlChoice && ioChoice && suitChoice);
   const isEngineRound = () => roundSource !== 'local-fallback' && roundSource !== 'none';
@@ -164,26 +240,11 @@
     return Math.round(clamped * 100) / 100;
   }
 
-  // Commit a value as the active bet and reflect it back into the input.
-  function applyBet(value: number) {
-    stateBetDerived.setBetAmount(normalizeBet(value));
-    betInput = stateBet.betAmount.toString();
-  }
-
-  function setBet() {
-    const value = Number(betInput);
-    if (isNaN(value) || value <= 0) {
-      alert('Invalid bet. Please enter a positive number.');
-      return;
-    }
-    applyBet(value);
-  }
-
   // Stake-style +/- stepper: step to the next / previous suggested bet level
   // (stateConfig.betAmountOptions) relative to whatever is currently shown, so
-  // the increment scales sensibly across the range. Typing any amount still
-  // works - the stepper just gives quick nudges. Falls back to +/-1 when no
-  // levels are known (local dev before authenticate).
+  // the increment scales sensibly across the range. It just rewrites the live
+  // input - typing any amount still works. Falls back to +/-1 when no levels
+  // are known (local dev before authenticate).
   function stepBet(direction: 1 | -1) {
     const shown = Number(betInput);
     const current = !isNaN(shown) && shown > 0 ? shown : stateBet.betAmount;
@@ -194,9 +255,9 @@
         direction > 0
           ? sorted.find((l) => l > current + 1e-9)
           : [...sorted].reverse().find((l) => l < current - 1e-9);
-      applyBet(next ?? current);
+      if (next !== undefined) betInput = String(next);
     } else {
-      applyBet(Math.max(1, current + direction));
+      betInput = String(Math.max(1, current + direction));
     }
   }
 
@@ -369,16 +430,14 @@
   }
 
   function startGame() {
-    if (stateBet.betAmount <= 0) {
-      alert('Set a bet amount first.');
-      return;
-    }
-    if (!allChoicesMade()) {
-      alert('Pick all four options first.');
-      return;
-    }
+    // The Start button is disabled unless these hold, but guard anyway.
+    if (!betIsValid() || !allChoicesMade()) return;
 
-    initialBet = stateBet.betAmount;
+    // Normalize the live bet to what the RGS accepts (clamp to range, round to
+    // the cent) at the moment of play.
+    initialBet = normalizeBet(betValue());
+    stateBet.betAmount = initialBet;
+    betInput = String(initialBet);
     const roundSeedData = resolveRoundSeed();
 
     if (roundSeedData.source === 'engine-auth' || roundSeedData.source === 'engine-replay') {
@@ -568,18 +627,25 @@
 
     <div class="control-group">
       <span class="control-label">Bet Amount</span>
-      <div class="bet-row">
-        <button type="button" class="step-btn" onclick={() => stepBet(-1)} aria-label="Decrease bet">−</button>
-        <input
-          class="bet-input"
-          type="number"
-          bind:value={betInput}
-          min="1"
-          placeholder="0.00"
-          onkeydown={(event) => { if (event.key === 'Enter') setBet(); }}
-        />
-        <button type="button" class="step-btn" onclick={() => stepBet(1)} aria-label="Increase bet">+</button>
-        <button class="set-bet-btn" onclick={setBet}>Set</button>
+      <div class="bet-selector">
+        <div class="bet-field">
+          <div class="bet-amount-row" bind:this={betRowEl}>
+            <span class="bet-currency">$</span>
+            <input
+              class="bet-input"
+              type="text"
+              inputmode="decimal"
+              bind:value={betInput}
+              onblur={formatBetInput}
+              placeholder="0.00"
+              aria-label="Bet amount"
+            />
+          </div>
+        </div>
+        <div class="bet-stepper">
+          <button type="button" class="stepper-btn" onclick={() => stepBet(1)} aria-label="Increase bet">▲</button>
+          <button type="button" class="stepper-btn" onclick={() => stepBet(-1)} aria-label="Decrease bet">▼</button>
+        </div>
       </div>
     </div>
 
@@ -587,9 +653,9 @@
       <button
         class="action-button"
         onclick={startGame}
-        disabled={(IS_PROD && resolveRoundSeed().source === 'none') || stateBet.betAmount <= 0 || !allChoicesMade() || isProcessing}
+        disabled={(IS_PROD && resolveRoundSeed().source === 'none') || !betIsValid() || !allChoicesMade() || isProcessing}
       >
-        {#if !allChoicesMade()}Pick all 4 guesses{:else if stateBet.betAmount <= 0}Enter a bet{:else}Start{/if}
+        {#if !allChoicesMade()}Pick all 4 guesses{:else if !betIsValid()}Enter a valid bet{:else}Start{/if}
       </button>
     {:else if gameState === 'playing'}
       <button class="action-button" disabled>Revealing…</button>
@@ -805,43 +871,40 @@
     color: #93a4b5;
   }
 
-  .bet-row {
+  /* Bet selector: "BET / $amount" on the left, a vertical up/down stepper on
+     the right, in one rounded control. */
+  .bet-selector {
     display: flex;
-    gap: 6px;
     align-items: stretch;
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(5, 12, 18, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.16);
   }
 
-  /* Stake-style +/- steppers replacing the native number-input arrows. */
-  .step-btn {
-    flex: 0 0 auto;
-    width: 34px;
+  .bet-field {
+    flex: 1 1 auto;
+    min-width: 0;
     display: flex;
-    align-items: center;
+    flex-direction: column;
     justify-content: center;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    background: rgba(255, 255, 255, 0.08);
-    color: #fff;
-    font-size: 1.2rem;
-    font-weight: 700;
-    line-height: 1;
-    cursor: pointer;
-    user-select: none;
+    padding: 9px 12px;
   }
-  .step-btn:hover { background: rgba(255, 255, 255, 0.16); }
-  .step-btn:active { transform: translateY(1px); }
 
-  .set-bet-btn {
-    flex: 0 0 auto;
-    padding: 0 14px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    background: rgba(255, 255, 255, 0.08);
-    color: #fff;
-    font-weight: 700;
-    cursor: pointer;
+  .bet-amount-row {
+    display: flex;
+    align-items: baseline;
+    gap: 1px;
+    font-size: 20px;
+    line-height: 1.05;
   }
-  .set-bet-btn:hover { background: rgba(255, 255, 255, 0.16); }
+
+  .bet-currency {
+    flex: 0 0 auto;
+    font-size: inherit;
+    font-weight: 800;
+    color: #fff;
+  }
 
   .action-button {
     width: 100%;
@@ -1030,9 +1093,10 @@
     .sidebar { padding: 6px 8px; gap: 5px; }
     .sidebar-title { font-size: 0.78rem; padding-bottom: 5px; }
     .control-label { font-size: 0.58rem; }
-    .bet-input { font-size: 12px; padding: 5px 7px; }
-    .step-btn { width: 24px; font-size: 1rem; }
-    .set-bet-btn { padding: 0 8px; }
+    .bet-field { padding: 5px 8px; }
+    .bet-amount-row { font-size: 14px; }
+    .bet-stepper { width: 30px; }
+    .stepper-btn { font-size: 0.6rem; }
     .action-button { padding: 6px; font-size: 0.72rem; }
     .profit-display { font-size: 0.8rem; padding: 5px 7px; }
     .wallet-info { gap: 3px; padding-top: 5px; }
@@ -1186,31 +1250,51 @@
     color: #e74c3c;
   }
 
+  /* The amount reads as plain bold text inside the field - the box border is
+     on .bet-selector, not the input. Font-size is inherited from
+     .bet-amount-row so the currency symbol and number scale together (auto-fit
+     in fitBetFont). */
   .bet-input {
     flex: 1 1 auto;
     min-width: 0;
-    font-size: 16px;
-    padding: 10px 12px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    font-size: inherit;
+    font-weight: 800;
+    padding: 0;
+    border: none;
+    outline: none;
     color: #fff;
-    background: rgba(5, 12, 18, 0.6);
+    background: transparent;
     box-sizing: border-box;
-    text-align: center;
-    -moz-appearance: textfield;
-    appearance: textfield;
-  }
-  /* Hide the browser's native up/down number spinners - replaced by the
-     custom +/- stepper buttons. */
-  .bet-input::-webkit-outer-spin-button,
-  .bet-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
   }
 
   .bet-input::placeholder {
-    color: rgba(255, 255, 255, 0.45);
+    color: rgba(255, 255, 255, 0.4);
   }
+
+  .bet-stepper {
+    flex: 0 0 auto;
+    width: 46px;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid rgba(255, 255, 255, 0.16);
+  }
+
+  .stepper-btn {
+    flex: 1 1 0;
+    border: none;
+    background: rgba(255, 255, 255, 0.07);
+    color: #fff;
+    font-size: 0.72rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+  }
+  .stepper-btn:hover { background: rgba(255, 255, 255, 0.16); }
+  .stepper-btn:active { background: rgba(255, 255, 255, 0.22); }
+  .stepper-btn:first-child { border-bottom: 1px solid rgba(255, 255, 255, 0.12); }
 
   .result-screen {
     width: min(960px, 100%);
