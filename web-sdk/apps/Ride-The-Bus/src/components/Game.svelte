@@ -2,8 +2,8 @@
   import { base } from '$app/paths';
   import './app.css';
   import { createRoundContract, rankValue, type Card } from '../game/roundContract';
-  import { stateBet, stateBetDerived, stateUrlDerived } from 'state-shared';
-  import { requestBet } from 'rgs-requests';
+  import { stateBet, stateBetDerived, stateUrlDerived, stateMeta } from 'state-shared';
+  import { requestBet, requestEndRound } from 'rgs-requests';
   import { numberToCurrencyString } from 'utils-shared/amount';
   import { API_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
 
@@ -51,6 +51,26 @@
     stateBet.balanceAmount = 1_000_000;
   }
 
+  // This game has no "BASE" bet mode - every one of its 64 modes encodes a
+  // full guess combination (see math-sdk mode_name). The shared bet state
+  // defaults activeBetModeKey to 'BASE', and the framework's bet-cost
+  // helpers (stateBetDerived.betCostMultiplier -> activeBetMode().type)
+  // dereference the looked-up mode without a null guard - so once the RGS
+  // loads our modes, 'BASE' resolves to null and Set Bet / any cost check
+  // throws "Cannot read properties of null (reading 'type')". Keep the active
+  // key pointed at a mode that actually exists in betModeMeta. All our modes
+  // cost 1.0x, so any is fine for cost purposes; the real per-round mode is
+  // sent explicitly to /wallet/play in startGameEngineFlow.
+  $effect(() => {
+    const meta = stateMeta.betModeMeta ?? {};
+    const key = stateBet.activeBetModeKey ?? '';
+    const resolves = meta[key] || meta[key.toUpperCase?.()] || meta[key.toLowerCase?.()];
+    if (!resolves) {
+      const firstMode = Object.keys(meta)[0];
+      if (firstMode) stateBet.activeBetModeKey = firstMode;
+    }
+  });
+
   let gameState = $state<State>('start');
   let isProcessing = $state(false);
 
@@ -62,6 +82,12 @@
   let revealEvents = $state<RevealEvent[]>([]);
   let revealedCards = $state<(Card | null)[]>([null, null, null, null]);
   let bustedIndex = $state<number | null>(null);
+  // Cumulative (quantized) win multiplier shown above each card as it is
+  // revealed - climbs while the streak holds, then shows the banked value on
+  // the bust card. null = not revealed yet.
+  let stageMultipliers = $state<(number | null)[]>([null, null, null, null]);
+  // Running cash won so far (current multiplier x bet), shown under the cards.
+  let runningWin = $state(0);
   // Set from the server's authoritative finalWin event on engine rounds so
   // the displayed win is exactly what the RGS credited (not a local recompute
   // that could drift by a floating-point hair). null => compute locally.
@@ -119,12 +145,26 @@
     // Reveal one card at a time, stopping at the first miss - the round ends
     // where the player "gets off the bus". Unlike the old all-or-nothing
     // flow, a miss past stage 1 still banks partial winnings, so a bust is
-    // no longer automatically a loss.
+    // no longer automatically a loss. `running` is kept RAW (unquantized) and
+    // compounded exactly like computeFinalMultiplier / gamestate.run_spin; we
+    // only quantize for the per-card display and the final payout, so the
+    // last card's shown multiplier equals the credited win.
+    let running = 1;
+    let busted = false;
     for (let i = 0; i < revealEvents.length; i++) {
       await wait(650);
       revealedCards[i] = revealEvents[i].card;
-      if (!revealEvents[i].correct) {
+      const event = revealEvents[i];
+      if (!busted && event.correct) {
+        running *= event.payout;
+      } else if (!busted) {
         bustedIndex = i;
+        running *= STAGE_RETENTION[i] * DECAY ** (3 - i);
+        busted = true;
+      }
+      stageMultipliers[i] = quantizeMultiplier(running);
+      runningWin = stageMultipliers[i]! * initialBet;
+      if (busted) {
         await wait(900);
         break;
       }
@@ -135,11 +175,29 @@
     // the local formula (identical maths) when there's no RGS session.
     const multiplier = engineFinalMultiplier ?? computeFinalMultiplier(revealEvents);
     wonAmount = multiplier * initialBet;
-    // Local-fallback has no server to credit it - the engine path's balance
-    // was already settled by the /wallet/play response in
-    // startGameEngineFlow (a single atomic bet, no separate end-round).
+    runningWin = wonAmount;
     if (!isEngineRound()) {
+      // Local-fallback has no server - credit the win locally.
       stateBet.balanceAmount += wonAmount;
+    } else if (wonAmount > 0) {
+      // A WINNING engine round must be settled with /wallet/end-round: this
+      // credits the payout and closes the round. Without it the round stays
+      // "active" and the NEXT /wallet/play is rejected with ERR_VAL - which is
+      // exactly why the game blocked right after the first win. Losing rounds
+      // (0 payout) auto-close on the RGS, so they need no end-round (that's
+      // why consecutive losses kept working). Use the end-round balance as the
+      // post-win source of truth.
+      try {
+        const endData = await requestEndRound({
+          rgsUrl: stateUrlDerived.rgsUrl(),
+          sessionID: stateUrlDerived.sessionID(),
+        });
+        if ((endData as any)?.balance?.amount !== undefined) {
+          stateBet.balanceAmount = (endData as any).balance.amount / API_AMOUNT_MULTIPLIER;
+        }
+      } catch (err) {
+        console.error('end-round failed', err);
+      }
     }
     gameState = wonAmount > 0 ? 'won' : 'lost';
   }
@@ -148,6 +206,9 @@
     isProcessing = true;
     try {
       const mode = `${colorChoice}_${hlChoice}_${ioChoice}_${suitChoice}`;
+      // Keep the shared bet state's active mode in sync with what we actually
+      // play, so any framework helper that reads activeBetModeKey agrees.
+      stateBet.activeBetModeKey = mode;
       const data = await requestBet({
         rgsUrl: stateUrlDerived.rgsUrl(),
         sessionID: stateUrlDerived.sessionID(),
@@ -156,13 +217,29 @@
         amount: initialBet,
       });
 
+      // The RGS returns a failure in the body (status.statusCode !== SUCCESS,
+      // and/or an `error` field) rather than throwing; surface the real reason
+      // (e.g. ERR_IS invalid session, ERR_IPB balance) instead of masking it
+      // behind the generic empty-state error below.
+      const statusCode = (data as any)?.status?.statusCode;
+      if ((data as any)?.error || (statusCode && statusCode !== 'SUCCESS')) {
+        const detail =
+          (data as any)?.status?.statusMessage ||
+          (typeof (data as any)?.error === 'string' ? (data as any).error : '') ||
+          JSON.stringify((data as any)?.error ?? (data as any)?.status ?? {});
+        throw new Error(`RGS rejected play (${statusCode ?? 'error'})${detail ? `: ${detail}` : ''}`);
+      }
+
       if (data?.balance?.amount !== undefined) {
         stateBet.balanceAmount = data.balance.amount / API_AMOUNT_MULTIPLIER;
       }
 
       const events = data?.round?.state;
       if (!Array.isArray(events) || events.length === 0) {
-        throw new Error('Empty round/state from play API');
+        throw new Error(
+          `No round state from /wallet/play for mode "${mode}". The math for this mode may not be ` +
+            `published/approved, or the bet amount isn't a valid level.`,
+        );
       }
 
       const reveals = events.filter((event: any) => event.type === 'reveal');
@@ -188,6 +265,8 @@
       lastRoundId = `${data?.round?.roundID ?? ''}`;
       roundSource = roundSeedData.source;
       revealedCards = [null, null, null, null];
+      stageMultipliers = [null, null, null, null];
+      runningWin = 0;
       bustedIndex = null;
       wonAmount = 0;
       gameState = 'playing';
@@ -231,6 +310,8 @@
     revealEvents = buildLocalRevealEvents(round.deck);
     engineFinalMultiplier = null; // local round computes its own payout
     revealedCards = [null, null, null, null];
+    stageMultipliers = [null, null, null, null];
+    runningWin = 0;
     bustedIndex = null;
     wonAmount = 0;
     gameState = 'playing';
@@ -238,14 +319,15 @@
   }
 
   function retryGame() {
+    // Deliberately keep colorChoice/hlChoice/ioChoice/suitChoice so the
+    // player's guesses persist across rounds - they can press Start again
+    // immediately, or tweak a choice first, without re-picking all four.
     gameState = 'start';
     revealedCards = [null, null, null, null];
+    stageMultipliers = [null, null, null, null];
+    runningWin = 0;
     revealEvents = [];
     bustedIndex = null;
-    colorChoice = null;
-    hlChoice = null;
-    ioChoice = null;
-    suitChoice = null;
   }
 
   // Mirrors games/ride_the_bus/game_calculations.py:partial_multiplier - the
@@ -435,7 +517,38 @@
   </aside>
 
   <main class="game-main">
+    {#snippet cardRow()}
+      <div class="card-row">
+        {#each revealedCards as card, index}
+          <div class="card-slot">
+            <div class="card-mult" class:show={stageMultipliers[index] !== null}>
+              {(stageMultipliers[index] ?? 0).toFixed(2)}×
+            </div>
+            <div class="card-block" class:revealed={card} class:busted={index === bustedIndex}>
+              {#if card}
+                <div class="card-face" class:red-card={card.suit === '♥' || card.suit === '♦'} class:black-card={card.suit === '♠' || card.suit === '♣'}>
+                  <div class="rank top">{card.rank}</div>
+                  <div class="suit center">{card.suit}</div>
+                  <div class="rank bottom">{card.rank}</div>
+                </div>
+              {:else}
+                <div class="card-back" aria-hidden="true"></div>
+              {/if}
+            </div>
+          </div>
+        {/each}
+      </div>
+    {/snippet}
+
+    {#snippet runningWinBar()}
+      <div class="running-win">
+        <span class="running-win-label">Winning</span>
+        <span class="running-win-amount">{numberToCurrencyString(runningWin)}</span>
+      </div>
+    {/snippet}
+
     {#if gameState === 'start'}
+      {@render cardRow()}
       <div class="choice-row">
         <div class="choice-column">
           <span class="choice-label">Color</span>
@@ -476,21 +589,8 @@
     {/if}
 
     {#if gameState === 'playing' || gameState === 'lost'}
-      <div class="card-row">
-        {#each revealedCards as card, index}
-          <div class="card-block" class:revealed={card} class:busted={index === bustedIndex}>
-            {#if card}
-              <div class="card-face" class:red-card={card.suit === '♥' || card.suit === '♦'} class:black-card={card.suit === '♠' || card.suit === '♣'}>
-                <div class="rank top">{card.rank}</div>
-                <div class="suit center">{card.suit}</div>
-                <div class="rank bottom">{card.rank}</div>
-              </div>
-            {:else}
-              <div class="card-back" aria-hidden="true"></div>
-            {/if}
-          </div>
-        {/each}
-      </div>
+      {@render cardRow()}
+      {@render runningWinBar()}
       <div class="game-stage">
         {#if gameState === 'lost'}
           <p>You busted on the first card and lost your bet.</p>
@@ -502,21 +602,7 @@
 
     {#if gameState === 'won'}
       <div class="result-screen">
-        <div class="card-row">
-          {#each revealedCards as card, index}
-            <div class="card-block" class:revealed={card} class:busted={index === bustedIndex}>
-              {#if card}
-                <div class="card-face" class:red-card={card.suit === '♥' || card.suit === '♦'} class:black-card={card.suit === '♠' || card.suit === '♣'}>
-                  <div class="rank top">{card.rank}</div>
-                  <div class="suit center">{card.suit}</div>
-                  <div class="rank bottom">{card.rank}</div>
-                </div>
-              {:else}
-                <div class="card-back" aria-hidden="true"></div>
-              {/if}
-            </div>
-          {/each}
-        </div>
+        {@render cardRow()}
         <div class="result-hero">
           <p class="result-kicker">{bustedIndex === null ? 'Full Game Win' : 'You Rode The Bus'}</p>
           {#if bustedIndex === null}
@@ -685,9 +771,58 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    align-items: center;
+    align-items: flex-end;
     gap: 24px;
     margin: 0;
+  }
+
+  /* Each card sits in a slot with its cumulative win multiplier above it. */
+  .card-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-mult {
+    min-height: 24px;
+    padding: 2px 12px;
+    border-radius: 999px;
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: #7cffb2;
+    background: rgba(6, 24, 16, 0.72);
+    border: 1px solid rgba(124, 255, 178, 0.4);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .card-mult.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Running cash won so far, shown under the cards during the reveal. */
+  .running-win {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .running-win-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #cfe8d8;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  }
+  .running-win-amount {
+    font-size: 1.9rem;
+    font-weight: 900;
+    color: #7cffb2;
+    text-shadow: 0 3px 14px rgba(0, 0, 0, 0.65);
   }
 
   /* On narrow screens stack the sidebar above the game instead of beside it. */
