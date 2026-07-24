@@ -71,15 +71,20 @@
     }
   });
 
-  // Once the RGS's allowed bet levels arrive (at authenticate), make sure the
-  // current bet amount is actually one of them - otherwise the very first
-  // /wallet/play is rejected with ERR_VAL before the player ever touches the
-  // Set button. Gated on a real session so local dev keeps free amounts.
+  // Once the RGS's bet range arrives (at authenticate), pull the current bet
+  // into range if it's outside - otherwise the first /wallet/play could be
+  // rejected with ERR_VAL before the player touches the Set button. We only
+  // clamp to the min/max here (not to a level), since any in-range amount is
+  // valid. Gated on a real session so local dev keeps free amounts.
   $effect(() => {
     if (!stateUrlDerived.sessionID()) return;
     const levels = stateConfig.betAmountOptions;
-    if (levels && levels.length && !levels.includes(stateBet.betAmount)) {
-      stateBet.betAmount = snapToBetLevel(stateBet.betAmount);
+    if (levels && levels.length) {
+      const lo = Math.min(...levels);
+      const hi = Math.max(...levels);
+      if (stateBet.betAmount < lo || stateBet.betAmount > hi) {
+        stateBet.betAmount = normalizeBet(stateBet.betAmount);
+      }
     }
   });
 
@@ -143,23 +148,21 @@
     return { seed: fallbackRoundSeed, source: 'local-fallback' as const };
   };
 
-  // Snap a raw amount to the nearest RGS-allowed bet level. The RGS rejects
-  // /wallet/play with ERR_VAL if the amount isn't one of the levels it
-  // returned at authenticate (stateConfig.betAmountOptions). Our free-text
-  // box would otherwise let the player send an unlisted amount - which is
-  // exactly what started failing once the Set-bet crash was fixed and typed
-  // amounts actually took effect. When no levels are known (local dev) the
-  // value passes through unchanged.
-  function snapToBetLevel(value: number): number {
-    // Only constrain to bet levels when there's a real RGS session enforcing
-    // them. In local dev, betAmountOptions holds placeholder defaults, so free
-    // amounts should pass through untouched.
+  // Bring a raw bet into what the RGS actually accepts. Per Stake's RGS spec
+  // the predefined betLevels are only *suggestions* - a bet is valid as long
+  // as it (1) sits between minBet and maxBet and (2) is divisible by stepBet.
+  // So we do NOT snap to the nearest level (that needlessly turned 11 -> 10);
+  // we just clamp into range and round to the cent (the finest common step),
+  // which keeps any whole/simple amount the player types. Gated on a real
+  // session - in local dev betAmountOptions holds placeholder defaults, so
+  // free amounts pass through untouched.
+  function normalizeBet(value: number): number {
     const levels = stateConfig.betAmountOptions;
     if (!stateUrlDerived.sessionID() || !levels || levels.length === 0) return value;
-    return levels.reduce(
-      (best, level) => (Math.abs(level - value) < Math.abs(best - value) ? level : best),
-      levels[0],
-    );
+    const lo = Math.min(...levels);
+    const hi = Math.max(...levels);
+    const clamped = Math.min(Math.max(value, lo), hi);
+    return Math.round(clamped * 100) / 100;
   }
 
   function setBet() {
@@ -168,7 +171,7 @@
       alert('Invalid bet. Please enter a positive number.');
       return;
     }
-    stateBetDerived.setBetAmount(snapToBetLevel(value));
+    stateBetDerived.setBetAmount(normalizeBet(value));
     betInput = stateBet.betAmount.toString();
   }
 
