@@ -128,6 +128,10 @@
   const AUTO_ROUND_PRESETS = [10, 25, 50, 100];
   const autoRoundsValid = () =>
     autoInfinite || (Number.isFinite(Number(autoRoundsInput)) && Math.floor(Number(autoRoundsInput)) >= 1);
+  // Stop the auto run the moment a round is won outright (all 4 cards correct,
+  // no bust). A passive stop condition - it only ends the run, never changes
+  // the stake - so it's safe to ship (unlike the gated Advanced progression).
+  let stopOnFullWin = $state(false);
 
   // Advanced auto-bet strategy (Stake-style). When the Advanced switch is on:
   //  - On Win / On Loss adjust the next bet: 'reset' back to the starting bet,
@@ -579,6 +583,9 @@
         const won = wonAmount > roundBet;
         autoProfit = Math.round((autoProfit + (wonAmount - roundBet)) * 100) / 100;
 
+        // Stop on a full game win (all 4 correct, no bust) if requested.
+        if (stopOnFullWin && gameState === 'won' && bustedIndex === null) break;
+
         if (useAdvanced) {
           // End the run once a cumulative profit / loss target is hit.
           if (stopProfit > 0 && autoProfit >= stopProfit - 1e-9) break;
@@ -905,6 +912,20 @@
             aria-pressed={autoInfinite}
           >∞</button>
         </div>
+      </div>
+
+      <div class="advanced-row">
+        <span class="control-label">Stop on full game win</span>
+        <button
+          type="button"
+          class="switch"
+          class:on={stopOnFullWin}
+          role="switch"
+          aria-checked={stopOnFullWin}
+          aria-label="Stop auto on a full game win"
+          disabled={autoRunning}
+          onclick={() => (stopOnFullWin = !stopOnFullWin)}
+        ><span class="switch-knob"></span></button>
       </div>
 
       <div class="advanced-row">
