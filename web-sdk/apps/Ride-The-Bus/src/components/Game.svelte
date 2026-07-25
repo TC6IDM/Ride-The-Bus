@@ -1040,16 +1040,22 @@
             <div class="card-mult" class:show={stageMultipliers[index] !== null}>
               {(stageMultipliers[index] ?? 0).toFixed(2)}×
             </div>
-            <div class="card-block" class:revealed={card} class:busted={index === bustedIndex}>
-              {#if card}
-                <div class="card-face" class:red-card={card.suit === '♥' || card.suit === '♦'} class:black-card={card.suit === '♠' || card.suit === '♣'}>
-                  <div class="rank top">{card.rank}</div>
-                  <div class="suit center">{card.suit}</div>
-                  <div class="rank bottom">{card.rank}</div>
-                </div>
-              {:else}
+            <div class="card-block">
+              <div class="card-inner" class:flipped={card} class:instant={turbo}>
                 <div class="card-back" aria-hidden="true"></div>
-              {/if}
+                <div class="card-front">
+                  {#if card}
+                    <div class="card-face" class:red-card={card.suit === '♥' || card.suit === '♦'} class:black-card={card.suit === '♠' || card.suit === '♣'}>
+                      <div class="rank top">{card.rank}</div>
+                      <div class="suit center">{card.suit}</div>
+                      <div class="rank bottom">{card.rank}</div>
+                    </div>
+                  {/if}
+                  {#if index === bustedIndex}
+                    <div class="bust-x" aria-hidden="true">✕</div>
+                  {/if}
+                </div>
+              </div>
             </div>
           </div>
         {/each}
@@ -2045,25 +2051,49 @@
     margin: 0;
   }
 
+  /* Card = a 3D flip. .card-block is the perspective frame; .card-inner holds
+     the two faces back-to-back and rotates 180deg when the card is revealed
+     (class:flipped={card}). Turbo adds .instant to skip the animation. */
   .card-block {
     width: var(--card-w);
     height: var(--card-h);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 18px;
-    color: #fff;
-    font-weight: bold;
-    border-radius: var(--card-radius);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3), inset 0 1px 3px rgba(255,255,255,0.2);
-    letter-spacing: 1px;
     position: relative;
-    overflow: hidden;
-    border: 3px solid #8b7355;
-    background-color: #1a5f7a;
+    perspective: 900px;
   }
 
-  .card-block::before {
+  .card-inner {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .card-inner.flipped {
+    transform: rotateY(180deg);
+  }
+  .card-inner.instant {
+    transition: none;
+  }
+
+  /* Both faces occupy the frame back-to-back; only the forward-facing one shows
+     (backface-visibility: hidden). */
+  .card-back,
+  .card-front {
+    position: absolute;
+    inset: 0;
+    box-sizing: border-box;
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  /* Face-down back */
+  .card-back {
+    border: 3px solid #8b7355;
+    background: linear-gradient(135deg, #1a5f7a 0%, #0d3a52 50%, #1a5f7a 100%);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3), inset 0 1px 3px rgba(255,255,255,0.2);
+  }
+  .card-back::before {
     content: '';
     position: absolute;
     width: 60%;
@@ -2076,38 +2106,20 @@
     pointer-events: none;
   }
 
-  .red-card {
-    color: #ff4d4d;
-  }
-  .black-card {
-    color: #fff;
-  }
-
-  /* Revealed (face-up) card styling */
-  .card-block.revealed {
+  /* Revealed front - pre-rotated so it faces the viewer once .card-inner flips. */
+  .card-front {
+    transform: rotateY(180deg);
     background: #fff;
     color: #000;
     border: 2px solid #cfcfcf;
     box-shadow: 0 6px 12px rgba(0,0,0,0.25);
   }
 
-  .card-block.revealed .card-back,
-  .card-block.revealed::before {
-    display: none;
+  .red-card {
+    color: #ff4d4d;
   }
-
-  .card-block.busted::after {
-    content: '✕';
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 64px;
-    font-weight: 900;
-    color: #ff3b3b;
-    text-shadow: 0 0 10px rgba(0, 0, 0, 0.85);
-    background: rgba(0, 0, 0, 0.35);
+  .black-card {
+    color: #fff;
   }
 
   .card-face {
@@ -2149,12 +2161,17 @@
   .card-face.black-card .suit.center,
   .card-face.black-card .rank { color: #111; }
 
-  /* Card back element (face-down) */
-  .card-back {
-    width: 100%;
-    height: 100%;
-    display: block;
-    background: linear-gradient(135deg, #1a5f7a 0%, #0d3a52 50%, #1a5f7a 100%);
-    border-radius: 6px;
+  /* Bust ✕ drawn over the revealed front face. */
+  .bust-x {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 64px;
+    font-weight: 900;
+    color: #ff3b3b;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.35);
   }
 </style>
