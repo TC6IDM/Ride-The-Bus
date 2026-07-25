@@ -101,6 +101,63 @@
   let roundSequence = $state(0);
   let betDefaulted = $state(false);
   let betRowEl = $state<HTMLElement>();
+  // Set true whenever an engine round fails to place/settle, so the auto loop
+  // stops instead of hammering /wallet/play with the same failing request
+  // (mirrors the SDK autobet resetting autoSpinsCounter to 0 on error).
+  let roundError = $state(false);
+
+  // Manual vs Auto play. Auto simply loops the SAME single-bet round the manual
+  // Start does - each iteration is one independent /wallet/play (+ end-round on
+  // a win). Stake's RGS has no server-side "auto" concept; this is a purely
+  // client-side convenience, exactly like the SDK's autoBet machine
+  // (createIntermediateMachineAutoBet.ts) which just counts down a run of
+  // discrete bets and stops on 0 / insufficient funds / a Stop.
+  let betMode = $state<'manual' | 'auto'>('manual');
+  let autoRoundsInput = $state('10');
+  let autoInfinite = $state(false);
+  let autoRunning = $state(false);
+  let autoRemaining = $state(0);
+  // A Stop press can't cancel a bet already placed on the server, so it just
+  // asks the loop to stop BEFORE starting the next round (the in-flight round
+  // finishes normally - this matches the documented single-bet RGS model).
+  let autoStopRequested = $state(false);
+  const AUTO_ROUND_PRESETS = [10, 25, 50, 100];
+  const autoRoundsValid = () =>
+    autoInfinite || (Number.isFinite(Number(autoRoundsInput)) && Math.floor(Number(autoRoundsInput)) >= 1);
+
+  // Advanced auto-bet strategy (Stake-style). When the Advanced switch is on:
+  //  - On Win / On Loss adjust the next bet: 'reset' back to the starting bet,
+  //    or 'increase' it by a percentage (100% = classic martingale double).
+  //  - Stop on Profit / Stop on Loss end the run once the cumulative net result
+  //    for this auto run crosses the given amount.
+  // Win vs loss is decided by the round's NET result (payout vs the bet placed),
+  // not just gameState - this game's partial credit means a "won" round can
+  // still pay back less than the stake.
+  //
+  // COMPLIANCE GATE: the On Win / On Loss bet-progression (martingale) is NOT
+  // part of the Stake Engine SDK's auto-bet, which keeps the stake constant and
+  // only offers stop-limits (see packages/state-shared stateUi AUTO_SPINS /
+  // LOSS_LIMIT / SINGLE_WIN_LIMIT). Auto-raising the bet on a loss is a
+  // "chasing losses" mechanic that needs Stake's approval before it can ship,
+  // so the Advanced switch is hard-disabled for now. Flip this to true (and
+  // confirm with Stake) to re-enable the whole panel - all the logic below is
+  // kept intact and gated on it.
+  const ADVANCED_ENABLED = false;
+  let advancedMode = $state(false);
+  let onWinMode = $state<'reset' | 'increase'>('reset');
+  let onLossMode = $state<'reset' | 'increase'>('reset');
+  let onWinPct = $state('0');
+  let onLossPct = $state('0');
+  let stopOnProfit = $state('0');
+  let stopOnLoss = $state('0');
+  // Running net profit (payouts - stakes) for the active auto run; drives the
+  // stop-on checks and the live readouts next to those fields.
+  let autoProfit = $state(0);
+  let autoBaseBet = $state(0);
+  const toNum = (s: string) => {
+    const n = Number(`${s ?? ''}`.trim());
+    return Number.isFinite(n) ? n : 0;
+  };
 
   // The bet is live now (no Set button): the input + / - drive it directly and
   // the Start button only enables when the amount is actually playable.
@@ -420,18 +477,25 @@
       bustedIndex = null;
       wonAmount = 0;
       gameState = 'playing';
-      playRevealSequence();
+      await playRevealSequence();
     } catch (err) {
       console.error(err);
-      alert('Engine play failed: ' + ((err as any)?.message || String(err)));
+      roundError = true;
+      // One alert is enough; during an auto run the loop stops after this, so
+      // we don't pop a dialog for every remaining round.
+      if (!autoRunning) alert('Engine play failed: ' + ((err as any)?.message || String(err)));
     } finally {
       isProcessing = false;
     }
   }
 
-  function startGame() {
+  // One full round: place the single bet (engine or local-fallback) and play it
+  // out to a won/lost result. Awaitable so the auto loop can run rounds
+  // back-to-back; manual Start just fires it and forgets.
+  async function playRound() {
     // The Start button is disabled unless these hold, but guard anyway.
     if (!betIsValid() || !allChoicesMade()) return;
+    roundError = false;
 
     // Normalize the live bet to what the RGS accepts (clamp to range, round to
     // the cent) at the moment of play.
@@ -441,9 +505,7 @@
     const roundSeedData = resolveRoundSeed();
 
     if (roundSeedData.source === 'engine-auth' || roundSeedData.source === 'engine-replay') {
-      startGameEngineFlow(roundSeedData).catch((err) => {
-        console.error('Engine flow failed', err);
-      });
+      await startGameEngineFlow(roundSeedData);
       return;
     }
 
@@ -462,7 +524,118 @@
     bustedIndex = null;
     wonAmount = 0;
     gameState = 'playing';
-    playRevealSequence();
+    await playRevealSequence();
+  }
+
+  function startGame() {
+    // Manual Start: play exactly one round (the reveal animates on its own).
+    playRound().catch((err) => console.error('Play failed', err));
+  }
+
+  // Auto play: loop the single-bet round with the player's locked-in guesses
+  // until the round count runs out, the balance can't cover the next bet, an
+  // engine round errors, or the player hits Stop.
+  async function startAuto() {
+    if (autoRunning || !betIsValid() || !allChoicesMade() || !autoRoundsValid()) return;
+    autoStopRequested = false;
+    autoRunning = true;
+    autoRemaining = autoInfinite ? Infinity : Math.floor(Number(autoRoundsInput));
+
+    // Advanced strategy setup: the starting bet is the reset target, and the
+    // net result is tracked so Stop on Profit / Stop on Loss can end the run.
+    autoBaseBet = normalizeBet(betValue());
+    autoProfit = 0;
+    let nextBet = autoBaseBet;
+    // Advanced strategy only applies when the feature is enabled AND switched on
+    // (the switch is currently hard-disabled - see ADVANCED_ENABLED). This keeps
+    // the stake constant, matching the SDK's own auto-bet.
+    const useAdvanced = ADVANCED_ENABLED && advancedMode;
+    const stopProfit = useAdvanced ? toNum(stopOnProfit) : 0;
+    const stopLoss = useAdvanced ? toNum(stopOnLoss) : 0;
+
+    try {
+      while (autoRemaining > 0 && !autoStopRequested) {
+        // Bet this round's amount (advanced strategy may have grown / reset it).
+        betInput = String(nextBet);
+        // Stop if the next bet is no longer affordable (prod: server balance;
+        // local: the debited fallback balance) - the same guard the SDK's
+        // autobet uses (createIntermediateMachineAutoBet.ts:checkInsufficientFunds).
+        if (betValue() > stateBet.balanceAmount + 1e-9) break;
+
+        await playRound();
+        // Bail on a placement/settlement error rather than repeating it, and
+        // honour a Stop pressed during the round (the in-flight bet finished).
+        if (roundError || autoStopRequested) break;
+
+        // Tally this round's net result (payout minus the stake actually placed).
+        const roundBet = initialBet;
+        const won = wonAmount > roundBet;
+        autoProfit = Math.round((autoProfit + (wonAmount - roundBet)) * 100) / 100;
+
+        if (useAdvanced) {
+          // End the run once a cumulative profit / loss target is hit.
+          if (stopProfit > 0 && autoProfit >= stopProfit - 1e-9) break;
+          if (stopLoss > 0 && -autoProfit >= stopLoss - 1e-9) break;
+          // Set the next bet from the win/loss rule: reset to base, or grow the
+          // current bet by the given % (100% = classic martingale double).
+          const mode = won ? onWinMode : onLossMode;
+          const pct = won ? toNum(onWinPct) : toNum(onLossPct);
+          nextBet = mode === 'reset' ? autoBaseBet : nextBet * (1 + pct / 100);
+          nextBet = Math.round(Math.max(0, nextBet) * 100) / 100;
+          if (!(nextBet > 0)) nextBet = autoBaseBet;
+        }
+
+        if (!autoInfinite) autoRemaining -= 1;
+        if (autoRemaining <= 0) break;
+        // Let the just-finished result sit briefly before the board clears.
+        await wait(750);
+      }
+    } finally {
+      autoRunning = false;
+      autoRemaining = 0;
+      // Restore the input to the starting bet so the sidebar doesn't keep the
+      // last (possibly grown) strategy amount after the run ends.
+      betInput = String(autoBaseBet);
+      // Return to the picking screen (guesses kept) so the player can adjust
+      // and run again - after leaving the final result up for a moment.
+      if (gameState === 'won' || gameState === 'lost') {
+        await wait(1000);
+        if (!autoRunning) retryGame();
+      }
+    }
+  }
+
+  function stopAuto() {
+    // Can't cancel a bet already on the server, so just ask the loop to stop
+    // before the next round; the current round plays out.
+    autoStopRequested = true;
+  }
+
+  // Switch Manual <-> Auto. Blocked while a round/auto run is live. If a result
+  // is on screen, drop back to the picking screen (guesses kept) so the choices
+  // are visible for the newly selected mode.
+  function selectMode(mode: 'manual' | 'auto') {
+    if (autoRunning || gameState === 'playing') return;
+    betMode = mode;
+    if (gameState === 'won' || gameState === 'lost') retryGame();
+  }
+
+  function setAutoRounds(n: number) {
+    autoInfinite = false;
+    autoRoundsInput = String(n);
+  }
+  function stepAutoRounds(direction: 1 | -1) {
+    autoInfinite = false;
+    const current = Math.floor(Number(autoRoundsInput));
+    const base = Number.isFinite(current) && current >= 1 ? current : 1;
+    autoRoundsInput = String(Math.max(1, base + direction));
+  }
+  function toggleAutoInfinite() {
+    autoInfinite = !autoInfinite;
+  }
+  function formatAutoRounds() {
+    const n = Math.floor(Number(autoRoundsInput));
+    autoRoundsInput = Number.isFinite(n) && n >= 1 ? String(n) : '1';
   }
 
   function retryGame() {
@@ -625,6 +798,27 @@
   <aside class="sidebar">
     <div class="sidebar-title">Ride the Bus</div>
 
+    <div class="mode-toggle" role="tablist" aria-label="Play mode">
+      <button
+        type="button"
+        class="mode-tab"
+        class:active={betMode === 'manual'}
+        role="tab"
+        aria-selected={betMode === 'manual'}
+        disabled={autoRunning || gameState === 'playing'}
+        onclick={() => selectMode('manual')}
+      >Manual</button>
+      <button
+        type="button"
+        class="mode-tab"
+        class:active={betMode === 'auto'}
+        role="tab"
+        aria-selected={betMode === 'auto'}
+        disabled={autoRunning || gameState === 'playing'}
+        onclick={() => selectMode('auto')}
+      >Auto</button>
+    </div>
+
     <div class="control-group">
       <span class="control-label">Bet Amount</span>
       <div class="bet-selector">
@@ -649,7 +843,126 @@
       </div>
     </div>
 
-    {#if gameState === 'start'}
+    {#if betMode === 'auto'}
+      <div class="control-group">
+        <span class="control-label">Number of Rounds</span>
+        <div class="rounds-selector">
+          <div class="rounds-field">
+            {#if autoInfinite}
+              <span class="rounds-infinite" aria-label="Infinite rounds">∞</span>
+            {:else}
+              <input
+                class="rounds-input"
+                type="text"
+                inputmode="numeric"
+                bind:value={autoRoundsInput}
+                onblur={formatAutoRounds}
+                aria-label="Number of rounds"
+                disabled={autoRunning}
+              />
+            {/if}
+          </div>
+          <div class="rounds-stepper">
+            <button type="button" class="stepper-btn" onclick={() => stepAutoRounds(1)} disabled={autoRunning} aria-label="More rounds">▲</button>
+            <button type="button" class="stepper-btn" onclick={() => stepAutoRounds(-1)} disabled={autoRunning} aria-label="Fewer rounds">▼</button>
+          </div>
+        </div>
+        <div class="rounds-presets">
+          {#each AUTO_ROUND_PRESETS as preset}
+            <button
+              type="button"
+              class="rounds-preset"
+              class:active={!autoInfinite && Math.floor(Number(autoRoundsInput)) === preset}
+              onclick={() => setAutoRounds(preset)}
+              disabled={autoRunning}
+            >{preset}</button>
+          {/each}
+          <button
+            type="button"
+            class="rounds-preset rounds-preset-inf"
+            class:active={autoInfinite}
+            onclick={toggleAutoInfinite}
+            disabled={autoRunning}
+            aria-pressed={autoInfinite}
+          >∞</button>
+        </div>
+      </div>
+
+      <div class="advanced-row">
+        <span class="control-label">Advanced{#if !ADVANCED_ENABLED}<span class="soon-tag">Soon</span>{/if}</span>
+        <button
+          type="button"
+          class="switch"
+          class:on={advancedMode}
+          role="switch"
+          aria-checked={advancedMode}
+          aria-label="Advanced auto-bet options"
+          title={ADVANCED_ENABLED ? undefined : 'Advanced auto-bet is disabled pending approval'}
+          disabled={autoRunning || !ADVANCED_ENABLED}
+          onclick={() => { if (ADVANCED_ENABLED) advancedMode = !advancedMode; }}
+        ><span class="switch-knob"></span></button>
+      </div>
+
+      {#if ADVANCED_ENABLED && advancedMode}
+        <div class="control-group">
+          <span class="control-label">On Win</span>
+          <div class="strategy-row">
+            <div class="seg">
+              <button type="button" class:active={onWinMode === 'reset'} disabled={autoRunning} onclick={() => (onWinMode = 'reset')}>Reset</button>
+              <button type="button" class:active={onWinMode === 'increase'} disabled={autoRunning} onclick={() => (onWinMode = 'increase')}>Increase by:</button>
+            </div>
+            <div class="pct-field" class:disabled={onWinMode !== 'increase'}>
+              <input class="pct-input" type="text" inputmode="decimal" bind:value={onWinPct} disabled={onWinMode !== 'increase' || autoRunning} aria-label="On win increase percent" />
+              <span class="pct-sign">%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <span class="control-label">On Loss</span>
+          <div class="strategy-row">
+            <div class="seg">
+              <button type="button" class:active={onLossMode === 'reset'} disabled={autoRunning} onclick={() => (onLossMode = 'reset')}>Reset</button>
+              <button type="button" class:active={onLossMode === 'increase'} disabled={autoRunning} onclick={() => (onLossMode = 'increase')}>Increase by:</button>
+            </div>
+            <div class="pct-field" class:disabled={onLossMode !== 'increase'}>
+              <input class="pct-input" type="text" inputmode="decimal" bind:value={onLossPct} disabled={onLossMode !== 'increase' || autoRunning} aria-label="On loss increase percent" />
+              <span class="pct-sign">%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <span class="control-label-row"><span>Stop on Profit</span><span class="stop-preview">{numberToCurrencyString(toNum(stopOnProfit))}</span></span>
+          <div class="amount-field">
+            <input class="amount-input" type="text" inputmode="decimal" bind:value={stopOnProfit} placeholder="0.00" aria-label="Stop on profit amount" disabled={autoRunning} />
+            <span class="currency-badge">$</span>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <span class="control-label-row"><span>Stop on Loss</span><span class="stop-preview">{numberToCurrencyString(toNum(stopOnLoss))}</span></span>
+          <div class="amount-field">
+            <input class="amount-input" type="text" inputmode="decimal" bind:value={stopOnLoss} placeholder="0.00" aria-label="Stop on loss amount" disabled={autoRunning} />
+            <span class="currency-badge">$</span>
+          </div>
+        </div>
+      {/if}
+    {/if}
+
+    {#if autoRunning}
+      <button class="action-button stop" onclick={stopAuto}>
+        Stop{autoInfinite ? '' : ` · ${autoRemaining} left`}
+      </button>
+    {:else if betMode === 'auto'}
+      <button
+        class="action-button"
+        onclick={startAuto}
+        disabled={(IS_PROD && resolveRoundSeed().source === 'none') || !betIsValid() || !allChoicesMade() || !autoRoundsValid() || isProcessing}
+      >
+        {#if !allChoicesMade()}Pick all 4 guesses{:else if !betIsValid()}Enter a valid bet{:else if !autoRoundsValid()}Set rounds{:else}Start Auto{/if}
+      </button>
+    {:else if gameState === 'start'}
       <button
         class="action-button"
         onclick={startGame}
@@ -926,6 +1239,273 @@
     background: linear-gradient(180deg, #ffb64c, #e08a1f);
     box-shadow: 0 6px 16px rgba(224, 138, 31, 0.35);
   }
+  /* Stop (auto running) - a clear danger action. */
+  .action-button.stop {
+    background: linear-gradient(180deg, #ff5d5d, #d63a3a);
+    box-shadow: 0 6px 16px rgba(214, 58, 58, 0.35);
+  }
+
+  /* Manual | Auto segmented control (top of the sidebar). The global
+     `button { padding/font/text-transform }` in app.css is overridden per
+     element below (incl. text-transform:none so it reads "Manual"/"Auto"). */
+  .mode-toggle {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 999px;
+    background: rgba(5, 12, 18, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .mode-tab {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 9px 8px;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: #93a4b5;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .mode-tab.active {
+    background: linear-gradient(180deg, #3a4d63, #2c3d50);
+    color: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  }
+  .mode-tab:not(.active):not(:disabled):hover { color: #cfe0f0; }
+  .mode-tab:disabled { cursor: not-allowed; opacity: 0.55; }
+
+  /* Number-of-Rounds selector: mirrors the bet selector (field + vertical
+     stepper), with a row of quick presets under it. Reuses .stepper-btn. */
+  .rounds-selector {
+    display: flex;
+    align-items: stretch;
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(5, 12, 18, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+  }
+  .rounds-field {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+  }
+  .rounds-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+    font-size: 18px;
+    font-weight: 800;
+    padding: 0;
+    border: none;
+    outline: none;
+    color: #fff;
+    background: transparent;
+    box-sizing: border-box;
+  }
+  .rounds-input:disabled { color: rgba(255, 255, 255, 0.55); }
+  .rounds-infinite {
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1;
+    color: #fff;
+  }
+  .rounds-stepper {
+    flex: 0 0 auto;
+    width: 46px;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid rgba(255, 255, 255, 0.16);
+  }
+  .rounds-presets {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .rounds-preset {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 6px 0;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 8px;
+    background: rgba(5, 12, 18, 0.5);
+    color: #93a4b5;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: none;
+    cursor: pointer;
+    transition: color 0.12s, border-color 0.12s, background 0.12s;
+  }
+  .rounds-preset:not(:disabled):hover { color: #cfe0f0; border-color: rgba(255, 255, 255, 0.28); }
+  .rounds-preset.active {
+    background: rgba(76, 159, 254, 0.2);
+    border-color: rgba(76, 159, 254, 0.6);
+    color: #fff;
+  }
+  .rounds-preset:disabled { opacity: 0.5; cursor: not-allowed; }
+  .rounds-preset-inf { font-size: 1rem; line-height: 1; }
+
+  /* Advanced auto-bet panel (Stake-style): a switch that reveals On Win /
+     On Loss bet progression and Stop on Profit / Stop on Loss limits. */
+  .advanced-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  /* "Soon" tag shown next to Advanced while the bet-progression panel is gated
+     off (ADVANCED_ENABLED = false) pending Stake approval. */
+  .soon-tag {
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #8296a8;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    vertical-align: middle;
+  }
+  .switch {
+    flex: 0 0 auto;
+    width: 44px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+    position: relative;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .switch.on { background: #1f8fff; }
+  .switch:disabled { opacity: 0.55; cursor: not-allowed; }
+  .switch-knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    transition: transform 0.15s;
+  }
+  .switch.on .switch-knob { transform: translateX(20px); }
+
+  /* On Win / On Loss: a Reset | Increase-by segmented toggle plus a % field. */
+  .strategy-row {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .seg {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(5, 12, 18, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+  }
+  .seg button {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 8px 4px;
+    border: none;
+    background: transparent;
+    color: #93a4b5;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+  }
+  .seg button.active { background: rgba(76, 159, 254, 0.2); color: #fff; }
+  .seg button:not(.active):not(:disabled):hover { color: #cfe0f0; }
+  .seg button:disabled { cursor: not-allowed; opacity: 0.6; }
+
+  .pct-field {
+    flex: 0 0 auto;
+    width: 72px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 0 8px;
+    border-radius: 8px;
+    background: rgba(5, 12, 18, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+  }
+  .pct-field.disabled { opacity: 0.5; }
+  .pct-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+    padding: 8px 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-align: right;
+  }
+  .pct-sign { flex: 0 0 auto; color: #93a4b5; font-size: 0.8rem; font-weight: 700; }
+
+  /* Stop on Profit / Stop on Loss: label with a live $ readout, then an amount
+     field with a currency badge. */
+  .control-label-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #93a4b5;
+  }
+  .stop-preview { color: #6f8296; letter-spacing: 0; text-transform: none; font-weight: 700; }
+  .amount-field {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 10px;
+    border-radius: 8px;
+    background: rgba(5, 12, 18, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+  }
+  .amount-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 10px 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .currency-badge {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #26a17b;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
   .profit-display {
     padding: 10px 12px;
@@ -1079,6 +1659,10 @@
     .round-debug { display: none; }
     .card-mult { font-size: 0.8rem; min-height: 20px; }
     .running-win-amount { font-size: 1.5rem; }
+    .mode-tab { padding: 7px 6px; font-size: 0.78rem; }
+    .rounds-field { padding: 4px 10px; }
+    .rounds-input, .rounds-infinite { font-size: 15px; }
+    .rounds-preset { padding: 5px 0; font-size: 0.68rem; }
   }
 
   /* Tiny popout (e.g. 400x225): minimal control panel + very small game. */
@@ -1105,6 +1689,23 @@
     .running-win-label { font-size: 0.55rem; }
     .card-mult { font-size: 0.62rem; min-height: 15px; padding: 0 6px; }
     .equal-btn { width: 13px; height: 13px; font-size: 0.5rem; }
+    .mode-toggle { padding: 3px; }
+    .mode-tab { padding: 5px 4px; font-size: 0.6rem; }
+    .rounds-field { padding: 3px 8px; }
+    .rounds-input, .rounds-infinite { font-size: 13px; }
+    .rounds-stepper { width: 30px; }
+    .rounds-presets { gap: 4px; margin-top: 4px; }
+    .rounds-preset { padding: 3px 0; font-size: 0.58rem; }
+    .switch { width: 34px; height: 19px; }
+    .switch-knob { width: 15px; height: 15px; }
+    .switch.on .switch-knob { transform: translateX(15px); }
+    .strategy-row { gap: 5px; }
+    .seg button { padding: 4px 2px; font-size: 0.52rem; }
+    .pct-field { width: 50px; padding: 0 5px; }
+    .pct-input { font-size: 0.62rem; padding: 4px 0; }
+    .control-label-row { font-size: 0.58rem; }
+    .amount-input { font-size: 0.72rem; padding: 5px 0; }
+    .currency-badge { width: 15px; height: 15px; font-size: 0.56rem; }
   }
 
   /* Choice squares */
