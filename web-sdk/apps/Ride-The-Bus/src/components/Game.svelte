@@ -113,6 +113,10 @@
   // (createIntermediateMachineAutoBet.ts) which just counts down a run of
   // discrete bets and stops on 0 / insufficient funds / a Stop.
   let betMode = $state<'manual' | 'auto'>('manual');
+  // Turbo collapses the reveal/pacing delays so a round (and each auto round)
+  // resolves near-instantly - all cards flip at once instead of the ~3s
+  // card-by-card animation. Safe to toggle any time, including mid auto-run.
+  let turbo = $state(false);
   let autoRoundsInput = $state('10');
   let autoInfinite = $state(false);
   let autoRunning = $state(false);
@@ -253,6 +257,9 @@
   const allChoicesMade = () => Boolean(colorChoice && hlChoice && ioChoice && suitChoice);
   const isEngineRound = () => roundSource !== 'local-fallback' && roundSource !== 'none';
   const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+  // Pick a delay based on Turbo: normal pacing vs a collapsed fast one. Read at
+  // call time so toggling Turbo mid-reveal takes effect on the next step.
+  const paceMs = (normal: number, fast: number) => (turbo ? fast : normal);
 
   const resolveRoundSeed = () => {
     if (roundSeed !== fallbackRoundSeed) {
@@ -329,7 +336,7 @@
     let running = 1;
     let busted = false;
     for (let i = 0; i < revealEvents.length; i++) {
-      await wait(650);
+      await wait(paceMs(650, 0));
       revealedCards[i] = revealEvents[i].card;
       const event = revealEvents[i];
       if (!busted && event.correct) {
@@ -342,12 +349,12 @@
       stageMultipliers[i] = quantizeMultiplier(running);
       runningWin = stageMultipliers[i]! * initialBet;
       if (busted) {
-        await wait(900);
+        await wait(paceMs(900, 150));
         break;
       }
     }
 
-    await wait(300);
+    await wait(paceMs(300, 120));
     // Prefer the server's authoritative payout on engine rounds; fall back to
     // the local formula (identical maths) when there's no RGS session.
     const multiplier = engineFinalMultiplier ?? computeFinalMultiplier(revealEvents);
@@ -588,7 +595,7 @@
         if (!autoInfinite) autoRemaining -= 1;
         if (autoRemaining <= 0) break;
         // Let the just-finished result sit briefly before the board clears.
-        await wait(750);
+        await wait(paceMs(750, 200));
       }
     } finally {
       autoRunning = false;
@@ -599,7 +606,7 @@
       // Return to the picking screen (guesses kept) so the player can adjust
       // and run again - after leaving the final result up for a moment.
       if (gameState === 'won' || gameState === 'lost') {
-        await wait(1000);
+        await wait(paceMs(1000, 300));
         if (!autoRunning) retryGame();
       }
     }
@@ -842,6 +849,18 @@
         </div>
       </div>
     </div>
+
+    <button
+      type="button"
+      class="turbo-toggle"
+      class:active={turbo}
+      onclick={() => (turbo = !turbo)}
+      aria-pressed={turbo}
+      aria-label="Turbo mode"
+    >
+      <span class="turbo-icon" aria-hidden="true">⚡</span>
+      <span>Turbo{turbo ? ' On' : ''}</span>
+    </button>
 
     {#if betMode === 'auto'}
       <div class="control-group">
@@ -1244,6 +1263,33 @@
     background: linear-gradient(180deg, #ff5d5d, #d63a3a);
     box-shadow: 0 6px 16px rgba(214, 58, 58, 0.35);
   }
+
+  /* Turbo: a toggle that collapses the reveal animation. Amber when active. */
+  .turbo-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 10px;
+    background: rgba(5, 12, 18, 0.6);
+    color: #93a4b5;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: color 0.12s, border-color 0.12s, background 0.12s;
+  }
+  .turbo-toggle:hover { color: #cfe0f0; border-color: rgba(255, 255, 255, 0.28); }
+  .turbo-toggle.active {
+    background: rgba(255, 193, 7, 0.16);
+    border-color: rgba(255, 193, 7, 0.55);
+    color: #ffd54a;
+  }
+  .turbo-icon { font-size: 0.95rem; line-height: 1; }
 
   /* Manual | Auto segmented control (top of the sidebar). The global
      `button { padding/font/text-transform }` in app.css is overridden per
@@ -1706,6 +1752,8 @@
     .control-label-row { font-size: 0.58rem; }
     .amount-input { font-size: 0.72rem; padding: 5px 0; }
     .currency-badge { width: 15px; height: 15px; font-size: 0.56rem; }
+    .turbo-toggle { padding: 5px; font-size: 0.6rem; }
+    .turbo-icon { font-size: 0.7rem; }
   }
 
   /* Choice squares */
