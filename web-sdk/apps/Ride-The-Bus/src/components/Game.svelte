@@ -73,6 +73,9 @@
 
   let gameState = $state<State>('start');
   let isProcessing = $state(false);
+  // The win readout stays hidden on the very first screen and appears once the
+  // player has taken their first spin.
+  let hasPlayed = $state(false);
 
   let colorChoice = $state<ColorChoice>(null);
   let hlChoice = $state<HigherLowerChoice>(null);
@@ -113,10 +116,14 @@
   // (createIntermediateMachineAutoBet.ts) which just counts down a run of
   // discrete bets and stops on 0 / insufficient funds / a Stop.
   let betMode = $state<'manual' | 'auto'>('manual');
-  // Turbo collapses the reveal/pacing delays so a round (and each auto round)
-  // resolves near-instantly - all cards flip at once instead of the ~3s
-  // card-by-card animation. Safe to toggle any time, including mid auto-run.
-  let turbo = $state(false);
+  // Turbo is a SPEED now (0 = full-length reveal ... 1 = instant), set by the
+  // turbo popup's slider. It scales the per-step reveal delays (paceMs) and the
+  // card flip duration (--flip-dur) continuously.
+  let turboSpeed = $state(0);
+
+  // Bottom control-bar UI: which popup (if any) is open, plus mute state.
+  let openPopup = $state<null | 'bet' | 'turbo' | 'autospin' | 'advanced' | 'info'>(null);
+  let muted = $state(false);
   let autoRoundsInput = $state('10');
   let autoInfinite = $state(false);
   let autoRunning = $state(false);
@@ -126,6 +133,15 @@
   // finishes normally - this matches the documented single-bet RGS model).
   let autoStopRequested = $state(false);
   const AUTO_ROUND_PRESETS = [10, 25, 50, 100];
+  // Spin-count presets for the Autoplay popup.
+  const AUTOSPIN_PRESETS = [10, 25, 50, 100, 250, 500, 1000];
+  // Fallback bet levels for the bet menu when no RGS session has supplied any
+  // (local dev). On a real session stateConfig.betAmountOptions drives it.
+  const DEFAULT_BET_LEVELS = [1, 5, 25, 50, 75, 100, 200, 500, 800, 1000];
+  const betLevels = () => {
+    const lv = stateConfig.betAmountOptions;
+    return lv && lv.length ? [...lv].sort((a, b) => a - b) : DEFAULT_BET_LEVELS;
+  };
   const autoRoundsValid = () =>
     autoInfinite || (Number.isFinite(Number(autoRoundsInput)) && Math.floor(Number(autoRoundsInput)) >= 1);
   // Stop the auto run the moment a round is won outright (all 4 cards correct,
@@ -261,9 +277,12 @@
   const allChoicesMade = () => Boolean(colorChoice && hlChoice && ioChoice && suitChoice);
   const isEngineRound = () => roundSource !== 'local-fallback' && roundSource !== 'none';
   const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
-  // Pick a delay based on Turbo: normal pacing vs a collapsed fast one. Read at
-  // call time so toggling Turbo mid-reveal takes effect on the next step.
-  const paceMs = (normal: number, fast: number) => (turbo ? fast : normal);
+  // Scale a delay by the turbo speed: 0 => full `normal`, 1 => `fast` (instant).
+  // Read at call time so moving the slider mid-reveal takes effect next step.
+  const paceMs = (normal: number, fast: number) => Math.round(normal + (fast - normal) * turboSpeed);
+  // Card flip duration (seconds) for the --flip-dur CSS var; shrinks to 0 as
+  // turbo approaches instant.
+  const flipDurSec = () => (0.5 * (1 - turboSpeed)).toFixed(3);
 
   const resolveRoundSeed = () => {
     if (roundSeed !== fallbackRoundSeed) {
@@ -507,6 +526,7 @@
     // The Start button is disabled unless these hold, but guard anyway.
     if (!betIsValid() || !allChoicesMade()) return;
     roundError = false;
+    hasPlayed = true;
 
     // Normalize the live bet to what the RGS accepts (clamp to range, round to
     // the cent) at the moment of play.
@@ -650,6 +670,38 @@
   function formatAutoRounds() {
     const n = Math.floor(Number(autoRoundsInput));
     autoRoundsInput = Number.isFinite(n) && n >= 1 ? String(n) : '1';
+  }
+
+  // --- Bottom control-bar handlers ---
+  function togglePopup(name: 'bet' | 'turbo' | 'autospin' | 'advanced' | 'info') {
+    openPopup = openPopup === name ? null : name;
+  }
+  // The big spin button: acts as Stop while an auto run is live, otherwise
+  // plays exactly one round. Disabled (greyed) until a bet + all 4 guesses are
+  // valid.
+  const spinDisabled = () =>
+    autoRunning
+      ? false
+      : gameState === 'playing' ||
+        isProcessing ||
+        !betIsValid() ||
+        !allChoicesMade() ||
+        (IS_PROD && resolveRoundSeed().source === 'none');
+  function onSpin() {
+    if (autoRunning) { stopAuto(); return; }
+    if (spinDisabled()) return;
+    playRound().catch((err) => console.error('Play failed', err));
+  }
+  // Bet menu: choose a preset level then close.
+  function setBetLevel(v: number) {
+    betInput = String(v);
+    openPopup = null;
+  }
+  // Autoplay popup Start: close it and kick off the run.
+  function startAutoFromPopup() {
+    if (!betIsValid() || !allChoicesMade() || !autoRoundsValid()) return;
+    openPopup = null;
+    startAuto();
   }
 
   function retryGame() {
@@ -808,231 +860,13 @@
   const backdropUrl = `${base}/backdrop.png`;
 </script>
 
-<div class="game-layout" style={`--backdrop-url: url(${backdropUrl})`}>
-  <aside class="sidebar">
-    <div class="sidebar-title">Ride the Bus</div>
+<div class="game-layout" style={`--backdrop-url: url(${backdropUrl}); --flip-dur: ${flipDurSec()}s`}>
+  <div class="game-title" aria-hidden="true">
+    <span class="game-title-main">Ride The Bus</span>
+    <span class="game-title-sub">by Takeover Casino</span>
+  </div>
 
-    <div class="mode-toggle" role="tablist" aria-label="Play mode">
-      <button
-        type="button"
-        class="mode-tab"
-        class:active={betMode === 'manual'}
-        role="tab"
-        aria-selected={betMode === 'manual'}
-        disabled={autoRunning || gameState === 'playing'}
-        onclick={() => selectMode('manual')}
-      >Manual</button>
-      <button
-        type="button"
-        class="mode-tab"
-        class:active={betMode === 'auto'}
-        role="tab"
-        aria-selected={betMode === 'auto'}
-        disabled={autoRunning || gameState === 'playing'}
-        onclick={() => selectMode('auto')}
-      >Auto</button>
-    </div>
-
-    <div class="control-group">
-      <span class="control-label">Bet Amount</span>
-      <div class="bet-selector">
-        <div class="bet-field">
-          <div class="bet-amount-row" bind:this={betRowEl}>
-            <span class="bet-currency">$</span>
-            <input
-              class="bet-input"
-              type="text"
-              inputmode="decimal"
-              bind:value={betInput}
-              onblur={formatBetInput}
-              placeholder="0.00"
-              aria-label="Bet amount"
-            />
-          </div>
-        </div>
-        <div class="bet-stepper">
-          <button type="button" class="stepper-btn" onclick={() => stepBet(1)} aria-label="Increase bet">▲</button>
-          <button type="button" class="stepper-btn" onclick={() => stepBet(-1)} aria-label="Decrease bet">▼</button>
-        </div>
-      </div>
-    </div>
-
-    <button
-      type="button"
-      class="turbo-toggle"
-      class:active={turbo}
-      onclick={() => (turbo = !turbo)}
-      aria-pressed={turbo}
-      aria-label="Turbo mode"
-    >
-      <span class="turbo-icon" aria-hidden="true">⚡</span>
-      <span>Turbo{turbo ? ' On' : ''}</span>
-    </button>
-
-    {#if betMode === 'auto'}
-      <div class="control-group">
-        <span class="control-label">Number of Rounds</span>
-        <div class="rounds-selector">
-          <div class="rounds-field">
-            {#if autoInfinite}
-              <span class="rounds-infinite" aria-label="Infinite rounds">∞</span>
-            {:else}
-              <input
-                class="rounds-input"
-                type="text"
-                inputmode="numeric"
-                bind:value={autoRoundsInput}
-                onblur={formatAutoRounds}
-                aria-label="Number of rounds"
-                disabled={autoRunning}
-              />
-            {/if}
-          </div>
-          <div class="rounds-stepper">
-            <button type="button" class="stepper-btn" onclick={() => stepAutoRounds(1)} disabled={autoRunning} aria-label="More rounds">▲</button>
-            <button type="button" class="stepper-btn" onclick={() => stepAutoRounds(-1)} disabled={autoRunning} aria-label="Fewer rounds">▼</button>
-          </div>
-        </div>
-        <div class="rounds-presets">
-          {#each AUTO_ROUND_PRESETS as preset}
-            <button
-              type="button"
-              class="rounds-preset"
-              class:active={!autoInfinite && Math.floor(Number(autoRoundsInput)) === preset}
-              onclick={() => setAutoRounds(preset)}
-              disabled={autoRunning}
-            >{preset}</button>
-          {/each}
-          <button
-            type="button"
-            class="rounds-preset rounds-preset-inf"
-            class:active={autoInfinite}
-            onclick={toggleAutoInfinite}
-            disabled={autoRunning}
-            aria-pressed={autoInfinite}
-          >∞</button>
-        </div>
-      </div>
-
-      <div class="advanced-row">
-        <span class="control-label">Stop on full game win</span>
-        <button
-          type="button"
-          class="switch"
-          class:on={stopOnFullWin}
-          role="switch"
-          aria-checked={stopOnFullWin}
-          aria-label="Stop auto on a full game win"
-          disabled={autoRunning}
-          onclick={() => (stopOnFullWin = !stopOnFullWin)}
-        ><span class="switch-knob"></span></button>
-      </div>
-
-      <div class="advanced-row">
-        <span class="control-label">Advanced{#if !ADVANCED_ENABLED}<span class="soon-tag">Soon</span>{/if}</span>
-        <button
-          type="button"
-          class="switch"
-          class:on={advancedMode}
-          role="switch"
-          aria-checked={advancedMode}
-          aria-label="Advanced auto-bet options"
-          title={ADVANCED_ENABLED ? undefined : 'Advanced auto-bet is disabled pending approval'}
-          disabled={autoRunning || !ADVANCED_ENABLED}
-          onclick={() => { if (ADVANCED_ENABLED) advancedMode = !advancedMode; }}
-        ><span class="switch-knob"></span></button>
-      </div>
-
-      {#if ADVANCED_ENABLED && advancedMode}
-        <div class="control-group">
-          <span class="control-label">On Win</span>
-          <div class="strategy-row">
-            <div class="seg">
-              <button type="button" class:active={onWinMode === 'reset'} disabled={autoRunning} onclick={() => (onWinMode = 'reset')}>Reset</button>
-              <button type="button" class:active={onWinMode === 'increase'} disabled={autoRunning} onclick={() => (onWinMode = 'increase')}>Increase by:</button>
-            </div>
-            <div class="pct-field" class:disabled={onWinMode !== 'increase'}>
-              <input class="pct-input" type="text" inputmode="decimal" bind:value={onWinPct} disabled={onWinMode !== 'increase' || autoRunning} aria-label="On win increase percent" />
-              <span class="pct-sign">%</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="control-group">
-          <span class="control-label">On Loss</span>
-          <div class="strategy-row">
-            <div class="seg">
-              <button type="button" class:active={onLossMode === 'reset'} disabled={autoRunning} onclick={() => (onLossMode = 'reset')}>Reset</button>
-              <button type="button" class:active={onLossMode === 'increase'} disabled={autoRunning} onclick={() => (onLossMode = 'increase')}>Increase by:</button>
-            </div>
-            <div class="pct-field" class:disabled={onLossMode !== 'increase'}>
-              <input class="pct-input" type="text" inputmode="decimal" bind:value={onLossPct} disabled={onLossMode !== 'increase' || autoRunning} aria-label="On loss increase percent" />
-              <span class="pct-sign">%</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="control-group">
-          <span class="control-label-row"><span>Stop on Profit</span><span class="stop-preview">{numberToCurrencyString(toNum(stopOnProfit))}</span></span>
-          <div class="amount-field">
-            <input class="amount-input" type="text" inputmode="decimal" bind:value={stopOnProfit} placeholder="0.00" aria-label="Stop on profit amount" disabled={autoRunning} />
-            <span class="currency-badge">$</span>
-          </div>
-        </div>
-
-        <div class="control-group">
-          <span class="control-label-row"><span>Stop on Loss</span><span class="stop-preview">{numberToCurrencyString(toNum(stopOnLoss))}</span></span>
-          <div class="amount-field">
-            <input class="amount-input" type="text" inputmode="decimal" bind:value={stopOnLoss} placeholder="0.00" aria-label="Stop on loss amount" disabled={autoRunning} />
-            <span class="currency-badge">$</span>
-          </div>
-        </div>
-      {/if}
-    {/if}
-
-    {#if autoRunning}
-      <button class="action-button stop" onclick={stopAuto}>
-        Stop{autoInfinite ? '' : ` · ${autoRemaining} left`}
-      </button>
-    {:else if betMode === 'auto'}
-      <button
-        class="action-button"
-        onclick={startAuto}
-        disabled={(IS_PROD && resolveRoundSeed().source === 'none') || !betIsValid() || !allChoicesMade() || !autoRoundsValid() || isProcessing}
-      >
-        {#if !allChoicesMade()}Pick all 4 guesses{:else if !betIsValid()}Enter a valid bet{:else if !autoRoundsValid()}Set rounds{:else}Start Auto{/if}
-      </button>
-    {:else if gameState === 'start'}
-      <button
-        class="action-button"
-        onclick={startGame}
-        disabled={(IS_PROD && resolveRoundSeed().source === 'none') || !betIsValid() || !allChoicesMade() || isProcessing}
-      >
-        {#if !allChoicesMade()}Pick all 4 guesses{:else if !betIsValid()}Enter a valid bet{:else}Start{/if}
-      </button>
-    {:else if gameState === 'playing'}
-      <button class="action-button" disabled>Revealing…</button>
-    {:else}
-      <button class="action-button replay" onclick={retryGame}>Play Again</button>
-    {/if}
-
-    <div class="control-group">
-      <span class="control-label">Total Profit ({initialBet > 0 && wonAmount > 0 ? (wonAmount / initialBet).toFixed(2) : '0.00'}×)</span>
-      <div class="profit-display">{numberToCurrencyString(wonAmount)}</div>
-    </div>
-
-    <div class="wallet-info">
-      <div><span>Balance</span><strong>{numberToCurrencyString(stateBet.balanceAmount)}</strong></div>
-      <div><span>Current Bet</span><strong>{numberToCurrencyString(stateBet.betAmount)}</strong></div>
-    </div>
-
-    <div class="round-debug" aria-live="polite">
-      <span>Source: {roundSource}</span>
-      <span>Round: {lastRoundId || 'not started'}</span>
-    </div>
-  </aside>
-
-  <main class="game-main">
+  <main class="play-area">
     {#snippet cardRow()}
       <div class="card-row">
         {#each revealedCards as card, index}
@@ -1041,7 +875,7 @@
               {(stageMultipliers[index] ?? 0).toFixed(2)}×
             </div>
             <div class="card-block">
-              <div class="card-inner" class:flipped={card} class:instant={turbo}>
+              <div class="card-inner" class:flipped={card}>
                 <div class="card-back" aria-hidden="true"></div>
                 <div class="card-front">
                   {#if card}
@@ -1063,82 +897,201 @@
     {/snippet}
 
     {#snippet runningWinBar()}
-      <div class="running-win">
-        <span class="running-win-label">Winning</span>
+      <div class="running-win" class:is-win={gameState === 'won' && wonAmount > 0} class:is-loss={gameState === 'lost'}>
+        <span class="running-win-label">
+          {#if gameState === 'won'}{bustedIndex === null ? 'Full Game Win!' : 'Banked'}{:else if gameState === 'lost'}Busted{:else if gameState === 'playing'}Revealing…{:else}Winning{/if}
+        </span>
         <span class="running-win-amount">{numberToCurrencyString(runningWin)}</span>
+        <!-- Always rendered (a non-breaking space when there's no result yet) so
+             the multiplier appearing at the end of a round doesn't grow the bar
+             and shove the cards / choices around. -->
+        <span class="running-win-mult">{(gameState === 'won' || gameState === 'lost') && initialBet > 0 ? `${(wonAmount / initialBet).toFixed(2)}×` : ' '}</span>
       </div>
     {/snippet}
 
-    {#if gameState === 'start'}
-      {@render cardRow()}
-      <div class="choice-row">
-        <div class="choice-column">
-          <span class="choice-label">Color</span>
-          <div class="choice-square color-square" role="group" aria-label="Pick a color">
-            <button type="button" class="half-btn black-half" class:selected={colorChoice === 'black'} onclick={() => (colorChoice = 'black')} aria-label="Black"></button>
-            <button type="button" class="half-btn red-half" class:selected={colorChoice === 'red'} onclick={() => (colorChoice = 'red')} aria-label="Red"></button>
-          </div>
-        </div>
+    {@render cardRow()}
+    {#if hasPlayed}{@render runningWinBar()}{/if}
 
-        <div class="choice-column">
-          <span class="choice-label">Higher / Lower</span>
-          <div class="choice-square hl-square" role="group" aria-label="Higher, lower, or equal">
-            <button type="button" class="third-btn higher-third" class:selected={hlChoice === 'higher'} onclick={() => (hlChoice = 'higher')} aria-label="Higher">▲</button>
-            <button type="button" class="third-btn lower-third" class:selected={hlChoice === 'lower'} onclick={() => (hlChoice = 'lower')} aria-label="Lower">▼</button>
-            <button type="button" class="equal-btn" class:selected={hlChoice === 'equal'} onclick={() => (hlChoice = 'equal')} aria-label="Equal">=</button>
-          </div>
-        </div>
-
-        <div class="choice-column">
-          <span class="choice-label">Inside / Outside</span>
-          <div class="choice-square io-square" role="group" aria-label="Inside, outside, or equal">
-            <button type="button" class="half-btn inside-half" class:selected={ioChoice === 'inside'} onclick={() => (ioChoice = 'inside')} aria-label="Inside">→←</button>
-            <button type="button" class="half-btn outside-half" class:selected={ioChoice === 'outside'} onclick={() => (ioChoice = 'outside')} aria-label="Outside">←→</button>
-            <button type="button" class="equal-btn" class:selected={ioChoice === 'equal'} onclick={() => (ioChoice = 'equal')} aria-label="Equal">=</button>
-          </div>
-        </div>
-
-        <div class="choice-column">
-          <span class="choice-label">Suit</span>
-          <div class="choice-square suit-square" role="group" aria-label="Pick a suit">
-            <button type="button" class="quad-btn red-suit" class:selected={suitChoice === 'heart'} onclick={() => (suitChoice = 'heart')} aria-label="Heart">♥</button>
-            <button type="button" class="quad-btn" class:selected={suitChoice === 'spade'} onclick={() => (suitChoice = 'spade')} aria-label="Spade">♠</button>
-            <button type="button" class="quad-btn" class:selected={suitChoice === 'club'} onclick={() => (suitChoice = 'club')} aria-label="Club">♣</button>
-            <button type="button" class="quad-btn red-suit" class:selected={suitChoice === 'diamond'} onclick={() => (suitChoice = 'diamond')} aria-label="Diamond">♦</button>
-          </div>
+    <div class="choice-row" class:locked={gameState === 'playing' || autoRunning}>
+      <div class="choice-column">
+        <span class="choice-label">Color</span>
+        <div class="choice-square color-square" role="group" aria-label="Pick a color">
+          <button type="button" class="half-btn black-half" class:selected={colorChoice === 'black'} onclick={() => (colorChoice = 'black')} aria-label="Black"></button>
+          <button type="button" class="half-btn red-half" class:selected={colorChoice === 'red'} onclick={() => (colorChoice = 'red')} aria-label="Red"></button>
         </div>
       </div>
-    {/if}
 
-    {#if gameState === 'playing' || gameState === 'lost'}
-      {@render cardRow()}
-      {@render runningWinBar()}
-      <div class="game-stage">
-        {#if gameState === 'lost'}
-          <p>You busted on the first card and lost your bet.</p>
-        {:else}
-          <p>Revealing your cards…</p>
-        {/if}
-      </div>
-    {/if}
-
-    {#if gameState === 'won'}
-      <div class="result-screen">
-        {@render cardRow()}
-        <div class="result-hero">
-          <p class="result-kicker">{bustedIndex === null ? 'Full Game Win' : 'You Rode The Bus'}</p>
-          {#if bustedIndex === null}
-            <h2>Congratulations! Full Game Win</h2>
-            <p class="result-copy">You correctly guessed all four cards!</p>
-          {:else}
-            <h2>Banked before the bust!</h2>
-            <p class="result-copy">You missed on card {bustedIndex + 1}, but kept the winnings earned up to there.</p>
-          {/if}
-          <div class="result-total">x{initialBet > 0 ? (wonAmount / initialBet).toFixed(2) : '0.00'} — ${wonAmount.toFixed(2)}</div>
+      <div class="choice-column">
+        <span class="choice-label">Higher / Lower</span>
+        <div class="choice-square hl-square" role="group" aria-label="Higher, lower, or equal">
+          <button type="button" class="third-btn higher-third" class:selected={hlChoice === 'higher'} onclick={() => (hlChoice = 'higher')} aria-label="Higher">▲</button>
+          <button type="button" class="third-btn lower-third" class:selected={hlChoice === 'lower'} onclick={() => (hlChoice = 'lower')} aria-label="Lower">▼</button>
+          <button type="button" class="equal-btn" class:selected={hlChoice === 'equal'} onclick={() => (hlChoice = 'equal')} aria-label="Equal">=</button>
         </div>
       </div>
-    {/if}
+
+      <div class="choice-column">
+        <span class="choice-label">Inside / Outside</span>
+        <div class="choice-square io-square" role="group" aria-label="Inside, outside, or equal">
+          <button type="button" class="half-btn inside-half" class:selected={ioChoice === 'inside'} onclick={() => (ioChoice = 'inside')} aria-label="Inside">→←</button>
+          <button type="button" class="half-btn outside-half" class:selected={ioChoice === 'outside'} onclick={() => (ioChoice = 'outside')} aria-label="Outside">←→</button>
+          <button type="button" class="equal-btn" class:selected={ioChoice === 'equal'} onclick={() => (ioChoice = 'equal')} aria-label="Equal">=</button>
+        </div>
+      </div>
+
+      <div class="choice-column">
+        <span class="choice-label">Suit</span>
+        <div class="choice-square suit-square" role="group" aria-label="Pick a suit">
+          <button type="button" class="quad-btn red-suit" class:selected={suitChoice === 'heart'} onclick={() => (suitChoice = 'heart')} aria-label="Heart">♥</button>
+          <button type="button" class="quad-btn" class:selected={suitChoice === 'spade'} onclick={() => (suitChoice = 'spade')} aria-label="Spade">♠</button>
+          <button type="button" class="quad-btn" class:selected={suitChoice === 'club'} onclick={() => (suitChoice = 'club')} aria-label="Club">♣</button>
+          <button type="button" class="quad-btn red-suit" class:selected={suitChoice === 'diamond'} onclick={() => (suitChoice = 'diamond')} aria-label="Diamond">♦</button>
+        </div>
+      </div>
+    </div>
   </main>
+
+  <footer class="control-bar">
+    <div class="cb-cluster cb-left">
+      <button class="cb-icon" class:active={openPopup === 'info'} onclick={() => togglePopup('info')} aria-label="How to play">
+        <span class="cb-glyph cb-info-i">i</span>
+      </button>
+      <button class="cb-icon" onclick={() => (muted = !muted)} aria-pressed={muted} aria-label={muted ? 'Unmute' : 'Mute'}>
+        <span class="cb-glyph">{muted ? '🔇' : '🔊'}</span>
+      </button>
+      <div class="cb-balance">
+        <span class="cb-cap">Balance</span>
+        <span class="cb-val">{numberToCurrencyString(stateBet.balanceAmount)}</span>
+      </div>
+    </div>
+
+    <div class="cb-cluster cb-right">
+      <div class="cb-bet">
+        <button class="cb-bet-display" class:active={openPopup === 'bet'} onclick={() => togglePopup('bet')} aria-label="Choose bet amount">
+          <span class="cb-cap">Bet</span>
+          <span class="cb-val">{numberToCurrencyString(betValue() > 0 ? betValue() : 0)}</span>
+        </button>
+        <div class="cb-betstep">
+          <button class="cb-step" onclick={() => stepBet(1)} disabled={autoRunning} aria-label="Increase bet">+</button>
+          <button class="cb-step" onclick={() => stepBet(-1)} disabled={autoRunning} aria-label="Decrease bet">−</button>
+        </div>
+      </div>
+
+      <button class="cb-round cb-turbo" class:active={turboSpeed > 0 || openPopup === 'turbo'} onclick={() => togglePopup('turbo')} aria-label="Turbo speed">
+        <svg class="cb-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 2v11h3v9l7-12h-4l4-8z" /></svg>
+      </button>
+
+      <button class="cb-spin" class:stopping={autoRunning} onclick={onSpin} disabled={spinDisabled()} aria-label={autoRunning ? 'Stop autoplay' : 'Spin'}>
+        {#if autoRunning}
+          <span class="cb-spin-square" aria-hidden="true"></span>
+        {:else}
+          <svg class="cb-spin-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8A5.87 5.87 0 0 1 6 12c0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" /></svg>
+        {/if}
+      </button>
+
+      <button class="cb-round cb-autospin" class:active={openPopup === 'autospin'} onclick={() => togglePopup('autospin')} disabled={autoRunning} aria-label="Autoplay settings">
+        <svg class="cb-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8A5.87 5.87 0 0 1 6 12c0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" /></svg>
+      </button>
+
+      <button class="cb-round cb-advanced" class:active={openPopup === 'advanced'} onclick={() => togglePopup('advanced')} aria-label="Advanced settings">
+        <svg class="cb-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z" /></svg>
+      </button>
+    </div>
+  </footer>
+
+  {#if openPopup}
+    <button class="popup-backdrop" aria-label="Close menu" onclick={() => (openPopup = null)}></button>
+  {/if}
+
+  {#if openPopup === 'bet'}
+    <div class="popup popup-bet" role="dialog" aria-label="Bet menu">
+      <div class="popup-head"><span>Bet Menu</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label="Close">✕</button></div>
+      <div class="bet-entry">
+        <span class="bet-entry-cur">$</span>
+        <input class="bet-entry-input" type="text" inputmode="decimal" bind:value={betInput} onblur={formatBetInput} placeholder="0.00" aria-label="Custom bet amount" />
+      </div>
+      <span class="popup-sub">Quick Bets</span>
+      <div class="bet-grid">
+        {#each betLevels() as lv}
+          <button class="bet-cell" class:active={Math.abs(betValue() - lv) < 1e-9} onclick={() => setBetLevel(lv)}>{numberToCurrencyString(lv)}</button>
+        {/each}
+      </div>
+    </div>
+  {/if}
+
+  {#if openPopup === 'turbo'}
+    <div class="popup popup-turbo" role="dialog" aria-label="Turbo speed">
+      <div class="popup-head"><span>Turbo Speed</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label="Close">✕</button></div>
+      <div class="turbo-body">
+        <div class="turbo-track">
+          <span class="turbo-end">Normal</span>
+          <input class="turbo-slider" type="range" min="0" max="1" step="0.05" bind:value={turboSpeed} aria-label="Turbo speed" />
+          <span class="turbo-end">Instant</span>
+        </div>
+        <div class="turbo-readout">{turboSpeed <= 0 ? 'Off — full animation' : turboSpeed >= 1 ? 'Instant' : `${Math.round(turboSpeed * 100)}% faster`}</div>
+      </div>
+    </div>
+  {/if}
+
+  {#if openPopup === 'autospin'}
+    <div class="popup popup-autospin" role="dialog" aria-label="Autoplay">
+      <div class="popup-head"><span>Autoplay</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label="Close">✕</button></div>
+      <div class="autospin-body">
+        <span class="popup-sub">Number of Spins</span>
+        <div class="spin-grid">
+          {#each AUTOSPIN_PRESETS as p}
+            <button class="bet-cell" class:active={!autoInfinite && Math.floor(Number(autoRoundsInput)) === p} onclick={() => setAutoRounds(p)}>{p}</button>
+          {/each}
+          <button class="bet-cell" class:active={autoInfinite} onclick={toggleAutoInfinite}>∞</button>
+        </div>
+        <div class="rounds-selector autospin-input">
+          <div class="rounds-field">
+            {#if autoInfinite}
+              <span class="rounds-infinite">∞</span>
+            {:else}
+              <input class="rounds-input" type="text" inputmode="numeric" bind:value={autoRoundsInput} onblur={formatAutoRounds} aria-label="Number of spins" />
+            {/if}
+          </div>
+          <div class="rounds-stepper">
+            <button type="button" class="stepper-btn" onclick={() => stepAutoRounds(1)} aria-label="More spins">▲</button>
+            <button type="button" class="stepper-btn" onclick={() => stepAutoRounds(-1)} aria-label="Fewer spins">▼</button>
+          </div>
+        </div>
+        <button class="action-button popup-start" onclick={startAutoFromPopup} disabled={!betIsValid() || !allChoicesMade() || !autoRoundsValid()}>
+          {#if !allChoicesMade()}Pick all 4 guesses{:else if !betIsValid()}Enter a valid bet{:else}Start{/if}
+        </button>
+      </div>
+    </div>
+  {/if}
+
+  {#if openPopup === 'advanced'}
+    <div class="popup popup-advanced" role="dialog" aria-label="Advanced">
+      <div class="popup-head"><span>Advanced</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label="Close">✕</button></div>
+      <div class="advanced-body">
+        <div class="advanced-row">
+          <span class="control-label">Stop on full game win</span>
+          <button type="button" class="switch" class:on={stopOnFullWin} role="switch" aria-checked={stopOnFullWin} disabled={autoRunning} onclick={() => (stopOnFullWin = !stopOnFullWin)}><span class="switch-knob"></span></button>
+        </div>
+      </div>
+    </div>
+  {/if}
+
+  {#if openPopup === 'info'}
+    <div class="popup popup-info" role="dialog" aria-label="How to play">
+      <div class="popup-head"><span>How to Play</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label="Close">✕</button></div>
+      <div class="info-body">
+        <p>Guess your way through four cards:</p>
+        <ol>
+          <li><strong>Colour</strong> — red or black for card 1.</li>
+          <li><strong>Higher / Lower</strong> — versus card 1 (or =).</li>
+          <li><strong>Inside / Outside</strong> — between cards 1 &amp; 2 (or =).</li>
+          <li><strong>Suit</strong> — the suit of card 4.</li>
+        </ol>
+        <p>Pick all four, set your bet, and hit <strong>Spin</strong>. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you'd banked so far. Guess all four to win the full game.</p>
+        <p>Use <strong>⚡ Turbo</strong> to speed up the reveal and <strong>⟳ Autoplay</strong> to run many rounds with the same guesses.</p>
+      </div>
+    </div>
+  {/if}
 </div>
 
 <style>
@@ -1174,28 +1127,49 @@
     height: 100vh;
     width: 100vw;
     display: flex;
+    flex-direction: column;
     box-sizing: border-box;
     background: var(--backdrop-url) center/cover no-repeat fixed;
     overflow: hidden;
+    position: relative;
   }
 
-  .sidebar {
-    flex: 0 0 var(--sidebar-w);
-    height: 100%;
-    box-sizing: border-box;
-    padding: 18px 18px 16px;
+  /* Game title / branding, overlaid at the top-centre of the table. */
+  .game-title {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    background: rgba(8, 15, 24, 0.85);
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
-    overflow-y: auto;
+    align-items: center;
+    line-height: 1;
+    text-align: center;
+    pointer-events: none;
+  }
+  .game-title-main {
+    font-size: 1.95rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    color: #ffe08a;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.75), 0 0 22px rgba(255, 200, 80, 0.28);
+  }
+  .game-title-sub {
+    margin-top: 3px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #dfe8f2;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
   }
 
-  .game-main {
+  /* Play area fills everything above the control bar; the game centres itself. */
+  .play-area {
     flex: 1 1 auto;
-    height: 100%;
-    min-width: 0;
+    min-height: 0;
+    width: 100%;
     box-sizing: border-box;
     padding: var(--pad);
     display: flex;
@@ -1203,8 +1177,263 @@
     align-items: center;
     justify-content: center;
     gap: var(--gap);
-    overflow-y: auto;
+    overflow: hidden;
   }
+
+  /* ==== Bottom control bar (slot-style) ==== */
+  .control-bar {
+    flex: 0 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 18px;
+    background: linear-gradient(180deg, rgba(6, 12, 20, 0.82), rgba(4, 9, 15, 0.95));
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .cb-cluster { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .cb-right { gap: 10px; }
+
+  /* Small square icon buttons (info / sound) */
+  .cb-icon {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.05);
+    color: #cfe0f0;
+    cursor: pointer;
+    text-transform: none;
+    transition: box-shadow 0.15s, border-color 0.15s, background 0.15s, color 0.15s;
+  }
+  .cb-glyph { font-size: 1.15rem; line-height: 1; font-weight: 700; }
+  .cb-svg { width: 20px; height: 20px; display: block; }
+  .cb-spin-svg { width: 34px; height: 34px; display: block; }
+  .cb-info-i { font-style: italic; font-family: Georgia, "Times New Roman", serif; font-weight: 700; }
+
+  /* Balance / bet text stacks */
+  .cb-cap { display: block; font-size: 0.6rem; letter-spacing: 0.09em; text-transform: uppercase; color: #4c9ffe; font-weight: 700; }
+  .cb-val { display: block; font-size: 1.05rem; font-weight: 800; color: #fff; line-height: 1.1; }
+  .cb-balance { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+
+  .cb-bet { display: flex; align-items: center; gap: 8px; }
+  .cb-bet-display {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding: 4px 8px;
+    border-radius: 9px;
+    border: 1px solid transparent;
+    background: none;
+    cursor: pointer;
+    text-transform: none;
+    transition: box-shadow 0.15s, border-color 0.15s, background 0.15s;
+  }
+  .cb-bet-display .cb-cap { text-align: right; }
+  .cb-bet-display:hover, .cb-bet-display.active { border-color: #4c9ffe; background: rgba(76, 159, 254, 0.12); box-shadow: 0 0 12px rgba(76, 159, 254, 0.35); }
+
+  .cb-betstep { display: flex; flex-direction: column; gap: 4px; }
+  .cb-step {
+    width: 30px;
+    height: 25px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.07);
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 800;
+    line-height: 1;
+    cursor: pointer;
+    transition: box-shadow 0.12s, border-color 0.12s, color 0.12s;
+  }
+  .cb-step:hover:not(:disabled) { border-color: #4c9ffe; box-shadow: 0 0 8px rgba(76, 159, 254, 0.5); }
+  .cb-step:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* Round icon buttons (turbo / autospin / advanced) */
+  .cb-round {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 auto;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.06);
+    color: #cfe0f0;
+    cursor: pointer;
+    text-transform: none;
+    transition: box-shadow 0.15s, border-color 0.15s, background 0.15s, color 0.15s;
+  }
+  .cb-round:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* The big Spin button */
+  .cb-spin {
+    width: 72px;
+    height: 72px;
+    flex: 0 0 auto;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, 0.85);
+    background: radial-gradient(circle at 50% 35%, #2a4d74, #12233a 75%);
+    color: #fff;
+    cursor: pointer;
+    text-transform: none;
+    transition: box-shadow 0.15s, border-color 0.15s, transform 0.1s;
+  }
+  .cb-spin-icon { font-size: 2.1rem; line-height: 1; font-weight: 700; }
+  .cb-spin:not(:disabled):hover { box-shadow: 0 0 20px rgba(76, 159, 254, 0.75); transform: scale(1.04); }
+  .cb-spin:not(:disabled):active { transform: scale(0.97); }
+  .cb-spin:disabled { opacity: 0.5; cursor: not-allowed; }
+  .cb-spin.stopping { border-color: #ff5d5d; background: radial-gradient(circle at 50% 35%, #5a1f27, #2a0d11 75%); }
+  .cb-spin.stopping:hover { box-shadow: 0 0 20px rgba(255, 80, 80, 0.85); }
+  .cb-spin-square { width: 24px; height: 24px; border-radius: 6px; background: #ff3b3b; box-shadow: 0 0 10px rgba(255, 59, 59, 0.7); }
+
+  /* Distinct hover glow per control (info=blue, turbo=amber, autospin=green,
+     advanced=purple), plus an active (popup-open) highlight. */
+  .cb-icon:hover, .cb-icon.active { border-color: #4c9ffe; color: #fff; background: rgba(76, 159, 254, 0.16); box-shadow: 0 0 12px rgba(76, 159, 254, 0.45); }
+  .cb-turbo:hover, .cb-turbo.active { border-color: #ffce3a; color: #ffd54a; background: rgba(255, 193, 7, 0.16); box-shadow: 0 0 12px rgba(255, 193, 7, 0.5); }
+  .cb-autospin:hover:not(:disabled), .cb-autospin.active { border-color: #57d98a; color: #9df0b8; background: rgba(87, 217, 138, 0.14); box-shadow: 0 0 12px rgba(87, 217, 138, 0.45); }
+  .cb-advanced:hover, .cb-advanced.active { border-color: #a98cff; color: #d0bcff; background: rgba(169, 140, 255, 0.16); box-shadow: 0 0 12px rgba(169, 140, 255, 0.45); }
+
+  /* ==== Popups ==== */
+  .popup-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    border: none;
+    padding: 0;
+    margin: 0;
+    background: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+  }
+  .popup {
+    position: fixed;
+    z-index: 50;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(360px, calc(100vw - 28px));
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    box-sizing: border-box;
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: #141d2a;
+    box-shadow: 0 14px 44px rgba(0, 0, 0, 0.65);
+    color: #dfe8f2;
+  }
+  .popup-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    color: #4c9ffe;
+  }
+  .popup-close {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: none;
+    border-radius: 7px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #cfe0f0;
+    font-size: 0.75rem;
+    cursor: pointer;
+    text-transform: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: box-shadow 0.12s, color 0.12s;
+  }
+  .popup-close:hover { color: #fff; box-shadow: 0 0 10px rgba(76, 159, 254, 0.5); }
+
+  .bet-grid, .spin-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 7px;
+  }
+  .bet-cell {
+    padding: 9px 3px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: #cfe0f0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: none;
+    transition: box-shadow 0.12s, border-color 0.12s, background 0.12s, color 0.12s;
+  }
+  .bet-cell:hover { border-color: #4c9ffe; color: #fff; box-shadow: 0 0 10px rgba(76, 159, 254, 0.4); }
+  .bet-cell.active { background: #2f8fff; border-color: #2f8fff; color: #fff; }
+
+  /* Free-entry bet field at the top of the bet menu (type any amount). */
+  .bet-entry {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 9px 12px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(5, 12, 18, 0.6);
+  }
+  .bet-entry:focus-within { border-color: #4c9ffe; box-shadow: 0 0 12px rgba(76, 159, 254, 0.35); }
+  .bet-entry-cur { font-size: 1.1rem; font-weight: 800; color: #fff; }
+  .bet-entry-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+    padding: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 800;
+  }
+  .popup-bet .popup-sub { display: block; margin-bottom: 7px; }
+
+  .turbo-body { display: flex; flex-direction: column; gap: 12px; padding: 4px 2px 2px; }
+  .turbo-track { display: flex; align-items: center; gap: 10px; }
+  .turbo-end { font-size: 0.7rem; color: #93a4b5; white-space: nowrap; }
+  .turbo-slider { flex: 1 1 auto; min-width: 0; accent-color: #4c9ffe; cursor: pointer; }
+  .turbo-readout { text-align: center; font-weight: 800; color: #4c9ffe; font-size: 0.85rem; }
+
+  .autospin-body { display: flex; flex-direction: column; gap: 10px; }
+  .popup-sub { font-size: 0.64rem; letter-spacing: 0.09em; text-transform: uppercase; color: #93a4b5; font-weight: 700; }
+  .autospin-input { align-self: stretch; }
+  .popup-start { margin-top: 2px; }
+
+  .advanced-body { display: flex; flex-direction: column; gap: 14px; }
+  /* Greyed-out, non-interactive "coming soon" strategy controls. */
+  .coming-soon { display: flex; flex-direction: column; gap: 14px; opacity: 0.5; pointer-events: none; }
+
+  .info-body { font-size: 0.85rem; line-height: 1.5; color: #cfe0f0; }
+  .info-body p { margin: 8px 0; }
+  .info-body ol { margin: 8px 0; padding-left: 20px; }
+  .info-body li { margin: 3px 0; }
+  .info-body strong { color: #fff; }
 
   .sidebar-title {
     font-size: 1.25rem;
@@ -1672,6 +1901,18 @@
     color: #7cffb2;
     text-shadow: 0 3px 14px rgba(0, 0, 0, 0.65);
   }
+  .running-win-mult {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #ffe08a;
+  }
+  .running-win.is-loss .running-win-label { color: #ff9a9a; }
+  .running-win.is-loss .running-win-amount { color: #d8dee6; }
+  .running-win.is-win .running-win-label { color: #ffe08a; }
+
+  /* Guesses stay on screen between rounds; lock them (no clicks, dimmed) while
+     a round is revealing or an auto run is live. */
+  .choice-row.locked { pointer-events: none; opacity: 0.5; }
 
   /* ---------- Responsive ----------
      The game has a lot of fixed content (4 cards + 4 choice squares + the
@@ -2053,7 +2294,8 @@
 
   /* Card = a 3D flip. .card-block is the perspective frame; .card-inner holds
      the two faces back-to-back and rotates 180deg when the card is revealed
-     (class:flipped={card}). Turbo adds .instant to skip the animation. */
+     (class:flipped={card}). The flip duration (--flip-dur) shrinks to 0 as the
+     turbo-speed slider approaches instant. */
   .card-block {
     width: var(--card-w);
     height: var(--card-h);
@@ -2065,13 +2307,10 @@
     position: absolute;
     inset: 0;
     transform-style: preserve-3d;
-    transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+    transition: transform var(--flip-dur, 0.5s) cubic-bezier(0.2, 0.7, 0.2, 1);
   }
   .card-inner.flipped {
     transform: rotateY(180deg);
-  }
-  .card-inner.instant {
-    transition: none;
   }
 
   /* Both faces occupy the frame back-to-back; only the forward-facing one shows
@@ -2173,5 +2412,42 @@
     color: #ff3b3b;
     text-shadow: 0 0 10px rgba(0, 0, 0, 0.85);
     background: rgba(0, 0, 0, 0.35);
+  }
+
+  /* ==== Control bar on narrow viewports (mobile portrait + small popouts).
+     Width-based so it catches both orientations; shrinks every control so the
+     whole bar fits without horizontal overflow. ==== */
+  @media (max-width: 560px) {
+    .control-bar { padding: 7px 9px; gap: 7px; }
+    .cb-cluster { gap: 7px; }
+    .cb-right { gap: 6px; }
+    .cb-icon { width: 32px; height: 32px; border-radius: 8px; }
+    .cb-glyph { font-size: 0.92rem; }
+    .cb-cap { font-size: 0.5rem; letter-spacing: 0.04em; }
+    .cb-val { font-size: 0.78rem; }
+    .cb-step { width: 22px; height: 19px; font-size: 0.9rem; border-radius: 6px; }
+    .cb-round { width: 34px; height: 34px; }
+    .cb-svg { width: 17px; height: 17px; }
+    .cb-spin { width: 50px; height: 50px; border-width: 2px; }
+    .cb-spin-icon { font-size: 1.4rem; }
+    .cb-spin-svg { width: 26px; height: 26px; }
+    .cb-spin-square { width: 16px; height: 16px; }
+    .cb-bet-display { padding: 3px 6px; }
+    .game-title-main { font-size: 1.4rem; }
+    .game-title-sub { font-size: 0.6rem; letter-spacing: 0.12em; }
+  }
+  /* Short landscape popouts have no vertical room for the title. */
+  @media (orientation: landscape) and (max-height: 430px) {
+    .game-title { display: none; }
+  }
+  @media (max-width: 400px) {
+    /* Very tight: drop the inline +/- (bet still set via the bet menu) and
+       shrink the rest a little further. */
+    .cb-betstep { display: none; }
+    .cb-val { font-size: 0.72rem; }
+    .cb-round { width: 31px; height: 31px; }
+    .cb-spin { width: 46px; height: 46px; }
+    .cb-spin-icon { font-size: 1.3rem; }
+    .cb-spin-svg { width: 24px; height: 24px; }
   }
 </style>
