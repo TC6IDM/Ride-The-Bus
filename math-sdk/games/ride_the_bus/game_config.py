@@ -46,13 +46,25 @@ class GameConfig(Config):
         self.wincap = 1400
         self.win_type = "other"
         # Common RTP every bet mode is reweighted to land on exactly (see
-        # reweight_luts.py). This is the single published/declared RTP for
-        # the game. 0.94 sits centrally inside Stake's 90%-96.70% band, with
-        # margin on both sides for the tiny integer-weight rounding in the
-        # reweighter. Because every mode is pinned to this same value, the
-        # Cross-Mode RTP Consistency check (all modes within +/-0.5%) passes
-        # with a spread of ~0%.
-        self.rtp = 0.94
+        # reweight_luts.py). This is the single published/declared RTP for the
+        # game. Because every mode is pinned to this same value, the Cross-Mode
+        # RTP Consistency check (all modes within +/-0.5%) passes with a spread
+        # of ~0%.
+        #
+        # 0.96 sits inside Stake's 90%-96.70% band while leaving ~0.7 points of
+        # headroom below the ceiling - worth keeping, because the reweighter
+        # rounds its loss weight to an integer, and a target sitting exactly on
+        # 96.70% could round a mode just over the limit and fail the check.
+        #
+        # The maths allows far more than the band does: the reweighter's real
+        # limit is each mode's win-conditional mean payout (where the loss weight
+        # would fall below 1 and it raises rather than emit a bad table), and the
+        # lowest of those across the 64 modes is 1.492x, i.e. ~149% RTP. At 0.96
+        # the smallest loss weight is still ~554,400, so there is no risk of that
+        # guard tripping.
+        #
+        # Mirrored in web-sdk/apps/Ride-The-Bus/src/game/config.ts - update both.
+        self.rtp = 0.96
         self.construct_paths()
 
         # Not a reel game - no board/reels involved.

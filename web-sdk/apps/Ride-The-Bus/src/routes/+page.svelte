@@ -1,20 +1,6 @@
-<!-- <script>
-  import { onMount } from 'svelte';
-
-  let multiplier = "0";
-
-  // Optional: min/max multipliers
-  const MIN = 1;
-  const MAX = 10;
-
-  function play() {
-    // Random multiplier between MIN and MAX
-    multiplier = (Math.random() * (MAX - MIN) + MIN).toFixed(2);
-  }
-</script>
-
-<main style="text-align:center; margin-top:50px;">
-  <h1>Simple Stake Game</h1>
-  <button on:click={play} style="padding:10px 20px; font-size:18px;">Play</button>
-  <p style="font-size:24px; margin-top:20px;">Multiplier: {multiplier}x</p>
-</main> -->
+<!--
+  Intentionally empty. SvelteKit needs a +page.svelte for the "/" route to
+  exist, but the game itself is mounted by +layout.svelte (inside Authenticate
+  and LoadI18n), so this page renders nothing. The SDK's own sample games do the
+  same - see apps/lines/src/routes/+page.svelte.
+-->

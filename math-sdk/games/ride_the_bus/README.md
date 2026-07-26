@@ -57,7 +57,7 @@ itself, so the bundled phase 4 works from anywhere.
 `run.py` prints this near the end — the spread should be ~0:
 
 ```
-Reweighted 64 modes to 0.9400: realized RTP 94.0000%-94.0000% (spread 0.0000%)
+Reweighted 64 modes to 0.9600: realized RTP 96.0000%-96.0000% (spread 0.0000%)
 ```
 
 Then spot-check the published config and stats:
@@ -67,9 +67,14 @@ cd games/ride_the_bus
 grep -o '"maxWin": [0-9]*' library/configs/config.json | sort -u   # -> 1400
 ```
 
-`library/stats_summary.json` should show, across all 64 modes: `rtp` 0.94
-everywhere, `max_win` topping out at 135420 (= 1354.2x), `etl40b` ≤ 0.55 and
-`non_zero_hr` between about 1.59 and 2.06.
+`library/stats_summary.json` should show `rtp` 0.96 for all 64 modes and
+`max_win` topping out at 135420 (= 1354.2x, the payout ceiling, which no RTP
+target changes).
+
+`etl40b` and `non_zero_hr` **do** move with the RTP target — raising it shifts
+weight from losing to winning outcomes — so re-read them after any change rather
+than assuming the previous build's figures. At 94% they were `etl40b` ≤ 0.55 and
+`non_zero_hr` ≈ 1.59–2.06; both want to stay comfortably inside Stake's limits.
 
 ## Things worth knowing
 
