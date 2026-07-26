@@ -8,6 +8,7 @@ from game_calculations import all_mode_combinations, mode_name
 from reweight_luts import reweight_all
 from src.state.run_sims import create_books
 from src.write_data.write_configs import generate_configs
+from utils.rgs_verification import execute_all_tests
 
 if __name__ == "__main__":
 
@@ -77,3 +78,23 @@ if __name__ == "__main__":
         f"realized RTP {min(realized)*100:.4f}%-{max(realized)*100:.4f}% "
         f"(spread {(max(realized)-min(realized))*100:.4f}%)"
     )
+
+    # Verify the published files and write library/stats_summary.json - the RTP /
+    # variance / ETL figures the approval dashboard reads. This used to be a
+    # separate `python utils/rgs_verification.py -g ride_the_bus` step that was
+    # very easy to forget, which left stats_summary.json describing the PREVIOUS
+    # build. Runs last, and specifically after reweight_all, because it reads the
+    # published _0 lookup tables that the reweighter rewrites.
+    #
+    # rgs_verification resolves its output as the RELATIVE path
+    # "games/<id>/library/stats_summary.json", so it only writes anything when
+    # the working directory is the math-sdk root. Pin that here so the stats are
+    # produced no matter where run.py was invoked from.
+    print("\nVerifying published files and writing stats_summary.json...")
+    sdk_root = os.path.abspath(os.path.join(here, os.pardir, os.pardir))
+    previous_cwd = os.getcwd()
+    os.chdir(sdk_root)
+    try:
+        execute_all_tests(config)
+    finally:
+        os.chdir(previous_cwd)
