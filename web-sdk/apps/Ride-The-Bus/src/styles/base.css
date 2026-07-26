@@ -14,18 +14,37 @@
 /* The page is a vertical stack: the play area fills everything above the
    fixed-height control bar at the bottom. */
 .game-layout {
-  /* Sizes are driven by these custom properties so responsive.css can rescale
-     the whole game for small / short / portrait viewports in one place. */
-  --card-w: 102px;
-  --card-h: 152px;
-  --card-radius: 10px;
-  --rank-fs: 17px;
-  --suit-fs: 46px;
-  --choice-size: 92px;
-  --choice-fs: 1.4rem;
-  --quad-fs: 1.6rem;
-  --gap: 24px;
-  --pad: 24px;
+  /* --ui is the fluid unit the play area is sized from: every card, guess
+     square and font below is a multiple of it, so the UI scales smoothly with
+     the window instead of jumping between fixed breakpoints. It tracks BOTH
+     axes because short landscape popouts run out of height long before they
+     run out of width. The coefficients come from the actual layout budget: the
+     four cards plus gaps and padding span ~48x this unit across, and the cards + win
+     readout + guess squares stack ~30x tall, hence ~2vw / ~2vh. The clamp
+     keeps it legible on tiny windows and stops it growing past the reference
+     desktop size (11px @ 1280x720). */
+  --ui: clamp(4.5px, min(2vw, 2vh), 11px);
+
+  /* The control bar is constrained by WIDTH, not height, so it gets its own
+     unit that leans on vw - otherwise a tall narrow phone (lots of height,
+     little width) would shrink the bar as if it were a tiny popout.
+     Laid out in one row the bar needs ~94x this unit (measured), hence ~1.02vw;
+     responsive.css raises the coefficient once the readouts wrap onto their
+     own row and the width budget doubles. */
+  --ui-bar: clamp(6px, min(1.02vw, 2.4vh), 11px);
+
+  /* Cards / guess squares, expressed as multiples of --ui. The right-hand
+     comments are the resulting desktop pixel sizes. */
+  --card-w: calc(var(--ui) * 9.27); /* 102px */
+  --card-h: calc(var(--ui) * 13.8); /* 152px */
+  --card-radius: calc(var(--ui) * 0.9); /* 10px */
+  --rank-fs: calc(var(--ui) * 1.55); /* 17px */
+  --suit-fs: calc(var(--ui) * 4.18); /* 46px */
+  --choice-size: calc(var(--ui) * 8.36); /* 92px */
+  --choice-fs: calc(var(--ui) * 2.04); /* 22.4px */
+  --quad-fs: calc(var(--ui) * 2.33); /* 25.6px */
+  --gap: calc(var(--ui) * 2.18); /* 24px */
+  --pad: calc(var(--ui) * 2.18); /* 24px */
   height: 100vh;
   width: 100vw;
   display: flex;
@@ -40,7 +59,7 @@
    dark plate keeps it legible instead of blending into the felt. */
 .game-title {
   position: absolute;
-  top: 10px;
+  top: calc(var(--ui) * 0.9);
   left: 50%;
   transform: translateX(-50%);
   z-index: 5;
@@ -50,15 +69,15 @@
   line-height: 1;
   text-align: center;
   pointer-events: none;
-  padding: 9px 26px 10px;
-  border-radius: 14px;
+  padding: calc(var(--ui) * 0.82) calc(var(--ui) * 2.36) calc(var(--ui) * 0.9);
+  border-radius: calc(var(--ui) * 1.27);
   border: 1px solid rgba(255, 214, 130, 0.28);
   background: linear-gradient(180deg, rgba(10, 18, 28, 0.82), rgba(6, 11, 18, 0.72));
   box-shadow: 0 6px 22px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .game-title-main {
-  font-size: 1.95rem;
+  font-size: calc(var(--ui) * 2.84); /* 31px */
   font-weight: 900;
   letter-spacing: 0.04em;
   color: #ffe08a;
@@ -66,8 +85,8 @@
 }
 
 .game-title-sub {
-  margin-top: 3px;
-  font-size: 0.72rem;
+  margin-top: calc(var(--ui) * 0.27);
+  font-size: calc(var(--ui) * 1.05); /* 11.5px */
   font-weight: 700;
   letter-spacing: 0.15em;
   text-transform: uppercase;

@@ -14,16 +14,23 @@
   margin: 0;
 }
 
+/* Pin the column to the square's width. Otherwise the longest labels
+   ("INSIDE / OUTSIDE") are wider than their square and drive the column, which
+   pushes the four columns past the viewport and wraps the row on phones. */
 .choice-column {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  width: var(--choice-size);
+  gap: calc(var(--ui) * 0.73);
 }
 
 .choice-label {
-  font-size: 0.75rem;
-  letter-spacing: 0.14em;
+  /* Sized so even the longest label fits its column on one line at any scale. */
+  font-size: calc(var(--ui) * 0.95); /* 10.5px */
+  line-height: 1.2;
+  text-align: center;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #fff6df;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
@@ -100,7 +107,7 @@
 }
 
 .io-square .half-btn {
-  font-size: 1rem;
+  font-size: calc(var(--ui) * 1.45); /* 16px */
 }
 
 .inside-half {
@@ -117,8 +124,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 18px;
-  height: 18px;
+  width: calc(var(--ui) * 1.64);
+  height: calc(var(--ui) * 1.64);
   padding: 0;
   margin: 0;
   box-sizing: border-box;
@@ -128,7 +135,7 @@
   background: #f1c40f;
   border: 2px solid rgba(0, 0, 0, 0.45);
   border-radius: 4px;
-  font-size: 0.7rem;
+  font-size: calc(var(--ui) * 1.02); /* 11.2px */
   font-weight: 800;
   line-height: 1;
   color: #16181c;

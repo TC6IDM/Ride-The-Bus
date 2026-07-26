@@ -15,14 +15,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: calc(var(--ui) * 0.73);
 }
 
 .card-mult {
-  min-height: 24px;
-  padding: 2px 12px;
+  min-height: calc(var(--ui) * 2.18);
+  padding: calc(var(--ui) * 0.18) calc(var(--ui) * 1.09);
   border-radius: 999px;
-  font-size: 0.95rem;
+  font-size: calc(var(--ui) * 1.38); /* 15.2px */
   font-weight: 800;
   letter-spacing: 0.02em;
   color: #7cffb2;
@@ -44,11 +44,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: calc(var(--ui) * 0.18);
 }
 
 .running-win-label {
-  font-size: 0.7rem;
+  font-size: calc(var(--ui) * 1.02); /* 11.2px */
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: #cfe8d8;
@@ -56,14 +56,14 @@
 }
 
 .running-win-amount {
-  font-size: 1.9rem;
+  font-size: calc(var(--ui) * 2.76); /* 30.4px */
   font-weight: 900;
   color: #7cffb2;
   text-shadow: 0 3px 14px rgba(0, 0, 0, 0.65);
 }
 
 .running-win-mult {
-  font-size: 0.9rem;
+  font-size: calc(var(--ui) * 1.31); /* 14.4px */
   font-weight: 800;
   color: #ffe08a;
 }
@@ -153,7 +153,7 @@
   flex-direction: column;
   justify-content: space-between;
   align-items: stretch;
-  padding: 6px;
+  padding: calc(var(--ui) * 0.55);
   box-sizing: border-box;
 }
 
@@ -192,7 +192,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 64px;
+  font-size: calc(var(--ui) * 5.82); /* 64px */
   font-weight: 900;
   color: #ff3b3b;
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.85);
