@@ -1,0 +1,287 @@
+/* Centred modal popups opened from the control bar (bet menu, turbo speed,
+   autoplay, advanced, how-to-play) plus the shared controls inside them. */
+
+/* ==== Popups ==== */
+.popup-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+}
+
+.popup {
+  position: fixed;
+  z-index: 50;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(360px, calc(100vw - 28px));
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #141d2a;
+  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.65);
+  color: #dfe8f2;
+}
+
+.popup-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: #4c9ffe;
+}
+
+.popup-close {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #cfe0f0;
+  font-size: 0.75rem;
+  cursor: pointer;
+  text-transform: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow 0.12s, color 0.12s;
+}
+
+.popup-close:hover { color: #fff; box-shadow: 0 0 10px rgba(76, 159, 254, 0.5); }
+
+.bet-grid, .spin-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+}
+
+.bet-cell {
+  padding: 9px 3px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: #cfe0f0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-transform: none;
+  transition: box-shadow 0.12s, border-color 0.12s, background 0.12s, color 0.12s;
+}
+
+.bet-cell:hover { border-color: #4c9ffe; color: #fff; box-shadow: 0 0 10px rgba(76, 159, 254, 0.4); }
+
+.bet-cell.active { background: #2f8fff; border-color: #2f8fff; color: #fff; }
+
+/* Free-entry bet field at the top of the bet menu (type any amount). */
+.bet-entry {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 9px 12px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(5, 12, 18, 0.6);
+}
+
+.bet-entry:focus-within { border-color: #4c9ffe; box-shadow: 0 0 12px rgba(76, 159, 254, 0.35); }
+
+.bet-entry-cur { font-size: 1.1rem; font-weight: 800; color: #fff; }
+
+.bet-entry-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.popup-bet .popup-sub { display: block; margin-bottom: 7px; }
+
+.turbo-body { display: flex; flex-direction: column; gap: 12px; padding: 4px 2px 2px; }
+
+.turbo-track { display: flex; align-items: center; gap: 10px; }
+
+.turbo-end { font-size: 0.7rem; color: #93a4b5; white-space: nowrap; }
+
+.turbo-slider { flex: 1 1 auto; min-width: 0; accent-color: #4c9ffe; cursor: pointer; }
+
+.turbo-readout { text-align: center; font-weight: 800; color: #4c9ffe; font-size: 0.85rem; }
+
+.autospin-body { display: flex; flex-direction: column; gap: 10px; }
+
+.popup-sub { font-size: 0.64rem; letter-spacing: 0.09em; text-transform: uppercase; color: #93a4b5; font-weight: 700; }
+
+.autospin-input { align-self: stretch; }
+
+.popup-start { margin-top: 2px; }
+
+.advanced-body { display: flex; flex-direction: column; gap: 14px; }
+
+.info-body { font-size: 0.85rem; line-height: 1.5; color: #cfe0f0; }
+
+.info-body p { margin: 8px 0; }
+
+.info-body ol { margin: 8px 0; padding-left: 20px; }
+
+.info-body li { margin: 3px 0; }
+
+.info-body strong { color: #fff; }
+
+.control-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #93a4b5;
+}
+
+.action-button {
+  width: 100%;
+  padding: 14px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background: linear-gradient(180deg, #4c9ffe, #1f6fe0);
+  color: #fff;
+  letter-spacing: 0.03em;
+  box-shadow: 0 6px 16px rgba(31, 111, 224, 0.35);
+}
+
+.action-button:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+
+.action-button:not(:disabled):hover { filter: brightness(1.08); }
+
+.action-button:not(:disabled):active { transform: translateY(1px); }
+
+/* Number-of-Rounds selector: mirrors the bet selector (field + vertical
+   stepper), with a row of quick presets under it. Reuses .stepper-btn. */
+.rounds-selector {
+  display: flex;
+  align-items: stretch;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(5, 12, 18, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.rounds-field {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+}
+
+.rounds-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  font-size: 18px;
+  font-weight: 800;
+  padding: 0;
+  border: none;
+  outline: none;
+  color: #fff;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+.rounds-input:disabled { color: rgba(255, 255, 255, 0.55); }
+
+.rounds-infinite {
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1;
+  color: #fff;
+}
+
+.rounds-stepper {
+  flex: 0 0 auto;
+  width: 46px;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+/* Advanced auto-bet panel (Stake-style): a switch that reveals On Win /
+   On Loss bet progression and Stop on Profit / Stop on Loss limits. */
+.advanced-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.switch {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.switch.on { background: #1f8fff; }
+
+.switch:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  transition: transform 0.15s;
+}
+
+.switch.on .switch-knob { transform: translateX(20px); }
+
+.stepper-btn {
+  flex: 1 1 0;
+  border: none;
+  /* Override the global `button { padding: 1.5rem }` from app.css, which
+     otherwise makes each arrow button ~59px tall and forces the whole
+     selector (via align-items: stretch) to ~119px. */
+  padding: 9px 0;
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+  font-size: 0.72rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.stepper-btn:hover { background: rgba(255, 255, 255, 0.16); }
+
+.stepper-btn:active { background: rgba(255, 255, 255, 0.22); }
+
+.stepper-btn:first-child { border-bottom: 1px solid rgba(255, 255, 255, 0.12); }

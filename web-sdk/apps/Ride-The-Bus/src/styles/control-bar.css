@@ -1,0 +1,180 @@
+/* Bottom control bar: info/sound icons, balance + last win, the bet display
+   with steppers, and the round spin / turbo / autoplay / advanced buttons.
+   Each control gets its own hover-glow colour. */
+
+/* ==== Bottom control bar (slot-style) ==== */
+.control-bar {
+  flex: 0 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 18px;
+  background: linear-gradient(180deg, rgba(6, 12, 20, 0.82), rgba(4, 9, 15, 0.95));
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cb-cluster { display: flex; align-items: center; gap: 12px; min-width: 0; }
+
+.cb-right { gap: 10px; }
+
+/* Small square icon buttons (info / sound) */
+.cb-icon {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: #cfe0f0;
+  cursor: pointer;
+  text-transform: none;
+  transition: box-shadow 0.15s, border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.cb-glyph { font-size: 1.15rem; line-height: 1; font-weight: 700; }
+
+.cb-svg { width: 20px; height: 20px; display: block; }
+
+.cb-autospin-svg { width: 30px; height: 30px; }
+
+.cb-turbo .cb-svg { width: 26px; height: 26px; }
+
+/* Tilt the spin arrows and scale them up so they fill the big play button. */
+.cb-spin-svg { width: 66px; height: 66px; display: block; transform: rotate(45deg); }
+
+.cb-info-i { font-style: italic; font-family: Georgia, "Times New Roman", serif; font-weight: 700; }
+
+/* Balance / bet text stacks */
+.cb-cap { display: block; font-size: 0.6rem; letter-spacing: 0.09em; text-transform: uppercase; color: #4c9ffe; font-weight: 700; }
+
+.cb-val { display: block; font-size: 1.05rem; font-weight: 800; color: #fff; line-height: 1.1; }
+
+.cb-balance { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+
+/* "Last Win" readout: the most recently settled round's cash + multiplier. */
+.cb-lastwin {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  min-width: 0;
+  padding-left: 12px;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.cb-lastwin .cb-cap { color: #93a4b5; }
+
+.cb-lastwin .cb-val { color: #97a8b8; }
+
+.cb-lastwin.won .cb-val { color: #7cffb2; }
+
+.cb-lastwin-mult { font-size: 0.72rem; font-weight: 800; color: #ffe08a; margin-left: 3px; }
+
+.cb-bet { display: flex; align-items: center; gap: 8px; }
+
+.cb-bet-display {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 4px 8px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  background: none;
+  cursor: pointer;
+  text-transform: none;
+  transition: box-shadow 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.cb-bet-display .cb-cap { text-align: right; }
+
+.cb-bet-display:hover, .cb-bet-display.active { border-color: #4c9ffe; background: rgba(76, 159, 254, 0.12); box-shadow: 0 0 12px rgba(76, 159, 254, 0.35); }
+
+.cb-betstep { display: flex; flex-direction: column; gap: 4px; }
+
+.cb-step {
+  width: 30px;
+  height: 25px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  transition: box-shadow 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.cb-step:hover:not(:disabled) { border-color: #4c9ffe; box-shadow: 0 0 8px rgba(76, 159, 254, 0.5); }
+
+.cb-step:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* Round icon buttons (turbo / autospin / advanced) */
+.cb-round {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  color: #cfe0f0;
+  cursor: pointer;
+  text-transform: none;
+  transition: box-shadow 0.15s, border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.cb-round:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* The big Spin button */
+.cb-spin {
+  width: 72px;
+  height: 72px;
+  flex: 0 0 auto;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  background: radial-gradient(circle at 50% 35%, #2a4d74, #12233a 75%);
+  color: #fff;
+  cursor: pointer;
+  text-transform: none;
+  transition: box-shadow 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.cb-spin:not(:disabled):hover { box-shadow: 0 0 20px rgba(76, 159, 254, 0.75); transform: scale(1.04); }
+
+.cb-spin:not(:disabled):active { transform: scale(0.97); }
+
+.cb-spin:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.cb-spin.stopping { border-color: #ff5d5d; background: radial-gradient(circle at 50% 35%, #5a1f27, #2a0d11 75%); }
+
+.cb-spin.stopping:hover { box-shadow: 0 0 20px rgba(255, 80, 80, 0.85); }
+
+.cb-spin-square { width: 24px; height: 24px; border-radius: 6px; background: #ff3b3b; box-shadow: 0 0 10px rgba(255, 59, 59, 0.7); }
+
+/* Distinct hover glow per control (info=blue, turbo=amber, autospin=green,
+   advanced=purple), plus an active (popup-open) highlight. */
+.cb-icon:hover, .cb-icon.active { border-color: #4c9ffe; color: #fff; background: rgba(76, 159, 254, 0.16); box-shadow: 0 0 12px rgba(76, 159, 254, 0.45); }
+
+.cb-turbo:hover, .cb-turbo.active { border-color: #ffce3a; color: #ffd54a; background: rgba(255, 193, 7, 0.16); box-shadow: 0 0 12px rgba(255, 193, 7, 0.5); }
+
+.cb-autospin:hover:not(:disabled), .cb-autospin.active { border-color: #57d98a; color: #9df0b8; background: rgba(87, 217, 138, 0.14); box-shadow: 0 0 12px rgba(87, 217, 138, 0.45); }
+
+.cb-advanced:hover, .cb-advanced.active { border-color: #a98cff; color: #d0bcff; background: rgba(169, 140, 255, 0.16); box-shadow: 0 0 12px rgba(169, 140, 255, 0.45); }

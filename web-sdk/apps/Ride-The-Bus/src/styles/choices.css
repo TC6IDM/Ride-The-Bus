@@ -1,0 +1,158 @@
+/* The four guess selectors (colour, higher/lower, inside/outside, suit) -
+   split squares, the small "=" buttons, and their selected states. */
+
+/* Guesses stay on screen between rounds; lock them (no clicks, dimmed) while
+   a round is revealing or an auto run is live. */
+.choice-row.locked { pointer-events: none; opacity: 0.5; }
+
+/* Choice squares */
+.choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--gap);
+  margin: 0;
+}
+
+.choice-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.choice-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #fff6df;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+}
+
+.choice-square {
+  position: relative;
+  width: var(--choice-size);
+  height: var(--choice-size);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35), 0 0 0 2px rgba(255, 255, 255, 0.25);
+}
+
+.half-btn,
+.third-btn,
+.quad-btn {
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--choice-fs);
+  font-weight: 800;
+  line-height: 1;
+  transition: filter 0.15s, transform 0.15s;
+}
+
+.half-btn.selected,
+.third-btn.selected,
+.quad-btn.selected {
+  filter: brightness(1.3);
+  box-shadow: inset 0 0 0 3px #fff, inset 0 0 16px rgba(255, 255, 255, 0.5);
+}
+
+/* All choice squares use CSS Grid (not flexbox) so adjacent cells share
+   exact pixel boundaries - flex:1 splits can leave a subpixel seam where
+   the square's background shows through between segments. */
+/* Color square: left/right halves */
+.color-square {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.black-half {
+  background: #16181c;
+}
+
+.red-half {
+  background: #c0392b;
+}
+
+/* Higher/Lower square: top/bottom halves + center equal square */
+.hl-square {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+}
+
+.higher-third {
+  background: #2ecc71;
+}
+
+.lower-third {
+  background: #c0392b;
+}
+
+/* Inside/Outside square: left/right halves */
+.io-square {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.io-square .half-btn {
+  font-size: 1rem;
+}
+
+.inside-half {
+  background: #00bcd4;
+}
+
+.outside-half {
+  background: #d81ce0;
+}
+
+/* Shared small "equal" square, centered over hl/io squares */
+.equal-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1c40f;
+  border: 2px solid rgba(0, 0, 0, 0.45);
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #16181c;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.equal-btn.selected {
+  box-shadow: 0 0 0 3px #fff, 0 0 12px rgba(255, 255, 255, 0.7);
+  transform: translate(-50%, -50%) scale(1.15);
+}
+
+/* Suit square: 2x2 grid */
+.suit-square {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+.quad-btn {
+  background: #16181c;
+  font-size: var(--quad-fs);
+}
+
+.quad-btn.red-suit {
+  color: #e74c3c;
+}

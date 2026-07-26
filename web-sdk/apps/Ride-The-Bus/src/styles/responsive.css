@@ -1,0 +1,98 @@
+/* Responsive overrides. The game has a lot of fixed content, so instead of
+   one breakpoint the whole thing rescales via the --card/--choice custom
+   properties per viewport shape. Imported last so these always win. */
+
+/* Portrait (phones): shrink the cards + guesses so all four stay on one row. */
+@media (orientation: portrait) {
+  .game-layout {
+    flex-direction: column;
+    --card-w: 60px; --card-h: 88px; --card-radius: 7px;
+    --rank-fs: 11px; --suit-fs: 26px;
+    --choice-size: 62px; --choice-fs: 0.95rem; --quad-fs: 1.05rem;
+    --gap: 12px; --pad: 12px;
+  }
+  .action-button { padding: 10px; font-size: 0.95rem; }
+  .choice-label { font-size: 0.6rem; letter-spacing: 0.05em; }
+  .card-mult { font-size: 0.8rem; min-height: 20px; padding: 1px 9px; }
+  .running-win-amount { font-size: 1.5rem; }
+}
+
+/* Short landscape (popout windows): shrink everything to fit the height. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .game-layout {
+    --card-w: 54px; --card-h: 78px; --card-radius: 6px;
+    --rank-fs: 10px; --suit-fs: 24px;
+    --choice-size: 58px; --choice-fs: 0.9rem; --quad-fs: 1rem;
+    --gap: 10px; --pad: 12px;
+  }
+  .action-button { padding: 9px; font-size: 0.9rem; }
+  .card-mult { font-size: 0.8rem; min-height: 20px; }
+  .running-win-amount { font-size: 1.5rem; }
+  .rounds-field { padding: 4px 10px; }
+  .rounds-input, .rounds-infinite { font-size: 15px; }
+}
+
+/* Tiny popout (e.g. 400x225): smallest cards + guesses. */
+@media (orientation: landscape) and (max-height: 320px) {
+  .game-layout {
+    --card-w: 38px; --card-h: 55px; --card-radius: 4px;
+    --rank-fs: 8px; --suit-fs: 17px;
+    --choice-size: 44px; --choice-fs: 0.7rem; --quad-fs: 0.8rem;
+    --gap: 6px; --pad: 8px;
+  }
+  .control-label { font-size: 0.58rem; }
+  .stepper-btn { font-size: 0.6rem; padding: 4px 0; }
+  .action-button { padding: 6px; font-size: 0.72rem; }
+  .running-win-amount { font-size: 1.1rem; }
+  .running-win-label { font-size: 0.55rem; }
+  .card-mult { font-size: 0.62rem; min-height: 15px; padding: 0 6px; }
+  .equal-btn { width: 13px; height: 13px; font-size: 0.5rem; }
+  .rounds-field { padding: 3px 8px; }
+  .rounds-input, .rounds-infinite { font-size: 13px; }
+  .rounds-stepper { width: 30px; }
+  .switch { width: 34px; height: 19px; }
+  .switch-knob { width: 15px; height: 15px; }
+  .switch.on .switch-knob { transform: translateX(15px); }
+}
+
+/* ==== Control bar on narrow viewports (mobile portrait + small popouts).
+   Width-based so it catches both orientations; shrinks every control so the
+   whole bar fits without horizontal overflow. ==== */
+@media (max-width: 560px) {
+  .control-bar { padding: 7px 9px; gap: 7px; }
+  .cb-cluster { gap: 7px; }
+  .cb-right { gap: 6px; }
+  .cb-icon { width: 32px; height: 32px; border-radius: 8px; }
+  .cb-glyph { font-size: 0.92rem; }
+  .cb-cap { font-size: 0.5rem; letter-spacing: 0.04em; }
+  .cb-val { font-size: 0.78rem; }
+  .cb-step { width: 22px; height: 19px; font-size: 0.9rem; border-radius: 6px; }
+  .cb-round { width: 34px; height: 34px; }
+  .cb-svg { width: 17px; height: 17px; }
+  .cb-autospin-svg { width: 24px; height: 24px; }
+  .cb-turbo .cb-svg { width: 21px; height: 21px; }
+  .cb-spin { width: 50px; height: 50px; border-width: 2px; }
+  .cb-spin-svg { width: 46px; height: 46px; }
+  .cb-spin-square { width: 16px; height: 16px; }
+  .cb-bet-display { padding: 3px 6px; }
+  .game-title { padding: 6px 16px 7px; border-radius: 11px; }
+  .game-title-main { font-size: 1.4rem; }
+  .game-title-sub { font-size: 0.6rem; letter-spacing: 0.12em; }
+}
+
+/* Short landscape popouts have no vertical room for the title. */
+@media (orientation: landscape) and (max-height: 430px) {
+  .game-title { display: none; }
+}
+
+@media (max-width: 400px) {
+  /* Very tight: drop the inline +/- (bet still set via the bet menu) and
+     shrink the rest a little further. */
+  .cb-betstep { display: none; }
+  .cb-val { font-size: 0.72rem; }
+  .cb-round { width: 31px; height: 31px; }
+  .cb-autospin-svg { width: 22px; height: 22px; }
+  .cb-turbo .cb-svg { width: 19px; height: 19px; }
+  .cb-spin { width: 46px; height: 46px; }
+  .cb-spin-svg { width: 42px; height: 42px; }
+}

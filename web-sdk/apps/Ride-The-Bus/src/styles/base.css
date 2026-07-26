@@ -1,0 +1,91 @@
+/* Page shell: full-viewport layout, the table backdrop, the game title
+   plate, and the play area that holds the cards + guesses. */
+
+:global(html, body) {
+  height: 100%;
+  margin: 0;
+}
+
+:global(body) {
+  background: #0b1420;
+  min-height: 100vh;
+}
+
+/* The page is a vertical stack: the play area fills everything above the
+   fixed-height control bar at the bottom. */
+.game-layout {
+  /* Sizes are driven by these custom properties so responsive.css can rescale
+     the whole game for small / short / portrait viewports in one place. */
+  --card-w: 102px;
+  --card-h: 152px;
+  --card-radius: 10px;
+  --rank-fs: 17px;
+  --suit-fs: 46px;
+  --choice-size: 92px;
+  --choice-fs: 1.4rem;
+  --quad-fs: 1.6rem;
+  --gap: 24px;
+  --pad: 24px;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  background: var(--backdrop-url) center/cover no-repeat fixed;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Game title / branding, overlaid at the top-centre of the table. The rounded
+   dark plate keeps it legible instead of blending into the felt. */
+.game-title {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  text-align: center;
+  pointer-events: none;
+  padding: 9px 26px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 214, 130, 0.28);
+  background: linear-gradient(180deg, rgba(10, 18, 28, 0.82), rgba(6, 11, 18, 0.72));
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.game-title-main {
+  font-size: 1.95rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: #ffe08a;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.75), 0 0 22px rgba(255, 200, 80, 0.28);
+}
+
+.game-title-sub {
+  margin-top: 3px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #dfe8f2;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
+}
+
+/* Play area fills everything above the control bar; the game centres itself. */
+.play-area {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--pad);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap);
+  overflow: hidden;
+}
