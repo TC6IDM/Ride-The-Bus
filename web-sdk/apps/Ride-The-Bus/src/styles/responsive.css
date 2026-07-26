@@ -55,16 +55,21 @@
   .switch.on .switch-knob { transform: translateX(15px); }
 }
 
-/* ==== Control bar on narrow viewports (mobile portrait + small popouts).
-   Width-based so it catches both orientations; shrinks every control so the
-   whole bar fits without horizontal overflow. ==== */
-@media (max-width: 560px) {
-  .control-bar { padding: 7px 9px; gap: 7px; }
-  .cb-cluster { gap: 7px; }
-  .cb-right { gap: 6px; }
-  .cb-icon { width: 32px; height: 32px; border-radius: 8px; }
+/* ==== Control bar below full desktop width. The reserved readout widths make
+   the bar fairly wide, so shrink every control from 1000px down; width-based so
+   it catches short landscape popouts as well as portrait phones. ==== */
+@media (max-width: 1000px) {
+  .control-bar { padding: 0 8px 8px; gap: 6px; flex-wrap: wrap; }
+  .cb-panel { padding: 5px 9px; gap: 7px; border-radius: 13px; }
+  .cb-actions { padding: 5px 10px; gap: 8px; }
+  .cb-readouts { gap: 12px; }
+  .cb-float { width: 36px; height: 36px; }
+  .cb-icon { width: 30px; height: 30px; border-radius: 9px; }
   .cb-glyph { font-size: 0.92rem; }
   .cb-cap { font-size: 0.5rem; letter-spacing: 0.04em; }
+  .cb-balance { min-width: 108px; }
+  .cb-lastwin { min-width: 168px; }
+  .cb-bet-display { min-width: 116px; }
   .cb-val { font-size: 0.78rem; }
   .cb-step { width: 22px; height: 19px; font-size: 0.9rem; border-radius: 6px; }
   .cb-round { width: 34px; height: 34px; }
@@ -75,6 +80,13 @@
   .cb-spin-svg { width: 46px; height: 46px; }
   .cb-spin-square { width: 16px; height: 16px; }
   .cb-bet-display { padding: 3px 6px; }
+}
+
+/* Truly narrow (phones): give the readouts their own top row so the advanced
+   button does not wrap alone and look stranded. */
+@media (max-width: 620px) {
+  .cb-panel-light { order: -1; flex: 1 0 100%; }
+  .cb-readouts { justify-content: space-between; }
   .game-title { padding: 6px 16px 7px; border-radius: 11px; }
   .game-title-main { font-size: 1.4rem; }
   .game-title-sub { font-size: 0.6rem; letter-spacing: 0.12em; }
@@ -90,6 +102,9 @@
      shrink the rest a little further. */
   .cb-betstep { display: none; }
   .cb-val { font-size: 0.72rem; }
+  .cb-balance { min-width: 100px; }
+  .cb-lastwin { min-width: 152px; }
+  .cb-bet-display { min-width: 106px; }
   .cb-round { width: 31px; height: 31px; }
   .cb-autospin-svg { width: 22px; height: 22px; }
   .cb-turbo .cb-svg { width: 19px; height: 19px; }

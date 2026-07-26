@@ -931,19 +931,29 @@
     </div>
   </main>
 
+  <!-- Floating control bar: detached pill groups pulled toward the centre,
+       with the turbo button and the advanced button floating free at the
+       outer edges (slot-style). -->
   <footer class="control-bar">
-    <div class="cb-cluster cb-left">
-      <button class="cb-icon" class:active={openPopup === 'info'} onclick={() => togglePopup('info')} aria-label="How to play">
-        <span class="cb-glyph cb-info-i">i</span>
-      </button>
+    <button class="cb-float cb-turbo" class:active={turboSpeed > 0 || openPopup === 'turbo'} onclick={() => togglePopup('turbo')} aria-label="Turbo speed">
+      <svg class="cb-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 2v11h3v9l7-12h-4l4-8z" /></svg>
+    </button>
+
+    <div class="cb-panel cb-panel-light">
       <button class="cb-icon" onclick={() => (muted = !muted)} aria-pressed={muted} aria-label={muted ? 'Unmute' : 'Mute'}>
         <span class="cb-glyph">{muted ? '🔇' : '🔊'}</span>
       </button>
-      <div class="cb-balance">
-        <span class="cb-cap">Balance</span>
-        <span class="cb-val">{numberToCurrencyString(stateBet.balanceAmount)}</span>
-      </div>
-      {#if hasPlayed}
+      <button class="cb-icon" class:active={openPopup === 'info'} onclick={() => togglePopup('info')} aria-label="How to play">
+        <span class="cb-glyph cb-info-i">i</span>
+      </button>
+
+      <div class="cb-readouts">
+        <div class="cb-balance">
+          <span class="cb-cap">Balance</span>
+          <span class="cb-val">{numberToCurrencyString(stateBet.balanceAmount)}</span>
+        </div>
+        <!-- Always rendered (even before the first spin) so it can't pop into
+             existence mid-session and shove the rest of the bar sideways. -->
         <div class="cb-lastwin" class:won={lastWinAmount > 0}>
           <span class="cb-cap">Last Win</span>
           <span class="cb-val">
@@ -951,20 +961,27 @@
             <span class="cb-lastwin-mult">{lastWinMultiplier.toFixed(2)}×</span>
           </span>
         </div>
-      {/if}
+      </div>
     </div>
 
-    <div class="cb-cluster cb-right">
-      <div class="cb-bet">
-        <button class="cb-bet-display" class:active={openPopup === 'bet'} onclick={() => togglePopup('bet')} aria-label="Choose bet amount">
-          <span class="cb-cap">Bet</span>
-          <span class="cb-val">{numberToCurrencyString(betValue() > 0 ? betValue() : 0)}</span>
-        </button>
-        <div class="cb-betstep">
-          <button class="cb-step" onclick={() => stepBet(1)} disabled={autoRunning} aria-label="Increase bet">+</button>
-          <button class="cb-step" onclick={() => stepBet(-1)} disabled={autoRunning} aria-label="Decrease bet">−</button>
-        </div>
+    <div class="cb-panel cb-panel-dark cb-bet">
+      <button class="cb-bet-display" class:active={openPopup === 'bet'} onclick={() => togglePopup('bet')} aria-label="Choose bet amount">
+        <span class="cb-cap">Bet</span>
+        <span class="cb-val">{numberToCurrencyString(betValue() > 0 ? betValue() : 0)}</span>
+      </button>
+      <div class="cb-betstep">
+        <button class="cb-step" onclick={() => stepBet(1)} disabled={autoRunning} aria-label="Increase bet">+</button>
+        <button class="cb-step" onclick={() => stepBet(-1)} disabled={autoRunning} aria-label="Decrease bet">−</button>
       </div>
+    </div>
+
+    <div class="cb-panel cb-panel-dark cb-actions">
+      <button class="cb-round cb-autospin" class:active={openPopup === 'autospin'} onclick={() => togglePopup('autospin')} disabled={autoRunning} aria-label="Autoplay settings">
+        <svg class="cb-svg cb-autospin-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8A5.87 5.87 0 0 1 6 12c0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" />
+          <path d="M10.4 9.7 14.6 12l-4.2 2.3z" />
+        </svg>
+      </button>
 
       <button class="cb-spin" class:stopping={autoRunning} onclick={onSpin} disabled={spinDisabled()} aria-label={autoRunning ? 'Stop autoplay' : 'Spin'}>
         {#if autoRunning}
@@ -973,22 +990,11 @@
           <svg class="cb-spin-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8A5.87 5.87 0 0 1 6 12c0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" /></svg>
         {/if}
       </button>
-
-      <button class="cb-round cb-turbo" class:active={turboSpeed > 0 || openPopup === 'turbo'} onclick={() => togglePopup('turbo')} aria-label="Turbo speed">
-        <svg class="cb-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 2v11h3v9l7-12h-4l4-8z" /></svg>
-      </button>
-
-      <button class="cb-round cb-autospin" class:active={openPopup === 'autospin'} onclick={() => togglePopup('autospin')} disabled={autoRunning} aria-label="Autoplay settings">
-        <svg class="cb-svg cb-autospin-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8A5.87 5.87 0 0 1 6 12c0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" />
-          <path d="M10.4 9.7 14.6 12l-4.2 2.3z" />
-        </svg>
-      </button>
-
-      <button class="cb-round cb-advanced" class:active={openPopup === 'advanced'} onclick={() => togglePopup('advanced')} aria-label="Advanced settings">
-        <svg class="cb-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z" /></svg>
-      </button>
     </div>
+
+    <button class="cb-float cb-advanced" class:active={openPopup === 'advanced'} onclick={() => togglePopup('advanced')} aria-label="Advanced settings">
+      <svg class="cb-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z" /></svg>
+    </button>
   </footer>
 
   {#if openPopup}
@@ -1062,7 +1068,7 @@
       <div class="advanced-body">
         <div class="advanced-row">
           <span class="control-label">Stop on full game win</span>
-          <button type="button" class="switch" class:on={stopOnFullWin} role="switch" aria-checked={stopOnFullWin} disabled={autoRunning} onclick={() => (stopOnFullWin = !stopOnFullWin)}><span class="switch-knob"></span></button>
+          <button type="button" class="switch" class:on={stopOnFullWin} role="switch" aria-checked={stopOnFullWin} aria-label="Stop autoplay on a full game win" disabled={autoRunning} onclick={() => (stopOnFullWin = !stopOnFullWin)}><span class="switch-knob"></span></button>
         </div>
       </div>
     </div>
