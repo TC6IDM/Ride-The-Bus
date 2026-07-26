@@ -6,6 +6,7 @@
   import { GameVersion, Modals } from 'components-ui-html';
   import { requestBet, requestEndRound } from 'rgs-requests';
   import { sound } from '../game/sound';
+  import { t } from '../i18n/i18nDerived';
   import { numberToCurrencyString } from 'utils-shared/amount';
   import { API_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
 
@@ -962,7 +963,7 @@
     {#snippet runningWinBar()}
       <div class="running-win" class:is-win={gameState === 'won' && wonAmount > 0} class:is-loss={gameState === 'lost'}>
         <span class="running-win-label">
-          {#if gameState === 'won'}{bustedIndex === null ? 'Full Game Win!' : 'Banked'}{:else if gameState === 'lost'}Busted{:else if gameState === 'playing'}Revealing…{:else}Winning{/if}
+          {#if gameState === 'won'}{bustedIndex === null ? t('Full Game Win!') : t('Banked')}{:else if gameState === 'lost'}{t('Busted')}{:else if gameState === 'playing'}{t('Revealing…')}{:else}{t('Winning')}{/if}
         </span>
         <span class="running-win-amount">{numberToCurrencyString(runningWin)}</span>
         <!-- Always rendered (a non-breaking space when there's no result yet) so
@@ -977,38 +978,38 @@
 
     <div class="choice-row" class:locked={gameState === 'playing' || autoRunning}>
       <div class="choice-column">
-        <span class="choice-label">Color</span>
-        <div class="choice-square color-square" role="group" aria-label="Pick a color">
-          <button type="button" class="half-btn black-half" class:selected={colorChoice === 'black'} onclick={() => (colorChoice = 'black')} aria-label="Black"></button>
-          <button type="button" class="half-btn red-half" class:selected={colorChoice === 'red'} onclick={() => (colorChoice = 'red')} aria-label="Red"></button>
+        <span class="choice-label">{t('Color')}</span>
+        <div class="choice-square color-square" role="group" aria-label={t('Pick a color')}>
+          <button type="button" class="half-btn black-half" class:selected={colorChoice === 'black'} onclick={() => (colorChoice = 'black')} aria-label={t('Black')}></button>
+          <button type="button" class="half-btn red-half" class:selected={colorChoice === 'red'} onclick={() => (colorChoice = 'red')} aria-label={t('Red')}></button>
         </div>
       </div>
 
       <div class="choice-column">
-        <span class="choice-label">Higher<br />Lower</span>
-        <div class="choice-square hl-square" role="group" aria-label="Higher, lower, or equal">
-          <button type="button" class="third-btn higher-third" class:selected={hlChoice === 'higher'} onclick={() => (hlChoice = 'higher')} aria-label="Higher">▲</button>
-          <button type="button" class="third-btn lower-third" class:selected={hlChoice === 'lower'} onclick={() => (hlChoice = 'lower')} aria-label="Lower">▼</button>
-          <button type="button" class="equal-btn" class:selected={hlChoice === 'equal'} onclick={() => (hlChoice = 'equal')} aria-label="Equal">=</button>
+        <span class="choice-label">{t('Higher')}<br />{t('Lower')}</span>
+        <div class="choice-square hl-square" role="group" aria-label={t('Higher, lower, or equal')}>
+          <button type="button" class="third-btn higher-third" class:selected={hlChoice === 'higher'} onclick={() => (hlChoice = 'higher')} aria-label={t('Higher')}>▲</button>
+          <button type="button" class="third-btn lower-third" class:selected={hlChoice === 'lower'} onclick={() => (hlChoice = 'lower')} aria-label={t('Lower')}>▼</button>
+          <button type="button" class="equal-btn" class:selected={hlChoice === 'equal'} onclick={() => (hlChoice = 'equal')} aria-label={t('Equal')}>=</button>
         </div>
       </div>
 
       <div class="choice-column">
-        <span class="choice-label">Inside<br />Outside</span>
-        <div class="choice-square io-square" role="group" aria-label="Inside, outside, or equal">
-          <button type="button" class="half-btn inside-half" class:selected={ioChoice === 'inside'} onclick={() => (ioChoice = 'inside')} aria-label="Inside">→←</button>
-          <button type="button" class="half-btn outside-half" class:selected={ioChoice === 'outside'} onclick={() => (ioChoice = 'outside')} aria-label="Outside">←→</button>
-          <button type="button" class="equal-btn" class:selected={ioChoice === 'equal'} onclick={() => (ioChoice = 'equal')} aria-label="Equal">=</button>
+        <span class="choice-label">{t('Inside')}<br />{t('Outside')}</span>
+        <div class="choice-square io-square" role="group" aria-label={t('Inside, outside, or equal')}>
+          <button type="button" class="half-btn inside-half" class:selected={ioChoice === 'inside'} onclick={() => (ioChoice = 'inside')} aria-label={t('Inside')}>→←</button>
+          <button type="button" class="half-btn outside-half" class:selected={ioChoice === 'outside'} onclick={() => (ioChoice = 'outside')} aria-label={t('Outside')}>←→</button>
+          <button type="button" class="equal-btn" class:selected={ioChoice === 'equal'} onclick={() => (ioChoice = 'equal')} aria-label={t('Equal')}>=</button>
         </div>
       </div>
 
       <div class="choice-column">
-        <span class="choice-label">Suit</span>
-        <div class="choice-square suit-square" role="group" aria-label="Pick a suit">
-          <button type="button" class="quad-btn red-suit" class:selected={suitChoice === 'heart'} onclick={() => (suitChoice = 'heart')} aria-label="Heart">♥</button>
-          <button type="button" class="quad-btn" class:selected={suitChoice === 'spade'} onclick={() => (suitChoice = 'spade')} aria-label="Spade">♠</button>
-          <button type="button" class="quad-btn" class:selected={suitChoice === 'club'} onclick={() => (suitChoice = 'club')} aria-label="Club">♣</button>
-          <button type="button" class="quad-btn red-suit" class:selected={suitChoice === 'diamond'} onclick={() => (suitChoice = 'diamond')} aria-label="Diamond">♦</button>
+        <span class="choice-label">{t('Suit')}</span>
+        <div class="choice-square suit-square" role="group" aria-label={t('Pick a suit')}>
+          <button type="button" class="quad-btn red-suit" class:selected={suitChoice === 'heart'} onclick={() => (suitChoice = 'heart')} aria-label={t('Heart')}>♥</button>
+          <button type="button" class="quad-btn" class:selected={suitChoice === 'spade'} onclick={() => (suitChoice = 'spade')} aria-label={t('Spade')}>♠</button>
+          <button type="button" class="quad-btn" class:selected={suitChoice === 'club'} onclick={() => (suitChoice = 'club')} aria-label={t('Club')}>♣</button>
+          <button type="button" class="quad-btn red-suit" class:selected={suitChoice === 'diamond'} onclick={() => (suitChoice = 'diamond')} aria-label={t('Diamond')}>♦</button>
         </div>
       </div>
     </div>
@@ -1018,27 +1019,27 @@
        with the turbo button and the advanced button floating free at the
        outer edges (slot-style). -->
   <footer class="control-bar">
-    <button class="cb-float cb-turbo" class:active={turboSpeed > 0 || openPopup === 'turbo'} onclick={() => togglePopup('turbo')} aria-label="Turbo speed">
+    <button class="cb-float cb-turbo" class:active={turboSpeed > 0 || openPopup === 'turbo'} onclick={() => togglePopup('turbo')} aria-label={t('Turbo speed')}>
       <svg class="cb-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 2v11h3v9l7-12h-4l4-8z" /></svg>
     </button>
 
     <div class="cb-panel cb-panel-light">
-      <button class="cb-icon" onclick={toggleMuted} aria-pressed={muted} aria-label={muted ? 'Unmute' : 'Mute'}>
+      <button class="cb-icon" onclick={toggleMuted} aria-pressed={muted} aria-label={muted ? t('Unmute') : t('Mute')}>
         <span class="cb-glyph">{muted ? '🔇' : '🔊'}</span>
       </button>
-      <button class="cb-icon" class:active={openPopup === 'info'} onclick={() => togglePopup('info')} aria-label="How to play">
+      <button class="cb-icon" class:active={openPopup === 'info'} onclick={() => togglePopup('info')} aria-label={t('How to play')}>
         <span class="cb-glyph cb-info-i">i</span>
       </button>
 
       <div class="cb-readouts">
         <div class="cb-balance">
-          <span class="cb-cap">Balance</span>
+          <span class="cb-cap">{t('Balance')}</span>
           <span class="cb-val">{numberToCurrencyString(stateBet.balanceAmount)}</span>
         </div>
         <!-- Always rendered (even before the first spin) so it can't pop into
              existence mid-session and shove the rest of the bar sideways. -->
         <div class="cb-lastwin" class:won={lastWinAmount > 0}>
-          <span class="cb-cap">Last Win</span>
+          <span class="cb-cap">{t('Last Win')}</span>
           <span class="cb-val">
             {numberToCurrencyString(lastWinAmount)}
             <span class="cb-lastwin-mult">{lastWinMultiplier.toFixed(2)}×</span>
@@ -1048,25 +1049,25 @@
     </div>
 
     <div class="cb-panel cb-panel-dark cb-bet">
-      <button class="cb-bet-display" class:active={openPopup === 'bet'} onclick={() => togglePopup('bet')} aria-label="Choose bet amount">
-        <span class="cb-cap">Bet</span>
+      <button class="cb-bet-display" class:active={openPopup === 'bet'} onclick={() => togglePopup('bet')} aria-label={t('Choose bet amount')}>
+        <span class="cb-cap">{t('Bet')}</span>
         <span class="cb-val">{numberToCurrencyString(betValue() > 0 ? betValue() : 0)}</span>
       </button>
       <div class="cb-betstep">
-        <button class="cb-step" onclick={() => stepBet(1)} disabled={autoRunning} aria-label="Increase bet">+</button>
-        <button class="cb-step" onclick={() => stepBet(-1)} disabled={autoRunning} aria-label="Decrease bet">−</button>
+        <button class="cb-step" onclick={() => stepBet(1)} disabled={autoRunning} aria-label={t('Increase bet')}>+</button>
+        <button class="cb-step" onclick={() => stepBet(-1)} disabled={autoRunning} aria-label={t('Decrease bet')}>−</button>
       </div>
     </div>
 
     <div class="cb-panel cb-panel-dark cb-actions">
-      <button class="cb-round cb-autospin" class:active={openPopup === 'autospin'} onclick={() => togglePopup('autospin')} disabled={autoRunning} aria-label="Autoplay settings">
+      <button class="cb-round cb-autospin" class:active={openPopup === 'autospin'} onclick={() => togglePopup('autospin')} disabled={autoRunning} aria-label={t('Autoplay settings')}>
         <svg class="cb-svg cb-autospin-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8A5.87 5.87 0 0 1 6 12c0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" />
           <path d="M10.4 9.7 14.6 12l-4.2 2.3z" />
         </svg>
       </button>
 
-      <button class="cb-spin" class:stopping={autoRunning} onclick={onSpin} disabled={spinDisabled()} aria-label={autoRunning ? 'Stop autoplay' : 'Spin'}>
+      <button class="cb-spin" class:stopping={autoRunning} onclick={onSpin} disabled={spinDisabled()} aria-label={autoRunning ? t('Stop autoplay') : t('Spin')}>
         {#if autoRunning}
           <span class="cb-spin-square" aria-hidden="true"></span>
         {:else}
@@ -1075,23 +1076,23 @@
       </button>
     </div>
 
-    <button class="cb-float cb-advanced" class:active={openPopup === 'advanced'} onclick={() => togglePopup('advanced')} aria-label="Advanced settings">
+    <button class="cb-float cb-advanced" class:active={openPopup === 'advanced'} onclick={() => togglePopup('advanced')} aria-label={t('Advanced settings')}>
       <svg class="cb-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z" /></svg>
     </button>
   </footer>
 
   {#if openPopup}
-    <button class="popup-backdrop" aria-label="Close menu" onclick={() => (openPopup = null)}></button>
+    <button class="popup-backdrop" aria-label={t('Close menu')} onclick={() => (openPopup = null)}></button>
   {/if}
 
   {#if openPopup === 'bet'}
-    <div class="popup popup-bet" role="dialog" aria-label="Bet menu">
-      <div class="popup-head"><span>Bet Menu</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label="Close">✕</button></div>
+    <div class="popup popup-bet" role="dialog" aria-label={t('Bet Menu')}>
+      <div class="popup-head"><span>{t('Bet Menu')}</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label={t('Close')}>✕</button></div>
       <div class="bet-entry">
         <span class="bet-entry-cur">$</span>
-        <input class="bet-entry-input" type="text" inputmode="decimal" bind:value={betInput} onblur={formatBetInput} placeholder="0.00" aria-label="Custom bet amount" />
+        <input class="bet-entry-input" type="text" inputmode="decimal" bind:value={betInput} onblur={formatBetInput} placeholder="0.00" aria-label={t('Custom bet amount')} />
       </div>
-      <span class="popup-sub">Quick Bets</span>
+      <span class="popup-sub">{t('Quick Bets')}</span>
       <div class="bet-grid">
         {#each betLevels() as lv}
           <button class="bet-cell" class:active={Math.abs(betValue() - lv) < 1e-9} onclick={() => setBetLevel(lv)}>{numberToCurrencyString(lv)}</button>
@@ -1101,24 +1102,24 @@
   {/if}
 
   {#if openPopup === 'turbo'}
-    <div class="popup popup-turbo" role="dialog" aria-label="Turbo speed">
-      <div class="popup-head"><span>Turbo Speed</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label="Close">✕</button></div>
+    <div class="popup popup-turbo" role="dialog" aria-label={t('Turbo speed')}>
+      <div class="popup-head"><span>{t('Turbo Speed')}</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label={t('Close')}>✕</button></div>
       <div class="turbo-body">
         <div class="turbo-track">
-          <span class="turbo-end">Normal</span>
-          <input class="turbo-slider" type="range" min="0" max="1" step="0.05" bind:value={turboSpeed} aria-label="Turbo speed" />
-          <span class="turbo-end">Instant</span>
+          <span class="turbo-end">{t('Normal')}</span>
+          <input class="turbo-slider" type="range" min="0" max="1" step="0.05" bind:value={turboSpeed} aria-label={t('Turbo speed')} />
+          <span class="turbo-end">{t('Instant')}</span>
         </div>
-        <div class="turbo-readout">{turboSpeed <= 0 ? 'Off — full animation' : turboSpeed >= 1 ? 'Instant' : `${Math.round(turboSpeed * 100)}% faster`}</div>
+        <div class="turbo-readout">{turboSpeed <= 0 ? t('Off — full animation') : turboSpeed >= 1 ? t('Instant') : `${Math.round(turboSpeed * 100)}${t('% faster')}`}</div>
       </div>
     </div>
   {/if}
 
   {#if openPopup === 'autospin'}
-    <div class="popup popup-autospin" role="dialog" aria-label="Autoplay">
-      <div class="popup-head"><span>Autoplay</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label="Close">✕</button></div>
+    <div class="popup popup-autospin" role="dialog" aria-label={t('Autoplay')}>
+      <div class="popup-head"><span>{t('Autoplay')}</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label={t('Close')}>✕</button></div>
       <div class="autospin-body">
-        <span class="popup-sub">Number of Spins</span>
+        <span class="popup-sub">{t('Number of Spins')}</span>
         <div class="spin-grid">
           {#each AUTOSPIN_PRESETS as p}
             <button class="bet-cell" class:active={!autoInfinite && Math.floor(Number(autoRoundsInput)) === p} onclick={() => setAutoRounds(p)}>{p}</button>
@@ -1130,46 +1131,46 @@
             {#if autoInfinite}
               <span class="rounds-infinite">∞</span>
             {:else}
-              <input class="rounds-input" type="text" inputmode="numeric" bind:value={autoRoundsInput} onblur={formatAutoRounds} aria-label="Number of spins" />
+              <input class="rounds-input" type="text" inputmode="numeric" bind:value={autoRoundsInput} onblur={formatAutoRounds} aria-label={t('Number of spins')} />
             {/if}
           </div>
           <div class="rounds-stepper">
-            <button type="button" class="stepper-btn" onclick={() => stepAutoRounds(1)} aria-label="More spins">▲</button>
-            <button type="button" class="stepper-btn" onclick={() => stepAutoRounds(-1)} aria-label="Fewer spins">▼</button>
+            <button type="button" class="stepper-btn" onclick={() => stepAutoRounds(1)} aria-label={t('More spins')}>▲</button>
+            <button type="button" class="stepper-btn" onclick={() => stepAutoRounds(-1)} aria-label={t('Fewer spins')}>▼</button>
           </div>
         </div>
         <button class="action-button popup-start" onclick={startAutoFromPopup} disabled={!betIsValid() || !allChoicesMade() || !autoRoundsValid()}>
-          {#if !allChoicesMade()}Pick all 4 guesses{:else if !betIsValid()}Enter a valid bet{:else}Start{/if}
+          {#if !allChoicesMade()}{t('Pick all 4 guesses')}{:else if !betIsValid()}{t('Enter a valid bet')}{:else}{t('Start')}{/if}
         </button>
       </div>
     </div>
   {/if}
 
   {#if openPopup === 'advanced'}
-    <div class="popup popup-advanced" role="dialog" aria-label="Advanced">
-      <div class="popup-head"><span>Advanced</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label="Close">✕</button></div>
+    <div class="popup popup-advanced" role="dialog" aria-label={t('Advanced')}>
+      <div class="popup-head"><span>{t('Advanced')}</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label={t('Close')}>✕</button></div>
       <div class="advanced-body">
         <div class="advanced-row">
-          <span class="control-label">Stop on full game win</span>
-          <button type="button" class="switch" class:on={stopOnFullWin} role="switch" aria-checked={stopOnFullWin} aria-label="Stop autoplay on a full game win" disabled={autoRunning} onclick={() => (stopOnFullWin = !stopOnFullWin)}><span class="switch-knob"></span></button>
+          <span class="control-label">{t('Stop on full game win')}</span>
+          <button type="button" class="switch" class:on={stopOnFullWin} role="switch" aria-checked={stopOnFullWin} aria-label={t('Stop autoplay on a full game win')} disabled={autoRunning} onclick={() => (stopOnFullWin = !stopOnFullWin)}><span class="switch-knob"></span></button>
         </div>
       </div>
     </div>
   {/if}
 
   {#if openPopup === 'info'}
-    <div class="popup popup-info" role="dialog" aria-label="How to play">
-      <div class="popup-head"><span>How to Play</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label="Close">✕</button></div>
+    <div class="popup popup-info" role="dialog" aria-label={t('How to play')}>
+      <div class="popup-head"><span>{t('How to Play')}</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label={t('Close')}>✕</button></div>
       <div class="info-body">
-        <p>Guess your way through four cards:</p>
+        <p>{t('Guess your way through four cards:')}</p>
         <ol>
-          <li><strong>Colour</strong> — red or black for card 1.</li>
-          <li><strong>Higher / Lower</strong> — versus card 1 (or =).</li>
-          <li><strong>Inside / Outside</strong> — between cards 1 &amp; 2 (or =).</li>
-          <li><strong>Suit</strong> — the suit of card 4.</li>
+          <li>{t('Colour — red or black for card 1.')}</li>
+          <li>{t('Higher / Lower — versus card 1 (or =).')}</li>
+          <li>{t('Inside / Outside — between cards 1 & 2 (or =).')}</li>
+          <li>{t('Suit — the suit of card 4.')}</li>
         </ol>
-        <p>Pick all four, set your bet, and hit <strong>Spin</strong>. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you'd banked so far. Guess all four to win the full game.</p>
-        <p>Use <strong>⚡ Turbo</strong> to speed up the reveal and <strong>⟳ Autoplay</strong> to run many rounds with the same guesses.</p>
+        <p>{t('Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.')}</p>
+        <p>{t('Use Turbo to speed up the reveal and Autoplay to run many rounds with the same guesses.')}</p>
       </div>
     </div>
   {/if}
