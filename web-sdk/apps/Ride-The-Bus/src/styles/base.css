@@ -23,7 +23,7 @@
      readout + guess squares stack ~30x tall, hence ~2vw / ~2vh. The clamp
      keeps it legible on tiny windows and stops it growing past the reference
      desktop size (11px @ 1280x720). */
-  --ui: clamp(4.5px, min(2vw, 2vh), 11px);
+  --ui: clamp(4px, min(2vw, 1.55vh), 11px);
 
   /* The control bar is constrained by WIDTH, not height, so it gets its own
      unit that leans on vw - otherwise a tall narrow phone (lots of height,
@@ -58,10 +58,11 @@
 /* Game title / branding, overlaid at the top-centre of the table. The rounded
    dark plate keeps it legible instead of blending into the felt. */
 .game-title {
-  position: absolute;
-  top: calc(var(--ui) * 0.9);
-  left: 50%;
-  transform: translateX(-50%);
+  /* In normal flow (not absolutely positioned) so it RESERVES its space - when
+     it overlaid the table it sat on top of the cards on short windows. */
+  flex: 0 0 auto;
+  align-self: center;
+  margin-top: calc(var(--ui) * 0.9);
   z-index: 5;
   display: flex;
   flex-direction: column;

@@ -28,3 +28,15 @@
 @media (orientation: landscape) and (max-height: 430px) {
   .game-title { display: none; }
 }
+
+/* Very short windows (e.g. a 400x225 popout): the control bar alone takes a
+   third of the height, so claw back vertical space by dropping the secondary
+   labels and tightening the stack. Without this the cards and guess squares
+   are pushed outside the play area and overlap each other. */
+@media (max-height: 320px) {
+  .choice-label { display: none; }
+  .running-win-label { display: none; }
+  .running-win-mult { display: none; }
+  .card-mult { min-height: 0; }
+  .play-area { gap: calc(var(--ui) * 1.1); padding: calc(var(--ui) * 0.8); }
+}

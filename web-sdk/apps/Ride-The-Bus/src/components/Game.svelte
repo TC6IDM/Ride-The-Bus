@@ -902,7 +902,7 @@
       </div>
 
       <div class="choice-column">
-        <span class="choice-label">Higher / Lower</span>
+        <span class="choice-label">Higher Lower</span>
         <div class="choice-square hl-square" role="group" aria-label="Higher, lower, or equal">
           <button type="button" class="third-btn higher-third" class:selected={hlChoice === 'higher'} onclick={() => (hlChoice = 'higher')} aria-label="Higher">▲</button>
           <button type="button" class="third-btn lower-third" class:selected={hlChoice === 'lower'} onclick={() => (hlChoice = 'lower')} aria-label="Lower">▼</button>
@@ -911,7 +911,7 @@
       </div>
 
       <div class="choice-column">
-        <span class="choice-label">Inside / Outside</span>
+        <span class="choice-label">Inside Outside</span>
         <div class="choice-square io-square" role="group" aria-label="Inside, outside, or equal">
           <button type="button" class="half-btn inside-half" class:selected={ioChoice === 'inside'} onclick={() => (ioChoice = 'inside')} aria-label="Inside">→←</button>
           <button type="button" class="half-btn outside-half" class:selected={ioChoice === 'outside'} onclick={() => (ioChoice = 'outside')} aria-label="Outside">←→</button>

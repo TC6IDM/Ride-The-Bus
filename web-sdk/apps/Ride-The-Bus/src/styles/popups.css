@@ -1,4 +1,7 @@
-/* Centred modal popups opened from the control bar (bet menu, turbo speed,
+/* Sizes here are multiples of --ui-bar so the popup box and its text scale
+   together with the window instead of the box shrinking around fixed-size text.
+
+   Centred modal popups opened from the control bar (bet menu, turbo speed,
    autoplay, advanced, how-to-play) plus the shared controls inside them. */
 
 /* ==== Popups ==== */
@@ -19,12 +22,12 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: min(360px, calc(100vw - 28px));
-  max-height: calc(100vh - 40px);
+  width: min(calc(var(--ui-bar) * 32.73), calc(100vw - calc(var(--ui-bar) * 2.55)));
+  max-height: calc(100vh - calc(var(--ui-bar) * 3.64));
   overflow-y: auto;
   box-sizing: border-box;
-  padding: 14px;
-  border-radius: 14px;
+  padding: calc(var(--ui-bar) * 1.27);
+  border-radius: calc(var(--ui-bar) * 1.27);
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: #141d2a;
   box-shadow: 0 14px 44px rgba(0, 0, 0, 0.65);
@@ -36,21 +39,21 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 12px;
-  font-size: 1rem;
+  font-size: calc(var(--ui-bar) * 1.45);
   font-weight: 800;
   letter-spacing: 0.03em;
   color: #4c9ffe;
 }
 
 .popup-close {
-  width: 26px;
-  height: 26px;
+  width: calc(var(--ui-bar) * 2.36);
+  height: calc(var(--ui-bar) * 2.36);
   padding: 0;
   border: none;
-  border-radius: 7px;
+  border-radius: calc(var(--ui-bar) * 0.64);
   background: rgba(255, 255, 255, 0.08);
   color: #cfe0f0;
-  font-size: 0.75rem;
+  font-size: calc(var(--ui-bar) * 1.09);
   cursor: pointer;
   text-transform: none;
   display: flex;
@@ -64,16 +67,16 @@
 .bet-grid, .spin-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 7px;
+  gap: calc(var(--ui-bar) * 0.64);
 }
 
 .bet-cell {
-  padding: 9px 3px;
-  border-radius: 8px;
+  padding: calc(var(--ui-bar) * 0.82) calc(var(--ui-bar) * 0.27);
+  border-radius: calc(var(--ui-bar) * 0.73);
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
   color: #cfe0f0;
-  font-size: 0.8rem;
+  font-size: calc(var(--ui-bar) * 1.16);
   font-weight: 700;
   cursor: pointer;
   text-transform: none;
@@ -88,8 +91,8 @@
 .bet-entry {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 9px 12px;
+  gap: calc(var(--ui-bar) * 0.36);
+  padding: calc(var(--ui-bar) * 0.82) calc(var(--ui-bar) * 1.09);
   margin-bottom: 10px;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.18);
@@ -98,7 +101,7 @@
 
 .bet-entry:focus-within { border-color: #4c9ffe; box-shadow: 0 0 12px rgba(76, 159, 254, 0.35); }
 
-.bet-entry-cur { font-size: 1.1rem; font-weight: 800; color: #fff; }
+.bet-entry-cur { font-size: calc(var(--ui-bar) * 1.6); font-weight: 800; color: #fff; }
 
 .bet-entry-input {
   flex: 1 1 auto;
@@ -109,33 +112,33 @@
   outline: none;
   background: transparent;
   color: #fff;
-  font-size: 1.1rem;
+  font-size: calc(var(--ui-bar) * 1.6);
   font-weight: 800;
 }
 
 .popup-bet .popup-sub { display: block; margin-bottom: 7px; }
 
-.turbo-body { display: flex; flex-direction: column; gap: 12px; padding: 4px 2px 2px; }
+.turbo-body { display: flex; flex-direction: column; gap: calc(var(--ui-bar) * 1.09); padding: calc(var(--ui-bar) * 0.36) calc(var(--ui-bar) * 0.18) calc(var(--ui-bar) * 0.18); }
 
-.turbo-track { display: flex; align-items: center; gap: 10px; }
+.turbo-track { display: flex; align-items: center; gap: calc(var(--ui-bar) * 0.91); }
 
-.turbo-end { font-size: 0.7rem; color: #93a4b5; white-space: nowrap; }
+.turbo-end { font-size: calc(var(--ui-bar) * 1.02); color: #93a4b5; white-space: nowrap; }
 
 .turbo-slider { flex: 1 1 auto; min-width: 0; accent-color: #4c9ffe; cursor: pointer; }
 
-.turbo-readout { text-align: center; font-weight: 800; color: #4c9ffe; font-size: 0.85rem; }
+.turbo-readout { text-align: center; font-weight: 800; color: #4c9ffe; font-size: calc(var(--ui-bar) * 1.24); }
 
-.autospin-body { display: flex; flex-direction: column; gap: 10px; }
+.autospin-body { display: flex; flex-direction: column; gap: calc(var(--ui-bar) * 0.91); }
 
-.popup-sub { font-size: 0.64rem; letter-spacing: 0.09em; text-transform: uppercase; color: #93a4b5; font-weight: 700; }
+.popup-sub { font-size: calc(var(--ui-bar) * 0.93); letter-spacing: 0.09em; text-transform: uppercase; color: #93a4b5; font-weight: 700; }
 
 .autospin-input { align-self: stretch; }
 
 .popup-start { margin-top: 2px; }
 
-.advanced-body { display: flex; flex-direction: column; gap: 14px; }
+.advanced-body { display: flex; flex-direction: column; gap: calc(var(--ui-bar) * 1.27); }
 
-.info-body { font-size: 0.85rem; line-height: 1.5; color: #cfe0f0; }
+.info-body { font-size: calc(var(--ui-bar) * 1.24); line-height: 1.5; color: #cfe0f0; }
 
 .info-body p { margin: 8px 0; }
 
@@ -146,7 +149,7 @@
 .info-body strong { color: #fff; }
 
 .control-label {
-  font-size: 0.72rem;
+  font-size: calc(var(--ui-bar) * 1.05);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #93a4b5;
@@ -154,8 +157,8 @@
 
 .action-button {
   width: 100%;
-  padding: 14px;
-  font-size: 1.05rem;
+  padding: calc(var(--ui-bar) * 1.27);
+  font-size: calc(var(--ui-bar) * 1.53);
   font-weight: 800;
   border: none;
   border-radius: 10px;
@@ -188,14 +191,14 @@
   min-width: 0;
   display: flex;
   align-items: center;
-  padding: 6px 12px;
+  padding: calc(var(--ui-bar) * 0.55) calc(var(--ui-bar) * 1.09);
 }
 
 .rounds-input {
   flex: 1 1 auto;
   min-width: 0;
   width: 100%;
-  font-size: 18px;
+  font-size: calc(var(--ui-bar) * 1.64);
   font-weight: 800;
   padding: 0;
   border: none;
@@ -208,7 +211,7 @@
 .rounds-input:disabled { color: rgba(255, 255, 255, 0.55); }
 
 .rounds-infinite {
-  font-size: 20px;
+  font-size: calc(var(--ui-bar) * 1.82);
   font-weight: 800;
   line-height: 1;
   color: #fff;
@@ -216,7 +219,7 @@
 
 .rounds-stepper {
   flex: 0 0 auto;
-  width: 46px;
+  width: calc(var(--ui-bar) * 4.18);
   display: flex;
   flex-direction: column;
   border-left: 1px solid rgba(255, 255, 255, 0.16);
@@ -228,13 +231,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: calc(var(--ui-bar) * 0.73);
 }
 
 .switch {
   flex: 0 0 auto;
-  width: 44px;
-  height: 24px;
+  width: calc(var(--ui-bar) * 4);
+  height: calc(var(--ui-bar) * 2.18);
   padding: 0;
   border: none;
   border-radius: 999px;
@@ -252,8 +255,8 @@
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 20px;
-  height: 20px;
+  width: calc(var(--ui-bar) * 1.82);
+  height: calc(var(--ui-bar) * 1.82);
   border-radius: 50%;
   background: #fff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
@@ -268,10 +271,10 @@
   /* Override the global `button { padding: 1.5rem }` from app.css, which
      otherwise makes each arrow button ~59px tall and forces the whole
      selector (via align-items: stretch) to ~119px. */
-  padding: 9px 0;
+  padding: calc(var(--ui-bar) * 0.82) 0;
   background: rgba(255, 255, 255, 0.07);
   color: #fff;
-  font-size: 0.72rem;
+  font-size: calc(var(--ui-bar) * 1.05);
   line-height: 1;
   cursor: pointer;
   display: flex;

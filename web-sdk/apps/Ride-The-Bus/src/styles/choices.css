@@ -26,10 +26,13 @@
 }
 
 .choice-label {
-  /* Sized so even the longest label fits its column on one line at any scale. */
   font-size: calc(var(--ui) * 0.95); /* 10.5px */
   line-height: 1.2;
   text-align: center;
+  /* The two-word labels wrap to two lines, so reserve two lines for ALL of them
+     - otherwise COLOR / SUIT sit a line higher and the four squares don not line
+     up. */
+  min-height: 2.4em;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #fff6df;
