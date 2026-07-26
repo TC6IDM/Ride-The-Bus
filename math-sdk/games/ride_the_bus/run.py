@@ -11,7 +11,23 @@ from src.write_data.write_configs import generate_configs
 
 if __name__ == "__main__":
 
-    num_threads = 1
+    # This build is ~13.8M simulations across the 64 bet modes, so it runs in
+    # parallel. src/state/run_sims.py spawns real multiprocessing.Process
+    # workers (not GIL-bound threads), each taking a disjoint slice of the
+    # global simulation index.
+    #
+    # Results are UNCHANGED by this: gamestate.run_spin seeds the RNG with
+    # reset_seed(sim) -> random.seed(sim + 1), so every simulation's outcome is
+    # a function of its global index alone, never of which worker ran it. More
+    # workers only makes the same books arrive sooner.
+    #
+    # Keep this a power of two. sims_per_thread is computed with int()
+    # truncation, so a count that doesn't divide evenly silently drops
+    # simulations - 12 workers, for instance, would lose 512 of them. 8 divides
+    # all three per-mode counts (80k / 200k / 800k) exactly and leaves a couple
+    # of cores free on a 12-CPU machine. Set to 1 if you need to profile
+    # (run_sims.py rejects profiling with threads > 1).
+    num_threads = 8
     batching_size = 50000
     compression = True
     profiling = False

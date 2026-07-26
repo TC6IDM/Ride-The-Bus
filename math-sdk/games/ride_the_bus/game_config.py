@@ -24,12 +24,26 @@ class GameConfig(Config):
         self.game_id = "ride_the_bus"
         self.provider_number = 0
         self.working_name = "Ride The Bus"
-        # The rarest combos (multiple "equal" picks) naturally compound to
-        # ~3000-3400x on a win (verified empirically) - a low wincap was
-        # silently capping ~85% of their value away, crushing their RTP
-        # far below target regardless of house_edge. 5000 gives headroom
-        # above the observed max with margin for suit-count variance.
-        self.wincap = 5000
+        # Declared max win, published per bet mode as "maxWin" in config.json.
+        #
+        # The true ceiling is 1354.2x: the rarest winning path is a mode with
+        # two "equal" picks, and the largest product the four stage multipliers
+        # can reach is red/black_equal_equal_<suit> on cards like A A A / 2.
+        # That is EXHAUSTIVE, not sampled - enumerating all 6,497,400 ordered
+        # 4-card draws against partial_multiplier() tops out at exactly 1354.2x,
+        # which also matches the highest max_win in library/stats_summary.json
+        # and the prob5k = 0 recorded for every mode.
+        #
+        # 1400 sits just above that, so it can never actually bind (payouts go
+        # through min(running_bet_win, wincap) in src/events/events.py), while
+        # keeping the DECLARED worst-case exposure - maxBet x maxWin, which is
+        # what the operator sizes the bet-level template against - 3.6x lower
+        # than the old 5000. The previous 5000 predated the partial-credit /
+        # martingale payout rework and its "~3000-3400x" note no longer holds.
+        #
+        # NB: this bound follows from target_rtp and STAGE_RETENTION below. If
+        # either changes, re-derive the max before trusting this number.
+        self.wincap = 1400
         self.win_type = "other"
         # Common RTP every bet mode is reweighted to land on exactly (see
         # reweight_luts.py). This is the single published/declared RTP for

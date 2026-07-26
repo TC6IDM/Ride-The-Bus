@@ -13,7 +13,10 @@ export default {
 			feature: true,
 			buyBonus: false,
 			rtp: 0.94,
-			max_win: 5000,
+			// Keep in step with math-sdk games/ride_the_bus/game_config.py:wincap.
+			// The game's true ceiling is 1354.2x (proven by exhaustive
+			// enumeration - see that file), so 1400 never binds.
+			max_win: 1400,
 		},
 	},
 	// NOTE: symbols/paddingReels below are unused leftovers from the slot
