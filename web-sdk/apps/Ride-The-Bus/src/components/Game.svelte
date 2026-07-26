@@ -5,6 +5,7 @@
   import { stateBet, stateUrlDerived, stateMeta, stateConfig, stateModal } from 'state-shared';
   import { GameVersion, Modals } from 'components-ui-html';
   import { requestBet, requestEndRound } from 'rgs-requests';
+  import { sound } from '../game/sound';
   import { numberToCurrencyString } from 'utils-shared/amount';
   import { API_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
 
@@ -141,7 +142,14 @@
 
   // Bottom control-bar UI: which popup (if any) is open, plus mute state.
   let openPopup = $state<null | 'bet' | 'turbo' | 'autospin' | 'advanced' | 'info'>(null);
-  let muted = $state(false);
+  // Seeded from the persisted preference so mute survives a reload.
+  let muted = $state(sound.isMuted());
+  function toggleMuted() {
+    muted = sound.toggleMuted();
+    // Unmuting should be audible; also doubles as the user gesture that lets the
+    // browser start the audio context.
+    if (!muted) sound.playPress();
+  }
   let autoRoundsInput = $state('10');
   let autoInfinite = $state(false);
   let autoRunning = $state(false);
@@ -378,13 +386,16 @@
     for (let i = 0; i < revealEvents.length; i++) {
       await wait(paceMs(650, 0));
       revealedCards[i] = revealEvents[i].card;
+      sound.playCardFlip();
       const event = revealEvents[i];
       if (!busted && event.correct) {
         running *= event.payout;
+        sound.playStageWin(i);
       } else if (!busted) {
         bustedIndex = i;
         running *= STAGE_RETENTION[i] * DECAY ** (3 - i);
         busted = true;
+        sound.playBust();
       }
       stageMultipliers[i] = quantizeMultiplier(running);
       runningWin = stageMultipliers[i]! * initialBet;
@@ -400,7 +411,11 @@
     const multiplier = engineFinalMultiplier ?? computeFinalMultiplier(revealEvents);
     wonAmount = multiplier * initialBet;
     runningWin = wonAmount;
-    if (!isEngineRound()) {
+    if (stateUrlDerived.replay()) {
+      // Replay is a read-only view of an already-settled round: nothing to
+      // credit and nothing to close (the SDK's own end-round helper bails out on
+      // replay too - createPrimaryMachines.ts:43).
+    } else if (!isEngineRound()) {
       // Local-fallback has no server - credit the win locally.
       stateBet.balanceAmount += wonAmount;
     } else if (wonAmount > 0) {
@@ -427,7 +442,86 @@
     // Record the settled result for the "Last Win" readout on the control bar.
     lastWinAmount = wonAmount;
     lastWinMultiplier = initialBet > 0 ? wonAmount / initialBet : 0;
+
+    if (wonAmount <= 0) {
+      sound.playRoundLoss();
+    } else if (bustedIndex === null) {
+      sound.playFullWin();
+    } else {
+      sound.playRoundWin();
+    }
   }
+
+  // Turn a book's event list into the on-screen reveal. Shared by a freshly
+  // placed bet (/wallet/play) and by replay, which reads an already-settled
+  // round instead of placing anything.
+  async function animateRoundFromEvents(
+    events: unknown,
+    roundId: string,
+    source: 'engine-auth' | 'engine-replay',
+    emptyStateMessage: string,
+  ) {
+    if (!Array.isArray(events) || events.length === 0) {
+      throw new Error(emptyStateMessage);
+    }
+
+    const reveals = events.filter((event: any) => event.type === 'reveal');
+    if (reveals.length < 4) {
+      throw new Error('Round did not contain all 4 reveal stages');
+    }
+
+    revealEvents = reveals.map((event: any) => ({
+      stage: event.stage,
+      card: event.card as Card,
+      choice: event.choice,
+      correct: Boolean(event.correct),
+      payout: event.payout,
+    }));
+
+    // The book's finalWin event carries the authoritative payout the RGS
+    // settled (amount is the multiplier x100 - see math-sdk
+    // src/events/events.py:final_win_event). Use it verbatim so the display
+    // can't disagree with the credited balance.
+    const finalWin = events.find((event: any) => event.type === 'finalWin') as any;
+    engineFinalMultiplier = finalWin ? Number(finalWin.amount) / 100 : null;
+
+    lastRoundId = roundId;
+    roundSource = source;
+    revealedCards = [null, null, null, null];
+    stageMultipliers = [null, null, null, null];
+    runningWin = 0;
+    bustedIndex = null;
+    wonAmount = 0;
+    gameState = 'playing';
+    await playRevealSequence();
+  }
+
+  // Replay (Stake's Fairness view, ?replay=true). Authenticate.svelte has
+  // already fetched the settled round via /bet/replay and parked it in
+  // stateBet.betToResume, so this must render THAT round - it must never place a
+  // bet. Replaying used to fall through to startGameEngineFlow, which would have
+  // called /wallet/play and charged the player for a brand new round.
+  let replayStarted = false;
+  $effect(() => {
+    if (replayStarted || !stateUrlDerived.replay()) return;
+    const bet = stateBet.betToResume as any;
+    if (!bet?.state) return;
+    replayStarted = true;
+
+    // The replay URL carries the original stake, so the multipliers shown
+    // resolve to the same cash amounts the player originally saw.
+    initialBet = stateBet.wageredBetAmount || stateBet.betAmount || 0;
+    hasPlayed = true;
+    animateRoundFromEvents(
+      bet.state,
+      `${bet.roundID ?? stateUrlDerived.event()}`,
+      'engine-replay',
+      'Replay returned no round state for this event.',
+    ).catch((err) => {
+      console.error(err);
+      stateModal.modal = { name: 'error', error: err };
+    });
+  });
 
   async function startGameEngineFlow(roundSeedData: { seed: string; source: 'engine-auth' | 'engine-replay' }) {
     isProcessing = true;
@@ -491,43 +585,13 @@
         stateBet.balanceAmount = data.balance.amount / API_AMOUNT_MULTIPLIER;
       }
 
-      const events = data?.round?.state;
-      if (!Array.isArray(events) || events.length === 0) {
-        throw new Error(
-          `No round state from /wallet/play for mode "${mode}". The math for this mode may not be ` +
-            `published/approved, or the bet amount isn't a valid level.`,
-        );
-      }
-
-      const reveals = events.filter((event: any) => event.type === 'reveal');
-      if (reveals.length < 4) {
-        throw new Error('Round did not contain all 4 reveal stages');
-      }
-
-      revealEvents = reveals.map((event: any) => ({
-        stage: event.stage,
-        card: event.card as Card,
-        choice: event.choice,
-        correct: Boolean(event.correct),
-        payout: event.payout,
-      }));
-
-      // The book's finalWin event carries the authoritative payout the RGS
-      // settled (amount is the multiplier x100 - see math-sdk
-      // src/events/events.py:final_win_event). Use it verbatim so the display
-      // can't disagree with the credited balance.
-      const finalWin = events.find((event: any) => event.type === 'finalWin') as any;
-      engineFinalMultiplier = finalWin ? Number(finalWin.amount) / 100 : null;
-
-      lastRoundId = `${data?.round?.roundID ?? ''}`;
-      roundSource = roundSeedData.source;
-      revealedCards = [null, null, null, null];
-      stageMultipliers = [null, null, null, null];
-      runningWin = 0;
-      bustedIndex = null;
-      wonAmount = 0;
-      gameState = 'playing';
-      await playRevealSequence();
+      await animateRoundFromEvents(
+        data?.round?.state,
+        `${data?.round?.roundID ?? ''}`,
+        roundSeedData.source,
+        `No round state from /wallet/play for mode "${mode}". The math for this mode may not be ` +
+          `published/approved, or the bet amount isn't a valid level.`,
+      );
     } catch (err) {
       console.error(err);
       roundError = true;
@@ -692,10 +756,13 @@
       ? false
       : gameState === 'playing' ||
         isProcessing ||
+        // Replay is a read-only view of a past round - never let it bet.
+        stateUrlDerived.replay() ||
         !betIsValid() ||
         !allChoicesMade() ||
         (IS_PROD && resolveRoundSeed().source === 'none');
   function onSpin() {
+    sound.playPress();
     if (autoRunning) { stopAuto(); return; }
     if (spinDisabled()) return;
     playRound().catch((err) => console.error('Play failed', err));
@@ -956,7 +1023,7 @@
     </button>
 
     <div class="cb-panel cb-panel-light">
-      <button class="cb-icon" onclick={() => (muted = !muted)} aria-pressed={muted} aria-label={muted ? 'Unmute' : 'Mute'}>
+      <button class="cb-icon" onclick={toggleMuted} aria-pressed={muted} aria-label={muted ? 'Unmute' : 'Mute'}>
         <span class="cb-glyph">{muted ? '🔇' : '🔊'}</span>
       </button>
       <button class="cb-icon" class:active={openPopup === 'info'} onclick={() => togglePopup('info')} aria-label="How to play">
