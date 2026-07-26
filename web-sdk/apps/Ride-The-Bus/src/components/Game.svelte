@@ -2,7 +2,8 @@
   import { base } from '$app/paths';
   import './app.css';
   import { createRoundContract, rankValue, type Card } from '../game/roundContract';
-  import { stateBet, stateUrlDerived, stateMeta, stateConfig } from 'state-shared';
+  import { stateBet, stateUrlDerived, stateMeta, stateConfig, stateModal } from 'state-shared';
+  import { GameVersion, Modals } from 'components-ui-html';
   import { requestBet, requestEndRound } from 'rgs-requests';
   import { numberToCurrencyString } from 'utils-shared/amount';
   import { API_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
@@ -69,6 +70,17 @@
       const firstMode = Object.keys(meta)[0];
       if (firstMode) stateBet.activeBetModeKey = firstMode;
     }
+  });
+
+  // Local dev has no RGS to authenticate against, so Authenticate always fails
+  // and posts an error modal. That's expected here - this game deliberately
+  // falls back to a locally-generated round - and the modal would otherwise
+  // cover the board on every load. Deliberately narrow: a production build, or
+  // any real session, keeps the modal, because an auth failure there is
+  // something the player genuinely needs to see.
+  $effect(() => {
+    if (IS_PROD || stateUrlDerived.sessionID()) return;
+    if (stateModal.modal?.name === 'error') stateModal.modal = null;
   });
 
   let gameState = $state<State>('start');
@@ -519,9 +531,13 @@
     } catch (err) {
       console.error(err);
       roundError = true;
-      // One alert is enough; during an auto run the loop stops after this, so
-      // we don't pop a dialog for every remaining round.
-      if (!autoRunning) alert('Engine play failed: ' + ((err as any)?.message || String(err)));
+      // Surface through the SDK's ModalError (mounted at the bottom of this
+      // file) rather than a raw alert(), so a failed bet looks the same as the
+      // auth/session errors the framework already reports. Only report once:
+      // an auto run stops after this, so we don't stack a dialog per round.
+      if (!autoRunning) {
+        stateModal.modal = { name: 'error', error: err };
+      }
     } finally {
       isProcessing = false;
     }
@@ -1091,6 +1107,19 @@
     </div>
   {/if}
 </div>
+
+<!-- The SDK's shared modals. ModalError is the important one: Authenticate and
+     the bet state machine report failures by setting stateModal.modal to
+     { name: 'error', ... }, and without this mounted those errors are swallowed
+     silently - a player hitting an auth or session failure would just see a
+     stuck screen. The other modals in here only render when stateModal.modal
+     names them, which this game never does (it has its own bet/autoplay/rules
+     popups), so they stay inert. -->
+<Modals>
+  {#snippet version()}
+    <GameVersion version="1.0.0" />
+  {/snippet}
+</Modals>
 
 <style>
   /* Styles live in src/styles/*.css and are pulled in here so they stay
