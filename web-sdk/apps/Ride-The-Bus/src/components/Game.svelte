@@ -76,6 +76,12 @@
   // The win readout stays hidden on the very first screen and appears once the
   // player has taken their first spin.
   let hasPlayed = $state(false);
+  // Most recently settled round, shown in the "Last Win" readout on the control
+  // bar. Kept separate from wonAmount so it survives the board resetting between
+  // rounds (and during an auto run it shows the previous round while the next
+  // one is still revealing).
+  let lastWinAmount = $state(0);
+  let lastWinMultiplier = $state(0);
 
   let colorChoice = $state<ColorChoice>(null);
   let hlChoice = $state<HigherLowerChoice>(null);
@@ -407,6 +413,9 @@
       }
     }
     gameState = wonAmount > 0 ? 'won' : 'lost';
+    // Record the settled result for the "Last Win" readout on the control bar.
+    lastWinAmount = wonAmount;
+    lastWinMultiplier = initialBet > 0 ? wonAmount / initialBet : 0;
   }
 
   async function startGameEngineFlow(roundSeedData: { seed: string; source: 'engine-auth' | 'engine-replay' }) {
@@ -630,12 +639,10 @@
       // Restore the input to the starting bet so the sidebar doesn't keep the
       // last (possibly grown) strategy amount after the run ends.
       betInput = String(autoBaseBet);
-      // Return to the picking screen (guesses kept) so the player can adjust
-      // and run again - after leaving the final result up for a moment.
-      if (gameState === 'won' || gameState === 'lost') {
-        await wait(paceMs(1000, 300));
-        if (!autoRunning) retryGame();
-      }
+      // Deliberately DON'T reset the board here: when the run ends (count
+      // exhausted or Stop pressed) the final round stays on screen with its
+      // revealed cards and win, exactly like a manual round does. The next
+      // spin clears it (playRound resets the board itself).
     }
   }
 
@@ -963,6 +970,15 @@
         <span class="cb-cap">Balance</span>
         <span class="cb-val">{numberToCurrencyString(stateBet.balanceAmount)}</span>
       </div>
+      {#if hasPlayed}
+        <div class="cb-lastwin" class:won={lastWinAmount > 0}>
+          <span class="cb-cap">Last Win</span>
+          <span class="cb-val">
+            {numberToCurrencyString(lastWinAmount)}
+            <span class="cb-lastwin-mult">{lastWinMultiplier.toFixed(2)}×</span>
+          </span>
+        </div>
+      {/if}
     </div>
 
     <div class="cb-cluster cb-right">
@@ -977,10 +993,6 @@
         </div>
       </div>
 
-      <button class="cb-round cb-turbo" class:active={turboSpeed > 0 || openPopup === 'turbo'} onclick={() => togglePopup('turbo')} aria-label="Turbo speed">
-        <svg class="cb-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 2v11h3v9l7-12h-4l4-8z" /></svg>
-      </button>
-
       <button class="cb-spin" class:stopping={autoRunning} onclick={onSpin} disabled={spinDisabled()} aria-label={autoRunning ? 'Stop autoplay' : 'Spin'}>
         {#if autoRunning}
           <span class="cb-spin-square" aria-hidden="true"></span>
@@ -989,8 +1001,15 @@
         {/if}
       </button>
 
+      <button class="cb-round cb-turbo" class:active={turboSpeed > 0 || openPopup === 'turbo'} onclick={() => togglePopup('turbo')} aria-label="Turbo speed">
+        <svg class="cb-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 2v11h3v9l7-12h-4l4-8z" /></svg>
+      </button>
+
       <button class="cb-round cb-autospin" class:active={openPopup === 'autospin'} onclick={() => togglePopup('autospin')} disabled={autoRunning} aria-label="Autoplay settings">
-        <svg class="cb-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8A5.87 5.87 0 0 1 6 12c0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" /></svg>
+        <svg class="cb-svg cb-autospin-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8A5.87 5.87 0 0 1 6 12c0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" />
+          <path d="M10.4 9.7 14.6 12l-4.2 2.3z" />
+        </svg>
       </button>
 
       <button class="cb-round cb-advanced" class:active={openPopup === 'advanced'} onclick={() => togglePopup('advanced')} aria-label="Advanced settings">
@@ -1135,6 +1154,8 @@
   }
 
   /* Game title / branding, overlaid at the top-centre of the table. */
+  /* A rounded dark plate keeps the title legible over the table felt / backdrop
+     instead of the text blending into it. */
   .game-title {
     position: absolute;
     top: 10px;
@@ -1147,6 +1168,11 @@
     line-height: 1;
     text-align: center;
     pointer-events: none;
+    padding: 9px 26px 10px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 214, 130, 0.28);
+    background: linear-gradient(180deg, rgba(10, 18, 28, 0.82), rgba(6, 11, 18, 0.72));
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   }
   .game-title-main {
     font-size: 1.95rem;
@@ -1215,13 +1241,30 @@
   }
   .cb-glyph { font-size: 1.15rem; line-height: 1; font-weight: 700; }
   .cb-svg { width: 20px; height: 20px; display: block; }
-  .cb-spin-svg { width: 34px; height: 34px; display: block; }
+  .cb-autospin-svg { width: 30px; height: 30px; }
+  .cb-turbo .cb-svg { width: 26px; height: 26px; }
+  /* Tilt the spin arrows and scale them up so they fill the big play button. */
+  .cb-spin-svg { width: 66px; height: 66px; display: block; transform: rotate(45deg); }
   .cb-info-i { font-style: italic; font-family: Georgia, "Times New Roman", serif; font-weight: 700; }
 
   /* Balance / bet text stacks */
   .cb-cap { display: block; font-size: 0.6rem; letter-spacing: 0.09em; text-transform: uppercase; color: #4c9ffe; font-weight: 700; }
   .cb-val { display: block; font-size: 1.05rem; font-weight: 800; color: #fff; line-height: 1.1; }
   .cb-balance { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+
+  /* "Last Win" readout: the most recently settled round's cash + multiplier. */
+  .cb-lastwin {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+    min-width: 0;
+    padding-left: 12px;
+    border-left: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .cb-lastwin .cb-cap { color: #93a4b5; }
+  .cb-lastwin .cb-val { color: #97a8b8; }
+  .cb-lastwin.won .cb-val { color: #7cffb2; }
+  .cb-lastwin-mult { font-size: 0.72rem; font-weight: 800; color: #ffe08a; margin-left: 3px; }
 
   .cb-bet { display: flex; align-items: center; gap: 8px; }
   .cb-bet-display {
@@ -2428,11 +2471,14 @@
     .cb-step { width: 22px; height: 19px; font-size: 0.9rem; border-radius: 6px; }
     .cb-round { width: 34px; height: 34px; }
     .cb-svg { width: 17px; height: 17px; }
+    .cb-autospin-svg { width: 24px; height: 24px; }
+    .cb-turbo .cb-svg { width: 21px; height: 21px; }
     .cb-spin { width: 50px; height: 50px; border-width: 2px; }
     .cb-spin-icon { font-size: 1.4rem; }
-    .cb-spin-svg { width: 26px; height: 26px; }
+    .cb-spin-svg { width: 46px; height: 46px; }
     .cb-spin-square { width: 16px; height: 16px; }
     .cb-bet-display { padding: 3px 6px; }
+    .game-title { padding: 6px 16px 7px; border-radius: 11px; }
     .game-title-main { font-size: 1.4rem; }
     .game-title-sub { font-size: 0.6rem; letter-spacing: 0.12em; }
   }
@@ -2446,8 +2492,10 @@
     .cb-betstep { display: none; }
     .cb-val { font-size: 0.72rem; }
     .cb-round { width: 31px; height: 31px; }
+    .cb-autospin-svg { width: 22px; height: 22px; }
+    .cb-turbo .cb-svg { width: 19px; height: 19px; }
     .cb-spin { width: 46px; height: 46px; }
     .cb-spin-icon { font-size: 1.3rem; }
-    .cb-spin-svg { width: 24px; height: 24px; }
+    .cb-spin-svg { width: 42px; height: 42px; }
   }
 </style>
