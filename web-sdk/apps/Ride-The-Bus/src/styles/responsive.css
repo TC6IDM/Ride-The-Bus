@@ -40,3 +40,32 @@
   .card-mult { min-height: 0; }
   .play-area { gap: calc(var(--ui) * 1.1); padding: calc(var(--ui) * 0.8); }
 }
+
+/* Popout S only (~400x225 and smaller in landscape).
+   Both --ui and --ui-bar bottom out at their clamp floors here, so the layout
+   stops scaling with the window: the control bar freezes at ~87px - up to 58%
+   of the viewport - and the play area, which gets whatever is left, pushes the
+   multiplier chips off the top and the guess squares under the bar.
+   The bar genuinely cannot fit on one row at this width (its controls measure
+   637px against a 400px viewport), so the two-row layout stays; instead lower
+   the two floors so both units keep tracking height, and tighten the bar's own
+   padding and row gap - it is spending ~18px of a 225px window on whitespace.
+   Scoped to landscape and 320px so nothing else is touched: phones are taller
+   than this in portrait AND in landscape, and popout L / desktop clear it by a
+   wide margin. */
+@media (orientation: landscape) and (max-height: 320px) {
+  .game-layout {
+    --ui: clamp(2.6px, min(2vw, 1.55vh), 11px);
+    --ui-bar: clamp(4px, min(2.05vw, 2.4vh), 11px);
+  }
+
+  /* Reclaimed whitespace: the bar's bottom padding and the gap between its two
+     rows, plus a little off each panel's vertical padding. */
+  .control-bar {
+    gap: calc(var(--ui-bar) * 0.5);
+    padding: 0 calc(var(--ui-bar) * 1.27) calc(var(--ui-bar) * 0.5);
+  }
+  .cb-panel {
+    padding: calc(var(--ui-bar) * 0.4) calc(var(--ui-bar) * 1.09);
+  }
+}
