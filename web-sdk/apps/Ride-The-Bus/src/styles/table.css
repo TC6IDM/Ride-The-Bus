@@ -1,0 +1,205 @@
+/* The backdrop, drawn in CSS rather than shipped as an image.
+ *
+ * This replaces a 1.9 MB backdrop.png. Beyond the weight, it stays crisp at any
+ * resolution and - because the props are positioned, not baked into a bitmap -
+ * nothing gets cropped away when the viewport aspect changes, which was the
+ * awkward part of `background: center/cover`.
+ *
+ * Everything scales from --ui (see base.css), so the table and its props grow
+ * and shrink with the cards.
+ *
+ * Layout rule: the middle of the screen belongs to the dealt cards, the win
+ * readout and the guess squares, so every prop is pinned out toward the table's
+ * rim. The deck sits upper-left - it is deliberately part of the fiction (you
+ * are drawing from a real deck) but must not sit behind the dealt cards.
+ */
+
+.scene {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* ---- the table ---------------------------------------------------------- */
+
+.table-top {
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  transform: translate(-50%, -50%);
+  width: min(104vw, 158vh);
+  aspect-ratio: 1.48 / 1;
+  border-radius: 50%;
+  background:
+    /* soft pool of light toward the top, falling off to the rim */
+    radial-gradient(ellipse at 50% 32%, rgba(255, 226, 175, 0.16), transparent 62%),
+    radial-gradient(ellipse at 50% 40%, #a4703f 0%, #8d5c31 48%, #6d4322 82%, #5b3619 100%);
+  box-shadow:
+    /* the table edge, then the shadow it casts on the felt */
+    inset 0 0 0 calc(var(--ui) * 0.9) #6b4021,
+    inset 0 calc(var(--ui) * 0.5) calc(var(--ui) * 1.6) rgba(255, 220, 170, 0.1),
+    0 calc(var(--ui) * 1.6) calc(var(--ui) * 3.5) rgba(0, 0, 0, 0.45);
+}
+
+/* faint wood grain */
+.table-top::after {
+  content: '';
+  position: absolute;
+  inset: calc(var(--ui) * 0.9);
+  border-radius: 50%;
+  opacity: 0.35;
+  background: repeating-linear-gradient(
+    92deg,
+    rgba(255, 255, 255, 0.035) 0 calc(var(--ui) * 0.2),
+    transparent calc(var(--ui) * 0.2) calc(var(--ui) * 0.75)
+  );
+}
+
+/* ---- props -------------------------------------------------------------- */
+
+.prop {
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+
+/* Face-down deck, upper-left of the table. */
+.deck {
+  width: calc(var(--ui) * 5.4);
+  aspect-ratio: 5 / 7;
+  border-radius: calc(var(--ui) * 0.55);
+  background:
+    repeating-linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.18) 0 calc(var(--ui) * 0.32),
+        transparent calc(var(--ui) * 0.32) calc(var(--ui) * 0.64)
+      )
+      ,
+    linear-gradient(160deg, #c2352f, #9d211d);
+  box-shadow:
+    inset 0 0 0 calc(var(--ui) * 0.22) #f4efe6,
+    /* the stack underneath */ calc(var(--ui) * 0.16) calc(var(--ui) * 0.16) 0 #efe9dd,
+    calc(var(--ui) * 0.32) calc(var(--ui) * 0.32) 0 #e2dccf,
+    calc(var(--ui) * 0.5) calc(var(--ui) * 0.55) calc(var(--ui) * 0.9) rgba(0, 0, 0, 0.4);
+}
+
+/* Red party cup: a trapezoid body with a rim and a drink inside. */
+.cup {
+  width: calc(var(--ui) * 4.2);
+  height: calc(var(--ui) * 5);
+  filter: drop-shadow(calc(var(--ui) * 0.3) calc(var(--ui) * 0.5) calc(var(--ui) * 0.7) rgba(0, 0, 0, 0.45));
+}
+.cup-body {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(0 9%, 100% 9%, 78% 100%, 22% 100%);
+  background: linear-gradient(
+    90deg,
+    #8d1a17 0%,
+    #c62a24 22%,
+    #ef5147 48%,
+    #cf322b 70%,
+    #8d1a17 100%
+  );
+}
+/* the lip */
+.cup-rim {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 19%;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #a8201c, #e5433b 42%, #ff8378 52%, #c72c26 78%, #8d1a17);
+  box-shadow: inset 0 calc(var(--ui) * -0.12) calc(var(--ui) * 0.2) rgba(0, 0, 0, 0.35);
+}
+/* what's in it */
+.cup-drink {
+  position: absolute;
+  left: 11%;
+  top: 3.5%;
+  width: 78%;
+  height: 13%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 40% 35%, #d9903f, #a75f22);
+}
+
+/* Poker chip: dashed rim, flat face. */
+.chip {
+  width: calc(var(--ui) * 3.6);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    /* face highlight */
+    radial-gradient(circle at 42% 32%, rgba(255, 255, 255, 0.3), transparent 55%),
+    /* inner face, then a thin cream ring around it */
+    radial-gradient(circle, var(--chip-face) 0 52%, #f3efe4 52% 60%, transparent 60%),
+    /* six chunky rim dashes */
+    repeating-conic-gradient(from 15deg, #f3efe4 0deg 30deg, var(--chip) 30deg 60deg);
+  box-shadow:
+    inset 0 0 0 calc(var(--ui) * 0.16) rgba(0, 0, 0, 0.22),
+    0 calc(var(--ui) * 0.3) calc(var(--ui) * 0.55) rgba(0, 0, 0, 0.45);
+}
+.chip-red {
+  --chip: #c0332c;
+  --chip-face: #d8433a;
+}
+.chip-green {
+  --chip: #1f7a4d;
+  --chip-face: #2a9660;
+}
+.chip-navy {
+  --chip: #2b4a7a;
+  --chip-face: #375d97;
+}
+
+/* A short stack reads as more than one chip. */
+.chip-stack {
+  box-shadow:
+    inset 0 0 0 calc(var(--ui) * 0.14) rgba(0, 0, 0, 0.18),
+    0 calc(var(--ui) * 0.34) 0 #b9b3a6,
+    0 calc(var(--ui) * 0.68) 0 #cfc9bb,
+    0 calc(var(--ui) * 1.02) 0 #b9b3a6,
+    0 calc(var(--ui) * 1.3) calc(var(--ui) * 0.7) rgba(0, 0, 0, 0.45);
+}
+
+/* ---- placement ---------------------------------------------------------- */
+/* Positions are percentages of THE TABLE, not the viewport, so every prop stays
+   on the wood at any aspect ratio (positioning them against the viewport left
+   them floating on the felt once the table shrank on portrait screens).
+   Each point is kept inside the ellipse - ((x-50)/50)^2 + ((y-50)/50)^2 < 0.8^2
+   - and out of the centre column, which the cards and guesses occupy. */
+
+.p-deck { left: 22%; top: 30%; }
+.p-cup-1 { left: 14%; top: 62%; }
+.p-cup-2 { left: 83%; top: 33%; }
+.p-chip-1 { left: 74%; top: 24%; }
+.p-chip-2 { left: 86%; top: 58%; }
+.p-chip-3 { left: 22%; top: 74%; }
+.p-chip-4 { left: 70%; top: 80%; }
+.p-chip-5 { left: 87%; top: 45%; }
+
+/* Portrait: the landscape ellipse is far too short for a tall screen - the
+   cards and guess squares spilled off the wood onto the felt. Make the table
+   rounder and taller so the whole play column sits on it. It deliberately
+   overhangs the screen edges (the .scene clips it), which reads as a table
+   larger than the view rather than a small oval floating in space. */
+@media (orientation: portrait) {
+  .table-top {
+    width: min(118vw, 70vh);
+    aspect-ratio: 0.92 / 1;
+    top: 46%;
+  }
+  /* Only the props that stay clear of the play column survive here. */
+  .p-chip-1,
+  .p-chip-4,
+  .p-cup-2 {
+    display: none;
+  }
+  .p-deck { left: 17%; top: 16%; }
+  .p-cup-1 { left: 15%; top: 78%; }
+  .p-chip-2 { left: 86%; top: 74%; }
+  .p-chip-3 { left: 18%; top: 44%; }
+  .p-chip-5 { left: 87%; top: 22%; }
+}

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { base } from '$app/paths';
   import './app.css';
+  import { BACKDROP_IMAGE, isCssBackdrop } from '../game/backdrop';
   import { createRoundContract, rankValue, type Card } from '../game/roundContract';
   import { stateBet, stateUrlDerived, stateMeta, stateConfig, stateModal } from 'state-shared';
   import { GameVersion, Modals } from 'components-ui-html';
@@ -921,10 +922,43 @@
     });
   }
 
-  const backdropUrl = `${base}/backdrop.png`;
 </script>
 
-<div class="game-layout" style={`--backdrop-url: url(${backdropUrl}); --flip-dur: ${flipDurSec()}s`}>
+<!-- Backdrop: either the CSS-drawn table or the shipped bitmap. Switch between
+     them with the single BACKDROP constant in game/backdrop.ts. -->
+<div
+  class="game-layout"
+  class:backdrop-image={!isCssBackdrop}
+  style={`--flip-dur: ${flipDurSec()}s; --backdrop-url: url(${base}/${BACKDROP_IMAGE})`}
+>
+  {#if isCssBackdrop}
+    <!-- Drawn entirely in CSS (see styles/table.css). Purely decorative, and
+         every prop is placed out toward the table's rim so the middle stays
+         clear for the cards and guesses. -->
+    <div class="scene" aria-hidden="true">
+      <div class="table-top">
+        <div class="prop deck p-deck"></div>
+
+        <div class="prop cup p-cup-1">
+          <div class="cup-body"></div>
+          <div class="cup-rim"></div>
+          <div class="cup-drink"></div>
+        </div>
+        <div class="prop cup p-cup-2">
+          <div class="cup-body"></div>
+          <div class="cup-rim"></div>
+          <div class="cup-drink"></div>
+        </div>
+
+        <div class="prop chip chip-red chip-stack p-chip-1"></div>
+        <div class="prop chip chip-green p-chip-2"></div>
+        <div class="prop chip chip-navy p-chip-3"></div>
+        <div class="prop chip chip-red p-chip-4"></div>
+        <div class="prop chip chip-green chip-stack p-chip-5"></div>
+      </div>
+    </div>
+  {/if}
+
   <div class="game-title" aria-hidden="true">
     <span class="game-title-main">Ride The Bus</span>
     <span class="game-title-sub">by Takeover Casino</span>
@@ -997,8 +1031,8 @@
       <div class="choice-column">
         <span class="choice-label">{t('Inside')}<br />{t('Outside')}</span>
         <div class="choice-square io-square" role="group" aria-label={t('Inside, outside, or equal')}>
-          <button type="button" class="half-btn inside-half" class:selected={ioChoice === 'inside'} onclick={() => (ioChoice = 'inside')} aria-label={t('Inside')}>→←</button>
-          <button type="button" class="half-btn outside-half" class:selected={ioChoice === 'outside'} onclick={() => (ioChoice = 'outside')} aria-label={t('Outside')}>←→</button>
+          <button type="button" class="half-btn inside-half" class:selected={ioChoice === 'inside'} onclick={() => (ioChoice = 'inside')} aria-label={t('Inside')}>⇒⇐</button>
+          <button type="button" class="half-btn outside-half" class:selected={ioChoice === 'outside'} onclick={() => (ioChoice = 'outside')} aria-label={t('Outside')}>⟺</button> 
           <button type="button" class="equal-btn" class:selected={ioChoice === 'equal'} onclick={() => (ioChoice = 'equal')} aria-label={t('Equal')}>=</button>
         </div>
       </div>
@@ -1195,6 +1229,7 @@
      resolves these @imports before Svelte scopes the result). Import order
      matters: responsive.css last so its overrides win. */
   @import '../styles/base.css';
+  @import '../styles/table.css';
   @import '../styles/cards.css';
   @import '../styles/choices.css';
   @import '../styles/control-bar.css';

@@ -70,6 +70,7 @@ if __name__ == "__main__":
     # check pass. Must run AFTER generate_configs: the pipeline only writes a
     # raw weight-1 _0 file when one is absent (write_data.py:251), so this
     # overwrites it with the properly reweighted table.
+    print(f"\nReweighting all modes to {config.rtp:.4f} RTP...")
     here = os.path.dirname(os.path.abspath(__file__))
     stats = reweight_all(here, config.rtp)
     realized = [s["realized_rtp"] for s in stats]

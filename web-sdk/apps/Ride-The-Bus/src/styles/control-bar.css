@@ -7,6 +7,9 @@
    grouped into detached rounded panels that cluster toward the centre, with
    the turbo and advanced buttons floating free at the outer edges. */
 .control-bar {
+  /* Above .scene (the CSS backdrop). */
+  position: relative;
+  z-index: 1;
   flex: 0 0 auto;
   width: 100%;
   box-sizing: border-box;

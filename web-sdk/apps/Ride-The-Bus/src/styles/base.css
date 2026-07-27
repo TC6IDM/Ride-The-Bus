@@ -50,9 +50,18 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  background: var(--backdrop-url) center/cover no-repeat fixed;
+  /* Green felt. The table and its props are drawn on top of this by the .scene
+     element - see table.css. */
+  background: radial-gradient(ellipse at 50% 42%, #1e6f52 0%, #14523c 45%, #0a2f22 100%);
   overflow: hidden;
   position: relative;
+}
+
+/* Image backdrop instead of the CSS-drawn one. Applied when BACKDROP is set to
+   'image' in game/backdrop.ts, which also suppresses the .scene element - so
+   this bitmap is the whole background, felt included. */
+.game-layout.backdrop-image {
+  background: var(--backdrop-url) center/cover no-repeat fixed;
 }
 
 /* Game title / branding, overlaid at the top-centre of the table. The rounded
@@ -97,6 +106,9 @@
 
 /* Play area fills everything above the control bar; the game centres itself. */
 .play-area {
+  /* Above .scene, which is absolutely positioned behind everything. */
+  position: relative;
+  z-index: 1;
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
