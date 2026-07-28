@@ -232,7 +232,30 @@
 
 .cb-spin.stopping:hover { box-shadow: 0 0 20px rgba(255, 80, 80, 0.85); }
 
+.cb-spin { position: relative; /* anchors the autoplay count over the square */ }
+
 .cb-spin-square { width: calc(var(--ui-bar) * 2.18) /* 24px */; height: calc(var(--ui-bar) * 2.18); border-radius: calc(var(--ui-bar) * 0.55); background: #ff3b3b; box-shadow: 0 0 10px rgba(255, 59, 59, 0.7); }
+
+/* Rounds left in an auto run, sitting on top of the stop square. Centred on
+   the whole 64px button rather than the 24px square so four digits still fit,
+   and non-interactive so it never swallows a click meant for Stop. */
+.cb-spin-count {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  font-size: calc(var(--ui-bar) * 1.64) /* 18px */;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 6px rgba(0, 0, 0, 0.8);
+}
+
+/* The infinity mark reads small and thin next to digits at the same size. */
+.cb-spin-count.is-infinite { font-size: calc(var(--ui-bar) * 2.36) /* 26px */; }
 
 /* Distinct hover glow per control (info=blue, turbo=amber, autospin=green,
    advanced=purple), plus an active (popup-open) highlight. */

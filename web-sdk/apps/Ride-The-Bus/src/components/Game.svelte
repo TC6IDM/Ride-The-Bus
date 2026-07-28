@@ -155,13 +155,23 @@
   let autoRoundsInput = $state('10');
   let autoInfinite = $state(false);
   let autoRunning = $state(false);
+  // Rounds still to play in the current auto run. Infinity when the player
+  // picked the unlimited option (the run then ends only on Stop, an error, or
+  // one of the stop conditions).
   let autoRemaining = $state(0);
   // A Stop press can't cancel a bet already placed on the server, so it just
   // asks the loop to stop BEFORE starting the next round (the in-flight round
   // finishes normally - this matches the documented single-bet RGS model).
   let autoStopRequested = $state(false);
-  // Spin-count presets for the Autoplay popup.
-  const AUTOSPIN_PRESETS = [10, 25, 50, 100, 250, 500, 1000];
+  // Space-hold run: the auto loop keeps going only while the key is physically
+  // held, so it has no round count (unlike a normal auto run). Mirrors the SDK's
+  // own EnableSpaceHold component.
+  let spaceHoldRunning = $state(false);
+  // Spin-count presets for the Autoplay popup. These are exactly the SDK's own
+  // AUTO_SPINS_TEXT_OPTIONS (state-shared/stateUi), infinity included - it is
+  // rendered as a separate full-width cell below the eight numbers.
+  const AUTOSPIN_PRESETS = [10, 25, 50, 75, 100, 250, 500, 1000];
+  const INFINITY_MARK = '∞';
   // Fallback bet levels for the bet menu when no RGS session has supplied any
   // (local dev). On a real session stateConfig.betAmountOptions drives it.
   const DEFAULT_BET_LEVELS = [1, 5, 25, 50, 75, 100, 200, 500, 800, 1000];
@@ -609,9 +619,22 @@
     }
   }
 
+  // Single-flight wrapper around playRound. A space-hold starts one round on
+  // keydown and then, 400ms later, an auto loop - so without this the loop's
+  // first iteration would place a second bet on top of the still-running tap
+  // round. Callers that arrive mid-round get the in-flight promise instead,
+  // which is exactly the "wait for it, then carry on" the auto loop wants.
+  let roundInFlight: Promise<void> | null = null;
+  function runRound(): Promise<void> {
+    if (roundInFlight) return roundInFlight;
+    roundInFlight = playRound().finally(() => { roundInFlight = null; });
+    return roundInFlight;
+  }
+
   // One full round: place the single bet (engine or local-fallback) and play it
   // out to a won/lost result. Awaitable so the auto loop can run rounds
-  // back-to-back; manual Start just fires it and forgets.
+  // back-to-back; manual Start just fires it and forgets. Go through runRound()
+  // rather than calling this directly, so rounds can never overlap.
   async function playRound() {
     // The Start button is disabled unless these hold, but guard anyway.
     if (!betIsValid() || !allChoicesMade()) return;
@@ -651,11 +674,15 @@
   // Auto play: loop the single-bet round with the player's locked-in guesses
   // until the round count runs out, the balance can't cover the next bet, an
   // engine round errors, or the player hits Stop.
-  async function startAuto() {
-    if (autoRunning || !betIsValid() || !allChoicesMade() || !autoRoundsValid()) return;
+  // `hold` = a space-hold run: it ignores the round count and instead runs for
+  // as long as spaceHoldRunning stays true (i.e. the key is still down).
+  async function startAuto({ hold = false } = {}) {
+    if (autoRunning || !betIsValid() || !allChoicesMade()) return;
+    if (!hold && !autoRoundsValid()) return;
     autoStopRequested = false;
     autoRunning = true;
-    autoRemaining = autoInfinite ? Infinity : Math.floor(Number(autoRoundsInput));
+    spaceHoldRunning = hold;
+    autoRemaining = hold ? 0 : autoInfinite ? Infinity : Math.floor(Number(autoRoundsInput));
 
     // Advanced strategy setup: the starting bet is the reset target, and the
     // net result is tracked so Stop on Profit / Stop on Loss can end the run.
@@ -670,7 +697,7 @@
     const stopLoss = useAdvanced ? toNum(stopOnLoss) : 0;
 
     try {
-      while (autoRemaining > 0 && !autoStopRequested) {
+      while ((hold ? spaceHoldRunning : autoRemaining > 0) && !autoStopRequested) {
         // Bet this round's amount (advanced strategy may have grown / reset it).
         betInput = String(nextBet);
         // Stop if the next bet is no longer affordable (prod: server balance;
@@ -678,7 +705,7 @@
         // autobet uses (createIntermediateMachineAutoBet.ts:checkInsufficientFunds).
         if (betValue() > stateBet.balanceAmount + 1e-9) break;
 
-        await playRound();
+        await runRound();
         // Bail on a placement/settlement error rather than repeating it, and
         // honour a Stop pressed during the round (the in-flight bet finished).
         if (roundError || autoStopRequested) break;
@@ -704,13 +731,19 @@
           if (!(nextBet > 0)) nextBet = autoBaseBet;
         }
 
-        if (!autoInfinite) autoRemaining -= 1;
-        if (autoRemaining <= 0) break;
+        if (hold) {
+          // Released mid-round: finish here rather than starting another bet.
+          if (!spaceHoldRunning) break;
+        } else if (!autoInfinite) {
+          autoRemaining -= 1;
+          if (autoRemaining <= 0) break;
+        }
         // Let the just-finished result sit briefly before the board clears.
         await wait(paceMs(750, 200));
       }
     } finally {
       autoRunning = false;
+      spaceHoldRunning = false;
       autoRemaining = 0;
       // Restore the input to the starting bet so the sidebar doesn't keep the
       // last (possibly grown) strategy amount after the run ends.
@@ -732,14 +765,15 @@
     autoInfinite = false;
     autoRoundsInput = String(n);
   }
+  function toggleAutoInfinite() {
+    autoInfinite = !autoInfinite;
+  }
   function stepAutoRounds(direction: 1 | -1) {
+    // Stepping is a count action, so it drops out of unlimited.
     autoInfinite = false;
     const current = Math.floor(Number(autoRoundsInput));
     const base = Number.isFinite(current) && current >= 1 ? current : 1;
     autoRoundsInput = String(Math.max(1, base + direction));
-  }
-  function toggleAutoInfinite() {
-    autoInfinite = !autoInfinite;
   }
   function formatAutoRounds() {
     const n = Math.floor(Number(autoRoundsInput));
@@ -767,7 +801,7 @@
     sound.playPress();
     if (autoRunning) { stopAuto(); return; }
     if (spinDisabled()) return;
-    playRound().catch((err) => console.error('Play failed', err));
+    runRound().catch((err) => console.error('Play failed', err));
   }
   // Bet menu: choose a preset level then close.
   function setBetLevel(v: number) {
@@ -780,6 +814,75 @@
     openPopup = null;
     startAuto();
   }
+
+  // --- Spacebar: tap to spin, hold to keep spinning -------------------------
+  // Same shape as the SDK's EnableSpaceHold / OnHotkey pair: keydown spins once
+  // immediately, and if the key is still down after HOLD_MS the run continues
+  // until it is released. The hold run is bounded by the key being physically
+  // held, so it is not an unattended unlimited autoplay.
+  const SPACE_HOLD_MS = 400;
+  let spaceDown = false;
+  let spaceHoldTimer: ReturnType<typeof setTimeout> | null = null;
+
+  // Don't hijack Space while the player is typing a bet / round count, or
+  // operating a focused button (Space is that button's own activation key).
+  function spaceIsForUs(target: EventTarget | null) {
+    const el = target as HTMLElement | null;
+    if (!el) return true;
+    if (el.isContentEditable) return false;
+    return !['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A'].includes(el.tagName);
+  }
+
+  function onKeyDown(event: KeyboardEvent) {
+    if (event.code !== 'Space' && event.key !== ' ') return;
+    if (!spaceIsForUs(event.target)) return;
+    // Space scrolls the page by default.
+    event.preventDefault();
+    // Held keys auto-repeat; only the first keydown counts.
+    if (event.repeat || spaceDown) return;
+    spaceDown = true;
+
+    // A live auto run treats Space like the Stop button.
+    if (autoRunning) { onSpin(); return; }
+    if (spinDisabled()) return;
+
+    onSpin(); // the tap: one round, straight away
+    spaceHoldTimer = setTimeout(() => {
+      spaceHoldTimer = null;
+      // Still held, and the tap's round is done or nearly so - keep going.
+      if (spaceDown && !autoRunning) startAuto({ hold: true });
+    }, SPACE_HOLD_MS);
+  }
+
+  function onKeyUp(event: KeyboardEvent) {
+    if (event.code !== 'Space' && event.key !== ' ') return;
+    releaseSpace();
+  }
+
+  function releaseSpace() {
+    spaceDown = false;
+    if (spaceHoldTimer !== null) {
+      clearTimeout(spaceHoldTimer);
+      spaceHoldTimer = null;
+    }
+    // Ends the hold run after the in-flight round settles (a placed bet can't
+    // be cancelled).
+    spaceHoldRunning = false;
+  }
+
+  $effect(() => {
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    // A lost focus / hidden tab never delivers the keyup, which would otherwise
+    // leave the hold run going with nobody holding anything.
+    window.addEventListener('blur', releaseSpace);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('blur', releaseSpace);
+      releaseSpace();
+    };
+  });
 
   // Mirrors games/ride_the_bus/game_calculations.py:partial_multiplier - the
   // RAW (unquantized) win multiplier for a correct guess, solved so that for
@@ -1104,6 +1207,14 @@
       <button class="cb-spin" class:stopping={autoRunning} onclick={onSpin} disabled={spinDisabled()} aria-label={autoRunning ? t('Stop autoplay') : t('Spin')}>
         {#if autoRunning}
           <span class="cb-spin-square" aria-hidden="true"></span>
+          <!-- Rounds left, over the stop square. An unlimited run shows the
+               infinity mark instead of a number; a space-hold run shows
+               nothing, since it lasts only as long as the key is held. -->
+          {#if !spaceHoldRunning}
+            <span class="cb-spin-count" class:is-infinite={autoInfinite}>
+              {autoInfinite ? INFINITY_MARK : autoRemaining}
+            </span>
+          {/if}
         {:else}
           <svg class="cb-spin-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8A5.87 5.87 0 0 1 6 12c0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" /></svg>
         {/if}
@@ -1158,12 +1269,14 @@
           {#each AUTOSPIN_PRESETS as p}
             <button class="bet-cell" class:active={!autoInfinite && Math.floor(Number(autoRoundsInput)) === p} onclick={() => setAutoRounds(p)}>{p}</button>
           {/each}
-          <button class="bet-cell" class:active={autoInfinite} onclick={toggleAutoInfinite}>∞</button>
+          <!-- Unlimited spans the last row: nine cells in a 4-column grid would
+               otherwise leave a ragged single cell. -->
+          <button class="bet-cell bet-cell-wide" class:active={autoInfinite} onclick={toggleAutoInfinite} aria-label={t('Unlimited spins')}>{INFINITY_MARK}</button>
         </div>
         <div class="rounds-selector autospin-input">
           <div class="rounds-field">
             {#if autoInfinite}
-              <span class="rounds-infinite">∞</span>
+              <span class="rounds-infinite">{INFINITY_MARK}</span>
             {:else}
               <input class="rounds-input" type="text" inputmode="numeric" bind:value={autoRoundsInput} onblur={formatAutoRounds} aria-label={t('Number of spins')} />
             {/if}

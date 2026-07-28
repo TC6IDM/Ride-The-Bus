@@ -96,6 +96,7 @@ export default {
 	'Advanced settings': 'Advanced settings',
 	'Stop autoplay': 'Stop autoplay',
 	'Number of spins': 'Number of spins',
+	'Unlimited spins': 'Unlimited spins',
 	'More spins': 'More spins',
 	'Fewer spins': 'Fewer spins',
 	'Stop autoplay on a full game win': 'Stop autoplay on a full game win',

@@ -217,6 +217,14 @@
   color: #fff;
 }
 
+/* The unlimited option takes the whole last row - as a ninth cell in a
+   4-column grid it would otherwise sit alone against three empty columns. */
+.bet-cell-wide {
+  grid-column: 1 / -1;
+  font-size: calc(var(--ui-bar) * 1.45);
+  line-height: 1;
+}
+
 .rounds-stepper {
   flex: 0 0 auto;
   width: calc(var(--ui-bar) * 4.18);
