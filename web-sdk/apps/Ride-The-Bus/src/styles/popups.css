@@ -156,6 +156,51 @@
 
 .info-body li { margin: 3px 0; }
 
+/* Ace-to-King rank strip in How to Play. A list, not prose, because the
+   ordering is the point - and it wraps rather than shrinking the chips below
+   readable size on a narrow popup. */
+.rank-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--ui-bar) * 0.33);
+  /* override .info-body ol's indent and markers */
+  margin: calc(var(--ui-bar) * 0.55) 0 calc(var(--ui-bar) * 0.36);
+  padding: 0;
+  list-style: none;
+}
+
+.rank-chip {
+  flex: 1 1 auto;
+  min-width: calc(var(--ui-bar) * 2.1);
+  margin: 0; /* .info-body li sets a vertical margin */
+  padding: calc(var(--ui-bar) * 0.4) 0;
+  text-align: center;
+  border-radius: calc(var(--ui-bar) * 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.07);
+  font-size: calc(var(--ui-bar) * 1.05);
+  font-weight: 800;
+  line-height: 1;
+  color: #fff;
+}
+
+/* The two ends carry the actual message, so they get the accent. */
+.rank-chip:first-child,
+.rank-chip:last-child {
+  border-color: #4c9ffe;
+  background: rgba(76, 159, 254, 0.22);
+  color: #cfe4ff;
+}
+
+.rank-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: calc(var(--ui-bar) * 0.95);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #93a4b5;
+}
+
 /* Section heading inside the how-to-play body. The popup now covers odds,
    losses and max wins, which needs signposting to stay skimmable. */
 .info-h {

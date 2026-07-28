@@ -69,6 +69,11 @@ export default {
 	'Suit — the suit of card 4.': 'Suit — the suit of card 4.',
 	'Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.':
 		'Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.',
+	'Card order': 'Card order',
+	'Ace is low and King is high — worth knowing, since plenty of card games play it the other way. Suit never affects rank; only the number counts for Higher / Lower and Inside / Outside.':
+		'Ace is low and King is high — worth knowing, since plenty of card games play it the other way. Suit never affects rank; only the number counts for Higher / Lower and Inside / Outside.',
+	Lowest: 'Lowest',
+	Highest: 'Highest',
 	'Payouts follow the odds': 'Payouts follow the odds',
 	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
 		'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.',
@@ -88,8 +93,15 @@ export default {
 		'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
 		'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.',
-	'Use Turbo to speed up the reveal and Autoplay to run many rounds with the same guesses.':
-		'Use Turbo to speed up the reveal and Autoplay to run many rounds with the same guesses.',
+	'Speed and autoplay': 'Speed and autoplay',
+	'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.':
+		'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.',
+	'Autoplay (the circular arrows) replays the same four guesses for a set number of rounds, or unlimited. The round counter sits on the button while it runs — press the red square to stop, and the round already in play finishes first.':
+		'Autoplay (the circular arrows) replays the same four guesses for a set number of rounds, or unlimited. The round counter sits on the button while it runs — press the red square to stop, and the round already in play finishes first.',
+	'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.':
+		'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.',
+	'Tap the spacebar to play one round, or hold it to keep spinning until you let go.':
+		'Tap the spacebar to play one round, or hold it to keep spinning until you let go.',
 
 	// Accessible control names (screen readers)
 	'Pick a color': 'Pick a color',

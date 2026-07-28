@@ -2,7 +2,10 @@
   import { base } from '$app/paths';
   import './app.css';
   import { BACKDROP_IMAGE, isCssBackdrop } from '../game/backdrop';
-  import { createRoundContract, rankValue, type Card } from '../game/roundContract';
+  // `ranks` is imported (rather than the order being retyped in the help text)
+  // so the strip in How to Play can never drift from the order the game and
+  // the math-sdk actually use.
+  import { createRoundContract, rankValue, ranks, type Card } from '../game/roundContract';
   import { stateBet, stateUrlDerived, stateMeta, stateConfig, stateModal } from 'state-shared';
   import { GameVersion, Modals } from 'components-ui-html';
   import { requestBet, requestEndRound } from 'rgs-requests';
@@ -1429,6 +1432,21 @@
         </ol>
         <p>{t('Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.')}</p>
 
+        <h4 class="info-h">{t('Card order')}</h4>
+        <p>{t('Ace is low and King is high — worth knowing, since plenty of card games play it the other way. Suit never affects rank; only the number counts for Higher / Lower and Inside / Outside.')}</p>
+        <!-- Rendered from the same `ranks` array the game runs on, so it cannot
+             disagree with the real ordering. An ordered list because that is
+             exactly what it is: lowest to highest. -->
+        <ol class="rank-strip">
+          {#each ranks as rank}
+            <li class="rank-chip">{rank}</li>
+          {/each}
+        </ol>
+        <div class="rank-ends" aria-hidden="true">
+          <span>{t('Lowest')}</span>
+          <span>{t('Highest')}</span>
+        </div>
+
         <h4 class="info-h">{t('Payouts follow the odds')}</h4>
         <p>{t('Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.')}</p>
         <p>{t('With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.')}</p>
@@ -1449,7 +1467,13 @@
         </ul>
         <p>{t('Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.')}</p>
 
-        <p>{t('Use Turbo to speed up the reveal and Autoplay to run many rounds with the same guesses.')}</p>
+        <h4 class="info-h">{t('Speed and autoplay')}</h4>
+        <ul>
+          <li>{t('Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.')}</li>
+          <li>{t('Autoplay (the circular arrows) replays the same four guesses for a set number of rounds, or unlimited. The round counter sits on the button while it runs — press the red square to stop, and the round already in play finishes first.')}</li>
+          <li>{t('Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.')}</li>
+          <li>{t('Tap the spacebar to play one round, or hold it to keep spinning until you let go.')}</li>
+        </ul>
       </div>
     </div>
   {/if}
