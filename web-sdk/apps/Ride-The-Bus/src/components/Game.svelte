@@ -169,9 +169,9 @@
   let spaceHoldRunning = $state(false);
   // Spin-count presets for the Autoplay popup. These are exactly the SDK's own
   // AUTO_SPINS_TEXT_OPTIONS (state-shared/stateUi), infinity included - it is
-  // rendered as a separate full-width cell below the eight numbers.
+  // rendered as a separate full-width cell below the eight numbers, using the
+  // drawn lemniscate (iconInfinity) rather than the U+221E character.
   const AUTOSPIN_PRESETS = [10, 25, 50, 75, 100, 250, 500, 1000];
-  const INFINITY_MARK = '∞';
   // Fallback bet levels for the bet menu when no RGS session has supplied any
   // (local dev). On a real session stateConfig.betAmountOptions drives it.
   const DEFAULT_BET_LEVELS = [1, 5, 25, 50, 75, 100, 200, 500, 800, 1000];
@@ -798,7 +798,8 @@
         !allChoicesMade() ||
         (IS_PROD && resolveRoundSeed().source === 'none');
   function onSpin() {
-    sound.playPress();
+    // No playPress() here - the delegated click listener below already sounds
+    // every button. The spacebar path, which isn't a click, sounds its own.
     if (autoRunning) { stopAuto(); return; }
     if (spinDisabled()) return;
     runRound().catch((err) => console.error('Play failed', err));
@@ -843,9 +844,10 @@
     spaceDown = true;
 
     // A live auto run treats Space like the Stop button.
-    if (autoRunning) { onSpin(); return; }
+    if (autoRunning) { sound.playPress(); onSpin(); return; }
     if (spinDisabled()) return;
 
+    sound.playPress(); // keyboard activation isn't a click, so sound it here
     onSpin(); // the tap: one round, straight away
     spaceHoldTimer = setTimeout(() => {
       spaceHoldTimer = null;
@@ -870,13 +872,28 @@
     spaceHoldRunning = false;
   }
 
+  // --- Click sound on every button ------------------------------------------
+  // Delegated rather than a sound.playPress() in each of the ~40 onclick
+  // handlers: one place to change, nothing to forget, and buttons added later
+  // are covered for free. Capture phase so the cue fires before the handler
+  // runs - notably the mute button, which should still be audible as it mutes.
+  function onDocumentClick(event: MouseEvent) {
+    const el = (event.target as HTMLElement | null)?.closest?.('button');
+    // Disabled buttons don't dispatch clicks at all, but a click landing on a
+    // child of one can still bubble here, and a dead control shouldn't sound.
+    if (!el || (el as HTMLButtonElement).disabled) return;
+    sound.playPress();
+  }
+
   $effect(() => {
+    document.addEventListener('click', onDocumentClick, true);
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
     // A lost focus / hidden tab never delivers the keyup, which would otherwise
     // leave the hold run going with nobody holding anything.
     window.addEventListener('blur', releaseSpace);
     return () => {
+      document.removeEventListener('click', onDocumentClick, true);
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('blur', releaseSpace);
@@ -1034,6 +1051,90 @@
   class:backdrop-image={!isCssBackdrop}
   style={`--flip-dur: ${flipDurSec()}s; --backdrop-url: url(${base}/${BACKDROP_IMAGE})`}
 >
+  <!-- Custom glyphs, drawn rather than typed. The Unicode arrows and infinity
+       sign vary a lot between platform fonts (weight, size, whether the glyph
+       exists at all), so these are inline SVG instead: identical everywhere,
+       sized from --ui, and inheriting currentColor. Decorative - every button
+       using them carries its own aria-label. -->
+
+  <!-- Inside: the card lands BETWEEN the two bounds, so the arrows converge. -->
+  {#snippet iconInside()}
+    <svg class="io-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M2.6 5v14" />
+      <path d="M21.4 5v14" />
+      <path d="M6 12h4.4" />
+      <path d="M8.2 9.6 10.6 12l-2.4 2.4" />
+      <path d="M18 12h-4.4" />
+      <path d="M15.8 9.6 13.4 12l2.4 2.4" />
+    </svg>
+  {/snippet}
+
+  <!-- Outside: the card lands BEYOND the bounds, so the arrows diverge. Same
+       parts as Inside, mirrored - the pair has to read as opposites. -->
+  {#snippet iconOutside()}
+    <svg class="io-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M10.2 5v14" />
+      <path d="M13.8 5v14" />
+      <path d="M7.6 12H3.2" />
+      <path d="M5.4 9.6 3 12l2.4 2.4" />
+      <path d="M16.4 12h4.4" />
+      <path d="M18.6 9.6 21 12l-2.4 2.4" />
+    </svg>
+  {/snippet}
+
+  <!-- Lemniscate: two symmetric loops crossing at the centre. The viewBox hugs
+       the drawing (2:1) rather than padding it into a square, so the CSS width
+       maps straight onto the glyph's real size and it can be weighted against
+       adjacent numerals. -->
+  {#snippet iconInfinity()}
+    <svg class="inf-icon" viewBox="0 0 24 12" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path
+        d="M12 6C10.5 3.6 8.7 2 6.6 2 4.1 2 2.6 3.8 2.6 6s1.5 4 4 4c2.1 0 3.9-1.6 5.4-4 1.5-2.4 3.3-4 5.4-4 2.5 0 4 1.8 4 4s-1.5 4-4 4c-2.1 0-3.9-1.6-5.4-4Z"
+      />
+    </svg>
+  {/snippet}
+
+  <!-- Stepper chevrons. The viewBox hugs the stroke (no padding) so the CSS
+       height IS the glyph height - the typed triangles they replace filled only
+       39% of their 31px button, which read timid for the hit area. -->
+  {#snippet iconChevronUp()}
+    <svg class="step-icon" viewBox="0 0 24 12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M2.5 9.5 12 2.5l9.5 7" />
+    </svg>
+  {/snippet}
+  {#snippet iconChevronDown()}
+    <svg class="step-icon" viewBox="0 0 24 12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M2.5 2.5 12 9.5l9.5-7" />
+    </svg>
+  {/snippet}
+
+  <!-- Higher / Lower. Solid triangles, matching the typed U+25B2/U+25BC they
+       replace - a filled wedge reads as a value direction where the stepper's
+       open chevron reads as a nudge, so the two stay deliberately different. -->
+  {#snippet iconTriangleUp()}
+    <svg class="hl-icon" viewBox="0 0 24 20" fill="currentColor" aria-hidden="true">
+      <path d="M12 1.6 23 18.4H1Z" />
+    </svg>
+  {/snippet}
+  {#snippet iconTriangleDown()}
+    <svg class="hl-icon" viewBox="0 0 24 20" fill="currentColor" aria-hidden="true">
+      <path d="M12 18.4 1 1.6h22Z" />
+    </svg>
+  {/snippet}
+
+  <!-- Bet nudge +/-, drawn to match rather than typed as "+" and U+2212. -->
+  {#snippet iconPlus()}
+    <svg class="step-icon step-icon-sq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true">
+      <path d="M12 4.5v15" />
+      <path d="M4.5 12h15" />
+    </svg>
+  {/snippet}
+  {#snippet iconMinus()}
+    <svg class="step-icon step-icon-sq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true">
+      <path d="M4.5 12h15" />
+    </svg>
+  {/snippet}
+
   {#if isCssBackdrop}
     <!-- Drawn entirely in CSS (see styles/table.css). Purely decorative, and
          every prop is placed out toward the table's rim so the middle stays
@@ -1125,8 +1226,8 @@
       <div class="choice-column">
         <span class="choice-label">{t('Higher')}<br />{t('Lower')}</span>
         <div class="choice-square hl-square" role="group" aria-label={t('Higher, lower, or equal')}>
-          <button type="button" class="third-btn higher-third" class:selected={hlChoice === 'higher'} onclick={() => (hlChoice = 'higher')} aria-label={t('Higher')}>▲</button>
-          <button type="button" class="third-btn lower-third" class:selected={hlChoice === 'lower'} onclick={() => (hlChoice = 'lower')} aria-label={t('Lower')}>▼</button>
+          <button type="button" class="third-btn higher-third" class:selected={hlChoice === 'higher'} onclick={() => (hlChoice = 'higher')} aria-label={t('Higher')}>{@render iconTriangleUp()}</button>
+          <button type="button" class="third-btn lower-third" class:selected={hlChoice === 'lower'} onclick={() => (hlChoice = 'lower')} aria-label={t('Lower')}>{@render iconTriangleDown()}</button>
           <button type="button" class="equal-btn" class:selected={hlChoice === 'equal'} onclick={() => (hlChoice = 'equal')} aria-label={t('Equal')}>=</button>
         </div>
       </div>
@@ -1134,8 +1235,8 @@
       <div class="choice-column">
         <span class="choice-label">{t('Inside')}<br />{t('Outside')}</span>
         <div class="choice-square io-square" role="group" aria-label={t('Inside, outside, or equal')}>
-          <button type="button" class="half-btn inside-half" class:selected={ioChoice === 'inside'} onclick={() => (ioChoice = 'inside')} aria-label={t('Inside')}>⇒⇐</button>
-          <button type="button" class="half-btn outside-half" class:selected={ioChoice === 'outside'} onclick={() => (ioChoice = 'outside')} aria-label={t('Outside')}>⟺</button> 
+          <button type="button" class="half-btn inside-half" class:selected={ioChoice === 'inside'} onclick={() => (ioChoice = 'inside')} aria-label={t('Inside')}>{@render iconInside()}</button>
+          <button type="button" class="half-btn outside-half" class:selected={ioChoice === 'outside'} onclick={() => (ioChoice = 'outside')} aria-label={t('Outside')}>{@render iconOutside()}</button>
           <button type="button" class="equal-btn" class:selected={ioChoice === 'equal'} onclick={() => (ioChoice = 'equal')} aria-label={t('Equal')}>=</button>
         </div>
       </div>
@@ -1191,8 +1292,8 @@
         <span class="cb-val">{numberToCurrencyString(betValue() > 0 ? betValue() : 0)}</span>
       </button>
       <div class="cb-betstep">
-        <button class="cb-step" onclick={() => stepBet(1)} disabled={autoRunning} aria-label={t('Increase bet')}>+</button>
-        <button class="cb-step" onclick={() => stepBet(-1)} disabled={autoRunning} aria-label={t('Decrease bet')}>−</button>
+        <button class="cb-step" onclick={() => stepBet(1)} disabled={autoRunning} aria-label={t('Increase bet')}>{@render iconPlus()}</button>
+        <button class="cb-step" onclick={() => stepBet(-1)} disabled={autoRunning} aria-label={t('Decrease bet')}>{@render iconMinus()}</button>
       </div>
     </div>
 
@@ -1212,7 +1313,7 @@
                nothing, since it lasts only as long as the key is held. -->
           {#if !spaceHoldRunning}
             <span class="cb-spin-count" class:is-infinite={autoInfinite}>
-              {autoInfinite ? INFINITY_MARK : autoRemaining}
+              {#if autoInfinite}{@render iconInfinity()}{:else}{autoRemaining}{/if}
             </span>
           {/if}
         {:else}
@@ -1271,19 +1372,19 @@
           {/each}
           <!-- Unlimited spans the last row: nine cells in a 4-column grid would
                otherwise leave a ragged single cell. -->
-          <button class="bet-cell bet-cell-wide" class:active={autoInfinite} onclick={toggleAutoInfinite} aria-label={t('Unlimited spins')}>{INFINITY_MARK}</button>
+          <button class="bet-cell bet-cell-wide" class:active={autoInfinite} onclick={toggleAutoInfinite} aria-label={t('Unlimited spins')}>{@render iconInfinity()}</button>
         </div>
         <div class="rounds-selector autospin-input">
           <div class="rounds-field">
             {#if autoInfinite}
-              <span class="rounds-infinite">{INFINITY_MARK}</span>
+              <span class="rounds-infinite">{@render iconInfinity()}</span>
             {:else}
               <input class="rounds-input" type="text" inputmode="numeric" bind:value={autoRoundsInput} onblur={formatAutoRounds} aria-label={t('Number of spins')} />
             {/if}
           </div>
           <div class="rounds-stepper">
-            <button type="button" class="stepper-btn" onclick={() => stepAutoRounds(1)} aria-label={t('More spins')}>▲</button>
-            <button type="button" class="stepper-btn" onclick={() => stepAutoRounds(-1)} aria-label={t('Fewer spins')}>▼</button>
+            <button type="button" class="stepper-btn" onclick={() => stepAutoRounds(1)} aria-label={t('More spins')}>{@render iconChevronUp()}</button>
+            <button type="button" class="stepper-btn" onclick={() => stepAutoRounds(-1)} aria-label={t('Fewer spins')}>{@render iconChevronDown()}</button>
           </div>
         </div>
         <button class="action-button popup-start" onclick={startAutoFromPopup} disabled={!betIsValid() || !allChoicesMade() || !autoRoundsValid()}>

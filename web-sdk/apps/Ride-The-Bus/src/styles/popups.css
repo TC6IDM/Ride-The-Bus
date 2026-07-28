@@ -211,18 +211,32 @@
 .rounds-input:disabled { color: rgba(255, 255, 255, 0.55); }
 
 .rounds-infinite {
-  font-size: calc(var(--ui-bar) * 1.82);
-  font-weight: 800;
+  display: flex;
+  align-items: center;
   line-height: 1;
   color: #fff;
+}
+
+/* Widths are picked so the lemniscate's height (half its width, per the 2:1
+   viewBox) lands on the cap-height of the numerals it replaces. */
+.rounds-infinite .inf-icon {
+  width: calc(var(--ui-bar) * 2.4); /* ~1.2x tall, matching the 1.64 input text */
+  height: calc(var(--ui-bar) * 1.2);
 }
 
 /* The unlimited option takes the whole last row - as a ninth cell in a
    4-column grid it would otherwise sit alone against three empty columns. */
 .bet-cell-wide {
   grid-column: 1 / -1;
-  font-size: calc(var(--ui-bar) * 1.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   line-height: 1;
+}
+
+.bet-cell-wide .inf-icon {
+  width: calc(var(--ui-bar) * 1.75); /* ~0.87x tall, matching the 1.16 cell text */
+  height: calc(var(--ui-bar) * 0.87);
 }
 
 .rounds-stepper {
@@ -278,17 +292,29 @@
   border: none;
   /* Override the global `button { padding: 1.5rem }` from app.css, which
      otherwise makes each arrow button ~59px tall and forces the whole
-     selector (via align-items: stretch) to ~119px. */
-  padding: calc(var(--ui-bar) * 0.82) 0;
+     selector (via align-items: stretch) to ~119px. Trimmed from 0.82 when the
+     typed triangle became a taller drawn chevron, so the button keeps its
+     original ~31px height instead of growing the whole selector. */
+  padding: calc(var(--ui-bar) * 0.6) 0;
   background: rgba(255, 255, 255, 0.07);
   color: #fff;
-  font-size: calc(var(--ui-bar) * 1.05);
   line-height: 1;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   user-select: none;
+}
+
+/* ~18px tall in a 31px button (~58%). The typed triangle managed 12px (39%),
+   which read timid against the 45x31 hit area. The chevron's viewBox hugs its
+   stroke, so this height IS the glyph height. Scoped to the button rather than
+   styling .step-icon globally: control-bar.css imports first and sizes its own
+   copy, and equal specificity across files would make that order load-bearing. */
+.stepper-btn .step-icon {
+  display: block;
+  width: calc(var(--ui-bar) * 3.28);
+  height: calc(var(--ui-bar) * 1.64);
 }
 
 .stepper-btn:hover { background: rgba(255, 255, 255, 0.16); }

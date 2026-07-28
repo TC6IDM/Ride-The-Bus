@@ -178,6 +178,14 @@
   transition: box-shadow 0.12s, border-color 0.12s, color 0.12s;
 }
 
+/* ~14px in a 25px button (56%), matching the stepper chevrons' weight. Drawn
+   rather than typed as "+" and U+2212 so both steppers share one icon set. */
+.cb-step .step-icon {
+  display: block;
+  width: calc(var(--ui-bar) * 1.8);
+  height: calc(var(--ui-bar) * 1.8);
+}
+
 .cb-step:hover:not(:disabled) { border-color: #4c9ffe; box-shadow: 0 0 8px rgba(76, 159, 254, 0.5); }
 
 .cb-step:disabled { opacity: 0.45; cursor: not-allowed; }
@@ -254,8 +262,15 @@
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 6px rgba(0, 0, 0, 0.8);
 }
 
-/* The infinity mark reads small and thin next to digits at the same size. */
-.cb-spin-count.is-infinite { font-size: calc(var(--ui-bar) * 2.36) /* 26px */; }
+/* The drawn lemniscate replaces the digits on an unlimited run. Sized a touch
+   larger than the cap-height of the numerals so it reads with the same weight,
+   and given the same shadow so it stays legible on the red square. */
+.cb-spin-count .inf-icon {
+  width: calc(var(--ui-bar) * 2.4); /* 26px wide, 13px tall - the cap height of
+                                       the 18px digits it stands in for */
+  height: calc(var(--ui-bar) * 1.2);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.9));
+}
 
 /* Distinct hover glow per control (info=blue, turbo=amber, autospin=green,
    advanced=purple), plus an active (popup-open) highlight. */

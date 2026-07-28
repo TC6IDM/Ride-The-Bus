@@ -95,6 +95,14 @@
   grid-template-rows: 1fr 1fr;
 }
 
+/* Sized to the typed triangle it replaces (~0.72em of the 22.4px choice font),
+   so the square looks unchanged - only the font dependency goes away. */
+.hl-icon {
+  display: block;
+  width: calc(var(--ui) * 1.97);
+  height: calc(var(--ui) * 1.64);
+}
+
 .higher-third {
   background: #2ecc71;
 }
@@ -109,8 +117,13 @@
   grid-template-columns: 1fr 1fr;
 }
 
-.io-square .half-btn {
-  font-size: calc(var(--ui) * 1.45); /* 16px */
+/* The drawn converge/diverge arrows (Game.svelte iconInside / iconOutside).
+   Kept narrower than the half it sits in so it clears the yellow "equal"
+   button, which is centred on the seam and overlaps both halves. */
+.io-icon {
+  display: block;
+  width: calc(var(--ui) * 2.55); /* 28px */
+  height: calc(var(--ui) * 2.55);
 }
 
 .inside-half {
