@@ -3,10 +3,12 @@ node_modules/
 
 # Build outputs
 .build/
-.build/
 dist/
 build/
 .svelte-kit/
+# Turborepo task logs - regenerated on every build, so they show up dirty
+# constantly and produce noisy diffs.
+.turbo/
 
 # Logs
 npm-debug.log*
