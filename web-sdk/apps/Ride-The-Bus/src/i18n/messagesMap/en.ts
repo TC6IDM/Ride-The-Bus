@@ -69,6 +69,25 @@ export default {
 	'Suit — the suit of card 4.': 'Suit — the suit of card 4.',
 	'Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.':
 		'Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.',
+	'Payouts follow the odds': 'Payouts follow the odds',
+	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
+		'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.',
+	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
+		'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.',
+	'If you guess wrong': 'If you guess wrong',
+	'Card 1 — the round pays nothing.': 'Card 1 — the round pays nothing.',
+	'Card 2 — you get 0.5× your bet back.': 'Card 2 — you get 0.5× your bet back.',
+	'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.':
+		'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.',
+	'Full game wins': 'Full game wins',
+	'Guess all four cards right and the payout depends on how hard your picks were:':
+		'Guess all four cards right and the payout depends on how hard your picks were:',
+	'No Equal picks — averages 17.3×, up to 317.4×.': 'No Equal picks — averages 17.3×, up to 317.4×.',
+	'One Equal pick — averages 67.5×, up to 381.9×.': 'One Equal pick — averages 67.5×, up to 381.9×.',
+	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
+		'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.',
+	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
+		'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.',
 	'Use Turbo to speed up the reveal and Autoplay to run many rounds with the same guesses.':
 		'Use Turbo to speed up the reveal and Autoplay to run many rounds with the same guesses.',
 

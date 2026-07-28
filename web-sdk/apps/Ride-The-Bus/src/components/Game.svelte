@@ -1122,6 +1122,16 @@
     </svg>
   {/snippet}
 
+  <!-- The "=" pick. Typed, its ink sat 2px low in an 18px button (the glyph
+       rides the font's math axis, not the line box's centre, so flex centring
+       cannot fix it). Drawn, the two bars are centred by construction. -->
+  {#snippet iconEquals()}
+    <svg class="eq-icon" viewBox="0 0 24 12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true">
+      <path d="M3 3.5h18" />
+      <path d="M3 8.5h18" />
+    </svg>
+  {/snippet}
+
   <!-- Bet nudge +/-, drawn to match rather than typed as "+" and U+2212. -->
   {#snippet iconPlus()}
     <svg class="step-icon step-icon-sq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true">
@@ -1228,7 +1238,7 @@
         <div class="choice-square hl-square" role="group" aria-label={t('Higher, lower, or equal')}>
           <button type="button" class="third-btn higher-third" class:selected={hlChoice === 'higher'} onclick={() => (hlChoice = 'higher')} aria-label={t('Higher')}>{@render iconTriangleUp()}</button>
           <button type="button" class="third-btn lower-third" class:selected={hlChoice === 'lower'} onclick={() => (hlChoice = 'lower')} aria-label={t('Lower')}>{@render iconTriangleDown()}</button>
-          <button type="button" class="equal-btn" class:selected={hlChoice === 'equal'} onclick={() => (hlChoice = 'equal')} aria-label={t('Equal')}>=</button>
+          <button type="button" class="equal-btn" class:selected={hlChoice === 'equal'} onclick={() => (hlChoice = 'equal')} aria-label={t('Equal')}>{@render iconEquals()}</button>
         </div>
       </div>
 
@@ -1237,7 +1247,7 @@
         <div class="choice-square io-square" role="group" aria-label={t('Inside, outside, or equal')}>
           <button type="button" class="half-btn inside-half" class:selected={ioChoice === 'inside'} onclick={() => (ioChoice = 'inside')} aria-label={t('Inside')}>{@render iconInside()}</button>
           <button type="button" class="half-btn outside-half" class:selected={ioChoice === 'outside'} onclick={() => (ioChoice = 'outside')} aria-label={t('Outside')}>{@render iconOutside()}</button>
-          <button type="button" class="equal-btn" class:selected={ioChoice === 'equal'} onclick={() => (ioChoice = 'equal')} aria-label={t('Equal')}>=</button>
+          <button type="button" class="equal-btn" class:selected={ioChoice === 'equal'} onclick={() => (ioChoice = 'equal')} aria-label={t('Equal')}>{@render iconEquals()}</button>
         </div>
       </div>
 
@@ -1418,6 +1428,27 @@
           <li>{t('Suit — the suit of card 4.')}</li>
         </ol>
         <p>{t('Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.')}</p>
+
+        <h4 class="info-h">{t('Payouts follow the odds')}</h4>
+        <p>{t('Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.')}</p>
+        <p>{t('With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.')}</p>
+
+        <h4 class="info-h">{t('If you guess wrong')}</h4>
+        <ul>
+          <li>{t('Card 1 — the round pays nothing.')}</li>
+          <li>{t('Card 2 — you get 0.5× your bet back.')}</li>
+          <li>{t('Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.')}</li>
+        </ul>
+
+        <h4 class="info-h">{t('Full game wins')}</h4>
+        <p>{t('Guess all four cards right and the payout depends on how hard your picks were:')}</p>
+        <ul>
+          <li>{t('No Equal picks — averages 17.3×, up to 317.4×.')}</li>
+          <li>{t('One Equal pick — averages 67.5×, up to 381.9×.')}</li>
+          <li>{t('Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.')}</li>
+        </ul>
+        <p>{t('Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.')}</p>
+
         <p>{t('Use Turbo to speed up the reveal and Autoplay to run many rounds with the same guesses.')}</p>
       </div>
     </div>

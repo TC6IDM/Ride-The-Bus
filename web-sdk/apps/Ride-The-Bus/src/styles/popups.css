@@ -34,6 +34,15 @@
   color: #dfe8f2;
 }
 
+/* How to Play carries far more prose than the other popups (odds, losses,
+   full-game wins), so it gets a wider column - long paragraphs at the shared
+   360px width wrapped into a very tall, narrow block. Compound selector so it
+   beats .popup regardless of rule order. The same viewport clamp applies, so
+   it still can't overflow a narrow window. */
+.popup.popup-info {
+  width: min(calc(var(--ui-bar) * 45), calc(100vw - calc(var(--ui-bar) * 2.55)));
+}
+
 .popup-head {
   display: flex;
   align-items: center;
@@ -142,11 +151,21 @@
 
 .info-body p { margin: 8px 0; }
 
-.info-body ol { margin: 8px 0; padding-left: 20px; }
+.info-body ol,
+.info-body ul { margin: 8px 0; padding-left: 20px; }
 
 .info-body li { margin: 3px 0; }
 
-.info-body strong { color: #fff; }
+/* Section heading inside the how-to-play body. The popup now covers odds,
+   losses and max wins, which needs signposting to stay skimmable. */
+.info-h {
+  margin: calc(var(--ui-bar) * 1.1) 0 calc(var(--ui-bar) * 0.36);
+  font-size: calc(var(--ui-bar) * 1.16);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #4c9ffe;
+}
 
 .control-label {
   font-size: calc(var(--ui-bar) * 1.05);
