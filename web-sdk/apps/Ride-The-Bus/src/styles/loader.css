@@ -1,0 +1,180 @@
+/* Game loader: the branded screen shown after Stake's own loader hands over.
+   Drawn in CSS rather than shipped as a GIF, for the same reasons as the rest
+   of the art - no download, sharp at any resolution, and it scales with the
+   viewport instead of being letterboxed. */
+
+.game-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 998; /* under Stake's loader (999), over the game */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--lu) * 2.4);
+  overflow: hidden;
+  /* Same felt as the game, so the handover isn't a colour jump. */
+  background: radial-gradient(ellipse at 50% 42%, #1e6f52 0%, #14523c 45%, #0a2f22 100%);
+
+  /* Self-contained sizing unit - the loader mounts before .game-layout exists,
+     so it can't inherit --ui. Tracks both axes for short landscape popouts. */
+  --lu: clamp(4px, min(2vw, 1.6vh), 12px);
+}
+
+/* ---- logo + title ---- */
+
+/* The brand mark, front and centre. Sized off the shorter axis so a wide
+   desktop doesn't blow it up past the cards below it. */
+.gl-logo {
+  width: min(calc(var(--lu) * 17), 46vh);
+  aspect-ratio: 1;
+  background: var(--logo-url) center / contain no-repeat;
+  filter: drop-shadow(0 calc(var(--lu) * 0.8) calc(var(--lu) * 1.6) rgba(0, 0, 0, 0.55));
+  animation: gl-logo-in 0.55s cubic-bezier(0.2, 0.8, 0.3, 1) backwards;
+}
+
+@keyframes gl-logo-in {
+  from { opacity: 0; transform: scale(0.88); }
+  to { opacity: 1; transform: none; }
+}
+
+.gl-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--lu) * 0.36);
+  padding: calc(var(--lu) * 1.1) calc(var(--lu) * 2.4);
+  border-radius: calc(var(--lu) * 1.1);
+  background: linear-gradient(180deg, rgba(10, 18, 28, 0.82), rgba(6, 11, 18, 0.72));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.5);
+}
+
+.gl-title-main {
+  font-size: calc(var(--lu) * 3.1);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: #f4d47c;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+/* Matches .game-title-sub in base.css, so the loader plate and the in-game
+   plate read as the same lockup. */
+.gl-title-sub {
+  font-size: calc(var(--lu) * 1.15);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: #dfe8f2;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
+}
+
+
+/* ---- the four cards ---- */
+
+.gl-cards {
+  display: flex;
+  gap: calc(var(--lu) * 1.36);
+}
+
+/* Same face-down back as the dealt cards (cards.css .card-back), so the loader
+   is showing the very deck the game is about to deal from. */
+.gl-card {
+  position: relative;
+  width: calc(var(--lu) * 6.4);
+  aspect-ratio: 5 / 7;
+  border-radius: calc(var(--lu) * 0.64);
+  background:
+    repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.12) 0 calc(var(--lu) * 0.19),
+      transparent calc(var(--lu) * 0.19) calc(var(--lu) * 0.55)
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0.12) 0 calc(var(--lu) * 0.19),
+      transparent calc(var(--lu) * 0.19) calc(var(--lu) * 0.55)
+    ),
+    linear-gradient(160deg, #b81030 0%, #a80828 55%, #78061e 100%);
+  box-shadow:
+    inset 0 0 0 calc(var(--lu) * 0.3) #f8f8f8,
+    inset 0 0 0 calc(var(--lu) * 0.42) #c8c8c8,
+    0 calc(var(--lu) * 0.55) calc(var(--lu) * 1) rgba(0, 0, 0, 0.45);
+  /* Deal in once, then breathe on a loop while we wait. `backwards` holds the
+     first keyframe during the stagger delay so cards don't flash in first. */
+  animation:
+    loader-deal 0.52s cubic-bezier(0.2, 0.8, 0.3, 1) backwards,
+    loader-breathe 1.9s ease-in-out 0.52s infinite;
+}
+
+/* Keyline and centre chip mark, matching .card-back's pseudo-elements. */
+.gl-card::before {
+  content: '';
+  position: absolute;
+  inset: calc(var(--lu) * 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: calc(var(--lu) * 0.36);
+}
+
+.gl-card::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 58%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background: var(--logo-url) center / contain no-repeat;
+  filter: drop-shadow(0 0 calc(var(--lu) * 0.3) rgba(0, 0, 0, 0.85));
+}
+
+.gl-card:nth-child(1) { animation-delay: 0s, 0.52s; }
+.gl-card:nth-child(2) { animation-delay: 0.11s, 0.63s; }
+.gl-card:nth-child(3) { animation-delay: 0.22s, 0.74s; }
+.gl-card:nth-child(4) { animation-delay: 0.33s, 0.85s; }
+
+@keyframes loader-deal {
+  from {
+    opacity: 0;
+    /* dealt from the left, off the top of the table */
+    transform: translate(calc(var(--lu) * -5), calc(var(--lu) * -3.4)) rotate(-16deg) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes loader-breathe {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(calc(var(--lu) * -0.55)); }
+}
+
+/* ---- progress ---- */
+
+.gl-bar {
+  width: calc(var(--lu) * 30);
+  max-width: 72vw;
+  height: calc(var(--lu) * 0.64);
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.38);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.09);
+}
+
+.gl-bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2ecc71, #f4d47c);
+  box-shadow: 0 0 calc(var(--lu) * 0.9) rgba(244, 212, 124, 0.6);
+  transition: width 0.25s ease-out;
+}
+
+/* Respect a reduced-motion preference: the loader still shows and still
+   progresses, it just stops dealing and breathing. */
+@media (prefers-reduced-motion: reduce) {
+  .gl-card { animation: none; }
+  .gl-bar-fill { transition: none; }
+}

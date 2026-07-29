@@ -109,23 +109,58 @@
   -webkit-backface-visibility: hidden;
 }
 
-/* Face-down back */
+/* Face-down back. Deliberately the same red crosshatch as the deck prop on the
+   table (table.css) and the loader cards (loader.css), so every card in the
+   game reads as coming from one deck - the old teal-on-brown back matched
+   nothing else on screen. The white edge is an inset shadow rather than a
+   border so the geometry is unchanged from the 3px border it replaces. */
+/* Reds and the chrome edge are sampled from logo.png (#A80828 brand red,
+   #F8F8F8 white, #C8C8C8 chrome) so the deck and the brand mark are the same
+   family - the earlier #C8392F leaned orange against the logo's crimson. */
 .card-back {
-  border: 3px solid #8b7355;
-  background: linear-gradient(135deg, #1a5f7a 0%, #0d3a52 50%, #1a5f7a 100%);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3), inset 0 1px 3px rgba(255,255,255,0.2);
+  border: none;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.12) 0 calc(var(--ui) * 0.2),
+      transparent calc(var(--ui) * 0.2) calc(var(--ui) * 0.58)
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0.12) 0 calc(var(--ui) * 0.2),
+      transparent calc(var(--ui) * 0.2) calc(var(--ui) * 0.58)
+    ),
+    linear-gradient(160deg, #b81030 0%, #a80828 55%, #78061e 100%);
+  box-shadow:
+    inset 0 0 0 calc(var(--ui) * 0.32) #f8f8f8,
+    inset 0 0 0 calc(var(--ui) * 0.45) #c8c8c8,
+    inset 0 calc(var(--ui) * 0.1) calc(var(--ui) * 0.3) rgba(255, 255, 255, 0.16),
+    0 4px 8px rgba(0, 0, 0, 0.38);
 }
 
+/* Keyline inset from the chrome edge, the way a real card back is framed. */
 .card-back::before {
   content: '';
   position: absolute;
-  width: 60%;
-  height: 80%;
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 4px;
+  inset: calc(var(--ui) * 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: calc(var(--card-radius) * 0.55);
+  pointer-events: none;
+}
+
+/* Takeover Casino chip mark, centred. The logo's own rim is the same red as
+   the card, so it needs the dark halo to separate - without it the chip's
+   outer ring dissolves into the crosshatch. */
+.card-back::after {
+  content: '';
+  position: absolute;
   top: 50%;
   left: 50%;
+  width: 58%;
+  aspect-ratio: 1;
   transform: translate(-50%, -50%);
+  background: var(--logo-url) center / contain no-repeat;
+  filter: drop-shadow(0 0 calc(var(--ui) * 0.32) rgba(0, 0, 0, 0.85));
   pointer-events: none;
 }
 

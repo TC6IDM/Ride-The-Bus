@@ -10,6 +10,7 @@
   import { GameVersion, Modals } from 'components-ui-html';
   import { requestBet, requestEndRound } from 'rgs-requests';
   import { sound } from '../game/sound';
+  import { gameReady } from '../game/ready.svelte';
   import { t } from '../i18n/i18nDerived';
   import { numberToCurrencyString } from 'utils-shared/amount';
   import { API_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
@@ -875,6 +876,13 @@
     spaceHoldRunning = false;
   }
 
+  // Tell the loader the board is actually on screen. It sits outside this
+  // component's tree (see game/ready.svelte.ts), and clearing on a timer alone
+  // left a gap of empty screen while <Authenticate> was still resolving.
+  $effect(() => {
+    gameReady.value = true;
+  });
+
   // --- Click sound on every button ------------------------------------------
   // Delegated rather than a sound.playPress() in each of the ~40 onclick
   // handlers: one place to change, nothing to forget, and buttons added later
@@ -1052,7 +1060,7 @@
 <div
   class="game-layout"
   class:backdrop-image={!isCssBackdrop}
-  style={`--flip-dur: ${flipDurSec()}s; --backdrop-url: url(${base}/${BACKDROP_IMAGE})`}
+  style={`--flip-dur: ${flipDurSec()}s; --backdrop-url: url(${base}/${BACKDROP_IMAGE}); --logo-url: url(${base}/logo.png)`}
 >
   <!-- Custom glyphs, drawn rather than typed. The Unicode arrows and infinity
        sign vary a lot between platform fonts (weight, size, whether the glyph
@@ -1176,6 +1184,9 @@
     </div>
   {/if}
 
+  <!-- Game name over the casino's, stacked. The logo deliberately stays out of
+       this plate - it is the hero on the loader and sits on every card back,
+       which is enough branding once play has started. -->
   <div class="game-title" aria-hidden="true">
     <span class="game-title-main">Ride The Bus</span>
     <span class="game-title-sub">by Takeover Casino</span>
