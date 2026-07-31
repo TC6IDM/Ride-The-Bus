@@ -133,6 +133,23 @@ export default {
 	'Round in progress': 'Round in progress',
 	'Replay is view-only': 'Replay is view-only',
 	'No active game session': 'No active game session',
+	// Failure dialog. Codes are from docs/rgs_docs/RGS.md "Response Codes".
+	Error: 'Error',
+	Reload: 'Reload',
+	'Something went wrong. Please try again.': 'Something went wrong. Please try again.',
+	'That bet was rejected. Please adjust the amount and try again.':
+		'That bet was rejected. Please adjust the amount and try again.',
+	'Not enough balance for that bet.': 'Not enough balance for that bet.',
+	'Your session has expired. Please reload the game.':
+		'Your session has expired. Please reload the game.',
+	'A gambling limit on your account has been reached.':
+		'A gambling limit on your account has been reached.',
+	'This game is not available from your location.':
+		'This game is not available from your location.',
+	'The game server had a problem. Please try again shortly.':
+		'The game server had a problem. Please try again shortly.',
+	'The game is under maintenance. Please try again shortly.':
+		'The game is under maintenance. Please try again shortly.',
 	'Session information': 'Session information',
 	'Net Position': 'Net Position',
 	RTP: 'RTP',

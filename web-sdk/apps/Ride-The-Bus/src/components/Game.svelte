@@ -7,7 +7,26 @@
   // the math-sdk actually use.
   import { createRoundContract, rankValue, ranks, type Card } from '../game/roundContract';
   import { stateBet, stateUrlDerived, stateMeta, stateConfig, stateModal } from 'state-shared';
-  import { GameVersion, Modals } from 'components-ui-html';
+  import ErrorModal from './ErrorModal.svelte';
+  // Of the five documented RGS endpoints this game uses three: authenticate
+  // (via <Authenticate>), play and end-round. The other two are deliberately
+  // not called, recorded here so the omissions read as decisions:
+  //
+  //   /bet/event   - tracks how far through a round the player has got, for
+  //                  resuming after a disconnect. This round is atomic: all
+  //                  four guesses are locked in before the bet, so there are no
+  //                  in-round player actions to track, and the outcome is fixed
+  //                  the moment /wallet/play returns. Reporting it would mean
+  //                  one call per book event - five per round, so ~5,000 extra
+  //                  requests across a 1,000-round autoplay - to buy a resume
+  //                  that starts mid-reveal instead of replaying the round,
+  //                  which is arguably worse to watch anyway.
+  //
+  //   /wallet/balance - "useful for periodic balance updates" (RGS.md). The
+  //                  balance here is refreshed from every play and end-round
+  //                  response, which covers every way this game can change it.
+  //                  The SDK ships no helper for it at all, which is a fair
+  //                  signal it is not expected of a game like this.
   import { requestBet, requestEndRound } from 'rgs-requests';
   import { sound } from '../game/sound';
   import { gameReady } from '../game/ready.svelte';
@@ -333,7 +352,32 @@
     }
     el.style.fontSize = `${size}px`;
   }
-  const betDisplay = () => `$${`${betInput ?? ''}`.trim() || '0.00'}`;
+  // Currency symbol for the raw bet-entry field. Everything else formats through
+  // numberToCurrencyString, but that returns a formatted AMOUNT and this field
+  // holds the player's own in-progress typing, so it needs just the symbol.
+  // Hardcoding "$" showed a dollar sign to every non-USD player while the
+  // balance beside it read in euro/yen.
+  //
+  // The two social-casino currencies are spelled out the same way the SDK's
+  // formatter does (utils-shared/amount.ts NO_LOCALISATION_CURRENCY_MAP), since
+  // Intl has no symbol for them.
+  const SOCIAL_CURRENCY_LABELS: Record<string, string> = { XGC: 'GC', XSC: 'SC' };
+  const currencySymbol = () => {
+    const code = stateBet.currency || 'USD';
+    if (code in SOCIAL_CURRENCY_LABELS) return SOCIAL_CURRENCY_LABELS[code];
+    try {
+      const parts = new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency: code,
+      }).formatToParts(0);
+      return parts.find((p) => p.type === 'currency')?.value ?? code;
+    } catch {
+      // Unknown/!ISO code - Intl throws rather than degrading, and a bet field
+      // with no prefix beats a crash.
+      return code;
+    }
+  };
+  const betDisplay = () => `${currencySymbol()}${`${betInput ?? ''}`.trim() || '0.00'}`;
 
   // When the field loses focus, snap the amount onto the operator's step grid
   // and tidy the decimals. Typing is left untouched while the field is focused.
@@ -747,7 +791,7 @@
     } catch (err) {
       console.error(err);
       roundError = true;
-      // Surface through the SDK's ModalError (mounted at the bottom of this
+      // Surface through ErrorModal (mounted at the bottom of this
       // file) rather than a raw alert(), so a failed bet looks the same as the
       // auth/session errors the framework already reports. Only report once:
       // an auto run stops after this, so we don't stack a dialog per round.
@@ -1617,7 +1661,7 @@
     <div class="popup popup-bet" role="dialog" aria-label={t('Bet Menu')}>
       <div class="popup-head"><span>{t('Bet Menu')}</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label={t('Close')}>✕</button></div>
       <div class="bet-entry">
-        <span class="bet-entry-cur">$</span>
+        <span class="bet-entry-cur">{currencySymbol()}</span>
         <input class="bet-entry-input" type="text" inputmode="decimal" bind:value={betInput} onblur={formatBetInput} placeholder="0.00" aria-label={t('Custom bet amount')} />
       </div>
       <span class="popup-sub">{t('Quick Bets')}</span>
@@ -1759,18 +1803,26 @@
   {/if}
 </div>
 
-<!-- The SDK's shared modals. ModalError is the important one: Authenticate and
-     the bet state machine report failures by setting stateModal.modal to
-     { name: 'error', ... }, and without this mounted those errors are swallowed
-     silently - a player hitting an auth or session failure would just see a
-     stuck screen. The other modals in here only render when stateModal.modal
-     names them, which this game never does (it has its own bet/autoplay/rules
-     popups), so they stay inert. -->
-<Modals>
-  {#snippet version()}
-    <GameVersion version="1.0.0" />
-  {/snippet}
-</Modals>
+<!-- Our own failure dialog, NOT the SDK's <Modals> bundle.
+
+     This is load-bearing: Authenticate and the bet flow report failures by
+     setting stateModal.modal to { name: 'error', ... }, and with nothing
+     mounted to read that, a player hitting an auth or session failure just
+     sees a stuck screen.
+
+     <Modals> would mount eight others alongside it, including ModalPayTable
+     and ModalGameRules, whose bodies are the template's literal "ADD YOUR PAY
+     TABLE" / "ADD YOUR GAME RULES" - and those strings were shipping in the
+     production bundle. Nothing can open them here: the only triggers are
+     ButtonPayTable / ButtonGameRules in components-ui-pixi, the SDK UI this
+     game replaced, and there is no postMessage channel for the platform to
+     reach them either. This game's rules and payouts live in How to Play.
+
+     ModalError itself is not reused because it renders `<p>{error}</p>` for
+     anything lacking both .error and .message - and an RGS failure body is
+     { error: 'ERR_IS', status: {...} }, so it showed the player the literal
+     text "[object Object]". ErrorModal maps the documented codes instead. -->
+<ErrorModal />
 
 <style>
   /* Styles live in src/styles/*.css and are pulled in here so they stay
