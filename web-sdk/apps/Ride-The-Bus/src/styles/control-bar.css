@@ -314,6 +314,14 @@
 
 .cb-spin.stopping { border-color: #ff5d5d; background: radial-gradient(circle at 50% 35%, #5a1f27, #2a0d11 75%); }
 
+/* Skip-the-reveal state. Amber rather than the spin blue or the stop red: it is
+   neither starting nor ending anything, just hurrying the current round along. */
+.cb-spin.slammable { border-color: #ffce3a; background: radial-gradient(circle at 50% 35%, #4a3a12, #221a06 75%); }
+
+.cb-spin.slammable:hover { box-shadow: 0 0 20px rgba(255, 206, 58, 0.7); }
+
+.cb-slam-svg { width: calc(var(--ui-bar) * 3.45); height: calc(var(--ui-bar) * 3.45); transform: none; color: #ffe08a; }
+
 .cb-spin.stopping:hover { box-shadow: 0 0 20px rgba(255, 80, 80, 0.85); }
 
 .cb-spin { position: relative; /* anchors the autoplay count over the square */ }

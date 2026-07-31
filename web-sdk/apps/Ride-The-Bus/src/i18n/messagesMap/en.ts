@@ -150,6 +150,7 @@ export default {
 		'The game server had a problem. Please try again shortly.',
 	'The game is under maintenance. Please try again shortly.':
 		'The game is under maintenance. Please try again shortly.',
+	'Skip the reveal': 'Skip the reveal',
 	'Session information': 'Session information',
 	'Net Position': 'Net Position',
 	RTP: 'RTP',

@@ -430,12 +430,51 @@
   const allChoicesMade = () => Boolean(colorChoice && hlChoice && ioChoice && suitChoice);
   const isEngineRound = () => roundSource !== 'local-fallback' && roundSource !== 'none';
   const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+  // --- Slam stop -------------------------------------------------------------
+  // Tapping the button mid-reveal cuts the animation short and shows the result
+  // now. Purely cosmetic: the outcome came from the book the moment
+  // /wallet/play returned, so nothing here can change what is paid.
+  let slamRequested = $state(false);
+
+  // The reveal gets its OWN interruptible wait. Deliberately not the shared
+  // wait(): that is also what holds the minimum-round-duration gate open, and a
+  // slam must never be able to shorten a regulator's floor.
+  let revealWaitTimer: ReturnType<typeof setTimeout> | null = null;
+  let revealWaitResolve: (() => void) | null = null;
+  const revealWait = (ms: number) =>
+    new Promise<void>((resolve) => {
+      if (ms <= 0) {
+        resolve();
+        return;
+      }
+      revealWaitResolve = resolve;
+      revealWaitTimer = setTimeout(() => {
+        revealWaitTimer = null;
+        revealWaitResolve = null;
+        resolve();
+      }, ms);
+    });
+  /** Resolve the reveal's in-flight pause immediately. */
+  function cutShortRevealWait() {
+    if (revealWaitTimer !== null) {
+      clearTimeout(revealWaitTimer);
+      revealWaitTimer = null;
+    }
+    const resolve = revealWaitResolve;
+    revealWaitResolve = null;
+    resolve?.();
+  }
   // Scale a delay by the turbo speed: 0 => full `normal`, 1 => `fast` (instant).
   // Read at call time so moving the slider mid-reveal takes effect next step.
-  const paceMs = (normal: number, fast: number) => Math.round(normal + (fast - normal) * turboSpeed);
+  // A slam collapses every remaining pause to the instant end of the scale -
+  // exactly what turbo at maximum does, so it reuses that value rather than
+  // inventing a second notion of "fast".
+  const paceMs = (normal: number, fast: number) =>
+    slamRequested ? fast : Math.round(normal + (fast - normal) * turboSpeed);
   // Card flip duration (seconds) for the --flip-dur CSS var; shrinks to 0 as
-  // turbo approaches instant.
-  const flipDurSec = () => (0.5 * (1 - turboSpeed)).toFixed(3);
+  // turbo approaches instant, and snaps to 0 on a slam.
+  const flipDurSec = () => (slamRequested ? '0.000' : (0.5 * (1 - turboSpeed)).toFixed(3));
 
   const resolveRoundSeed = () => {
     if (roundSeed !== fallbackRoundSeed) {
@@ -513,10 +552,12 @@
     // compounded exactly like computeFinalMultiplier / gamestate.run_spin; we
     // only quantize for the per-card display and the final payout, so the
     // last card's shown multiplier equals the credited win.
+    // Each round starts un-slammed; the flag only lives for one reveal.
+    slamRequested = false;
     let running = 1;
     let busted = false;
     for (let i = 0; i < revealEvents.length; i++) {
-      await wait(paceMs(650, 0));
+      await revealWait(paceMs(650, 0));
       revealedCards[i] = revealEvents[i].card;
       sound.playCardFlip();
       const event = revealEvents[i];
@@ -532,12 +573,12 @@
       stageMultipliers[i] = quantizeMultiplier(running);
       runningWin = stageMultipliers[i]! * initialBet;
       if (busted) {
-        await wait(paceMs(900, 150));
+        await revealWait(paceMs(900, 150));
         break;
       }
     }
 
-    await wait(paceMs(300, 120));
+    await revealWait(paceMs(300, 120));
     // Prefer the server's authoritative payout on engine rounds; fall back to
     // the local formula (identical maths) when there's no RGS session.
     const multiplier = engineFinalMultiplier ?? computeFinalMultiplier(revealEvents);
@@ -1028,10 +1069,25 @@
   // The big spin button: acts as Stop while an auto run is live, otherwise
   // plays exactly one round. Disabled (greyed) until a bet + all 4 guesses are
   // valid.
+  // Can the button cut the current reveal short right now?
+  //
+  // Not offered during an auto run: there the button is Stop, and overloading a
+  // single control with "skip this round" and "end the whole run" would make
+  // the destructive one easy to hit by accident. Not offered in replay either,
+  // which is a read-only view.
+  const canSlam = () =>
+    gameState === 'playing' &&
+    !slamRequested &&
+    !autoRunning &&
+    !jurisdiction.slamstopDisabled() &&
+    !stateUrlDerived.replay();
+
   const spinDisabled = () =>
     autoRunning
       ? false
-      : gameState === 'playing' ||
+      : canSlam()
+        ? false // it is a Skip button for the duration of the reveal
+        : gameState === 'playing' ||
         isProcessing ||
         // An interrupted round is being replayed onto the board - the player
         // must not be able to buy a new one on top of it.
@@ -1054,6 +1110,10 @@
   // first: transient states before "you haven't finished setting up".
   function spinBlockedReason(): string | null {
     if (autoRunning) return null; // it's a Stop button; always live
+    // Mid-reveal but slammable: the button is live as Skip, so there is no
+    // blocked reason to explain. Without this it claimed "Round in progress"
+    // over an enabled button.
+    if (canSlam()) return null;
     if (stateUrlDerived.replay()) return t('Replay is view-only');
     if (roundGateHeld) {
       return t('Spins must be %s seconds apart').replace('%s', cooldownSecondsLabel());
@@ -1069,6 +1129,14 @@
     // No playPress() here - the delegated click listener below already sounds
     // every button. The spacebar path, which isn't a click, sounds its own.
     if (autoRunning) { stopAuto(); return; }
+    // Mid-reveal: cut the animation short rather than starting a new round.
+    // cutShortRevealWait() resolves the pause already in flight, so the skip is
+    // immediate instead of waiting out the current step.
+    if (canSlam()) {
+      slamRequested = true;
+      cutShortRevealWait();
+      return;
+    }
     if (spinDisabled()) return;
     runRound().catch((err) => console.error('Play failed', err));
   }
@@ -1607,7 +1675,14 @@
       <!-- Wraps the spin button so the cooldown ring and tooltip have a host
            that still receives hover while the button itself is disabled. -->
       <div class="cb-spin-wrap">
-      <button class="cb-spin" class:stopping={autoRunning} onclick={onSpin} disabled={spinDisabled()} aria-label={autoRunning ? t('Stop autoplay') : t('Spin')}>
+      <button
+        class="cb-spin"
+        class:stopping={autoRunning}
+        class:slammable={canSlam()}
+        onclick={onSpin}
+        disabled={spinDisabled()}
+        aria-label={autoRunning ? t('Stop autoplay') : canSlam() ? t('Skip the reveal') : t('Spin')}
+      >
         {#if autoRunning}
           <span class="cb-spin-square" aria-hidden="true"></span>
           <!-- Rounds left, over the stop square. An unlimited run shows the
@@ -1618,6 +1693,14 @@
               {#if autoInfinite}{@render iconInfinity()}{:else}{autoRemaining}{/if}
             </span>
           {/if}
+        {:else if canSlam()}
+          <!-- Skip-to-end: two chevrons into a bar. Distinct from the spin
+               arrows so the button's job is readable at a glance. -->
+          <svg class="cb-spin-svg cb-slam-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M4 5.5 12 12 4 18.5z" />
+            <path d="M11 5.5 19 12l-8 6.5z" />
+            <rect x="19.6" y="5" width="2.4" height="14" rx="1.2" />
+          </svg>
         {:else}
           <svg class="cb-spin-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8A5.87 5.87 0 0 1 6 12c0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" /></svg>
         {/if}

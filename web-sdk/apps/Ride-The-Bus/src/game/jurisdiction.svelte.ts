@@ -39,6 +39,8 @@ export const jurisdiction = {
   autoplayDisabled: () => readFlag(source(), 'disabledAutoplay', false),
   /** The spacebar shortcut (tap to spin, hold to repeat) may not be offered. */
   spacebarDisabled: () => readFlag(source(), 'disabledSpacebar', false),
+  /** Tapping mid-reveal to cut the animation short may not be offered. */
+  slamstopDisabled: () => readFlag(source(), 'disabledSlamstop', false),
 
   /**
    * Floor on how long one round may take, in milliseconds. Regulators use it
