@@ -1370,6 +1370,35 @@
     </div>
   {/if}
 
+  <!-- Responsible-gambling readouts, rendered only where the player's regulator
+       asks for them (displayNetPosition / displayRTP / displaySessionTimer).
+       Pinned top-right rather than sitting in the control bar: in the bar it
+       pushed the row count to five and took 40% of the viewport height on a
+       400x225 popout, squeezing the play area. Up here it costs the layout
+       nothing, and it is reference information rather than a control. -->
+  {#if jurisdiction.showAnyReadout()}
+    <aside class="rg-panel" aria-label={t('Session information')}>
+      {#if jurisdiction.showNetPosition()}
+        <div class="rg-item" class:up={sessionNet > 0} class:down={sessionNet < 0}>
+          <span class="cb-cap">{t('Net Position')}</span>
+          <span class="cb-val">{numberToCurrencyString(sessionNet)}</span>
+        </div>
+      {/if}
+      {#if jurisdiction.showRTP()}
+        <div class="rg-item">
+          <span class="cb-cap">{t('RTP')}</span>
+          <span class="cb-val">{(gameConfig.rtp * 100).toFixed(2)}%</span>
+        </div>
+      {/if}
+      {#if jurisdiction.showSessionTimer()}
+        <div class="rg-item">
+          <span class="cb-cap">{t('Session')}</span>
+          <span class="cb-val">{sessionClock()}</span>
+        </div>
+      {/if}
+    </aside>
+  {/if}
+
   <!-- Game name over the casino's, stacked. The logo deliberately stays out of
        this plate - it is the hero on the loader and sits on every card back,
        which is enough branding once play has started. -->
@@ -1499,32 +1528,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Responsible-gambling readouts. Rendered only where the player's
-         regulator asks for them (displayNetPosition / displayRTP /
-         displaySessionTimer), so the bar is unchanged everywhere else. -->
-    {#if jurisdiction.showAnyReadout()}
-      <div class="cb-panel cb-panel-light cb-rg">
-        {#if jurisdiction.showNetPosition()}
-          <div class="cb-rg-item" class:up={sessionNet > 0} class:down={sessionNet < 0}>
-            <span class="cb-cap">{t('Net Position')}</span>
-            <span class="cb-val">{numberToCurrencyString(sessionNet)}</span>
-          </div>
-        {/if}
-        {#if jurisdiction.showRTP()}
-          <div class="cb-rg-item">
-            <span class="cb-cap">{t('RTP')}</span>
-            <span class="cb-val">{(gameConfig.rtp * 100).toFixed(2)}%</span>
-          </div>
-        {/if}
-        {#if jurisdiction.showSessionTimer()}
-          <div class="cb-rg-item">
-            <span class="cb-cap">{t('Session')}</span>
-            <span class="cb-val">{sessionClock()}</span>
-          </div>
-        {/if}
-      </div>
-    {/if}
 
     <div class="cb-panel cb-panel-dark cb-bet">
       <button class="cb-bet-display" class:active={openPopup === 'bet'} onclick={() => togglePopup('bet')} aria-label={t('Choose bet amount')}>

@@ -133,6 +133,7 @@ export default {
 	'Round in progress': 'Round in progress',
 	'Replay is view-only': 'Replay is view-only',
 	'No active game session': 'No active game session',
+	'Session information': 'Session information',
 	'Net Position': 'Net Position',
 	RTP: 'RTP',
 	Session: 'Session',
