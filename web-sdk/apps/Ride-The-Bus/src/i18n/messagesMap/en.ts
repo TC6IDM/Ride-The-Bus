@@ -126,6 +126,17 @@ export default {
 	'Autoplay settings': 'Autoplay settings',
 	'Advanced settings': 'Advanced settings',
 	'Stop autoplay': 'Stop autoplay',
+	// %s is substituted at render time - keep it in translations. Deliberately
+	// NOT {seconds}: Lingui parses braces as ICU placeholders and, with no
+	// value passed, silently renders them as an empty string.
+	'Spins must be %s seconds apart': 'Spins must be %s seconds apart',
+	'Round in progress': 'Round in progress',
+	'Replay is view-only': 'Replay is view-only',
+	'No active game session': 'No active game session',
+	'Net Position': 'Net Position',
+	RTP: 'RTP',
+	Session: 'Session',
+	Fast: 'Fast',
 	'Number of spins': 'Number of spins',
 	'Unlimited spins': 'Unlimited spins',
 	'More spins': 'More spins',

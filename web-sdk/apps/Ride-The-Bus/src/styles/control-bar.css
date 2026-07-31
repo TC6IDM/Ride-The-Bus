@@ -192,6 +192,96 @@
 
 .cb-actions { gap: calc(var(--ui-bar) * 1.09); padding: calc(var(--ui-bar) * 0.64) calc(var(--ui-bar) * 1.27); }
 
+/* ==== Minimum-round-duration cooldown ====
+   Host for the spin button plus its cooldown ring and tooltip. Sized to the
+   button so it is invisible in the flex row. */
+.cb-spin-wrap {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ring around the spin button, filling clockwise from 12 o'clock. Sits just
+   outside the button's edge, and never intercepts a click. */
+.cb-cooldown {
+  position: absolute;
+  inset: calc(var(--ui-bar) * -0.55);
+  pointer-events: none;
+  /* -90deg puts the sweep's start at the top instead of 3 o'clock. */
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+
+.cb-cooldown-track,
+.cb-cooldown-fill {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.cb-cooldown-track { stroke: rgba(0, 0, 0, 0.45); }
+
+.cb-cooldown-fill {
+  stroke: #4c9ffe;
+  filter: drop-shadow(0 0 3px rgba(76, 159, 254, 0.8));
+}
+
+/* Tooltip above the button. Shown on hovering the WRAPPER, because the button
+   underneath is disabled for the whole cooldown and so fires no mouse events
+   of its own. */
+.cb-cooldown-tip {
+  position: absolute;
+  bottom: calc(100% + var(--ui-bar) * 1.2);
+  left: 50%;
+  transform: translateX(-50%) translateY(calc(var(--ui-bar) * 0.36));
+  z-index: 60;
+  padding: calc(var(--ui-bar) * 0.6) calc(var(--ui-bar) * 1);
+  border-radius: calc(var(--ui-bar) * 0.64);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(8, 14, 22, 0.96);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+  color: #dfe8f2;
+  font-size: calc(var(--ui-bar) * 1.05);
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.14s ease-out, transform 0.14s ease-out;
+}
+
+.cb-spin-wrap:hover .cb-cooldown-tip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Little arrow pointing down at the button. */
+.cb-cooldown-tip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: calc(var(--ui-bar) * 0.45) solid transparent;
+  border-top-color: rgba(8, 14, 22, 0.96);
+}
+
+/* Responsible-gambling readouts (net position / RTP / session clock). Only
+   rendered when the player's jurisdiction asks for them, so this panel is
+   absent from the bar in every other case. */
+.cb-rg { gap: calc(var(--ui-bar) * 1.64); }
+
+.cb-rg-item { display: flex; flex-direction: column; align-items: flex-start; white-space: nowrap; }
+
+/* tabular-nums so the session clock ticking doesn't jitter the bar. */
+.cb-rg-item .cb-val { font-variant-numeric: tabular-nums; }
+
+.cb-rg-item.up .cb-val { color: #7ee2a8; }
+
+.cb-rg-item.down .cb-val { color: #ff8f8f; }
+
 /* Round icon buttons (autospin, and the floating turbo / advanced) */
 .cb-round {
   width: calc(var(--ui-bar) * 4) /* 44px */;

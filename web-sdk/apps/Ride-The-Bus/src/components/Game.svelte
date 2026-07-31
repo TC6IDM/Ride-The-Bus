@@ -11,6 +11,10 @@
   import { requestBet, requestEndRound } from 'rgs-requests';
   import { sound } from '../game/sound';
   import { gameReady } from '../game/ready.svelte';
+  import { jurisdiction } from '../game/jurisdiction.svelte';
+  // Sourced from the shared config rather than retyped, so a displayed RTP can
+  // never drift from the one the math is actually built and reweighted to.
+  import gameConfig from '../game/config';
   import { t } from '../i18n/i18nDerived';
   import { numberToCurrencyString } from 'utils-shared/amount';
   import { API_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
@@ -102,6 +106,27 @@
   let lastWinAmount = $state(0);
   let lastWinMultiplier = $state(0);
 
+  // Responsible-gambling session tracking, shown only when the jurisdiction
+  // asks for it (displayNetPosition / displaySessionTimer).
+  // Net position is cumulative payout minus cumulative stake for this session.
+  let sessionNet = $state(0);
+  let sessionSeconds = $state(0);
+  $effect(() => {
+    if (!jurisdiction.showSessionTimer()) return;
+    const startedAt = Date.now();
+    const id = setInterval(() => {
+      sessionSeconds = Math.floor((Date.now() - startedAt) / 1000);
+    }, 1000);
+    return () => clearInterval(id);
+  });
+  const sessionClock = () => {
+    const h = Math.floor(sessionSeconds / 3600);
+    const m = Math.floor((sessionSeconds % 3600) / 60);
+    const s = sessionSeconds % 60;
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+  };
+
   let colorChoice = $state<ColorChoice>(null);
   let hlChoice = $state<HigherLowerChoice>(null);
   let ioChoice = $state<InsideOutsideChoice>(null);
@@ -145,6 +170,28 @@
   // turbo popup's slider. It scales the per-step reveal delays (paceMs) and the
   // card flip duration (--flip-dur) continuously.
   let turboSpeed = $state(0);
+
+  // The regulator can bar Turbo outright, or bar only its instant end
+  // ("super turbo"). Clamp continuously rather than just at startup: the
+  // jurisdiction block arrives with /wallet/authenticate, and this also
+  // re-corrects if a stale value was restored from a previous session.
+  const TURBO_CAP_WITHOUT_SUPER = 0.8;
+  $effect(() => {
+    if (jurisdiction.turboDisabled()) {
+      if (turboSpeed !== 0) turboSpeed = 0;
+      // A barred control must not sit open either.
+      if (openPopup === 'turbo') openPopup = null;
+    } else if (jurisdiction.superTurboDisabled() && turboSpeed > TURBO_CAP_WITHOUT_SUPER) {
+      turboSpeed = TURBO_CAP_WITHOUT_SUPER;
+    }
+  });
+
+  // Same for autoplay: bar the control, and stop any run already going.
+  $effect(() => {
+    if (!jurisdiction.autoplayDisabled()) return;
+    if (openPopup === 'autospin') openPopup = null;
+    if (autoRunning) stopAuto();
+  });
 
   // Bottom control-bar UI: which popup (if any) is open, plus mute state.
   let openPopup = $state<null | 'bet' | 'turbo' | 'autospin' | 'advanced' | 'info'>(null);
@@ -458,6 +505,8 @@
     // Record the settled result for the "Last Win" readout on the control bar.
     lastWinAmount = wonAmount;
     lastWinMultiplier = initialBet > 0 ? wonAmount / initialBet : 0;
+    // Net position for this session: payout minus the stake actually placed.
+    sessionNet = Math.round((sessionNet + (wonAmount - initialBet)) * 100) / 100;
 
     if (wonAmount <= 0) {
       sound.playRoundLoss();
@@ -629,9 +678,52 @@
   // round. Callers that arrive mid-round get the in-flight promise instead,
   // which is exactly the "wait for it, then carry on" the auto loop wants.
   let roundInFlight: Promise<void> | null = null;
+  // True while a settled round is being held open to satisfy the regulator's
+  // minimum round duration. Feeds spinDisabled so the button stays dead.
+  let roundGateHeld = $state(false);
+  // 0..1 through the hold, drawn as a ring that fills clockwise around the
+  // spin button so the wait reads as a countdown rather than a dead control.
+  let cooldownProgress = $state(0);
+  // The regulator's floor in seconds, for the tooltip. Trimmed so a whole
+  // number reads "3" rather than "3.0".
+  const cooldownSecondsLabel = () => {
+    const s = jurisdiction.minimumRoundDurationMs() / 1000;
+    return Number.isInteger(s) ? String(s) : s.toFixed(1);
+  };
   function runRound(): Promise<void> {
     if (roundInFlight) return roundInFlight;
-    roundInFlight = playRound().finally(() => { roundInFlight = null; });
+    const started = performance.now();
+    roundInFlight = playRound()
+      .then(async () => {
+        // Enforce jurisdiction.minimumRoundDuration. Deliberately applied
+        // AFTER the result is on screen rather than by slowing the reveal:
+        // the rule exists so a player can register the outcome, so padding
+        // the gap before the next spin is what it actually asks for. Covers
+        // manual and autoplay alike, since the auto loop awaits runRound.
+        const min = jurisdiction.minimumRoundDurationMs();
+        if (min <= 0) return;
+        const remaining = min - (performance.now() - started);
+        if (remaining <= 0) return;
+        roundGateHeld = true;
+        cooldownProgress = 0;
+        // Drive the ring off the clock rather than a CSS transition, so it
+        // stays honest if the tab is throttled or the hold is cut short.
+        const gateStart = performance.now();
+        let raf = requestAnimationFrame(function tick() {
+          cooldownProgress = Math.min(1, (performance.now() - gateStart) / remaining);
+          if (cooldownProgress < 1) raf = requestAnimationFrame(tick);
+        });
+        try {
+          await wait(remaining);
+        } finally {
+          cancelAnimationFrame(raf);
+          cooldownProgress = 0;
+          roundGateHeld = false;
+        }
+      })
+      .finally(() => {
+        roundInFlight = null;
+      });
     return roundInFlight;
   }
 
@@ -681,6 +773,9 @@
   // `hold` = a space-hold run: it ignores the round count and instead runs for
   // as long as spaceHoldRunning stays true (i.e. the key is still down).
   async function startAuto({ hold = false } = {}) {
+    // Barred outright by the regulator - covers the popup's Start, the
+    // spacebar hold, and any future caller.
+    if (jurisdiction.autoplayDisabled()) return;
     if (autoRunning || !betIsValid() || !allChoicesMade()) return;
     if (!hold && !autoRoundsValid()) return;
     autoStopRequested = false;
@@ -796,11 +891,35 @@
       ? false
       : gameState === 'playing' ||
         isProcessing ||
+        // Held open to satisfy the regulator's minimum round duration.
+        roundGateHeld ||
         // Replay is a read-only view of a past round - never let it bet.
         stateUrlDerived.replay() ||
         !betIsValid() ||
         !allChoicesMade() ||
         (IS_PROD && resolveRoundSeed().source === 'none');
+
+  // Why the spin button is dead right now, or null when it's live. Shown as a
+  // tooltip on hovering the wrapper, so a greyed button always explains itself
+  // instead of leaving the player guessing.
+  //
+  // Deliberately mirrors spinDisabled()'s conditions in the same order, so the
+  // two can't disagree - a disabled button with no reason (or a reason on a
+  // live button) would be worse than no tooltip at all. Ordered most-specific
+  // first: transient states before "you haven't finished setting up".
+  function spinBlockedReason(): string | null {
+    if (autoRunning) return null; // it's a Stop button; always live
+    if (stateUrlDerived.replay()) return t('Replay is view-only');
+    if (roundGateHeld) {
+      return t('Spins must be %s seconds apart').replace('%s', cooldownSecondsLabel());
+    }
+    if (gameState === 'playing' || isProcessing) return t('Round in progress');
+    if (!allChoicesMade()) return t('Pick all 4 guesses');
+    if (!betIsValid()) return t('Enter a valid bet');
+    if (IS_PROD && resolveRoundSeed().source === 'none') return t('No active game session');
+    return null;
+  }
+
   function onSpin() {
     // No playPress() here - the delegated click listener below already sounds
     // every button. The spacebar path, which isn't a click, sounds its own.
@@ -840,6 +959,8 @@
 
   function onKeyDown(event: KeyboardEvent) {
     if (event.code !== 'Space' && event.key !== ' ') return;
+    // Regulator has barred the shortcut - leave Space to the browser.
+    if (jurisdiction.spacebarDisabled()) return;
     if (!spaceIsForUs(event.target)) return;
     // Space scrolls the page by default.
     event.preventDefault();
@@ -1281,9 +1402,13 @@
        with the turbo button and the advanced button floating free at the
        outer edges (slot-style). -->
   <footer class="control-bar">
-    <button class="cb-float cb-turbo" class:active={turboSpeed > 0 || openPopup === 'turbo'} onclick={() => togglePopup('turbo')} aria-label={t('Turbo speed')}>
-      <svg class="cb-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 2v11h3v9l7-12h-4l4-8z" /></svg>
-    </button>
+    <!-- Removed, not just disabled, when the regulator bars Turbo: a greyed
+         control still advertises a feature the player may not have. -->
+    {#if !jurisdiction.turboDisabled()}
+      <button class="cb-float cb-turbo" class:active={turboSpeed > 0 || openPopup === 'turbo'} onclick={() => togglePopup('turbo')} aria-label={t('Turbo speed')}>
+        <svg class="cb-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 2v11h3v9l7-12h-4l4-8z" /></svg>
+      </button>
+    {/if}
 
     <div class="cb-panel cb-panel-light">
       <button class="cb-icon" onclick={toggleMuted} aria-pressed={muted} aria-label={muted ? t('Unmute') : t('Mute')}>
@@ -1310,6 +1435,32 @@
       </div>
     </div>
 
+    <!-- Responsible-gambling readouts. Rendered only where the player's
+         regulator asks for them (displayNetPosition / displayRTP /
+         displaySessionTimer), so the bar is unchanged everywhere else. -->
+    {#if jurisdiction.showAnyReadout()}
+      <div class="cb-panel cb-panel-light cb-rg">
+        {#if jurisdiction.showNetPosition()}
+          <div class="cb-rg-item" class:up={sessionNet > 0} class:down={sessionNet < 0}>
+            <span class="cb-cap">{t('Net Position')}</span>
+            <span class="cb-val">{numberToCurrencyString(sessionNet)}</span>
+          </div>
+        {/if}
+        {#if jurisdiction.showRTP()}
+          <div class="cb-rg-item">
+            <span class="cb-cap">{t('RTP')}</span>
+            <span class="cb-val">{(gameConfig.rtp * 100).toFixed(2)}%</span>
+          </div>
+        {/if}
+        {#if jurisdiction.showSessionTimer()}
+          <div class="cb-rg-item">
+            <span class="cb-cap">{t('Session')}</span>
+            <span class="cb-val">{sessionClock()}</span>
+          </div>
+        {/if}
+      </div>
+    {/if}
+
     <div class="cb-panel cb-panel-dark cb-bet">
       <button class="cb-bet-display" class:active={openPopup === 'bet'} onclick={() => togglePopup('bet')} aria-label={t('Choose bet amount')}>
         <span class="cb-cap">{t('Bet')}</span>
@@ -1322,13 +1473,18 @@
     </div>
 
     <div class="cb-panel cb-panel-dark cb-actions">
-      <button class="cb-round cb-autospin" class:active={openPopup === 'autospin'} onclick={() => togglePopup('autospin')} disabled={autoRunning} aria-label={t('Autoplay settings')}>
-        <svg class="cb-svg cb-autospin-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8A5.87 5.87 0 0 1 6 12c0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" />
-          <path d="M10.4 9.7 14.6 12l-4.2 2.3z" />
-        </svg>
-      </button>
+      {#if !jurisdiction.autoplayDisabled()}
+        <button class="cb-round cb-autospin" class:active={openPopup === 'autospin'} onclick={() => togglePopup('autospin')} disabled={autoRunning} aria-label={t('Autoplay settings')}>
+          <svg class="cb-svg cb-autospin-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8A5.87 5.87 0 0 1 6 12c0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" />
+            <path d="M10.4 9.7 14.6 12l-4.2 2.3z" />
+          </svg>
+        </button>
+      {/if}
 
+      <!-- Wraps the spin button so the cooldown ring and tooltip have a host
+           that still receives hover while the button itself is disabled. -->
+      <div class="cb-spin-wrap">
       <button class="cb-spin" class:stopping={autoRunning} onclick={onSpin} disabled={spinDisabled()} aria-label={autoRunning ? t('Stop autoplay') : t('Spin')}>
         {#if autoRunning}
           <span class="cb-spin-square" aria-hidden="true"></span>
@@ -1344,6 +1500,30 @@
           <svg class="cb-spin-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8A5.87 5.87 0 0 1 6 12c0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" /></svg>
         {/if}
       </button>
+
+      <!-- Ring and tooltip live on the WRAPPER, not the button: the button is
+           disabled whenever either is relevant, and a disabled button receives
+           no mouse events, so :hover on it would never fire. -->
+      {#if roundGateHeld}
+        <svg class="cb-cooldown" viewBox="0 0 100 100" aria-hidden="true">
+          <circle class="cb-cooldown-track" cx="50" cy="50" r="46" />
+          <!-- Rotated -90deg so the sweep starts at 12 o'clock; dashoffset
+               shrinks from the full circumference to 0 as it fills clockwise.
+               2*pi*46 = 289.03 -->
+          <circle
+            class="cb-cooldown-fill"
+            cx="50"
+            cy="50"
+            r="46"
+            style={`stroke-dasharray: 289.03; stroke-dashoffset: ${(289.03 * (1 - cooldownProgress)).toFixed(2)}`}
+          />
+        </svg>
+      {/if}
+      <!-- Any reason the button is dead, not just the cooldown. -->
+      {#if spinBlockedReason()}
+        <span class="cb-cooldown-tip" role="tooltip">{spinBlockedReason()}</span>
+      {/if}
+      </div>
     </div>
 
     <button class="cb-float cb-advanced" class:active={openPopup === 'advanced'} onclick={() => togglePopup('advanced')} aria-label={t('Advanced settings')}>
@@ -1371,21 +1551,32 @@
     </div>
   {/if}
 
-  {#if openPopup === 'turbo'}
+  {#if openPopup === 'turbo' && !jurisdiction.turboDisabled()}
     <div class="popup popup-turbo" role="dialog" aria-label={t('Turbo speed')}>
       <div class="popup-head"><span>{t('Turbo Speed')}</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label={t('Close')}>✕</button></div>
       <div class="turbo-body">
         <div class="turbo-track">
           <span class="turbo-end">{t('Normal')}</span>
-          <input class="turbo-slider" type="range" min="0" max="1" step="0.05" bind:value={turboSpeed} aria-label={t('Turbo speed')} />
-          <span class="turbo-end">{t('Instant')}</span>
+          <!-- The track's own max is capped when super turbo is barred, so the
+               slider can't even be dragged to instant - the clamp above is the
+               backstop, this is the affordance. -->
+          <input
+            class="turbo-slider"
+            type="range"
+            min="0"
+            max={jurisdiction.superTurboDisabled() ? TURBO_CAP_WITHOUT_SUPER : 1}
+            step="0.05"
+            bind:value={turboSpeed}
+            aria-label={t('Turbo speed')}
+          />
+          <span class="turbo-end">{jurisdiction.superTurboDisabled() ? t('Fast') : t('Instant')}</span>
         </div>
         <div class="turbo-readout">{turboSpeed <= 0 ? t('Off — full animation') : turboSpeed >= 1 ? t('Instant') : `${Math.round(turboSpeed * 100)}${t('% faster')}`}</div>
       </div>
     </div>
   {/if}
 
-  {#if openPopup === 'autospin'}
+  {#if openPopup === 'autospin' && !jurisdiction.autoplayDisabled()}
     <div class="popup popup-autospin" role="dialog" aria-label={t('Autoplay')}>
       <div class="popup-head"><span>{t('Autoplay')}</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label={t('Close')}>✕</button></div>
       <div class="autospin-body">
