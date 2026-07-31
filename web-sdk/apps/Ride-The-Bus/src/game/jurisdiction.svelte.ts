@@ -1,72 +1,59 @@
 /**
- * Jurisdiction rules handed down by the RGS.
+ * Jurisdiction rules handed down by the RGS, bound to shared state.
  *
  * /wallet/authenticate returns a `config.jurisdiction` block (see
- * math-sdk/docs/rgs_docs/RGS.md) describing what the player's regulator allows.
- * Authenticate.svelte parks it on stateConfig.jurisdiction and nothing in the
- * SDK reads it - honouring it is entirely the game's job.
+ * math-sdk/docs/rgs_docs/RGS.md) describing what the player's regulator
+ * allows. Authenticate.svelte parks it on stateConfig.jurisdiction and nothing
+ * in the SDK reads it - honouring it is entirely the game's job.
  *
- * Everything here is read through `flag()` rather than off stateConfig
- * directly, because Authenticate assigns the block unconditionally:
- *
- *     stateConfig.jurisdiction = authenticateData?.config?.jurisdiction;
- *
- * An RGS response without a jurisdiction block therefore replaces the default
- * object with `undefined`, and a bare stateConfig.jurisdiction.disabledTurbo
- * would throw. `flag()` falls back to the permissive default in that case,
- * which is also the right behaviour offline and in local dev.
+ * The reading logic lives in jurisdictionRules.ts (pure, unit-tested); this
+ * file only wires it to stateConfig. Reads go through readFlag rather than
+ * touching stateConfig.jurisdiction directly because Authenticate assigns it
+ * unconditionally, so a response without the block replaces the default object
+ * with `undefined` and a bare property access would throw.
  */
 import { stateConfig } from 'state-shared';
 
-type Jurisdiction = {
-  socialCasino: boolean;
-  disabledFullscreen: boolean;
-  disabledTurbo: boolean;
-  disabledSuperTurbo: boolean;
-  disabledAutoplay: boolean;
-  disabledSlamstop: boolean;
-  disabledSpacebar: boolean;
-  disabledBuyFeature: boolean;
-  displayNetPosition: boolean;
-  displayRTP: boolean;
-  displaySessionTimer: boolean;
-  minimumRoundDuration: number;
-};
+import {
+  TURBO_CAP_WITHOUT_SUPER,
+  clampTurboSpeed,
+  readFlag,
+  readMinimumRoundDuration,
+  type JurisdictionSource,
+} from './jurisdictionRules';
 
-function flag<K extends keyof Jurisdiction>(key: K, fallback: Jurisdiction[K]): Jurisdiction[K] {
-  const j = stateConfig.jurisdiction as Partial<Jurisdiction> | undefined | null;
-  const value = j?.[key];
-  return (value === undefined || value === null ? fallback : value) as Jurisdiction[K];
-}
+export { TURBO_CAP_WITHOUT_SUPER };
+
+const source = (): JurisdictionSource => stateConfig.jurisdiction as JurisdictionSource;
 
 export const jurisdiction = {
   /** Turbo (the speed slider) may not be offered at all. */
-  turboDisabled: () => flag('disabledTurbo', false),
+  turboDisabled: () => readFlag(source(), 'disabledTurbo', false),
   /**
    * "Super turbo" is the instant end of our speed slider. When only super
    * turbo is barred we keep the slider but cap it short of instant, so the
    * reveal is always at least partly animated.
    */
-  superTurboDisabled: () => flag('disabledSuperTurbo', false),
+  superTurboDisabled: () => readFlag(source(), 'disabledSuperTurbo', false),
   /** Autoplay may not be offered. */
-  autoplayDisabled: () => flag('disabledAutoplay', false),
+  autoplayDisabled: () => readFlag(source(), 'disabledAutoplay', false),
   /** The spacebar shortcut (tap to spin, hold to repeat) may not be offered. */
-  spacebarDisabled: () => flag('disabledSpacebar', false),
+  spacebarDisabled: () => readFlag(source(), 'disabledSpacebar', false),
 
   /**
    * Floor on how long one round may take, in milliseconds. Regulators use it
    * to stop games cycling faster than a player can register the result, so it
    * gates the NEXT spin rather than slowing the current animation.
    */
-  minimumRoundDurationMs: () => {
-    const raw = Number(flag('minimumRoundDuration', 0));
-    return Number.isFinite(raw) && raw > 0 ? raw : 0;
-  },
+  minimumRoundDurationMs: () => readMinimumRoundDuration(source()),
+
+  /** Clamp a turbo speed to what the jurisdiction permits. */
+  clampTurbo: (speed: number) => clampTurboSpeed(speed, source()),
 
   /** Responsible-gambling readouts the regulator wants on screen. */
-  showNetPosition: () => flag('displayNetPosition', false),
-  showRTP: () => flag('displayRTP', false),
-  showSessionTimer: () => flag('displaySessionTimer', false),
+  showNetPosition: () => readFlag(source(), 'displayNetPosition', false),
+  showRTP: () => readFlag(source(), 'displayRTP', false),
+  showSessionTimer: () => readFlag(source(), 'displaySessionTimer', false),
 
   /** True when any of the three readouts above is switched on. */
   showAnyReadout: () =>

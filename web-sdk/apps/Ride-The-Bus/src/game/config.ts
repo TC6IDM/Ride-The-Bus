@@ -1,5 +1,7 @@
 export default {
-	providerName: 'sample_provider',
+	// Was 'sample_provider' - SDK template boilerplate. Must name the real
+	// operator before submission; it identifies the game's provider.
+	providerName: 'Takeover Casino',
 	gameName: 'Ride The Bus',
 	gameID: 'ride_the_bus',
 	// Single published RTP every bet mode is reweighted onto - see math-sdk

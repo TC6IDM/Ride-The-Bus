@@ -10,7 +10,9 @@
 		"dev": "vite dev --host --port 3001",
 		"dev:fresh": "vite dev --host --port 3001 --force",
 		"build": "vite build",
-		"preview": "vite preview"
+		"preview": "vite preview",
+		"test": "node --test \"src/**/*.test.ts\"",
+		"test:watch": "node --test --watch \"src/**/*.test.ts\""
 	},
 	"type": "module",
 	"devDependencies": {

@@ -60,6 +60,16 @@
 				// 	}
 				// }
 				stateConfig.jurisdiction = authenticateData?.config?.jurisdiction;
+				// LOCAL ADDITION to the Stake SDK - re-apply if this package is
+				// updated from upstream. The RGS enforces minBet/maxBet/stepBet
+				// (see stateConfig.betLimits); keeping only betLevels leaves a
+				// game unable to guarantee a bet the RGS will accept. Stored raw,
+				// in micro-units, exactly as returned.
+				stateConfig.betLimits = {
+					minBet: Number(authenticateData.config?.minBet) || 0,
+					maxBet: Number(authenticateData.config?.maxBet) || 0,
+					stepBet: Number(authenticateData.config?.stepBet) || 0,
+				};
 				stateConfig.betAmountOptions = (authenticateData.config?.betLevels || []).map(
 					(level) => level / API_AMOUNT_MULTIPLIER,
 				);

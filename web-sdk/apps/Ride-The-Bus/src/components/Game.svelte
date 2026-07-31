@@ -11,7 +11,19 @@
   import { requestBet, requestEndRound } from 'rgs-requests';
   import { sound } from '../game/sound';
   import { gameReady } from '../game/ready.svelte';
-  import { jurisdiction } from '../game/jurisdiction.svelte';
+  import { jurisdiction, TURBO_CAP_WITHOUT_SUPER } from '../game/jurisdiction.svelte';
+  // Payout maths and bet-grid arithmetic live in plain modules so they can be
+  // unit-tested (src/game/*.test.ts) - payout.ts is checked against the real
+  // published books, which is the only way to be sure the number shown here
+  // matches the number the RGS credits.
+  import {
+    DECAY,
+    STAGE_RETENTION,
+    computeFinalMultiplier,
+    partialMultiplier,
+    quantizeMultiplier,
+  } from '../game/payout';
+  import { betWithinRange, snapBetToGrid } from '../game/betLimits';
   // Sourced from the shared config rather than retyped, so a displayed RTP can
   // never drift from the one the math is actually built and reweighted to.
   import gameConfig from '../game/config';
@@ -52,9 +64,9 @@
   // is NOT reweighted, so its long-run RTP differs from prod's (most for the
   // structurally-hard "inside" modes) - but any single hand pays identically,
   // which is what matters for local testing.
-  const TARGET_RTP = 0.99;
-  const DECAY = Math.pow(TARGET_RTP, 0.25);
-  const STAGE_RETENTION = [0, 0.3, 0.3, 0.3];
+  // TARGET_RTP / DECAY / STAGE_RETENTION and the three multiplier functions now
+  // live in game/payout.ts (imported above) so they can be unit-tested against
+  // the published books.
 
   // Local dev only: there's no real RGS session to report a balance, so
   // Set Bet always clamps to 0 without this. On the real site, Authenticate
@@ -175,15 +187,13 @@
   // ("super turbo"). Clamp continuously rather than just at startup: the
   // jurisdiction block arrives with /wallet/authenticate, and this also
   // re-corrects if a stale value was restored from a previous session.
-  const TURBO_CAP_WITHOUT_SUPER = 0.8;
   $effect(() => {
-    if (jurisdiction.turboDisabled()) {
-      if (turboSpeed !== 0) turboSpeed = 0;
-      // A barred control must not sit open either.
-      if (openPopup === 'turbo') openPopup = null;
-    } else if (jurisdiction.superTurboDisabled() && turboSpeed > TURBO_CAP_WITHOUT_SUPER) {
-      turboSpeed = TURBO_CAP_WITHOUT_SUPER;
-    }
+    // The cap and the clamping rule live in game/jurisdictionRules.ts, so the
+    // slider's max attribute below and this backstop can't disagree.
+    const clamped = jurisdiction.clampTurbo(turboSpeed);
+    if (clamped !== turboSpeed) turboSpeed = clamped;
+    // A barred control must not sit open either.
+    if (jurisdiction.turboDisabled() && openPopup === 'turbo') openPopup = null;
   });
 
   // Same for autoplay: bar the control, and stop any run already going.
@@ -277,13 +287,14 @@
   const betIsValid = () => {
     const v = betValue();
     if (!(v > 0) || v > stateBet.balanceAmount) return false;
-    // On a real RGS session, the amount must sit within the allowed range
-    // (min..max of the bet levels). Locally there's nothing to enforce.
-    const levels = stateConfig.betAmountOptions;
-    if (stateUrlDerived.sessionID() && levels && levels.length) {
-      return v >= Math.min(...levels) && v <= Math.max(...levels);
-    }
-    return true;
+    // On a real session the RGS enforces minBet/maxBet, so check against those
+    // rather than the min/max of betLevels - betLevels is a suggestion list and
+    // need not span the full allowed range. Divisibility by stepBet is NOT
+    // checked here: normalizeBet snaps the amount onto the grid at play time,
+    // so an off-grid figure in the input is correctable, not invalid.
+    // betWithinRange is a no-op when no limits are known, so this needs no
+    // session gate either.
+    return betWithinRange(v, stateConfig.betLimits, API_AMOUNT_MULTIPLIER);
   };
 
   // Keep the shared bet state in sync with the live input so "Current Bet" and
@@ -398,21 +409,25 @@
     return { seed: fallbackRoundSeed, source: 'local-fallback' as const };
   };
 
-  // Bring a raw bet into what the RGS actually accepts. Per Stake's RGS spec
-  // the predefined betLevels are only *suggestions* - a bet is valid as long
-  // as it (1) sits between minBet and maxBet and (2) is divisible by stepBet.
-  // So we do NOT snap to the nearest level (that needlessly turned 11 -> 10);
-  // we just clamp into range and round to the cent (the finest common step),
-  // which keeps any whole/simple amount the player types. Gated on a real
-  // session - in local dev betAmountOptions holds placeholder defaults, so
-  // free amounts pass through untouched.
+  // Bring a raw bet into what the RGS will actually accept.
+  //
+  // Per the RGS spec ("Bet Levels") the predefined betLevels are only
+  // *suggestions* - free-form amounts are allowed - but two rules are hard:
+  // the bet must sit within [minBet, maxBet] AND be divisible by stepBet. So
+  // we don't snap to a level (that needlessly turned 11 -> 10); we snap to the
+  // operator's step grid, which keeps free typing while guaranteeing the bet
+  // is one the RGS accepts. Without this, typing 1.37 against a 0.10 step is
+  // rejected with ERR_VAL.
+  //
+  // All arithmetic is in the RGS's own micro-units (integers), because doing
+  // it in decimal dollars drifts: 0.1 * 3 !== 0.3 in binary floating point,
+  // and an off-by-one-micro-unit bet is exactly what ERR_VAL catches.
   function normalizeBet(value: number): number {
-    const levels = stateConfig.betAmountOptions;
-    if (!stateUrlDerived.sessionID() || !levels || levels.length === 0) return value;
-    const lo = Math.min(...levels);
-    const hi = Math.max(...levels);
-    const clamped = Math.min(Math.max(value, lo), hi);
-    return Math.round(clamped * 100) / 100;
+    // Keyed on whether limits are actually known rather than on the presence of
+    // a session: snapBetToGrid falls back to cent-rounding when they are all
+    // zero (local dev), and this way the dev_* URL overrides can exercise the
+    // real grid logic without a live RGS.
+    return snapBetToGrid(value, stateConfig.betLimits, API_AMOUNT_MULTIPLIER);
   }
 
   // Stake-style +/- stepper: step to the next / previous suggested bet level
@@ -588,6 +603,60 @@
     });
   });
 
+  // Resume a round the player was in the middle of. /wallet/authenticate
+  // returns the session's round, which per the RGS docs "may represent a
+  // currently active or the last completed round" - and frontends "should
+  // continue the round if it remains active".
+  //
+  // Authenticate.svelte parks it in betToResume whenever it has `state`,
+  // REGARDLESS of `active`, so that has to be checked here: re-animating an
+  // already-settled round would show a result the player has been paid for as
+  // though it were live.
+  //
+  // Previously an interrupted round was just closed by the defensive
+  // end-round in startGameEngineFlow. The player was still paid, but never saw
+  // the outcome of a round they had bought.
+  let resumeStarted = false;
+  let resumeInProgress = $state(false);
+  $effect(() => {
+    if (resumeStarted || stateUrlDerived.replay()) return;
+    const bet = stateBet.betToResume as any;
+    if (!bet?.state || !bet.active) return;
+    resumeStarted = true;
+    resumeInProgress = true;
+
+    // Put the guess squares back to the combination the round was bought with,
+    // so the board the player returns to matches what they actually bet on.
+    // The bet mode IS the four guesses (see math-sdk mode_name).
+    const parts = String(bet.mode ?? '').split('_');
+    if (parts.length === 4) {
+      colorChoice = parts[0] as ColorChoice;
+      hlChoice = parts[1] as HigherLowerChoice;
+      ioChoice = parts[2] as InsideOutsideChoice;
+      suitChoice = parts[3] as SuitChoice;
+    }
+
+    // Authenticate populates these from round.amount, so the multipliers
+    // resolve to the cash the player actually staked.
+    initialBet = stateBet.wageredBetAmount || stateBet.betAmount || 0;
+    hasPlayed = true;
+    animateRoundFromEvents(
+      bet.state,
+      `${bet.roundID ?? bet.betID ?? 'resumed'}`,
+      'engine-auth',
+      'Resumed round contained no state.',
+    )
+      .catch((err) => {
+        // Don't trap the player on a broken resume - log it, mark the round
+        // failed, and let the defensive end-round clear it on the next spin.
+        console.error('resume failed', err);
+        roundError = true;
+      })
+      .finally(() => {
+        resumeInProgress = false;
+      });
+  });
+
   async function startGameEngineFlow(roundSeedData: { seed: string; source: 'engine-auth' | 'engine-replay' }) {
     isProcessing = true;
     try {
@@ -615,15 +684,23 @@
       stateBet.activeBetModeKey = mode;
       // Diagnostic: log exactly what we send so an RGS ERR_VAL can be traced to
       // the offending field (mode vs amount vs currency) from the console.
-      console.log('[RideTheBus] /wallet/play request:', {
-        mode,
-        betAmount: stateBet.betAmount,
-        initialBet,
-        amountMicroUnits: initialBet * API_AMOUNT_MULTIPLIER,
-        currency: stateBet.currency,
-        balance: stateBet.balanceAmount,
-        allowedBetLevels: stateConfig.betAmountOptions,
-      });
+      //
+      // Gated on `import.meta.env.DEV` written out literally, NOT on the IS_PROD
+      // const above: Vite substitutes this expression at build time, so the
+      // whole block is dead code in a production build and gets dropped. The
+      // const is computed at runtime and would keep the payload - including the
+      // player's balance - in the shipped bundle.
+      if (import.meta.env.DEV) {
+        console.log('[RideTheBus] /wallet/play request:', {
+          mode,
+          betAmount: stateBet.betAmount,
+          initialBet,
+          amountMicroUnits: initialBet * API_AMOUNT_MULTIPLIER,
+          currency: stateBet.currency,
+          balance: stateBet.balanceAmount,
+          allowedBetLevels: stateConfig.betAmountOptions,
+        });
+      }
       const data = await requestBet({
         rgsUrl: stateUrlDerived.rgsUrl(),
         sessionID: stateUrlDerived.sessionID(),
@@ -631,7 +708,7 @@
         mode,
         amount: initialBet,
       });
-      console.log('[RideTheBus] /wallet/play response:', data);
+      if (import.meta.env.DEV) console.log('[RideTheBus] /wallet/play response:', data);
 
       // The RGS returns a failure in the body (status.statusCode !== SUCCESS,
       // and/or an `error` field) rather than throwing; surface the real reason
@@ -749,9 +826,20 @@
       return;
     }
 
-    // local deterministic fallback (dev): simulate the debit a real
-    // /wallet/play call would make, so balance behaves like prod.
+    // Local deterministic fallback - DEV ONLY. resolveRoundSeed already refuses
+    // to return this source under IS_PROD, but the guard is repeated here as an
+    // `import.meta.env.DEV` literal so Vite can prove the branch dead and drop
+    // roundContract's client-side shuffler from the production bundle entirely.
+    // A real-money build should not ship a card generator, even an unreachable
+    // one - it is the first thing an auditor reading the bundle would query.
+    if (!import.meta.env.DEV) {
+      throw new Error('Local fallback is not available in a production build.');
+    }
+
+    // Simulate the debit a real /wallet/play call would make, so balance
+    // behaves like prod.
     stateBet.balanceAmount -= initialBet;
+    const { createRoundContract } = await import('../game/roundContract');
     const round = createRoundContract(`${roundSeedData.seed}:${roundSequence}`);
     roundSequence += 1;
     lastRoundId = round.roundId;
@@ -891,6 +979,9 @@
       ? false
       : gameState === 'playing' ||
         isProcessing ||
+        // An interrupted round is being replayed onto the board - the player
+        // must not be able to buy a new one on top of it.
+        resumeInProgress ||
         // Held open to satisfy the regulator's minimum round duration.
         roundGateHeld ||
         // Replay is a read-only view of a past round - never let it bet.
@@ -913,7 +1004,7 @@
     if (roundGateHeld) {
       return t('Spins must be %s seconds apart').replace('%s', cooldownSecondsLabel());
     }
-    if (gameState === 'playing' || isProcessing) return t('Round in progress');
+    if (gameState === 'playing' || isProcessing || resumeInProgress) return t('Round in progress');
     if (!allChoicesMade()) return t('Pick all 4 guesses');
     if (!betIsValid()) return t('Enter a valid bet');
     if (IS_PROD && resolveRoundSeed().source === 'none') return t('No active game session');
@@ -997,6 +1088,20 @@
     spaceHoldRunning = false;
   }
 
+  // DEV ONLY: let ?dev_* query params stand in for the RGS config, so the
+  // jurisdiction rules and bet grid can be exercised on localhost where there
+  // is no /wallet/authenticate. Written as an `import.meta.env.DEV` literal so
+  // Vite drops the whole thing - and devOverrides itself - from a production
+  // build.
+  if (import.meta.env.DEV) {
+    $effect(() => {
+      void import('../game/devOverrides').then(({ applyDevOverrides }) => {
+        const applied = applyDevOverrides(window.location.search);
+        if (applied.length) console.log('[RideTheBus] dev overrides:', applied.join(', '));
+      });
+    });
+  }
+
   // Tell the loader the board is actually on screen. It sits outside this
   // component's tree (see game/ready.svelte.ts), and clearing on a timer alone
   // left a gap of empty screen while <Authenticate> was still resolving.
@@ -1033,48 +1138,8 @@
     };
   });
 
-  // Mirrors games/ride_the_bus/game_calculations.py:partial_multiplier - the
-  // RAW (unquantized) win multiplier for a correct guess, solved so that for
-  // ANY probability p the expected change to the running multiplier is a
-  // fixed constant DECAY: p*m + (1-p)*retention == DECAY. Returns 0 when the
-  // guess is impossible this round (p<=0), which also flags the dead zone to
-  // computeFinalMultiplier below. NOT floored here - only the final compound
-  // is quantized, exactly like the real book.
-  function partialMultiplier(probability: number, stageIndex: number): number {
-    if (probability <= 0) return 0;
-    const retention = STAGE_RETENTION[stageIndex];
-    return (DECAY - (1 - probability) * retention) / probability;
-  }
 
-  // Mirrors games/ride_the_bus/game_calculations.py:quantize_multiplier -
-  // floor the final multiplier to the 0.1x steps the RGS lookup uses.
-  function quantizeMultiplier(raw: number): number {
-    if (raw <= 0) return 0;
-    const quantized = Math.floor(raw * 10) / 10;
-    return quantized > 0 ? quantized : 0.1;
-  }
 
-  // Mirrors games/ride_the_bus/gamestate.py:run_spin exactly - compound the
-  // running multiplier over the streak of correct guesses; on the first miss
-  // bank STAGE_RETENTION[stage] of it, then apply DECAY for each unplayed
-  // stage (so the martingale expectation holds for the stages that never got
-  // drawn), and quantize once. A stage-1 (colour) miss banks
-  // STAGE_RETENTION[0] === 0, i.e. a total loss.
-  function computeFinalMultiplier(events: RevealEvent[]): number {
-    let running = 1;
-    let busted = false;
-    for (let stage = 0; stage < events.length; stage += 1) {
-      const event = events[stage];
-      if (!busted && event.correct) {
-        running *= event.payout;
-      } else if (!busted) {
-        running *= STAGE_RETENTION[stage];
-        running *= DECAY ** (3 - stage);
-        busted = true;
-      }
-    }
-    return quantizeMultiplier(running);
-  }
 
   function localColorPayouts(remaining: Card[]) {
     const total = remaining.length;
