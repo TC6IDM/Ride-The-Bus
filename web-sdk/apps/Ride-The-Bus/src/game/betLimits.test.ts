@@ -5,7 +5,14 @@
 import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
 
-import { betWithinRange, limitsAreUnknown, snapBetToGrid, type BetLimits } from './betLimits.ts';
+import {
+  betDecimals,
+  betWithinRange,
+  limitsAreUnknown,
+  snapBetToGrid,
+  snapToStep,
+  type BetLimits,
+} from './betLimits.ts';
 
 /** Micro-units, as the RGS sends them: 1_000_000 === 1.00 */
 const M = 1_000_000;
@@ -94,6 +101,73 @@ describe('snapBetToGrid', () => {
   test('with no limits known, tidies to the cent and lets anything through', () => {
     assert.equal(snapBetToGrid(1.379, null, M), 1.38);
     assert.equal(snapBetToGrid(99999, null, M), 99999);
+  });
+});
+
+describe('snapToStep (what the bet field does on blur)', () => {
+  const tenCent = limits(1, 100, 0.1);
+
+  test('snaps down onto the grid', () => {
+    assert.equal(snapToStep(1.37, tenCent, M), 1.3);
+    assert.equal(snapToStep(7.99, tenCent, M), 7.9);
+  });
+
+  test('does NOT clamp into range - that would stake more than was typed', () => {
+    // 0.50 is under the 1.00 minimum. Pulling it UP here would silently
+    // increase the player's bet; instead it stays put and betWithinRange
+    // refuses it, so the spin tooltip can explain.
+    assert.equal(snapToStep(0.5, tenCent, M), 0.5);
+    assert.equal(snapToStep(250, tenCent, M), 250);
+  });
+
+  test('leaves the value alone when no step is known', () => {
+    assert.equal(snapToStep(1.37, null, M), 1.37);
+    assert.equal(snapToStep(1.37, { minBet: M, maxBet: 0, stepBet: 0 }, M), 1.37);
+  });
+
+  test('ignores junk instead of producing NaN', () => {
+    assert.equal(snapToStep(0, tenCent, M), 0);
+    assert.equal(snapToStep(-5, tenCent, M), -5);
+    assert.equal(snapToStep(NaN, tenCent, M), NaN);
+  });
+
+  test('output is on-grid across step sizes', () => {
+    for (const step of [0.01, 0.1, 0.25, 1, 5]) {
+      const L = limits(0, 0, step);
+      for (const typed of [1.37, 7.77, 13.02, 456.789]) {
+        assert.ok(onGrid(snapToStep(typed, L, M), step), `step ${step}, typed ${typed}`);
+      }
+    }
+  });
+});
+
+describe('betDecimals', () => {
+  test('defaults to 2 when no step is known', () => {
+    assert.equal(betDecimals(null, M), 2);
+    assert.equal(betDecimals({ minBet: M, maxBet: 0, stepBet: 0 }, M), 2);
+  });
+
+  test('never drops below 2, so money still reads like money', () => {
+    assert.equal(betDecimals(limits(0, 0, 1), M), 2);
+    assert.equal(betDecimals(limits(0, 0, 5), M), 2);
+    assert.equal(betDecimals(limits(0, 0, 0.1), M), 2);
+  });
+
+  test('widens for a sub-cent step, which 6dp money makes possible', () => {
+    // Formatting a 0.001 step to 2 decimals would round it straight back
+    // off-grid.
+    assert.equal(betDecimals(limits(0, 0, 0.001), M), 3);
+    assert.equal(betDecimals(limits(0, 0, 0.0001), M), 4);
+  });
+
+  test('a snapped value survives being formatted at this precision', () => {
+    for (const step of [0.001, 0.01, 0.1, 0.25, 1]) {
+      const L = limits(0, 0, step);
+      const snapped = snapToStep(7.777777, L, M);
+      const formatted = Number(snapped.toFixed(betDecimals(L, M)));
+      assert.equal(formatted, snapped, `step ${step}`);
+      assert.ok(onGrid(formatted, step), `step ${step} -> ${formatted}`);
+    }
   });
 });
 

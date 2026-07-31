@@ -23,7 +23,7 @@
     partialMultiplier,
     quantizeMultiplier,
   } from '../game/payout';
-  import { betWithinRange, snapBetToGrid } from '../game/betLimits';
+  import { betDecimals, betWithinRange, snapBetToGrid, snapToStep } from '../game/betLimits';
   // Sourced from the shared config rather than retyped, so a displayed RTP can
   // never drift from the one the math is actually built and reweighted to.
   import gameConfig from '../game/config';
@@ -335,13 +335,23 @@
   }
   const betDisplay = () => `$${`${betInput ?? ''}`.trim() || '0.00'}`;
 
-  // Tidy the amount to 2 decimals when the field loses focus (so it reads like
-  // "$1.00"); typing is left untouched while the field is focused.
+  // When the field loses focus, snap the amount onto the operator's step grid
+  // and tidy the decimals. Typing is left untouched while the field is focused.
+  //
+  // Snapping HERE rather than only at spin time is deliberate: the RGS rejects
+  // an off-grid bet, so the amount has to change either way - doing it now means
+  // the player sees what they will actually be staked while they can still
+  // change their mind, instead of watching 1.37 become 1.30 after they commit.
+  //
+  // Range is not clamped here, only the grid: pulling 0.50 up to a 1.00 minimum
+  // would stake them more than they asked. Out-of-range amounts stay visible and
+  // betIsValid() refuses them, which the spin tooltip explains.
   function formatBetInput() {
-    const v = Number(`${betInput ?? ''}`.trim());
-    if (`${betInput ?? ''}`.trim() !== '' && !isNaN(v) && v > 0) {
-      betInput = v.toFixed(2);
-    }
+    const raw = `${betInput ?? ''}`.trim();
+    const v = Number(raw);
+    if (raw === '' || isNaN(v) || v <= 0) return;
+    const snapped = snapToStep(v, stateConfig.betLimits, API_AMOUNT_MULTIPLIER);
+    betInput = snapped.toFixed(betDecimals(stateConfig.betLimits, API_AMOUNT_MULTIPLIER));
   }
 
   $effect(() => {

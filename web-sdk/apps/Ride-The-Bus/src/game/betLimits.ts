@@ -63,6 +63,43 @@ export function snapBetToGrid(
 }
 
 /**
+ * Snap onto the step grid WITHOUT clamping into range.
+ *
+ * Used when the bet field loses focus, so the player sees the amount they will
+ * actually be staked before committing to it. Range is deliberately left
+ * alone: clamping 0.50 up to a 1.00 minimum would silently stake them MORE
+ * than they typed. An out-of-range amount stays visible and betWithinRange
+ * refuses it, which the spin tooltip then explains.
+ */
+export function snapToStep(
+  value: number,
+  limits: BetLimits | null | undefined,
+  amountMultiplier: number,
+): number {
+  const step = limits?.stepBet || 0;
+  if (step <= 0 || !Number.isFinite(value) || value <= 0) return value;
+  const micro = Math.floor(Math.round(value * amountMultiplier) / step) * step;
+  return micro / amountMultiplier;
+}
+
+/**
+ * How many decimal places the operator's step needs. A 0.10 step wants 2, but
+ * a sub-cent step would be destroyed by blindly formatting to 2 - money here
+ * carries six decimal places, so that is a real possibility.
+ */
+export function betDecimals(
+  limits: BetLimits | null | undefined,
+  amountMultiplier: number,
+): number {
+  const step = limits?.stepBet || 0;
+  if (step <= 0) return 2;
+  const decimal = step / amountMultiplier;
+  const text = decimal.toString();
+  const dot = text.indexOf('.');
+  return Math.max(2, dot === -1 ? 0 : text.length - dot - 1);
+}
+
+/**
  * Whether `value` sits inside [minBet, maxBet]. Divisibility is deliberately
  * NOT part of this: an off-grid figure typed into the input is correctable by
  * snapBetToGrid at play time, so it should not disable the spin button.
