@@ -7,7 +7,10 @@
 	import GameLoader from '../components/GameLoader.svelte';
 	import { setContext } from '../game/context';
 
+	import { stateUrlDerived } from 'state-shared';
+
 	import messagesMap from '../i18n/messagesMap';
+	import { applyDirection } from '../i18n/direction';
 
 	type Props = { children: Snippet };
 
@@ -18,6 +21,13 @@
 	const loaderUrlStakeEngine = `${base}/stake-engine-loader.gif`;
 
 	setContext();
+
+	// Arabic is the one right-to-left language the RGS can request. Set on
+	// <html> so it also reaches the popups and the error dialog, which are
+	// position:fixed and so live outside any game container.
+	$effect(() => {
+		applyDirection(stateUrlDerived.lang());
+	});
 </script>
 
 <GlobalStyle>

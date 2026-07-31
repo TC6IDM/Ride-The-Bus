@@ -1,0 +1,141 @@
+// Turkish. Keys are the English source strings - see en.ts.
+export default {
+	HOME: 'ANA SAYFA',
+
+	Balance: 'Bakiye',
+	'Last Win': 'Son kazanç',
+	Bet: 'Bahis',
+
+	Color: 'Renk',
+	Higher: 'Yüksek',
+	Lower: 'Düşük',
+	Inside: 'İçinde',
+	Outside: 'Dışında',
+	Suit: 'Sembol',
+
+	Winning: 'Kazanç',
+	'Full Game Win!': 'Tam oyun kazancı!',
+	Banked: 'Güvence altında',
+	Busted: 'Kaybettiniz',
+	'Revealing…': 'Açılıyor…',
+
+	Spin: 'Başlat',
+	Stop: 'Durdur',
+	left: 'kaldı',
+	'Pick all 4 guesses': '4 tahminin tümünü seçin',
+	'Enter a valid bet': 'Geçerli bir bahis girin',
+	'Set rounds': 'Tur sayısını ayarla',
+	Start: 'Başlat',
+
+	'Bet Menu': 'Bahis menüsü',
+	'Quick Bets': 'Hızlı bahisler',
+
+	'Turbo Speed': 'Turbo hızı',
+	Normal: 'Normal',
+	Instant: 'Anında',
+	'Off — full animation': 'Kapalı — tam animasyon',
+	'% faster': ' % daha hızlı',
+
+	Autoplay: 'Otomatik oyun',
+	'Number of Spins': 'Tur sayısı',
+
+	Advanced: 'Gelişmiş',
+	'Stop on full game win': 'Tam oyun kazancında durdur',
+
+	'How to Play': 'Nasıl oynanır',
+	'Guess your way through four cards:': 'Dört kartı sırayla tahmin edin:',
+	'Colour — red or black for card 1.': 'Renk — 1. kart kırmızı mı siyah mı.',
+	'Higher / Lower — versus card 1 (or =).': 'Yüksek / Düşük — 1. karta göre (veya =).',
+	'Inside / Outside — between cards 1 & 2 (or =).': 'İçinde / Dışında — 1. ve 2. kart arasında (veya =).',
+	'Suit — the suit of card 4.': 'Sembol — 4. kartın sembolü.',
+	'Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.':
+		'Dördünü de seçin, bahsinizi belirleyin ve Başlat’a basın. Her doğru tahmin kazancınızı katlar; yanlış tahmin turu bitirir ama o ana kadar güvence altına aldığınız tutar sizde kalır. Dördünü de bilirseniz tam oyunu kazanırsınız.',
+	'Card order': 'Kart sıralaması',
+	'Ace is low and King is high — worth knowing, since plenty of card games play it the other way. Suit never affects rank; only the number counts for Higher / Lower and Inside / Outside.':
+		'As en düşük, Papaz en yüksektir — birçok kart oyununda tersi geçerli olduğu için bilmekte fayda var. Sembol sıralamayı hiçbir zaman etkilemez; Yüksek / Düşük ve İçinde / Dışında için yalnızca sayı önemlidir.',
+	Lowest: 'En düşük',
+	Highest: 'En yüksek',
+	'Payouts follow the odds': 'Ödemeler olasılığa göre belirlenir',
+	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
+		'Her doğru tahmin gerçek olasılığına göre ödenir; seçiminiz ne kadar olası değilse o kadar çok kazandırır — bu da açıkta duran kartlara bağlıdır.',
+	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
+		'Masada 3 varsa, kalan 51 karttan yalnızca 8’i daha düşük olduğu için Düşük yaklaşık 4,75× öder; 40’ı daha yüksek olduğu için Yüksek yalnızca 1,19× öder. O 3’ü 8 yapın, durum tersine döner: Düşük yaklaşık 1,57×’e iner, Yüksek 2,08×’e çıkar. Eşit her zaman en zor olanıdır, yaklaşık 12×.',
+	'If you guess wrong': 'Yanlış tahmin ederseniz',
+	'Card 1 — the round pays nothing.': '1. kart — tur hiçbir ödeme yapmaz.',
+	'Card 2 — you get 0.5× your bet back.': '2. kart — bahsinizin 0,5 katını geri alırsınız.',
+	'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.':
+		'3. veya 4. kart — o ana kadar biriktirdiğiniz çarpanın %30’u sizde kalır; bu 0,6× ile 129× arasında değişir.',
+	'Full game wins': 'Tam oyun kazançları',
+	'Guess all four cards right and the payout depends on how hard your picks were:':
+		'Dört kartı da doğru bilirseniz ödeme, seçimlerinizin ne kadar zor olduğuna bağlıdır:',
+	'No Equal picks — averages 17.3×, up to 317.4×.':
+		'Eşit seçilmediğinde — ortalama 17,3×, en fazla 317,4×.',
+	'One Equal pick — averages 67.5×, up to 381.9×.': 'Bir Eşit ile — ortalama 67,5×, en fazla 381,9×.',
+	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
+		'İki Eşit ile — ortalama 1329,2×, en fazla 1354,2×; bu oyunun ödeyebileceği en yüksek tutar.',
+	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
+		'Eşit en nadir tahmindir; bu nedenle ona dayanan turlar en büyük kazançları taşır ve tutturması en zor olanlardır.',
+	'Speed and autoplay': 'Hız ve otomatik oyun',
+	'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.':
+		'Turbo (şimşek düğmesi) Normal’den Anında’ya kadar ayarlanır ve yalnızca kartların açılma hızını değiştirir. Kartları, olasılıkları veya ödemeyi asla değiştirmez.',
+	'Autoplay (the circular arrows) replays the same four guesses for a set number of rounds, or unlimited. The round counter sits on the button while it runs — press the red square to stop, and the round already in play finishes first.':
+		'Otomatik oyun (dairesel oklar) aynı dört tahmini belirlenen tur sayısı kadar veya sınırsız tekrarlar. Çalışırken tur sayacı düğmenin üzerinde görünür — durdurmak için kırmızı kareye basın; devam eden tur önce tamamlanır.',
+	'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.':
+		'Tam oyun kazancında durdur (sürgü düğmesi), bir turda dört kart da tutturulduğu anda otomatik oyunu sonlandırır. Yalnızca çalışmayı durdurur; bahsiniz değişmez.',
+	'Tap the spacebar to play one round, or hold it to keep spinning until you let go.':
+		'Bir tur oynamak için boşluk tuşuna basın, bırakana kadar oynamaya devam etmek için basılı tutun.',
+
+	'Pick a color': 'Bir renk seçin',
+	'Higher, lower, or equal': 'Yüksek, düşük veya eşit',
+	'Inside, outside, or equal': 'İçinde, dışında veya eşit',
+	'Pick a suit': 'Bir sembol seçin',
+	Red: 'Kırmızı',
+	Black: 'Siyah',
+	Equal: 'Eşit',
+	Heart: 'Kupa',
+	Diamond: 'Karo',
+	Club: 'Sinek',
+	Spade: 'Maça',
+	Mute: 'Sesi kapat',
+	Unmute: 'Sesi aç',
+	'How to play': 'Nasıl oynanır',
+	'Choose bet amount': 'Bahis tutarını seç',
+	'Custom bet amount': 'Özel bahis tutarı',
+	'Increase bet': 'Bahsi artır',
+	'Decrease bet': 'Bahsi azalt',
+	'Turbo speed': 'Turbo hızı',
+	'Autoplay settings': 'Otomatik oyun ayarları',
+	'Advanced settings': 'Gelişmiş ayarlar',
+	'Stop autoplay': 'Otomatik oyunu durdur',
+	'Spins must be %s seconds apart': 'Turlar arasında %s saniye olmalıdır',
+	'Round in progress': 'Tur devam ediyor',
+	'Replay is view-only': 'Tekrar yalnızca görüntülemeliktir',
+	'No active game session': 'Etkin oyun oturumu yok',
+	Error: 'Hata',
+	Reload: 'Yeniden yükle',
+	'Something went wrong. Please try again.': 'Bir sorun oluştu. Lütfen tekrar deneyin.',
+	'That bet was rejected. Please adjust the amount and try again.':
+		'Bu bahis reddedildi. Lütfen tutarı ayarlayıp tekrar deneyin.',
+	'Not enough balance for that bet.': 'Bu bahis için yeterli bakiye yok.',
+	'Your session has expired. Please reload the game.':
+		'Oturumunuzun süresi doldu. Lütfen oyunu yeniden yükleyin.',
+	'A gambling limit on your account has been reached.': 'Hesabınızdaki bir oyun limitine ulaşıldı.',
+	'This game is not available from your location.': 'Bu oyun bulunduğunuz konumda kullanılamıyor.',
+	'The game server had a problem. Please try again shortly.':
+		'Oyun sunucusunda bir sorun oluştu. Lütfen kısa süre sonra tekrar deneyin.',
+	'The game is under maintenance. Please try again shortly.':
+		'Oyun bakımda. Lütfen kısa süre sonra tekrar deneyin.',
+	'Skip the reveal': 'Açılışı atla',
+	'Session information': 'Oturum bilgileri',
+	'Net Position': 'Net durum',
+	RTP: 'RTP',
+	Session: 'Oturum',
+	Fast: 'Hızlı',
+	'Number of spins': 'Tur sayısı',
+	'Unlimited spins': 'Sınırsız tur',
+	'More spins': 'Daha fazla tur',
+	'Fewer spins': 'Daha az tur',
+	'Stop autoplay on a full game win': 'Tam oyun kazancında otomatik oyunu durdur',
+	'Close menu': 'Menüyü kapat',
+	Close: 'Kapat',
+};

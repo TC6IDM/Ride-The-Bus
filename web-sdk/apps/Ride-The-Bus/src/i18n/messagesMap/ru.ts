@@ -1,0 +1,144 @@
+// Russian. Keys are the English source strings - see en.ts.
+export default {
+	HOME: 'ГЛАВНАЯ',
+
+	Balance: 'Баланс',
+	'Last Win': 'Последний выигрыш',
+	Bet: 'Ставка',
+
+	Color: 'Цвет',
+	Higher: 'Больше',
+	Lower: 'Меньше',
+	Inside: 'Внутри',
+	Outside: 'Снаружи',
+	Suit: 'Масть',
+
+	Winning: 'Выигрыш',
+	'Full Game Win!': 'Полная победа!',
+	Banked: 'Сохранено',
+	Busted: 'Проигрыш',
+	'Revealing…': 'Открываем…',
+
+	Spin: 'Играть',
+	Stop: 'Стоп',
+	left: 'осталось',
+	'Pick all 4 guesses': 'Выберите все 4 прогноза',
+	'Enter a valid bet': 'Введите корректную ставку',
+	'Set rounds': 'Задать раунды',
+	Start: 'Старт',
+
+	'Bet Menu': 'Меню ставок',
+	'Quick Bets': 'Быстрые ставки',
+
+	'Turbo Speed': 'Скорость турбо',
+	Normal: 'Обычная',
+	Instant: 'Мгновенная',
+	'Off — full animation': 'Выкл. — полная анимация',
+	'% faster': ' % быстрее',
+
+	Autoplay: 'Автоигра',
+	'Number of Spins': 'Количество раундов',
+
+	Advanced: 'Дополнительно',
+	'Stop on full game win': 'Остановить при полной победе',
+
+	'How to Play': 'Как играть',
+	'Guess your way through four cards:': 'Угадайте четыре карты подряд:',
+	'Colour — red or black for card 1.': 'Цвет — красная или чёрная для карты 1.',
+	'Higher / Lower — versus card 1 (or =).': 'Больше / Меньше — относительно карты 1 (или =).',
+	'Inside / Outside — between cards 1 & 2 (or =).':
+		'Внутри / Снаружи — между картами 1 и 2 (или =).',
+	'Suit — the suit of card 4.': 'Масть — масть карты 4.',
+	'Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.':
+		'Выберите все четыре, задайте ставку и нажмите «Играть». Каждый верный прогноз умножает выигрыш; неверный завершает раунд, но вы сохраняете всё накопленное. Угадайте все четыре, чтобы выиграть игру целиком.',
+	'Card order': 'Порядок карт',
+	'Ace is low and King is high — worth knowing, since plenty of card games play it the other way. Suit never affects rank; only the number counts for Higher / Lower and Inside / Outside.':
+		'Туз — самая младшая карта, король — самая старшая. Это стоит знать: во многих карточных играх наоборот. Масть никогда не влияет на старшинство; для «Больше / Меньше» и «Внутри / Снаружи» важно только значение.',
+	Lowest: 'Младшая',
+	Highest: 'Старшая',
+	'Payouts follow the odds': 'Выплаты зависят от вероятности',
+	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
+		'Каждый верный прогноз оплачивается по его реальной вероятности: чем менее вероятен ваш выбор, тем больше выплата — и это зависит от уже открытых карт.',
+	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
+		'Если на столе тройка, «Меньше» платит около 4,75×, потому что лишь 8 из 51 оставшейся карты младше, а «Больше» — около 1,19×, потому что таких карт 40. Замените тройку на восьмёрку, и всё меняется: «Меньше» падает примерно до 1,57×, а «Больше» растёт до 2,08×. «Равно» всегда самый маловероятный вариант — около 12×.',
+	'If you guess wrong': 'Если вы ошиблись',
+	'Card 1 — the round pays nothing.': 'Карта 1 — раунд не приносит выплаты.',
+	'Card 2 — you get 0.5× your bet back.': 'Карта 2 — вы получаете обратно 0,5× ставки.',
+	'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.':
+		'Карта 3 или 4 — вы сохраняете 30 % накопленного множителя, то есть от 0,6× до 129×.',
+	'Full game wins': 'Полные победы',
+	'Guess all four cards right and the payout depends on how hard your picks were:':
+		'Если угаданы все четыре карты, выплата зависит от того, насколько сложным был ваш выбор:',
+	'No Equal picks — averages 17.3×, up to 317.4×.':
+		'Без выбора «Равно» — в среднем 17,3×, до 317,4×.',
+	'One Equal pick — averages 67.5×, up to 381.9×.': 'Одно «Равно» — в среднем 67,5×, до 381,9×.',
+	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
+		'Два «Равно» — в среднем 1329,2×, до 1354,2×: максимум для этой игры.',
+	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
+		'«Равно» — самый редкий прогноз, поэтому построенные на нём раунды дают наибольшие выигрыши и труднее всего достижимы.',
+	'Speed and autoplay': 'Скорость и автоигра',
+	'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.':
+		'Турбо (кнопка с молнией) меняется от обычной скорости до мгновенной и влияет только на скорость переворота карт. Карты, вероятности и выплата остаются прежними.',
+	'Autoplay (the circular arrows) replays the same four guesses for a set number of rounds, or unlimited. The round counter sits on the button while it runs — press the red square to stop, and the round already in play finishes first.':
+		'Автоигра (круговые стрелки) повторяет те же четыре прогноза заданное число раундов или без ограничения. Счётчик раундов отображается на кнопке — нажмите красный квадрат, чтобы остановить; текущий раунд сначала завершится.',
+	'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.':
+		'«Остановить при полной победе» (кнопка с ползунками) завершает автоигру, как только в раунде совпадут все четыре карты. Останавливается только серия; ставка не меняется.',
+	'Tap the spacebar to play one round, or hold it to keep spinning until you let go.':
+		'Нажмите пробел для одного раунда или удерживайте его, чтобы игра продолжалась, пока не отпустите.',
+
+	'Pick a color': 'Выберите цвет',
+	'Higher, lower, or equal': 'Больше, меньше или равно',
+	'Inside, outside, or equal': 'Внутри, снаружи или равно',
+	'Pick a suit': 'Выберите масть',
+	Red: 'Красный',
+	Black: 'Чёрный',
+	Equal: 'Равно',
+	Heart: 'Червы',
+	Diamond: 'Бубны',
+	Club: 'Трефы',
+	Spade: 'Пики',
+	Mute: 'Выключить звук',
+	Unmute: 'Включить звук',
+	'How to play': 'Как играть',
+	'Choose bet amount': 'Выбрать размер ставки',
+	'Custom bet amount': 'Своя ставка',
+	'Increase bet': 'Увеличить ставку',
+	'Decrease bet': 'Уменьшить ставку',
+	'Turbo speed': 'Скорость турбо',
+	'Autoplay settings': 'Настройки автоигры',
+	'Advanced settings': 'Дополнительные настройки',
+	'Stop autoplay': 'Остановить автоигру',
+	'Spins must be %s seconds apart': 'Между раундами должно пройти %s с',
+	'Round in progress': 'Раунд идёт',
+	'Replay is view-only': 'Повтор только для просмотра',
+	'No active game session': 'Нет активной игровой сессии',
+	Error: 'Ошибка',
+	Reload: 'Перезагрузить',
+	'Something went wrong. Please try again.': 'Что-то пошло не так. Попробуйте ещё раз.',
+	'That bet was rejected. Please adjust the amount and try again.':
+		'Ставка отклонена. Измените сумму и попробуйте ещё раз.',
+	'Not enough balance for that bet.': 'Недостаточно средств для этой ставки.',
+	'Your session has expired. Please reload the game.':
+		'Сессия истекла. Перезагрузите игру.',
+	'A gambling limit on your account has been reached.':
+		'Достигнут игровой лимит вашего аккаунта.',
+	'This game is not available from your location.':
+		'Эта игра недоступна в вашем регионе.',
+	'The game server had a problem. Please try again shortly.':
+		'На игровом сервере произошла ошибка. Попробуйте немного позже.',
+	'The game is under maintenance. Please try again shortly.':
+		'Игра на техническом обслуживании. Попробуйте немного позже.',
+	'Skip the reveal': 'Пропустить открытие',
+	'Session information': 'Сведения о сессии',
+	'Net Position': 'Чистый результат',
+	RTP: 'RTP',
+	Session: 'Сессия',
+	Fast: 'Быстро',
+	'Number of spins': 'Количество раундов',
+	'Unlimited spins': 'Без ограничения раундов',
+	'More spins': 'Больше раундов',
+	'Fewer spins': 'Меньше раундов',
+	'Stop autoplay on a full game win': 'Останавливать автоигру при полной победе',
+	'Close menu': 'Закрыть меню',
+	Close: 'Закрыть',
+};
