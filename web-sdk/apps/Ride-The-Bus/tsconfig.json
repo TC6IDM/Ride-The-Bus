@@ -1,3 +1,11 @@
 {
-	"extends": "./.svelte-kit/tsconfig.json"
+	"extends": "./.svelte-kit/tsconfig.json",
+	"compilerOptions": {
+		// The unit tests run under `node --test`, whose ESM resolver requires the
+		// explicit `.ts` extension on relative imports. TypeScript rejects that by
+		// default, so without this the two tools disagree and every test file
+		// reports errors that are not real. Type-checking only - Vite never
+		// bundles the test files.
+		"allowImportingTsExtensions": true
+	}
 }

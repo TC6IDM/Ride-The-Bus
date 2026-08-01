@@ -1,4 +1,4 @@
-import { mergeMessagesMaps } from 'utils-shared/i18n';
+import { mergeMessagesMaps, type MessagesMap } from 'utils-shared/i18n';
 import { messagesMap as messagesMapUiPixi } from 'components-ui-pixi';
 import { messagesMap as messagesMapUiHtml } from 'components-ui-html';
 
@@ -45,6 +45,25 @@ const messagesMapGame = {
 	zh,
 };
 
-const messagesMap = mergeMessagesMaps([messagesMapGame, messagesMapUiPixi, messagesMapUiHtml]);
+/**
+ * The two SDK packages ship only `en` and `zh`, but MessagesMap is
+ * Record<Language, Messages> over all sixteen languages - so their own maps have
+ * never satisfied their own type, and mergeMessagesMaps rejects them.
+ *
+ * Widened rather than "fixed": the shortfall is real but harmless here, because
+ * mergeMessagesMaps is a deep merge and any key those packages don't translate
+ * falls back to the key, which is the English text. This game also replaced the
+ * pixi UI, so most of those strings belong to components it never renders.
+ *
+ * Typed through Partial<MessagesMap> so a genuinely wrong shape is still caught
+ * - only the missing-languages gap is waved through.
+ */
+const partialMap = (map: Partial<MessagesMap>) => map as MessagesMap;
+
+const messagesMap = mergeMessagesMaps([
+	messagesMapGame,
+	partialMap(messagesMapUiPixi),
+	partialMap(messagesMapUiHtml),
+]);
 
 export default messagesMap;
