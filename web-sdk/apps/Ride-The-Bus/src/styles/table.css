@@ -1,17 +1,31 @@
-/* The backdrop, drawn in CSS rather than shipped as an image.
+/* The backdrop, drawn entirely in CSS rather than shipped as a bitmap.
  *
- * This replaces a 1.9 MB backdrop.png. Beyond the weight, it stays crisp at any
- * resolution and - because the props are positioned, not baked into a bitmap -
- * nothing gets cropped away when the viewport aspect changes, which was the
- * awkward part of `background: center/cover`.
+ * Every number here was measured off static/backdrop.png rather than eyeballed
+ * (scratch scripts sampled the pixels: colours, the table's bounding ellipse,
+ * the rim profile, and each prop's bounding box). The reference is far darker
+ * and far less saturated than it looks - the felt is #0D381E, not "green", and
+ * the wood is #653008, not "brown".
  *
- * Everything scales from --ui (see base.css), so the table and its props grow
- * and shrink with the cards.
+ * Reference geometry, in the reference's own pixels (1535x1024):
+ *   top face ellipse  x 102..1415, y 70..958   -> 1313 x 888, aspect 1.479
+ *   apron below it    y 958..1001              -> 4.8% of the face height
+ *   bullnose rim      a ~10px lit band hugging the whole face perimeter
  *
- * Layout rule: the middle of the screen belongs to the dealt cards, the win
- * readout and the guess squares, so every prop is pinned out toward the table's
- * rim. The deck sits upper-left - it is deliberately part of the fiction (you
- * are drawing from a real deck) but must not sit behind the dealt cards.
+ * What makes it read as 3D - the flat first attempt had none of it:
+ *   1. the table has a real EDGE: a bullnose rim catching the light all the way
+ *      round, and below it an apron you see the thickness of on the near side;
+ *   2. chips are cylinders, and their rim dashes are laid out by projecting
+ *      evenly-spaced points round a circle, so they bunch up toward the
+ *      silhouette instead of marching across at even width;
+ *   3. two-part shadows - a tight dark contact patch plus a wide soft one -
+ *      because a single blurred blob reads as a sticker, not an object;
+ *   4. one consistent light from the upper right, so every shadow falls to the
+ *      lower left and every highlight sits top-right.
+ *
+ * Prop sizes are container-query units on .table-surface (1cqw = 1% of the
+ * table's width), so they are literally the reference's percentages and stay
+ * proportional to the table at any viewport - they no longer drift against the
+ * UI's --ui scale.
  */
 
 .scene {
@@ -20,192 +34,835 @@
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
+  /* The floor the table stands on. Deliberately plain and dark: the earlier
+     version carried a 1px felt weave which, at any scale but 1:1, moired into
+     visible banding and was the single noisiest thing on screen. All that is
+     left is a deep vignette, which is what actually makes the table read as
+     lit. Any weave belongs on a felt playing surface, and this is a room. */
+  background:
+    radial-gradient(ellipse 88% 80% at 50% 46%, #113724 0%, #0e2e1e 42%, #082014 76%, #04120b 100%),
+    #0a2417;
 }
 
 /* ---- the table ---------------------------------------------------------- */
 
-.table-top {
+.table {
   position: absolute;
   left: 50%;
-  top: 48%;
+  top: 50%;
   transform: translate(-50%, -50%);
-  width: min(104vw, 158vh);
-  aspect-ratio: 1.48 / 1;
-  border-radius: 50%;
-  background:
-    /* soft pool of light toward the top, falling off to the rim */
-    radial-gradient(ellipse at 50% 32%, rgba(255, 226, 175, 0.16), transparent 62%),
-    radial-gradient(ellipse at 50% 40%, #a4703f 0%, #8d5c31 48%, #6d4322 82%, #5b3619 100%);
-  box-shadow:
-    /* the table edge, then the shadow it casts on the felt */
-    inset 0 0 0 calc(var(--ui) * 0.9) #6b4021,
-    inset 0 calc(var(--ui) * 0.5) calc(var(--ui) * 1.6) rgba(255, 220, 170, 0.1),
-    0 calc(var(--ui) * 1.6) calc(var(--ui) * 3.5) rgba(0, 0, 0, 0.45);
+  /* The camera, expressed once.
+   *
+   * The table is a circle, and it draws as an ellipse 1.479 times as wide as it
+   * is tall - so the view sits 42.5deg above the table plane, and EVERY circle
+   * lying flat in this scene squashes to 1 / 1.479 = 0.676 of its width. That
+   * one number governs the cup's mouth, its base, and every chip face. Getting
+   * it wrong is what made props look photographed from a different angle than
+   * the table they stand on: the cup was drawn at 0.249, which is a view from
+   * 14deg - almost side-on - while the table behind it was a near-plan view.
+   *
+   * The matching figure for anything standing UP is 0.737: a vertical length
+   * projects to cos(42.5deg) of itself. */
+  --flat: 0.676;
+  --upright: 0.737;
+  /* The reference frame is 3:2 and the game's is 16:9, so the table cannot fill
+     both axes the way it does there. Height is the one that sells the shot, so
+     it is matched (130vh / 1.479 = 88vh, against the reference's 86.7%) and the
+     extra width shows as more felt down the sides. */
+  width: min(96vw, 130vh);
+  aspect-ratio: 1.479 / 1;
 }
 
-/* faint wood grain */
-.table-top::after {
+/* The apron: the same ellipse pushed down, in much darker wood, so the crescent
+   peeking out below the surface reads as the table's thickness. Measured at
+   4.8% of the face height, running #3F1E02 at the top to #371800 at the
+   bottom. The drop shadow underneath is what sits it on the felt. */
+.table-edge {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  transform: translateY(4.8%);
+  background: linear-gradient(180deg, #46220a 0%, #401d04 26%, #3a1a01 58%, #331600 100%);
+  box-shadow:
+    0 1.4% 1.6% rgba(0, 0, 0, 0.5),
+    0 3.4% 5% rgba(0, 0, 0, 0.42);
+}
+
+/* The top face. Sampled across the middle: #5D2D09 at the left rim, peaking
+   #70390A around 55% across, back to #5A2B08 at the right rim - a broad soft
+   pool of light just right of centre, not a hotspot. */
+.table-surface {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  /* 1cqw = 1% of the table's width, for every prop below. */
+  container-type: size;
+  background:
+    radial-gradient(ellipse 62% 58% at 53% 45%, rgba(255, 178, 92, 0.045), transparent 76%),
+    radial-gradient(
+      ellipse 76% 74% at 51% 46%,
+      #6a3307 0%,
+      #653007 32%,
+      #5c2b06 64%,
+      #542706 86%,
+      #4a2104 100%
+    );
+  /* Ambient occlusion where the face turns over into the rim - it is what stops
+     the rim reading as a painted-on outline. Lives on the element rather than a
+     pseudo-element so it paints below every child (an ::after sits ABOVE them
+     in DOM order, and was quietly wiping out the lit rim beneath it). */
+  box-shadow:
+    inset 0 0 3cqw rgba(30, 12, 0, 0.28),
+    inset 0 -0.6cqw 1.4cqw rgba(0, 0, 0, 0.2);
+}
+
+/* The surface of the wood, in two parts.
+ *
+ * A round table top is not one slab, it is boards glued edge to edge, and the
+ * seams are the thing that makes it read as furniture rather than as a brown
+ * ellipse. Seven of them across the table, each a hairline of shadow with a lit
+ * arris above it - low contrast on purpose.
+ *
+ * Over that, one broad satin sheen raked across the top, which is what a
+ * varnished table actually looks like under a light.
+ *
+ * Replaces three overlapping streak patterns at 0.42 opacity. Those were meant
+ * to read as grain and instead read as noise - the busiest thing in the scene
+ * once the props were thinned out.
+ */
+.table-surface::before {
   content: '';
   position: absolute;
-  inset: calc(var(--ui) * 0.9);
+  inset: 0;
   border-radius: 50%;
-  opacity: 0.35;
-  background: repeating-linear-gradient(
-    92deg,
-    rgba(255, 255, 255, 0.035) 0 calc(var(--ui) * 0.2),
-    transparent calc(var(--ui) * 0.2) calc(var(--ui) * 0.75)
+  background-image:
+    linear-gradient(
+      104deg,
+      transparent 20%,
+      rgba(255, 228, 194, 0.085) 39%,
+      rgba(255, 228, 194, 0.03) 50%,
+      transparent 64%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 10.6cqw,
+      rgba(46, 20, 0, 0.22) 10.6cqw 10.75cqw,
+      rgba(255, 210, 165, 0.04) 10.75cqw 10.95cqw,
+      transparent 10.95cqw 11.3cqw
+    ),
+    /* the faintest long grain, following the boards */
+    repeating-linear-gradient(89.4deg, rgba(255, 208, 160, 0.016) 0 0.1cqw, transparent 0.1cqw 1.6cqw);
+}
+
+/* The bullnose rim. A ring hugging the face's perimeter, filled with a gradient
+   that is brightest along the near edge (#834817 at the bottom of the
+   reference, #7F4817 at the left) and only just lit across the far edge. The
+   radial-gradient mask is `closest-side`, which makes its ellipse exactly the
+   one border-radius:50% draws, so the ring's thickness stays even all the way
+   round however the table is scaled. */
+.table-rim {
+  position: absolute;
+  z-index: 0; /* under the props, above the grain */
+  inset: 0;
+  border-radius: 50%;
+  /* Positions map round the ring, not down a wall: 0% is the far edge, 50% the
+     left and right extremes, 100% the near edge. Sampled there: #69320E far,
+     #7F4817 at the sides, #753C10 near - lit almost the whole way round, with
+     only a thin shadowed step just inboard of the far edge. */
+  background: linear-gradient(
+    180deg,
+    #6c360e 0%,
+    #55290a 3%,
+    #6b370f 26%,
+    #7d4415 50%,
+    #77400f 74%,
+    #7a4114 96%,
+    #6b360d 100%
   );
+  -webkit-mask-image: radial-gradient(closest-side, transparent 97.4%, #000 97.9%);
+  mask-image: radial-gradient(closest-side, transparent 97.4%, #000 97.9%);
 }
 
 /* ---- props -------------------------------------------------------------- */
+/* Positions are percentages of the TABLE's box, measured off the reference, so
+   they stay on the wood at any size. */
 
 .prop {
   position: absolute;
+  z-index: 1; /* above the rim ring and the perimeter occlusion */
   transform: translate(-50%, -50%);
 }
 
-/* Face-down deck, upper-left of the table. */
-.deck {
-  width: calc(var(--ui) * 5.4);
-  aspect-ratio: 5 / 7;
-  border-radius: calc(var(--ui) * 0.55);
-  /* Same crosshatch as the dealt cards (cards.css .card-back), just at prop
-     scale - it is meant to read as the deck those cards come from. */
-  background:
-    repeating-linear-gradient(
-      45deg,
-      rgba(255, 255, 255, 0.16) 0 calc(var(--ui) * 0.16),
-      transparent calc(var(--ui) * 0.16) calc(var(--ui) * 0.46)
-    ),
-    repeating-linear-gradient(
-      -45deg,
-      rgba(255, 255, 255, 0.16) 0 calc(var(--ui) * 0.16),
-      transparent calc(var(--ui) * 0.16) calc(var(--ui) * 0.46)
-    ),
-    linear-gradient(160deg, #c8392f 0%, #a82521 55%, #8d1a17 100%);
-  box-shadow:
-    inset 0 0 0 calc(var(--ui) * 0.22) #f4efe6,
-    /* the stack underneath */ calc(var(--ui) * 0.16) calc(var(--ui) * 0.16) 0 #efe9dd,
-    calc(var(--ui) * 0.32) calc(var(--ui) * 0.32) 0 #e2dccf,
-    calc(var(--ui) * 0.5) calc(var(--ui) * 0.55) calc(var(--ui) * 0.9) rgba(0, 0, 0, 0.4);
+/* Shared contact shadow. Two layers on every prop: a small dark patch right at
+   the contact point and a wide soft one further out. One blurred ellipse alone
+   made every prop look pasted on. */
+.chip-shadow,
+.cup-shadow,
+.deck-shadow {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(26, 9, 0, 0.42);
+  filter: blur(0.45cqw);
 }
 
-/* Red party cup: a trapezoid body with a rim and a drink inside. */
-.cup {
-  width: calc(var(--ui) * 4.2);
-  height: calc(var(--ui) * 5);
-  filter: drop-shadow(calc(var(--ui) * 0.3) calc(var(--ui) * 0.5) calc(var(--ui) * 0.7) rgba(0, 0, 0, 0.45));
+.chip-shadow::after,
+.cup-shadow::after,
+.deck-shadow::after {
+  content: '';
+  position: absolute;
+  /* Offset left, because the light is up and to the right. */
+  inset: -50% -6% -50% -34%;
+  border-radius: 50%;
+  background: rgba(24, 8, 0, 0.17);
+  filter: blur(1.6cqw);
 }
+
+/* ---- chips (cylinders) --------------------------------------------------- */
+
+.chip {
+  /* A chip is 7.5% of the table's width and one is 0.15 of that thick, both
+     measured off the reference. The face uses the scene's own --flat ratio
+     rather than the 0.58 measured off the photograph, so that a chip and the
+     table it lies on are seen from the same place. */
+  /* 5% of the table's width, down from the 7.5% measured off the reference
+     render: against a party cup that is 8.8% wide, a chip at 7.5% was nearly
+     the same size as the cup, which is not how the two objects compare. */
+  --chip-w: 5cqw;
+  --chip-h: calc(var(--chip-w) * var(--flat));
+  --chip-lip: calc(var(--chip-w) * 0.13);
+  --side: calc(var(--chip-lip) * var(--stack, 1));
+  width: var(--chip-w);
+  height: calc(var(--chip-h) + var(--side));
+  /* Anchored on the centre of its BOTTOM face - the point it actually touches
+     the table. Centre-anchoring made a five-high stack sit in a different place
+     from a single chip at the same coordinates. */
+  transform: translate(-50%, calc(-100% + var(--chip-h) / 2));
+}
+
+.chip-shadow {
+  left: -13%;
+  bottom: calc(var(--chip-h) * -0.14);
+  width: 110%;
+  height: calc(var(--chip-h) * 0.82);
+}
+
+/* One chip of the stack, counted from the bottom (--i = 0 is the lowest). Its
+   silhouette is the cylinder in one shape - horizontal radius half the width,
+   vertical radius half the foreshortened face, so the top and bottom are
+   ellipse caps and the sides are straight. Mixing % and length in border-radius
+   is what keeps that exact at any size. overflow:hidden then clips the dashes
+   to the silhouette; they were previously a rectangle under a soft mask, which
+   showed as a hard-edged box.
+   Each disc is opaque and sits one thickness above the one below, so the seam
+   you see between them is the upper disc's own front arc. The previous version
+   ruled the seams across a single tall wall with a repeating-linear-gradient,
+   which drew them dead straight - a circle seen at this angle is an ellipse,
+   and the flat lines were what made a stack look like a striped tin. */
+.chip-disc {
+  position: absolute;
+  z-index: calc(var(--i) + 1);
+  left: 0;
+  right: 0;
+  bottom: calc(var(--i) * var(--chip-lip));
+  height: calc(var(--chip-h) + var(--chip-lip));
+  border-radius: 50% / calc(var(--chip-h) / 2);
+  overflow: hidden;
+  background: var(--chip-dark);
+  /* The join to the chip below: a hairline right on the disc's own front arc,
+     so every chip in a pile is countable, over the softer shadow it drops. */
+  box-shadow:
+    inset 0 -0.05cqw 0 rgba(0, 0, 0, 0.5),
+    inset 0 -0.16cqw 0.18cqw rgba(0, 0, 0, 0.3);
+}
+
+/* The wall's surface: the cream rim dashes wrapping round it.
+   The dash positions are not evenly spaced - they are twelve points evenly
+   spaced round the cylinder, projected onto the screen (x = 50% + 50%*sin) and
+   given a width of cos(angle). That bunching toward the left and right
+   silhouettes is the single strongest cue that the wall is curved; a plain
+   repeating-linear-gradient read as a flat striped ribbon. Because every disc
+   carries the same pattern and they only ever differ vertically, the dashes
+   line up down a stack on their own. */
+.chip-disc::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  /* Starts at the face's equator - anything above is hidden by the top face. */
+  top: calc(var(--chip-h) / 2);
+  right: 0;
+  bottom: 0;
+  background:
+    /* Cylindrical shading, lit from the upper right. Stacked as a background
+       layer rather than its own positioned pseudo-element: as a ::before it
+       painted over the top face and left every chip looking muddy. */
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.86) 0%,
+      rgba(0, 0, 0, 0.62) 5%,
+      rgba(0, 0, 0, 0.34) 14%,
+      rgba(0, 0, 0, 0.1) 30%,
+      rgba(255, 255, 255, 0.02) 46%,
+      rgba(255, 255, 255, 0.13) 62%,
+      rgba(255, 255, 255, 0.02) 76%,
+      rgba(0, 0, 0, 0.3) 88%,
+      rgba(0, 0, 0, 0.58) 95%,
+      rgba(0, 0, 0, 0.8) 100%
+    ),
+    /* The edge spots, projected round the cylinder. EIGHT of them, 22.5deg
+       wide on 45deg centres - the same eight the top face carries, so a spot
+       runs over the rim and down the wall as one mark instead of the face and
+       the wall each having their own count (six against ten) and never meeting.
+       Each edge is x = 50% + 50%*sin(a) for a = centre +/- 11.25deg, which is
+       why the spots bunch toward the silhouettes. */
+    linear-gradient(
+      90deg,
+      var(--chip-cream) 0 0.96%,
+      var(--chip-dark) 0.96% 8.42%,
+      var(--chip-cream) 8.42% 22.22%,
+      var(--chip-dark) 22.22% 40.24%,
+      var(--chip-cream) 40.24% 59.76%,
+      var(--chip-dark) 59.76% 77.78%,
+      var(--chip-cream) 77.78% 91.58%,
+      var(--chip-dark) 91.58% 99.04%,
+      var(--chip-cream) 99.04% 100%
+    );
+}
+
+/* The top face, read from the reference straight across a chip: cream band,
+   a hard dark ring, then a flat coloured centre - the centre carries almost no
+   highlight of its own, all the modelling is in the cream. */
+.chip-top {
+  position: absolute;
+  /* Above every disc in the stack. Each disc takes z-index --i + 1, so a fixed
+     3 here left the top of a five-high stack painting over its own face. */
+  z-index: 20;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: var(--chip-h);
+  border-radius: 50%;
+  background:
+    linear-gradient(102deg, rgba(0, 0, 0, 0.2) 0%, transparent 34%, rgba(255, 255, 255, 0.12) 100%),
+    radial-gradient(closest-side, transparent 0 40%, rgba(0, 0, 0, 0.16) 40% 43%, transparent 43%),
+    /* The dark separation line sits INSIDE the coloured inlay rather than
+       straddling it and the cream spots - across the cream it turned grey and
+       read as a chrome ring. */
+    radial-gradient(closest-side, transparent 0 64%, rgba(0, 0, 0, 0.42) 64% 68%, transparent 68%),
+    radial-gradient(closest-side, var(--chip-face) 0 71%, transparent 71%),
+    /* The eight edge spots, seen from above. NOT a repeating-conic-gradient:
+       its sectors are evenly spaced in SCREEN angle, and on a squashed ellipse
+       that is not the same as evenly spaced round the chip - so the spots on
+       the face never landed on the ones running down the wall. These sixteen
+       stops are the same eight 22.5deg spots as .chip-disc::after, converted
+       through tan(screen) = tan(round-the-chip) / --flat, which is why the
+       numbers look irregular. Sector centres: 0, 55.9, 90, 124.1, 180, 235.9,
+       270 and 304.1 degrees. */
+    conic-gradient(
+      var(--chip-cream) 0deg 16.4deg,
+      var(--chip) 16.4deg 44.7deg,
+      var(--chip-cream) 44.7deg 65.7deg,
+      var(--chip) 65.7deg 82.3deg,
+      var(--chip-cream) 82.3deg 97.7deg,
+      var(--chip) 97.7deg 114.3deg,
+      var(--chip-cream) 114.3deg 135.3deg,
+      var(--chip) 135.3deg 163.6deg,
+      var(--chip-cream) 163.6deg 196.4deg,
+      var(--chip) 196.4deg 224.7deg,
+      var(--chip-cream) 224.7deg 245.7deg,
+      var(--chip) 245.7deg 262.3deg,
+      var(--chip-cream) 262.3deg 277.7deg,
+      var(--chip) 277.7deg 294.3deg,
+      var(--chip-cream) 294.3deg 315.3deg,
+      var(--chip) 315.3deg 343.6deg,
+      var(--chip-cream) 343.6deg 360deg
+    );
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+/* Three denominations. Red is the brand red the cards and the logo use, green
+   answers the felt, and black is the house colour - together they are the
+   logo's own palette rather than the photograph's red-and-green pair. The
+   spots are cooled from the render's warm #DBC4B1 toward the cards' #F8F8F8
+   so chips and cards belong to one set. */
+.chip-red {
+  --chip: #931228;
+  --chip-face: #a80828;
+  --chip-dark: #6c0619;
+  --chip-cream: #e0dad0;
+}
+
+.chip-green {
+  --chip: #235c26;
+  --chip-face: #2a682c;
+  --chip-dark: #113611;
+  --chip-cream: #dcd6cb;
+}
+
+.chip-black {
+  --chip: #211d1c;
+  --chip-face: #2a2624;
+  --chip-dark: #100e0d;
+  --chip-cream: #e8e4dc;
+}
+
+/* One blue in the set, as the odd high denomination. */
+.chip-blue {
+  --chip: #17457a;
+  --chip-face: #1c4f8a;
+  --chip-dark: #0d2b4f;
+  --chip-cream: #dedbd4;
+}
+
+/* The white one inverts the scheme - a pale chip cannot carry pale spots, so
+   --chip-cream here is the one cool colour in the set, a light blue. */
+.chip-white {
+  --chip: #cfc8bb;
+  --chip-face: #ece8e0;
+  --chip-dark: #cec6b9;
+  --chip-cream: #077dd0;
+}
+
+/* ---- cup ---------------------------------------------------------------- */
+
+.cup {
+  /* Anchored on its BASE: a standing object sits at a point on the table and
+     rises from it, so centre-anchoring pushed the cup's mouth off the near edge
+     and onto the felt.
+   *
+   * Built from the camera rather than from the photograph. A party cup is about
+   * 1.26 mouth-diameters tall, so on screen it takes 1.26 * --upright = 0.93
+   * of its own width, plus the top half of the mouth ellipse above that and the
+   * front half of the base ellipse below - 1.49 in all. The mouth is then
+   * --flat of the width, which is 45.4% of that box, against the 19% the first
+   * version used. Those two numbers are the whole difference between a cup
+   * standing on this table and a cup photographed from the side. */
+  transform: translate(-50%, -100%);
+  --cup-w: 8.8cqw;
+  --mouth: calc(var(--cup-w) * var(--flat)); /* the mouth ellipse's height */
+  width: var(--cup-w);
+  height: calc(var(--cup-w) * 1.49);
+}
+
+/* The cup is the tallest prop, so its shadow is the longest and the softest -
+   at the chips' blur radius it read as a hard dark puddle stuck to the base.
+   It lies flat on the wood, so it is foreshortened like everything else. */
+.cup-shadow {
+  left: -42%;
+  bottom: -9%;
+  width: 128%;
+  height: 38%;
+  filter: blur(1cqw);
+}
+
+/* Tapered body, lit from the right: sampled #660E01 on the left, #7F1302 in
+   the middle, #6E1203 on the right - so the brightest band is just left of
+   centre, where a matte cylinder's terminator sits under a light this high. */
 .cup-body {
   position: absolute;
-  inset: 0;
-  clip-path: polygon(0 9%, 100% 9%, 78% 100%, 22% 100%);
-  background: linear-gradient(
-    90deg,
-    #8d1a17 0%,
-    #c62a24 22%,
-    #ef5147 48%,
-    #cf322b 70%,
-    #8d1a17 100%
+  left: 0;
+  /* Starts exactly on the mouth ellipse's widest chord - half the mouth's own
+     height down, i.e. 22.7% of the box. Any higher and the body is full width
+     ABOVE that chord, which puts a square shoulder either side of the rim: the
+     top of a cup has to come to the ellipse's leftmost and rightmost points,
+     not to a corner. */
+  top: 22.7%;
+  width: 100%;
+  height: 77.3%;
+  /* A cone with a rounded foot. The sides are straight, as a cone's silhouette
+     is, but the bottom is the front half of the base ellipse rather than a
+     straight cut: thirteen points stepped 15deg round it, x = 50 + 33*cos and
+     y = 80.6 + 19.4*sin, in the body's own percentages. The base is 66% of the
+     mouth's width and foreshortened by the same --flat, which at this camera
+     leaves a deep curve - the earlier 6.25% bulge belonged to the near-side-on
+     cup and read as a flat cut across the bottom. */
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    83% 80.6%,
+    81.88% 85.62%,
+    78.58% 90.3%,
+    73.33% 94.32%,
+    66.5% 97.4%,
+    58.54% 99.34%,
+    50% 100%,
+    41.46% 99.34%,
+    33.5% 97.4%,
+    26.67% 94.32%,
+    21.42% 90.3%,
+    18.12% 85.62%,
+    17% 80.6%
   );
+  /* NOTE - no apostrophes in any comment inside a declaration value: Svelte 5
+     scans a value for its end without skipping comments, so a lone ' opens a
+     string it never closes and the whole stylesheet fails to parse. */
+  background:
+    /* Vertical fade: the near wall of a cone catches noticeably more light at
+       the top than at the base, and the whole thing sits down in the shade
+       cast across the wood. The moulded rings that used to live here as flat
+       180deg bands moved to ::before - a ring round a cone is a circle seen at
+       an angle, and drawing it as a horizontal line across the taper was the
+       thing making the cup look like a printed shape. */
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 40%, rgba(0, 0, 0, 0.22) 100%),
+    /* Glossy red plastic. Brighter and cleaner than the first pass, which was
+       nearly maroon - a party cup is a saturated red, and the narrow blown
+       highlight at 36% is most of what says "shiny" about it. */
+    linear-gradient(
+      90deg,
+      #4c0a01 0%,
+      #85160a 12%,
+      #b21f0c 30%,
+      #cc3418 36%,
+      #ae1d09 44%,
+      #a01a07 66%,
+      #6b0f03 87%,
+      #430700 100%
+    );
 }
-/* the lip */
+
+/* The moulded ribs. Each is the front arc of a circle round the cone, so each
+   gets its own width and its own squash: at a height y down the body the cone
+   has half-width w = 50 - 17*(y/80.6), and that circle draws as an ellipse
+   2w wide and 2w * --flat tall (converted from the body's width into its height
+   because the two are not the same length).
+   The 17 is the whole taper: the clip-path narrows from 50% half-width at the
+   mouth to 33% at the base, a drop of 17 points. An earlier pass used 33 - the
+   x of the polygon's base corner rather than the change in half-width - and
+   every ring came out too small for the cup, badly so low down where the error
+   compounds.
+   Drawn as a full elliptical ring with the top half masked off, which strokes
+   the whole front arc from one silhouette to the other. An inset box-shadow
+   only reaches a short way either side of the very bottom, and border-bottom
+   thins to nothing well before the sides - both left the rib looking like a
+   smile floating on the middle of the cup instead of a band going round it. */
+.cup-rib {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, transparent 0 96.5%, rgba(58, 6, 0, 0.4) 96.5% 100%);
+  filter: drop-shadow(0 0.1cqw 0 rgba(255, 170, 142, 0.15));
+  /* Two masks, intersected.
+   *
+   * The first keeps the visible part of the ring. Cutting it at the ellipse's
+   * own midline - the obvious 50% - is what made every rib finish well short of
+   * the cup's edge and read as a ring too small for the cup it was on. A cone's
+   * silhouette does NOT touch each of its circles at the 90deg point the way a
+   * cylinder's does: it touches where cos(a) = R' * --flat / --upright, which
+   * for this taper is about 83deg, a little way BEHIND the widest point and so
+   * a little way above the midline. Cutting at 43.5% includes that, and the
+   * body's own clip-path then trims whatever falls outside the true silhouette.
+   *
+   * The second is a 4% taper at each end. A radial-gradient band is measured
+   * along each ray, so it is at its thickest exactly where it meets the edge;
+   * without the taper each rib ended in a blunt blob, and where the clip-path
+   * caught one it left a stray tick beside the cup. Keep it short - at 13% the
+   * ribs visibly fell short of the cup's own edge. */
+  -webkit-mask-image:
+    linear-gradient(180deg, transparent 43%, #000 43.5%),
+    linear-gradient(90deg, transparent 0, #000 4%, #000 96%, transparent 100%);
+  mask-image:
+    linear-gradient(180deg, transparent 43%, #000 43.5%),
+    linear-gradient(90deg, transparent 0, #000 4%, #000 96%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+/* Three close together below the lip at 13%, 19% and 26% of the real cup, then
+   the two lower steps at 72% and 91%. */
+.rib-1 { left: 2.21%; right: 2.21%; top: -17.54%; height: 56.08%; }
+.rib-2 { left: 3.23%; right: 3.23%; top: -12.14%; height: 54.89%; }
+.rib-3 { left: 4.43%; right: 4.43%; top: -5.74%; height: 53.48%; }
+.rib-4 { left: 12.23%; right: 12.23%; top: 35.84%; height: 44.32%; }
+.rib-5 { left: 15.46%; right: 15.46%; top: 53.03%; height: 40.53%; }
+
+/* Where the base meets the wood. A fade, not an ellipse: an ellipse's top edge
+   arced up into the body and read as a hole cut in the bottom of the cup. */
+.cup-body::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 24%;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.42));
+}
+
+/* The mouth, read from the outside in. A red party cup is a two-shot moulding:
+   red on the outside, white all the way through the rolled lip and down the
+   whole inside. So there is only a sliver of red at the silhouette, then the
+   bright white lip, and then white wall running down to the drink. */
 .cup-rim {
   position: absolute;
   left: 0;
   top: 0;
   width: 100%;
-  height: 19%;
+  /* The mouth is a circle the width of the cup, so at this camera it is exactly
+     --flat of that - 45.4% of the box, not the 19% of a side-on view. */
+  height: var(--mouth);
   border-radius: 50%;
-  background: linear-gradient(90deg, #a8201c, #e5433b 42%, #ff8378 52%, #c72c26 78%, #8d1a17);
-  box-shadow: inset 0 calc(var(--ui) * -0.12) calc(var(--ui) * 0.2) rgba(0, 0, 0, 0.35);
+  /* The whole wall is 20% of the radius, not the 30% it started at: a party cup
+     is thin-walled, and the thick ring read as a plant pot. */
+  background: radial-gradient(
+    closest-side,
+    /* The white inside, seen down the far wall above the drink. The opening
+       runs out to 82% of the radius - a party cup is thin-walled, and at 72%
+       the whole rim read as a heavy collar. */
+    #cfc9c0 0 78%,
+    #e6e1d9 78% 82%,
+    /* The rolled lip. Still the thickest part of the wall by some way, because
+       it IS a roll - but 10% of the radius rather than 18%. */
+    #fcfaf6 82% 90%,
+    #f2eee7 90% 93%,
+    /* the roll turning over and away, still white but shaded */
+    #ddd7cc 93% 96.5%,
+    /* only now the red outside, and only as the sliver you can see of it */
+    #bf2f10 96.5% 98.5%,
+    #8c1a04 98.5% 100%
+  );
+  box-shadow: inset 0 0.12cqw 0.28cqw rgba(0, 0, 0, 0.34);
 }
-/* what's in it */
+
+/* The drink, filling the rim's inner opening (70% of the mouth) and nudged
+   down, so a crescent of shadowed inner wall shows along the far side and none
+   along the near. It is the same circle as the mouth at 70% scale, so its
+   height is 70% of the mouth's - it foreshortens with everything else. */
+/* The hole in the top of the cup: exactly the rim's inner opening, 80% of the
+   mouth. It exists to CLIP the drink. A liquid surface sits below the rim, so
+   the near wall hides the front of it - without that the drink was simply a
+   disc laid over the cup, and any attempt to lower it pushed the front of the
+   disc out over the lip. It paints after .cup-rim so the drink covers the rim's
+   pale inner wall wherever there is liquid, and the wall shows through where
+   there is not. */
+.cup-inside {
+  position: absolute;
+  left: 9%;
+  right: 9%;
+  top: calc(var(--mouth) * 0.09);
+  height: calc(var(--mouth) * 0.82);
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+/* The surface itself, in the opening's own percentages. A hair narrower than
+   the opening and dropped 10% of it, which leaves a thin crescent of white
+   wall along the far side and none along the near. */
 .cup-drink {
   position: absolute;
-  left: 11%;
-  top: 3.5%;
-  width: 78%;
-  height: 13%;
+  left: 2%;
+  right: 2%;
+  top: 12%;
+  height: 96%;
   border-radius: 50%;
-  background: radial-gradient(ellipse at 40% 35%, #d9903f, #a75f22);
+  /* A flat surface, so a flat gradient. The radial that was here read as a
+     dome of liquid bulging out of the cup once the mouth opened up to its real
+     ellipse - it was only ever hidden by how narrow the old one was. */
+  background: linear-gradient(180deg, #4a1902 0%, #6b2703 24%, #8a3806 60%, #722d08 100%);
+  box-shadow: inset 0 0.16cqw 0.3cqw rgba(0, 0, 0, 0.5);
 }
 
-/* Poker chip: dashed rim, flat face. */
-.chip {
-  width: calc(var(--ui) * 3.6);
-  aspect-ratio: 1;
-  border-radius: 50%;
+/* A cup somebody has got further through. The level drops, so the surface sits
+   lower AND is narrower - the cup tapers, so less drink is a smaller circle -
+   and it is deeper in the cup's own shade. Dropping it 34% of the opening puts
+   most of a white far wall on show above the liquid and lets the near wall cut
+   off the front of it, which is what an emptier cup looks like from up here. */
+.cup-low .cup-drink {
+  left: 6%;
+  right: 6%;
+  top: 40%;
+  height: 88%;
+  background: linear-gradient(180deg, #2a0c01 0%, #451601 28%, #5e2304 64%, #4c1b05 100%);
+}
+
+/* ---- deck --------------------------------------------------------------- */
+
+.deck {
+  /* It is the same card as the four dealt ones and every detail below is theirs
+     rescaled - but it is scenery, and it was reading as a fifth card competing
+     with the row the player is meant to be watching. Three things pull it back:
+     it is smaller; it is properly foreshortened, so it reads as lying on the
+     table rather than standing up facing the viewer (a 1:1.4 card seen at this
+     camera projects to 1:0.95, which is exactly what the reference render
+     measures); and --deck-dim below sinks it into the table's ambient light. */
+  --deck-w: 7.6cqw;
+  --deck-dim: 0.4; /* how far into shadow the whole card sits */
+  width: var(--deck-w);
+  height: calc(var(--deck-w) * 1.12);
+  transform: translate(-50%, -50%) rotate(-5deg);
+}
+
+.deck-shadow {
+  left: -7%;
+  bottom: -3%;
+  width: 110%;
+  height: 18%;
+  border-radius: 42%;
+}
+
+/* The stack of card edges below and right of the top card - the deck's
+   thickness. Cool paper rather than the reference render's warm tan, to sit
+   with the dealt cards' white-and-chrome edge. */
+.deck-stack {
+  position: absolute;
+  left: 0.5%;
+  top: 7%;
+  width: 100%;
+  height: 96%;
+  border-radius: calc(var(--deck-w) * 0.0971);
   background:
-    /* face highlight */
-    radial-gradient(circle at 42% 32%, rgba(255, 255, 255, 0.3), transparent 55%),
-    /* inner face, then a thin cream ring around it */
-    radial-gradient(circle, var(--chip-face) 0 52%, #f3efe4 52% 60%, transparent 60%),
-    /* six chunky rim dashes */
-    repeating-conic-gradient(from 15deg, #f3efe4 0deg 30deg, var(--chip) 30deg 60deg);
-  box-shadow:
-    inset 0 0 0 calc(var(--ui) * 0.16) rgba(0, 0, 0, 0.22),
-    0 calc(var(--ui) * 0.3) calc(var(--ui) * 0.55) rgba(0, 0, 0, 0.45);
-}
-.chip-red {
-  --chip: #c0332c;
-  --chip-face: #d8433a;
-}
-.chip-green {
-  --chip: #1f7a4d;
-  --chip-face: #2a9660;
-}
-.chip-navy {
-  --chip: #2b4a7a;
-  --chip-face: #375d97;
+    /* The dimming scrim has to be a gradient, not a bare rgba(): a plain colour
+       in a multi-layer `background` is parsed as background-color, which is
+       only legal in the last position, and putting one first drops the entire
+       declaration - the card rendered as a hole through to the wood. */
+    linear-gradient(rgba(0, 0, 0, var(--deck-dim)), rgba(0, 0, 0, var(--deck-dim))),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.36) 0%, transparent 24%, rgba(255, 255, 255, 0.08) 100%),
+    repeating-linear-gradient(180deg, #cfc7ba 0 1.2px, #7d7668 1.2px 2.4px);
+  box-shadow: 0 0.2cqw 0.45cqw rgba(0, 0, 0, 0.42);
 }
 
-/* A short stack reads as more than one chip. */
-.chip-stack {
-  box-shadow:
-    inset 0 0 0 calc(var(--ui) * 0.14) rgba(0, 0, 0, 0.18),
-    0 calc(var(--ui) * 0.34) 0 #b9b3a6,
-    0 calc(var(--ui) * 0.68) 0 #cfc9bb,
-    0 calc(var(--ui) * 1.02) 0 #b9b3a6,
-    0 calc(var(--ui) * 1.3) calc(var(--ui) * 0.7) rgba(0, 0, 0, 0.45);
+/* The back of the top card. Every value here is the dealt card's
+   (styles/cards.css .card-back) with --card-w swapped for --deck-w, so the two
+   are the same design at two sizes rather than two designs that merely rhyme:
+   the brand-red ground, the 45deg crosshatch and the framed edge.
+   The scrim on top is the one deliberate difference. Backdrop props are lit by
+   the room, not by the UI, and at full strength this card pulled the eye
+   straight off the dealt row. The dealt card's white-and-chrome double edge
+   also went, in favour of one soft bone keyline - a bright white outline in the
+   corner of the screen is exactly the kind of thing the eye keeps returning
+   to. */
+.deck-face {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 88%;
+  border-radius: calc(var(--deck-w) * 0.0971);
+  background:
+    linear-gradient(rgba(4, 2, 2, var(--deck-dim)), rgba(4, 2, 2, var(--deck-dim))),
+    linear-gradient(112deg, rgba(0, 0, 0, 0.26) 0%, transparent 46%, rgba(255, 255, 255, 0.05) 100%),
+    repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.1) 0 calc(var(--deck-w) * 0.0216),
+      transparent calc(var(--deck-w) * 0.0216) calc(var(--deck-w) * 0.0626)
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0.1) 0 calc(var(--deck-w) * 0.0216),
+      transparent calc(var(--deck-w) * 0.0216) calc(var(--deck-w) * 0.0626)
+    ),
+    linear-gradient(160deg, #b81030 0%, #a80828 55%, #78061e 100%);
+  box-shadow: inset 0 0 0 calc(var(--deck-w) * 0.036) #a99b8b;
+}
+
+/* Takeover Casino chip mark, centred and held well back - it is there so the
+   deck is recognisably from the same pack, not to be read. It is also squashed
+   to --flat, because it is printed on a card lying on the table. */
+.deck-face::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 54%;
+  height: calc(54% * var(--flat) / 0.95);
+  opacity: 0.5;
+  transform: translate(-50%, -50%);
+  background: var(--logo-url) center / contain no-repeat;
+  filter: drop-shadow(0 0 calc(var(--deck-w) * 0.035) rgba(0, 0, 0, 0.7));
 }
 
 /* ---- placement ---------------------------------------------------------- */
-/* Positions are percentages of THE TABLE, not the viewport, so every prop stays
-   on the wood at any aspect ratio (positioning them against the viewport left
-   them floating on the felt once the table shrank on portrait screens).
-   Each point is kept inside the ellipse - ((x-50)/50)^2 + ((y-50)/50)^2 < 0.8^2
-   - and out of the centre column, which the cards and guesses occupy. */
+/* Percentages of the table's box. Chips and the cup are placed by where they
+   TOUCH the wood, not by their centre; the deck by its centre.
+ *
+ * Six props, in four groups, on a diagonal: deck top left, chips top right,
+ * cup on the right, chips bottom left. Everything sits in pairs or stacks the
+ * way things actually end up on a table people are playing at, and the whole
+ * middle - cards at roughly x 24-76% / y 25-49%, the win readout, and the guess
+ * squares at x 27-75% / y 56-72% - stays empty wood. */
 
-.p-deck { left: 22%; top: 30%; }
-.p-cup-1 { left: 14%; top: 62%; }
-.p-cup-2 { left: 83%; top: 33%; }
-.p-chip-1 { left: 74%; top: 24%; }
-.p-chip-2 { left: 86%; top: 58%; }
-.p-chip-3 { left: 22%; top: 74%; }
-.p-chip-4 { left: 70%; top: 80%; }
-.p-chip-5 { left: 87%; top: 45%; }
+.p-deck { left: 30%; top: 15%; } /* top left */
 
-/* Portrait: the landscape ellipse is far too short for a tall screen - the
-   cards and guess squares spilled off the wood onto the felt. Make the table
-   rounder and taller so the whole play column sits on it. It deliberately
-   overhangs the screen edges (the .scene clips it), which reads as a table
-   larger than the view rather than a small oval floating in space. */
-@media (orientation: portrait) {
-  .table-top {
-    width: min(118vw, 70vh);
-    aspect-ratio: 0.92 / 1;
-    top: 46%;
-  }
-  /* Only the props that stay clear of the play column survive here. */
-  .p-chip-1,
-  .p-chip-4,
+/* Both clusters sit ON AN ARC that follows the rim rather than in rows: each
+   contact point is 82% of the way out from the table's centre, stepped round in
+   even angles. Rows pointed the far end of a cluster inward and the chips crept
+   toward the middle of the wood, which is exactly where nothing decorative
+   should be.
+   Top right, swept from the far end of the arc round toward the near one. */
+.p-chip-1 { left: 79.5%; top: 21.5%; } /* red, five high */
+.p-chip-2 { left: 82.9%; top: 25.5%; } /* blue, three */
+.p-chip-3 { left: 85.7%; top: 29.9%; } /* green, two */
+.p-chip-4 { left: 88%; top: 34.6%; } /* black, one */
+
+/* Staggered rather than mirrored: two cups at the same height either side read
+   as a symmetrical decoration, two at different heights read as two people. */
+.p-cup-1 { left: 88%; top: 66%; } /* right, low */
+.p-cup-2 { left: 12%; top: 46%; } /* left, high */
+
+/* Bottom left, on the matching arc round the near edge. It stops short of the
+   bottom of the wood: below about 85% the near rim is behind the control bar in
+   a short popout, and a chip half-ghosted through the bar looks like a bug. */
+.p-chip-5 { left: 15.5%; top: 71%; } /* white, four high */
+.p-chip-6 { left: 19.5%; top: 77%; } /* black, three */
+.p-chip-7 { left: 24.5%; top: 81.5%; } /* red, two */
+.p-chip-8 { left: 30.5%; top: 84%; } /* green, one */
+
+/* Short landscape popouts (~400x225). The control bar takes over a third of the
+   height and the cards start barely a sixth of the way down the wood, so both
+   the top band and the bottom band disappear: the deck has nowhere to sit above
+   the cards and the bottom pair ghosts behind the translucent bar.
+   Same query as responsive.css uses for this window. */
+@media (orientation: landscape) and (max-height: 320px) {
+  /* The bottom-left cluster, and the left cup - the deck takes that strip. */
+  .p-chip-5,
+  .p-chip-6,
+  .p-chip-7,
+  .p-chip-8,
   .p-cup-2 {
     display: none;
   }
-  .p-deck { left: 17%; top: 16%; }
-  .p-cup-1 { left: 15%; top: 78%; }
-  .p-chip-2 { left: 86%; top: 74%; }
-  .p-chip-3 { left: 18%; top: 44%; }
-  .p-chip-5 { left: 87%; top: 22%; }
+
+  /* Out of the top band and into the gap between the wood's left rim and the
+     first card - the only part of the table the play column does not reach. */
+  .p-deck { left: 19%; top: 26%; }
+}
+
+/* Portrait: the wide ellipse is far too short for a tall screen and the cards
+   would spill off the wood, so the table becomes rounder and taller. It
+   deliberately overhangs the sides (the .scene clips it), which reads as a
+   table bigger than the view rather than a small oval floating in space. */
+@media (orientation: portrait) {
+  .table {
+    width: min(124vw, 74vh);
+    aspect-ratio: 0.95 / 1;
+    top: 46%;
+  }
+
+  /* The apron is a fixed fraction of the FACE height, and the face is far
+     taller here, so it needs scaling back down to the same visual thickness. */
+  .table-edge {
+    transform: translateY(3.1%);
+  }
+
+  /* Laid out again rather than nudged: there is no usable margin beside the
+     play column here - the cards fill x 15-85% of the wood, the guess squares
+     reach y 75%, and on a phone the table is wider than the screen, so anything
+     parked at x 10% or x 90% is squeezed against the cards AND sliced in half
+     by the bezel. Both groups move into the top and bottom bands, and the
+     landscape pairs stay pairs. */
+  .p-deck { left: 28%; top: 17%; }
+  /* Further left than in landscape, to leave the top-right arc a clear run. */
+  .p-cup-1 { left: 66%; top: 26%; }
+  /* No room beside the deck in the top band, so the left cup goes to the near
+     edge instead - still the left half of the table. */
+  .p-cup-2 { left: 26%; top: 90%; }
+
+  /* The same two arcs, pulled in: on a phone the table is wider than the screen
+     and the play column reaches further out, so the far ends of both arcs would
+     otherwise sit against the bezel. The bottom one runs right of the cup. */
+  .p-chip-1 { left: 76%; top: 17.5%; }
+  .p-chip-2 { left: 79.5%; top: 20.5%; }
+  .p-chip-3 { left: 83%; top: 24%; }
+  .p-chip-4 { left: 86%; top: 27.5%; }
+
+  .p-chip-5 { left: 38%; top: 87%; }
+  .p-chip-6 { left: 43%; top: 89%; }
+  .p-chip-7 { left: 48%; top: 90.5%; }
+  .p-chip-8 { left: 53%; top: 91.5%; }
 }

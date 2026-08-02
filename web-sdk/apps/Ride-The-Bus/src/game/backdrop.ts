@@ -18,7 +18,7 @@ export type BackdropMode = 'css' | 'image';
 /* The `as BackdropMode` is load-bearing: without it TypeScript narrows a const
    to its literal type, and the comparison below becomes a "no overlap" error
    for whichever value is not currently selected. */
-export const BACKDROP = 'image' as BackdropMode;
+export const BACKDROP = 'css' as BackdropMode;
 
 /**
  * Which file 'image' mode uses. Must live in static/ (served from the app
