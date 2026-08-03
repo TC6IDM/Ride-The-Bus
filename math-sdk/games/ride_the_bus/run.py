@@ -1,6 +1,7 @@
 """Main file for generating results for Ride The Bus."""
 
 import os
+import subprocess
 
 from gamestate import GameState
 from game_config import GameConfig
@@ -120,3 +121,30 @@ if __name__ == "__main__":
         execute_all_tests(config)
     finally:
         os.chdir(previous_cwd)
+
+    # Regenerate the replay event ID table that approval asks for - normal win,
+    # big win, win cap and loss, per bet mode. Those IDs are simulation numbers
+    # drawn from the lookup tables this build just wrote, so they are invalidated
+    # by every rebuild. Doing it here rather than leaving it as a step to
+    # remember is the same reasoning as folding rgs_verification in above: a
+    # stale table is worse than no table, because it looks correct.
+    #
+    # Best-effort. The math build is the product; a missing Node or a failure in
+    # the generator must not fail a run that has already produced valid files.
+    repo_root = os.path.abspath(os.path.join(sdk_root, os.pardir))
+    generator = os.path.join(repo_root, "scripts", "replay-events.js")
+    if os.path.isfile(generator):
+        print("\nRegenerating REPLAY_EVENTS.md...")
+        try:
+            subprocess.run(
+                ["node", generator],
+                cwd=repo_root,
+                check=True,
+                shell=(os.name == "nt"),
+            )
+        except (OSError, subprocess.CalledProcessError) as exc:
+            print(f"  ! could not regenerate REPLAY_EVENTS.md: {exc}")
+            print("  ! run `node scripts/replay-events.js` by hand before submitting")
+    else:
+        print(f"\n! replay-events generator not found at {generator}")
+        print("! REPLAY_EVENTS.md will be stale - regenerate it before submitting")

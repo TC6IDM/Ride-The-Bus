@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import { base } from '$app/paths';
-  import { gameReady } from '../game/ready.svelte';
+  import { gameReady, loaderGone } from '../game/ready.svelte';
 
   type Props = { oncomplete?: () => void };
   const props: Props = $props();
@@ -76,6 +76,11 @@
       // Let the filled bar register before the fade starts.
       setTimeout(() => {
         visible = false;
+        // Anything that must not animate behind the overlay waits on this -
+        // notably replay and round-resume, which otherwise start the reveal
+        // while this is still covering the table. Set alongside `visible`
+        // rather than in oncomplete so it holds however the loader is used.
+        loaderGone.value = true;
         props.oncomplete?.();
       }, 220);
     };

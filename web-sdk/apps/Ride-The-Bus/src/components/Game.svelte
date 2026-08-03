@@ -29,7 +29,7 @@
   import { requestBet, requestEndRound } from 'rgs-requests';
   import { sound, type PressKind } from '../game/sound';
   import { isCombinationPlayable } from '../game/modes';
-  import { gameReady } from '../game/ready.svelte';
+  import { gameReady, loaderGone } from '../game/ready.svelte';
   import { jurisdiction, TURBO_CAP_WITHOUT_SUPER } from '../game/jurisdiction.svelte';
   // Payout maths and bet-grid arithmetic live in plain modules so they can be
   // unit-tested (src/game/*.test.ts) - payout.ts is checked against the real
@@ -518,6 +518,35 @@
   const isEngineRound = () => roundSource !== 'local-fallback' && roundSource !== 'none';
   const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
+  /**
+   * Hold until the loading screen has gone.
+   *
+   * Replay and round-resume both start the moment /wallet/authenticate returns a
+   * round, but the loader stays up for a minimum 1400ms plus 220ms after that -
+   * and the first card turns roughly 650ms in. The reveal therefore played out
+   * behind a full-screen overlay, which on Stake's replay view meant the round
+   * was already part-finished when the screen cleared.
+   *
+   * Polled rather than watched with an effect, for the same reason GameLoader
+   * polls gameReady: a tracked read inside the calling effect would re-run it
+   * when the flag flipped.
+   *
+   * The timeout is a backstop, not a schedule. GameLoader always resolves - it
+   * caps itself at 8s - but if it is ever absent from a route this must not
+   * strand the player on a round that never animates.
+   */
+  function waitForLoaderGone(timeoutMs = 10000): Promise<void> {
+    return new Promise((resolve) => {
+      if (loaderGone.value) return resolve();
+      const started = performance.now();
+      const check = () => {
+        if (loaderGone.value || performance.now() - started > timeoutMs) resolve();
+        else requestAnimationFrame(check);
+      };
+      check();
+    });
+  }
+
   // --- Slam stop -------------------------------------------------------------
   // Tapping the button mid-reveal cuts the animation short and shows the result
   // now. Purely cosmetic: the outcome came from the book the moment
@@ -774,15 +803,20 @@
     // resolve to the same cash amounts the player originally saw.
     initialBet = stateBet.wageredBetAmount || stateBet.betAmount || 0;
     hasPlayed = true;
-    animateRoundFromEvents(
-      bet.state,
-      `${bet.roundID ?? stateUrlDerived.event()}`,
-      'engine-replay',
-      'Replay returned no round state for this event.',
-    ).catch((err) => {
-      console.error(err);
-      stateModal.modal = { name: 'error', error: err };
-    });
+    // Held until the loader clears, or the reveal plays out behind it.
+    waitForLoaderGone()
+      .then(() =>
+        animateRoundFromEvents(
+          bet.state,
+          `${bet.roundID ?? stateUrlDerived.event()}`,
+          'engine-replay',
+          'Replay returned no round state for this event.',
+        ),
+      )
+      .catch((err) => {
+        console.error(err);
+        stateModal.modal = { name: 'error', error: err };
+      });
   });
 
   // Resume a round the player was in the middle of. /wallet/authenticate
@@ -822,12 +856,16 @@
     // resolve to the cash the player actually staked.
     initialBet = stateBet.wageredBetAmount || stateBet.betAmount || 0;
     hasPlayed = true;
-    animateRoundFromEvents(
-      bet.state,
-      `${bet.roundID ?? bet.betID ?? 'resumed'}`,
-      'engine-auth',
-      'Resumed round contained no state.',
-    )
+    // Same hold as replay: a resumed round must not reveal behind the loader.
+    waitForLoaderGone()
+      .then(() =>
+        animateRoundFromEvents(
+          bet.state,
+          `${bet.roundID ?? bet.betID ?? 'resumed'}`,
+          'engine-auth',
+          'Resumed round contained no state.',
+        ),
+      )
       .catch((err) => {
         // Don't trap the player on a broken resume - log it, mark the round
         // failed, and let the defensive end-round clear it on the next spin.
