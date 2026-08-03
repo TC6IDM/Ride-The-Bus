@@ -1,8 +1,15 @@
 # Ride The Bus
 
 A Stake Engine casino game: the classic 4-stage card-guessing drinking game
-(Red/Black → Higher/Lower → Inside/Outside → Guess Suit), with a compounding
-multiplier and the option to cash out after any stage.
+(Red/Black → Higher/Lower → Inside/Outside → Guess Suit), with a multiplier
+that compounds across the four stages.
+
+The player commits to all four guesses **before** the bet is placed, and the
+whole round then resolves in a single `/wallet/play` call — there is no
+cash-out and no mid-round decision. Stake Engine requires every bet to be one
+independent, stateless outcome, so the four choices are encoded in the bet
+mode instead (64 modes, one per combination). Everything after the bet is
+animation of an already-determined result.
 
 The project has two halves, matching Stake Engine's split between frontend
 and math/RGS backend:
