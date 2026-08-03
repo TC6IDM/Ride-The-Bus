@@ -4,7 +4,11 @@
 		<meta charset="utf-8" />
 		<link rel="icon" href="%sveltekit.assets%/logo.png" />
 		<title>Ride The Bus — Takeover Casino</title>
-		<link rel="stylesheet" href="https://use.typekit.net/aba0ebl.css" />
+		<!-- No external stylesheet here. This used to load use.typekit.net, which
+		     serves proxima-nova and brandon-grotesque - the SDK sample's fonts,
+		     neither of which this game names anywhere. It cost two third-party
+		     requests on every load and gave nothing back. Poppins is self-hosted
+		     in components/app.css. -->
 		<meta name="viewport" content="width=device-width" />
 		%sveltekit.head%
 	</head>

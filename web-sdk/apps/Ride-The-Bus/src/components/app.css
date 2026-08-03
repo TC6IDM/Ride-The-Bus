@@ -1,4 +1,117 @@
-/* @import '@fontsource/poppins'; */
+/* Poppins, self-hosted.
+ *
+ * The stylesheet asked for 'Poppins' and nothing ever loaded it: there was no
+ * @font-face and no font link, and the commented-out @fontsource import above
+ * refers to a package that is not a dependency. Every player was therefore
+ * seeing the generic sans-serif fallback - Segoe UI, Helvetica or Roboto
+ * depending on their device - which is also why the control bar had to measure
+ * its own text to fit (styles/control-bar.css).
+ *
+ * The old <link> to use.typekit.net served proxima-nova and brandon-grotesque,
+ * the SDK sample's fonts, which this game never names. It was a third-party
+ * request on every load that bought nothing, and it is gone.
+ *
+ * Files live in src/fonts rather than static/ ON PURPOSE. The game is served
+ * from {team}.cdn.stake-engine.com/{GameID}/{GameVersion}/, so a root-relative
+ * url(/fonts/...) would resolve to the wrong place; going through Vite's asset
+ * pipeline gets the path rewritten for wherever the build is mounted.
+ *
+ * LATIN ONLY, four weights - which is every weight the game uses (400 for body,
+ * 700/800/900 in the UI). Google also publishes a Devanagari cut, and it was
+ * here until a build showed what config-svelte's bundleStrategy:"inline" does:
+ * every asset Vite processes is base64-inlined into the page, so nothing is
+ * fetched on demand and unicode-range stops being a download optimisation.
+ * Devanagari was 160KB of a 224KB total, inlined into every single load, to
+ * serve one of sixteen languages. Hindi now falls back to the system sans-serif
+ * exactly as Arabic, Cyrillic and CJK already do - Poppins has no cut for those
+ * scripts either, so this is the consistent treatment rather than a special case.
+ *
+ * The unicode-range lines are kept as Google emits them: they still tell the
+ * browser which face to pick per character, they just no longer gate a network
+ * request.
+ *
+ * Poppins is by the Indian Type Foundry, Copyright 2020 The Poppins Project
+ * Authors (https://github.com/itfoundry/Poppins), under the SIL Open Font
+ * License 1.1. The licence permits self-hosting and redistribution, and it
+ * requires the notice and licence text to travel with the files - they are in
+ * src/fonts/OFL.txt, and that file must ship with any copy of these fonts.
+ *
+ * The family keeps its real name. Poppins declares no Reserved Font Name, so
+ * the OFL would allow renaming it, but it is not our typeface and calling it
+ * anything else would only mislead whoever reads this next.
+ */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/poppins-latin-400.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/poppins-latin-ext-400.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../fonts/poppins-latin-700.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../fonts/poppins-latin-ext-700.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('../fonts/poppins-latin-800.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('../fonts/poppins-latin-ext-800.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('../fonts/poppins-latin-900.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('../fonts/poppins-latin-ext-900.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
 
 * {
 	margin: 0;
