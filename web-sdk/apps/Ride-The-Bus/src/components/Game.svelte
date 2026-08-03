@@ -433,6 +433,29 @@
 
   const allChoicesMade = () => Boolean(colorChoice && hlChoice && ioChoice && suitChoice);
 
+  /**
+   * When the guess squares stop accepting input.
+   *
+   * This has to cover every state spinDisabled() covers, and for the same
+   * reason. It used to be just `gameState === 'playing' || autoRunning`, which
+   * leaves the guesses editable for the whole of an engine bet: startGameEngineFlow
+   * sets isProcessing, then awaits the defensive end-round, THEN builds the mode
+   * string from the four choices, then awaits /wallet/play - and gameState only
+   * becomes 'playing' once the reveal starts. Two round trips, all of it
+   * unlocked.
+   *
+   * Change a guess in that window and one of two things happens, both wrong:
+   * before the mode is built you are billed for a combination you did not press
+   * Start on, and after it the board shows guesses that do not match the round
+   * being revealed.
+   *
+   * It never showed up locally because the fallback path sets gameState in the
+   * same tick, with nothing awaited in between - the window only exists against
+   * a real RGS, which is exactly where it matters.
+   */
+  const choicesLocked = () =>
+    gameState === 'playing' || autoRunning || isProcessing || resumeInProgress;
+
   // --- The one impossible pairing --------------------------------------------
   // Stage 2 "equal" ties card 2 to card 1's rank, which leaves nothing strictly
   // between them for stage 3 "inside" to land on. The math does not publish that
@@ -1736,7 +1759,7 @@
     {@render cardRow()}
     {#if hasPlayed}{@render runningWinBar()}{/if}
 
-    <div class="choice-row" class:locked={gameState === 'playing' || autoRunning}>
+    <div class="choice-row" class:locked={choicesLocked()}>
       <div class="choice-column">
         <span class="choice-label">{t('Color')}</span>
         <div class="choice-square color-square" role="group" aria-label={t('Pick a color')}>
