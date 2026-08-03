@@ -134,4 +134,12 @@ export default {
 	'Stop autoplay on a full game win': '全中时停止自动游戏',
 	'Close menu': '关闭菜单',
 	Close: '关闭',
+	'Game information':
+		'游戏信息',
+	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
+		'玩家回报率（RTP）为 %s。任何猜测组合的成本均为投注额的 1 倍，并在多轮中返还相同比例。本游戏的最高派彩为投注额的 1354.2 倍。',
+	'Disclaimer':
+		'免责声明',
+	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
+		'故障将使所有奖金和游戏无效。需要稳定的网络连接。如果断开连接，请重新加载游戏以完成未结束的回合。预期回报是基于大量游戏计算得出的。游戏画面不代表任何实体设备，仅供示意。奖金依据从 Remote Game Server 收到的金额结算，而非依据网页浏览器中的事件。TM 和 (c) 2026 Stake Engine.',
 };

@@ -142,4 +142,12 @@ export default {
 	'Stop autoplay on a full game win': 'Останавливать автоигру при полной победе',
 	'Close menu': 'Закрыть меню',
 	Close: 'Закрыть',
+	'Game information':
+		'Информация об игре',
+	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
+		'Возврат игроку (RTP) составляет %s. Любая комбинация догадок стоит 1x вашей ставки и возвращает тот же показатель на протяжении многих раундов. Максимальная выплата в этой игре — 1354,2x вашей ставки.',
+	'Disclaimer':
+		'Отказ от ответственности',
+	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
+		'Сбой аннулирует все выигрыши и игры. Требуется стабильное интернет-соединение. При разрыве соединения перезагрузите игру, чтобы завершить незаконченные раунды. Ожидаемый возврат рассчитывается на большом числе игр. Экран игры не изображает какое-либо физическое устройство и приведён только для иллюстрации. Выигрыши рассчитываются по сумме, полученной от Remote Game Server, а не по событиям в браузере. TM и (c) 2026 Stake Engine.',
 };

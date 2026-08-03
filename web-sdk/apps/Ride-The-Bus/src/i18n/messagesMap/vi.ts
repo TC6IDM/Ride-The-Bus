@@ -142,4 +142,12 @@ export default {
 	'Stop autoplay on a full game win': 'Dừng tự động chơi khi thắng toàn ván',
 	'Close menu': 'Đóng menu',
 	Close: 'Đóng',
+	'Game information':
+		'Thong tin tro choi',
+	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
+		'Ty le hoan tra cho nguoi choi (RTP) la %s. Moi to hop du doan deu co gia 1x tien cuoc cua ban va tra lai cung ty le do qua nhieu vong. Muc chi tra toi da cua tro choi nay la 1354,2x tien cuoc cua ban.',
+	'Disclaimer':
+		'Mien tru trach nhiem',
+	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
+		'Su co lam vo hieu moi khoan thang va luot choi. Can co ket noi internet on dinh. Neu bi mat ket noi, hay tai lai tro choi de hoan tat cac vong con do. Ty le hoan tra du kien duoc tinh tren rat nhieu luot choi. Man hinh tro choi khong mo phong bat ky thiet bi vat ly nao va chi mang tinh minh hoa. Tien thang duoc quyet toan theo so tien nhan tu Remote Game Server, khong phai theo cac su kien trong trinh duyet web. TM va (c) 2026 Stake Engine.',
 };

@@ -2074,6 +2074,23 @@
           <li>{t('Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.')}</li>
           <li>{t('Tap the spacebar to play one round, or hold it to keep spinning until you let go.')}</li>
         </ul>
+
+        <!-- Required for approval, and required HERE specifically: the rules /
+             information popup must state the RTP and must carry the legal
+             disclaimer, and this popup is what the `i` button opens, so it is
+             reachable at any point during play.
+             The RTP is interpolated from game/config.ts rather than written
+             out, so the figure a player is shown cannot drift from the one the
+             math is actually built and reweighted to. -->
+        <h4 class="info-h">{t('Game information')}</h4>
+        <p>
+          {t('Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.').replace('%s', `${(gameConfig.rtp * 100).toFixed(2)}%`)}
+        </p>
+
+        <h4 class="info-h">{t('Disclaimer')}</h4>
+        <p>
+          {t('Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.')}
+        </p>
       </div>
     </div>
   {/if}

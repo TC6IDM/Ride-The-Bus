@@ -143,4 +143,12 @@ export default {
 	'Stop autoplay on a full game win': 'Parar el juego automático al ganar el juego completo',
 	'Close menu': 'Cerrar menú',
 	Close: 'Cerrar',
+	'Game information':
+		'Informacion del juego',
+	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
+		'El retorno al jugador (RTP) es %s. Cada combinacion de predicciones cuesta 1x tu apuesta y devuelve esa misma cifra a lo largo de muchas rondas. Lo maximo que puede pagar este juego es 1354,2x tu apuesta.',
+	'Disclaimer':
+		'Aviso legal',
+	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
+		'Cualquier fallo anula todas las ganancias y jugadas. Se requiere una conexion a internet estable. En caso de desconexion, recarga el juego para terminar las rondas incompletas. El retorno esperado se calcula a lo largo de muchas jugadas. La pantalla del juego no representa ningun dispositivo fisico y solo tiene fines ilustrativos. Las ganancias se liquidan segun el importe recibido del Remote Game Server y no segun los eventos del navegador. TM y (c) 2026 Stake Engine.',
 };

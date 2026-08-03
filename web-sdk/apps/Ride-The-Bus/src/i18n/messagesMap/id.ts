@@ -142,4 +142,12 @@ export default {
 	'Stop autoplay on a full game win': 'Hentikan main otomatis saat menang penuh',
 	'Close menu': 'Tutup menu',
 	Close: 'Tutup',
+	'Game information':
+		'Informasi permainan',
+	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
+		'Return to player (RTP) adalah %s. Setiap kombinasi tebakan berbiaya 1x taruhan Anda dan mengembalikan angka yang sama selama banyak putaran. Pembayaran maksimum permainan ini adalah 1354,2x taruhan Anda.',
+	'Disclaimer':
+		'Penafian',
+	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
+		'Kerusakan membatalkan semua kemenangan dan permainan. Koneksi internet yang stabil diperlukan. Jika terputus, muat ulang permainan untuk menyelesaikan putaran yang belum selesai. Pengembalian yang diharapkan dihitung selama banyak permainan. Tampilan permainan tidak mewakili perangkat fisik mana pun dan hanya untuk ilustrasi. Kemenangan diselesaikan sesuai jumlah yang diterima dari Remote Game Server, bukan dari peristiwa di peramban. TM dan (c) 2026 Stake Engine.',
 };

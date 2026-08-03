@@ -139,4 +139,12 @@ export default {
 	'Stop autoplay on a full game win': 'Tam oyun kazancında otomatik oyunu durdur',
 	'Close menu': 'Menüyü kapat',
 	Close: 'Kapat',
+	'Game information':
+		'Oyun bilgileri',
+	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
+		'Oyuncuya donus orani (RTP) %s degerindedir. Her tahmin kombinasyonu bahsinizin 1 katina mal olur ve cok sayida turda ayni orani geri verir. Bu oyunun odeyebilecegi en yuksek tutar bahsinizin 1354,2 katidir.',
+	'Disclaimer':
+		'Yasal uyari',
+	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
+		'Arizalar tum kazanclari ve oyunlari gecersiz kilar. Istikrarli bir internet baglantisi gereklidir. Baglanti kesilirse tamamlanmamis turlari bitirmek icin oyunu yeniden yukleyin. Beklenen donus cok sayida oyun uzerinden hesaplanir. Oyun ekrani herhangi bir fiziksel cihazi temsil etmez ve yalnizca gorsel amaclidir. Kazanclar taraycidaki olaylara gore degil, Remote Game Server dan alinan tutara gore odenir. TM ve (c) 2026 Stake Engine.',
 };

@@ -141,4 +141,12 @@ export default {
 	'Stop autoplay on a full game win': 'フルゲーム達成でオートプレイを停止',
 	'Close menu': 'メニューを閉じる',
 	Close: '閉じる',
+	'Game information':
+		'ゲーム情報',
+	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
+		'還元率（RTP）は %s です。どの予想の組み合わせもベット額の1倍で、多数のラウンドを通じて同じ還元率になります。このゲームの最大配当はベット額の1354.2倍です。',
+	'Disclaimer':
+		'免責事項',
+	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
+		'不具合が発生した場合、すべての勝利とプレイは無効となります。安定したインターネット接続が必要です。接続が切断された場合は、ゲームを再読み込みして未完了のラウンドを終了してください。期待還元率は多数のプレイを通じて算出されます。ゲーム画面は実在の機器を表すものではなく、説明目的のみです。勝利金はウェブブラウザ内の事象ではなく、Remote Game Server から受信した金額に基づいて精算されます。TM および (c) 2026 Stake Engine.',
 };

@@ -141,4 +141,12 @@ export default {
 	'Stop autoplay on a full game win': 'पूरी जीत पर ऑटोप्ले रोकें',
 	'Close menu': 'मेन्यू बंद करें',
 	Close: 'बंद करें',
+	'Game information':
+		'गेम जानकारी',
+	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
+		'खिलाड़ी को वापसी (RTP) %s है। अनुमानों का हर संयोजन आपकी शर्त का 1x खर्च करता है और कई राउंड में वही आंकड़ा लौटाता है। यह गेम अधिकतम आपकी शर्त का 1354.2x दे सकता है।',
+	'Disclaimer':
+		'अस्वीकरण',
+	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
+		'खराबी से सभी जीत और खेल रद्द हो जाते हैं। स्थिर इंटरनेट कनेक्शन आवश्यक है। कनेक्शन टूटने पर अधूरे राउंड पूरे करने के लिए गेम फिर से लोड करें। अपेक्षित वापसी कई खेलों में गणना की जाती है। गेम डिस्प्ले किसी भौतिक उपकरण का प्रतिनिधित्व नहीं करता और केवल उदाहरण के लिए है। जीत का निपटान Remote Game Server से प्राप्त राशि के अनुसार होता है, ब्राउज़र की घटनाओं से नहीं। TM और (c) 2026 Stake Engine.',
 };

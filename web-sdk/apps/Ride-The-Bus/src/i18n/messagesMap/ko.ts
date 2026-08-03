@@ -139,4 +139,12 @@ export default {
 	'Stop autoplay on a full game win': '풀 게임 성공 시 자동 플레이 중지',
 	'Close menu': '메뉴 닫기',
 	Close: '닫기',
+	'Game information':
+		'게임 정보',
+	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
+		'환수율(RTP)은 %s입니다. 모든 예측 조합은 베팅액의 1배이며 많은 라운드에 걸쳐 동일한 수치를 돌려줍니다. 이 게임의 최대 지급액은 베팅액의 1354.2배입니다.',
+	'Disclaimer':
+		'면책 조항',
+	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
+		'오작동 시 모든 당첨과 플레이가 무효가 됩니다. 안정적인 인터넷 연결이 필요합니다. 연결이 끊긴 경우 게임을 다시 불러와 완료되지 않은 라운드를 마치십시오. 기대 환수율은 다수의 플레이를 기준으로 계산됩니다. 게임 화면은 실제 기기를 나타내지 않으며 예시용입니다. 당첨금은 웹 브라우저 내의 이벤트가 아니라 Remote Game Server에서 수신한 금액에 따라 정산됩니다. TM 및 (c) 2026 Stake Engine.',
 };

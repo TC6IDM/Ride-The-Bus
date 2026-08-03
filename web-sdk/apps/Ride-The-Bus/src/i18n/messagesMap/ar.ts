@@ -142,4 +142,12 @@ export default {
 	'Stop autoplay on a full game win': 'إيقاف اللعب التلقائي عند الفوز الكامل',
 	'Close menu': 'إغلاق القائمة',
 	Close: 'إغلاق',
+	'Game information':
+		'معلومات اللعبة',
+	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
+		'نسبة العائد للاعب (RTP) هي %s. كل تركيبة من التخمينات تكلف 1x من رهانك وتعيد النسبة نفسها على مدى جولات كثيرة. أقصى ما يمكن أن تدفعه هذه اللعبة هو 1354.2x من رهانك.',
+	'Disclaimer':
+		'إخلاء المسؤولية',
+	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
+		'أي خلل يلغي جميع المكاسب والجولات. يلزم اتصال إنترنت مستقر. في حالة انقطاع الاتصال، أعد تحميل اللعبة لإكمال أي جولات غير منتهية. يُحسب العائد المتوقع على مدى عدد كبير من الجولات. لا تمثل شاشة اللعبة أي جهاز فعلي وهي لأغراض توضيحية فقط. تتم تسوية المكاسب وفقًا للمبلغ الوارد من خادم اللعبة البعيد وليس وفقًا للأحداث داخل متصفح الويب. TM و (c) 2026 Stake Engine.',
 };
