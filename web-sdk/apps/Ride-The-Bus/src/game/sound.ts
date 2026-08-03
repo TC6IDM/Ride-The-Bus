@@ -411,10 +411,17 @@ export const sound = {
 	 * four different flips rather than one flip four times.
 	 */
 	playCardFlip() {
+		// Held at roughly 55% of the level the other layers were originally
+		// written at. The flip is the most FREQUENT cue in the game - four of
+		// them in a clean round, against one of anything else - and at equal
+		// level a cue that repeats that often stops reading as punctuation and
+		// starts reading as noise. All three layers are scaled together so the
+		// balance between the riffle, the body and the landing is unchanged;
+		// only the whole thing sits further back.
 		const bright = rand(2600, 3400);
 		noise({
 			duration: rand(0.07, 0.1),
-			gain: rand(0.22, 0.3),
+			gain: rand(0.12, 0.165),
 			from: bright,
 			to: rand(800, 1200),
 			q: rand(0.6, 1.1),
@@ -426,11 +433,11 @@ export const sound = {
 			to: rand(480, 560),
 			duration: 0.055,
 			type: 'triangle',
-			gain: 0.17,
+			gain: 0.094,
 			space: 0.3,
 			jitter: 40,
 		});
-		thud({ from: rand(150, 200), to: 65, duration: 0.11, gain: 0.19, delay: rand(0.01, 0.025) });
+		thud({ from: rand(150, 200), to: 65, duration: 0.11, gain: 0.105, delay: rand(0.01, 0.025) });
 	},
 
 	/**
@@ -448,13 +455,53 @@ export const sound = {
 	},
 
 	/**
-	 * A wrong guess. A sawtooth dragged down under a noise scrape, with the
-	 * bottom falling out beneath it - the point is that it should land badly.
+	 * A wrong guess - the moment it goes wrong, not the verdict on the round.
+	 *
+	 * This used to be a sawtooth dragged from 300Hz down to 92 over 360ms. The
+	 * problem was not the sound in isolation, it was that playRoundLoss arrives
+	 * about 1.2 seconds later and is ALSO a slow downward glide, in an
+	 * overlapping register, over a near-identical span. Two slow falls in a row
+	 * read as one long descending noise rather than as an event and its
+	 * consequence, which is why the reveal felt like it had a single "loss"
+	 * sound in it.
+	 *
+	 * So this is the mirror of playStageWin rather than a new kind of noise -
+	 * the same triangle and sine voices, the same note lengths, the same amount
+	 * of room, built on the same C5 root. The win climbs away from that root and
+	 * opens up; the bust falls away from it through a minor triad and settles.
+	 * Heard next to each other they are obviously two halves of one idea, which
+	 * a struck percussive hit never was: an earlier pass here used a broadband
+	 * transient and a tritone, and it sat outside the rest of the game's voice
+	 * entirely.
+	 *
+	 * It still separates from playRoundLoss, and on the axis that matters most:
+	 * this steps between discrete notes, where the settle cue GLIDES. Stepped
+	 * against slid is what stops them reading as one long descent, and it does
+	 * not require them to be different instruments.
 	 */
 	playBust() {
-		tone({ from: rand(300, 330), to: 92, duration: 0.36, type: 'sawtooth', gain: 0.24, space: 0.4 });
-		noise({ duration: 0.22, gain: 0.12, from: 1400, to: 260, q: 1.4, curve: 0.7, space: 0.4 });
-		thud({ from: 130, to: 45, duration: 0.3, gain: 0.24, delay: 0.04 });
+		// Deliberately the SAME root the stage win is built on, so the two are
+		// heard as a matched pair: the win climbs away from C, the bust falls
+		// away from it.
+		const root = 523.25;
+		// C5, Ab4, F4 - an F minor triad taken downward. Minor because it has to
+		// read as a loss, a triad rather than a dissonance because the rest of
+		// the game is consonant and a clash would stand outside it.
+		const fall = [1, Math.pow(2, -4 / 12), Math.pow(2, -7 / 12)];
+
+		// The gains are lower than the single-note cues elsewhere because these
+		// three overlap - each note is still sounding when the next arrives -
+		// and the low octave lands on top of the third. Written at stage-win
+		// levels the stack measured 0.185, which made losing a stage the second
+		// loudest thing in the game, above a stage win and above a payout.
+		tone({ from: root * fall[0]!, duration: 0.17, type: 'triangle', gain: 0.165, space: 0.45, attack: 0.008 });
+		tone({ from: root * fall[1]!, duration: 0.2, type: 'sine', gain: 0.14, delay: 0.085, space: 0.5 });
+		tone({ from: root * fall[2]!, duration: 0.28, type: 'triangle', gain: 0.125, delay: 0.17, space: 0.55 });
+
+		// Weight underneath the last note - the floor giving way. Tonal, an
+		// octave below where the figure lands, rather than a thump: it should
+		// settle the phrase, not punctuate it.
+		tone({ from: root * fall[2]! * 0.5, duration: 0.34, type: 'sine', gain: 0.082, delay: 0.17, space: 0.4 });
 	},
 
 	/** Round settled with a payout (partial or full). */
