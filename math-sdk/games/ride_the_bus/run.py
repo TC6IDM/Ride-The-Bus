@@ -40,13 +40,34 @@ if __name__ == "__main__":
     # enough to land more than a handful of wins for the rare ones, making
     # their reported RTP unreliably noisy rather than actually representative.
     # Scale sims up by how many "equal" choices the combo requires.
-    SIMS_BY_EQUAL_COUNT = {0: int(8e4), 1: int(2e5), 2: int(8e5)}
+    #
+    # The floor is 100k, not the 80k this used to run. Stake's math approval
+    # asks for 100,000 to 1,000,000 simulations per bet mode, and the 32 combos
+    # with no "equal" pick sat under that at 80k - fine for accuracy, since
+    # those are the common combos and their RTP was never noisy, but it is a
+    # stated threshold and cheap to clear. It costs 640k extra simulations,
+    # about 4.6% on top of the previous 13.76M total.
+    MIN_SIMS_PER_MODE = 100_000
+    SIMS_BY_EQUAL_COUNT = {0: int(1e5), 1: int(2e5), 2: int(8e5)}
 
     def _sim_count(combo):
         equal_count = sum(1 for choice in combo[1:3] if choice == "equal")
         return SIMS_BY_EQUAL_COUNT[equal_count]
 
     num_sim_args = {mode_name(*combo): _sim_count(combo) for combo in all_mode_combinations()}
+
+    # Assert the floor rather than trust the table above. Two ways this could
+    # silently regress: someone edits SIMS_BY_EQUAL_COUNT, or num_threads is
+    # changed to a value that does not divide a count exactly - run_sims.py
+    # computes sims_per_thread with int() truncation, so an uneven split drops
+    # simulations and a mode could land under the threshold without anything
+    # failing. Checking the effective post-truncation total catches both.
+    for _mode, _count in num_sim_args.items():
+        _effective = (_count // num_threads) * num_threads
+        assert _effective >= MIN_SIMS_PER_MODE, (
+            f"{_mode}: {_effective} simulations after splitting across "
+            f"{num_threads} workers, below the {MIN_SIMS_PER_MODE} approval floor"
+        )
 
     run_conditions = {"run_sims": True}
 
