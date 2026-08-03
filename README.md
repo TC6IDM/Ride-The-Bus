@@ -23,6 +23,22 @@ you skip a step.
 - Node 22.16.0 and pnpm 10.5.0 (for `web-sdk`)
 - Python 3.x (for `math-sdk`)
 
+Everything below runs from inside this repo. There is no second checkout to
+copy files to or from: edit here, build here, commit here.
+
+## Command summary
+
+Paths are relative to the repo root. Windows shown; on macOS/Linux swap
+`.venv\Scripts\python.exe` for `.venv/bin/python`.
+
+| What | Where | Command |
+| --- | --- | --- |
+| Run the game locally | `web-sdk` | `pnpm run dev --filter=ride-the-bus` |
+| Build the frontend | `web-sdk` | `pnpm run build --filter=ride-the-bus` |
+| Test the frontend | `web-sdk\apps\Ride-The-Bus` | `pnpm test` |
+| Build the math | `math-sdk` | `.venv\Scripts\python.exe games\ride_the_bus\run.py` |
+| Test the math | `math-sdk` | `.venv\Scripts\python.exe -m pytest tests\` |
+
 ## Build & publish: math-sdk (RGS backend)
 
 ```
@@ -37,20 +53,36 @@ python -m venv .venv
 .venv\Scripts\python.exe games\ride_the_bus\run.py
 ```
 
-This writes everything under `math-sdk\games\ride_the_bus\library\`. **Upload
-the contents of `math-sdk\games\ride_the_bus\library\publish_files\`**
-(`books_base.jsonl.zst`, `index.json`, `lookUpTable_base_0.csv`) to Stake
-Engine's Files page, under the Math/RGS section for this game.
+This is a long run - roughly 13.8M simulations across the 64 bet modes, on 8
+worker processes - and it writes everything under
+`math-sdk\games\ride_the_bus\library\`.
 
-To sanity-check a build before uploading (catches payout-format issues like
-`ERR_MATH_OUTSIDE_RANGE` locally instead of on the dashboard):
+**Upload the contents of `math-sdk\games\ride_the_bus\library\publish_files\`**
+to Stake Engine's Files page, under the Math/RGS section for this game. That is
+129 files: one `books_<mode>.jsonl.zst` and one `lookUpTable_<mode>_0.csv` per
+bet mode (64 of each), plus a single `index.json`.
+
+### Test the math
+
+```
+cd math-sdk
+.venv\Scripts\python.exe -m pytest tests\
+```
+
+13 tests, under a second. These cover the win calculations only and need no
+build output, so they are safe to run before a build.
+
+`run.py` finishes by verifying the published files itself and writing
+`library\stats_summary.json` - the RTP / variance / ETL figures the approval
+dashboard reads. To re-run just that check against an existing build (it
+catches payout-format issues like `ERR_MATH_OUTSIDE_RANGE` locally instead of
+on the dashboard):
 
 ```
 .venv\Scripts\python.exe -c "from utils.rgs_verification import execute_all_tests, load_game_config; execute_all_tests(load_game_config('ride_the_bus'))"
 ```
 
-Should print `[FAST PATH] base: SHA-256 OK, payout hash OK, ...` with no
-assertion errors.
+Should print `SHA-256 OK, payout hash OK, ...` with no assertion errors.
 
 ## Build & publish: web-sdk (frontend)
 
@@ -63,8 +95,28 @@ pnpm run build --filter=ride-the-bus
 **Upload the contents of `web-sdk\apps\Ride-The-Bus\build\`** to Stake
 Engine's Files page, under the Front End section.
 
+The build process does not always exit cleanly on Windows. Check for emitted
+assets in `web-sdk\apps\Ride-The-Bus\build\_app\immutable\assets\` rather than
+waiting on the exit code, and stop the dev server first - a build and a dev
+server on the same app contend with each other.
+
 Then on the dashboard: **Publish Game** → publish both Math/RGS and Front
 End (publishing only one half leaves the other stale and the game won't run).
+
+### Test the frontend
+
+```
+cd web-sdk\apps\Ride-The-Bus
+pnpm test
+```
+
+120 tests (`node --test "src/**/*.test.ts"`). One of them, `parity with the
+published books`, reads the math build out of
+`math-sdk\games\ride_the_bus\library\publish_files\` and replays real books
+through the client's payout arithmetic. It skips itself if that directory is
+missing, and **fails if the directory holds output from an older math build** -
+so if it reports mismatches, rebuild the math before believing the frontend
+broke.
 
 ## Run locally
 
@@ -93,6 +145,14 @@ fallback.
 - Each SDK folder is a full fork (framework + all sample apps/games from
   Stake Engine, not trimmed) — both need their shared framework code
   (`web-sdk/packages/*`, `math-sdk/src/*`) to build.
+- Build output and environments are gitignored and never committed:
+  `web-sdk/**/build`, `.svelte-kit`, `node_modules`, `.turbo`,
+  `math-sdk/.venv` and `math-sdk/games/ride_the_bus/library`. A fresh clone
+  therefore has no math output until you run the math build, and the
+  frontend's parity test will skip itself until you do.
+- `web-sdk/packages/*` carries local patches to the Stake SDK (search for
+  `LOCAL ADDITION`) — re-apply them if those packages are ever updated from
+  upstream.
 - `web-sdk/apps/Ride-The-Bus` keeps its own commit history from before this
   repo was restructured (see `git log` — the "Add 'web-sdk/apps/Ride-The-Bus/'
   from commit ..." merge commit and its second parent chain).
