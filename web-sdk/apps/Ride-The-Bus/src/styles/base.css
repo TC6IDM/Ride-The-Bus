@@ -57,13 +57,6 @@
   position: relative;
 }
 
-/* Image backdrop instead of the CSS-drawn one. Applied when BACKDROP is set to
-   'image' in game/backdrop.ts, which also suppresses the .scene element - so
-   this bitmap is the whole background, felt included. */
-.game-layout.backdrop-image {
-  background: var(--backdrop-url) center/cover no-repeat fixed;
-}
-
 /* Game title / branding, overlaid at the top-centre of the table. The rounded
    dark plate keeps it legible instead of blending into the felt. */
 /* Responsible-gambling readouts (net position / RTP / session clock), pinned

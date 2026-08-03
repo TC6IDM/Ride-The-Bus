@@ -1,7 +1,6 @@
 <script lang="ts">
   import { base } from '$app/paths';
   import './app.css';
-  import { BACKDROP_IMAGE, isCssBackdrop } from '../game/backdrop';
   // `ranks` is imported (rather than the order being retyped in the help text)
   // so the strip in How to Play can never drift from the order the game and
   // the math-sdk actually use.
@@ -1367,12 +1366,12 @@
 
 </script>
 
-<!-- Backdrop: either the CSS-drawn table or the shipped bitmap. Switch between
-     them with the single BACKDROP constant in game/backdrop.ts. -->
+<!-- The backdrop is drawn in CSS, always. There used to be a second path here
+     that painted a 1.9 MB bitmap instead, selected by a BACKDROP constant in
+     game/backdrop.ts; both the switch and the image are gone. -->
 <div
   class="game-layout"
-  class:backdrop-image={!isCssBackdrop}
-  style={`--flip-dur: ${flipDurSec()}s; --backdrop-url: url(${base}/${BACKDROP_IMAGE}); --logo-url: url(${base}/logo.png)`}
+  style={`--flip-dur: ${flipDurSec()}s; --logo-url: url(${base}/logo.png)`}
 >
   <!-- Custom glyphs, drawn rather than typed. The Unicode arrows and infinity
        sign vary a lot between platform fonts (weight, size, whether the glyph
@@ -1484,86 +1483,84 @@
     </div>
   {/snippet}
 
-  {#if isCssBackdrop}
-    <!-- Drawn entirely in CSS (see styles/table.css). Purely decorative, and
-         every prop is placed out toward the table's rim so the middle stays
-         clear for the cards and guesses. -->
-    <!-- Each prop is built from separate top / side / shadow layers rather than
-         one flat shape, because the volume is what sells the scene: a chip is a
-         cylinder (elliptical top + side wall), the table has a real edge, and
-         everything casts to the lower-left from a light at the upper right. -->
-    <div class="scene" aria-hidden="true">
-      <div class="table">
-        <div class="table-edge"></div>
-        <div class="table-surface">
-          <!-- The bullnose rim, lit right round the table's perimeter. -->
-          <div class="table-rim"></div>
+  <!-- Drawn entirely in CSS (see styles/table.css). Purely decorative, and
+       every prop is placed out toward the table's rim so the middle stays
+       clear for the cards and guesses. -->
+  <!-- Each prop is built from separate top / side / shadow layers rather than
+       one flat shape, because the volume is what sells the scene: a chip is a
+       cylinder (elliptical top + side wall), the table has a real edge, and
+       everything casts to the lower-left from a light at the upper right. -->
+  <div class="scene" aria-hidden="true">
+    <div class="table">
+      <div class="table-edge"></div>
+      <div class="table-surface">
+        <!-- The bullnose rim, lit right round the table's perimeter. -->
+        <div class="table-rim"></div>
 
-          <!-- The deck, top left: the same brand-red back, chrome edge and
-               Takeover chip mark as the four dealt cards (styles/cards.css), so
-               the cards visibly come from it. -->
-          <div class="prop deck p-deck">
-            <div class="deck-shadow"></div>
-            <div class="deck-stack"></div>
-            <div class="deck-face"></div>
-          </div>
-
-          <!-- A party cup either side - it is a drinking game, and a pair reads
-               as two people sitting at the table. The left one is further down
-               its drink so they are not the same object twice. -->
-          <div class="prop cup p-cup-1">
-            <div class="cup-shadow"></div>
-            <div class="cup-body">
-              <!-- The three stepped ribs below the lip and the roll above the
-                   base, which is what makes a party cup that shape and not a
-                   plain cone. Each is the front arc of a circle round the cone,
-                   so each has its own width and squash. -->
-              <div class="cup-rib rib-1"></div>
-              <div class="cup-rib rib-2"></div>
-              <div class="cup-rib rib-3"></div>
-              <div class="cup-rib rib-4"></div>
-              <div class="cup-rib rib-5"></div>
-            </div>
-            <div class="cup-rim"></div>
-            <div class="cup-inside"><div class="cup-drink"></div></div>
-          </div>
-          <div class="prop cup cup-low p-cup-2">
-            <div class="cup-shadow"></div>
-            <div class="cup-body">
-              <!-- The three stepped ribs below the lip and the roll above the
-                   base, which is what makes a party cup that shape and not a
-                   plain cone. Each is the front arc of a circle round the cone,
-                   so each has its own width and squash. -->
-              <div class="cup-rib rib-1"></div>
-              <div class="cup-rib rib-2"></div>
-              <div class="cup-rib rib-3"></div>
-              <div class="cup-rib rib-4"></div>
-              <div class="cup-rib rib-5"></div>
-            </div>
-            <div class="cup-rim"></div>
-            <div class="cup-inside"><div class="cup-drink"></div></div>
-          </div>
-
-          <!-- Two tight clusters, diagonally opposite, each holding all three
-               denominations - that is what a player's own chips look like when
-               they have been sitting there a while. An earlier pass had ten
-               loose counters ringing the table and it read as clutter. -->
-          <!-- Four stacks per cluster, set along an arc that follows the rim.
-               DOM order runs from the far end of each arc to the near one, so
-               the nearer stacks paint over the ones behind them. -->
-          {@render chipStack('chip-red', 'p-chip-1', 5)}
-          {@render chipStack('chip-blue', 'p-chip-2', 3)}
-          {@render chipStack('chip-green', 'p-chip-3', 2)}
-          {@render chipStack('chip-black', 'p-chip-4', 1)}
-
-          {@render chipStack('chip-white', 'p-chip-5', 4)}
-          {@render chipStack('chip-black', 'p-chip-6', 3)}
-          {@render chipStack('chip-red', 'p-chip-7', 2)}
-          {@render chipStack('chip-green', 'p-chip-8', 1)}
+        <!-- The deck, top left: the same brand-red back, chrome edge and
+             Takeover chip mark as the four dealt cards (styles/cards.css), so
+             the cards visibly come from it. -->
+        <div class="prop deck p-deck">
+          <div class="deck-shadow"></div>
+          <div class="deck-stack"></div>
+          <div class="deck-face"></div>
         </div>
+
+        <!-- A party cup either side - it is a drinking game, and a pair reads
+             as two people sitting at the table. The left one is further down
+             its drink so they are not the same object twice. -->
+        <div class="prop cup p-cup-1">
+          <div class="cup-shadow"></div>
+          <div class="cup-body">
+            <!-- The three stepped ribs below the lip and the roll above the
+                 base, which is what makes a party cup that shape and not a
+                 plain cone. Each is the front arc of a circle round the cone,
+                 so each has its own width and squash. -->
+            <div class="cup-rib rib-1"></div>
+            <div class="cup-rib rib-2"></div>
+            <div class="cup-rib rib-3"></div>
+            <div class="cup-rib rib-4"></div>
+            <div class="cup-rib rib-5"></div>
+          </div>
+          <div class="cup-rim"></div>
+          <div class="cup-inside"><div class="cup-drink"></div></div>
+        </div>
+        <div class="prop cup cup-low p-cup-2">
+          <div class="cup-shadow"></div>
+          <div class="cup-body">
+            <!-- The three stepped ribs below the lip and the roll above the
+                 base, which is what makes a party cup that shape and not a
+                 plain cone. Each is the front arc of a circle round the cone,
+                 so each has its own width and squash. -->
+            <div class="cup-rib rib-1"></div>
+            <div class="cup-rib rib-2"></div>
+            <div class="cup-rib rib-3"></div>
+            <div class="cup-rib rib-4"></div>
+            <div class="cup-rib rib-5"></div>
+          </div>
+          <div class="cup-rim"></div>
+          <div class="cup-inside"><div class="cup-drink"></div></div>
+        </div>
+
+        <!-- Two tight clusters, diagonally opposite, each holding all three
+             denominations - that is what a player's own chips look like when
+             they have been sitting there a while. An earlier pass had ten
+             loose counters ringing the table and it read as clutter. -->
+        <!-- Four stacks per cluster, set along an arc that follows the rim.
+             DOM order runs from the far end of each arc to the near one, so
+             the nearer stacks paint over the ones behind them. -->
+        {@render chipStack('chip-red', 'p-chip-1', 5)}
+        {@render chipStack('chip-blue', 'p-chip-2', 3)}
+        {@render chipStack('chip-green', 'p-chip-3', 2)}
+        {@render chipStack('chip-black', 'p-chip-4', 1)}
+
+        {@render chipStack('chip-white', 'p-chip-5', 4)}
+        {@render chipStack('chip-black', 'p-chip-6', 3)}
+        {@render chipStack('chip-red', 'p-chip-7', 2)}
+        {@render chipStack('chip-green', 'p-chip-8', 1)}
       </div>
     </div>
-  {/if}
+  </div>
 
   <!-- Responsible-gambling readouts, rendered only where the player's regulator
        asks for them (displayNetPosition / displayRTP / displaySessionTimer).

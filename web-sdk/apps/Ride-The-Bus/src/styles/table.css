@@ -1,10 +1,13 @@
 /* The backdrop, drawn entirely in CSS rather than shipped as a bitmap.
  *
- * Every number here was measured off static/backdrop.png rather than eyeballed
- * (scratch scripts sampled the pixels: colours, the table's bounding ellipse,
- * the rim profile, and each prop's bounding box). The reference is far darker
- * and far less saturated than it looks - the felt is #0D381E, not "green", and
- * the wood is #653008, not "brown".
+ * Every number here was measured off the render this replaces rather than
+ * eyeballed (scratch scripts sampled the pixels: colours, the table's bounding
+ * ellipse, the rim profile, and each prop's bounding box). That reference was
+ * static/backdrop.png, which is no longer in the tree - the bitmap backdrop and
+ * the constant that switched to it were removed once this took over, so recover
+ * it from git history if any of the figures below ever need re-deriving. It is
+ * far darker and far less saturated than it looks - the felt is #0D381E, not
+ * "green", and the wood is #653008, not "brown".
  *
  * Reference geometry, in the reference's own pixels (1535x1024):
  *   top face ellipse  x 102..1415, y 70..958   -> 1313 x 888, aspect 1.479

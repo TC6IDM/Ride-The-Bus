@@ -2,7 +2,6 @@
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import { base } from '$app/paths';
-  import { BACKDROP_IMAGE, isCssBackdrop } from '../game/backdrop';
   import { gameReady } from '../game/ready.svelte';
 
   type Props = { oncomplete?: () => void };
@@ -30,15 +29,13 @@
     });
   }
 
-  // Wait for the bitmaps the game needs, so nothing pops in behind the player
-  // a beat after the loader clears: the backdrop (skipped in CSS-backdrop
-  // mode, where there is no asset) and the logo, which the title plate and
-  // every card back use.
+  // Wait for the bitmaps the game needs, so nothing pops in behind the player a
+  // beat after the loader clears. That is just the logo now - the title plate
+  // and every card back use it. The backdrop used to be preloaded here too,
+  // back when it could be a 1.9 MB bitmap; it is drawn in CSS and downloads
+  // nothing.
   function preloadArt(): Promise<unknown> {
-    return Promise.all([
-      decode(`${base}/logo.png`),
-      isCssBackdrop ? Promise.resolve() : decode(`${base}/${BACKDROP_IMAGE}`),
-    ]);
+    return Promise.all([decode(`${base}/logo.png`)]);
   }
 
   // <Game /> is a sibling tree, so poll the flag it sets on mount. Polled
