@@ -47,7 +47,7 @@
   // never drift from the one the math is actually built and reweighted to.
   import gameConfig from '../game/config';
   import { t } from '../i18n/i18nDerived';
-  import { numberToCurrencyString } from 'utils-shared/amount';
+  import { currencyDecimals, numberToCurrencyString } from 'utils-shared/amount';
   import { API_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
 
   // Stake Engine requires every bet to be a single, independent, stateless
@@ -395,7 +395,11 @@
     const v = Number(raw);
     if (raw === '' || isNaN(v) || v <= 0) return;
     const snapped = snapToStep(v, stateConfig.betLimits, API_AMOUNT_MULTIPLIER);
-    betInput = snapped.toFixed(betDecimals(stateConfig.betLimits, API_AMOUNT_MULTIPLIER));
+    betInput = snapped.toFixed(
+      // The currency's own precision is the floor, not 2 - a yen bet field has
+      // no decimals to offer.
+      betDecimals(stateConfig.betLimits, API_AMOUNT_MULTIPLIER, currencyDecimals(stateBet.currency)),
+    );
   }
 
   $effect(() => {

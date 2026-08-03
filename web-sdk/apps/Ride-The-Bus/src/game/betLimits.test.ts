@@ -24,6 +24,34 @@ const limits = (min: number, max: number, step: number): BetLimits => ({
 
 const onGrid = (value: number, step: number) => Math.round(value * M) % Math.round(step * M) === 0;
 
+/**
+ * currencyDecimals (utils-shared/amount) reads a currency's precision out of
+ * Intl instead of carrying its own table. That is only safe if Intl agrees
+ * with the RGS. This locks the agreement down: the helper itself cannot be
+ * imported here, because the SDK package resolves through Vite aliases that
+ * plain `node --test` has no knowledge of.
+ */
+describe('currency precision assumed by currencyDecimals', () => {
+  test('the five RGS currencies with no subunit resolve to 0', () => {
+    for (const currency of ['JPY', 'IDR', 'KRW', 'VND', 'CLP']) {
+      const places = new Intl.NumberFormat('en', { style: 'currency', currency })
+        .resolvedOptions()
+        .maximumFractionDigits;
+      assert.equal(places, 0, `${currency} should have no decimal places`);
+    }
+  });
+
+  test('the rest of the supported list resolves to 2', () => {
+    const two = ['USD', 'CAD', 'EUR', 'RUB', 'CNY', 'PHP', 'INR', 'BRL', 'MXN', 'DKK', 'PLN', 'TRY', 'ARS', 'PEN'];
+    for (const currency of two) {
+      const places = new Intl.NumberFormat('en', { style: 'currency', currency })
+        .resolvedOptions()
+        .maximumFractionDigits;
+      assert.equal(places, 2, `${currency} should have 2 decimal places`);
+    }
+  });
+});
+
 describe('limitsAreUnknown', () => {
   test('true for null, undefined and all-zero', () => {
     assert.equal(limitsAreUnknown(null), true);
@@ -151,6 +179,18 @@ describe('betDecimals', () => {
     assert.equal(betDecimals(limits(0, 0, 1), M), 2);
     assert.equal(betDecimals(limits(0, 0, 5), M), 2);
     assert.equal(betDecimals(limits(0, 0, 0.1), M), 2);
+  });
+
+  test('takes its floor from the currency, not from a hardcoded 2', () => {
+    // JPY, IDR, KRW, VND and CLP have no subunit (docs/rgs_docs/RGS.md), so a
+    // bet field must not offer decimals that do not exist.
+    assert.equal(betDecimals(null, M, 0), 0);
+    assert.equal(betDecimals(limits(0, 0, 1), M, 0), 0);
+    assert.equal(betDecimals(limits(0, 0, 100), M, 0), 0);
+    // A currency floor never suppresses a step that genuinely needs more.
+    assert.equal(betDecimals(limits(0, 0, 0.001), M, 0), 3);
+    // and two-decimal currencies are untouched.
+    assert.equal(betDecimals(limits(0, 0, 1), M, 2), 2);
   });
 
   test('widens for a sub-cent step, which 6dp money makes possible', () => {

@@ -86,17 +86,24 @@ export function snapToStep(
  * How many decimal places the operator's step needs. A 0.10 step wants 2, but
  * a sub-cent step would be destroyed by blindly formatting to 2 - money here
  * carries six decimal places, so that is a real possibility.
+ *
+ * `currencyPlaces` is the floor, and it is the CURRENCY's own precision rather
+ * than a hardcoded 2: JPY, IDR, KRW, VND and CLP have no subunit, so a bet
+ * field showing "1000.00 yen" is offering the player decimals that do not
+ * exist. It defaults to 2 so existing callers and every two-decimal currency
+ * behave exactly as before.
  */
 export function betDecimals(
   limits: BetLimits | null | undefined,
   amountMultiplier: number,
+  currencyPlaces: number = 2,
 ): number {
   const step = limits?.stepBet || 0;
-  if (step <= 0) return 2;
+  if (step <= 0) return currencyPlaces;
   const decimal = step / amountMultiplier;
   const text = decimal.toString();
   const dot = text.indexOf('.');
-  return Math.max(2, dot === -1 ? 0 : text.length - dot - 1);
+  return Math.max(currencyPlaces, dot === -1 ? 0 : text.length - dot - 1);
 }
 
 /**

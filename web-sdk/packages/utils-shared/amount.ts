@@ -29,14 +29,39 @@ export const bookEventAmountToNormalisedAmount = (bookEventAmount: number) => {
 
 export const numberToFloat = (value: number) => Number.parseFloat(`${value}`);
 
+/**
+ * LOCAL ADDITION to the Stake SDK - re-apply if this package is updated from
+ * upstream.
+ *
+ * How many decimal places a currency actually has. Five of the currencies the
+ * RGS supports have NONE - JPY, IDR, KRW, VND and CLP (see the CurrencyMeta
+ * table in docs/rgs_docs/RGS.md) - because they have no subunit to show.
+ *
+ * Read out of Intl rather than kept as our own table, so it cannot drift from
+ * the platform and needs no maintenance when the supported list grows.
+ * Anything Intl does not recognise falls back to 2.
+ */
+export const currencyDecimals = (currency: string): number => {
+	try {
+		const resolved = new Intl.NumberFormat('en', { style: 'currency', currency }).resolvedOptions();
+		return resolved.maximumFractionDigits ?? 2;
+	} catch {
+		return 2;
+	}
+};
+
 export const numberToCurrencyString = (value: number) => {
 	if (stateBet.currency in NO_LOCALISATION_CURRENCY_MAP) {
 		return `${NO_LOCALISATION_CURRENCY_MAP[stateBet.currency]} ${numberToFloat(value).toFixed(2)}`;
 	}
 
+	// LOCAL ADDITION to the Stake SDK - re-apply if this package is updated
+	// from upstream. This used to pin minimumFractionDigits and
+	// maximumFractionDigits to 2 for every currency, which rendered a ten-yen
+	// balance as "10.00" - yen has no subunit, so the correct display is
+	// "10". Letting Intl use each currency's own default fixes JPY, IDR, KRW,
+	// VND and CLP and changes nothing for the other sixteen.
 	return stateI18n.i18n.number(value, {
-		minimumFractionDigits: 2,
-		maximumFractionDigits: 2,
 		style: 'currency',
 		currency: stateBet.currency,
 		// numberingSystem: 'latn',
