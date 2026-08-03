@@ -93,6 +93,7 @@ export default {
 	Red: 'Merah',
 	Black: 'Hitam',
 	Equal: 'Sama',
+	'Not possible after guessing Equal': 'Tidak mungkin setelah memilih Sama',
 	Heart: 'Hati',
 	Diamond: 'Wajik',
 	Club: 'Keriting',

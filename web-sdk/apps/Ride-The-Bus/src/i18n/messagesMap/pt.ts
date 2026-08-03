@@ -92,6 +92,7 @@ export default {
 	Red: 'Vermelho',
 	Black: 'Preto',
 	Equal: 'Igual',
+	'Not possible after guessing Equal': 'Não é possível depois de escolher Igual',
 	Heart: 'Copas',
 	Diamond: 'Ouros',
 	Club: 'Paus',

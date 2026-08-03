@@ -95,6 +95,7 @@ export default {
 	Red: 'أحمر',
 	Black: 'أسود',
 	Equal: 'متساوٍ',
+	'Not possible after guessing Equal': 'غير ممكن بعد اختيار متساوٍ',
 	Heart: 'قلب',
 	Diamond: 'ديناري',
 	Club: 'سباتي',

@@ -91,6 +91,7 @@ export default {
 	Red: '红色',
 	Black: '黑色',
 	Equal: '相同',
+	'Not possible after guessing Equal': '选择“相同”后无法选择',
 	Heart: '红桃',
 	Diamond: '方块',
 	Club: '梅花',

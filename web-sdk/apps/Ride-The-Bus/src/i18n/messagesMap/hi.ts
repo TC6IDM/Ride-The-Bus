@@ -92,6 +92,7 @@ export default {
 	Red: 'लाल',
 	Black: 'काला',
 	Equal: 'बराबर',
+	'Not possible after guessing Equal': 'बराबर चुनने के बाद संभव नहीं',
 	Heart: 'पान',
 	Diamond: 'ईंट',
 	Club: 'चिड़ी',

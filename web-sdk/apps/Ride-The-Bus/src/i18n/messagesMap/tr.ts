@@ -92,6 +92,7 @@ export default {
 	Red: 'Kırmızı',
 	Black: 'Siyah',
 	Equal: 'Eşit',
+	'Not possible after guessing Equal': 'Eşit seçildikten sonra mümkün değil',
 	Heart: 'Kupa',
 	Diamond: 'Karo',
 	Club: 'Sinek',

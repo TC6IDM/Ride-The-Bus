@@ -111,6 +111,7 @@ export default {
 	Red: 'Red',
 	Black: 'Black',
 	Equal: 'Equal',
+	'Not possible after guessing Equal': 'Not possible after guessing Equal',
 	Heart: 'Heart',
 	Diamond: 'Diamond',
 	Club: 'Club',

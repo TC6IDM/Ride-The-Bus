@@ -94,6 +94,7 @@ export default {
 	Red: 'Rojo',
 	Black: 'Negro',
 	Equal: 'Igual',
+	'Not possible after guessing Equal': 'No es posible tras elegir Igual',
 	Heart: 'Corazones',
 	Diamond: 'Diamantes',
 	Club: 'Tréboles',

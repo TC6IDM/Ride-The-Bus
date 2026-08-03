@@ -455,6 +455,22 @@
     return current === next ? null : next;
   }
 
+  // The turbo slider sounds its own position - pitch climbs to the right, falls
+  // to the left. Read off the event target rather than turboSpeed so it cannot
+  // depend on whether bind:value has been applied by the time this runs.
+  //
+  // Guarded on the value actually changing: a range input fires `input` for
+  // pointer movement inside the current step too, which without this retriggers
+  // the same note over and over while the thumb is merely being nudged.
+  let lastTurboTick = -1;
+
+  function onTurboInput(event: Event) {
+    const value = Number((event.currentTarget as HTMLInputElement).value);
+    if (!Number.isFinite(value) || value === lastTurboTick) return;
+    lastTurboTick = value;
+    sound.playSliderTick(value);
+  }
+
   function setColorChoice(next: ColorChoice) {
     colorChoice = toggle(colorChoice, next);
   }
@@ -1292,8 +1308,21 @@
   // Committing to a guess, nudging the bet and closing a popup are different
   // sorts of action and now sound like it. Anything unrecognised falls through
   // to 'soft', so a button added later is still covered - just generically.
+  // Which guess column a button sits in: 0 colour, 1 higher/lower, 2 inside/
+  // outside, 3 suit. The press cue climbs a whole tone per column, so the row
+  // is audibly a sequence rather than four interchangeable taps. -1 for
+  // anything outside the guess row, where the stage means nothing.
+  const CHOICE_SQUARES = ['.color-square', '.hl-square', '.io-square', '.suit-square'];
+
+  function choiceStageFor(el: HTMLElement): number {
+    return CHOICE_SQUARES.findIndex((selector) => el.closest(selector));
+  }
+
   function pressKindFor(el: HTMLElement): PressKind {
-    if (el.closest('.half-btn, .third-btn, .quad-btn, .equal-btn')) return 'choice';
+    // Checked before the halves and thirds, because an equal badge overlaps
+    // them and is the more specific match.
+    if (el.closest('.equal-btn')) return 'equal';
+    if (el.closest('.half-btn, .third-btn, .quad-btn')) return 'choice';
     if (el.closest('.cb-step, .stepper-btn, .bet-cell, .cb-bet-display')) return 'chip';
     if (el.closest('.cb-spin, .cb-round, .cb-float, .popup-start')) return 'primary';
     if (el.closest('.switch, .cb-icon')) return 'toggle';
@@ -1305,7 +1334,8 @@
     // Disabled buttons don't dispatch clicks at all, but a click landing on a
     // child of one can still bubble here, and a dead control shouldn't sound.
     if (!el || (el as HTMLButtonElement).disabled) return;
-    sound.playPress(pressKindFor(el as HTMLElement));
+    const target = el as HTMLElement;
+    sound.playPress(pressKindFor(target), Math.max(0, choiceStageFor(target)));
   }
 
   $effect(() => {
@@ -1911,6 +1941,7 @@
             max={jurisdiction.superTurboDisabled() ? TURBO_CAP_WITHOUT_SUPER : 1}
             step="0.05"
             bind:value={turboSpeed}
+            oninput={onTurboInput}
             aria-label={t('Turbo speed')}
           />
           <span class="turbo-end">{jurisdiction.superTurboDisabled() ? t('Fast') : t('Instant')}</span>

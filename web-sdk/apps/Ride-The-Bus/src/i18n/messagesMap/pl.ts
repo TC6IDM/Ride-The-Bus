@@ -94,6 +94,7 @@ export default {
 	Red: 'Czerwony',
 	Black: 'Czarny',
 	Equal: 'Równo',
+	'Not possible after guessing Equal': 'Niemożliwe po wybraniu Równo',
 	Heart: 'Kier',
 	Diamond: 'Karo',
 	Club: 'Trefl',

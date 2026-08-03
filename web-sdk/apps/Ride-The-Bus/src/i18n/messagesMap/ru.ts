@@ -93,6 +93,7 @@ export default {
 	Red: 'Красный',
 	Black: 'Чёрный',
 	Equal: 'Равно',
+	'Not possible after guessing Equal': 'Невозможно после выбора «Равно»',
 	Heart: 'Червы',
 	Diamond: 'Бубны',
 	Club: 'Трефы',

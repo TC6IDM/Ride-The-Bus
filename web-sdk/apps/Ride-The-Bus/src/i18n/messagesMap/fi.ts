@@ -94,6 +94,7 @@ export default {
 	Red: 'Punainen',
 	Black: 'Musta',
 	Equal: 'Yhtä suuri',
+	'Not possible after guessing Equal': 'Ei mahdollista Yhtä suuri -valinnan jälkeen',
 	Heart: 'Hertta',
 	Diamond: 'Ruutu',
 	Club: 'Risti',

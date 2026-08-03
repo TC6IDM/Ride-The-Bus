@@ -92,6 +92,7 @@ export default {
 	Red: '빨강',
 	Black: '검정',
 	Equal: '이퀄',
+	'Not possible after guessing Equal': '이퀄을 선택하면 불가능합니다',
 	Heart: '하트',
 	Diamond: '다이아몬드',
 	Club: '클로버',

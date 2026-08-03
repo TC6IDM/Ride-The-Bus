@@ -92,6 +92,7 @@ export default {
 	Red: '赤',
 	Black: '黒',
 	Equal: 'イコール',
+	'Not possible after guessing Equal': 'イコールを選んだ後は選べません',
 	Heart: 'ハート',
 	Diamond: 'ダイヤ',
 	Club: 'クラブ',

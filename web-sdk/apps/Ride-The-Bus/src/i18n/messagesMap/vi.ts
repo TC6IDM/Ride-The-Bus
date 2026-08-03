@@ -93,6 +93,7 @@ export default {
 	Red: 'Đỏ',
 	Black: 'Đen',
 	Equal: 'Bằng nhau',
+	'Not possible after guessing Equal': 'Không thể chọn sau khi đã chọn Bằng nhau',
 	Heart: 'Cơ',
 	Diamond: 'Rô',
 	Club: 'Chuồn',
