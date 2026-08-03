@@ -17,7 +17,12 @@ const primaryMachines = createPrimaryMachines<Bet>({
 			(emitterEvent) => emitterEvent?.type === 'reveal',
 		);
 
-		if (lastRevealEvent) stateGameDerived.enhancedBoard.settle(lastRevealEvent.board);
+			// settle() with no board, unlike the slot template this came from.
+			// A reveal event here carries a Card, never a reel board - the
+			// property simply does not exist on the union in typesBookEvent.ts,
+			// so `lastRevealEvent.board` has always been undefined at runtime
+			// and this is what it was already doing.
+			if (lastRevealEvent) stateGameDerived.enhancedBoard.settle();
 	},
 	onNewGameStart: async () => {
 		if ((stateBet.isTurbo && stateXstateDerived.isAutoBetting()) || stateBet.isSpaceHold) return;

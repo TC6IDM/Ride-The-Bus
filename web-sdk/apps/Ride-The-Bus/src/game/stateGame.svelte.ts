@@ -1,14 +1,12 @@
 import _ from 'lodash';
 import type { Tween } from 'svelte/motion';
 
-import { stateBet } from 'state-shared';
 import { createEnhanceBoard, createReelForCascading } from 'utils-slots';
 import { createGetWinLevelDataByWinLevelAlias } from 'utils-shared/winLevel';
 
 import type { GameType, RawSymbol, SymbolState } from './types';
 import { stateLayoutDerived } from './stateLayout';
 import { winLevelMap } from './winLevelMap';
-import { eventEmitter } from './eventEmitter';
 import {
 	SYMBOL_SIZE,
 	BOARD_SIZES,
@@ -17,25 +15,24 @@ import {
 	SPIN_OPTIONS_DEFAULT,
 	SPIN_OPTIONS_FAST,
 	INITIAL_SYMBOL_STATE,
-	SCATTER_LAND_SOUND_MAP,
 } from './constants';
 
-const onSymbolLand = ({ rawSymbol }: { rawSymbol: RawSymbol }) => {
-	if (rawSymbol.name === 'S') {
-		eventEmitter.broadcast({ type: 'soundScatterCounterIncrease' });
-		eventEmitter.broadcast({
-			type: 'soundOnce',
-			name: SCATTER_LAND_SOUND_MAP[scatterLandIndex()],
-		});
-	}
-
-	if (rawSymbol.name === 'W') {
-		eventEmitter.broadcast({
-			type: 'soundOnce',
-			name: 'sfx_multiplier_landing',
-		});
-	}
-};
+/**
+ * Required by the reel type, and deliberately empty.
+ *
+ * This fired the slot template's scatter and wild landing sounds. Both the
+ * trigger and the destination are gone: this game has no reels, so no symbol
+ * ever lands, and the `soundOnce` / `soundScatterCounterIncrease` events it
+ * broadcast belonged to Sound.svelte, a component deleted with the rest of the
+ * template. Audio here is synthesised in game/sound.ts and driven directly by
+ * the reveal, not through the emitter.
+ *
+ * Kept rather than deleted because utils-slots types both reel callbacks as
+ * required (packages/utils-slots/src/types.ts), and the board they belong to is
+ * load-bearing for the types that flow through to game/context.ts - see the
+ * note in game/config.ts.
+ */
+const onSymbolLand = (_args: { rawSymbol: RawSymbol }) => {};
 
 const board = _.range(BOARD_DIMENSIONS.x).map((reelIndex) => {
 	const reel = createReelForCascading({
@@ -43,13 +40,10 @@ const board = _.range(BOARD_DIMENSIONS.x).map((reelIndex) => {
 		symbolHeight: SYMBOL_SIZE,
 		initialSymbols: INITIAL_BOARD[reelIndex],
 		initialSymbolState: INITIAL_SYMBOL_STATE,
-		onReelStopping: () => {
-			eventEmitter.broadcast({
-				type: 'soundOnce',
-				name: 'sfx_reel_stop_1',
-				forcePlay: !stateBet.isTurbo,
-			});
-		},
+		// Empty for the same reason as onSymbolLand above: no reel ever spins
+		// here, and the sound event this broadcast belonged to a deleted
+		// component.
+		onReelStopping: () => {},
 		onSymbolLand,
 	});
 

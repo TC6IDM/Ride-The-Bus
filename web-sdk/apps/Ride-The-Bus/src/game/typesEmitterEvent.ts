@@ -1,18 +1,30 @@
-import type { EmitterEventBoard } from '../components/Board.svelte';
-import type { EmitterEventBoardFrame } from '../components/BoardFrame.svelte';
-import type { EmitterEventFreeSpinIntro } from '../components/FreeSpinIntro.svelte';
-import type { EmitterEventFreeSpinCounter } from '../components/FreeSpinCounter.svelte';
-import type { EmitterEventFreeSpinOutro } from '../components/FreeSpinOutro.svelte';
-import type { EmitterEventWin } from '../components/Win.svelte';
-import type { EmitterEventSound } from '../components/Sound.svelte';
-import type { EmitterEventTransition } from '../components/Transition.svelte';
+/**
+ * The emitter events this game broadcasts.
+ *
+ * This file used to import eight event types from Board.svelte,
+ * BoardFrame.svelte, FreeSpinIntro.svelte, Win.svelte and friends - components
+ * belonging to the slot template that were deleted when this game replaced it.
+ * The imports survived because TypeScript resolves `*.svelte` through a wildcard
+ * ambient declaration, so it reported "no exported member" rather than a missing
+ * file, and nothing in the build ever failed: `tsc` was never actually being
+ * run (`npx tsc` resolves to a decoy package, not TypeScript), and Vite strips
+ * type-only imports without resolving them.
+ *
+ * What the game actually emits is the two events in bookEventHandlerMap.ts, one
+ * per book event type the math produces.
+ */
+import type { BookEventOfType } from './typesBookEvent';
 
-export type EmitterEventGame =
-	| EmitterEventBoard
-	| EmitterEventBoardFrame
-	| EmitterEventWin
-	| EmitterEventFreeSpinIntro
-	| EmitterEventFreeSpinCounter
-	| EmitterEventFreeSpinOutro
-	| EmitterEventSound
-	| EmitterEventTransition;
+/** A card turning over, broadcast per reveal event in the book. */
+export type EmitterEventEngineReveal = {
+	type: 'engineReveal';
+	data: BookEventOfType<'reveal'>;
+};
+
+/** The round's settled payout. */
+export type EmitterEventFinalWin = {
+	type: 'finalWin';
+	data: BookEventOfType<'finalWin'>;
+};
+
+export type EmitterEventGame = EmitterEventEngineReveal | EmitterEventFinalWin;

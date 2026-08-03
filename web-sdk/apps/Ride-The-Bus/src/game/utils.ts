@@ -5,7 +5,7 @@ import { createGetEmptyPaddedBoard } from 'utils-slots';
 
 import { SYMBOL_SIZE, REEL_PADDING, SYMBOL_INFO_MAP, BOARD_DIMENSIONS } from './constants';
 import { eventEmitter } from './eventEmitter';
-import type { Bet, BookEventOfType } from './typesBookEvent';
+import type { Bet } from './typesBookEvent';
 import { bookEventHandlerMap } from './bookEventHandlerMap';
 import type { RawSymbol, SymbolState } from './types';
 
@@ -18,34 +18,29 @@ export const playBet = async (bet: Bet) => {
 	eventEmitter.broadcast({ type: 'stopButtonEnable' });
 };
 
-// resume bet
-const BOOK_EVENT_TYPES_TO_RESERVE_FOR_SNAPSHOT = [
-	'updateGlobalMult',
-	'freeSpinTrigger',
-	'updateFreeSpin',
-	'setTotalWin',
-];
-
+/**
+ * Trim a partly-played round down to the events still to come.
+ *
+ * The slot template this came from also prepended a synthetic
+ * `createBonusSnapshot` event carrying the bonus state accumulated before the
+ * resume point - global multiplier, free-spin counters, running total. None of
+ * that exists here: this game's book events are `reveal` and `finalWin` only,
+ * so the four types it collected for the snapshot could never match anything,
+ * the snapshot was always empty, and no handler in bookEventHandlerMap.ts would
+ * have processed it if it had not been. It also did not typecheck -
+ * BookEventOfType<'createBonusSnapshot'> resolves to `never` against this
+ * game's union - which went unnoticed because `tsc` was never actually running.
+ *
+ * Dropping it changes nothing at runtime and lets the types describe what the
+ * function really does.
+ */
 export const convertTorResumableBet = (lastBetData: Bet) => {
 	const resumingIndex = Number(lastBetData.event);
-	const bookEventsBeforeResume = lastBetData.state.filter(
-		(_, eventIndex) => eventIndex < resumingIndex,
-	);
 	const bookEventsAfterResume = lastBetData.state.filter(
 		(_, eventIndex) => eventIndex >= resumingIndex,
 	);
 
-	const bookEventToCreateSnapshot: BookEventOfType<'createBonusSnapshot'> = {
-		index: 0,
-		type: 'createBonusSnapshot',
-		bookEvents: bookEventsBeforeResume.filter((bookEvent) =>
-			BOOK_EVENT_TYPES_TO_RESERVE_FOR_SNAPSHOT.includes(bookEvent.type),
-		),
-	};
-
-	const stateToResume = [bookEventToCreateSnapshot, ...bookEventsAfterResume];
-
-	return { ...lastBetData, state: stateToResume };
+	return { ...lastBetData, state: bookEventsAfterResume };
 };
 
 // other utils
