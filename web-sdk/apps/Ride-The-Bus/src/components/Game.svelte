@@ -28,6 +28,7 @@
   //                  signal it is not expected of a game like this.
   import { requestBet, requestEndRound } from 'rgs-requests';
   import { sound, type PressKind } from '../game/sound';
+  import { isCombinationPlayable } from '../game/modes';
   import { gameReady } from '../game/ready.svelte';
   import { jurisdiction, TURBO_CAP_WITHOUT_SUPER } from '../game/jurisdiction.svelte';
   // Payout maths and bet-grid arithmetic live in plain modules so they can be
@@ -431,6 +432,50 @@
   });
 
   const allChoicesMade = () => Boolean(colorChoice && hlChoice && ioChoice && suitChoice);
+
+  // --- The one impossible pairing --------------------------------------------
+  // Stage 2 "equal" ties card 2 to card 1's rank, which leaves nothing strictly
+  // between them for stage 3 "inside" to land on. The math does not publish that
+  // combination (64 modes, not 72 - see game/modes.ts), so the client must not
+  // offer it either: the mode string is built by concatenating the four choices,
+  // and naming a mode that does not exist gets the bet rejected by the RGS.
+  //
+  // It survived this long because it is invisible locally - without a sessionID
+  // and rgs_url the game deals from roundContract and never sends a mode at all.
+  const insideIsPossible = () => isCombinationPlayable(hlChoice, 'inside');
+
+  // --- Picking, and un-picking -----------------------------------------------
+  // Every choice toggles: clicking the option already selected clears it. There
+  // is no other way to undo a guess - the four groups have no "none" button -
+  // so without this a misclick could only be corrected by choosing one of the
+  // other options in that group, and never by changing your mind back to
+  // undecided. Clearing any one choice disables Start, which is correct: the
+  // bet mode needs all four.
+  function toggle<T>(current: T | null, next: T): T | null {
+    return current === next ? null : next;
+  }
+
+  function setColorChoice(next: ColorChoice) {
+    colorChoice = toggle(colorChoice, next);
+  }
+
+  function setSuitChoice(next: SuitChoice) {
+    suitChoice = toggle(suitChoice, next);
+  }
+
+  function setIoChoice(next: InsideOutsideChoice) {
+    ioChoice = toggle(ioChoice, next);
+  }
+
+  // Choosing Equal at stage 2 retires Inside at stage 3. If it was already
+  // picked it is cleared rather than silently left selected-but-impossible,
+  // which would leave the Start button enabled on a bet that cannot be placed.
+  // Un-picking Equal makes Inside available again, which falls out of
+  // insideIsPossible() reading hlChoice directly.
+  function setHlChoice(next: HigherLowerChoice) {
+    hlChoice = toggle(hlChoice, next);
+    if (!isCombinationPlayable(hlChoice, ioChoice)) ioChoice = null;
+  }
   const isEngineRound = () => roundSource !== 'local-fallback' && roundSource !== 'none';
   const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
@@ -1665,36 +1710,44 @@
       <div class="choice-column">
         <span class="choice-label">{t('Color')}</span>
         <div class="choice-square color-square" role="group" aria-label={t('Pick a color')}>
-          <button type="button" class="half-btn black-half" class:selected={colorChoice === 'black'} onclick={() => (colorChoice = 'black')} aria-label={t('Black')}></button>
-          <button type="button" class="half-btn red-half" class:selected={colorChoice === 'red'} onclick={() => (colorChoice = 'red')} aria-label={t('Red')}></button>
+          <button type="button" class="half-btn black-half" class:selected={colorChoice === 'black'} onclick={() => setColorChoice('black')} aria-label={t('Black')}></button>
+          <button type="button" class="half-btn red-half" class:selected={colorChoice === 'red'} onclick={() => setColorChoice('red')} aria-label={t('Red')}></button>
         </div>
       </div>
 
       <div class="choice-column">
         <span class="choice-label">{t('Higher')}<br />{t('Lower')}</span>
         <div class="choice-square hl-square" role="group" aria-label={t('Higher, lower, or equal')}>
-          <button type="button" class="third-btn higher-third" class:selected={hlChoice === 'higher'} onclick={() => (hlChoice = 'higher')} aria-label={t('Higher')}>{@render iconTriangleUp()}</button>
-          <button type="button" class="third-btn lower-third" class:selected={hlChoice === 'lower'} onclick={() => (hlChoice = 'lower')} aria-label={t('Lower')}>{@render iconTriangleDown()}</button>
-          <button type="button" class="equal-btn" class:selected={hlChoice === 'equal'} onclick={() => (hlChoice = 'equal')} aria-label={t('Equal')}>{@render iconEquals()}</button>
+          <button type="button" class="third-btn higher-third" class:selected={hlChoice === 'higher'} onclick={() => setHlChoice('higher')} aria-label={t('Higher')}>{@render iconTriangleUp()}</button>
+          <button type="button" class="third-btn lower-third" class:selected={hlChoice === 'lower'} onclick={() => setHlChoice('lower')} aria-label={t('Lower')}>{@render iconTriangleDown()}</button>
+          <button type="button" class="equal-btn" class:selected={hlChoice === 'equal'} onclick={() => setHlChoice('equal')} aria-label={t('Equal')}>{@render iconEquals()}</button>
         </div>
       </div>
 
       <div class="choice-column">
         <span class="choice-label">{t('Inside')}<br />{t('Outside')}</span>
         <div class="choice-square io-square" role="group" aria-label={t('Inside, outside, or equal')}>
-          <button type="button" class="half-btn inside-half" class:selected={ioChoice === 'inside'} onclick={() => (ioChoice = 'inside')} aria-label={t('Inside')}>{@render iconInside()}</button>
-          <button type="button" class="half-btn outside-half" class:selected={ioChoice === 'outside'} onclick={() => (ioChoice = 'outside')} aria-label={t('Outside')}>{@render iconOutside()}</button>
-          <button type="button" class="equal-btn" class:selected={ioChoice === 'equal'} onclick={() => (ioChoice = 'equal')} aria-label={t('Equal')}>{@render iconEquals()}</button>
+          <button
+            type="button"
+            class="half-btn inside-half"
+            class:selected={ioChoice === 'inside'}
+            onclick={() => setIoChoice('inside')}
+            disabled={!insideIsPossible()}
+            title={insideIsPossible() ? undefined : t('Not possible after guessing Equal')}
+            aria-label={t('Inside')}
+          >{@render iconInside()}</button>
+          <button type="button" class="half-btn outside-half" class:selected={ioChoice === 'outside'} onclick={() => setIoChoice('outside')} aria-label={t('Outside')}>{@render iconOutside()}</button>
+          <button type="button" class="equal-btn" class:selected={ioChoice === 'equal'} onclick={() => setIoChoice('equal')} aria-label={t('Equal')}>{@render iconEquals()}</button>
         </div>
       </div>
 
       <div class="choice-column">
         <span class="choice-label">{t('Suit')}</span>
         <div class="choice-square suit-square" role="group" aria-label={t('Pick a suit')}>
-          <button type="button" class="quad-btn red-suit" class:selected={suitChoice === 'heart'} onclick={() => (suitChoice = 'heart')} aria-label={t('Heart')}>♥</button>
-          <button type="button" class="quad-btn" class:selected={suitChoice === 'spade'} onclick={() => (suitChoice = 'spade')} aria-label={t('Spade')}>♠</button>
-          <button type="button" class="quad-btn" class:selected={suitChoice === 'club'} onclick={() => (suitChoice = 'club')} aria-label={t('Club')}>♣</button>
-          <button type="button" class="quad-btn red-suit" class:selected={suitChoice === 'diamond'} onclick={() => (suitChoice = 'diamond')} aria-label={t('Diamond')}>♦</button>
+          <button type="button" class="quad-btn red-suit" class:selected={suitChoice === 'heart'} onclick={() => setSuitChoice('heart')} aria-label={t('Heart')}>♥</button>
+          <button type="button" class="quad-btn" class:selected={suitChoice === 'spade'} onclick={() => setSuitChoice('spade')} aria-label={t('Spade')}>♠</button>
+          <button type="button" class="quad-btn" class:selected={suitChoice === 'club'} onclick={() => setSuitChoice('club')} aria-label={t('Club')}>♣</button>
+          <button type="button" class="quad-btn red-suit" class:selected={suitChoice === 'diamond'} onclick={() => setSuitChoice('diamond')} aria-label={t('Diamond')}>♦</button>
         </div>
       </div>
     </div>
