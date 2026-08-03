@@ -27,7 +27,7 @@
   //                  The SDK ships no helper for it at all, which is a fair
   //                  signal it is not expected of a game like this.
   import { requestBet, requestEndRound } from 'rgs-requests';
-  import { sound } from '../game/sound';
+  import { sound, type PressKind } from '../game/sound';
   import { gameReady } from '../game/ready.svelte';
   import { jurisdiction, TURBO_CAP_WITHOUT_SUPER } from '../game/jurisdiction.svelte';
   // Payout maths and bet-grid arithmetic live in plain modules so they can be
@@ -229,7 +229,7 @@
     muted = sound.toggleMuted();
     // Unmuting should be audible; also doubles as the user gesture that lets the
     // browser start the audio context.
-    if (!muted) sound.playPress();
+    if (!muted) sound.playPress('toggle');
   }
   let autoRoundsInput = $state('10');
   let autoInfinite = $state(false);
@@ -1185,10 +1185,12 @@
     spaceDown = true;
 
     // A live auto run treats Space like the Stop button.
-    if (autoRunning) { sound.playPress(); onSpin(); return; }
+    if (autoRunning) { sound.playPress('primary'); onSpin(); return; }
     if (spinDisabled()) return;
 
-    sound.playPress(); // keyboard activation isn't a click, so sound it here
+    // Keyboard activation isn't a click, so it never reaches the delegated
+    // handler - sound it here, as the primary control Space stands in for.
+    sound.playPress('primary');
     onSpin(); // the tap: one round, straight away
     spaceHoldTimer = setTimeout(() => {
       spaceHoldTimer = null;
@@ -1239,12 +1241,26 @@
   // handlers: one place to change, nothing to forget, and buttons added later
   // are covered for free. Capture phase so the cue fires before the handler
   // runs - notably the mute button, which should still be audible as it mutes.
+  //
+  // The kind is read off the button's own class, because all 34 of them sharing
+  // one identical click was the single most mechanical thing about the audio.
+  // Committing to a guess, nudging the bet and closing a popup are different
+  // sorts of action and now sound like it. Anything unrecognised falls through
+  // to 'soft', so a button added later is still covered - just generically.
+  function pressKindFor(el: HTMLElement): PressKind {
+    if (el.closest('.half-btn, .third-btn, .quad-btn, .equal-btn')) return 'choice';
+    if (el.closest('.cb-step, .stepper-btn, .bet-cell, .cb-bet-display')) return 'chip';
+    if (el.closest('.cb-spin, .cb-round, .cb-float, .popup-start')) return 'primary';
+    if (el.closest('.switch, .cb-icon')) return 'toggle';
+    return 'soft';
+  }
+
   function onDocumentClick(event: MouseEvent) {
     const el = (event.target as HTMLElement | null)?.closest?.('button');
     // Disabled buttons don't dispatch clicks at all, but a click landing on a
     // child of one can still bubble here, and a dead control shouldn't sound.
     if (!el || (el as HTMLButtonElement).disabled) return;
-    sound.playPress();
+    sound.playPress(pressKindFor(el as HTMLElement));
   }
 
   $effect(() => {
