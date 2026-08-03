@@ -40,8 +40,20 @@
      left is a deep vignette, which is what actually makes the table read as
      lit. Any weave belongs on a felt playing surface, and this is a room. */
   background:
-    radial-gradient(ellipse 88% 80% at 50% 46%, #113724 0%, #0e2e1e 42%, #082014 76%, #04120b 100%),
-    #0a2417;
+    /* The vignette proper, kept as its own layer over the floor colour so the
+       falloff can bite hard at the frame edge without dragging the middle of
+       the room down with it. Flat until 56% out - past that it closes down to
+       near black in the corners, which is what pushes the eye into the table
+       and reads as a lit room rather than a green backdrop. */
+    radial-gradient(
+      ellipse 76% 70% at 50% 46%,
+      transparent 0%,
+      rgba(0, 0, 0, 0.1) 56%,
+      rgba(0, 0, 0, 0.4) 80%,
+      rgba(0, 0, 0, 0.74) 100%
+    ),
+    radial-gradient(ellipse 88% 80% at 50% 46%, #123a26 0%, #0e2e1e 42%, #071c12 76%, #030d08 100%),
+    #071a10;
 }
 
 /* ---- the table ---------------------------------------------------------- */
@@ -71,6 +83,12 @@
      extra width shows as more felt down the sides. */
   width: min(96vw, 130vh);
   aspect-ratio: 1.479 / 1;
+  /* A container in its own right, so .table-edge and .table-surface can size
+     their shadows in cqw against the TABLE. Without it their cqw fell through
+     to the viewport, which meant the ambient occlusion round the rim grew and
+     shrank against a table that was not changing size with it. Props are
+     unaffected: they sit inside .table-surface, which is a nearer container. */
+  container-type: inline-size;
 }
 
 /* The apron: the same ellipse pushed down, in much darker wood, so the crescent
@@ -83,9 +101,14 @@
   border-radius: 50%;
   transform: translateY(4.8%);
   background: linear-gradient(180deg, #46220a 0%, #401d04 26%, #3a1a01 58%, #331600 100%);
+  /* The shadow the table drops on the floor, offset DOWN AND LEFT like every
+     other shadow in the scene. These were percentages until now - box-shadow
+     offsets have to be lengths, so the browser threw the whole declaration out
+     and the table stood on the felt with no shadow whatsoever. In cqw they are
+     a fraction of the table width and hold at any size. */
   box-shadow:
-    0 1.4% 1.6% rgba(0, 0, 0, 0.5),
-    0 3.4% 5% rgba(0, 0, 0, 0.42);
+    -0.4cqw 1.1cqw 1.5cqw rgba(0, 0, 0, 0.5),
+    -1.3cqw 2.8cqw 4.6cqw rgba(0, 0, 0, 0.44);
 }
 
 /* The top face. Sampled across the middle: #5D2D09 at the left rim, peaking
@@ -98,22 +121,34 @@
   /* 1cqw = 1% of the table's width, for every prop below. */
   container-type: size;
   background:
-    radial-gradient(ellipse 62% 58% at 53% 45%, rgba(255, 178, 92, 0.045), transparent 76%),
+    /* The pool of light the cards are dealt into. Tighter and brighter than the
+       broad wash it replaces, and centred on the card row rather than on the
+       table, so the middle of the shot lifts clear of its surroundings. */
+    radial-gradient(
+      ellipse 44% 42% at 51% 44%,
+      rgba(255, 190, 112, 0.1),
+      rgba(255, 184, 104, 0.04) 52%,
+      transparent 78%
+    ),
+    /* Edge darkening as its own layer: the gradient below sets the colour of the
+       wood, this sets how far the rim falls away. Held flat until 60% so it only
+       takes hold out past the props and never touches the cards. */
+    radial-gradient(closest-side, transparent 0 60%, rgba(20, 7, 0, 0.16) 82%, rgba(12, 4, 0, 0.4) 100%),
     radial-gradient(
       ellipse 76% 74% at 51% 46%,
-      #6a3307 0%,
-      #653007 32%,
-      #5c2b06 64%,
-      #542706 86%,
-      #4a2104 100%
+      #6e3608 0%,
+      #663108 32%,
+      #592906 64%,
+      #4c2204 86%,
+      #3d1a03 100%
     );
   /* Ambient occlusion where the face turns over into the rim - it is what stops
      the rim reading as a painted-on outline. Lives on the element rather than a
      pseudo-element so it paints below every child (an ::after sits ABOVE them
      in DOM order, and was quietly wiping out the lit rim beneath it). */
   box-shadow:
-    inset 0 0 3cqw rgba(30, 12, 0, 0.28),
-    inset 0 -0.6cqw 1.4cqw rgba(0, 0, 0, 0.2);
+    inset 0 0 6cqw rgba(24, 9, 0, 0.42),
+    inset 0 -0.8cqw 1.9cqw rgba(0, 0, 0, 0.24);
 }
 
 /* The surface of the wood, in two parts.
@@ -143,15 +178,56 @@
       rgba(255, 228, 194, 0.03) 50%,
       transparent 64%
     ),
+    /* The board seams. Pulled back to about a third of their old contrast: they
+       still say "boards" at a glance but they no longer draw as a set of ruled
+       horizontal lines across the shot, which is the one thing a table this
+       size cannot afford. */
     repeating-linear-gradient(
       0deg,
       transparent 0 10.6cqw,
-      rgba(46, 20, 0, 0.22) 10.6cqw 10.75cqw,
-      rgba(255, 210, 165, 0.04) 10.75cqw 10.95cqw,
+      rgba(46, 20, 0, 0.09) 10.6cqw 10.75cqw,
+      rgba(255, 210, 165, 0.018) 10.75cqw 10.95cqw,
       transparent 10.95cqw 11.3cqw
     ),
-    /* the faintest long grain, following the boards */
-    repeating-linear-gradient(89.4deg, rgba(255, 208, 160, 0.016) 0 0.1cqw, transparent 0.1cqw 1.6cqw);
+    /* Broad figure: three soft patches of lighter and darker timber, which is
+       what actually breaks up a surface this size. Lines alone cannot do it -
+       they subdivide the area without varying it. Placed out in the quadrants
+       and kept clear of the card row so they never fight the pool of light. */
+    radial-gradient(ellipse 40% 26% at 21% 31%, rgba(255, 206, 158, 0.03), transparent 70%),
+    radial-gradient(ellipse 34% 22% at 76% 63%, rgba(46, 20, 0, 0.055), transparent 72%),
+    radial-gradient(ellipse 46% 17% at 60% 15%, rgba(46, 20, 0, 0.04), transparent 75%),
+    /* Grain, in three passes ALONG the boards - the single pass this replaces
+       ran at 89.4deg, across them, which is not how a board is cut.
+       Each pass puts two or three lines at UNEVEN spacings inside its period,
+       and the three periods (2.3 / 3.1 / 4.7 cqw) share no common factor, so
+       nothing lines up twice and the result reads as figure rather than as
+       ruling. Evenly spaced single lines were the first attempt here and they
+       simply put back the horizontal banding the seams above had just lost.
+       Every pass is nearly invisible alone, which is the point: an earlier
+       version at 0.42 opacity was the noisiest thing on screen. */
+    repeating-linear-gradient(
+      0.5deg,
+      rgba(255, 206, 158, 0.028) 0 0.1cqw,
+      transparent 0.1cqw 0.55cqw,
+      rgba(255, 206, 158, 0.016) 0.55cqw 0.62cqw,
+      transparent 0.62cqw 1.28cqw,
+      rgba(58, 26, 2, 0.042) 1.28cqw 1.4cqw,
+      transparent 1.4cqw 2.3cqw
+    ),
+    repeating-linear-gradient(
+      -0.6deg,
+      rgba(58, 26, 2, 0.045) 0 0.22cqw,
+      transparent 0.22cqw 1.05cqw,
+      rgba(255, 198, 148, 0.02) 1.05cqw 1.18cqw,
+      transparent 1.18cqw 3.1cqw
+    ),
+    repeating-linear-gradient(
+      0.9deg,
+      rgba(255, 190, 140, 0.018) 0 0.4cqw,
+      transparent 0.4cqw 2.2cqw,
+      rgba(46, 20, 0, 0.032) 2.2cqw 2.5cqw,
+      transparent 2.5cqw 4.7cqw
+    );
 }
 
 /* The bullnose rim. A ring hugging the face's perimeter, filled with a gradient
@@ -342,7 +418,12 @@
   height: var(--chip-h);
   border-radius: 50%;
   background:
-    linear-gradient(102deg, rgba(0, 0, 0, 0.2) 0%, transparent 34%, rgba(255, 255, 255, 0.12) 100%),
+    /* Sheen across the face, running up to the light rather than across the
+       shot: 56deg, not the 102deg it was. 45deg in the table plane projects to
+       atan(1 / --flat) = 55.9deg on screen, the same conversion the edge spots
+       below use, so the bright side of a chip face and the lit side of its wall
+       are now the same side. */
+    linear-gradient(56deg, rgba(0, 0, 0, 0.2) 0%, transparent 34%, rgba(255, 255, 255, 0.12) 100%),
     radial-gradient(closest-side, transparent 0 40%, rgba(0, 0, 0, 0.16) 40% 43%, transparent 43%),
     /* The dark separation line sits INSIDE the coloured inlay rather than
        straddling it and the cream spots - across the cream it turned grey and
@@ -505,17 +586,22 @@
     linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 40%, rgba(0, 0, 0, 0.22) 100%),
     /* Glossy red plastic. Brighter and cleaner than the first pass, which was
        nearly maroon - a party cup is a saturated red, and the narrow blown
-       highlight at 36% is most of what says "shiny" about it. */
+       highlight is most of what says "shiny" about it.
+       Mirrored about the centre from where it started: the highlight sat at 36%,
+       left of centre, which put the cups lit from the upper LEFT while every
+       shadow in the scene fell to the lower left. It now sits at 64% - right of
+       centre, where a light over the right shoulder puts it - and both
+       silhouette edges fall away, the left one hardest. */
     linear-gradient(
       90deg,
-      #4c0a01 0%,
-      #85160a 12%,
-      #b21f0c 30%,
-      #cc3418 36%,
-      #ae1d09 44%,
-      #a01a07 66%,
-      #6b0f03 87%,
-      #430700 100%
+      #430700 0%,
+      #6b0f03 13%,
+      #a01a07 34%,
+      #ae1d09 56%,
+      #cc3418 64%,
+      #b21f0c 70%,
+      #85160a 88%,
+      #4c0a01 100%
     );
 }
 
@@ -617,7 +703,9 @@
     #bf2f10 96.5% 98.5%,
     #8c1a04 98.5% 100%
   );
-  box-shadow: inset 0 0.12cqw 0.28cqw rgba(0, 0, 0, 0.34);
+  /* Biased right: the light comes over the right shoulder, so it reaches down
+     the far LEFT of the inside and the right inner wall is the part in shade. */
+  box-shadow: inset -0.06cqw 0.12cqw 0.28cqw rgba(0, 0, 0, 0.34);
 }
 
 /* The drink, filling the rim's inner opening (70% of the mouth) and nudged
@@ -655,7 +743,7 @@
      dome of liquid bulging out of the cup once the mouth opened up to its real
      ellipse - it was only ever hidden by how narrow the old one was. */
   background: linear-gradient(180deg, #4a1902 0%, #6b2703 24%, #8a3806 60%, #722d08 100%);
-  box-shadow: inset 0 0.16cqw 0.3cqw rgba(0, 0, 0, 0.5);
+  box-shadow: inset -0.07cqw 0.16cqw 0.3cqw rgba(0, 0, 0, 0.5);
 }
 
 /* A cup somebody has got further through. The level drops, so the surface sits
@@ -689,9 +777,12 @@
 }
 
 .deck-shadow {
-  left: -7%;
+  /* Thrown to the lower left, like the chips and the cups. At -7% it sat almost
+     square under the deck, which read as a light directly overhead - the only
+     prop in the scene that did. */
+  left: -16%;
   bottom: -3%;
-  width: 110%;
+  width: 112%;
   height: 18%;
   border-radius: 42%;
 }
@@ -714,7 +805,7 @@
     linear-gradient(rgba(0, 0, 0, var(--deck-dim)), rgba(0, 0, 0, var(--deck-dim))),
     linear-gradient(90deg, rgba(0, 0, 0, 0.36) 0%, transparent 24%, rgba(255, 255, 255, 0.08) 100%),
     repeating-linear-gradient(180deg, #cfc7ba 0 1.2px, #7d7668 1.2px 2.4px);
-  box-shadow: 0 0.2cqw 0.45cqw rgba(0, 0, 0, 0.42);
+  box-shadow: -0.14cqw 0.2cqw 0.45cqw rgba(0, 0, 0, 0.42);
 }
 
 /* The back of the top card. Every value here is the dealt card's
