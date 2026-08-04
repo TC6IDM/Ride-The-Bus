@@ -1168,6 +1168,16 @@
     autoStopRequested = true;
   }
 
+  /**
+   * How many digits the rounds-left counter is showing.
+   *
+   * The count now sits INSIDE the stop square rather than floating over the
+   * whole button, so it has to fit. Nothing caps the rounds a player can enter
+   * - autoRoundsValid only requires one or more - so a five or six digit run is
+   * possible and the type has to shrink to match.
+   */
+  const countDigits = () => (autoInfinite ? 1 : String(autoRemaining).length);
+
   function setAutoRounds(n: number) {
     autoInfinite = false;
     autoRoundsInput = String(n);
@@ -1915,11 +1925,20 @@
       >
         {#if autoRunning}
           <span class="cb-spin-square" aria-hidden="true"></span>
-          <!-- Rounds left, over the stop square. An unlimited run shows the
+          <!-- Rounds left, inside the stop square. An unlimited run shows the
                infinity mark instead of a number; a space-hold run shows
-               nothing, since it lasts only as long as the key is held. -->
-          {#if !spaceHoldRunning}
-            <span class="cb-spin-count" class:is-infinite={autoInfinite}>
+               nothing, since it lasts only as long as the key is held.
+               It also disappears the moment Stop is pressed: the bet already
+               placed has to play out, so the button cannot stop instantly, and
+               emptying the square is what tells the player the run is ending
+               rather than leaving a count sitting there looking ignored. -->
+          {#if !spaceHoldRunning && !autoStopRequested}
+            <span
+              class="cb-spin-count"
+              class:is-infinite={autoInfinite}
+              class:is-long={countDigits() === 4}
+              class:is-longer={countDigits() > 4}
+            >
               {#if autoInfinite}{@render iconInfinity()}{:else}{autoRemaining}{/if}
             </span>
           {/if}

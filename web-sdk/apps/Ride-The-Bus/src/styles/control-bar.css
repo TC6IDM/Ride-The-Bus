@@ -326,11 +326,33 @@
 
 .cb-spin { position: relative; /* anchors the autoplay count over the square */ }
 
-.cb-spin-square { width: calc(var(--ui-bar) * 2.18) /* 24px */; height: calc(var(--ui-bar) * 2.18); border-radius: calc(var(--ui-bar) * 0.55); background: #ff3b3b; box-shadow: 0 0 10px rgba(255, 59, 59, 0.7); }
+/* The stop square. A thick red outline round a dark centre, rather than the
+   small solid red block it used to be - the count sits INSIDE it now, so it
+   has to be big enough to enclose the digits and open enough to read them
+   against. Sized to about two thirds of the 64px button, which leaves the ring
+   clearly visible around it. */
+.cb-spin-square {
+  width: calc(var(--ui-bar) * 3.8) /* 42px */;
+  height: calc(var(--ui-bar) * 3.8);
+  box-sizing: border-box;
+  /* The floor is 2px, not 3. A fixed 3px does not shrink with the button, so on
+     a short popout - where the whole control is 31px and the square about 20 -
+     the border ate six of those pixels and "999" overflowed it by a pixel.
+     Keeping the border proportional holds the interior wide enough at every
+     size, and 2px is still a visible outline on the smallest one. */
+  border: max(2px, calc(var(--ui-bar) * 0.38)) solid #ff3b3b;
+  border-radius: calc(var(--ui-bar) * 0.64);
+  background: #0d0d10;
+  box-shadow: 0 0 10px rgba(255, 59, 59, 0.7);
+}
 
-/* Rounds left in an auto run, sitting on top of the stop square. Centred on
-   the whole 64px button rather than the 24px square so four digits still fit,
-   and non-interactive so it never swallows a click meant for Stop. */
+/* Rounds left in an auto run, centred inside the stop square. Still positioned
+   against the whole button rather than the square - they share a centre, and
+   this keeps the digits off the square's border box so a wide number cannot
+   push the border around. Non-interactive so it never swallows a click meant
+   for Stop.
+   Tabular numerals matter here: the count changes every round, and
+   proportional digits would make it jitter as 111 becomes 110. */
 .cb-spin-count {
   position: absolute;
   inset: 0;
@@ -338,7 +360,7 @@
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  font-size: calc(var(--ui-bar) * 1.64) /* 18px */;
+  font-size: calc(var(--ui-bar) * 1.30) /* 14px */;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   line-height: 1;
@@ -346,13 +368,20 @@
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 6px rgba(0, 0, 0, 0.8);
 }
 
+/* Nothing caps the rounds a player can enter, so the type steps down to keep
+   long counts within the square's ~31px interior instead of overrunning the
+   red border. */
+.cb-spin-count.is-long { font-size: calc(var(--ui-bar) * 1.00) /* 11px */; }
+.cb-spin-count.is-longer { font-size: calc(var(--ui-bar) * 0.78) /* 8.5px */; }
+
 /* The drawn lemniscate replaces the digits on an unlimited run. Sized a touch
    larger than the cap-height of the numerals so it reads with the same weight,
    and given the same shadow so it stays legible on the red square. */
 .cb-spin-count .inf-icon {
-  width: calc(var(--ui-bar) * 2.4); /* 26px wide, 13px tall - the cap height of
-                                       the 18px digits it stands in for */
-  height: calc(var(--ui-bar) * 1.2);
+  width: calc(var(--ui-bar) * 1.95); /* 21px wide, 10.5px tall - the cap height
+                                        of the 15px digits it stands in for,
+                                        and inside the square's ~31px interior */
+  height: calc(var(--ui-bar) * 0.98);
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.9));
 }
 
