@@ -146,5 +146,19 @@ export default {
 	'Disclaimer':
 		'면책 조항',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
-		'오작동 시 모든 당첨과 플레이가 무효가 됩니다. 안정적인 인터넷 연결이 필요합니다. 연결이 끊긴 경우 게임을 다시 불러와 완료되지 않은 라운드를 마치십시오. 기대 환수율은 다수의 플레이를 기준으로 계산됩니다. 게임 화면은 실제 기기를 나타내지 않으며 예시용입니다. 당첨금은 웹 브라우저 내의 이벤트가 아니라 Remote Game Server에서 수신한 금액에 따라 정산됩니다. TM 및 (c) 2026 Stake Engine.',
+		'오작동 시 모든 당첨과 플레이가 무효가 됩니다. 안정적인 인터넷 연결이 필요합니다. 연결이 끊긴 경우 게임을 다시 불러와 완료되지 않은 라운드를 마치십시오. 기대 환수율은 다수의 플레이를 기준으로 계산됩니다. 게임 화면은 실제 기기를 나타내지 않으며 예시용입니다. 당첨금은 웹 브라우저 내의 이벤트가 아니라 Remote Game Server에서 수신한 금액에 따라 정산됩니다. TM 및 (c) 2026 Stake Engine.',	'Loading replay…': 'Loading replay…',
+	'Max Win': 'Max Win',
+	'Tap to continue': 'Tap to continue',
+	'Round details': 'Round details',
+	'Play amount': 'Play amount',
+	Mode: 'Mode',
+	Event: 'Event',
+	Payout: 'Payout',
+	Play: 'Play',
+
+	// Rule additions (new)
+	'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.':
+		'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.',
+	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
+		'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.',
 };

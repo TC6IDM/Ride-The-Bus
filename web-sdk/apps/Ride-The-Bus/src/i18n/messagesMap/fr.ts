@@ -150,5 +150,19 @@ export default {
 	'Disclaimer':
 		'Avertissement',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
-		'Tout dysfonctionnement annule les gains et les parties. Une connexion internet stable est requise. En cas de deconnexion, rechargez le jeu pour terminer les tours non acheves. Le retour attendu est calcule sur un grand nombre de parties. L affichage du jeu ne represente aucun appareil physique et sert uniquement d illustration. Les gains sont regles selon le montant recu du Remote Game Server et non selon les evenements du navigateur. TM et (c) 2026 Stake Engine.',
+		'Tout dysfonctionnement annule les gains et les parties. Une connexion internet stable est requise. En cas de deconnexion, rechargez le jeu pour terminer les tours non acheves. Le retour attendu est calcule sur un grand nombre de parties. L affichage du jeu ne represente aucun appareil physique et sert uniquement d illustration. Les gains sont regles selon le montant recu du Remote Game Server et non selon les evenements du navigateur. TM et (c) 2026 Stake Engine.',	'Loading replay…': 'Loading replay…',
+	'Max Win': 'Max Win',
+	'Tap to continue': 'Tap to continue',
+	'Round details': 'Round details',
+	'Play amount': 'Play amount',
+	Mode: 'Mode',
+	Event: 'Event',
+	Payout: 'Payout',
+	Play: 'Play',
+
+	// Rule additions (new)
+	'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.':
+		'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.',
+	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
+		'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.',
 };

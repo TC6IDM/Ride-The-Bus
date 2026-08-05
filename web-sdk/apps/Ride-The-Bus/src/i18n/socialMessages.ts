@@ -1,0 +1,109 @@
+/**
+ * Social-casino (Stake.US) vocabulary replacements.
+ *
+ * When ?social=true, every call to t(key) checks this map first. Only keys
+ * that differ from regular English are listed — anything not found here
+ * falls through to the normal translation.
+ *
+ * The replacements follow Stake's prohibited-terms table exactly
+ * (see the Jurisdiction Requirements in Stake Engine's submission docs).
+ */
+import type { MessageKey } from './i18nDerived';
+
+const socialMessages: Partial<Record<MessageKey, string>> = {
+	// Control bar readouts
+	Balance: 'Balance',
+	'Last Win': 'Last Won',
+	Bet: 'Play',
+
+	// Spin button / action states
+	Spin: 'Play',
+	Stop: 'Stop',
+	'Pick all 4 guesses': 'Pick all 4 guesses',
+	'Enter a valid bet': 'Enter a valid play amount',
+	Start: 'Start',
+
+	// Bet menu
+	'Bet Menu': 'Play Menu',
+	'Quick Bets': 'Quick Plays',
+
+	// Autoplay popup
+	Autoplay: 'Auto Play',
+	'Number of Spins': 'Number of Plays',
+	'Autoplay settings': 'Auto Play settings',
+	'Stop autoplay': 'Stop auto play',
+
+	// Advanced popup
+	'Stop on full game win': 'Stop on full game won',
+	'Stop autoplay on a full game win': 'Stop auto play on a full game won',
+
+	// Accessible control names
+	'Choose bet amount': 'Choose play amount',
+	'Custom bet amount': 'Custom play amount',
+	'Increase bet': 'Increase play',
+	'Decrease bet': 'Decrease play',
+	'More spins': 'More plays',
+	'Fewer spins': 'Fewer plays',
+	'Unlimited spins': 'Unlimited plays',
+	'Spins must be %s seconds apart': 'Plays must be %s seconds apart',
+
+	// Running win bar
+	Winning: 'Won',
+	'Full Game Win!': 'Full Game Won!',
+	Banked: 'Banked',
+	Busted: 'Busted',
+	'Revealing…': 'Revealing…',
+
+	// How to play — descriptions containing "bet", "win", "payout"
+	'Guess your way through four cards:':
+		'Guess your way through four cards:',
+	'Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.':
+		'Pick all four, set your play amount, and hit Play. Each correct guess multiplies your winnings; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.',
+	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
+		'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.',
+	'Payouts follow the odds': 'Winnings follow the odds',
+	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
+		'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.',
+	'If you guess wrong': 'If you guess wrong',
+	'Card 1 — the round pays nothing.': 'Card 1 — the round pays nothing.',
+	'Card 2 — you get 0.5× your bet back.': 'Card 2 — you get 0.5× of your play amount back.',
+	'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.':
+		'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.',
+	'Full game wins': 'Full game wins',
+	'Guess all four cards right and the payout depends on how hard your picks were:':
+		'Guess all four cards right and the winnings depend on how hard your picks were:',
+	'No Equal picks — averages 17.3×, up to 317.4×.':
+		'No Equal picks — averages 17.3×, up to 317.4×.',
+	'One Equal pick — averages 67.5×, up to 381.9×.':
+		'One Equal pick — averages 67.5×, up to 381.9×.',
+	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
+		'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.',
+	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
+		'Equal is the rarest guess, so the rounds built on it carry the largest winnings — and are the hardest to land.',
+
+	// Speed and autoplay
+	'Speed and autoplay': 'Speed and auto play',
+	'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.':
+		'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the winnings.',
+	'Autoplay (the circular arrows) replays the same four guesses for a set number of rounds, or unlimited. The round counter sits on the button while it runs — press the red square to stop, and the round already in play finishes first.':
+		'Auto Play (the circular arrows) replays the same four guesses for a set number of rounds, or unlimited. The round counter sits on the button while it runs — press the red square to stop, and the round already in play finishes first.',
+	'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.':
+		'Stop on full game win (the sliders button) ends an auto play run the moment a round lands all four cards. It only stops the run; your play amount never changes.',
+	'Tap the spacebar to play one round, or hold it to keep spinning until you let go.':
+		'Tap the spacebar to play one round, or hold it to keep playing until you let go.',
+
+	// Game information
+	'Game information': 'Game information',
+	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
+		'Return to player (RTP) is %s. Every combination of guesses costs 1x your play amount and returns that same figure over many rounds. The most this game can pay is 1354.2× your play amount.',
+
+	// Dynamic payout statement (new key — also added to en.ts)
+	'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.':
+		'Winnings are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.',
+
+	// No free games statement (new key — also added to en.ts)
+	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
+		'This game has no free rounds, bonus features, jackpots, or re-trigger features. Every round is a single, independent four-card draw.',
+};
+
+export default socialMessages;

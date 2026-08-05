@@ -1,0 +1,201 @@
+/* ---- Start / intro screen overlay ---------------------------------------- */
+.ss-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 1000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: radial-gradient(ellipse at center, #1a3a1a 0%, #0d1f0d 55%, #060f06 100%);
+	font-family: 'Poppins', sans-serif;
+	color: #e8e0d0;
+	/* Match the game's --ui scaling so text tracks the viewport naturally. */
+	font-size: calc(var(--ui, 7px) * 1.6);
+}
+
+.ss-card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: calc(var(--ui, 7px) * 2.4);
+	padding: calc(var(--ui, 7px) * 4) calc(var(--ui, 7px) * 3);
+	max-width: calc(var(--ui, 7px) * 48);
+	text-align: center;
+}
+
+/* ---- Logo ---- */
+.ss-logo {
+	width: calc(var(--ui, 7px) * 14);
+	height: calc(var(--ui, 7px) * 14);
+	background: var(--logo-url) center / contain no-repeat;
+	margin-bottom: calc(var(--ui, 7px) * 0.8);
+}
+
+/* ---- Title ---- */
+.ss-title {
+	font-size: calc(var(--ui, 7px) * 3.4);
+	font-weight: 900;
+	letter-spacing: 0.04em;
+	color: #f5d78c;
+	text-transform: uppercase;
+	line-height: 1.15;
+}
+
+.ss-subtitle {
+	font-size: calc(var(--ui, 7px) * 1.5);
+	font-weight: 400;
+	color: #a0a080;
+	margin-bottom: calc(var(--ui, 7px) * 1.2);
+}
+
+/* ---- Rules summary ---- */
+.ss-rules {
+	font-size: calc(var(--ui, 7px) * 1.35);
+	line-height: 1.6;
+	color: #c8c0b0;
+	max-width: calc(var(--ui, 7px) * 40);
+}
+
+.ss-stats {
+	display: flex;
+	gap: calc(var(--ui, 7px) * 3);
+	margin-top: calc(var(--ui, 7px) * 0.6);
+}
+
+.ss-stat {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: calc(var(--ui, 7px) * 0.3);
+}
+
+.ss-stat-val {
+	font-size: calc(var(--ui, 7px) * 2.4);
+	font-weight: 800;
+	color: #f5d78c;
+}
+
+.ss-stat-cap {
+	font-size: calc(var(--ui, 7px) * 1.1);
+	color: #a0a080;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+}
+
+/* ---- Continue button ---- */
+.ss-continue {
+	margin-top: calc(var(--ui, 7px) * 2);
+	padding: calc(var(--ui, 7px) * 1.4) calc(var(--ui, 7px) * 4.5);
+	border: 2px solid #f5d78c;
+	border-radius: calc(var(--ui, 7px) * 0.8);
+	background: transparent;
+	color: #f5d78c;
+	font-family: inherit;
+	font-size: calc(var(--ui, 7px) * 1.6);
+	font-weight: 700;
+	cursor: pointer;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	transition: background 0.2s, color 0.2s;
+}
+
+.ss-continue:hover,
+.ss-continue:focus-visible {
+	background: #f5d78c;
+	color: #0d1f0d;
+}
+
+/* ---- Replay info popup --------------------------------------------------- */
+.ss-popup-backdrop {
+	position: fixed;
+	inset: 0;
+	z-index: 1001;
+	background: rgba(0, 0, 0, 0.65);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.ss-popup {
+	background: #1a2a1a;
+	border: 1px solid #3a4a2a;
+	border-radius: calc(var(--ui, 7px) * 1.2);
+	padding: calc(var(--ui, 7px) * 3) calc(var(--ui, 7px) * 3.5);
+	min-width: calc(var(--ui, 7px) * 34);
+	max-width: calc(var(--ui, 7px) * 42);
+	display: flex;
+	flex-direction: column;
+	gap: calc(var(--ui, 7px) * 2);
+	text-align: left;
+}
+
+.ss-popup-head {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	font-size: calc(var(--ui, 7px) * 2);
+	font-weight: 700;
+	color: #f5d78c;
+}
+
+.ss-popup-close {
+	background: none;
+	border: none;
+	color: #a0a080;
+	font-size: calc(var(--ui, 7px) * 2);
+	cursor: pointer;
+	padding: calc(var(--ui, 7px) * 0.4);
+	line-height: 1;
+}
+
+.ss-popup-close:hover {
+	color: #e8e0d0;
+}
+
+.ss-detail-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	font-size: calc(var(--ui, 7px) * 1.4);
+	padding: calc(var(--ui, 7px) * 0.5) 0;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ss-detail-cap {
+	color: #a0a080;
+}
+
+.ss-detail-val {
+	color: #e8e0d0;
+	font-weight: 600;
+}
+
+.ss-detail-mode {
+	color: #f5d78c;
+	font-weight: 700;
+	font-size: calc(var(--ui, 7px) * 1.6);
+	text-align: right;
+	text-transform: capitalize;
+}
+
+.ss-play-btn {
+	margin-top: calc(var(--ui, 7px) * 1);
+	padding: calc(var(--ui, 7px) * 1.2) calc(var(--ui, 7px) * 3.5);
+	border: none;
+	border-radius: calc(var(--ui, 7px) * 0.7);
+	background: #f5d78c;
+	color: #0d1f0d;
+	font-family: inherit;
+	font-size: calc(var(--ui, 7px) * 1.6);
+	font-weight: 700;
+	cursor: pointer;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	align-self: center;
+	transition: background 0.2s;
+}
+
+.ss-play-btn:hover,
+.ss-play-btn:focus-visible {
+	background: #ffe0a0;
+}

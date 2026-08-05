@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
-	import { base } from '$app/paths';
 	import { GlobalStyle } from 'components-ui-html';
-	import { Authenticate, LoaderStakeEngine, LoadI18n } from 'components-shared';
+	import { Authenticate, LoadI18n } from 'components-shared';
 	import Game from '../components/Game.svelte';
 	import GameLoader from '../components/GameLoader.svelte';
 	import { setContext } from '../game/context';
@@ -16,17 +15,15 @@
 
 	const props: Props = $props();
 
-	let showYourLoader = $state(false);
-
-	const loaderUrlStakeEngine = `${base}/stake-engine-loader.gif`;
-
 	setContext();
 
 	// Arabic is the one right-to-left language the RGS can request. Set on
 	// <html> so it also reaches the popups and the error dialog, which are
 	// position:fixed and so live outside any game container.
+	// Social mode (Stake.US) restricts the game to English only.
 	$effect(() => {
-		applyDirection(stateUrlDerived.lang());
+		const lang = stateUrlDerived.social() ? 'en' : stateUrlDerived.lang();
+		applyDirection(lang);
 	});
 </script>
 
@@ -38,16 +35,9 @@
 	</Authenticate>
 </GlobalStyle>
 
-<!-- Stake's own branded loader runs first, left exactly as shipped. -->
-<LoaderStakeEngine src={loaderUrlStakeEngine} oncomplete={() => (showYourLoader = true)} />
-
-<!-- Then ours. This replaces the SDK's LoaderExample, which rendered the words
-     "Add Your Loader" over a placeholder GIF - template text that would have
-     shipped. GameLoader is drawn in CSS (nothing to download) and, unlike a
-     fixed-timer GIF, waits for the backdrop bitmap to decode so the table
-     can't pop in behind the player a beat after the loader clears. -->
-{#if showYourLoader}
-	<GameLoader />
-{/if}
+<!-- Our loader, drawn entirely in CSS. It waits for the logo to decode and the
+     game tree to mount, with a 1400ms floor and 8000ms ceiling, so the board
+     can never pop in behind the player. -->
+<GameLoader />
 
 {@render props.children()}

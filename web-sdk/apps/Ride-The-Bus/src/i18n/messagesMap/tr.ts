@@ -146,5 +146,19 @@ export default {
 	'Disclaimer':
 		'Yasal uyari',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
-		'Arizalar tum kazanclari ve oyunlari gecersiz kilar. Istikrarli bir internet baglantisi gereklidir. Baglanti kesilirse tamamlanmamis turlari bitirmek icin oyunu yeniden yukleyin. Beklenen donus cok sayida oyun uzerinden hesaplanir. Oyun ekrani herhangi bir fiziksel cihazi temsil etmez ve yalnizca gorsel amaclidir. Kazanclar taraycidaki olaylara gore degil, Remote Game Server dan alinan tutara gore odenir. TM ve (c) 2026 Stake Engine.',
+		'Arizalar tum kazanclari ve oyunlari gecersiz kilar. Istikrarli bir internet baglantisi gereklidir. Baglanti kesilirse tamamlanmamis turlari bitirmek icin oyunu yeniden yukleyin. Beklenen donus cok sayida oyun uzerinden hesaplanir. Oyun ekrani herhangi bir fiziksel cihazi temsil etmez ve yalnizca gorsel amaclidir. Kazanclar taraycidaki olaylara gore degil, Remote Game Server dan alinan tutara gore odenir. TM ve (c) 2026 Stake Engine.',	'Loading replay…': 'Loading replay…',
+	'Max Win': 'Max Win',
+	'Tap to continue': 'Tap to continue',
+	'Round details': 'Round details',
+	'Play amount': 'Play amount',
+	Mode: 'Mode',
+	Event: 'Event',
+	Payout: 'Payout',
+	Play: 'Play',
+
+	// Rule additions (new)
+	'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.':
+		'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.',
+	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
+		'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.',
 };

@@ -7,6 +7,7 @@
   import { createRoundContract, rankValue, ranks, type Card } from '../game/roundContract';
   import { stateBet, stateUrlDerived, stateMeta, stateConfig, stateModal } from 'state-shared';
   import ErrorModal from './ErrorModal.svelte';
+  import StartScreen from './StartScreen.svelte';
   // Of the five documented RGS endpoints this game uses three: authenticate
   // (via <Authenticate>), play and end-round. The other two are deliberately
   // not called, recorded here so the omissions read as decisions:
@@ -130,6 +131,17 @@
   // The win readout stays hidden on the very first screen and appears once the
   // player has taken their first spin.
   let hasPlayed = $state(false);
+  // Intro / start-screen state. On every page load the loader clears first,
+  // then the start screen appears. In normal play, clicking "Tap to Continue"
+  // dismisses it and the game begins. In replay mode, the same click advances
+  // to the replay-info popup; clicking "Play" starts the reveal.
+  let introPhase = $state<'loading' | 'start' | 'replay-info' | 'playing'>('loading');
+  let introDismissed = $state(false);
+  // Replay data arrives before the intro sequence finishes — park it here.
+  let replayReady = $state(false);
+  // Payout multiplier from the replay RGS response, shown on the info popup.
+  let replayPayoutMultiplier = $state<number | null>(null);
+
   // Most recently settled round, shown in the "Last Win" readout on the control
   // bar. Kept separate from wonAmount so it survives the board resetting between
   // rounds (and during an auto run it shows the previous round while the next
@@ -283,7 +295,7 @@
   // so the Advanced switch is hard-disabled for now. Flip this to true (and
   // confirm with Stake) to re-enable the whole panel - all the logic below is
   // kept intact and gated on it.
-  const ADVANCED_ENABLED = false;
+  const ADVANCED_ENABLED = import.meta.env.DEV as boolean;
   let advancedMode = $state(false);
   let onWinMode = $state<'reset' | 'increase'>('reset');
   let onLossMode = $state<'reset' | 'increase'>('reset');
@@ -789,9 +801,13 @@
 
   // Replay (Stake's Fairness view, ?replay=true). Authenticate.svelte has
   // already fetched the settled round via /bet/replay and parked it in
-  // stateBet.betToResume, so this must render THAT round - it must never place a
-  // bet. Replaying used to fall through to startGameEngineFlow, which would have
-  // called /wallet/play and charged the player for a brand new round.
+  // stateBet.betToResume, so this must render THAT round — it must never place a
+  // bet.
+  //
+  // The data is parked here and the reveal only starts once the player has
+  // clicked through the start screen AND the replay-info popup. Before this
+  // change the reveal auto-fired as soon as the loader cleared, which played
+  // behind the overlay on Stake's replay view.
   let replayStarted = false;
   $effect(() => {
     if (replayStarted || !stateUrlDerived.replay()) return;
@@ -803,20 +819,15 @@
     // resolve to the same cash amounts the player originally saw.
     initialBet = stateBet.wageredBetAmount || stateBet.betAmount || 0;
     hasPlayed = true;
-    // Held until the loader clears, or the reveal plays out behind it.
-    waitForLoaderGone()
-      .then(() =>
-        animateRoundFromEvents(
-          bet.state,
-          `${bet.roundID ?? stateUrlDerived.event()}`,
-          'engine-replay',
-          'Replay returned no round state for this event.',
-        ),
-      )
-      .catch((err) => {
-        console.error(err);
-        stateModal.modal = { name: 'error', error: err };
-      });
+
+    // Read the payout multiplier from the book's finalWin event for the info
+    // popup (amount is multiplier × 100 — see math-sdk events.py:final_win_event).
+    const finalWin = bet.state.find((e: any) => e.type === 'finalWin') as any;
+    replayPayoutMultiplier = finalWin ? Number(finalWin.amount) / 100 : null;
+
+    // Park the data. The reveal starts when the player clicks "Play" on the
+    // replay-info popup (onReplayPlay below), not here.
+    replayReady = true;
   });
 
   // Resume a round the player was in the middle of. /wallet/authenticate
@@ -1028,6 +1039,51 @@
   // out to a won/lost result. Awaitable so the auto loop can run rounds
   // back-to-back; manual Start just fires it and forgets. Go through runRound()
   // rather than calling this directly, so rounds can never overlap.
+  // --- Intro / start-screen transitions ------------------------------------
+  // Called when the player clicks "Tap to Continue" on the start screen.
+  // In normal play this dismisses the overlay and the game begins. In replay
+  // mode it advances to the replay-info popup instead.
+  function onStartContinue() {
+    if (stateUrlDerived.replay()) {
+      introPhase = 'replay-info';
+    } else {
+      introPhase = 'playing';
+      introDismissed = true;
+    }
+  }
+
+  // Called when the player clicks "Play" on the replay-info popup.
+  // Builds the reveal events from the parked replay data and starts the
+  // animation. The spin button will replay the round from here on.
+  function onReplayPlay() {
+    introPhase = 'playing';
+    introDismissed = true;
+    const bet = stateBet.betToResume as any;
+    if (!bet?.state) return;
+    animateRoundFromEvents(
+      bet.state,
+      `${bet.roundID ?? stateUrlDerived.event()}`,
+      'engine-replay',
+      'Replay returned no round state for this event.',
+    ).catch((err) => {
+      console.error(err);
+      stateModal.modal = { name: 'error', error: err };
+    });
+  }
+
+  // --- Intro-loaded handoff -------------------------------------------------
+  // Once the loader clears and the game tree has mounted, the start screen
+  // replaces it. This used to be handled by the replay $effect calling
+  // waitForLoaderGone() directly — now the intro transitions drive it.
+  $effect(() => {
+    if (introPhase !== 'loading') return;
+    // The replay data might arrive before the loader clears, and the normal
+    // flow needs neither. Only flip to 'start' once the loader is actually
+    // gone — everything else is handled by onStartContinue / onReplayPlay.
+    if (!loaderGone.value) return;
+    introPhase = 'start';
+  });
+
   async function playRound() {
     // The Start button is disabled unless these hold, but guard anyway.
     if (!betIsValid() || !allChoicesMade()) return;
@@ -1229,11 +1285,14 @@
         resumeInProgress ||
         // Held open to satisfy the regulator's minimum round duration.
         roundGateHeld ||
-        // Replay is a read-only view of a past round - never let it bet.
-        stateUrlDerived.replay() ||
-        !betIsValid() ||
-        !allChoicesMade() ||
-        (IS_PROD && resolveRoundSeed().source === 'none');
+        // Replay: block while the intro sequence is still showing, and during
+        // the initial reveal. Once the round has finished once, the spin
+        // button replays it (see onSpin).
+        (stateUrlDerived.replay() && !replayReady) ||
+        (stateUrlDerived.replay() && introPhase !== 'playing') ||
+        // Normal (non-replay) mode guards.
+        (!stateUrlDerived.replay() && (!betIsValid() || !allChoicesMade())) ||
+        (!stateUrlDerived.replay() && IS_PROD && resolveRoundSeed().source === 'none');
 
   // Why the spin button is dead right now, or null when it's live. Shown as a
   // tooltip on hovering the wrapper, so a greyed button always explains itself
@@ -1249,7 +1308,8 @@
     // blocked reason to explain. Without this it claimed "Round in progress"
     // over an enabled button.
     if (canSlam()) return null;
-    if (stateUrlDerived.replay()) return t('Replay is view-only');
+    if (stateUrlDerived.replay() && !replayReady) return t('Loading replay…');
+    if (stateUrlDerived.replay() && introPhase !== 'playing') return null; // button hidden behind overlay
     if (roundGateHeld) {
       return t('Spins must be %s seconds apart').replace('%s', cooldownSecondsLabel());
     }
@@ -1270,6 +1330,22 @@
     if (canSlam()) {
       slamRequested = true;
       cutShortRevealWait();
+      return;
+    }
+    // Replay mode: pressing the spin button after the round has finished (or
+    // during the reveal) replays the same round from the start. The book events
+    // are still in revealEvents from the first play-through.
+    if (stateUrlDerived.replay() && (gameState === 'won' || gameState === 'lost')) {
+      sound.playPress('primary');
+      // Reset the board and replay the same events.
+      slamRequested = false;
+      revealedCards = [null, null, null, null];
+      stageMultipliers = [null, null, null, null];
+      runningWin = 0;
+      bustedIndex = null;
+      wonAmount = 0;
+      gameState = 'playing';
+      playRevealSequence();
       return;
     }
     if (spinDisabled()) return;
@@ -1527,6 +1603,22 @@
   }
 
 </script>
+
+<!-- Start / intro screen overlay. Shown on every page load after the loader
+     clears. In normal play a single "Tap to Continue" dismisses it. In replay
+     mode the same tap opens a replay-info popup, and tapping "Play" starts the
+     reveal. The game board builds behind it the whole time. -->
+{#if !introDismissed}
+  <StartScreen
+    phase={introPhase}
+    mode={stateUrlDerived.mode() || ''}
+    betAmount={initialBet}
+    eventId={stateUrlDerived.event() || ''}
+    payoutMultiplier={replayPayoutMultiplier}
+    oncontinue={onStartContinue}
+    onplay={onReplayPlay}
+  />
+{/if}
 
 <!-- The backdrop is drawn in CSS, always. There used to be a second path here
      that painted a 1.9 MB bitmap instead, selected by a BACKDROP constant in
@@ -2107,6 +2199,7 @@
         <h4 class="info-h">{t('Payouts follow the odds')}</h4>
         <p>{t('Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.')}</p>
         <p>{t('With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.')}</p>
+        <p>{t('Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.')}</p>
 
         <h4 class="info-h">{t('If you guess wrong')}</h4>
         <ul>
@@ -2131,6 +2224,9 @@
           <li>{t('Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.')}</li>
           <li>{t('Tap the spacebar to play one round, or hold it to keep spinning until you let go.')}</li>
         </ul>
+
+        <h4 class="info-h">{t('Game information')}</h4>
+        <p>{t('This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.')}</p>
 
         <!-- Required for approval, and required HERE specifically: the rules /
              information popup must state the RTP and must carry the legal

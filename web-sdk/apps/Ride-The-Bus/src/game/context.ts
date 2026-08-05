@@ -8,7 +8,6 @@ import { stateXstate, stateXstateDerived } from './stateXstate';
 import { stateLayout, stateLayoutDerived } from './stateLayout';
 import { stateApp } from './stateApp';
 
-import { stateGame, stateGameDerived } from './stateGame.svelte';
 import { i18nDerived } from '../i18n/i18nDerived';
 
 export const setContext = () => {
@@ -23,7 +22,5 @@ export const getContext = () => ({
 	...getContextLayout(),
 	...getContextXstate(),
 	...getContextApp(),
-	stateGame,
-	stateGameDerived,
 	i18nDerived,
 });
