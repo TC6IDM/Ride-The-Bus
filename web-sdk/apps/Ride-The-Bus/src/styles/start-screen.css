@@ -14,6 +14,9 @@
 	   overlay lives outside .game-layout, so it must carry its own definition. */
 	--ui: clamp(4px, min(2vw, 1.55vh), 11px);
 	font-size: calc(var(--ui) * 1.6);
+	/* Let the content scroll when the viewport is too short to fit it all
+	   (e.g. Popout S 400×225). */
+	overflow-y: auto;
 }
 
 .ss-card {
@@ -202,3 +205,62 @@
 .ss-play-btn:focus-visible {
 	background: #ffe0a0;
 }
+
+/* ---- Responsive: very short viewports (Popout S ~225px tall) ------------- */
+@media (max-height: 320px) {
+	.ss-overlay {
+		/* Slightly smaller floor so text shrinks further when height is tiny. */
+		--ui: clamp(3.2px, min(2vw, 1.55vh), 11px);
+		align-items: flex-start; /* don't center — let scroll reveal from top */
+		padding-top: calc(var(--ui) * 1.5);
+	}
+	.ss-card {
+		gap: calc(var(--ui) * 1.2);
+		padding: calc(var(--ui) * 1.5) calc(var(--ui) * 2);
+	}
+	.ss-logo {
+		width: calc(var(--ui) * 9);
+		height: calc(var(--ui) * 9);
+		margin-bottom: calc(var(--ui) * 0.3);
+	}
+	.ss-subtitle { display: none; }
+	.ss-rules { font-size: calc(var(--ui) * 1.2); max-width: calc(var(--ui) * 45); }
+	.ss-stats { gap: calc(var(--ui) * 1.5); margin-top: 0; }
+	.ss-stat-val { font-size: calc(var(--ui) * 2); }
+	.ss-stat-cap { font-size: calc(var(--ui) * 1); }
+	.ss-continue {
+		margin-top: calc(var(--ui) * 1);
+		padding: calc(var(--ui) * 1) calc(var(--ui) * 3);
+		font-size: calc(var(--ui) * 1.4);
+	}
+}
+
+/* ---- Choice badges (replay info popup) ----------------------------------- */
+.ss-choices {
+	display: flex;
+	flex-wrap: wrap;
+	gap: calc(var(--ui) * 0.7);
+	justify-content: flex-end;
+}
+
+.ss-choice-badge {
+	display: inline-block;
+	padding: calc(var(--ui) * 0.25) calc(var(--ui) * 0.9);
+	border-radius: calc(var(--ui) * 0.5);
+	font-size: calc(var(--ui) * 1.25);
+	font-weight: 700;
+	text-transform: capitalize;
+	line-height: 1.5;
+}
+
+.ss-choice-badge.color-red    { background: #c0392b; color: #fdd; }
+.ss-choice-badge.color-black  { background: #1a1a2e; color: #ccc; border: 1px solid #555; }
+.ss-choice-badge.choice-higher { background: #1a5c1a; color: #bfb; }
+.ss-choice-badge.choice-lower  { background: #8b0000; color: #fcc; }
+.ss-choice-badge.choice-inside { background: #1a3a5c; color: #bbf; }
+.ss-choice-badge.choice-outside{ background: #5c3a1a; color: #fdb; }
+.ss-choice-badge.choice-equal  { background: #5c5c1a; color: #ffb; }
+.ss-choice-badge.suit-heart   { background: #8b0000; color: #fcc; }
+.ss-choice-badge.suit-diamond { background: #8b1a1a; color: #fdd; }
+.ss-choice-badge.suit-club    { background: #1a1a2e; color: #ccc; }
+.ss-choice-badge.suit-spade   { background: #111; color: #ccc; border: 1px solid #555; }

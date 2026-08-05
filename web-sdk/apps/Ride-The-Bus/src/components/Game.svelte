@@ -466,7 +466,7 @@
    * a real RGS, which is exactly where it matters.
    */
   const choicesLocked = () =>
-    gameState === 'playing' || autoRunning || isProcessing || resumeInProgress;
+    gameState === 'playing' || autoRunning || isProcessing || resumeInProgress || stateUrlDerived.replay();
 
   // --- The one impossible pairing --------------------------------------------
   // Stage 2 "equal" ties card 2 to card 1's rank, which leaves nothing strictly
@@ -815,9 +815,29 @@
     if (!bet?.state) return;
     replayStarted = true;
 
+    // The Authenticate replay path (handleReplay) does not set stateBet.currency
+    // from the replay URL's ?currency= param, so currency display always falls
+    // back to USD / $. Read it here so numberToCurrencyString formats correctly.
+    if (typeof window !== 'undefined') {
+      const replayCurrency = new URLSearchParams(window.location.search).get('currency');
+      if (replayCurrency) stateBet.currency = replayCurrency;
+    }
+
+    // Restore the guess squares to the combination the round was originally
+    // played with, so the viewer sees which choices were made. The bet mode
+    // IS the four guesses (see math-sdk mode_name).
+    const parts = String(bet.mode ?? stateUrlDerived.mode() ?? '').split('_');
+    if (parts.length === 4) {
+      colorChoice = parts[0] as ColorChoice;
+      hlChoice = parts[1] as HigherLowerChoice;
+      ioChoice = parts[2] as InsideOutsideChoice;
+      suitChoice = parts[3] as SuitChoice;
+    }
+
     // The replay URL carries the original stake, so the multipliers shown
     // resolve to the same cash amounts the player originally saw.
     initialBet = stateBet.wageredBetAmount || stateBet.betAmount || 0;
+    betInput = String(initialBet);
     hasPlayed = true;
 
     // Read the payout multiplier from the book's finalWin event for the info
@@ -1264,14 +1284,12 @@
   //
   // Not offered during an auto run: there the button is Stop, and overloading a
   // single control with "skip this round" and "end the whole run" would make
-  // the destructive one easy to hit by accident. Not offered in replay either,
-  // which is a read-only view.
+  // the destructive one easy to hit by accident.
   const canSlam = () =>
     gameState === 'playing' &&
     !slamRequested &&
     !autoRunning &&
-    !jurisdiction.slamstopDisabled() &&
-    !stateUrlDerived.replay();
+    !jurisdiction.slamstopDisabled();
 
   const spinDisabled = () =>
     autoRunning
@@ -1310,6 +1328,8 @@
     if (canSlam()) return null;
     if (stateUrlDerived.replay() && !replayReady) return t('Loading replay…');
     if (stateUrlDerived.replay() && introPhase !== 'playing') return null; // button hidden behind overlay
+    // Replay is view-only — these non-replay checks don't apply.
+    if (stateUrlDerived.replay()) return null;
     if (roundGateHeld) {
       return t('Spins must be %s seconds apart').replace('%s', cooldownSecondsLabel());
     }
@@ -1402,8 +1422,9 @@
     onSpin(); // the tap: one round, straight away
     spaceHoldTimer = setTimeout(() => {
       spaceHoldTimer = null;
-      // Still held, and the tap's round is done or nearly so - keep going.
-      if (spaceDown && !autoRunning) startAuto({ hold: true });
+      // Still held, and the tap's round is done or nearly so — keep going.
+      // Never start a hold-auto run during replay (view-only mode).
+      if (spaceDown && !autoRunning && !stateUrlDerived.replay()) startAuto({ hold: true });
     }, SPACE_HOLD_MS);
   }
 
@@ -1984,19 +2005,19 @@
     </div>
 
     <div class="cb-panel cb-panel-dark cb-bet">
-      <button class="cb-bet-display" class:active={openPopup === 'bet'} onclick={() => togglePopup('bet')} aria-label={t('Choose bet amount')}>
+      <button class="cb-bet-display" class:active={openPopup === 'bet'} onclick={() => togglePopup('bet')} disabled={stateUrlDerived.replay()} aria-label={t('Choose bet amount')}>
         <span class="cb-cap">{t('Bet')}</span>
         <span class="cb-val">{numberToCurrencyString(betValue() > 0 ? betValue() : 0)}</span>
       </button>
       <div class="cb-betstep">
-        <button class="cb-step" onclick={() => stepBet(1)} disabled={autoRunning} aria-label={t('Increase bet')}>{@render iconPlus()}</button>
-        <button class="cb-step" onclick={() => stepBet(-1)} disabled={autoRunning} aria-label={t('Decrease bet')}>{@render iconMinus()}</button>
+        <button class="cb-step" onclick={() => stepBet(1)} disabled={autoRunning || stateUrlDerived.replay()} aria-label={t('Increase bet')}>{@render iconPlus()}</button>
+        <button class="cb-step" onclick={() => stepBet(-1)} disabled={autoRunning || stateUrlDerived.replay()} aria-label={t('Decrease bet')}>{@render iconMinus()}</button>
       </div>
     </div>
 
     <div class="cb-panel cb-panel-dark cb-actions">
       {#if !jurisdiction.autoplayDisabled()}
-        <button class="cb-round cb-autospin" class:active={openPopup === 'autospin'} onclick={() => togglePopup('autospin')} disabled={autoRunning} aria-label={t('Autoplay settings')}>
+        <button class="cb-round cb-autospin" class:active={openPopup === 'autospin'} onclick={() => togglePopup('autospin')} disabled={autoRunning || stateUrlDerived.replay()} aria-label={t('Autoplay settings')}>
           <svg class="cb-svg cb-autospin-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8A5.87 5.87 0 0 1 6 12c0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" />
             <path d="M10.4 9.7 14.6 12l-4.2 2.3z" />
@@ -2072,7 +2093,7 @@
       </div>
     </div>
 
-    <button class="cb-float cb-advanced" class:active={openPopup === 'advanced'} onclick={() => togglePopup('advanced')} aria-label={t('Advanced settings')}>
+    <button class="cb-float cb-advanced" class:active={openPopup === 'advanced'} onclick={() => togglePopup('advanced')} disabled={stateUrlDerived.replay()} aria-label={t('Advanced settings')}>
       <svg class="cb-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z" /></svg>
     </button>
   </footer>

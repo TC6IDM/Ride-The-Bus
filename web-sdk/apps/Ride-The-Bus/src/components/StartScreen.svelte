@@ -20,11 +20,17 @@
 
 	const props: Props = $props();
 
-	/** Turn a mode name like "red_higher_inside_heart" into a readable list. */
-	function humanizeMode(mode: string): string {
+	/** Turn a mode name like "red_higher_inside_heart" into a list of {label, cssClass} badges. */
+	function modeBadges(mode: string): { label: string; cssClass: string }[] {
 		const parts = mode.split('_');
-		if (parts.length !== 4) return mode;
-		return parts.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(' / ');
+		if (parts.length !== 4) return [{ label: mode, cssClass: '' }];
+		const [color, hl, io, suit] = parts;
+		return [
+			{ label: color, cssClass: `color-${color}` },
+			{ label: hl, cssClass: `choice-${hl}` },
+			{ label: io, cssClass: `choice-${io}` },
+			{ label: suit, cssClass: `suit-${suit}` },
+		];
 	}
 </script>
 
@@ -85,7 +91,11 @@
 
 				<div class="ss-detail-row">
 					<span class="ss-detail-cap">{t('Mode')}</span>
-					<span class="ss-detail-mode">{humanizeMode(props.mode)}</span>
+					<span class="ss-choices">
+						{#each modeBadges(props.mode) as badge}
+							<span class="ss-choice-badge {badge.cssClass}">{badge.label}</span>
+						{/each}
+					</span>
 				</div>
 
 				<div class="ss-detail-row">

@@ -394,3 +394,5 @@
 .cb-autospin:hover:not(:disabled), .cb-autospin.active { border-color: #57d98a; color: #9df0b8; background: rgba(87, 217, 138, 0.14); box-shadow: 0 0 12px rgba(87, 217, 138, 0.45); }
 
 .cb-advanced:hover, .cb-advanced.active { border-color: #a98cff; color: #d0bcff; background: rgba(169, 140, 255, 0.16); box-shadow: 0 0 12px rgba(169, 140, 255, 0.45); }
+
+.cb-float:disabled { opacity: 0.4; cursor: not-allowed; }
