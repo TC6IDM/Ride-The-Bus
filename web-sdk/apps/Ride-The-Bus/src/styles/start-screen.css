@@ -9,31 +9,34 @@
 	background: radial-gradient(ellipse at center, #1a3a1a 0%, #0d1f0d 55%, #060f06 100%);
 	font-family: 'Poppins', sans-serif;
 	color: #e8e0d0;
-	/* Match the game's --ui scaling so text tracks the viewport naturally. */
-	font-size: calc(var(--ui, 7px) * 1.6);
+	/* Same fluid scaling unit as the game board (base.css .game-layout), so the
+	   start screen tracks the viewport identically at every breakpoint. The
+	   overlay lives outside .game-layout, so it must carry its own definition. */
+	--ui: clamp(4px, min(2vw, 1.55vh), 11px);
+	font-size: calc(var(--ui) * 1.6);
 }
 
 .ss-card {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: calc(var(--ui, 7px) * 2.4);
-	padding: calc(var(--ui, 7px) * 4) calc(var(--ui, 7px) * 3);
-	max-width: calc(var(--ui, 7px) * 48);
+	gap: calc(var(--ui) * 2.4);
+	padding: calc(var(--ui) * 4) calc(var(--ui) * 3);
+	max-width: calc(var(--ui) * 48);
 	text-align: center;
 }
 
 /* ---- Logo ---- */
 .ss-logo {
-	width: calc(var(--ui, 7px) * 14);
-	height: calc(var(--ui, 7px) * 14);
+	width: calc(var(--ui) * 14);
+	height: calc(var(--ui) * 14);
 	background: var(--logo-url) center / contain no-repeat;
-	margin-bottom: calc(var(--ui, 7px) * 0.8);
+	margin-bottom: calc(var(--ui) * 0.8);
 }
 
 /* ---- Title ---- */
 .ss-title {
-	font-size: calc(var(--ui, 7px) * 3.4);
+	font-size: calc(var(--ui) * 3.4);
 	font-weight: 900;
 	letter-spacing: 0.04em;
 	color: #f5d78c;
@@ -42,41 +45,41 @@
 }
 
 .ss-subtitle {
-	font-size: calc(var(--ui, 7px) * 1.5);
+	font-size: calc(var(--ui) * 1.5);
 	font-weight: 400;
 	color: #a0a080;
-	margin-bottom: calc(var(--ui, 7px) * 1.2);
+	margin-bottom: calc(var(--ui) * 1.2);
 }
 
 /* ---- Rules summary ---- */
 .ss-rules {
-	font-size: calc(var(--ui, 7px) * 1.35);
+	font-size: calc(var(--ui) * 1.35);
 	line-height: 1.6;
 	color: #c8c0b0;
-	max-width: calc(var(--ui, 7px) * 40);
+	max-width: calc(var(--ui) * 40);
 }
 
 .ss-stats {
 	display: flex;
-	gap: calc(var(--ui, 7px) * 3);
-	margin-top: calc(var(--ui, 7px) * 0.6);
+	gap: calc(var(--ui) * 3);
+	margin-top: calc(var(--ui) * 0.6);
 }
 
 .ss-stat {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: calc(var(--ui, 7px) * 0.3);
+	gap: calc(var(--ui) * 0.3);
 }
 
 .ss-stat-val {
-	font-size: calc(var(--ui, 7px) * 2.4);
+	font-size: calc(var(--ui) * 2.4);
 	font-weight: 800;
 	color: #f5d78c;
 }
 
 .ss-stat-cap {
-	font-size: calc(var(--ui, 7px) * 1.1);
+	font-size: calc(var(--ui) * 1.1);
 	color: #a0a080;
 	text-transform: uppercase;
 	letter-spacing: 0.06em;
@@ -84,14 +87,14 @@
 
 /* ---- Continue button ---- */
 .ss-continue {
-	margin-top: calc(var(--ui, 7px) * 2);
-	padding: calc(var(--ui, 7px) * 1.4) calc(var(--ui, 7px) * 4.5);
+	margin-top: calc(var(--ui) * 2);
+	padding: calc(var(--ui) * 1.4) calc(var(--ui) * 4.5);
 	border: 2px solid #f5d78c;
-	border-radius: calc(var(--ui, 7px) * 0.8);
+	border-radius: calc(var(--ui) * 0.8);
 	background: transparent;
 	color: #f5d78c;
 	font-family: inherit;
-	font-size: calc(var(--ui, 7px) * 1.6);
+	font-size: calc(var(--ui) * 1.6);
 	font-weight: 700;
 	cursor: pointer;
 	letter-spacing: 0.05em;
@@ -119,13 +122,13 @@
 .ss-popup {
 	background: #1a2a1a;
 	border: 1px solid #3a4a2a;
-	border-radius: calc(var(--ui, 7px) * 1.2);
-	padding: calc(var(--ui, 7px) * 3) calc(var(--ui, 7px) * 3.5);
-	min-width: calc(var(--ui, 7px) * 34);
-	max-width: calc(var(--ui, 7px) * 42);
+	border-radius: calc(var(--ui) * 1.2);
+	padding: calc(var(--ui) * 3) calc(var(--ui) * 3.5);
+	min-width: calc(var(--ui) * 34);
+	max-width: calc(var(--ui) * 42);
 	display: flex;
 	flex-direction: column;
-	gap: calc(var(--ui, 7px) * 2);
+	gap: calc(var(--ui) * 2);
 	text-align: left;
 }
 
@@ -133,7 +136,7 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	font-size: calc(var(--ui, 7px) * 2);
+	font-size: calc(var(--ui) * 2);
 	font-weight: 700;
 	color: #f5d78c;
 }
@@ -142,9 +145,9 @@
 	background: none;
 	border: none;
 	color: #a0a080;
-	font-size: calc(var(--ui, 7px) * 2);
+	font-size: calc(var(--ui) * 2);
 	cursor: pointer;
-	padding: calc(var(--ui, 7px) * 0.4);
+	padding: calc(var(--ui) * 0.4);
 	line-height: 1;
 }
 
@@ -156,8 +159,8 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: baseline;
-	font-size: calc(var(--ui, 7px) * 1.4);
-	padding: calc(var(--ui, 7px) * 0.5) 0;
+	font-size: calc(var(--ui) * 1.4);
+	padding: calc(var(--ui) * 0.5) 0;
 	border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -173,20 +176,20 @@
 .ss-detail-mode {
 	color: #f5d78c;
 	font-weight: 700;
-	font-size: calc(var(--ui, 7px) * 1.6);
+	font-size: calc(var(--ui) * 1.6);
 	text-align: right;
 	text-transform: capitalize;
 }
 
 .ss-play-btn {
-	margin-top: calc(var(--ui, 7px) * 1);
-	padding: calc(var(--ui, 7px) * 1.2) calc(var(--ui, 7px) * 3.5);
+	margin-top: calc(var(--ui) * 1);
+	padding: calc(var(--ui) * 1.2) calc(var(--ui) * 3.5);
 	border: none;
-	border-radius: calc(var(--ui, 7px) * 0.7);
+	border-radius: calc(var(--ui) * 0.7);
 	background: #f5d78c;
 	color: #0d1f0d;
 	font-family: inherit;
-	font-size: calc(var(--ui, 7px) * 1.6);
+	font-size: calc(var(--ui) * 1.6);
 	font-weight: 700;
 	cursor: pointer;
 	letter-spacing: 0.05em;
