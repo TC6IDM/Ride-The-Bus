@@ -1608,7 +1608,7 @@
      clears. In normal play a single "Tap to Continue" dismisses it. In replay
      mode the same tap opens a replay-info popup, and tapping "Play" starts the
      reveal. The game board builds behind it the whole time. -->
-{#if !introDismissed}
+{#if introPhase === 'start' || introPhase === 'replay-info'}
   <StartScreen
     phase={introPhase}
     mode={stateUrlDerived.mode() || ''}
