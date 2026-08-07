@@ -171,4 +171,11 @@ export default {
 		'स्लाइडर बटन से आप ऑटोप्ले के दौरान पूरी जीत पर रुकने की सुविधा चालू या बंद कर सकते हैं।',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'इस गेम में कोई फ्री स्पिन, बोनस राउंड, जैकपॉट या री-ट्रिगर फीचर नहीं है। हर राउंड चार कार्ड का एक अकेला, स्वतंत्र ड्रॉ है।',
+	'Big Win': 'बड़ी जीत',
+	'Huge Win': 'विशाल जीत',
+	'Mega Win': 'मेगा जीत',
+	'Epic Win': 'अद्भुत जीत',
+	'Tap to skip': 'छोड़ने के लिए टैप करें',
+	'Skip win animations on autoplay': 'ऑटोप्ले पर जीत एनिमेशन छोड़ें',
+	'Skip big win animations during autoplay': 'ऑटोप्ले के दौरान बड़ी जीत के एनिमेशन छोड़ें',
 };

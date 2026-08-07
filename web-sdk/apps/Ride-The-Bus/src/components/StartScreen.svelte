@@ -36,21 +36,73 @@
 
 <div class="ss-overlay" style={`--logo-url: url(${base}/logo.png)`}>
 	{#if props.phase === 'start'}
-		<!-- ---- Start / intro screen ---- -->
+		<!-- ---- Start / intro screen ----
+		     Everything animates in on a stagger driven by --d (delay index), set
+		     inline per element so one keyframe serves the whole screen. The old
+		     version of this was a five-line paragraph of rules text, which is a
+		     lot to read before you are allowed to play; the four steps below say
+		     the same thing as pictures. The prose version is still in How to Play
+		     for anyone who wants it. -->
 		<div class="ss-card">
-			<div class="ss-logo" aria-hidden="true"></div>
-			<h1 class="ss-title">Ride The Bus</h1>
-			<p class="ss-subtitle">by Takeover Casino</p>
+			<div class="ss-logo" style="--d: 0" aria-hidden="true"></div>
+			<h1 class="ss-title" style="--d: 1">Ride The Bus</h1>
+			<p class="ss-subtitle" style="--d: 2">by Takeover Casino</p>
 
-			<p class="ss-rules">
-				{t('Guess your way through four cards:')}<br />
-				{t('Colour — red or black for card 1.')}<br />
-				{t('Higher / Lower — versus card 1 (or =).')}<br />
-				{t('Inside / Outside — between cards 1 & 2 (or =).')}<br />
-				{t('Suit — the suit of card 4.')}
-			</p>
+			<p class="ss-lead" style="--d: 3">{t('Guess your way through four cards:')}</p>
 
-			<div class="ss-stats">
+			<ol class="ss-steps">
+				<!-- 1: colour of card 1 -->
+				<li class="ss-step" style="--d: 4">
+					<span class="ss-step-n">1</span>
+					<span class="ss-step-art" aria-hidden="true">
+						<span class="ss-mini-card">
+							<span class="ss-halfsplit"></span>
+						</span>
+					</span>
+					<span class="ss-step-label">{t('Color')}</span>
+				</li>
+
+				<!-- 2: higher or lower than card 1 -->
+				<li class="ss-step" style="--d: 5">
+					<span class="ss-step-n">2</span>
+					<span class="ss-step-art" aria-hidden="true">
+						<span class="ss-arrows">
+							<span class="ss-arrow up">▲</span>
+							<span class="ss-arrow down">▼</span>
+						</span>
+					</span>
+					<span class="ss-step-label">{t('Higher')} / {t('Lower')}</span>
+				</li>
+
+				<!-- 3: inside or outside cards 1 and 2 -->
+				<li class="ss-step" style="--d: 6">
+					<span class="ss-step-n">3</span>
+					<span class="ss-step-art" aria-hidden="true">
+						<span class="ss-range">
+							<span class="ss-range-pip"></span>
+							<span class="ss-range-bar"></span>
+							<span class="ss-range-pip"></span>
+						</span>
+					</span>
+					<span class="ss-step-label">{t('Inside')} / {t('Outside')}</span>
+				</li>
+
+				<!-- 4: suit of card 4 -->
+				<li class="ss-step" style="--d: 7">
+					<span class="ss-step-n">4</span>
+					<span class="ss-step-art" aria-hidden="true">
+						<span class="ss-suits">
+							<span class="ss-suit red">♥</span>
+							<span class="ss-suit red">♦</span>
+							<span class="ss-suit">♣</span>
+							<span class="ss-suit">♠</span>
+						</span>
+					</span>
+					<span class="ss-step-label">{t('Suit')}</span>
+				</li>
+			</ol>
+
+			<div class="ss-stats" style="--d: 8">
 				<div class="ss-stat">
 					<span class="ss-stat-val">{(gameConfig.rtp * 100).toFixed(2)}%</span>
 					<span class="ss-stat-cap">{t('RTP')}</span>
@@ -61,7 +113,7 @@
 				</div>
 			</div>
 
-			<button class="ss-continue" onclick={props.oncontinue}>
+			<button class="ss-continue" style="--d: 9" onclick={props.oncontinue}>
 				{t('Tap to continue')}
 			</button>
 		</div>

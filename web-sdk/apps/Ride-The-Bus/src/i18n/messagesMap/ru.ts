@@ -172,4 +172,12 @@ export default {
 		'Кнопка с ползунками позволяет включить или выключить остановку при полном выигрыше во время автоигры.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'В этой игре нет бесплатных вращений, бонусных раундов, джекпотов и функций повторного запуска. Каждый раунд — это одна независимая раздача из четырёх карт.',
+	'Big Win': 'Крупный выигрыш',
+	'Huge Win': 'Огромный выигрыш',
+	'Mega Win': 'Мега-выигрыш',
+	'Epic Win': 'Эпический выигрыш',
+	'Tap to skip': 'Нажмите, чтобы пропустить',
+	'Skip win animations on autoplay': 'Пропускать анимации выигрыша в автоигре',
+	'Skip big win animations during autoplay':
+		'Пропускать анимации крупных выигрышей во время автоигры',
 };

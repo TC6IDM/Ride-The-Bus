@@ -176,4 +176,12 @@ export default {
 		"Le bouton curseurs permet d'activer ou de désactiver l'arrêt sur partie complète gagnée pour les séries automatiques.",
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'Ce jeu ne comporte ni tours gratuits, ni tours bonus, ni jackpots, ni fonctions de relance. Chaque manche est un tirage unique et indépendant de quatre cartes.',
+	'Big Win': 'Gros Gain',
+	'Huge Win': 'Gain Énorme',
+	'Mega Win': 'Méga Gain',
+	'Epic Win': 'Gain Épique',
+	'Tap to skip': 'Appuyez pour passer',
+	'Skip win animations on autoplay': 'Passer les animations de gain en jeu automatique',
+	'Skip big win animations during autoplay':
+		'Passer les animations de gros gains pendant le jeu automatique',
 };

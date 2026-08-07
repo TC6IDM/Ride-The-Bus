@@ -175,4 +175,12 @@ export default {
 		'Przycisk suwaków pozwala włączyć lub wyłączyć zatrzymanie po pełnej wygranej w seriach automatycznych.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'Ta gra nie zawiera darmowych spinów, rund bonusowych, jackpotów ani funkcji ponownego wyzwalania. Każda runda to pojedyncze, niezależne losowanie czterech kart.',
+	'Big Win': 'Duża Wygrana',
+	'Huge Win': 'Ogromna Wygrana',
+	'Mega Win': 'Mega Wygrana',
+	'Epic Win': 'Epicka Wygrana',
+	'Tap to skip': 'Dotknij, aby pominąć',
+	'Skip win animations on autoplay': 'Pomijaj animacje wygranych w autoodtwarzaniu',
+	'Skip big win animations during autoplay':
+		'Pomijaj animacje dużych wygranych podczas autoodtwarzania',
 };

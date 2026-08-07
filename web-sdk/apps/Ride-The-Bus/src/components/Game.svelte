@@ -8,6 +8,8 @@
   import { stateBet, stateUrlDerived, stateMeta, stateConfig, stateModal } from 'state-shared';
   import ErrorModal from './ErrorModal.svelte';
   import StartScreen from './StartScreen.svelte';
+  import WinCelebration from './WinCelebration.svelte';
+  import { autoHoldMs, winTierFor, type WinTier } from '../game/winTiers';
   // Of the five documented RGS endpoints this game uses three: authenticate
   // (via <Authenticate>), play and end-round. The other two are deliberately
   // not called, recorded here so the omissions read as decisions:
@@ -277,6 +279,51 @@
   // no bust). A passive stop condition - it only ends the run, never changes
   // the stake - so it's safe to ship (unlike the gated Advanced progression).
   let stopOnFullWin = $state(false);
+
+  // Skip the big-win takeover during an auto run: show the finished figure for
+  // a beat, then move on without waiting to be dismissed.
+  //
+  // Default ON, deliberately. With it off, a 100-round run stops dead on every
+  // win of 10x or better - roughly one round in seventy - and each one waits
+  // for a tap. That turns "set it going" into "sit here and dismiss things",
+  // which is the opposite of what autoplay is for. A player who wants to watch
+  // every celebration can switch it off.
+  let skipWinOnAuto = $state(true);
+
+  // ---- Big-win takeover ----------------------------------------------------
+  // The round flow awaits dismissal, so the celebration naturally holds the
+  // next auto round rather than needing the loop to know about it.
+  let celebration = $state<{ tier: WinTier; amount: number; multiplier: number } | null>(null);
+  let celebrationResolve: (() => void) | null = null;
+
+  /** Show the takeover and resolve once the player dismisses it. */
+  function showWinCelebration(amount: number, multiplier: number): Promise<void> {
+    const tier = winTierFor(multiplier);
+    if (!tier) return Promise.resolve();
+    celebration = { tier, amount, multiplier };
+    return new Promise((resolve) => {
+      celebrationResolve = resolve;
+    });
+  }
+
+  function dismissCelebration() {
+    celebration = null;
+    const resolve = celebrationResolve;
+    celebrationResolve = null;
+    resolve?.();
+  }
+
+  /**
+   * How long the takeover holds before leaving on its own, or null to wait for
+   * a tap. Only ever non-null during an auto run with the skip switched on -
+   * a manual spin always waits, because the player is right there watching.
+   *
+   * The hold scales with the tier (see autoHoldMs): the rare tiers are exactly
+   * the ones worth leaving autoplay running for, so they get longer on screen
+   * than a routine Big Win.
+   */
+  const celebrationAutoSkipMs = () =>
+    autoRunning && skipWinOnAuto && celebration ? autoHoldMs(celebration.tier) : null;
 
   // Advanced auto-bet strategy (Stake-style). When the Advanced switch is on:
   //  - On Win / On Loss adjust the next bet: 'reset' back to the starting bet,
@@ -746,12 +793,32 @@
     // Net position for this session: payout minus the stake actually placed.
     sessionNet = Math.round((sessionNet + (wonAmount - initialBet)) * 100) / 100;
 
+    // A win big enough to celebrate gets the takeover, which plays its own
+    // escalating fanfare - so the ordinary win sting is suppressed rather than
+    // stacked underneath it.
+    //
+    // Tiering is on payout size, so a bust on card 4 that kept 30% of a big
+    // multiplier still celebrates. The second argument floors a FULL game win
+    // at the entry tier regardless of size: the smallest one possible is 6.6x
+    // (exhaustively enumerated - see winTiers.ts), which would otherwise slip
+    // under the 10x threshold and land the game's defining moment in silence.
+    const celebrationTier = winTierFor(lastWinMultiplier, bustedIndex === null && wonAmount > 0);
+
     if (wonAmount <= 0) {
       sound.playRoundLoss();
+    } else if (celebrationTier) {
+      // WinCelebration owns the audio for this round.
     } else if (bustedIndex === null) {
       sound.playFullWin();
     } else {
       sound.playRoundWin();
+    }
+
+    // Blocks here until dismissed (or auto-skipped). runRound awaits this, and
+    // the auto loop awaits runRound, so the run pauses without the loop needing
+    // to know the takeover exists.
+    if (celebrationTier) {
+      await showWinCelebration(wonAmount, lastWinMultiplier);
     }
   }
 
@@ -1298,6 +1365,8 @@
         ? false // it is a Skip button for the duration of the reveal
         : gameState === 'playing' ||
         isProcessing ||
+        // The big-win takeover is covering the board.
+        celebration !== null ||
         // An interrupted round is being replayed onto the board - the player
         // must not be able to buy a new one on top of it.
         resumeInProgress ||
@@ -1403,6 +1472,11 @@
 
   function onKeyDown(event: KeyboardEvent) {
     if (event.code !== 'Space' && event.key !== ' ') return;
+    // The big-win takeover is up and owns the keyboard - it binds Space on
+    // window in the capture phase, so this should already be unreachable. Kept
+    // as a belt-and-braces guard: Space reaching the spin button from behind a
+    // full-screen overlay would buy a round the player never asked for.
+    if (celebration) return;
     // Regulator has barred the shortcut - leave Space to the browser.
     if (jurisdiction.spacebarDisabled()) return;
     if (!spaceIsForUs(event.target)) return;
@@ -1639,6 +1713,20 @@
     oncontinue={onStartContinue}
     onplay={onReplayPlay}
   />
+{/if}
+
+<!-- Big-win takeover. Keyed on the tier so a second celebration in an auto run
+     remounts rather than reusing the first one's count-up state. -->
+{#if celebration}
+  {#key `${celebration.tier.id}-${celebration.amount}`}
+    <WinCelebration
+      tier={celebration.tier}
+      amount={celebration.amount}
+      multiplier={celebration.multiplier}
+      autoSkipMs={celebrationAutoSkipMs()}
+      ondismiss={dismissCelebration}
+    />
+  {/key}
 {/if}
 
 <!-- The backdrop is drawn in CSS, always. There used to be a second path here
@@ -2184,6 +2272,13 @@
         <div class="advanced-row">
           <span class="control-label">{t('Stop on full game win')}</span>
           <button type="button" class="switch" class:on={stopOnFullWin} role="switch" aria-checked={stopOnFullWin} aria-label={t('Stop autoplay on a full game win')} disabled={autoRunning} onclick={() => (stopOnFullWin = !stopOnFullWin)}><span class="switch-knob"></span></button>
+        </div>
+        <!-- Unlike the row above, this one is NOT disabled mid-run: it changes
+             only how the next celebration behaves, so flipping it during a run
+             is both safe and the moment a player is most likely to want it. -->
+        <div class="advanced-row">
+          <span class="control-label">{t('Skip win animations on autoplay')}</span>
+          <button type="button" class="switch" class:on={skipWinOnAuto} role="switch" aria-checked={skipWinOnAuto} aria-label={t('Skip big win animations during autoplay')} onclick={() => (skipWinOnAuto = !skipWinOnAuto)}><span class="switch-knob"></span></button>
         </div>
       </div>
     </div>

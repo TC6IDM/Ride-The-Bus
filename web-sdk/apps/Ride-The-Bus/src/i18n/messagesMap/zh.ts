@@ -167,4 +167,11 @@ export default {
 		'滑块按钮可开启或关闭自动游戏中的全胜时停止功能。',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'本游戏没有免费旋转、奖励回合、累积奖池或重新触发功能。每一轮都是独立的一次四张牌抽取。',
+	'Big Win': '大奖',
+	'Huge Win': '巨额大奖',
+	'Mega Win': '超级大奖',
+	'Epic Win': '史诗大奖',
+	'Tap to skip': '点击跳过',
+	'Skip win animations on autoplay': '自动游戏时跳过获胜动画',
+	'Skip big win animations during autoplay': '自动游戏期间跳过大奖动画',
 };

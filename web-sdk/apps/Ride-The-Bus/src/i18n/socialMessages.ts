@@ -55,8 +55,7 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 	'Revealing…': 'Revealing…',
 
 	// How to play — descriptions containing "bet", "win", "payout"
-	'Guess your way through four cards:':
-		'Guess your way through four cards:',
+	'Guess your way through four cards:': 'Guess your way through four cards:',
 	'Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.':
 		'Pick all four, set your play amount, and hit Play. Each correct guess multiplies your winnings; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.',
 	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
@@ -125,6 +124,12 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 		'The circular arrow button opens the auto play settings.',
 	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
 		'The sliders button lets you toggle stop-on-full-win for auto play runs.',
+
+	// Big-win takeover. The tier names need no replacement - "win" is one of the
+	// table's REPLACEMENT words, not a restricted one - but "autoplay" is spelled
+	// "auto play" everywhere else in social mode, so these follow suit.
+	'Skip win animations on autoplay': 'Skip win animations on auto play',
+	'Skip big win animations during autoplay': 'Skip big win animations during auto play',
 };
 
 export default socialMessages;

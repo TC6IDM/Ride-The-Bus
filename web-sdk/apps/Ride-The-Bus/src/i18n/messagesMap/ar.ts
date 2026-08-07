@@ -174,4 +174,11 @@ export default {
 		'زر المؤشرات يتيح لك تفعيل أو تعطيل التوقف عند الفوز الكامل في جولات اللعب التلقائي.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'لا تحتوي هذه اللعبة على لفات مجانية أو جولات مكافأة أو جوائز كبرى أو ميزات إعادة التفعيل. كل جولة هي سحب مستقل واحد لأربع بطاقات.',
+	'Big Win': 'فوز كبير',
+	'Huge Win': 'فوز ضخم',
+	'Mega Win': 'فوز هائل',
+	'Epic Win': 'فوز أسطوري',
+	'Tap to skip': 'اضغط للتخطي',
+	'Skip win animations on autoplay': 'تخطي مؤثرات الفوز أثناء اللعب التلقائي',
+	'Skip big win animations during autoplay': 'تخطي مؤثرات الفوز الكبير أثناء اللعب التلقائي',
 };

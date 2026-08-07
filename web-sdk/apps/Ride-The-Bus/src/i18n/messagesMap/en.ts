@@ -204,4 +204,16 @@ export default {
 		'The circular arrow button opens the autoplay settings.',
 	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
 		'The sliders button lets you toggle stop-on-full-win for autoplay runs.',
+
+	// Big-win takeover. Tier names are ordered by rarity - see game/winTiers.ts.
+	// "Max Win" is deliberately reused from the start screen's stat row: it is
+	// the same figure, and calling the ceiling two different things would be
+	// confusing in any language.
+	'Big Win': 'Big Win',
+	'Huge Win': 'Huge Win',
+	'Mega Win': 'Mega Win',
+	'Epic Win': 'Epic Win',
+	'Tap to skip': 'Tap to skip',
+	'Skip win animations on autoplay': 'Skip win animations on autoplay',
+	'Skip big win animations during autoplay': 'Skip big win animations during autoplay',
 };

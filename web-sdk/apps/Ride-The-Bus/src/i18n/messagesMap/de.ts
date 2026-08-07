@@ -178,4 +178,12 @@ export default {
 		'Mit der Regler-Schaltfläche kannst du das Stoppen bei einem Komplettgewinn für Autoplay-Läufe ein- und ausschalten.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'Dieses Spiel hat keine Freispiele, Bonusrunden, Jackpots oder Wiederauslöse-Funktionen. Jede Runde ist eine einzelne, unabhängige Ziehung von vier Karten.',
+	'Big Win': 'Großer Gewinn',
+	'Huge Win': 'Riesiger Gewinn',
+	'Mega Win': 'Mega-Gewinn',
+	'Epic Win': 'Epischer Gewinn',
+	'Tap to skip': 'Zum Überspringen tippen',
+	'Skip win animations on autoplay': 'Gewinnanimationen bei Autoplay überspringen',
+	'Skip big win animations during autoplay':
+		'Große Gewinnanimationen während Autoplay überspringen',
 };

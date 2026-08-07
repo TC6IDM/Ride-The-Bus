@@ -175,4 +175,12 @@ export default {
 		'El botón de los controles deslizantes activa o desactiva la parada al ganar la partida completa en las series automáticas.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'Este juego no tiene giros gratis, rondas de bonificación, botes ni funciones de reactivación. Cada ronda es una única extracción independiente de cuatro cartas.',
+	'Big Win': 'Gran Ganancia',
+	'Huge Win': 'Ganancia Enorme',
+	'Mega Win': 'Mega Ganancia',
+	'Epic Win': 'Ganancia Épica',
+	'Tap to skip': 'Toca para saltar',
+	'Skip win animations on autoplay': 'Saltar animaciones de ganancia en juego automático',
+	'Skip big win animations during autoplay':
+		'Saltar las animaciones de grandes ganancias durante el juego automático',
 };

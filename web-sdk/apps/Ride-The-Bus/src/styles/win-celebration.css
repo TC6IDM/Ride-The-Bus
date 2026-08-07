@@ -1,0 +1,320 @@
+/* ---- Big-win takeover ----------------------------------------------------
+   Drawn entirely in CSS - see the note at the top of WinCelebration.svelte for
+   why there are no image assets here.
+
+   Per-tier colour is carried on three custom properties set by the .tier-*
+   rules, so every rule below is written once against the variables rather than
+   five times against literals. --wc-hot is the core colour, --wc-cool the
+   outer falloff, --wc-ray the burst behind the text.                        */
+
+.wc-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 1200;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	cursor: pointer;
+	border: 0;
+	padding: 0;
+	background: radial-gradient(ellipse at center, rgba(8, 20, 8, 0.82) 0%, rgba(2, 6, 2, 0.94) 70%);
+	font-family: 'Poppins', sans-serif;
+	/* The overlay lives outside .game-layout, so it carries its own copy of the
+	   fluid unit - same definition as base.css and start-screen.css. */
+	--ui: clamp(4px, min(2vw, 1.55vh), 11px);
+	animation: wc-fade-in 0.44s ease-out both;
+}
+
+.wc-overlay:focus-visible {
+	outline: none;
+}
+
+/* ---- Tier palettes ---- */
+.tier-big {
+	--wc-hot: #f5d78c;
+	--wc-cool: #b8923f;
+	--wc-ray: rgba(245, 215, 140, 0.16);
+}
+.tier-huge {
+	--wc-hot: #ffc857;
+	--wc-cool: #c47a1c;
+	--wc-ray: rgba(255, 200, 87, 0.2);
+}
+.tier-mega {
+	--wc-hot: #ff9a3c;
+	--wc-cool: #c94f14;
+	--wc-ray: rgba(255, 154, 60, 0.24);
+}
+.tier-epic {
+	--wc-hot: #d98cff;
+	--wc-cool: #7b2fb5;
+	--wc-ray: rgba(217, 140, 255, 0.26);
+}
+/* Max win borrows the brand red from logo.png, so the ceiling reads as the
+   game's own moment rather than one more step up the same ramp. */
+.tier-max {
+	--wc-hot: #ffe9a8;
+	--wc-cool: #a80828;
+	--wc-ray: rgba(255, 233, 168, 0.3);
+}
+
+/* ---- Rotating ray burst ---- */
+.wc-rays {
+	position: absolute;
+	width: 200vmax;
+	height: 200vmax;
+	background: repeating-conic-gradient(
+		var(--wc-ray) 0deg 6deg,
+		transparent 6deg 14deg
+	);
+	animation: wc-spin 28s linear infinite;
+	opacity: 0.75;
+	mask-image: radial-gradient(circle at center, #000 0%, transparent 62%);
+	-webkit-mask-image: radial-gradient(circle at center, #000 0%, transparent 62%);
+}
+
+.wc-glow {
+	position: absolute;
+	width: calc(var(--ui) * 70);
+	height: calc(var(--ui) * 70);
+	border-radius: 50%;
+	background: radial-gradient(circle, var(--wc-cool) 0%, transparent 68%);
+	opacity: 0.4;
+	animation: wc-pulse 4.8s ease-in-out infinite;
+}
+
+/* ---- Sparks ----
+   Fourteen spans thrown outward on staggered delays. --i is set inline so each
+   one gets its own angle and timing off a single keyframe. */
+.wc-sparks {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+}
+
+.wc-spark {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: calc(var(--ui) * 0.85);
+	height: calc(var(--ui) * 0.85);
+	margin: calc(var(--ui) * -0.42);
+	border-radius: 50%;
+	background: var(--wc-hot);
+	box-shadow: 0 0 calc(var(--ui) * 1.2) var(--wc-hot);
+	/* --angle, --dist and animation-delay are set inline per spark - see the
+	   SPARKS constant in WinCelebration.svelte for why they are not computed
+	   here. */
+	animation: wc-spark-out 3.8s cubic-bezier(0.15, 0.7, 0.3, 1) infinite;
+	opacity: 0;
+}
+
+/* ---- Text stack ---- */
+.wc-body {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: calc(var(--ui) * 0.9);
+	text-align: center;
+	padding: calc(var(--ui) * 2);
+}
+
+.wc-title {
+	font-size: calc(var(--ui) * 5.2);
+	font-weight: 900;
+	line-height: 1;
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+	color: var(--wc-hot);
+	text-shadow:
+		0 0 calc(var(--ui) * 1.6) var(--wc-hot),
+		0 0 calc(var(--ui) * 4) var(--wc-cool),
+		0 calc(var(--ui) * 0.3) 0 rgba(0, 0, 0, 0.55);
+	/* Runs once, on mount. The element is no longer torn down and rebuilt between
+	   tiers, so this cannot replay - promotions are a scale pop applied through
+	   element.animate(), see promoteTitle. */
+	animation: wc-title-in 1.24s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+	/* The palette variables change under the element as the tier climbs, so ease
+	   the colour across instead of letting it snap mid-pop. */
+	transition:
+		color 0.45s ease-out,
+		text-shadow 0.45s ease-out;
+}
+
+.wc-amount {
+	font-size: calc(var(--ui) * 4);
+	font-weight: 800;
+	line-height: 1.1;
+	color: #fffdf5;
+	/* Tabular figures stop the width jittering as digits change during the
+	   count - without it the whole line shivers on every frame. */
+	font-variant-numeric: tabular-nums;
+	text-shadow: 0 0 calc(var(--ui) * 1.4) rgba(255, 255, 255, 0.35);
+	/* Runs once, on mount - nothing below may set `animation` on this element or
+	   it will replay. See .wc-amount.is-holding. */
+	animation: wc-amount-in 1s ease-out 0.32s both;
+	transition:
+		color 0.45s ease-out,
+		text-shadow 0.35s ease-out;
+}
+
+.wc-amount.is-counting {
+	color: var(--wc-hot);
+}
+
+/* Resting on a band ceiling between legs: a brighter glow so the pause reads as
+   the number being presented rather than the count stalling.
+
+   Only the glow. The scale pop is applied through element.animate() instead,
+   because setting `animation` here would REPLACE the entrance animation above -
+   and then removing the class restores it, restarting a 1s rise from
+   translateY+opacity:0. The number visibly dropped and climbed back after every
+   pause. A transition cannot collide that way. */
+.wc-amount.is-holding {
+	text-shadow:
+		0 0 calc(var(--ui) * 1.2) var(--wc-hot),
+		0 0 calc(var(--ui) * 3) var(--wc-cool);
+}
+
+.wc-mult {
+	font-size: calc(var(--ui) * 1.9);
+	font-weight: 700;
+	color: var(--wc-hot);
+	opacity: 0.85;
+	font-variant-numeric: tabular-nums;
+	animation: wc-amount-in 1s ease-out 0.56s both;
+}
+
+.wc-prompt {
+	margin-top: calc(var(--ui) * 1.8);
+	font-size: calc(var(--ui) * 1.3);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: #cfc6ae;
+	opacity: 0.6;
+	animation: wc-blink 3.6s ease-in-out infinite;
+}
+
+.wc-prompt.is-ready {
+	color: var(--wc-hot);
+	opacity: 0.95;
+}
+
+/* ---- Keyframes ---- */
+@keyframes wc-fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes wc-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes wc-pulse {
+	0%,
+	100% {
+		transform: scale(0.94);
+		opacity: 0.34;
+	}
+	50% {
+		transform: scale(1.06);
+		opacity: 0.48;
+	}
+}
+
+@keyframes wc-spark-out {
+	0% {
+		transform: rotate(var(--angle)) translateX(0) scale(0.3);
+		opacity: 0;
+	}
+	18% {
+		opacity: 1;
+	}
+	100% {
+		transform: rotate(var(--angle)) translateX(var(--dist)) scale(0.15);
+		opacity: 0;
+	}
+}
+
+@keyframes wc-title-in {
+	from {
+		transform: scale(0.55);
+		opacity: 0;
+	}
+	to {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
+@keyframes wc-amount-in {
+	from {
+		transform: translateY(calc(var(--ui) * 1.2));
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+
+@keyframes wc-blink {
+	0%,
+	100% {
+		opacity: 0.35;
+	}
+	50% {
+		opacity: 0.8;
+	}
+}
+
+/* ---- Short viewports ----
+   Popout S is 400x225. The stack has to shrink or the prompt falls off the
+   bottom and the player cannot see how to dismiss it. */
+@media (max-height: 380px) {
+	.wc-title {
+		font-size: calc(var(--ui) * 3.6);
+	}
+	.wc-amount {
+		font-size: calc(var(--ui) * 2.9);
+	}
+	.wc-mult {
+		font-size: calc(var(--ui) * 1.5);
+	}
+	.wc-prompt {
+		margin-top: calc(var(--ui) * 0.9);
+	}
+}
+
+/* ---- Reduced motion ----
+   The takeover still appears and still has to be dismissed - it carries the
+   payout, so suppressing it entirely would hide information. Only the moving
+   parts stop. The count-up is skipped in the component for the same reason. */
+@media (prefers-reduced-motion: reduce) {
+	.wc-rays,
+	.wc-glow,
+	.wc-sparks {
+		display: none;
+	}
+
+	.wc-overlay,
+	.wc-title,
+	.wc-amount,
+	.wc-amount.is-holding,
+	.wc-mult,
+	.wc-prompt {
+		animation: none;
+	}
+
+	.wc-title {
+		transition: none;
+	}
+}

@@ -174,4 +174,12 @@ export default {
 		'Liukusäädinpainikkeella voit ottaa käyttöön tai poistaa käytöstä pysäytyksen täyteen voittoon automaattipeleissä.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'Tässä pelissä ei ole ilmaiskierroksia, bonuskierroksia, jättipotteja eikä uudelleenlaukaisuominaisuuksia. Jokainen kierros on yksittäinen, itsenäinen neljän kortin nosto.',
+	'Big Win': 'Iso voitto',
+	'Huge Win': 'Valtava voitto',
+	'Mega Win': 'Megavoitto',
+	'Epic Win': 'Eeppinen voitto',
+	'Tap to skip': 'Ohita napauttamalla',
+	'Skip win animations on autoplay': 'Ohita voittoanimaatiot automaattipelissä',
+	'Skip big win animations during autoplay':
+		'Ohita suurten voittojen animaatiot automaattipelin aikana',
 };

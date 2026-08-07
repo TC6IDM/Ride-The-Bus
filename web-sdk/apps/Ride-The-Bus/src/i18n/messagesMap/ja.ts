@@ -173,4 +173,11 @@ export default {
 		'スライダーボタンでオートプレイ中のフルウィン時停止を切り替えられます。',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'このゲームにはフリースピン、ボーナスラウンド、ジャックポット、再トリガー機能はありません。各ラウンドは独立した1回の4枚カードドローです。',
+	'Big Win': '大当たり',
+	'Huge Win': '特大当たり',
+	'Mega Win': 'メガウィン',
+	'Epic Win': 'エピックウィン',
+	'Tap to skip': 'タップしてスキップ',
+	'Skip win animations on autoplay': 'オートプレイ中は勝利演出をスキップ',
+	'Skip big win animations during autoplay': 'オートプレイ中は大当たり演出をスキップします',
 };

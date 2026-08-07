@@ -176,4 +176,11 @@ export default {
 		'Nút thanh trượt cho phép bật hoặc tắt tính năng dừng khi thắng trọn vòng trong các lượt tự động chơi.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'Trò chơi này không có vòng quay miễn phí, vòng thưởng, jackpot hay tính năng kích hoạt lại. Mỗi vòng là một lượt rút bốn lá bài độc lập.',
+	'Big Win': 'Thắng Lớn',
+	'Huge Win': 'Thắng Khổng Lồ',
+	'Mega Win': 'Siêu Thắng',
+	'Epic Win': 'Thắng Huyền Thoại',
+	'Tap to skip': 'Chạm để bỏ qua',
+	'Skip win animations on autoplay': 'Bỏ qua hiệu ứng thắng khi tự động chơi',
+	'Skip big win animations during autoplay': 'Bỏ qua hiệu ứng thắng lớn trong khi tự động chơi',
 };

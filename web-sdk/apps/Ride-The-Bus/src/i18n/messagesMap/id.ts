@@ -176,4 +176,12 @@ export default {
 		'Tombol penggeser memungkinkan Anda mengaktifkan atau menonaktifkan berhenti saat menang penuh untuk sesi putar otomatis.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'Permainan ini tidak memiliki putaran gratis, ronde bonus, jackpot, atau fitur pemicu ulang. Setiap ronde adalah satu penarikan empat kartu yang berdiri sendiri.',
+	'Big Win': 'Kemenangan Besar',
+	'Huge Win': 'Kemenangan Luar Biasa',
+	'Mega Win': 'Kemenangan Mega',
+	'Epic Win': 'Kemenangan Epik',
+	'Tap to skip': 'Ketuk untuk melewati',
+	'Skip win animations on autoplay': 'Lewati animasi kemenangan saat putar otomatis',
+	'Skip big win animations during autoplay':
+		'Lewati animasi kemenangan besar selama putar otomatis',
 };

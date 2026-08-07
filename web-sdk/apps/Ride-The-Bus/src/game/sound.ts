@@ -379,6 +379,50 @@ function choiceRoot(stage: number): number {
  */
 const SCALE = [0, 2, 4, 5, 7, 9, 11] as const;
 
+/**
+ * Win tiers, as far as the audio is concerned. Mirrors WinTierId in
+ * game/winTiers.ts, redeclared rather than imported so this module stays a leaf
+ * - sound.ts is imported by nearly everything and importing back up into game
+ * logic would make that circular.
+ */
+export type WinTierSound = 'big' | 'huge' | 'mega' | 'epic' | 'max';
+
+/**
+ * How each tier's fanfare is built. Escalation is by density and range rather
+ * than volume - see playWinFanfare.
+ *
+ * `arpeggio` entries are ratios against the root (C5): 1 = root, 1.26 = major
+ * third, 1.5 = fifth, 2 = octave, and beyond that the same shape an octave up.
+ */
+const FANFARE: Record<
+	WinTierSound,
+	{ arpeggio: number[]; arpeggioStep: number; hold: number; shimmer: number; swell: boolean }
+> = {
+	big: { arpeggio: [1, 1.26, 1.5, 2], arpeggioStep: 0.075, hold: 0.8, shimmer: 2, swell: false },
+	huge: { arpeggio: [1, 1.26, 1.5, 2, 2.52], arpeggioStep: 0.072, hold: 1.0, shimmer: 3, swell: false },
+	mega: {
+		arpeggio: [1, 1.26, 1.5, 2, 2.52, 3],
+		arpeggioStep: 0.068,
+		hold: 1.25,
+		shimmer: 4,
+		swell: true,
+	},
+	epic: {
+		arpeggio: [1, 1.26, 1.5, 2, 2.52, 3, 4],
+		arpeggioStep: 0.064,
+		hold: 1.5,
+		shimmer: 5,
+		swell: true,
+	},
+	max: {
+		arpeggio: [1, 1.26, 1.5, 2, 2.52, 3, 4, 5.04, 6],
+		arpeggioStep: 0.06,
+		hold: 1.9,
+		shimmer: 7,
+		swell: true,
+	},
+};
+
 // Fixed pitch sets per control kind, cycled without immediate repeats. Two
 // presses in a row are therefore never the same note AND never the same detune,
 // which is what stops a run of clicks sounding mechanical.
@@ -730,5 +774,148 @@ export const sound = {
 	playRoundLoss() {
 		tone({ from: rand(235, 250), to: 148, duration: 0.28, type: 'sine', gain: 0.2, space: 0.4, attack: 0.03 });
 		tone({ from: rand(196, 205), to: 124, duration: 0.34, type: 'sine', gain: 0.12, delay: 0.05, space: 0.45 });
+	},
+
+	/**
+	 * The big-win takeover opening, escalating with the tier.
+	 *
+	 * Built from the same major-triad vocabulary as playFullWin rather than a
+	 * new palette, so the celebration reads as the game getting louder about
+	 * something it already says - not as a different game interrupting.
+	 *
+	 * Escalation is by DENSITY and RANGE, not just volume: each tier adds
+	 * voices, reaches further up, and holds longer. Turning one sound up is how
+	 * you get a louder version of the same event; adding voices is how you get a
+	 * bigger one.
+	 */
+	playWinFanfare(tier: WinTierSound) {
+		const shape = FANFARE[tier];
+		const root = 523.25;
+
+		// Rising arpeggio - the part that reads as "here it comes".
+		shape.arpeggio.forEach((ratio, i) => {
+			tone({
+				from: root * ratio,
+				duration: 0.3,
+				gain: 0.26,
+				delay: i * shape.arpeggioStep,
+				space: 0.55,
+				attack: 0.01,
+			});
+		});
+
+		// Sustained chord underneath, arriving as the arpeggio lands.
+		const held = shape.arpeggio.length * shape.arpeggioStep;
+		[1, 1.26, 1.5, 2].forEach((ratio, i) => {
+			tone({
+				from: root * ratio,
+				duration: shape.hold,
+				type: 'sine',
+				gain: 0.1,
+				delay: held + i * 0.012,
+				attack: 0.14,
+				space: 0.7,
+				jitter: 9,
+			});
+		});
+
+		// Low swell. Only the top tiers get it - it is what makes a Max Win feel
+		// like it has weight under it rather than just brightness on top.
+		if (shape.swell) {
+			thud({ from: 92, to: 58, duration: shape.hold * 0.8, gain: 0.16, attack: 0.09 });
+		}
+
+		// Shimmer, scaling in count with the tier.
+		for (let i = 0; i < shape.shimmer; i++) {
+			tone({
+				from: root * (3 + i * 0.45),
+				duration: 0.32,
+				type: 'sine',
+				gain: 0.05,
+				delay: held + 0.1 + i * 0.075,
+				space: 0.8,
+				jitter: 30,
+			});
+		}
+	},
+
+	/**
+	 * One step of the amount climbing.
+	 *
+	 * Pitch rises with progress but is SNAPPED TO THE MAJOR SCALE, for the same
+	 * reason the turbo slider is: a continuous sweep across a count-up reads as
+	 * a siren, where scale degrees read as a run. `progress` is 0..1 through the
+	 * count, so the run resolves upward as the number settles.
+	 */
+	playWinCountTick(progress: number) {
+		const clamped = Math.min(1, Math.max(0, progress));
+		// Two octaves of the scale, so a long Max Win count has somewhere to go.
+		const steps = SCALE.length * 2;
+		const index = Math.min(steps - 1, Math.floor(clamped * steps));
+		const octave = Math.floor(index / SCALE.length);
+		const degree = SCALE[index % SCALE.length]!;
+		const freq = 784 * 2 ** (octave + degree / 12);
+
+		tone({
+			from: freq,
+			duration: 0.055,
+			type: 'triangle',
+			gain: 0.075,
+			attack: 0.002,
+			space: 0.3,
+			jitter: 4,
+		});
+	},
+
+	/**
+	 * The title being promoted mid-count - Big to Huge, Huge to Mega, and so on.
+	 *
+	 * Deliberately short and bright, and deliberately NOT another fanfare: it
+	 * lands on top of a count-up that is already ticking, so anything with a tail
+	 * would smear across the ticks. A rising two-note stab reads as "up a level"
+	 * in about a tenth of a second.
+	 *
+	 * The interval widens with the tier, so the later promotions - the ones a
+	 * player almost never sees - are the ones that jump furthest.
+	 */
+	playWinTierUp(tier: WinTierSound) {
+		const index = (['big', 'huge', 'mega', 'epic', 'max'] as const).indexOf(tier);
+		const root = 659.25 * 2 ** (Math.max(0, index) / 12);
+		const leap = 1.26 + Math.max(0, index) * 0.06;
+
+		tone({ from: root, duration: 0.07, type: 'triangle', gain: 0.13, attack: 0.002, space: 0.3 });
+		tone({
+			from: root * leap,
+			duration: 0.11,
+			type: 'triangle',
+			gain: 0.15,
+			delay: 0.055,
+			attack: 0.002,
+			space: 0.42,
+		});
+	},
+
+	/**
+	 * The amount landing on its final figure - whether it counted all the way or
+	 * the player tapped to skip. Always plays, because it is the cue that the
+	 * number on screen is now the real one and the next tap will dismiss.
+	 */
+	playWinCountEnd(tier: WinTierSound) {
+		const root = 523.25;
+		const big = tier === 'epic' || tier === 'max';
+
+		[1, 1.5, 2].forEach((ratio, i) => {
+			tone({
+				from: root * ratio,
+				duration: big ? 0.6 : 0.38,
+				type: 'sine',
+				gain: 0.15,
+				delay: i * 0.015,
+				attack: 0.008,
+				space: 0.6,
+			});
+		});
+
+		thud({ from: 150, to: 84, duration: 0.14, gain: 0.12, attack: 0.003 });
 	},
 };

@@ -174,4 +174,12 @@ export default {
 		'Sürgü düğmesi, otomatik oyun serilerinde tam kazançta durmayı açıp kapatmanızı sağlar.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'Bu oyunda ücretsiz dönüş, bonus turu, ikramiye veya yeniden tetikleme özelliği yoktur. Her tur, tek ve bağımsız bir dört kart çekilişidir.',
+	'Big Win': 'Büyük Kazanç',
+	'Huge Win': 'Muazzam Kazanç',
+	'Mega Win': 'Mega Kazanç',
+	'Epic Win': 'Efsanevi Kazanç',
+	'Tap to skip': 'Atlamak için dokunun',
+	'Skip win animations on autoplay': 'Otomatik oyunda kazanç animasyonlarını atla',
+	'Skip big win animations during autoplay':
+		'Otomatik oyun sırasında büyük kazanç animasyonlarını atla',
 };

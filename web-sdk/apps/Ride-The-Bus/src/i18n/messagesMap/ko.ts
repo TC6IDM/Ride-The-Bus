@@ -172,4 +172,11 @@ export default {
 		'슬라이더 버튼으로 자동 플레이 중 완전 당첨 시 정지 기능을 켜거나 끌 수 있습니다.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'이 게임에는 무료 스핀, 보너스 라운드, 잭팟 또는 재발동 기능이 없습니다. 각 라운드는 독립적인 단일 4장 카드 드로우입니다.',
+	'Big Win': '빅 윈',
+	'Huge Win': '슈퍼 윈',
+	'Mega Win': '메가 윈',
+	'Epic Win': '에픽 윈',
+	'Tap to skip': '탭하여 건너뛰기',
+	'Skip win animations on autoplay': '자동 플레이 시 당첨 연출 건너뛰기',
+	'Skip big win animations during autoplay': '자동 플레이 중 빅 윈 연출 건너뛰기',
 };

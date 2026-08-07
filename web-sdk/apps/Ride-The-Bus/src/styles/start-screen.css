@@ -54,12 +54,253 @@
 	margin-bottom: calc(var(--ui) * 1.2);
 }
 
-/* ---- Rules summary ---- */
+/* ---- Staggered entrance -------------------------------------------------
+   Every direct child of the start card rises and scales in on a delay taken
+   from its own --d, so the screen assembles itself instead of appearing all at
+   once. One keyframe drives the lot; --d is set inline in StartScreen.svelte.
+
+   `both` fill mode matters: without it the elements are briefly visible at
+   their final position before their delay elapses, which flashes the whole
+   screen on the first frame.                                               */
+.ss-logo,
+.ss-title,
+.ss-subtitle,
+.ss-lead,
+.ss-step,
+.ss-stats,
+.ss-continue {
+	animation: ss-rise 0.52s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+	animation-delay: calc(var(--d, 0) * 0.075s);
+}
+
+/* The logo gets its own entrance - it is the first thing on screen and a plain
+   rise reads as flat next to the title that follows it. */
+.ss-logo {
+	animation-name: ss-logo-in;
+	animation-duration: 0.7s;
+}
+
+@keyframes ss-rise {
+	from {
+		opacity: 0;
+		transform: translateY(calc(var(--ui) * 1.6)) scale(0.96);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
+
+@keyframes ss-logo-in {
+	from {
+		opacity: 0;
+		transform: scale(0.5) rotate(-8deg);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1) rotate(0deg);
+	}
+}
+
+/* ---- Lead line ---- */
+.ss-lead {
+	font-size: calc(var(--ui) * 1.4);
+	color: #c8c0b0;
+	max-width: calc(var(--ui) * 40);
+}
+
+/* ---- Visual how-to-play --------------------------------------------------
+   Four steps, each a small picture of what you are choosing. Replaces the
+   paragraph of rules that used to sit here - the prose version still lives in
+   How to Play, which is where someone who wants the detail will look.        */
+.ss-steps {
+	display: flex;
+	justify-content: center;
+	gap: calc(var(--ui) * 1.6);
+	list-style: none;
+	padding: 0;
+	margin: calc(var(--ui) * 0.4) 0;
+	flex-wrap: wrap;
+}
+
+.ss-step {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: calc(var(--ui) * 0.7);
+	width: calc(var(--ui) * 9.4);
+	padding: calc(var(--ui) * 1.2) calc(var(--ui) * 0.5) calc(var(--ui) * 1);
+	border: 1px solid #2e4224;
+	border-radius: calc(var(--ui) * 1);
+	background: linear-gradient(160deg, rgba(38, 60, 32, 0.75), rgba(18, 34, 16, 0.75));
+}
+
+.ss-step-n {
+	position: absolute;
+	top: calc(var(--ui) * -0.9);
+	left: calc(var(--ui) * -0.7);
+	width: calc(var(--ui) * 2);
+	height: calc(var(--ui) * 2);
+	border-radius: 50%;
+	background: #f5d78c;
+	color: #12220f;
+	font-size: calc(var(--ui) * 1.15);
+	font-weight: 800;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.ss-step-art {
+	height: calc(var(--ui) * 4.6);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.ss-step-label {
+	font-size: calc(var(--ui) * 1.05);
+	font-weight: 700;
+	color: #e8e0d0;
+	text-align: center;
+	line-height: 1.25;
+}
+
+/* 1: a card split red / black */
+.ss-mini-card {
+	position: relative;
+	width: calc(var(--ui) * 3);
+	height: calc(var(--ui) * 4.2);
+	border-radius: calc(var(--ui) * 0.45);
+	background: #f4efe2;
+	box-shadow: 0 calc(var(--ui) * 0.2) calc(var(--ui) * 0.5) rgba(0, 0, 0, 0.45);
+	overflow: hidden;
+}
+
+.ss-halfsplit {
+	position: absolute;
+	inset: calc(var(--ui) * 0.45);
+	border-radius: 50%;
+	background: linear-gradient(90deg, #c02434 0 50%, #1b1b1b 50% 100%);
+}
+
+/* 2: higher / lower */
+.ss-arrows {
+	display: flex;
+	flex-direction: column;
+	gap: calc(var(--ui) * 0.35);
+	font-size: calc(var(--ui) * 1.5);
+	line-height: 1;
+}
+
+.ss-arrow.up {
+	color: #7fd18a;
+	animation: ss-nudge-up 2.2s ease-in-out infinite;
+}
+
+.ss-arrow.down {
+	color: #d98a8a;
+	animation: ss-nudge-down 2.2s ease-in-out infinite;
+}
+
+@keyframes ss-nudge-up {
+	0%, 100% { transform: translateY(0); }
+	50% { transform: translateY(calc(var(--ui) * -0.28)); }
+}
+
+@keyframes ss-nudge-down {
+	0%, 100% { transform: translateY(0); }
+	50% { transform: translateY(calc(var(--ui) * 0.28)); }
+}
+
+/* 3: inside / outside - two pips with a span between them */
+.ss-range {
+	display: flex;
+	align-items: center;
+	gap: calc(var(--ui) * 0.35);
+}
+
+.ss-range-pip {
+	width: calc(var(--ui) * 1.15);
+	height: calc(var(--ui) * 1.15);
+	border-radius: 50%;
+	border: calc(var(--ui) * 0.22) solid #f5d78c;
+}
+
+.ss-range-bar {
+	width: calc(var(--ui) * 2.4);
+	height: calc(var(--ui) * 0.34);
+	border-radius: calc(var(--ui) * 0.2);
+	background: linear-gradient(90deg, #f5d78c, #7fd18a, #f5d78c);
+	background-size: 200% 100%;
+	animation: ss-sweep 2.6s linear infinite;
+}
+
+@keyframes ss-sweep {
+	to { background-position: -200% 0; }
+}
+
+/* 4: the four suits */
+.ss-suits {
+	display: grid;
+	grid-template-columns: repeat(2, auto);
+	gap: calc(var(--ui) * 0.1) calc(var(--ui) * 0.5);
+	font-size: calc(var(--ui) * 1.7);
+	line-height: 1;
+	color: #e8e0d0;
+}
+
+.ss-suit.red {
+	color: #d8555f;
+}
+
+/* ---- Legacy rules paragraph ----
+   No longer rendered on the start screen; kept because the same class is used
+   by the replay card's summary. */
 .ss-rules {
 	font-size: calc(var(--ui) * 1.35);
 	line-height: 1.6;
 	color: #c8c0b0;
 	max-width: calc(var(--ui) * 40);
+}
+
+/* ---- Short viewports ----
+   Popout S is 400x225 and cannot fit four steps in a row alongside everything
+   else. Shrink the step boxes and drop the artwork rather than letting the
+   continue button fall below the fold. */
+@media (max-height: 420px) {
+	.ss-steps {
+		gap: calc(var(--ui) * 0.9);
+	}
+	.ss-step {
+		width: calc(var(--ui) * 7.4);
+		padding: calc(var(--ui) * 0.8) calc(var(--ui) * 0.3) calc(var(--ui) * 0.7);
+	}
+	.ss-step-art {
+		height: calc(var(--ui) * 3.2);
+	}
+	.ss-step-label {
+		font-size: calc(var(--ui) * 0.92);
+	}
+}
+
+/* ---- Reduced motion ----
+   The stagger and the looping hints are decoration; the content is not. Show
+   everything immediately and hold the loops still. */
+@media (prefers-reduced-motion: reduce) {
+	.ss-logo,
+	.ss-title,
+	.ss-subtitle,
+	.ss-lead,
+	.ss-step,
+	.ss-stats,
+	.ss-continue,
+	.ss-arrow.up,
+	.ss-arrow.down,
+	.ss-range-bar {
+		animation: none;
+	}
 }
 
 .ss-stats {
