@@ -24,33 +24,17 @@ const limits = (min: number, max: number, step: number): BetLimits => ({
 
 const onGrid = (value: number, step: number) => Math.round(value * M) % Math.round(step * M) === 0;
 
-/**
- * currencyDecimals (utils-shared/amount) reads a currency's precision out of
- * Intl instead of carrying its own table. That is only safe if Intl agrees
- * with the RGS. This locks the agreement down: the helper itself cannot be
- * imported here, because the SDK package resolves through Vite aliases that
- * plain `node --test` has no knowledge of.
+/*
+ * currencyDecimals used to be covered here, by asserting Intl's own resolved
+ * precision as a stand-in - the helper could not be imported, because
+ * utils-shared/amount reaches state-shared and SvelteKit's $app/* virtuals.
+ *
+ * That coverage was worse than none: it asserted the premise ("Intl agrees with
+ * Stake's currency table") rather than the helper, and the premise was false for
+ * nine of the forty-six currencies. The helper now lives in the import-free
+ * utils-shared/currency and is tested directly in game/currency.test.ts, which
+ * pins the divergences explicitly.
  */
-describe('currency precision assumed by currencyDecimals', () => {
-  test('the five RGS currencies with no subunit resolve to 0', () => {
-    for (const currency of ['JPY', 'IDR', 'KRW', 'VND', 'CLP']) {
-      const places = new Intl.NumberFormat('en', { style: 'currency', currency })
-        .resolvedOptions()
-        .maximumFractionDigits;
-      assert.equal(places, 0, `${currency} should have no decimal places`);
-    }
-  });
-
-  test('the rest of the supported list resolves to 2', () => {
-    const two = ['USD', 'CAD', 'EUR', 'RUB', 'CNY', 'PHP', 'INR', 'BRL', 'MXN', 'DKK', 'PLN', 'TRY', 'ARS', 'PEN'];
-    for (const currency of two) {
-      const places = new Intl.NumberFormat('en', { style: 'currency', currency })
-        .resolvedOptions()
-        .maximumFractionDigits;
-      assert.equal(places, 2, `${currency} should have 2 decimal places`);
-    }
-  });
-});
 
 describe('limitsAreUnknown', () => {
   test('true for null, undefined and all-zero', () => {

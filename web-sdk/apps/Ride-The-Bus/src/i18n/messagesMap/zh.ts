@@ -46,7 +46,8 @@ export default {
 	'Guess your way through four cards:': '依次预测四张牌：',
 	'Colour — red or black for card 1.': '颜色 — 第 1 张是红色还是黑色。',
 	'Higher / Lower — versus card 1 (or =).': '更大 / 更小 — 与第 1 张相比（或 =）。',
-	'Inside / Outside — between cards 1 & 2 (or =).': '之间 / 之外 — 在第 1、2 张之间或之外（或 =）。',
+	'Inside / Outside — between cards 1 & 2 (or =).':
+		'之间 / 之外 — 在第 1、2 张之间或之外（或 =）。',
 	'Suit — the suit of card 4.': '花色 — 第 4 张的花色。',
 	'Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.':
 		'选好四项预测，设置投注额，然后点击开始。每猜对一次都会让赢额翻倍；猜错则本局结束，但此前锁定的部分仍归你所有。四项全中即可赢得整局。',
@@ -69,7 +70,8 @@ export default {
 	'Guess all four cards right and the payout depends on how hard your picks were:':
 		'四张全中时，赔付取决于你的预测有多难：',
 	'No Equal picks — averages 17.3×, up to 317.4×.': '未选「相同」 — 平均 17.3 倍，最高 317.4 倍。',
-	'One Equal pick — averages 67.5×, up to 381.9×.': '选一次「相同」 — 平均 67.5 倍，最高 381.9 倍。',
+	'One Equal pick — averages 67.5×, up to 381.9×.':
+		'选一次「相同」 — 平均 67.5 倍，最高 381.9 倍。',
 	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
 		'选两次「相同」 — 平均 1329.2 倍，最高 1354.2 倍，为本游戏上限。',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
@@ -114,7 +116,8 @@ export default {
 	Error: '错误',
 	Reload: '重新加载',
 	'Something went wrong. Please try again.': '出错了，请重试。',
-	'That bet was rejected. Please adjust the amount and try again.': '该投注被拒绝，请调整金额后重试。',
+	'That bet was rejected. Please adjust the amount and try again.':
+		'该投注被拒绝，请调整金额后重试。',
 	'Not enough balance for that bet.': '余额不足，无法进行该投注。',
 	'Your session has expired. Please reload the game.': '会话已过期，请重新加载游戏。',
 	'A gambling limit on your account has been reached.': '您的账户已达到博彩限额。',
@@ -134,26 +137,34 @@ export default {
 	'Stop autoplay on a full game win': '全中时停止自动游戏',
 	'Close menu': '关闭菜单',
 	Close: '关闭',
-	'Game information':
-		'游戏信息',
+	'Game information': '游戏信息',
 	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
 		'玩家回报率（RTP）为 %s。任何猜测组合的成本均为投注额的 1 倍，并在多轮中返还相同比例。本游戏的最高派彩为投注额的 1354.2 倍。',
-	'Disclaimer':
-		'免责声明',
+	Disclaimer: '免责声明',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
-		'故障将使所有奖金和游戏无效。需要稳定的网络连接。如果断开连接，请重新加载游戏以完成未结束的回合。预期回报是基于大量游戏计算得出的。游戏画面不代表任何实体设备，仅供示意。奖金依据从 Remote Game Server 收到的金额结算，而非依据网页浏览器中的事件。TM 和 (c) 2026 Stake Engine.',	'Loading replay…': 'Loading replay…',
-	'Max Win': 'Max Win',
-	'Tap to continue': 'Tap to continue',
-	'Round details': 'Round details',
-	'Play amount': 'Play amount',
-	Mode: 'Mode',
-	Event: 'Event',
-	Payout: 'Payout',
-	Play: 'Play',
+		'故障将使所有奖金和游戏无效。需要稳定的网络连接。如果断开连接，请重新加载游戏以完成未结束的回合。预期回报是基于大量游戏计算得出的。游戏画面不代表任何实体设备，仅供示意。奖金依据从 Remote Game Server 收到的金额结算，而非依据网页浏览器中的事件。TM 和 (c) 2026 Stake Engine.',
+	'Loading replay…': '正在加载回放…',
+	'Max Win': '最高奖金',
+	'Tap to continue': '点击继续',
+	'Round details': '回合详情',
+	'Play amount': '投注金额',
+	Mode: '模式',
+	Event: '事件',
+	Payout: '派彩',
+	Play: '播放',
 
 	// Rule additions (new)
 	'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.':
-		'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.',
+		'派彩是动态的，会根据牌堆中剩余的牌而变化——你的选择越不可能出现，派彩就越高。同样的猜测在不同回合可能返回不同的金额。',
+	Controls: '操作说明',
+	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
+		'使用投注显示区以及加号和减号按钮设置投注金额。点击投注金额可打开快速选择菜单。',
+	'The speaker button mutes and unmutes the game sounds.': '扬声器按钮用于静音和取消静音游戏声音。',
+	'The i button opens this screen at any time.': 'i 按钮可随时打开此界面。',
+	'The lightning button adjusts the speed of the card reveal.': '闪电按钮用于调整翻牌速度。',
+	'The circular arrow button opens the autoplay settings.': '圆形箭头按钮用于打开自动游戏设置。',
+	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
+		'滑块按钮可开启或关闭自动游戏中的全胜时停止功能。',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.',
+		'本游戏没有免费旋转、奖励回合、累积奖池或重新触发功能。每一轮都是独立的一次四张牌抽取。',
 };

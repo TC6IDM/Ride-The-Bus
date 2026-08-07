@@ -23,8 +23,9 @@ export type MessageKey = keyof typeof en;
  * mode.
  */
 export const t = (key: MessageKey): string => {
-	if (stateUrlDerived.social() && key in socialMessages) {
-		return (socialMessages as Record<string, string>)[key];
+	if (stateUrlDerived.social()) {
+		// Social mode (Stake.US) — English only, with restricted terms replaced.
+		return (socialMessages as Record<string, string>)[key] ?? key;
 	}
 	return stateI18nDerived.translate(key);
 };

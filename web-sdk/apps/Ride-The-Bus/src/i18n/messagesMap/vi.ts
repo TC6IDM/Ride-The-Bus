@@ -46,7 +46,8 @@ export default {
 	'Guess your way through four cards:': 'Dự đoán lần lượt bốn lá bài:',
 	'Colour — red or black for card 1.': 'Màu — lá 1 là đỏ hay đen.',
 	'Higher / Lower — versus card 1 (or =).': 'Lớn hơn / Nhỏ hơn — so với lá 1 (hoặc =).',
-	'Inside / Outside — between cards 1 & 2 (or =).': 'Ở giữa / Ngoài khoảng — giữa lá 1 và lá 2 (hoặc =).',
+	'Inside / Outside — between cards 1 & 2 (or =).':
+		'Ở giữa / Ngoài khoảng — giữa lá 1 và lá 2 (hoặc =).',
 	'Suit — the suit of card 4.': 'Chất — chất của lá 4.',
 	'Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.':
 		'Chọn cả bốn, đặt mức cược rồi nhấn Chơi. Mỗi dự đoán đúng sẽ nhân tiền thắng; dự đoán sai kết thúc vòng chơi nhưng bạn vẫn giữ phần đã tích được. Đoán đúng cả bốn để thắng toàn ván.',
@@ -142,26 +143,37 @@ export default {
 	'Stop autoplay on a full game win': 'Dừng tự động chơi khi thắng toàn ván',
 	'Close menu': 'Đóng menu',
 	Close: 'Đóng',
-	'Game information':
-		'Thong tin tro choi',
+	'Game information': 'Thong tin tro choi',
 	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
-		'Ty le hoan tra cho nguoi choi (RTP) la %s. Moi to hop du doan deu co gia 1x tien cuoc cua ban va tra lai cung ty le do qua nhieu vong. Muc chi tra toi da cua tro choi nay la 1354,2x tien cuoc cua ban.',
-	'Disclaimer':
-		'Mien tru trach nhiem',
+		'Tỷ lệ hoàn trả cho người chơi (RTP) là %s. Mỗi tổ hợp dự đoán đều có giá 1x tiền cược của bạn và trả lại đúng tỷ lệ đó qua nhiều vòng chơi. Mức chi trả cao nhất của trò chơi này là 1354,2x tiền cược của bạn.',
+	Disclaimer: 'Mien tru trach nhiem',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
-		'Su co lam vo hieu moi khoan thang va luot choi. Can co ket noi internet on dinh. Neu bi mat ket noi, hay tai lai tro choi de hoan tat cac vong con do. Ty le hoan tra du kien duoc tinh tren rat nhieu luot choi. Man hinh tro choi khong mo phong bat ky thiet bi vat ly nao va chi mang tinh minh hoa. Tien thang duoc quyet toan theo so tien nhan tu Remote Game Server, khong phai theo cac su kien trong trinh duyet web. TM va (c) 2026 Stake Engine.',	'Loading replay…': 'Loading replay…',
-	'Max Win': 'Max Win',
-	'Tap to continue': 'Tap to continue',
-	'Round details': 'Round details',
-	'Play amount': 'Play amount',
-	Mode: 'Mode',
-	Event: 'Event',
-	Payout: 'Payout',
-	Play: 'Play',
+		'Sự cố làm vô hiệu mọi khoản thắng và lượt chơi. Cần có kết nối internet ổn định. Nếu bị mất kết nối, hãy tải lại trò chơi để hoàn tất các vòng chưa xong. Mức hoàn trả dự kiến được tính trên nhiều lượt chơi. Hình ảnh trò chơi không đại diện cho bất kỳ thiết bị vật lý nào và chỉ mang tính minh họa. Tiền thắng được thanh toán theo số tiền nhận từ Remote Game Server chứ không theo các sự kiện trong trình duyệt web. TM và (c) 2026 Stake Engine.',
+	'Loading replay…': 'Đang tải bản phát lại…',
+	'Max Win': 'Thắng tối đa',
+	'Tap to continue': 'Chạm để tiếp tục',
+	'Round details': 'Chi tiết vòng chơi',
+	'Play amount': 'Số tiền cược',
+	Mode: 'Chế độ',
+	Event: 'Sự kiện',
+	Payout: 'Tiền thưởng',
+	Play: 'Phát',
 
 	// Rule additions (new)
 	'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.':
-		'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.',
+		'Mức chi trả thay đổi linh hoạt theo những lá bài còn lại trong bộ bài — dự đoán của bạn càng ít khả năng xảy ra thì mức chi trả càng cao. Cùng một dự đoán có thể trả về số tiền khác nhau giữa các vòng.',
+	Controls: 'Điều khiển',
+	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
+		'Dùng ô hiển thị tiền cược cùng nút cộng và trừ để đặt số tiền cược. Chạm vào số tiền cược để mở menu chọn nhanh.',
+	'The speaker button mutes and unmutes the game sounds.':
+		'Nút loa dùng để tắt và bật lại âm thanh trò chơi.',
+	'The i button opens this screen at any time.': 'Nút i mở màn hình này bất cứ lúc nào.',
+	'The lightning button adjusts the speed of the card reveal.':
+		'Nút tia chớp điều chỉnh tốc độ lật bài.',
+	'The circular arrow button opens the autoplay settings.':
+		'Nút mũi tên tròn mở phần cài đặt tự động chơi.',
+	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
+		'Nút thanh trượt cho phép bật hoặc tắt tính năng dừng khi thắng trọn vòng trong các lượt tự động chơi.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.',
+		'Trò chơi này không có vòng quay miễn phí, vòng thưởng, jackpot hay tính năng kích hoạt lại. Mỗi vòng là một lượt rút bốn lá bài độc lập.',
 };

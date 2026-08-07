@@ -63,7 +63,8 @@ export default {
 		'Liegt eine 3 auf dem Tisch, zahlt Tiefer etwa 4,75×, weil nur 8 der 51 verbleibenden Karten niedriger sind, während Höher nur etwa 1,19× zahlt, weil 40 davon höher sind. Wird aus der 3 eine 8, dreht sich das um: Tiefer fällt auf etwa 1,57× und Höher steigt auf etwa 2,08×. Gleich ist mit rund 12× immer der weiteste Schuss.',
 	'If you guess wrong': 'Wenn du falsch tippst',
 	'Card 1 — the round pays nothing.': 'Karte 1 — die Runde zahlt nichts.',
-	'Card 2 — you get 0.5× your bet back.': 'Karte 2 — du erhältst das 0,5-Fache deines Einsatzes zurück.',
+	'Card 2 — you get 0.5× your bet back.':
+		'Karte 2 — du erhältst das 0,5-Fache deines Einsatzes zurück.',
 	'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.':
 		'Karte 3 oder 4 — du behältst 30 % des bis dahin aufgebauten Multiplikators, was zwischen 0,6× und 129× liegt.',
 	'Full game wins': 'Komplettgewinne',
@@ -116,8 +117,7 @@ export default {
 	'No active game session': 'Keine aktive Spielsitzung',
 	Error: 'Fehler',
 	Reload: 'Neu laden',
-	'Something went wrong. Please try again.':
-		'Etwas ist schiefgelaufen. Bitte versuche es erneut.',
+	'Something went wrong. Please try again.': 'Etwas ist schiefgelaufen. Bitte versuche es erneut.',
 	'That bet was rejected. Please adjust the amount and try again.':
 		'Dieser Einsatz wurde abgelehnt. Bitte passe den Betrag an und versuche es erneut.',
 	'Not enough balance for that bet.': 'Nicht genügend Guthaben für diesen Einsatz.',
@@ -144,26 +144,38 @@ export default {
 	'Stop autoplay on a full game win': 'Autoplay bei Komplettgewinn stoppen',
 	'Close menu': 'Menü schließen',
 	Close: 'Schließen',
-	'Game information':
-		'Spielinformationen',
+	'Game information': 'Spielinformationen',
 	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
-		'Die Auszahlungsquote (RTP) betragt %s. Jede Kombination von Tipps kostet das 1-Fache deines Einsatzes und gibt uber viele Runden denselben Wert zuruck. Das Maximum, das dieses Spiel auszahlen kann, betragt das 1354,2-Fache deines Einsatzes.',
-	'Disclaimer':
-		'Haftungsausschluss',
+		'Die Auszahlungsquote (RTP) beträgt %s. Jede Kombination von Tipps kostet das 1-Fache deines Einsatzes und gibt über viele Runden denselben Wert zurück. Das Maximum, das dieses Spiel auszahlen kann, beträgt das 1354,2-Fache deines Einsatzes.',
+	Disclaimer: 'Haftungsausschluss',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
-		'Eine Fehlfunktion macht alle Gewinne und Spiele ungultig. Eine stabile Internetverbindung ist erforderlich. Lade das Spiel bei einer Verbindungsunterbrechung neu, um nicht abgeschlossene Runden zu beenden. Die erwartete Auszahlung wird uber viele Spiele berechnet. Die Spieldarstellung bildet kein physisches Gerat ab und dient nur der Veranschaulichung. Gewinne werden nach dem vom Remote Game Server erhaltenen Betrag abgerechnet und nicht nach Ereignissen im Webbrowser. TM und (c) 2026 Stake Engine.',	'Loading replay…': 'Loading replay…',
-	'Max Win': 'Max Win',
-	'Tap to continue': 'Tap to continue',
-	'Round details': 'Round details',
-	'Play amount': 'Play amount',
-	Mode: 'Mode',
-	Event: 'Event',
-	Payout: 'Payout',
-	Play: 'Play',
+		'Eine Fehlfunktion macht alle Gewinne und Spiele ungültig. Eine stabile Internetverbindung ist erforderlich. Lade das Spiel bei einer Verbindungsunterbrechung neu, um nicht abgeschlossene Runden zu beenden. Die erwartete Auszahlung wird über viele Spiele berechnet. Die Spieldarstellung bildet kein physisches Gerät ab und dient nur der Veranschaulichung. Gewinne werden nach dem vom Remote Game Server erhaltenen Betrag abgerechnet und nicht nach Ereignissen im Webbrowser. TM und (c) 2026 Stake Engine.',
+	'Loading replay…': 'Wiederholung wird geladen…',
+	'Max Win': 'Max. Gewinn',
+	'Tap to continue': 'Zum Fortfahren tippen',
+	'Round details': 'Rundendetails',
+	'Play amount': 'Einsatz',
+	Mode: 'Modus',
+	Event: 'Ereignis',
+	Payout: 'Auszahlung',
+	Play: 'Abspielen',
 
 	// Rule additions (new)
 	'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.':
-		'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.',
+		'Die Auszahlungen sind dynamisch und richten sich danach, welche Karten noch im Deck sind — je unwahrscheinlicher dein Tipp, desto höher die Auszahlung. Derselbe Tipp kann von Runde zu Runde unterschiedliche Beträge zurückgeben.',
+	Controls: 'Bedienelemente',
+	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
+		'Stelle deinen Einsatz über die Einsatzanzeige und die Plus- und Minus-Schaltflächen ein. Tippe auf den Einsatzbetrag, um das Schnellauswahlmenü zu öffnen.',
+	'The speaker button mutes and unmutes the game sounds.':
+		'Die Lautsprecher-Schaltfläche schaltet die Spielgeräusche stumm und wieder ein.',
+	'The i button opens this screen at any time.':
+		'Die i-Schaltfläche öffnet diesen Bildschirm jederzeit.',
+	'The lightning button adjusts the speed of the card reveal.':
+		'Die Blitz-Schaltfläche passt die Geschwindigkeit der Kartenaufdeckung an.',
+	'The circular arrow button opens the autoplay settings.':
+		'Die Schaltfläche mit den kreisförmigen Pfeilen öffnet die Autoplay-Einstellungen.',
+	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
+		'Mit der Regler-Schaltfläche kannst du das Stoppen bei einem Komplettgewinn für Autoplay-Läufe ein- und ausschalten.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.',
+		'Dieses Spiel hat keine Freispiele, Bonusrunden, Jackpots oder Wiederauslöse-Funktionen. Jede Runde ist eine einzelne, unabhängige Ziehung von vier Karten.',
 };

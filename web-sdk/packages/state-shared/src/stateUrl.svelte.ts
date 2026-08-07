@@ -48,6 +48,22 @@ const social = () => getUrlSearchParam('social') === 'true';
 // params for replay
 const replay = () => getUrlSearchParam('replay') === 'true';
 const amount = () => Number(getUrlSearchParam('amount')) || 0;
+/**
+ * LOCAL ADDITION to the Stake SDK - re-apply if this package is updated from
+ * upstream. `currency` was declared in `Key` but never had an accessor, so
+ * nothing could read it: a replay URL carrying ?currency=BRL rendered in USD,
+ * because replay never calls /wallet/authenticate and so never learns the
+ * currency any other way. Bet Replay lists it as a supported parameter.
+ *
+ * Validated rather than passed straight through - anything that is not three
+ * letters makes Intl.NumberFormat throw a RangeError, which would take the
+ * whole display down instead of just showing the wrong symbol. A junk value
+ * yields '' and leaves the existing default in place.
+ */
+const currency = () => {
+	const raw = getUrlSearchParam('currency');
+	return /^[A-Za-z]{3}$/.test(raw) ? raw.toUpperCase() : '';
+};
 const game = () => getUrlSearchParam('game') || '';
 const version = () => getUrlSearchParam('version') || '';
 const mode = () => getUrlSearchParam('mode') || '';
@@ -62,6 +78,7 @@ export const stateUrlDerived = {
 	// states for replay
 	replay,
 	amount,
+	currency,
 	game,
 	mode,
 	version,

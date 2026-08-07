@@ -68,8 +68,7 @@ export default {
 	'Full game wins': 'पूरी जीत के भुगतान',
 	'Guess all four cards right and the payout depends on how hard your picks were:':
 		'चारों कार्ड सही होने पर भुगतान इस बात पर निर्भर करता है कि आपके चयन कितने कठिन थे:',
-	'No Equal picks — averages 17.3×, up to 317.4×.':
-		'कोई बराबर नहीं — औसतन 17.3×, अधिकतम 317.4×।',
+	'No Equal picks — averages 17.3×, up to 317.4×.': 'कोई बराबर नहीं — औसतन 17.3×, अधिकतम 317.4×।',
 	'One Equal pick — averages 67.5×, up to 381.9×.': 'एक बराबर — औसतन 67.5×, अधिकतम 381.9×।',
 	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
 		'दो बराबर — औसतन 1329.2×, अधिकतम 1354.2×, जो इस खेल का उच्चतम भुगतान है।',
@@ -120,10 +119,8 @@ export default {
 	'Not enough balance for that bet.': 'उस दांव के लिए पर्याप्त बैलेंस नहीं है।',
 	'Your session has expired. Please reload the game.':
 		'आपका सत्र समाप्त हो गया है। कृपया गेम पुनः लोड करें।',
-	'A gambling limit on your account has been reached.':
-		'आपके खाते की एक जुआ सीमा तक पहुंच गई है।',
-	'This game is not available from your location.':
-		'यह गेम आपके स्थान से उपलब्ध नहीं है।',
+	'A gambling limit on your account has been reached.': 'आपके खाते की एक जुआ सीमा तक पहुंच गई है।',
+	'This game is not available from your location.': 'यह गेम आपके स्थान से उपलब्ध नहीं है।',
 	'The game server had a problem. Please try again shortly.':
 		'गेम सर्वर में समस्या आई। कृपया थोड़ी देर में पुनः प्रयास करें।',
 	'The game is under maintenance. Please try again shortly.':
@@ -141,26 +138,37 @@ export default {
 	'Stop autoplay on a full game win': 'पूरी जीत पर ऑटोप्ले रोकें',
 	'Close menu': 'मेन्यू बंद करें',
 	Close: 'बंद करें',
-	'Game information':
-		'गेम जानकारी',
+	'Game information': 'गेम जानकारी',
 	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
 		'खिलाड़ी को वापसी (RTP) %s है। अनुमानों का हर संयोजन आपकी शर्त का 1x खर्च करता है और कई राउंड में वही आंकड़ा लौटाता है। यह गेम अधिकतम आपकी शर्त का 1354.2x दे सकता है।',
-	'Disclaimer':
-		'अस्वीकरण',
+	Disclaimer: 'अस्वीकरण',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
-		'खराबी से सभी जीत और खेल रद्द हो जाते हैं। स्थिर इंटरनेट कनेक्शन आवश्यक है। कनेक्शन टूटने पर अधूरे राउंड पूरे करने के लिए गेम फिर से लोड करें। अपेक्षित वापसी कई खेलों में गणना की जाती है। गेम डिस्प्ले किसी भौतिक उपकरण का प्रतिनिधित्व नहीं करता और केवल उदाहरण के लिए है। जीत का निपटान Remote Game Server से प्राप्त राशि के अनुसार होता है, ब्राउज़र की घटनाओं से नहीं। TM और (c) 2026 Stake Engine.',	'Loading replay…': 'Loading replay…',
-	'Max Win': 'Max Win',
-	'Tap to continue': 'Tap to continue',
-	'Round details': 'Round details',
-	'Play amount': 'Play amount',
-	Mode: 'Mode',
-	Event: 'Event',
-	Payout: 'Payout',
-	Play: 'Play',
+		'खराबी से सभी जीत और खेल रद्द हो जाते हैं। स्थिर इंटरनेट कनेक्शन आवश्यक है। कनेक्शन टूटने पर अधूरे राउंड पूरे करने के लिए गेम फिर से लोड करें। अपेक्षित वापसी कई खेलों में गणना की जाती है। गेम डिस्प्ले किसी भौतिक उपकरण का प्रतिनिधित्व नहीं करता और केवल उदाहरण के लिए है। जीत का निपटान Remote Game Server से प्राप्त राशि के अनुसार होता है, ब्राउज़र की घटनाओं से नहीं। TM और (c) 2026 Stake Engine.',
+	'Loading replay…': 'रीप्ले लोड हो रहा है…',
+	'Max Win': 'अधिकतम जीत',
+	'Tap to continue': 'जारी रखने के लिए टैप करें',
+	'Round details': 'राउंड विवरण',
+	'Play amount': 'दांव राशि',
+	Mode: 'मोड',
+	Event: 'इवेंट',
+	Payout: 'भुगतान',
+	Play: 'चलाएं',
 
 	// Rule additions (new)
 	'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.':
-		'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.',
+		'भुगतान गतिशील होते हैं और इस पर निर्भर करते हैं कि डेक में कौन से कार्ड बचे हैं — आपका चुनाव जितना कम संभावित होगा, भुगतान उतना ही अधिक होगा। एक ही अनुमान अलग-अलग राउंड में अलग-अलग राशि दे सकता है।',
+	Controls: 'नियंत्रण',
+	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
+		'अपनी दांव राशि तय करने के लिए दांव डिस्प्ले और प्लस-माइनस बटन का उपयोग करें। त्वरित-चयन मेनू खोलने के लिए दांव राशि पर टैप करें।',
+	'The speaker button mutes and unmutes the game sounds.':
+		'स्पीकर बटन गेम की आवाज़ को म्यूट और अनम्यूट करता है।',
+	'The i button opens this screen at any time.': 'i बटन इस स्क्रीन को कभी भी खोलता है।',
+	'The lightning button adjusts the speed of the card reveal.':
+		'बिजली बटन कार्ड खुलने की गति को समायोजित करता है।',
+	'The circular arrow button opens the autoplay settings.':
+		'गोल तीर बटन ऑटोप्ले सेटिंग्स खोलता है।',
+	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
+		'स्लाइडर बटन से आप ऑटोप्ले के दौरान पूरी जीत पर रुकने की सुविधा चालू या बंद कर सकते हैं।',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.',
+		'इस गेम में कोई फ्री स्पिन, बोनस राउंड, जैकपॉट या री-ट्रिगर फीचर नहीं है। हर राउंड चार कार्ड का एक अकेला, स्वतंत्र ड्रॉ है।',
 };

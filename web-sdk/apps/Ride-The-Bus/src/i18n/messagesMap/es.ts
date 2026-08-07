@@ -50,7 +50,7 @@ export default {
 		'Dentro / Fuera — entre las cartas 1 y 2 (o =).',
 	'Suit — the suit of card 4.': 'Palo — el palo de la carta 4.',
 	'Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.':
-		'Elige las cuatro, fija tu apuesta y pulsa Girar. Cada acierto multiplica tu ganancia; un fallo termina la ronda pero conservas lo que hubieras asegurado hasta ese momento. Acierta las cuatro para ganar el juego completo.',
+		'Elige las cuatro, fija tu apuesta y pulsa Girar. Cada acierto multiplica tu ganancia; un fallo termina la ronda, pero conservas lo que hayas acumulado hasta ese momento. Acierta las cuatro para ganar la partida completa.',
 	'Card order': 'Orden de las cartas',
 	'Ace is low and King is high — worth knowing, since plenty of card games play it the other way. Suit never affects rank; only the number counts for Higher / Lower and Inside / Outside.':
 		'El as es la más baja y el rey la más alta — conviene saberlo, porque muchos juegos de cartas lo hacen al revés. El palo nunca afecta al rango; solo cuenta el número para Mayor / Menor y Dentro / Fuera.',
@@ -71,8 +71,7 @@ export default {
 		'Si aciertas las cuatro cartas, el pago depende de lo difíciles que fueran tus elecciones:',
 	'No Equal picks — averages 17.3×, up to 317.4×.':
 		'Sin elegir Igual — promedia 17,3×, hasta 317,4×.',
-	'One Equal pick — averages 67.5×, up to 381.9×.':
-		'Con un Igual — promedia 67,5×, hasta 381,9×.',
+	'One Equal pick — averages 67.5×, up to 381.9×.': 'Con un Igual — promedia 67,5×, hasta 381,9×.',
 	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
 		'Con dos Igual — promedia 1329,2×, hasta 1354,2×, lo máximo que paga este juego.',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
@@ -120,8 +119,7 @@ export default {
 	'That bet was rejected. Please adjust the amount and try again.':
 		'Esa apuesta fue rechazada. Ajusta el importe e inténtalo de nuevo.',
 	'Not enough balance for that bet.': 'Saldo insuficiente para esa apuesta.',
-	'Your session has expired. Please reload the game.':
-		'Tu sesión ha caducado. Recarga el juego.',
+	'Your session has expired. Please reload the game.': 'Tu sesión ha caducado. Recarga el juego.',
 	'A gambling limit on your account has been reached.':
 		'Se ha alcanzado un límite de juego de tu cuenta.',
 	'This game is not available from your location.':
@@ -143,26 +141,38 @@ export default {
 	'Stop autoplay on a full game win': 'Parar el juego automático al ganar el juego completo',
 	'Close menu': 'Cerrar menú',
 	Close: 'Cerrar',
-	'Game information':
-		'Informacion del juego',
+	'Game information': 'Informacion del juego',
 	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
-		'El retorno al jugador (RTP) es %s. Cada combinacion de predicciones cuesta 1x tu apuesta y devuelve esa misma cifra a lo largo de muchas rondas. Lo maximo que puede pagar este juego es 1354,2x tu apuesta.',
-	'Disclaimer':
-		'Aviso legal',
+		'El retorno al jugador (RTP) es %s. Cada combinación de predicciones cuesta 1x tu apuesta y devuelve esa misma cifra a lo largo de muchas rondas. Lo máximo que este juego puede pagar es 1354,2x tu apuesta.',
+	Disclaimer: 'Aviso legal',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
-		'Cualquier fallo anula todas las ganancias y jugadas. Se requiere una conexion a internet estable. En caso de desconexion, recarga el juego para terminar las rondas incompletas. El retorno esperado se calcula a lo largo de muchas jugadas. La pantalla del juego no representa ningun dispositivo fisico y solo tiene fines ilustrativos. Las ganancias se liquidan segun el importe recibido del Remote Game Server y no segun los eventos del navegador. TM y (c) 2026 Stake Engine.',	'Loading replay…': 'Loading replay…',
-	'Max Win': 'Max Win',
-	'Tap to continue': 'Tap to continue',
-	'Round details': 'Round details',
-	'Play amount': 'Play amount',
-	Mode: 'Mode',
-	Event: 'Event',
-	Payout: 'Payout',
-	Play: 'Play',
+		'Cualquier fallo anula todas las ganancias y jugadas. Se requiere una conexión a internet estable. En caso de desconexión, vuelve a cargar el juego para terminar las rondas incompletas. El retorno esperado se calcula a lo largo de muchas jugadas. La representación del juego no corresponde a ningún dispositivo físico y es solo ilustrativa. Las ganancias se liquidan según el importe recibido del Remote Game Server y no según los eventos del navegador web. TM y (c) 2026 Stake Engine.',
+	'Loading replay…': 'Cargando repetición…',
+	'Max Win': 'Ganancia máx.',
+	'Tap to continue': 'Toca para continuar',
+	'Round details': 'Detalles de la ronda',
+	'Play amount': 'Importe de la apuesta',
+	Mode: 'Modo',
+	Event: 'Evento',
+	Payout: 'Pago',
+	Play: 'Reproducir',
 
 	// Rule additions (new)
 	'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.':
-		'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.',
+		'Los pagos son dinámicos y cambian según las cartas que queden en la baraja: cuanto menos probable sea tu predicción, más paga. La misma predicción puede devolver importes distintos de una ronda a otra.',
+	Controls: 'Controles',
+	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
+		'Usa el indicador de apuesta y los botones de más y menos para fijar tu importe. Toca el importe de la apuesta para abrir el menú de selección rápida.',
+	'The speaker button mutes and unmutes the game sounds.':
+		'El botón del altavoz silencia y reactiva los sonidos del juego.',
+	'The i button opens this screen at any time.':
+		'El botón i abre esta pantalla en cualquier momento.',
+	'The lightning button adjusts the speed of the card reveal.':
+		'El botón del rayo ajusta la velocidad con la que se revelan las cartas.',
+	'The circular arrow button opens the autoplay settings.':
+		'El botón de las flechas circulares abre los ajustes de juego automático.',
+	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
+		'El botón de los controles deslizantes activa o desactiva la parada al ganar la partida completa en las series automáticas.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.',
+		'Este juego no tiene giros gratis, rondas de bonificación, botes ni funciones de reactivación. Cada ronda es una única extracción independiente de cuatro cartas.',
 };

@@ -120,10 +120,8 @@ export default {
 	'That bet was rejected. Please adjust the amount and try again.':
 		'Ten zakład został odrzucony. Zmień kwotę i spróbuj ponownie.',
 	'Not enough balance for that bet.': 'Za mało środków na ten zakład.',
-	'Your session has expired. Please reload the game.':
-		'Twoja sesja wygasła. Odśwież grę.',
-	'A gambling limit on your account has been reached.':
-		'Osiągnięto limit gry na Twoim koncie.',
+	'Your session has expired. Please reload the game.': 'Twoja sesja wygasła. Odśwież grę.',
+	'A gambling limit on your account has been reached.': 'Osiągnięto limit gry na Twoim koncie.',
 	'This game is not available from your location.':
 		'Ta gra nie jest dostępna w Twojej lokalizacji.',
 	'The game server had a problem. Please try again shortly.':
@@ -143,26 +141,38 @@ export default {
 	'Stop autoplay on a full game win': 'Zatrzymaj autogrę przy pełnej wygranej',
 	'Close menu': 'Zamknij menu',
 	Close: 'Zamknij',
-	'Game information':
-		'Informacje o grze',
+	'Game information': 'Informacje o grze',
 	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
-		'Zwrot dla gracza (RTP) wynosi %s. Kazda kombinacja typow kosztuje 1x twojego zakladu i zwraca te sama wartosc na przestrzeni wielu rund. Maksymalna wygrana w tej grze to 1354,2x twojego zakladu.',
-	'Disclaimer':
-		'Zastrzezenie',
+		'Zwrot dla gracza (RTP) wynosi %s. Każda kombinacja typów kosztuje 1x twojego zakładu i zwraca tę samą wartość w wielu rundach. Najwięcej, ile ta gra może wypłacić, to 1354,2x twojego zakładu.',
+	Disclaimer: 'Zastrzezenie',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
-		'Awaria uniewaznia wszystkie wygrane i rozgrywki. Wymagane jest stabilne polaczenie internetowe. W razie rozlaczenia przeladuj gre, aby dokonczyc nieukonczone rundy. Oczekiwany zwrot jest obliczany na przestrzeni wielu rozgrywek. Ekran gry nie przedstawia zadnego fizycznego urzadzenia i sluzy wylacznie celom pogladowym. Wygrane sa rozliczane na podstawie kwoty otrzymanej z Remote Game Server, a nie zdarzen w przegladarce. TM i (c) 2026 Stake Engine.',	'Loading replay…': 'Loading replay…',
-	'Max Win': 'Max Win',
-	'Tap to continue': 'Tap to continue',
-	'Round details': 'Round details',
-	'Play amount': 'Play amount',
-	Mode: 'Mode',
-	Event: 'Event',
-	Payout: 'Payout',
-	Play: 'Play',
+		'Awaria unieważnia wszystkie wygrane i rozgrywki. Wymagane jest stabilne połączenie internetowe. W razie rozłączenia załaduj grę ponownie, aby dokończyć nieukończone rundy. Oczekiwany zwrot jest obliczany na podstawie wielu rozgrywek. Wyświetlacz gry nie przedstawia żadnego urządzenia fizycznego i ma charakter wyłącznie poglądowy. Wygrane są rozliczane według kwoty otrzymanej z Remote Game Server, a nie na podstawie zdarzeń w przeglądarce internetowej. TM i (c) 2026 Stake Engine.',
+	'Loading replay…': 'Wczytywanie powtórki…',
+	'Max Win': 'Maks. wygrana',
+	'Tap to continue': 'Dotknij, aby kontynuować',
+	'Round details': 'Szczegóły rundy',
+	'Play amount': 'Kwota zakładu',
+	Mode: 'Tryb',
+	Event: 'Zdarzenie',
+	Payout: 'Wypłata',
+	Play: 'Odtwórz',
 
 	// Rule additions (new)
 	'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.':
-		'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.',
+		'Wypłaty są dynamiczne i zmieniają się w zależności od tego, jakie karty pozostały w talii — im mniej prawdopodobny twój typ, tym wyższa wypłata. Ten sam typ może zwrócić różne kwoty w kolejnych rundach.',
+	Controls: 'Sterowanie',
+	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
+		'Ustaw kwotę zakładu za pomocą wskaźnika zakładu oraz przycisków plus i minus. Dotknij kwoty zakładu, aby otworzyć menu szybkiego wyboru.',
+	'The speaker button mutes and unmutes the game sounds.':
+		'Przycisk głośnika wycisza i włącza dźwięki gry.',
+	'The i button opens this screen at any time.':
+		'Przycisk i otwiera ten ekran w dowolnym momencie.',
+	'The lightning button adjusts the speed of the card reveal.':
+		'Przycisk błyskawicy reguluje szybkość odsłaniania kart.',
+	'The circular arrow button opens the autoplay settings.':
+		'Przycisk okrągłych strzałek otwiera ustawienia autoodtwarzania.',
+	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
+		'Przycisk suwaków pozwala włączyć lub wyłączyć zatrzymanie po pełnej wygranej w seriach automatycznych.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.',
+		'Ta gra nie zawiera darmowych spinów, rund bonusowych, jackpotów ani funkcji ponownego wyzwalania. Każda runda to pojedyncze, niezależne losowanie czterech kart.',
 };

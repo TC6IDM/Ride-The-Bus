@@ -46,7 +46,8 @@ export default {
 	'Guess your way through four cards:': 'Dört kartı sırayla tahmin edin:',
 	'Colour — red or black for card 1.': 'Renk — 1. kart kırmızı mı siyah mı.',
 	'Higher / Lower — versus card 1 (or =).': 'Yüksek / Düşük — 1. karta göre (veya =).',
-	'Inside / Outside — between cards 1 & 2 (or =).': 'İçinde / Dışında — 1. ve 2. kart arasında (veya =).',
+	'Inside / Outside — between cards 1 & 2 (or =).':
+		'İçinde / Dışında — 1. ve 2. kart arasında (veya =).',
 	'Suit — the suit of card 4.': 'Sembol — 4. kartın sembolü.',
 	'Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.':
 		'Dördünü de seçin, bahsinizi belirleyin ve Başlat’a basın. Her doğru tahmin kazancınızı katlar; yanlış tahmin turu bitirir ama o ana kadar güvence altına aldığınız tutar sizde kalır. Dördünü de bilirseniz tam oyunu kazanırsınız.',
@@ -70,7 +71,8 @@ export default {
 		'Dört kartı da doğru bilirseniz ödeme, seçimlerinizin ne kadar zor olduğuna bağlıdır:',
 	'No Equal picks — averages 17.3×, up to 317.4×.':
 		'Eşit seçilmediğinde — ortalama 17,3×, en fazla 317,4×.',
-	'One Equal pick — averages 67.5×, up to 381.9×.': 'Bir Eşit ile — ortalama 67,5×, en fazla 381,9×.',
+	'One Equal pick — averages 67.5×, up to 381.9×.':
+		'Bir Eşit ile — ortalama 67,5×, en fazla 381,9×.',
 	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
 		'İki Eşit ile — ortalama 1329,2×, en fazla 1354,2×; bu oyunun ödeyebileceği en yüksek tutar.',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
@@ -139,26 +141,37 @@ export default {
 	'Stop autoplay on a full game win': 'Tam oyun kazancında otomatik oyunu durdur',
 	'Close menu': 'Menüyü kapat',
 	Close: 'Kapat',
-	'Game information':
-		'Oyun bilgileri',
+	'Game information': 'Oyun bilgileri',
 	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
-		'Oyuncuya donus orani (RTP) %s degerindedir. Her tahmin kombinasyonu bahsinizin 1 katina mal olur ve cok sayida turda ayni orani geri verir. Bu oyunun odeyebilecegi en yuksek tutar bahsinizin 1354,2 katidir.',
-	'Disclaimer':
-		'Yasal uyari',
+		'Oyuncuya dönüş oranı (RTP) %s değerindedir. Her tahmin kombinasyonu bahsinizin 1 katına mal olur ve birçok tur boyunca aynı oranı geri verir. Bu oyunun ödeyebileceği en yüksek tutar bahsinizin 1354,2 katıdır.',
+	Disclaimer: 'Yasal uyari',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
-		'Arizalar tum kazanclari ve oyunlari gecersiz kilar. Istikrarli bir internet baglantisi gereklidir. Baglanti kesilirse tamamlanmamis turlari bitirmek icin oyunu yeniden yukleyin. Beklenen donus cok sayida oyun uzerinden hesaplanir. Oyun ekrani herhangi bir fiziksel cihazi temsil etmez ve yalnizca gorsel amaclidir. Kazanclar taraycidaki olaylara gore degil, Remote Game Server dan alinan tutara gore odenir. TM ve (c) 2026 Stake Engine.',	'Loading replay…': 'Loading replay…',
-	'Max Win': 'Max Win',
-	'Tap to continue': 'Tap to continue',
-	'Round details': 'Round details',
-	'Play amount': 'Play amount',
-	Mode: 'Mode',
-	Event: 'Event',
-	Payout: 'Payout',
-	Play: 'Play',
+		'Arızalar tüm kazançları ve oyunları geçersiz kılar. İstikrarlı bir internet bağlantısı gereklidir. Bağlantı kesilirse tamamlanmamış turları bitirmek için oyunu yeniden yükleyin. Beklenen getiri birçok oyun üzerinden hesaplanır. Oyun görüntüsü herhangi bir fiziksel cihazı temsil etmez ve yalnızca açıklama amaçlıdır. Kazançlar, web tarayıcısındaki olaylara göre değil, Remote Game Server üzerinden alınan tutara göre ödenir. TM ve (c) 2026 Stake Engine.',
+	'Loading replay…': 'Tekrar yükleniyor…',
+	'Max Win': 'Maks. Kazanç',
+	'Tap to continue': 'Devam etmek için dokunun',
+	'Round details': 'Tur ayrıntıları',
+	'Play amount': 'Bahis tutarı',
+	Mode: 'Mod',
+	Event: 'Olay',
+	Payout: 'Ödeme',
+	Play: 'Oynat',
 
 	// Rule additions (new)
 	'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.':
-		'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.',
+		'Ödemeler dinamiktir ve destede kalan kartlara göre değişir — tahmininiz ne kadar olası dışıysa ödeme o kadar yüksek olur. Aynı tahmin turdan tura farklı tutarlar döndürebilir.',
+	Controls: 'Kontroller',
+	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
+		'Bahis tutarınızı ayarlamak için bahis göstergesini ve artı ile eksi düğmelerini kullanın. Hızlı seçim menüsünü açmak için bahis tutarına dokunun.',
+	'The speaker button mutes and unmutes the game sounds.':
+		'Hoparlör düğmesi oyun seslerini kapatır ve yeniden açar.',
+	'The i button opens this screen at any time.': 'i düğmesi bu ekranı istediğiniz zaman açar.',
+	'The lightning button adjusts the speed of the card reveal.':
+		'Şimşek düğmesi kartların açılma hızını ayarlar.',
+	'The circular arrow button opens the autoplay settings.':
+		'Dairesel ok düğmesi otomatik oyun ayarlarını açar.',
+	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
+		'Sürgü düğmesi, otomatik oyun serilerinde tam kazançta durmayı açıp kapatmanızı sağlar.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.',
+		'Bu oyunda ücretsiz dönüş, bonus turu, ikramiye veya yeniden tetikleme özelliği yoktur. Her tur, tek ve bağımsız bir dört kart çekilişidir.',
 };

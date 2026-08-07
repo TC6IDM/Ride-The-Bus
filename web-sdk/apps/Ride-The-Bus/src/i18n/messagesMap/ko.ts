@@ -139,26 +139,37 @@ export default {
 	'Stop autoplay on a full game win': '풀 게임 성공 시 자동 플레이 중지',
 	'Close menu': '메뉴 닫기',
 	Close: '닫기',
-	'Game information':
-		'게임 정보',
+	'Game information': '게임 정보',
 	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
 		'환수율(RTP)은 %s입니다. 모든 예측 조합은 베팅액의 1배이며 많은 라운드에 걸쳐 동일한 수치를 돌려줍니다. 이 게임의 최대 지급액은 베팅액의 1354.2배입니다.',
-	'Disclaimer':
-		'면책 조항',
+	Disclaimer: '면책 조항',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
-		'오작동 시 모든 당첨과 플레이가 무효가 됩니다. 안정적인 인터넷 연결이 필요합니다. 연결이 끊긴 경우 게임을 다시 불러와 완료되지 않은 라운드를 마치십시오. 기대 환수율은 다수의 플레이를 기준으로 계산됩니다. 게임 화면은 실제 기기를 나타내지 않으며 예시용입니다. 당첨금은 웹 브라우저 내의 이벤트가 아니라 Remote Game Server에서 수신한 금액에 따라 정산됩니다. TM 및 (c) 2026 Stake Engine.',	'Loading replay…': 'Loading replay…',
-	'Max Win': 'Max Win',
-	'Tap to continue': 'Tap to continue',
-	'Round details': 'Round details',
-	'Play amount': 'Play amount',
-	Mode: 'Mode',
-	Event: 'Event',
-	Payout: 'Payout',
-	Play: 'Play',
+		'오작동 시 모든 당첨과 플레이가 무효가 됩니다. 안정적인 인터넷 연결이 필요합니다. 연결이 끊긴 경우 게임을 다시 불러와 완료되지 않은 라운드를 마치십시오. 기대 환수율은 다수의 플레이를 기준으로 계산됩니다. 게임 화면은 실제 기기를 나타내지 않으며 예시용입니다. 당첨금은 웹 브라우저 내의 이벤트가 아니라 Remote Game Server에서 수신한 금액에 따라 정산됩니다. TM 및 (c) 2026 Stake Engine.',
+	'Loading replay…': '리플레이 불러오는 중…',
+	'Max Win': '최대 당첨금',
+	'Tap to continue': '탭하여 계속',
+	'Round details': '라운드 상세',
+	'Play amount': '베팅 금액',
+	Mode: '모드',
+	Event: '이벤트',
+	Payout: '지급액',
+	Play: '재생',
 
 	// Rule additions (new)
 	'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.':
-		'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.',
+		'지급액은 덱에 남은 카드에 따라 달라집니다. 예상이 어려울수록 지급액이 높아집니다. 같은 예상이라도 라운드마다 다른 금액이 나올 수 있습니다.',
+	Controls: '조작 방법',
+	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
+		'베팅 표시와 플러스·마이너스 버튼으로 베팅 금액을 설정하세요. 베팅 금액을 탭하면 빠른 선택 메뉴가 열립니다.',
+	'The speaker button mutes and unmutes the game sounds.':
+		'스피커 버튼으로 게임 소리를 음소거하거나 해제합니다.',
+	'The i button opens this screen at any time.': 'i 버튼을 누르면 언제든지 이 화면이 열립니다.',
+	'The lightning button adjusts the speed of the card reveal.':
+		'번개 버튼으로 카드가 공개되는 속도를 조절합니다.',
+	'The circular arrow button opens the autoplay settings.':
+		'원형 화살표 버튼으로 자동 플레이 설정을 엽니다.',
+	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
+		'슬라이더 버튼으로 자동 플레이 중 완전 당첨 시 정지 기능을 켜거나 끌 수 있습니다.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.',
+		'이 게임에는 무료 스핀, 보너스 라운드, 잭팟 또는 재발동 기능이 없습니다. 각 라운드는 독립적인 단일 4장 카드 드로우입니다.',
 };

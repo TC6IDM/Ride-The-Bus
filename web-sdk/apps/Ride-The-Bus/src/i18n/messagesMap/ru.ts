@@ -119,12 +119,9 @@ export default {
 	'That bet was rejected. Please adjust the amount and try again.':
 		'Ставка отклонена. Измените сумму и попробуйте ещё раз.',
 	'Not enough balance for that bet.': 'Недостаточно средств для этой ставки.',
-	'Your session has expired. Please reload the game.':
-		'Сессия истекла. Перезагрузите игру.',
-	'A gambling limit on your account has been reached.':
-		'Достигнут игровой лимит вашего аккаунта.',
-	'This game is not available from your location.':
-		'Эта игра недоступна в вашем регионе.',
+	'Your session has expired. Please reload the game.': 'Сессия истекла. Перезагрузите игру.',
+	'A gambling limit on your account has been reached.': 'Достигнут игровой лимит вашего аккаунта.',
+	'This game is not available from your location.': 'Эта игра недоступна в вашем регионе.',
 	'The game server had a problem. Please try again shortly.':
 		'На игровом сервере произошла ошибка. Попробуйте немного позже.',
 	'The game is under maintenance. Please try again shortly.':
@@ -142,26 +139,37 @@ export default {
 	'Stop autoplay on a full game win': 'Останавливать автоигру при полной победе',
 	'Close menu': 'Закрыть меню',
 	Close: 'Закрыть',
-	'Game information':
-		'Информация об игре',
+	'Game information': 'Информация об игре',
 	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
 		'Возврат игроку (RTP) составляет %s. Любая комбинация догадок стоит 1x вашей ставки и возвращает тот же показатель на протяжении многих раундов. Максимальная выплата в этой игре — 1354,2x вашей ставки.',
-	'Disclaimer':
-		'Отказ от ответственности',
+	Disclaimer: 'Отказ от ответственности',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
-		'Сбой аннулирует все выигрыши и игры. Требуется стабильное интернет-соединение. При разрыве соединения перезагрузите игру, чтобы завершить незаконченные раунды. Ожидаемый возврат рассчитывается на большом числе игр. Экран игры не изображает какое-либо физическое устройство и приведён только для иллюстрации. Выигрыши рассчитываются по сумме, полученной от Remote Game Server, а не по событиям в браузере. TM и (c) 2026 Stake Engine.',	'Loading replay…': 'Loading replay…',
-	'Max Win': 'Max Win',
-	'Tap to continue': 'Tap to continue',
-	'Round details': 'Round details',
-	'Play amount': 'Play amount',
-	Mode: 'Mode',
-	Event: 'Event',
-	Payout: 'Payout',
-	Play: 'Play',
+		'Сбой аннулирует все выигрыши и игры. Требуется стабильное интернет-соединение. При разрыве соединения перезагрузите игру, чтобы завершить незаконченные раунды. Ожидаемый возврат рассчитывается на большом числе игр. Экран игры не изображает какое-либо физическое устройство и приведён только для иллюстрации. Выигрыши рассчитываются по сумме, полученной от Remote Game Server, а не по событиям в браузере. TM и (c) 2026 Stake Engine.',
+	'Loading replay…': 'Загрузка повтора…',
+	'Max Win': 'Макс. выигрыш',
+	'Tap to continue': 'Нажмите, чтобы продолжить',
+	'Round details': 'Детали раунда',
+	'Play amount': 'Сумма ставки',
+	Mode: 'Режим',
+	Event: 'Событие',
+	Payout: 'Выплата',
+	Play: 'Воспроизвести',
 
 	// Rule additions (new)
 	'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.':
-		'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.',
+		'Выплаты динамические и зависят от того, какие карты остались в колоде: чем менее вероятен ваш выбор, тем выше выплата. Одна и та же догадка может приносить разные суммы в разных раундах.',
+	Controls: 'Управление',
+	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
+		'Задайте сумму ставки с помощью индикатора ставки и кнопок «плюс» и «минус». Нажмите на сумму ставки, чтобы открыть меню быстрого выбора.',
+	'The speaker button mutes and unmutes the game sounds.':
+		'Кнопка динамика включает и выключает звуки игры.',
+	'The i button opens this screen at any time.': 'Кнопка i открывает этот экран в любой момент.',
+	'The lightning button adjusts the speed of the card reveal.':
+		'Кнопка молнии регулирует скорость раскрытия карт.',
+	'The circular arrow button opens the autoplay settings.':
+		'Кнопка с круговыми стрелками открывает настройки автоигры.',
+	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
+		'Кнопка с ползунками позволяет включить или выключить остановку при полном выигрыше во время автоигры.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.',
+		'В этой игре нет бесплатных вращений, бонусных раундов, джекпотов и функций повторного запуска. Каждый раунд — это одна независимая раздача из четырёх карт.',
 };

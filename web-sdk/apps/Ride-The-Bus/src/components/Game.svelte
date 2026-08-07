@@ -2246,9 +2246,18 @@
           <li>{t('Tap the spacebar to play one round, or hold it to keep spinning until you let go.')}</li>
         </ul>
 
+        <h4 class="info-h">{t('Controls')}</h4>
+        <ul>
+          <li>{t('Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.')}</li>
+          <li>{t('The speaker button mutes and unmutes the game sounds.')}</li>
+          <li>{t('The i button opens this screen at any time.')}</li>
+          <li>{t('The lightning button adjusts the speed of the card reveal.')}</li>
+          <li>{t('The circular arrow button opens the autoplay settings.')}</li>
+          <li>{t('The sliders button lets you toggle stop-on-full-win for autoplay runs.')}</li>
+        </ul>
+
         <h4 class="info-h">{t('Game information')}</h4>
         <p>{t('This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.')}</p>
-
         <!-- Required for approval, and required HERE specifically: the rules /
              information popup must state the RTP and must carry the legal
              disclaimer, and this popup is what the `i` button opens, so it is
@@ -2256,7 +2265,6 @@
              The RTP is interpolated from game/config.ts rather than written
              out, so the figure a player is shown cannot drift from the one the
              math is actually built and reweighted to. -->
-        <h4 class="info-h">{t('Game information')}</h4>
         <p>
           {t('Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.').replace('%s', `${(gameConfig.rtp * 100).toFixed(2)}%`)}
         </p>

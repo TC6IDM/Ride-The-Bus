@@ -65,7 +65,8 @@ export default {
 	'Guess your way through four cards:': 'Guess your way through four cards:',
 	'Colour — red or black for card 1.': 'Colour — red or black for card 1.',
 	'Higher / Lower — versus card 1 (or =).': 'Higher / Lower — versus card 1 (or =).',
-	'Inside / Outside — between cards 1 & 2 (or =).': 'Inside / Outside — between cards 1 & 2 (or =).',
+	'Inside / Outside — between cards 1 & 2 (or =).':
+		'Inside / Outside — between cards 1 & 2 (or =).',
 	'Suit — the suit of card 4.': 'Suit — the suit of card 4.',
 	'Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.':
 		'Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.',
@@ -87,8 +88,10 @@ export default {
 	'Full game wins': 'Full game wins',
 	'Guess all four cards right and the payout depends on how hard your picks were:':
 		'Guess all four cards right and the payout depends on how hard your picks were:',
-	'No Equal picks — averages 17.3×, up to 317.4×.': 'No Equal picks — averages 17.3×, up to 317.4×.',
-	'One Equal pick — averages 67.5×, up to 381.9×.': 'One Equal pick — averages 67.5×, up to 381.9×.',
+	'No Equal picks — averages 17.3×, up to 317.4×.':
+		'No Equal picks — averages 17.3×, up to 317.4×.',
+	'One Equal pick — averages 67.5×, up to 381.9×.':
+		'One Equal pick — averages 67.5×, up to 381.9×.',
 	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
 		'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
@@ -164,12 +167,10 @@ export default {
 	'Stop autoplay on a full game win': 'Stop autoplay on a full game win',
 	'Close menu': 'Close menu',
 	Close: 'Close',
-	'Game information':
-		'Game information',
+	'Game information': 'Game information',
 	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
 		'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.',
-	'Disclaimer':
-		'Disclaimer',
+	Disclaimer: 'Disclaimer',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
 		'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.',
 
@@ -189,4 +190,18 @@ export default {
 		'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.',
+
+	// User interaction guide (new)
+	Controls: 'Controls',
+	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
+		'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.',
+	'The speaker button mutes and unmutes the game sounds.':
+		'The speaker button mutes and unmutes the game sounds.',
+	'The i button opens this screen at any time.': 'The i button opens this screen at any time.',
+	'The lightning button adjusts the speed of the card reveal.':
+		'The lightning button adjusts the speed of the card reveal.',
+	'The circular arrow button opens the autoplay settings.':
+		'The circular arrow button opens the autoplay settings.',
+	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
+		'The sliders button lets you toggle stop-on-full-win for autoplay runs.',
 };

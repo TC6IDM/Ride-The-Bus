@@ -45,7 +45,8 @@ export default {
 	'How to Play': 'Cara bermain',
 	'Guess your way through four cards:': 'Tebak empat kartu secara berurutan:',
 	'Colour — red or black for card 1.': 'Warna — merah atau hitam untuk kartu 1.',
-	'Higher / Lower — versus card 1 (or =).': 'Lebih besar / Lebih kecil — dibanding kartu 1 (atau =).',
+	'Higher / Lower — versus card 1 (or =).':
+		'Lebih besar / Lebih kecil — dibanding kartu 1 (atau =).',
 	'Inside / Outside — between cards 1 & 2 (or =).':
 		'Di antara / Di luar — antara kartu 1 dan 2 (atau =).',
 	'Suit — the suit of card 4.': 'Jenis — jenis kartu 4.',
@@ -142,26 +143,37 @@ export default {
 	'Stop autoplay on a full game win': 'Hentikan main otomatis saat menang penuh',
 	'Close menu': 'Tutup menu',
 	Close: 'Tutup',
-	'Game information':
-		'Informasi permainan',
+	'Game information': 'Informasi permainan',
 	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
 		'Return to player (RTP) adalah %s. Setiap kombinasi tebakan berbiaya 1x taruhan Anda dan mengembalikan angka yang sama selama banyak putaran. Pembayaran maksimum permainan ini adalah 1354,2x taruhan Anda.',
-	'Disclaimer':
-		'Penafian',
+	Disclaimer: 'Penafian',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
-		'Kerusakan membatalkan semua kemenangan dan permainan. Koneksi internet yang stabil diperlukan. Jika terputus, muat ulang permainan untuk menyelesaikan putaran yang belum selesai. Pengembalian yang diharapkan dihitung selama banyak permainan. Tampilan permainan tidak mewakili perangkat fisik mana pun dan hanya untuk ilustrasi. Kemenangan diselesaikan sesuai jumlah yang diterima dari Remote Game Server, bukan dari peristiwa di peramban. TM dan (c) 2026 Stake Engine.',	'Loading replay…': 'Loading replay…',
-	'Max Win': 'Max Win',
-	'Tap to continue': 'Tap to continue',
-	'Round details': 'Round details',
-	'Play amount': 'Play amount',
+		'Kerusakan membatalkan semua kemenangan dan permainan. Koneksi internet yang stabil diperlukan. Jika terputus, muat ulang permainan untuk menyelesaikan putaran yang belum selesai. Pengembalian yang diharapkan dihitung selama banyak permainan. Tampilan permainan tidak mewakili perangkat fisik mana pun dan hanya untuk ilustrasi. Kemenangan diselesaikan sesuai jumlah yang diterima dari Remote Game Server, bukan dari peristiwa di peramban. TM dan (c) 2026 Stake Engine.',
+	'Loading replay…': 'Memuat tayangan ulang…',
+	'Max Win': 'Kemenangan Maks',
+	'Tap to continue': 'Ketuk untuk melanjutkan',
+	'Round details': 'Detail ronde',
+	'Play amount': 'Jumlah taruhan',
 	Mode: 'Mode',
-	Event: 'Event',
-	Payout: 'Payout',
-	Play: 'Play',
+	Event: 'Peristiwa',
+	Payout: 'Pembayaran',
+	Play: 'Putar',
 
 	// Rule additions (new)
 	'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.':
-		'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.',
+		'Pembayaran bersifat dinamis dan berubah berdasarkan kartu yang tersisa di dek — semakin kecil kemungkinan pilihan Anda, semakin besar pembayarannya. Tebakan yang sama dapat memberikan jumlah berbeda dari satu ronde ke ronde berikutnya.',
+	Controls: 'Kontrol',
+	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
+		'Gunakan tampilan taruhan serta tombol plus dan minus untuk mengatur jumlah taruhan Anda. Ketuk jumlah taruhan untuk membuka menu pilihan cepat.',
+	'The speaker button mutes and unmutes the game sounds.':
+		'Tombol pengeras suara membisukan dan menyalakan kembali suara permainan.',
+	'The i button opens this screen at any time.': 'Tombol i membuka layar ini kapan saja.',
+	'The lightning button adjusts the speed of the card reveal.':
+		'Tombol petir mengatur kecepatan pembukaan kartu.',
+	'The circular arrow button opens the autoplay settings.':
+		'Tombol panah melingkar membuka pengaturan putar otomatis.',
+	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
+		'Tombol penggeser memungkinkan Anda mengaktifkan atau menonaktifkan berhenti saat menang penuh untuk sesi putar otomatis.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.',
+		'Permainan ini tidak memiliki putaran gratis, ronde bonus, jackpot, atau fitur pemicu ulang. Setiap ronde adalah satu penarikan empat kartu yang berdiri sendiri.',
 };

@@ -122,10 +122,8 @@ export default {
 	'Not enough balance for that bet.': 'Saldo ei riitä tähän panokseen.',
 	'Your session has expired. Please reload the game.':
 		'Istuntosi on vanhentunut. Lataa peli uudelleen.',
-	'A gambling limit on your account has been reached.':
-		'Tilisi pelirajoitus on saavutettu.',
-	'This game is not available from your location.':
-		'Tämä peli ei ole käytettävissä sijainnistasi.',
+	'A gambling limit on your account has been reached.': 'Tilisi pelirajoitus on saavutettu.',
+	'This game is not available from your location.': 'Tämä peli ei ole käytettävissä sijainnistasi.',
 	'The game server had a problem. Please try again shortly.':
 		'Pelipalvelimessa oli ongelma. Yritä hetken kuluttua uudelleen.',
 	'The game is under maintenance. Please try again shortly.':
@@ -143,26 +141,37 @@ export default {
 	'Stop autoplay on a full game win': 'Pysäytä automaattipeli täydellä voitolla',
 	'Close menu': 'Sulje valikko',
 	Close: 'Sulje',
-	'Game information':
-		'Pelin tiedot',
+	'Game information': 'Pelin tiedot',
 	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
-		'Palautusprosentti (RTP) on %s. Jokainen arvausyhdistelma maksaa 1x panoksesi ja palauttaa saman osuuden monen kierroksen aikana. Enimmaisvoitto tassa pelissa on 1354,2x panoksesi.',
-	'Disclaimer':
-		'Vastuuvapauslauseke',
+		'Palautusprosentti (RTP) on %s. Jokainen arvausyhdistelmä maksaa 1x panoksesi ja palauttaa saman osuuden monen kierroksen aikana. Eniten tämä peli voi maksaa 1354,2x panoksesi.',
+	Disclaimer: 'Vastuuvapauslauseke',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
-		'Toimintahairio mitatoi kaikki voitot ja pelit. Vakaa internetyhteys vaaditaan. Jos yhteys katkeaa, lataa peli uudelleen viimeistellaksesi kesken jaaneet kierrokset. Odotettu palautus lasketaan useiden pelien perusteella. Pelinaytto ei vastaa mitaan fyysista laitetta ja on vain havainnollistava. Voitot maaraytyvat Remote Game Serverilta saadun summan mukaan, ei selaimessa tapahtuvien tapahtumien perusteella. TM ja (c) 2026 Stake Engine.',	'Loading replay…': 'Loading replay…',
-	'Max Win': 'Max Win',
-	'Tap to continue': 'Tap to continue',
-	'Round details': 'Round details',
-	'Play amount': 'Play amount',
-	Mode: 'Mode',
-	Event: 'Event',
-	Payout: 'Payout',
-	Play: 'Play',
+		'Toimintahäiriö mitätöi kaikki voitot ja pelit. Vakaa internetyhteys vaaditaan. Jos yhteys katkeaa, lataa peli uudelleen viimeistelläksesi keskeneräiset kierrokset. Odotettu palautus lasketaan monen pelin ajalta. Pelin näkymä ei vastaa mitään fyysistä laitetta ja on vain havainnollistava. Voitot maksetaan Remote Game Serveriltä saadun summan mukaan eikä verkkoselaimen tapahtumien perusteella. TM ja (c) 2026 Stake Engine.',
+	'Loading replay…': 'Ladataan uusintaa…',
+	'Max Win': 'Suurin voitto',
+	'Tap to continue': 'Jatka napauttamalla',
+	'Round details': 'Kierroksen tiedot',
+	'Play amount': 'Panoksen määrä',
+	Mode: 'Tila',
+	Event: 'Tapahtuma',
+	Payout: 'Maksu',
+	Play: 'Toista',
 
 	// Rule additions (new)
 	'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.':
-		'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.',
+		'Voitot ovat dynaamisia ja muuttuvat sen mukaan, mitä kortteja pakassa on jäljellä — mitä epätodennäköisempi valintasi on, sitä enemmän se maksaa. Sama arvaus voi tuottaa eri summia kierroksesta toiseen.',
+	Controls: 'Ohjaimet',
+	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
+		'Aseta panoksesi panosnäytöllä sekä plus- ja miinuspainikkeilla. Napauta panoksen määrää avataksesi pikavalintavalikon.',
+	'The speaker button mutes and unmutes the game sounds.':
+		'Kaiutinpainike mykistää pelin äänet ja palauttaa ne.',
+	'The i button opens this screen at any time.': 'i-painike avaa tämän näytön milloin tahansa.',
+	'The lightning button adjusts the speed of the card reveal.':
+		'Salamapainike säätää korttien paljastumisen nopeutta.',
+	'The circular arrow button opens the autoplay settings.':
+		'Pyöreä nuolipainike avaa automaattipelin asetukset.',
+	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
+		'Liukusäädinpainikkeella voit ottaa käyttöön tai poistaa käytöstä pysäytyksen täyteen voittoon automaattipeleissä.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.',
+		'Tässä pelissä ei ole ilmaiskierroksia, bonuskierroksia, jättipotteja eikä uudelleenlaukaisuominaisuuksia. Jokainen kierros on yksittäinen, itsenäinen neljän kortin nosto.',
 };

@@ -118,8 +118,7 @@ export default {
 	'That bet was rejected. Please adjust the amount and try again.':
 		'Essa aposta foi recusada. Ajuste o valor e tente novamente.',
 	'Not enough balance for that bet.': 'Saldo insuficiente para essa aposta.',
-	'Your session has expired. Please reload the game.':
-		'Sua sessão expirou. Recarregue o jogo.',
+	'Your session has expired. Please reload the game.': 'Sua sessão expirou. Recarregue o jogo.',
 	'A gambling limit on your account has been reached.':
 		'Um limite de jogo da sua conta foi atingido.',
 	'This game is not available from your location.':
@@ -141,26 +140,37 @@ export default {
 	'Stop autoplay on a full game win': 'Parar o jogo automático ao vencer o jogo completo',
 	'Close menu': 'Fechar menu',
 	Close: 'Fechar',
-	'Game information':
-		'Informacoes do jogo',
+	'Game information': 'Informacoes do jogo',
 	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
-		'O retorno ao jogador (RTP) e %s. Cada combinacao de palpites custa 1x sua aposta e devolve esse mesmo valor ao longo de muitas rodadas. O maximo que este jogo pode pagar e 1354,2x sua aposta.',
-	'Disclaimer':
-		'Aviso legal',
+		'O retorno ao jogador (RTP) é %s. Cada combinação de palpites custa 1x sua aposta e devolve esse mesmo valor ao longo de muitas rodadas. O máximo que este jogo pode pagar é 1354,2x sua aposta.',
+	Disclaimer: 'Aviso legal',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
-		'Qualquer falha anula todos os ganhos e jogadas. E necessaria uma conexao de internet estavel. Em caso de desconexao, recarregue o jogo para concluir as rodadas nao finalizadas. O retorno esperado e calculado ao longo de muitas jogadas. A tela do jogo nao representa nenhum dispositivo fisico e serve apenas para ilustracao. Os ganhos sao liquidados conforme o valor recebido do Remote Game Server e nao pelos eventos no navegador. TM e (c) 2026 Stake Engine.',	'Loading replay…': 'Loading replay…',
-	'Max Win': 'Max Win',
-	'Tap to continue': 'Tap to continue',
-	'Round details': 'Round details',
-	'Play amount': 'Play amount',
-	Mode: 'Mode',
-	Event: 'Event',
-	Payout: 'Payout',
-	Play: 'Play',
+		'Qualquer falha anula todos os ganhos e jogadas. É necessária uma conexão de internet estável. Em caso de desconexão, recarregue o jogo para concluir as rodadas não finalizadas. O retorno esperado é calculado ao longo de muitas jogadas. A exibição do jogo não representa nenhum dispositivo físico e é apenas ilustrativa. Os ganhos são liquidados de acordo com o valor recebido do Remote Game Server e não com os eventos ocorridos no navegador web. TM e (c) 2026 Stake Engine.',
+	'Loading replay…': 'Carregando repetição…',
+	'Max Win': 'Ganho máx.',
+	'Tap to continue': 'Toque para continuar',
+	'Round details': 'Detalhes da rodada',
+	'Play amount': 'Valor da aposta',
+	Mode: 'Modo',
+	Event: 'Evento',
+	Payout: 'Pagamento',
+	Play: 'Reproduzir',
 
 	// Rule additions (new)
 	'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.':
-		'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.',
+		'Os pagamentos são dinâmicos e mudam conforme as cartas que restam no baralho — quanto menos provável for o seu palpite, maior o pagamento. O mesmo palpite pode devolver valores diferentes de uma rodada para outra.',
+	Controls: 'Controles',
+	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
+		'Use o visor de aposta e os botões de mais e menos para definir o valor da sua aposta. Toque no valor da aposta para abrir o menu de seleção rápida.',
+	'The speaker button mutes and unmutes the game sounds.':
+		'O botão do alto-falante silencia e reativa os sons do jogo.',
+	'The i button opens this screen at any time.': 'O botão i abre esta tela a qualquer momento.',
+	'The lightning button adjusts the speed of the card reveal.':
+		'O botão do raio ajusta a velocidade de revelação das cartas.',
+	'The circular arrow button opens the autoplay settings.':
+		'O botão de setas circulares abre as configurações de jogo automático.',
+	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
+		'O botão de controles deslizantes permite ativar ou desativar a parada ao vencer o jogo completo nas séries automáticas.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.',
+		'Este jogo não tem rodadas grátis, rodadas de bônus, jackpots ou funções de reativação. Cada rodada é um único sorteio independente de quatro cartas.',
 };

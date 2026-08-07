@@ -60,12 +60,12 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 	'Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.':
 		'Pick all four, set your play amount, and hit Play. Each correct guess multiplies your winnings; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.',
 	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
-		'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.',
+		'With a 3 on the table, Lower wins about 4.75× because only 8 of the 51 remaining cards are lower, while Higher wins about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.',
 	'Payouts follow the odds': 'Winnings follow the odds',
 	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
-		'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.',
+		'Every correct guess wins at its true odds, so the less likely your pick, the more it wins — and that depends on the cards already showing.',
 	'If you guess wrong': 'If you guess wrong',
-	'Card 1 — the round pays nothing.': 'Card 1 — the round pays nothing.',
+	'Card 1 — the round pays nothing.': 'Card 1 — the round wins nothing.',
 	'Card 2 — you get 0.5× your bet back.': 'Card 2 — you get 0.5× of your play amount back.',
 	'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.':
 		'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.',
@@ -77,7 +77,7 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 	'One Equal pick — averages 67.5×, up to 381.9×.':
 		'One Equal pick — averages 67.5×, up to 381.9×.',
 	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
-		'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.',
+		'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can win.',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
 		'Equal is the rarest guess, so the rounds built on it carry the largest winnings — and are the hardest to land.',
 
@@ -95,15 +95,36 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 	// Game information
 	'Game information': 'Game information',
 	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
-		'Return to player (RTP) is %s. Every combination of guesses costs 1x your play amount and returns that same figure over many rounds. The most this game can pay is 1354.2× your play amount.',
+		'Return to player (RTP) is %s. Every combination of guesses costs 1x your play amount and returns that same figure over many rounds. The most this game can win is 1354.2× your play amount.',
 
 	// Dynamic payout statement (new key — also added to en.ts)
 	'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.':
-		'Winnings are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.',
+		'Winnings are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it wins. The same guess can return different amounts from one round to the next.',
 
 	// No free games statement (new key — also added to en.ts)
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'This game has no free rounds, bonus features, jackpots, or re-trigger features. Every round is a single, independent four-card draw.',
+
+	// Error dialog. "bet" and "gambling" are both on the prohibited list, and
+	// these are the only restricted terms that reach the player through a
+	// failure path rather than the rules screen - easy to miss in review, and
+	// just as visible when they fire.
+	'That bet was rejected. Please adjust the amount and try again.':
+		'That play was rejected. Please adjust the amount and try again.',
+	'Not enough balance for that bet.': 'Not enough balance for that play.',
+	'A gambling limit on your account has been reached.':
+		'A play limit on your account has been reached.',
+
+	// Replay start screen
+	Payout: 'Won',
+
+	// User interaction guide
+	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
+		'Use the play amount display and the plus and minus buttons to set your play amount. Tap the play amount to open the quick-select menu.',
+	'The circular arrow button opens the autoplay settings.':
+		'The circular arrow button opens the auto play settings.',
+	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
+		'The sliders button lets you toggle stop-on-full-win for auto play runs.',
 };
 
 export default socialMessages;
