@@ -15,6 +15,7 @@
   // a font glyph was the wrong tool for the most important mark in a card game.
   import SuitIcon from './SuitIcon.svelte';
   import SoundIcon from './SoundIcon.svelte';
+  import TableScene from './TableScene.svelte';
   import WinCelebration from './WinCelebration.svelte';
   import { autoHoldMs, winTierFor, type WinTier } from '../game/winTiers';
   // Of the five documented RGS endpoints this game uses three: authenticate
@@ -36,7 +37,8 @@
   //                  response, which covers every way this game can change it.
   //                  The SDK ships no helper for it at all, which is a fair
   //                  signal it is not expected of a game like this.
-  import { requestBet, requestEndRound, RgsHttpError } from 'rgs-requests';
+  import { requestBet, requestEndRound } from 'rgs-requests';
+  import { throttlePlay, withRateLimitRetry } from '../game/rgsPacing';
   import { sound, type PressKind } from '../game/sound';
   import { isCombinationPlayable } from '../game/modes';
   import { gameReady, loaderGone } from '../game/ready.svelte';
@@ -553,71 +555,8 @@
    */
   let engineRoundOpen = false;
 
-  /**
-   * The floor on how often /wallet/play may be sent, INDEPENDENT of turbo.
-   *
-   * Turbo speeds up the card reveal, which is presentation - but at the fast
-   * end a whole round can finish in a few hundred milliseconds, and every round
-   * is one or two RGS calls. That is what earns a 429: the requests are paced
-   * by an animation setting that was never meant to govern network traffic.
-   *
-   * Spacing the plays here means the rate limit is never reached in the first
-   * place, so an autoplay run does not have to survive being throttled - it
-   * simply is not. The reveal still runs at whatever speed turbo asks for; only
-   * the gap before the NEXT bet is held open.
-   *
-   * A manual player never notices this: a normal-speed reveal already takes
-   * longer than the floor, so the wait has elapsed before they can click again.
-   */
-  const MIN_PLAY_INTERVAL_MS = 900;
-  /** Raised if the RGS throttles us anyway - see withRateLimitRetry. */
-  let playFloorMs = MIN_PLAY_INTERVAL_MS;
-  let lastPlayAt = 0;
-
-  /** Hold until enough time has passed since the last bet was sent. */
-  async function throttlePlay() {
-    const elapsed = performance.now() - lastPlayAt;
-    const remaining = playFloorMs - elapsed;
-    if (remaining > 0) await wait(remaining);
-    lastPlayAt = performance.now();
-  }
-
-  /**
-   * Run an RGS call, waiting out a rate limit rather than failing the round.
-   *
-   * The RGS answers 429 when calls come too fast, and autoplay does exactly
-   * that: two requests per round (play, and end-round on a win) with barely a
-   * pause between rounds. A 429 used to surface as an unparseable body, get
-   * treated as a fatal round error, and stop the run - so a long autoplay
-   * reliably died partway through for a reason that was only ever temporary.
-   *
-   * Backs off exponentially and gives up after a few attempts, at which point
-   * the caller's own error handling takes over. Only 429 is retried: a rejected
-   * bet or an expired session will not improve by asking again.
-   */
-  async function withRateLimitRetry<T>(label: string, call: () => Promise<T>): Promise<T> {
-    const ATTEMPTS = 4;
-    let delay = 700;
-    for (let attempt = 1; ; attempt++) {
-      try {
-        return await call();
-      } catch (err) {
-        const rateLimited = err instanceof RgsHttpError && err.isRateLimited;
-        if (!rateLimited || attempt >= ATTEMPTS) throw err;
-        // Being throttled at all means the floor is too low for whatever limit
-        // this session is under, so raise it for the rest of the session. The
-        // run then settles at a rate the RGS accepts instead of repeatedly
-        // walking into the same wall.
-        playFloorMs = Math.min(playFloorMs + 400, 4000);
-        console.warn(
-          `[RideTheBus] ${label} rate limited by the RGS; retrying in ${delay}ms ` +
-            `(attempt ${attempt} of ${ATTEMPTS}, bet spacing now ${playFloorMs}ms)`,
-        );
-        await wait(delay);
-        delay *= 2;
-      }
-    }
-  }
+  // Bet spacing and the 429 retry live in game/rgsPacing.ts - the floor and
+  // the retry that raises it are one feedback loop and belong together.
 
   /**
    * Pointer or keyboard focus is on the barred Inside button.
@@ -1983,100 +1922,8 @@
     </svg>
   {/snippet}
 
-  <!-- One chip, or a pile of them. Each chip in a stack is its own disc rather
-       than one tall drum with lines ruled across it: the boundary between two
-       stacked chips is a circle seen at the table's angle, so it has to be an
-       arc. Drawn as straight seams the stack read as a striped can. Every disc
-       is the same capsule, offset by one chip's thickness, and the one above
-       covers all of the one below except its front edge. -->
-  {#snippet chipStack(colour: string, place: string, stack: number)}
-    <div class="prop chip {colour} {place}" style="--stack: {stack}">
-      <div class="chip-shadow"></div>
-      {#each Array(stack) as _, i (i)}
-        <div class="chip-disc" style="--i: {i}"></div>
-      {/each}
-      <div class="chip-top"></div>
-    </div>
-  {/snippet}
-
-  <!-- Drawn entirely in CSS (see styles/table.css). Purely decorative, and
-       every prop is placed out toward the table's rim so the middle stays
-       clear for the cards and guesses. -->
-  <!-- Each prop is built from separate top / side / shadow layers rather than
-       one flat shape, because the volume is what sells the scene: a chip is a
-       cylinder (elliptical top + side wall), the table has a real edge, and
-       everything casts to the lower-left from a light at the upper right. -->
-  <div class="scene" aria-hidden="true">
-    <div class="table">
-      <div class="table-edge"></div>
-      <div class="table-surface">
-        <!-- The bullnose rim, lit right round the table's perimeter. -->
-        <div class="table-rim"></div>
-
-        <!-- The deck, top left: the same brand-red back, chrome edge and
-             Takeover chip mark as the four dealt cards (styles/cards.css), so
-             the cards visibly come from it. -->
-        <div class="prop deck p-deck">
-          <div class="deck-shadow"></div>
-          <div class="deck-stack"></div>
-          <div class="deck-face"></div>
-        </div>
-
-        <!-- A party cup either side - it is a drinking game, and a pair reads
-             as two people sitting at the table. The left one is further down
-             its drink so they are not the same object twice. -->
-        <div class="prop cup p-cup-1">
-          <div class="cup-shadow"></div>
-          <div class="cup-body">
-            <!-- The three stepped ribs below the lip and the roll above the
-                 base, which is what makes a party cup that shape and not a
-                 plain cone. Each is the front arc of a circle round the cone,
-                 so each has its own width and squash. -->
-            <div class="cup-rib rib-1"></div>
-            <div class="cup-rib rib-2"></div>
-            <div class="cup-rib rib-3"></div>
-            <div class="cup-rib rib-4"></div>
-            <div class="cup-rib rib-5"></div>
-          </div>
-          <div class="cup-rim"></div>
-          <div class="cup-inside"><div class="cup-drink"></div></div>
-        </div>
-        <div class="prop cup cup-low p-cup-2">
-          <div class="cup-shadow"></div>
-          <div class="cup-body">
-            <!-- The three stepped ribs below the lip and the roll above the
-                 base, which is what makes a party cup that shape and not a
-                 plain cone. Each is the front arc of a circle round the cone,
-                 so each has its own width and squash. -->
-            <div class="cup-rib rib-1"></div>
-            <div class="cup-rib rib-2"></div>
-            <div class="cup-rib rib-3"></div>
-            <div class="cup-rib rib-4"></div>
-            <div class="cup-rib rib-5"></div>
-          </div>
-          <div class="cup-rim"></div>
-          <div class="cup-inside"><div class="cup-drink"></div></div>
-        </div>
-
-        <!-- Two tight clusters, diagonally opposite, each holding all three
-             denominations - that is what a player's own chips look like when
-             they have been sitting there a while. An earlier pass had ten
-             loose counters ringing the table and it read as clutter. -->
-        <!-- Four stacks per cluster, set along an arc that follows the rim.
-             DOM order runs from the far end of each arc to the near one, so
-             the nearer stacks paint over the ones behind them. -->
-        {@render chipStack('chip-red', 'p-chip-1', 5)}
-        {@render chipStack('chip-blue', 'p-chip-2', 3)}
-        {@render chipStack('chip-green', 'p-chip-3', 2)}
-        {@render chipStack('chip-black', 'p-chip-4', 1)}
-
-        {@render chipStack('chip-white', 'p-chip-5', 4)}
-        {@render chipStack('chip-black', 'p-chip-6', 3)}
-        {@render chipStack('chip-red', 'p-chip-7', 2)}
-        {@render chipStack('chip-green', 'p-chip-8', 1)}
-      </div>
-    </div>
-  </div>
+  <!-- The table and its props. Decorative only - see TableScene.svelte. -->
+  <TableScene />
 
   <!-- Responsible-gambling readouts, rendered only where the player's regulator
        asks for them (displayNetPosition / displayRTP / displaySessionTimer).
@@ -2564,7 +2411,6 @@
      resolves these @imports before Svelte scopes the result). Import order
      matters: responsive.css last so its overrides win. */
   @import '../styles/base.css';
-  @import '../styles/table.css';
   @import '../styles/cards.css';
   @import '../styles/choices.css';
   @import '../styles/control-bar.css';
