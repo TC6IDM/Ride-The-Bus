@@ -222,7 +222,10 @@ describe('countUpSegments', () => {
     const last = segments[segments.length - 1]!;
     assert.equal(last.tier.id, 'max');
     assert.ok(last.isHold, 'the max leg has nowhere to climb and must be a hold');
-    assert.ok(last.durationMs > 0, 'a hold still needs to be on screen long enough to read');
+    // Zero, because a hold has nothing to animate: the component lands it the
+    // moment it is reached and switches the prompt to "tap to continue" rather
+    // than offering to skip a count that does not exist.
+    assert.equal(last.durationMs, 0);
   });
 
   test('a win landing exactly on a threshold still shows that tier', () => {
@@ -265,11 +268,24 @@ describe('segmentDurationMs', () => {
   test('a max win climb stays watchable end to end', () => {
     // Every leg plus the ceiling pause between them. Long enough to build,
     // short enough that a player who does not tap is not stuck staring at it.
+    // The final Max leg contributes nothing - it is a hold.
     const segments = countUpSegments(MAX_WIN_MULTIPLIER, winTierFor(MAX_WIN_MULTIPLIER, true)!);
     const climbing = segments.reduce((sum, segment) => sum + segment.durationMs, 0);
     const pauses = (segments.length - 1) * CEILING_PAUSE_MS;
     const total = climbing + pauses;
     assert.ok(total >= 8000 && total <= 18000, `max win takes ${total}ms end to end`);
+  });
+
+  test('a hold takes no time, a climbing leg always does', () => {
+    for (const multiplier of [6.6, 15, 40, 50, 120, 300, 700, MAX_WIN_MULTIPLIER]) {
+      for (const segment of countUpSegments(multiplier, winTierFor(multiplier, true)!)) {
+        if (segment.isHold) {
+          assert.equal(segment.durationMs, 0, `${multiplier}x: ${segment.tier.id} hold has a duration`);
+        } else {
+          assert.ok(segment.durationMs > 0, `${multiplier}x: ${segment.tier.id} climbs in no time`);
+        }
+      }
+    }
   });
 
   test('the ceiling pause is long enough to read and the same for every tier', () => {

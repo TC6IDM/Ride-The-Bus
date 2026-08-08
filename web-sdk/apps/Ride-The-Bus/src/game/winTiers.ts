@@ -137,19 +137,22 @@ export type CountUpSegment = {
   fromMultiplier: number;
   /** Multiplier this leg climbs to. */
   toMultiplier: number;
-  /** How long this leg should take, before turbo. */
+  /** How long this leg spends climbing. Zero for a hold - there is nothing to
+   * animate, so it lands the moment it is reached. */
   durationMs: number;
   /**
-   * True when the leg has nowhere to climb, which happens only on a Max Win:
-   * the top tier's floor IS the game ceiling, so by the time "Max Win" appears
-   * the number has already arrived. The leg is kept rather than dropped so the
-   * title still gets its moment - it just holds instead of counting.
+   * True when the leg has nowhere to climb. Happens on a Max Win, where the top
+   * tier's floor IS the game ceiling so the previous leg already carried the
+   * number there, and on any win landing exactly on a threshold (40.0x earning
+   * Huge, say). The leg is kept rather than dropped so the title still gets its
+   * moment - it just arrives instead of counting.
+   *
+   * A hold is always the LAST leg, so reaching one means the celebration is
+   * finished: the prompt switches to "tap to continue" straight away rather than
+   * offering to skip a count that does not exist.
    */
   isHold: boolean;
 };
-
-/** A degenerate leg still pauses long enough for the promotion to register. */
-const HOLD_MS = 900;
 
 /**
  * How long the number rests on a band's ceiling before the next leg starts.
@@ -196,7 +199,7 @@ export function countUpSegments(finalMultiplier: number, earned: WinTier): Count
       tier,
       fromMultiplier,
       toMultiplier: isHold ? fromMultiplier : toMultiplier,
-      durationMs: isHold ? HOLD_MS : segmentDurationMs(tier),
+      durationMs: isHold ? 0 : segmentDurationMs(tier),
       isHold,
     });
   }

@@ -96,6 +96,26 @@
 
 	let titleEl: HTMLElement | undefined = $state(undefined);
 	let amountEl: HTMLElement | undefined = $state(undefined);
+
+	/**
+	 * When the celebration reached its final state, and how long a dismiss tap is
+	 * ignored afterwards.
+	 *
+	 * Without this the last tier is one careless double-tap from never being
+	 * seen: a tap on the Epic leg now lands the Max Win instantly (it has nothing
+	 * to count), so the very next tap would dismiss the rarest screen in the game
+	 * - 1 in 36,384 - before the player registered it. Short enough that a
+	 * deliberate second tap still feels immediate.
+	 */
+	let settledAt = 0;
+	const DISMISS_GRACE_MS = 400;
+
+	/** Mark the celebration finished: nothing left to count, only to dismiss. */
+	function settle() {
+		holding = false;
+		counting = false;
+		settledAt = performance.now();
+	}
 	let frame = 0;
 	let autoTimer: ReturnType<typeof setTimeout> | null = null;
 	let holdTimer: ReturnType<typeof setTimeout> | null = null;
@@ -151,8 +171,7 @@
 		clearHold();
 		shown = props.amount;
 		segmentIndex = segments.length - 1;
-		holding = false;
-		counting = false;
+		settle();
 		sound.playWinCountEnd(props.tier.id);
 	}
 
@@ -196,6 +215,19 @@
 		const to = segmentEnd(index);
 		const isLast = index === segments.length - 1;
 
+		// A leg with nowhere to climb - the Max Win, whose floor IS the game
+		// ceiling, or a win landing exactly on a threshold. There is no count to
+		// run and nothing to skip, so it arrives finished: the prompt reads "tap to
+		// continue" immediately and the next tap dismisses. Offering "tap to skip"
+		// over a static number would be a button that does nothing.
+		if (segment.isHold) {
+			shown = to;
+			settle();
+			popAmount();
+			sound.playWinCountEnd(props.tier.id);
+			return;
+		}
+
 		// Deliberately NOT scaled by the turbo slider. Turbo is about how fast the
 		// cards flip - how long the player waits to find out the result. The
 		// celebration is the result, and someone who has turned the reveal up to
@@ -228,7 +260,7 @@
 
 			shown = to;
 			if (isLast) {
-				counting = false;
+				settle();
 				sound.playWinCountEnd(props.tier.id);
 			} else {
 				// Rest on the ceiling before climbing on, so the figure the player
@@ -256,7 +288,9 @@
 	 */
 	function onTap() {
 		if (!counting) {
-			dismiss();
+			// Swallow a tap that arrives on the heels of the celebration settling -
+			// see DISMISS_GRACE_MS.
+			if (performance.now() - settledAt >= DISMISS_GRACE_MS) dismiss();
 			return;
 		}
 
@@ -307,8 +341,7 @@
 		if (props.autoSkipMs !== null || reducedMotion() || !segments.length) {
 			shown = props.amount;
 			segmentIndex = Math.max(0, segments.length - 1);
-			holding = false;
-			counting = false;
+			settle();
 			if (props.autoSkipMs !== null) {
 				autoTimer = setTimeout(dismiss, props.autoSkipMs);
 			}
