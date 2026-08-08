@@ -124,19 +124,17 @@
    reflow the row and leave the player wondering where a control went; showing
    it plainly disabled says the option exists but is off the table for the guess
    they have already made. The hover rules above are suppressed to match, so it
-   cannot light up under the cursor as though it were still choosable. */
+   cannot light up under the cursor as though it were still choosable.
+
+   The game marks that button with aria-disabled, not disabled, so those
+   variants live in choice-unavailable.css - imported by the board alone,
+   because the start screen never disables a choice. */
 .half-btn:disabled,
 .third-btn:disabled,
 .quad-btn:disabled,
 .half-btn:disabled:hover,
 .third-btn:disabled:hover,
-.quad-btn:disabled:hover,
-.half-btn[aria-disabled='true'],
-.third-btn[aria-disabled='true'],
-.quad-btn[aria-disabled='true'],
-.half-btn[aria-disabled='true']:hover,
-.third-btn[aria-disabled='true']:hover,
-.quad-btn[aria-disabled='true']:hover {
+.quad-btn:disabled:hover {
   cursor: not-allowed;
   box-shadow: none;
 }
@@ -149,10 +147,7 @@
    the option is off. */
 .half-btn:disabled::before,
 .third-btn:disabled::before,
-.quad-btn:disabled::before,
-.half-btn[aria-disabled='true']::before,
-.third-btn[aria-disabled='true']::before,
-.quad-btn[aria-disabled='true']::before {
+.quad-btn:disabled::before {
   content: '';
   position: absolute;
   left: 16%;
@@ -174,10 +169,7 @@
    whole button reads as one knocked-back thing. */
 .half-btn:disabled::after,
 .third-btn:disabled::after,
-.quad-btn:disabled::after,
-.half-btn[aria-disabled='true']::after,
-.third-btn[aria-disabled='true']::after,
-.quad-btn[aria-disabled='true']::after {
+.quad-btn:disabled::after {
   content: '';
   position: absolute;
   inset: 0;

@@ -85,7 +85,12 @@
 		{ rank: '10', suit: '♠', red: false },
 	];
 
-	const SUIT_GLYPH: Record<string, { glyph: string; red: boolean; label: string }> = {
+	// `label` is typed as the literal union rather than string: t() is keyed on
+	// the English map, and a widened string is not assignable to it.
+	const SUIT_GLYPH: Record<
+		string,
+		{ glyph: string; red: boolean; label: 'Heart' | 'Spade' | 'Club' | 'Diamond' }
+	> = {
 		heart: { glyph: '♥', red: true, label: 'Heart' },
 		spade: { glyph: '♠', red: false, label: 'Spade' },
 		club: { glyph: '♣', red: false, label: 'Club' },
@@ -134,12 +139,18 @@
 
 <!-- The "?" badge in each panel's top-right corner.
      Focusable rather than a bare hover target, so the explanation is reachable
-     by keyboard and by tap - hover alone would hide it from every phone. -->
+     by keyboard and by tap - hover alone would hide it from every phone.
+
+     A real <button> rather than a span with tabindex: it is focusable natively,
+     which is what makes the :focus-visible rule that reveals the tip work for
+     keyboard users, and it needs no role. The span version carried role="note",
+     which is non-interactive and cannot legally hold a tabindex.
+     type="button" so it never submits anything. -->
 {#snippet help(text: Parameters<typeof t>[0])}
-	<span class="ss-help" tabindex="0" role="note" aria-label={t(text)}>
+	<button type="button" class="ss-help" aria-label={t(text)}>
 		?
 		<span class="ss-tip">{t(text)}</span>
-	</span>
+	</button>
 {/snippet}
 
 <div class="ss-overlay" style={`--logo-url: url(${base}/logo.png)`}>

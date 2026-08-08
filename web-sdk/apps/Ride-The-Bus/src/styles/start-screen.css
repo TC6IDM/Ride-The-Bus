@@ -229,18 +229,23 @@
 /* ---- Help badge ----
    Top-right of each panel. Focusable rather than hover-only so the explanation
    is reachable by keyboard and by tap. */
+/* A real <button>, so padding and font-family need resetting - without them the
+   browser's defaults push the "?" off centre and swap the game's font out. */
 .ss-help {
 	position: absolute;
 	top: calc(var(--ss) * 0.4);
 	right: calc(var(--ss) * 0.4);
 	width: calc(var(--ss) * 1.9);
 	height: calc(var(--ss) * 1.9);
+	padding: 0;
 	border-radius: 50%;
 	background: #2e4224;
 	border: 1px solid #6b8a58;
 	color: #cfe3bd;
+	font-family: inherit;
 	font-size: calc(var(--ss) * 1.1);
 	font-weight: 800;
+	line-height: 1;
 	display: flex;
 	align-items: center;
 	justify-content: center;

@@ -1,10 +1,21 @@
 /* Sizes here are multiples of --ui-bar so the popup box and its text scale
    together with the window instead of the box shrinking around fixed-size text.
 
-   Centred modal popups opened from the control bar (bet menu, turbo speed,
-   autoplay, advanced, how-to-play) plus the shared controls inside them. */
+   The controls INSIDE the control-bar popups (bet menu, turbo speed, autoplay,
+   advanced). Imported by Game.svelte alone.
+
+   Two things that used to live here now sit beside it, because Svelte scopes a
+   stylesheet to whichever component imports it and How to Play is its own
+   component now:
+     - popup-base.css        the shell both components share
+     - popup-how-to-play.css the info panel's own rules
+   Splitting them is what stops each component reporting the other's rules as
+   unused selectors. */
 
 /* ==== Popups ==== */
+
+/* Game.svelte renders the backdrop for every popup, including How to Play, so
+   this stays here rather than in popup-base.css. */
 .popup-backdrop {
   position: fixed;
   inset: 0;
@@ -15,63 +26,6 @@
   background: rgba(0, 0, 0, 0.5);
   cursor: pointer;
 }
-
-.popup {
-  position: fixed;
-  z-index: 50;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: min(calc(var(--ui-bar) * 32.73), calc(100vw - calc(var(--ui-bar) * 2.55)));
-  max-height: calc(100vh - calc(var(--ui-bar) * 3.64));
-  overflow-y: auto;
-  box-sizing: border-box;
-  padding: calc(var(--ui-bar) * 1.27);
-  border-radius: calc(var(--ui-bar) * 1.27);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: #141d2a;
-  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.65);
-  color: #dfe8f2;
-}
-
-/* How to Play carries far more prose than the other popups (odds, losses,
-   full-game wins), so it gets a wider column - long paragraphs at the shared
-   360px width wrapped into a very tall, narrow block. Compound selector so it
-   beats .popup regardless of rule order. The same viewport clamp applies, so
-   it still can't overflow a narrow window. */
-.popup.popup-info {
-  width: min(calc(var(--ui-bar) * 45), calc(100vw - calc(var(--ui-bar) * 2.55)));
-}
-
-.popup-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-  font-size: calc(var(--ui-bar) * 1.45);
-  font-weight: 800;
-  letter-spacing: 0.03em;
-  color: #4c9ffe;
-}
-
-.popup-close {
-  width: calc(var(--ui-bar) * 2.36);
-  height: calc(var(--ui-bar) * 2.36);
-  padding: 0;
-  border: none;
-  border-radius: calc(var(--ui-bar) * 0.64);
-  background: rgba(255, 255, 255, 0.08);
-  color: #cfe0f0;
-  font-size: calc(var(--ui-bar) * 1.09);
-  cursor: pointer;
-  text-transform: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: box-shadow 0.12s, color 0.12s;
-}
-
-.popup-close:hover { color: #fff; box-shadow: 0 0 10px rgba(76, 159, 254, 0.5); }
 
 .bet-grid, .spin-grid {
   display: grid;
@@ -147,70 +101,8 @@
 
 .advanced-body { display: flex; flex-direction: column; gap: calc(var(--ui-bar) * 1.27); }
 
-.info-body { font-size: calc(var(--ui-bar) * 1.24); line-height: 1.5; color: #cfe0f0; }
-
-.info-body p { margin: 8px 0; }
-
-.info-body ol,
-.info-body ul { margin: 8px 0; padding-left: 20px; }
-
-.info-body li { margin: 3px 0; }
-
-/* Ace-to-King rank strip in How to Play. A list, not prose, because the
-   ordering is the point - and it wraps rather than shrinking the chips below
-   readable size on a narrow popup. */
-.rank-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: calc(var(--ui-bar) * 0.33);
-  /* override .info-body ol's indent and markers */
-  margin: calc(var(--ui-bar) * 0.55) 0 calc(var(--ui-bar) * 0.36);
-  padding: 0;
-  list-style: none;
-}
-
-.rank-chip {
-  flex: 1 1 auto;
-  min-width: calc(var(--ui-bar) * 2.1);
-  margin: 0; /* .info-body li sets a vertical margin */
-  padding: calc(var(--ui-bar) * 0.4) 0;
-  text-align: center;
-  border-radius: calc(var(--ui-bar) * 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.07);
-  font-size: calc(var(--ui-bar) * 1.05);
-  font-weight: 800;
-  line-height: 1;
-  color: #fff;
-}
-
-/* The two ends carry the actual message, so they get the accent. */
-.rank-chip:first-child,
-.rank-chip:last-child {
-  border-color: #4c9ffe;
-  background: rgba(76, 159, 254, 0.22);
-  color: #cfe4ff;
-}
-
-.rank-ends {
-  display: flex;
-  justify-content: space-between;
-  font-size: calc(var(--ui-bar) * 0.95);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #93a4b5;
-}
-
-/* Section heading inside the how-to-play body. The popup now covers odds,
-   losses and max wins, which needs signposting to stay skimmable. */
-.info-h {
-  margin: calc(var(--ui-bar) * 1.1) 0 calc(var(--ui-bar) * 0.36);
-  font-size: calc(var(--ui-bar) * 1.16);
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #4c9ffe;
-}
+/* The How to Play body, its rank strip and its section headings moved to
+   popup-how-to-play.css when that panel became its own component. */
 
 .control-label {
   font-size: calc(var(--ui-bar) * 1.05);

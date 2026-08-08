@@ -1,0 +1,65 @@
+/* The one choice the game takes off the table: Inside, after Equal at stage 2.
+ *
+ * WHY THIS IS NOT IN choices.css
+ *
+ * choices.css is shared by the board and the start screen, and the start screen
+ * never disables anything - on the intro nobody is really playing, so picking
+ * Equal there must not grey out Inside. That makes every rule below dead weight
+ * in StartScreen.svelte, and Svelte reports each one as an unused selector.
+ * Keeping them here, imported only by Game.svelte, is what keeps that quiet.
+ *
+ * The attribute is only ever set on .half-btn. .third-btn and .quad-btn (Colour
+ * and Suit) have no unplayable combination, so they never carry aria-disabled -
+ * the selectors that used to name them matched nothing anywhere in the game.
+ *
+ * aria-disabled rather than disabled is load-bearing: a `disabled` button fires
+ * no mouse events at all, so it could never raise the .choice-tip explaining
+ * why the option is off. That is why the native `title` never appeared either.
+ *
+ * The :disabled equivalents of these rules stay in choices.css. Only the
+ * aria-disabled variants live here.
+ */
+
+/* Dimmed and struck through rather than hidden. Removing the button would
+   reflow the row and leave the player wondering where a control went; showing
+   it plainly disabled says the option exists but is off the table for the guess
+   they have already made. The hover rules in choices.css already exclude
+   [aria-disabled='true'], so it cannot light up under the cursor either. */
+.half-btn[aria-disabled='true'],
+.half-btn[aria-disabled='true']:hover {
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* The strike, drawn rather than set as a glyph so it scales with the button and
+   needs no font support. It is ::before so that the dimming layer below paints
+   OVER it: the line then sits at exactly the same brightness as the half it
+   crosses, instead of staying white while everything round it is knocked back.
+   Ignores pointer events so it cannot swallow the tip explaining why it is off. */
+.half-btn[aria-disabled='true']::before {
+  content: '';
+  position: absolute;
+  left: 16%;
+  right: 16%;
+  top: calc(50% - 1.5px);
+  height: 3px;
+  transform: rotate(-24deg);
+  transform-origin: center;
+  background: #fff;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* The dimming, as an OVERLAY rather than a filter on the button.
+   filter: brightness() would apply to the button AND its pseudo-elements as one
+   unit, which is fine for the colour and the icon but leaves no way to have the
+   strike share their brightness rather than its own. Painting a translucent
+   black layer last dims the half, its icon and the strike together, so the
+   whole button reads as one knocked-back thing. */
+.half-btn[aria-disabled='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}

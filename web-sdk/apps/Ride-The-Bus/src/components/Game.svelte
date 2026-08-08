@@ -1,10 +1,15 @@
 <script lang="ts">
   import { base } from '$app/paths';
   import './app.css';
-  // `ranks` is imported (rather than the order being retyped in the help text)
-  // so the strip in How to Play can never drift from the order the game and
-  // the math-sdk actually use.
-  import { createRoundContract, rankValue, ranks, type Card } from '../game/roundContract';
+  // TYPE ONLY, deliberately - this line erases at build time.
+  //
+  // roundContract is otherwise reached only by the dynamic import inside the
+  // DEV-only branch of playRound, which is what lets Vite drop the card
+  // shuffler from a production build. That was previously undone by this same
+  // line importing createRoundContract and rankValue as values: the dynamic
+  // import was there, but the module was already in the graph, so a real-money
+  // bundle still carried a card generator.
+  import type { Card } from '../game/roundContract';
   import { stateBet, stateUrlDerived, stateMeta, stateConfig, stateModal } from 'state-shared';
   import ErrorModal from './ErrorModal.svelte';
   import StartScreen from './StartScreen.svelte';
@@ -16,6 +21,7 @@
   import SuitIcon from './SuitIcon.svelte';
   import SoundIcon from './SoundIcon.svelte';
   import TableScene from './TableScene.svelte';
+  import HowToPlayPopup from './HowToPlayPopup.svelte';
   import WinCelebration from './WinCelebration.svelte';
   import { autoHoldMs, winTierFor, type WinTier } from '../game/winTiers';
   // Of the five documented RGS endpoints this game uses three: authenticate
@@ -38,7 +44,7 @@
   //                  The SDK ships no helper for it at all, which is a fair
   //                  signal it is not expected of a game like this.
   import { requestBet, requestEndRound } from 'rgs-requests';
-  import { throttlePlay, withRateLimitRetry } from '../game/rgsPacing';
+  import { pacedPlay, pacedRequest } from '../game/rgsPacing';
   import { sound, type PressKind } from '../game/sound';
   import { isCombinationPlayable } from '../game/modes';
   import { gameReady, loaderGone } from '../game/ready.svelte';
@@ -51,7 +57,6 @@
     DECAY,
     STAGE_RETENTION,
     computeFinalMultiplier,
-    partialMultiplier,
     quantizeMultiplier,
   } from '../game/payout';
   import { betDecimals, betWithinRange, snapBetToGrid, snapToStep } from '../game/betLimits';
@@ -75,6 +80,9 @@
   type HigherLowerChoice = 'higher' | 'lower' | 'equal' | null;
   type InsideOutsideChoice = 'inside' | 'outside' | 'equal' | null;
   type SuitChoice = 'heart' | 'diamond' | 'club' | 'spade' | null;
+  // Shape shared with game/localRound.ts, which builds these for DEV rounds.
+  // Declared here rather than imported so the type does not pull that DEV-only
+  // module into the production graph.
   type RevealEvent = { stage: number; card: Card; choice: string; correct: boolean; payout: number };
   type Props = { roundSeed?: string };
 
@@ -659,34 +667,6 @@
   // /wallet/play returned, so nothing here can change what is paid.
   let slamRequested = $state(false);
 
-  // The reveal gets its OWN interruptible wait. Deliberately not the shared
-  // wait(): that is also what holds the minimum-round-duration gate open, and a
-  // slam must never be able to shorten a regulator's floor.
-  let revealWaitTimer: ReturnType<typeof setTimeout> | null = null;
-  let revealWaitResolve: (() => void) | null = null;
-  const revealWait = (ms: number) =>
-    new Promise<void>((resolve) => {
-      if (ms <= 0) {
-        resolve();
-        return;
-      }
-      revealWaitResolve = resolve;
-      revealWaitTimer = setTimeout(() => {
-        revealWaitTimer = null;
-        revealWaitResolve = null;
-        resolve();
-      }, ms);
-    });
-  /** Resolve the reveal's in-flight pause immediately. */
-  function cutShortRevealWait() {
-    if (revealWaitTimer !== null) {
-      clearTimeout(revealWaitTimer);
-      revealWaitTimer = null;
-    }
-    const resolve = revealWaitResolve;
-    revealWaitResolve = null;
-    resolve?.();
-  }
   // Scale a delay by the turbo speed: 0 => full `normal`, 1 => `fast` (instant).
   // Read at call time so moving the slider mid-reveal takes effect next step.
   // A slam collapses every remaining pause to the instant end of the scale -
@@ -697,6 +677,73 @@
   // Card flip duration (seconds) for the --flip-dur CSS var; shrinks to 0 as
   // turbo approaches instant, and snaps to 0 on a slam.
   const flipDurSec = () => (slamRequested ? '0.000' : (0.5 * (1 - turboSpeed)).toFixed(3));
+
+  // The reveal gets its OWN interruptible wait. Deliberately not the shared
+  // wait(): that is also what holds the minimum-round-duration gate open, and a
+  // slam must never be able to shorten a regulator's floor.
+  //
+  // Takes the normal/fast PAIR rather than a finished duration, because a slam
+  // has to re-time a pause that is already running and that needs the instant
+  // figure for this particular step, not just how long was originally asked for.
+  let revealWaitTimer: ReturnType<typeof setTimeout> | null = null;
+  let revealWaitResolve: (() => void) | null = null;
+  let revealWaitFastMs = 0;
+  let revealWaitStartedAt = 0;
+
+  const revealWait = (normalMs: number, fastMs: number) =>
+    new Promise<void>((resolve) => {
+      const ms = paceMs(normalMs, fastMs);
+      if (ms <= 0) {
+        resolve();
+        return;
+      }
+      revealWaitFastMs = fastMs;
+      revealWaitStartedAt = performance.now();
+      revealWaitResolve = resolve;
+      revealWaitTimer = setTimeout(() => {
+        revealWaitTimer = null;
+        revealWaitResolve = null;
+        resolve();
+      }, ms);
+    });
+
+  /**
+   * Bring the in-flight pause down to instant-turbo speed - no further.
+   *
+   * This used to resolve the pause outright, which made a slammed round finish
+   * FASTER than the same round at maximum turbo: every later step already paces
+   * itself at `fast` via paceMs, so cancelling the running one was the single
+   * thing that pushed slam past the fastest setting a player can otherwise
+   * choose. Rounds then arrived at the RGS closer together than any turbo
+   * setting could produce them.
+   *
+   * Re-timing to `fast` measured from when the pause STARTED means a slam lands
+   * exactly on the instant-turbo timeline. If that much time has already gone by
+   * the step is simply due, so it resolves now.
+   *
+   * The bet spacing in rgsPacing.ts is what actually guarantees the RGS is never
+   * outrun - it floors /wallet/play regardless of any of this. This keeps the
+   * presentation honest about its own fastest setting rather than relying on
+   * that floor to absorb it.
+   */
+  function collapseRevealWaitToInstant() {
+    if (revealWaitTimer === null || revealWaitResolve === null) return;
+
+    const settle = () => {
+      revealWaitTimer = null;
+      const resolve = revealWaitResolve;
+      revealWaitResolve = null;
+      resolve?.();
+    };
+
+    clearTimeout(revealWaitTimer);
+    const remaining = revealWaitFastMs - (performance.now() - revealWaitStartedAt);
+    if (remaining <= 0) {
+      settle();
+      return;
+    }
+    revealWaitTimer = setTimeout(settle, remaining);
+  }
 
   const resolveRoundSeed = () => {
     if (roundSeed !== fallbackRoundSeed) {
@@ -779,7 +826,7 @@
     let running = 1;
     let busted = false;
     for (let i = 0; i < revealEvents.length; i++) {
-      await revealWait(paceMs(650, 0));
+      await revealWait(650, 0);
       revealedCards[i] = revealEvents[i].card;
       sound.playCardFlip();
       const event = revealEvents[i];
@@ -795,12 +842,12 @@
       stageMultipliers[i] = quantizeMultiplier(running);
       runningWin = stageMultipliers[i]! * initialBet;
       if (busted) {
-        await revealWait(paceMs(900, 150));
+        await revealWait(900, 150);
         break;
       }
     }
 
-    await revealWait(paceMs(300, 120));
+    await revealWait(300, 120);
     // Prefer the server's authoritative payout on engine rounds; fall back to
     // the local formula (identical maths) when there's no RGS session.
     const multiplier = engineFinalMultiplier ?? computeFinalMultiplier(revealEvents);
@@ -837,7 +884,7 @@
       // local-fallback branch above credits wins directly.
       let credited = false;
       try {
-        const endData = await withRateLimitRetry('end-round', () =>
+        const endData = await pacedRequest('end-round', () =>
           requestEndRound({
             rgsUrl: stateUrlDerived.rgsUrl(),
             sessionID: stateUrlDerived.sessionID(),
@@ -1077,7 +1124,7 @@
       // is never a round we want to resume rather than close.
       if (engineRoundOpen) {
         try {
-          await withRateLimitRetry('end-round (settling previous)', () =>
+          await pacedRequest('end-round (settling previous)', () =>
             requestEndRound({
               rgsUrl: stateUrlDerived.rgsUrl(),
               sessionID: stateUrlDerived.sessionID(),
@@ -1114,9 +1161,9 @@
           allowedBetLevels: stateConfig.betAmountOptions,
         });
       }
-      // Turbo-independent spacing, so autoplay cannot outrun the RGS.
-      await throttlePlay();
-      const data = await withRateLimitRetry('play', () =>
+      // Turbo-independent spacing, so autoplay cannot outrun the RGS. pacedPlay
+      // holds for the bet interval AND the shared inter-call gap before sending.
+      const data = await pacedPlay('play', () =>
         requestBet({
           rgsUrl: stateUrlDerived.rgsUrl(),
           sessionID: stateUrlDerived.sessionID(),
@@ -1316,12 +1363,20 @@
     // Simulate the debit a real /wallet/play call would make, so balance
     // behaves like prod.
     stateBet.balanceAmount -= initialBet;
-    const { createRoundContract } = await import('../game/roundContract');
+    const [{ createRoundContract }, { buildLocalRevealEvents }] = await Promise.all([
+      import('../game/roundContract'),
+      import('../game/localRound'),
+    ]);
     const round = createRoundContract(`${roundSeedData.seed}:${roundSequence}`);
     roundSequence += 1;
     lastRoundId = round.roundId;
     roundSource = roundSeedData.source;
-    revealEvents = buildLocalRevealEvents(round.deck);
+    revealEvents = buildLocalRevealEvents(round.deck, [
+      colorChoice as string,
+      hlChoice as string,
+      ioChoice as string,
+      suitChoice as string,
+    ]);
     engineFinalMultiplier = null; // local round computes its own payout
     revealedCards = [null, null, null, null];
     stageMultipliers = [null, null, null, null];
@@ -1535,11 +1590,13 @@
     // every button. The spacebar path, which isn't a click, sounds its own.
     if (autoRunning) { stopAuto(); return; }
     // Mid-reveal: cut the animation short rather than starting a new round.
-    // cutShortRevealWait() resolves the pause already in flight, so the skip is
-    // immediate instead of waiting out the current step.
+    // Every remaining pause drops to instant via paceMs, and the one already in
+    // flight is re-timed to match - so a slam finishes the round on exactly the
+    // maximum-turbo timeline, never quicker than the player could get by moving
+    // the slider.
     if (canSlam()) {
       slamRequested = true;
-      cutShortRevealWait();
+      collapseRevealWaitToInstant();
       return;
     }
     // Replay mode: pressing the spin button after the round has finished (or
@@ -1720,103 +1777,8 @@
 
 
 
-  function localColorPayouts(remaining: Card[]) {
-    const total = remaining.length;
-    const red = remaining.filter((card) => card.suit === '♥' || card.suit === '♦').length;
-    const black = total - red;
-    return { red: partialMultiplier(red / total, 0), black: partialMultiplier(black / total, 0) };
-  }
-
-  function localHigherLowerPayouts(remaining: Card[], ref: number) {
-    const total = remaining.length;
-    const higher = remaining.filter((card) => rankValue[card.rank] > ref).length;
-    const lower = remaining.filter((card) => rankValue[card.rank] < ref).length;
-    const equal = total - higher - lower;
-    return {
-      higher: partialMultiplier(higher / total, 1),
-      lower: partialMultiplier(lower / total, 1),
-      equal: partialMultiplier(equal / total, 1),
-    };
-  }
-
-  function localInsideOutsidePayouts(remaining: Card[], a: number, b: number) {
-    const total = remaining.length;
-    const minVal = Math.min(a, b);
-    const maxVal = Math.max(a, b);
-    const inside = remaining.filter((card) => rankValue[card.rank] > minVal && rankValue[card.rank] < maxVal).length;
-    const outside = remaining.filter((card) => rankValue[card.rank] < minVal || rankValue[card.rank] > maxVal).length;
-    const equal = total - inside - outside;
-    return {
-      inside: partialMultiplier(inside / total, 2),
-      outside: partialMultiplier(outside / total, 2),
-      equal: partialMultiplier(equal / total, 2),
-    };
-  }
-
-  function localSuitPayouts(remaining: Card[]) {
-    const total = remaining.length;
-    const counts = { heart: 0, diamond: 0, club: 0, spade: 0 };
-    for (const card of remaining) {
-      if (card.suit === '♥') counts.heart += 1;
-      else if (card.suit === '♦') counts.diamond += 1;
-      else if (card.suit === '♣') counts.club += 1;
-      else counts.spade += 1;
-    }
-    return {
-      heart: partialMultiplier(counts.heart / total, 3),
-      diamond: partialMultiplier(counts.diamond / total, 3),
-      club: partialMultiplier(counts.club / total, 3),
-      spade: partialMultiplier(counts.spade / total, 3),
-    };
-  }
-
-  const SUIT_NAME_MAP: Record<string, string> = { '♥': 'heart', '♦': 'diamond', '♣': 'club', '♠': 'spade' };
-
-  function isCorrectGuess(stageIndex: number, choice: string, card: Card, ranks: number[]): boolean {
-    const value = rankValue[card.rank];
-    if (stageIndex === 0) {
-      const color = card.suit === '♥' || card.suit === '♦' ? 'red' : 'black';
-      return choice === color;
-    }
-    if (stageIndex === 1) {
-      const ref = ranks[0];
-      if (value === ref) return choice === 'equal';
-      return choice === (value > ref ? 'higher' : 'lower');
-    }
-    if (stageIndex === 2) {
-      const minVal = Math.min(ranks[0], ranks[1]);
-      const maxVal = Math.max(ranks[0], ranks[1]);
-      if (value === minVal || value === maxVal) return choice === 'equal';
-      return choice === (value > minVal && value < maxVal ? 'inside' : 'outside');
-    }
-    return choice === SUIT_NAME_MAP[card.suit];
-  }
-
-  // Mirrors games/ride_the_bus/gamestate.py:run_spin - draws the same 4
-  // cards from a deterministic local deck and resolves them against the
-  // player's pre-selected choices, exactly like the real math-sdk book does.
-  function buildLocalRevealEvents(deck: Card[]): RevealEvent[] {
-    const drawn = deck.slice(0, 4);
-    const ranks = drawn.map((card) => rankValue[card.rank]);
-    const choices = [colorChoice as string, hlChoice as string, ioChoice as string, suitChoice as string];
-    const stagePayouts = [
-      localColorPayouts(deck.slice(0)),
-      localHigherLowerPayouts(deck.slice(1), ranks[0]),
-      localInsideOutsidePayouts(deck.slice(2), ranks[0], ranks[1]),
-      localSuitPayouts(deck.slice(3)),
-    ] as Record<string, number>[];
-
-    return drawn.map((card, index) => {
-      const choice = choices[index];
-      return {
-        stage: index + 1,
-        card,
-        choice,
-        correct: isCorrectGuess(index, choice, card, ranks),
-        payout: stagePayouts[index][choice],
-      };
-    });
-  }
+  // The DEV-only local dealer lives in game/localRound.ts, imported
+  // dynamically below so it can be dropped from a production build.
 
 </script>
 
@@ -2296,91 +2258,7 @@
   {/if}
 
   {#if openPopup === 'info'}
-    <div class="popup popup-info" role="dialog" aria-label={t('How to play')}>
-      <div class="popup-head"><span>{t('How to Play')}</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label={t('Close')}>✕</button></div>
-      <div class="info-body">
-        <p>{t('Guess your way through four cards:')}</p>
-        <ol>
-          <li>{t('Colour — red or black for card 1.')}</li>
-          <li>{t('Higher / Lower — versus card 1 (or =).')}</li>
-          <li>{t('Inside / Outside — between cards 1 & 2 (or =).')}</li>
-          <li>{t('Suit — the suit of card 4.')}</li>
-        </ol>
-        <p>{t('Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.')}</p>
-
-        <h4 class="info-h">{t('Card order')}</h4>
-        <p>{t('Ace is low and King is high — worth knowing, since plenty of card games play it the other way. Suit never affects rank; only the number counts for Higher / Lower and Inside / Outside.')}</p>
-        <!-- Rendered from the same `ranks` array the game runs on, so it cannot
-             disagree with the real ordering. An ordered list because that is
-             exactly what it is: lowest to highest. -->
-        <ol class="rank-strip">
-          {#each ranks as rank}
-            <li class="rank-chip">{rank}</li>
-          {/each}
-        </ol>
-        <div class="rank-ends" aria-hidden="true">
-          <span>{t('Lowest')}</span>
-          <span>{t('Highest')}</span>
-        </div>
-
-        <h4 class="info-h">{t('Payouts follow the odds')}</h4>
-        <p>{t('Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.')}</p>
-        <p>{t('With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.')}</p>
-        <p>{t('Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.')}</p>
-
-        <h4 class="info-h">{t('If you guess wrong')}</h4>
-        <ul>
-          <li>{t('Card 1 — the round pays nothing.')}</li>
-          <li>{t('Card 2 — you get 0.5× your bet back.')}</li>
-          <li>{t('Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.')}</li>
-        </ul>
-
-        <h4 class="info-h">{t('Full game wins')}</h4>
-        <p>{t('Guess all four cards right and the payout depends on how hard your picks were:')}</p>
-        <ul>
-          <li>{t('No Equal picks — averages 17.3×, up to 317.4×.')}</li>
-          <li>{t('One Equal pick — averages 67.5×, up to 381.9×.')}</li>
-          <li>{t('Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.')}</li>
-        </ul>
-        <p>{t('Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.')}</p>
-
-        <h4 class="info-h">{t('Speed and autoplay')}</h4>
-        <ul>
-          <li>{t('Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.')}</li>
-          <li>{t('Autoplay (the circular arrows) replays the same four guesses for a set number of rounds, or unlimited. The round counter sits on the button while it runs — press the red square to stop, and the round already in play finishes first.')}</li>
-          <li>{t('Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.')}</li>
-          <li>{t('Tap the spacebar to play one round, or hold it to keep spinning until you let go.')}</li>
-        </ul>
-
-        <h4 class="info-h">{t('Controls')}</h4>
-        <ul>
-          <li>{t('Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.')}</li>
-          <li>{t('The speaker button mutes and unmutes the game sounds.')}</li>
-          <li>{t('The i button opens this screen at any time.')}</li>
-          <li>{t('The lightning button adjusts the speed of the card reveal.')}</li>
-          <li>{t('The circular arrow button opens the autoplay settings.')}</li>
-          <li>{t('The sliders button lets you toggle stop-on-full-win for autoplay runs.')}</li>
-        </ul>
-
-        <h4 class="info-h">{t('Game information')}</h4>
-        <p>{t('This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.')}</p>
-        <!-- Required for approval, and required HERE specifically: the rules /
-             information popup must state the RTP and must carry the legal
-             disclaimer, and this popup is what the `i` button opens, so it is
-             reachable at any point during play.
-             The RTP is interpolated from game/config.ts rather than written
-             out, so the figure a player is shown cannot drift from the one the
-             math is actually built and reweighted to. -->
-        <p>
-          {t('Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.').replace('%s', `${(gameConfig.rtp * 100).toFixed(2)}%`)}
-        </p>
-
-        <h4 class="info-h">{t('Disclaimer')}</h4>
-        <p>
-          {t('Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.')}
-        </p>
-      </div>
-    </div>
+    <HowToPlayPopup onclose={() => (openPopup = null)} />
   {/if}
 </div>
 
@@ -2413,7 +2291,11 @@
   @import '../styles/base.css';
   @import '../styles/cards.css';
   @import '../styles/choices.css';
+  /* Board only: the start screen never disables a choice, so these rules would
+     be unused there. */
+  @import '../styles/choice-unavailable.css';
   @import '../styles/control-bar.css';
+  @import '../styles/popup-base.css';
   @import '../styles/popups.css';
   @import '../styles/responsive.css';
 </style>

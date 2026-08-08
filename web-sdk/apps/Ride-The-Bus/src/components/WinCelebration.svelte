@@ -302,6 +302,17 @@
 		advanceTo(segmentIndex + 1);
 	}
 
+	/* The overlay announces itself as a button, so it has to behave like one:
+	   Enter and Space skip and dismiss exactly as a tap does. Without this the
+	   takeover could only be cleared with a pointer, which strands anyone
+	   playing by keyboard until the auto-dismiss timer runs out.
+	   preventDefault stops Space also scrolling the page behind the overlay. */
+	function onKey(event: KeyboardEvent) {
+		if (event.key !== 'Enter' && event.key !== ' ') return;
+		event.preventDefault();
+		onTap();
+	}
+
 	function dismiss() {
 		if (autoTimer) clearTimeout(autoTimer);
 		clearHold();
@@ -373,6 +384,7 @@
 	tabindex="0"
 	aria-label={`${t(props.tier.label)} ${numberToCurrencyString(props.amount)}`}
 	onclick={onTap}
+	onkeydown={onKey}
 >
 	<div class="wc-rays" aria-hidden="true"></div>
 	<div class="wc-glow" aria-hidden="true"></div>

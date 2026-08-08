@@ -1,0 +1,66 @@
+/* The popup shell: the panel itself, its header and its close button.
+ *
+ * Split out of popups.css because two components render popups and Svelte
+ * scopes a stylesheet to whichever component IMPORTS it - so both have to
+ * import their own copy, and each then gets an unused-selector warning for
+ * every rule it does not use. popups.css is nearly all bet-menu, turbo,
+ * autoplay and advanced controls that How to Play has no markup for, which was
+ * 46 warnings on its own.
+ *
+ * What lives here is only what BOTH use, so neither reports anything:
+ *   - Game.svelte, for the bet / turbo / autoplay / advanced popups
+ *   - HowToPlayPopup.svelte
+ *
+ * .popup-backdrop is deliberately NOT here: Game.svelte renders the backdrop
+ * for every popup including this one, so How to Play never uses it.
+ *
+ * Sizes are multiples of --ui-bar so the box and its text scale together with
+ * the window, instead of the box shrinking around fixed-size text.
+ */
+.popup {
+  position: fixed;
+  z-index: 50;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(calc(var(--ui-bar) * 32.73), calc(100vw - calc(var(--ui-bar) * 2.55)));
+  max-height: calc(100vh - calc(var(--ui-bar) * 3.64));
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: calc(var(--ui-bar) * 1.27);
+  border-radius: calc(var(--ui-bar) * 1.27);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #141d2a;
+  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.65);
+  color: #dfe8f2;
+}
+
+.popup-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: calc(var(--ui-bar) * 1.45);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: #4c9ffe;
+}
+
+.popup-close {
+  width: calc(var(--ui-bar) * 2.36);
+  height: calc(var(--ui-bar) * 2.36);
+  padding: 0;
+  border: none;
+  border-radius: calc(var(--ui-bar) * 0.64);
+  background: rgba(255, 255, 255, 0.08);
+  color: #cfe0f0;
+  font-size: calc(var(--ui-bar) * 1.09);
+  cursor: pointer;
+  text-transform: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow 0.12s, color 0.12s;
+}
+
+.popup-close:hover { color: #fff; box-shadow: 0 0 10px rgba(76, 159, 254, 0.5); }
