@@ -167,7 +167,7 @@ describe('every locale covers every English key', () => {
 
 		test(`${lang}: no untranslated values`, () => {
 			const untranslated = englishKeys.filter(
-				(k) => messages[k] === en[k] && !IDENTICAL_TO_ENGLISH_OK.has(`${lang}:${k}`),
+				(k) => messages[k] === (en as Record<string, string>)[k] && !IDENTICAL_TO_ENGLISH_OK.has(`${lang}:${k}`),
 			);
 			assert.deepEqual(
 				untranslated,
