@@ -549,6 +549,14 @@
 	text-transform: capitalize;
 }
 
+/* The drawn play triangle, sized to sit on the text baseline beside the
+   label - it replaces a U+25B6 that rendered as a colour emoji on phones. */
+.ss-play-tri {
+	width: calc(var(--ss) * 1.1);
+	height: calc(var(--ss) * 1.3);
+	margin-left: calc(var(--ss) * 0.5);
+}
+
 .ss-play-btn {
 	margin-top: calc(var(--ui) * 1);
 	padding: calc(var(--ui) * 1.2) calc(var(--ui) * 3.5);

@@ -4,6 +4,7 @@
 	import { t } from '../i18n/i18nDerived';
 	import gameConfig from '../game/config';
 	import ChoiceIcon from './ChoiceIcon.svelte';
+	import SuitIcon from './SuitIcon.svelte';
 
 	/**
 	 * The how-to-play picks behave like the real ones on the board.
@@ -127,7 +128,7 @@
 {#snippet card(rank: string, suit: string, red: boolean)}
 	<span class="ss-card-mini" class:red>
 		<span class="ss-card-rank">{rank}</span>
-		<span class="ss-card-suit">{suit}</span>
+		<span class="ss-card-suit"><SuitIcon {suit} /></span>
 	</span>
 {/snippet}
 
@@ -284,7 +285,7 @@
 								class:selected={locked.suit === suit} aria-label={t(SUIT_GLYPH[suit].label)}
 								onmouseenter={() => (hover.suit = suit)} onfocus={() => (hover.suit = suit)}
 								onclick={() => lock('suit', suit)}
-							>{SUIT_GLYPH[suit].glyph}</button>
+							><SuitIcon {suit} /></button>
 						{/each}
 					</div>
 
@@ -356,7 +357,10 @@
 				{/if}
 
 				<button class="ss-play-btn" onclick={props.onplay}>
-					{t('Play')} ▶
+					{t('Play')}
+					<svg class="ss-play-tri" viewBox="0 0 12 14" fill="currentColor" aria-hidden="true">
+						<path d="M1 1.2 11 7 1 12.8Z" />
+					</svg>
 				</button>
 			</div>
 		</div>

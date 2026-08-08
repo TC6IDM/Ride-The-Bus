@@ -11,6 +11,10 @@
   // The guess icons live in one component so the board and the start screen's
   // how-to-play cannot drift apart - see ChoiceIcon.svelte.
   import ChoiceIcon from './ChoiceIcon.svelte';
+  // Suits and the mute button are drawn, not typed: see SuitIcon.svelte for why
+  // a font glyph was the wrong tool for the most important mark in a card game.
+  import SuitIcon from './SuitIcon.svelte';
+  import SoundIcon from './SoundIcon.svelte';
   import WinCelebration from './WinCelebration.svelte';
   import { autoHoldMs, winTierFor, type WinTier } from '../game/winTiers';
   // Of the five documented RGS endpoints this game uses three: authenticate
@@ -2126,7 +2130,7 @@
                   {#if card}
                     <div class="card-face" class:red-card={card.suit === '♥' || card.suit === '♦'} class:black-card={card.suit === '♠' || card.suit === '♣'}>
                       <div class="rank top">{card.rank}</div>
-                      <div class="suit center">{card.suit}</div>
+                      <div class="suit center"><SuitIcon suit={card.suit} /></div>
                       <div class="rank bottom">{card.rank}</div>
                     </div>
                   {/if}
@@ -2206,10 +2210,10 @@
       <div class="choice-column">
         <span class="choice-label">{t('Suit')}</span>
         <div class="choice-square suit-square" role="group" aria-label={t('Pick a suit')}>
-          <button type="button" class="quad-btn red-suit" class:selected={suitChoice === 'heart'} onclick={() => setSuitChoice('heart')} aria-label={t('Heart')}>♥</button>
-          <button type="button" class="quad-btn" class:selected={suitChoice === 'spade'} onclick={() => setSuitChoice('spade')} aria-label={t('Spade')}>♠</button>
-          <button type="button" class="quad-btn" class:selected={suitChoice === 'club'} onclick={() => setSuitChoice('club')} aria-label={t('Club')}>♣</button>
-          <button type="button" class="quad-btn red-suit" class:selected={suitChoice === 'diamond'} onclick={() => setSuitChoice('diamond')} aria-label={t('Diamond')}>♦</button>
+          <button type="button" class="quad-btn red-suit" class:selected={suitChoice === 'heart'} onclick={() => setSuitChoice('heart')} aria-label={t('Heart')}><SuitIcon suit="heart" /></button>
+          <button type="button" class="quad-btn" class:selected={suitChoice === 'spade'} onclick={() => setSuitChoice('spade')} aria-label={t('Spade')}><SuitIcon suit="spade" /></button>
+          <button type="button" class="quad-btn" class:selected={suitChoice === 'club'} onclick={() => setSuitChoice('club')} aria-label={t('Club')}><SuitIcon suit="club" /></button>
+          <button type="button" class="quad-btn red-suit" class:selected={suitChoice === 'diamond'} onclick={() => setSuitChoice('diamond')} aria-label={t('Diamond')}><SuitIcon suit="diamond" /></button>
         </div>
       </div>
     </div>
@@ -2229,7 +2233,7 @@
 
     <div class="cb-panel cb-panel-light">
       <button class="cb-icon" onclick={toggleMuted} aria-pressed={muted} aria-label={muted ? t('Unmute') : t('Mute')}>
-        <span class="cb-glyph">{muted ? '🔇' : '🔊'}</span>
+        <SoundIcon {muted} />
       </button>
       <button class="cb-icon" class:active={openPopup === 'info'} onclick={() => togglePopup('info')} aria-label={t('How to play')}>
         <span class="cb-glyph cb-info-i">i</span>
