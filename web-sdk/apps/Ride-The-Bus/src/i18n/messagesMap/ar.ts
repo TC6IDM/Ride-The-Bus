@@ -181,4 +181,13 @@ export default {
 	'Tap to skip': 'اضغط للتخطي',
 	'Skip win animations on autoplay': 'تخطي مؤثرات الفوز أثناء اللعب التلقائي',
 	'Skip big win animations during autoplay': 'تخطي مؤثرات الفوز الكبير أثناء اللعب التلقائي',
+	'Guess the color of card 1: red or black.': 'خمّن لون البطاقة الأولى: أحمر أم أسود.',
+	'Guess whether card 2 is higher or lower than card 1, or equal to it.':
+		'خمّن ما إذا كانت البطاقة الثانية أعلى أم أقل من الأولى، أو مساوية لها.',
+	'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either of the first 2 cards. If you pick Equal on step 2, Inside becomes impossible: nothing can fall between two cards of the same rank.':
+		'خمّن ما إذا كانت البطاقة الثالثة تقع بين البطاقتين الأولى والثانية، أو خارجهما، أو مساوية لإحدى البطاقتين الأوليين. إذا اخترت متساوٍ في الخطوة 2، يصبح داخل مستحيلاً: لا شيء يقع بين بطاقتين لهما القيمة نفسها.',
+	'Guess the suit of card 4: hearts, diamonds, clubs or spades.':
+		'خمّن نوع البطاقة الرابعة: قلوب أو ديناري أو سباتي أو بستوني.',
+	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
+		'اخترت متساوٍ، لذا فالبطاقتان الأولى والثانية لهما القيمة نفسها. لا شيء يقع بينهما، لذلك لا يمكن لـ داخل أن يفوز.',
 };

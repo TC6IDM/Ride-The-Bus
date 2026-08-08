@@ -178,4 +178,13 @@ export default {
 	'Tap to skip': 'छोड़ने के लिए टैप करें',
 	'Skip win animations on autoplay': 'ऑटोप्ले पर जीत एनिमेशन छोड़ें',
 	'Skip big win animations during autoplay': 'ऑटोप्ले के दौरान बड़ी जीत के एनिमेशन छोड़ें',
+	'Guess the color of card 1: red or black.': 'कार्ड 1 का रंग बताएं: लाल या काला।',
+	'Guess whether card 2 is higher or lower than card 1, or equal to it.':
+		'बताएं कि कार्ड 2 कार्ड 1 से बड़ा है या छोटा, या बराबर।',
+	'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either of the first 2 cards. If you pick Equal on step 2, Inside becomes impossible: nothing can fall between two cards of the same rank.':
+		'बताएं कि कार्ड 3 कार्ड 1 और 2 के बीच आता है, उनके बाहर, या पहले दो में से किसी एक के बराबर। यदि आप चरण 2 में बराबर चुनते हैं, तो अंदर असंभव हो जाता है: एक ही रैंक के दो कार्डों के बीच कुछ नहीं आ सकता।',
+	'Guess the suit of card 4: hearts, diamonds, clubs or spades.':
+		'कार्ड 4 का सूट बताएं: पान, ईंट, चिड़ी या हुकुम।',
+	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
+		'आपने बराबर चुना, इसलिए कार्ड 1 और 2 की रैंक समान है। उनके बीच कुछ नहीं आ सकता, इसलिए अंदर जीत नहीं सकता।',
 };

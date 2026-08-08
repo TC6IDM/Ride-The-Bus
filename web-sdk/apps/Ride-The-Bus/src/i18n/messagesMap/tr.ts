@@ -182,4 +182,13 @@ export default {
 	'Skip win animations on autoplay': 'Otomatik oyunda kazanç animasyonlarını atla',
 	'Skip big win animations during autoplay':
 		'Otomatik oyun sırasında büyük kazanç animasyonlarını atla',
+	'Guess the color of card 1: red or black.': '1. kartın rengini tahmin edin: kırmızı mı siyah mı.',
+	'Guess whether card 2 is higher or lower than card 1, or equal to it.':
+		'2. kartın 1. karttan yüksek mi alçak mı, yoksa eşit mi olduğunu tahmin edin.',
+	'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either of the first 2 cards. If you pick Equal on step 2, Inside becomes impossible: nothing can fall between two cards of the same rank.':
+		'3. kartın 1. ve 2. kartların arasına mı, dışına mı düşeceğini ya da ilk iki karttan birine eşit mi olacağını tahmin edin. 2. adımda Eşit seçerseniz İçeride imkânsız hale gelir: aynı değerdeki iki kartın arasına hiçbir şey giremez.',
+	'Guess the suit of card 4: hearts, diamonds, clubs or spades.':
+		'4. kartın türünü tahmin edin: kupa, karo, sinek veya maça.',
+	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
+		'Eşit seçtiniz, yani 1. ve 2. kartlar aynı değerde. Aralarına hiçbir şey giremez, bu yüzden İçeride kazanamaz.',
 };

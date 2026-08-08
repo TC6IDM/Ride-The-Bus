@@ -184,4 +184,13 @@ export default {
 	'Skip win animations on autoplay': 'Passer les animations de gain en jeu automatique',
 	'Skip big win animations during autoplay':
 		'Passer les animations de gros gains pendant le jeu automatique',
+	'Guess the color of card 1: red or black.': 'Devinez la couleur de la carte 1 : rouge ou noir.',
+	'Guess whether card 2 is higher or lower than card 1, or equal to it.':
+		'Devinez si la carte 2 est plus haute ou plus basse que la carte 1, ou égale.',
+	'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either of the first 2 cards. If you pick Equal on step 2, Inside becomes impossible: nothing can fall between two cards of the same rank.':
+		"Devinez si la carte 3 tombe entre les cartes 1 et 2, en dehors, ou égale l'une des deux premières. Si vous choisissez Égal à l'étape 2, Intérieur devient impossible : rien ne peut tomber entre deux cartes de même valeur.",
+	'Guess the suit of card 4: hearts, diamonds, clubs or spades.':
+		'Devinez l’enseigne de la carte 4 : cœur, carreau, trèfle ou pique.',
+	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
+		'Vous avez choisi Égal, donc les cartes 1 et 2 ont la même valeur. Rien ne peut tomber entre elles, Intérieur ne peut donc pas gagner.',
 };

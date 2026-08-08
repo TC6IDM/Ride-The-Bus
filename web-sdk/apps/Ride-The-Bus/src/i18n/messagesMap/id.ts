@@ -184,4 +184,13 @@ export default {
 	'Skip win animations on autoplay': 'Lewati animasi kemenangan saat putar otomatis',
 	'Skip big win animations during autoplay':
 		'Lewati animasi kemenangan besar selama putar otomatis',
+	'Guess the color of card 1: red or black.': 'Tebak warna kartu 1: merah atau hitam.',
+	'Guess whether card 2 is higher or lower than card 1, or equal to it.':
+		'Tebak apakah kartu 2 lebih tinggi atau lebih rendah dari kartu 1, atau sama.',
+	'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either of the first 2 cards. If you pick Equal on step 2, Inside becomes impossible: nothing can fall between two cards of the same rank.':
+		'Tebak apakah kartu 3 jatuh di antara kartu 1 dan 2, di luarnya, atau sama dengan salah satu dari dua kartu pertama. Jika Anda memilih Sama di langkah 2, Dalam menjadi mustahil: tidak ada yang bisa jatuh di antara dua kartu bernilai sama.',
+	'Guess the suit of card 4: hearts, diamonds, clubs or spades.':
+		'Tebak jenis kartu 4: hati, wajik, keriting, atau sekop.',
+	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
+		'Anda memilih Sama, jadi kartu 1 dan 2 bernilai sama. Tidak ada yang bisa jatuh di antaranya, sehingga Dalam tidak bisa menang.',
 };

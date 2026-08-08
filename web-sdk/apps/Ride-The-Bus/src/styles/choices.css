@@ -1,5 +1,15 @@
 /* The four guess selectors (colour, higher/lower, inside/outside, suit) -
-   split squares, the small "=" buttons, and their selected states. */
+   split squares, the small "=" buttons, and their selected states.
+
+   The ICON sizes are deliberately not here. They used to be, and they silently
+   stopped applying the moment the SVGs moved into ChoiceIcon.svelte: Svelte
+   scopes a stylesheet to the component that imports it, and a child component's
+   elements do not carry the parent's scope class, so `.hl-icon` compiled to
+   `.hl-icon.svelte-<parent>` and matched nothing. The SVGs then rendered at
+   their intrinsic size and swallowed their squares whole. They are styled
+   inside ChoiceIcon.svelte instead, off the same --ui this file uses - custom
+   properties inherit through the DOM, so a component boundary does not break
+   them the way a scoped selector does. */
 
 /* Guesses stay on screen between rounds; lock them (no clicks, dimmed) while
    a round is revealing or an auto run is live. */
@@ -17,7 +27,11 @@
 /* Pin the column to the square's width. Otherwise the longest labels
    ("INSIDE / OUTSIDE") are wider than their square and drive the column, which
    pushes the four columns past the viewport and wraps the row on phones. */
+/* position:relative so the "why is Inside off" box can be placed against the
+   column. It cannot live inside .choice-square - that is overflow:hidden and
+   would clip it to the rounded box. */
 .choice-column {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -81,9 +95,9 @@
    brightness and ring weight - hovering the already-selected half must not
    look like a different state. `.choice-row.locked` sets pointer-events:none,
    so nothing highlights while a round is playing. */
-.half-btn:hover:not(.selected),
-.third-btn:hover:not(.selected),
-.quad-btn:hover:not(.selected) {
+.half-btn:hover:not(.selected):not([aria-disabled='true']),
+.third-btn:hover:not(.selected):not([aria-disabled='true']),
+.quad-btn:hover:not(.selected):not([aria-disabled='true']) {
   filter: brightness(1.16);
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.6), inset 0 0 12px rgba(255, 255, 255, 0.22);
 }
@@ -97,9 +111,9 @@
 
 /* Keep the hover cue while the button is held down, so a click doesn't flash
    back to the unhovered look mid-press. */
-.half-btn:active:not(:disabled),
-.third-btn:active:not(:disabled),
-.quad-btn:active:not(:disabled) {
+.half-btn:active:not(:disabled):not([aria-disabled='true']),
+.third-btn:active:not(:disabled):not([aria-disabled='true']),
+.quad-btn:active:not(:disabled):not([aria-disabled='true']) {
   filter: brightness(1.34);
 }
 
@@ -116,7 +130,13 @@
 .quad-btn:disabled,
 .half-btn:disabled:hover,
 .third-btn:disabled:hover,
-.quad-btn:disabled:hover {
+.quad-btn:disabled:hover,
+.half-btn[aria-disabled='true'],
+.third-btn[aria-disabled='true'],
+.quad-btn[aria-disabled='true'],
+.half-btn[aria-disabled='true']:hover,
+.third-btn[aria-disabled='true']:hover,
+.quad-btn[aria-disabled='true']:hover {
   cursor: not-allowed;
   box-shadow: none;
 }
@@ -129,7 +149,10 @@
    the option is off. */
 .half-btn:disabled::before,
 .third-btn:disabled::before,
-.quad-btn:disabled::before {
+.quad-btn:disabled::before,
+.half-btn[aria-disabled='true']::before,
+.third-btn[aria-disabled='true']::before,
+.quad-btn[aria-disabled='true']::before {
   content: '';
   position: absolute;
   left: 16%;
@@ -151,7 +174,10 @@
    whole button reads as one knocked-back thing. */
 .half-btn:disabled::after,
 .third-btn:disabled::after,
-.quad-btn:disabled::after {
+.quad-btn:disabled::after,
+.half-btn[aria-disabled='true']::after,
+.third-btn[aria-disabled='true']::after,
+.quad-btn[aria-disabled='true']::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -218,14 +244,6 @@
   grid-template-rows: 1fr 1fr;
 }
 
-/* Sized to the typed triangle it replaces (~0.72em of the 22.4px choice font),
-   so the square looks unchanged - only the font dependency goes away. */
-.hl-icon {
-  display: block;
-  width: calc(var(--ui) * 1.97);
-  height: calc(var(--ui) * 1.64);
-}
-
 .higher-third {
   background: #2ecc71;
 }
@@ -238,15 +256,6 @@
 .io-square {
   display: grid;
   grid-template-columns: 1fr 1fr;
-}
-
-/* The drawn converge/diverge arrows (Game.svelte iconInside / iconOutside).
-   Kept narrower than the half it sits in so it clears the yellow "equal"
-   button, which is centred on the seam and overlaps both halves. */
-.io-icon {
-  display: block;
-  width: calc(var(--ui) * 2.55); /* 28px */
-  height: calc(var(--ui) * 2.55);
 }
 
 .inside-half {
@@ -281,14 +290,6 @@
   transition: box-shadow 0.15s, transform 0.15s, filter 0.15s;
 }
 
-/* The drawn "=", sized to the ~11x5px ink of the glyph it replaces so the
-   button looks unchanged apart from finally being centred. */
-.eq-icon {
-  display: block;
-  width: calc(var(--ui) * 1.0);
-  height: calc(var(--ui) * 0.5);
-}
-
 /* Lighter than .selected, and a smaller lift, for the same reason as the
    halves above: hover previews the selection without imitating it. */
 .equal-btn:hover:not(.selected) {
@@ -315,4 +316,32 @@
 
 .quad-btn.red-suit {
   color: #e74c3c;
+}
+
+/* ---- Why a pick is unavailable -------------------------------------------
+   Only ever shown for Inside after Equal. The button carries aria-disabled
+   rather than disabled precisely so it still receives hover and focus and can
+   raise this - a `disabled` button fires no mouse events at all, which is why
+   the old native `title` never appeared either. */
+.choice-tip {
+  position: absolute;
+  top: calc(100% + var(--ui) * 0.5);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  width: max(calc(var(--ui) * 20), 160px);
+  max-width: 60vw;
+  padding: calc(var(--ui) * 0.8) calc(var(--ui) * 1);
+  border-radius: calc(var(--ui) * 0.6);
+  background: #0b1a09;
+  border: 1px solid #6b8a58;
+  color: #e8e0d0;
+  font-size: calc(var(--ui) * 1.05);
+  font-weight: 500;
+  line-height: 1.35;
+  text-align: center;
+  text-transform: none;
+  letter-spacing: 0;
+  box-shadow: 0 calc(var(--ui) * 0.6) calc(var(--ui) * 1.4) rgba(0, 0, 0, 0.55);
+  pointer-events: none;
 }

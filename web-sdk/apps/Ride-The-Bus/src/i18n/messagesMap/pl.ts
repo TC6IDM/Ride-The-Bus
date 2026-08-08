@@ -183,4 +183,13 @@ export default {
 	'Skip win animations on autoplay': 'Pomijaj animacje wygranych w autoodtwarzaniu',
 	'Skip big win animations during autoplay':
 		'Pomijaj animacje dużych wygranych podczas autoodtwarzania',
+	'Guess the color of card 1: red or black.': 'Zgadnij kolor karty 1: czerwony czy czarny.',
+	'Guess whether card 2 is higher or lower than card 1, or equal to it.':
+		'Zgadnij, czy karta 2 jest wyższa czy niższa od karty 1, albo równa jej.',
+	'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either of the first 2 cards. If you pick Equal on step 2, Inside becomes impossible: nothing can fall between two cards of the same rank.':
+		'Zgadnij, czy karta 3 wypada między kartami 1 i 2, poza nimi, albo równa jednej z dwóch pierwszych. Jeśli w kroku 2 wybierzesz Równe, Wewnątrz staje się niemożliwe: między dwiema kartami tej samej wartości nic się nie zmieści.',
+	'Guess the suit of card 4: hearts, diamonds, clubs or spades.':
+		'Zgadnij kolor karty 4: kier, karo, trefl czy pik.',
+	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
+		'Wybrałeś Równe, więc karty 1 i 2 mają tę samą wartość. Nic nie zmieści się między nimi, więc Wewnątrz nie może wygrać.',
 };

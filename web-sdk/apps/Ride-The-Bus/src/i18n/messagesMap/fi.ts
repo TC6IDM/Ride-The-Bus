@@ -182,4 +182,13 @@ export default {
 	'Skip win animations on autoplay': 'Ohita voittoanimaatiot automaattipelissä',
 	'Skip big win animations during autoplay':
 		'Ohita suurten voittojen animaatiot automaattipelin aikana',
+	'Guess the color of card 1: red or black.': 'Arvaa kortin 1 väri: punainen vai musta.',
+	'Guess whether card 2 is higher or lower than card 1, or equal to it.':
+		'Arvaa, onko kortti 2 korkeampi vai matalampi kuin kortti 1 – vai yhtä suuri.',
+	'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either of the first 2 cards. If you pick Equal on step 2, Inside becomes impossible: nothing can fall between two cards of the same rank.':
+		'Arvaa, osuuko kortti 3 korttien 1 ja 2 väliin, niiden ulkopuolelle, vai yhtä suureksi kuin jompikumpi kahdesta ensimmäisestä. Jos valitset vaiheessa 2 Yhtä suuri, Sisällä muuttuu mahdottomaksi: kahden samanarvoisen kortin väliin ei mahdu mitään.',
+	'Guess the suit of card 4: hearts, diamonds, clubs or spades.':
+		'Arvaa kortin 4 maa: hertta, ruutu, risti vai pata.',
+	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
+		'Valitsit Yhtä suuri, joten korteilla 1 ja 2 on sama arvo. Niiden väliin ei mahdu mitään, joten Sisällä ei voi voittaa.',
 };

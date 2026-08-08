@@ -1,21 +1,43 @@
-import { stateI18nDerived, stateUrlDerived } from 'state-shared';
+import { stateUrlDerived } from 'state-shared';
 
 import { i18nDerived as i18nDerivedUiPixi } from 'components-ui-pixi';
 import { i18nDerived as i18nDerivedUiHtml } from 'components-ui-html';
 
+import messagesMap from './messagesMap';
 import type en from './messagesMap/en';
 import socialMessages from './socialMessages';
 
 /** Every key defined in messagesMap/en.ts — a typo becomes a compile error. */
 export type MessageKey = keyof typeof en;
 
+/** Fallback language, and the one the keys themselves are written in. */
+const DEFAULT_LANG = 'en';
+
 /**
  * Translate one of this game's strings.
  *
- * The SDK's UI packages expose a named accessor per string, which is fine for a
- * handful; this game has ~60, so it uses a single generic lookup keyed by the
- * English text instead. `translate` falls back to the key when a locale has no
- * entry, so an untranslated language still renders readable English.
+ * DELIBERATELY NOT THROUGH LINGUI. The SDK's `stateI18nDerived.translate` calls
+ * `i18n._()`, which expects a COMPILED catalog - Lingui's CLI turns each message
+ * into a function or token array ahead of time. This game's catalogs are plain
+ * TypeScript objects, so Lingui found a raw string, compiled it on the fly, and
+ * logged "Uncompiled message detected!" for every string on every render. A
+ * normal session filled the console with hundreds of them, which is its own
+ * problem for a submission that gets its network and console tab inspected.
+ *
+ * The alternative was adding @lingui/cli, a macro pass and a catalog-compile
+ * step to the build. That is a lot of machinery to look up a string in an object
+ * this game already owns - and none of Lingui's actual features are in play
+ * here: there are no plurals, no genders, and the one runtime value (%s in the
+ * cooldown tooltip) is substituted with .replace() precisely because Lingui's
+ * ICU braces were a problem. So the lookup is done directly.
+ *
+ * Degradation is unchanged: requested language, then English, then the key -
+ * and the key IS the English text, so the worst case is still readable. An
+ * unsupported ?lang= simply misses the map and lands on English, which is what
+ * "invalid language parameters do not break game display" asks for.
+ *
+ * Lingui is still loaded and activated by LoadI18n, and still needed:
+ * `i18n.number()` formats every currency amount off the active locale.
  *
  * When ?social=true (Stake.US), restricted gambling terms are replaced with
  * social-casino equivalents per Stake's prohibited-terms table. The social
@@ -27,13 +49,19 @@ export const t = (key: MessageKey): string => {
 		// Social mode (Stake.US) — English only, with restricted terms replaced.
 		return (socialMessages as Record<string, string>)[key] ?? key;
 	}
-	return stateI18nDerived.translate(key);
+
+	const catalogs = messagesMap as unknown as Record<string, Record<string, string>>;
+	const lang = stateUrlDerived.lang();
+	return catalogs[lang]?.[key] ?? catalogs[DEFAULT_LANG]?.[key] ?? key;
 };
 
 export const i18nDerived = {
 	...i18nDerivedUiPixi,
 	...i18nDerivedUiHtml,
 	t,
-	home: () => stateI18nDerived.translate('HOME'),
-	notTranslated: () => stateI18nDerived.translate('NOT TRANSLATED'),
+	// These two are SDK strings rather than this game's, and nothing here
+	// renders them - kept only so the shape of i18nDerived still matches what
+	// the SDK components expect to find.
+	home: () => t('HOME' as MessageKey),
+	notTranslated: () => 'NOT TRANSLATED',
 };

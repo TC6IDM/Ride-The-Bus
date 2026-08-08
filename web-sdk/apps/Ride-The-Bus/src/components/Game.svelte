@@ -8,6 +8,9 @@
   import { stateBet, stateUrlDerived, stateMeta, stateConfig, stateModal } from 'state-shared';
   import ErrorModal from './ErrorModal.svelte';
   import StartScreen from './StartScreen.svelte';
+  // The guess icons live in one component so the board and the start screen's
+  // how-to-play cannot drift apart - see ChoiceIcon.svelte.
+  import ChoiceIcon from './ChoiceIcon.svelte';
   import WinCelebration from './WinCelebration.svelte';
   import { autoHoldMs, winTierFor, type WinTier } from '../game/winTiers';
   // Of the five documented RGS endpoints this game uses three: authenticate
@@ -29,7 +32,7 @@
   //                  response, which covers every way this game can change it.
   //                  The SDK ships no helper for it at all, which is a fair
   //                  signal it is not expected of a game like this.
-  import { requestBet, requestEndRound } from 'rgs-requests';
+  import { requestBet, requestEndRound, RgsHttpError } from 'rgs-requests';
   import { sound, type PressKind } from '../game/sound';
   import { isCombinationPlayable } from '../game/modes';
   import { gameReady, loaderGone } from '../game/ready.svelte';
@@ -296,10 +299,18 @@
   let celebration = $state<{ tier: WinTier; amount: number; multiplier: number } | null>(null);
   let celebrationResolve: (() => void) | null = null;
 
-  /** Show the takeover and resolve once the player dismisses it. */
-  function showWinCelebration(amount: number, multiplier: number): Promise<void> {
-    const tier = winTierFor(multiplier);
-    if (!tier) return Promise.resolve();
+  /**
+   * Show the takeover and resolve once the player dismisses it.
+   *
+   * Takes the tier the caller already resolved rather than working it out
+   * again. It used to recompute with `winTierFor(multiplier)` - dropping the
+   * fullGameWin argument the caller passed - so a full game win under 10x came
+   * back null here and returned without showing anything. That is exactly the
+   * case the floor exists for: the smallest possible full win is 6.6x, so
+   * landing all four guesses on the least likely-looking round in the game
+   * passed in silence.
+   */
+  function showWinCelebration(tier: WinTier, amount: number, multiplier: number): Promise<void> {
     celebration = { tier, amount, multiplier };
     return new Promise((resolve) => {
       celebrationResolve = resolve;
@@ -526,6 +537,93 @@
   // and rgs_url the game deals from roundContract and never sends a mode at all.
   const insideIsPossible = () => isCombinationPlayable(hlChoice, 'inside');
 
+  /**
+   * Whether the RGS currently has an unsettled round on this session.
+   *
+   * Exists so the defensive end-round in startGameEngineFlow only fires when
+   * there is something to settle. It used to fire before EVERY round, and on a
+   * session with nothing open the RGS answers 400 - so a clean run put one
+   * failed request in the network tab per spin. Stake's frontend checklist has
+   * a line for exactly that ("check the network tab to ensure no errors"), and
+   * the noise also buried the end-round failures that matter.
+   */
+  let engineRoundOpen = false;
+
+  /**
+   * The floor on how often /wallet/play may be sent, INDEPENDENT of turbo.
+   *
+   * Turbo speeds up the card reveal, which is presentation - but at the fast
+   * end a whole round can finish in a few hundred milliseconds, and every round
+   * is one or two RGS calls. That is what earns a 429: the requests are paced
+   * by an animation setting that was never meant to govern network traffic.
+   *
+   * Spacing the plays here means the rate limit is never reached in the first
+   * place, so an autoplay run does not have to survive being throttled - it
+   * simply is not. The reveal still runs at whatever speed turbo asks for; only
+   * the gap before the NEXT bet is held open.
+   *
+   * A manual player never notices this: a normal-speed reveal already takes
+   * longer than the floor, so the wait has elapsed before they can click again.
+   */
+  const MIN_PLAY_INTERVAL_MS = 900;
+  /** Raised if the RGS throttles us anyway - see withRateLimitRetry. */
+  let playFloorMs = MIN_PLAY_INTERVAL_MS;
+  let lastPlayAt = 0;
+
+  /** Hold until enough time has passed since the last bet was sent. */
+  async function throttlePlay() {
+    const elapsed = performance.now() - lastPlayAt;
+    const remaining = playFloorMs - elapsed;
+    if (remaining > 0) await wait(remaining);
+    lastPlayAt = performance.now();
+  }
+
+  /**
+   * Run an RGS call, waiting out a rate limit rather than failing the round.
+   *
+   * The RGS answers 429 when calls come too fast, and autoplay does exactly
+   * that: two requests per round (play, and end-round on a win) with barely a
+   * pause between rounds. A 429 used to surface as an unparseable body, get
+   * treated as a fatal round error, and stop the run - so a long autoplay
+   * reliably died partway through for a reason that was only ever temporary.
+   *
+   * Backs off exponentially and gives up after a few attempts, at which point
+   * the caller's own error handling takes over. Only 429 is retried: a rejected
+   * bet or an expired session will not improve by asking again.
+   */
+  async function withRateLimitRetry<T>(label: string, call: () => Promise<T>): Promise<T> {
+    const ATTEMPTS = 4;
+    let delay = 700;
+    for (let attempt = 1; ; attempt++) {
+      try {
+        return await call();
+      } catch (err) {
+        const rateLimited = err instanceof RgsHttpError && err.isRateLimited;
+        if (!rateLimited || attempt >= ATTEMPTS) throw err;
+        // Being throttled at all means the floor is too low for whatever limit
+        // this session is under, so raise it for the rest of the session. The
+        // run then settles at a rate the RGS accepts instead of repeatedly
+        // walking into the same wall.
+        playFloorMs = Math.min(playFloorMs + 400, 4000);
+        console.warn(
+          `[RideTheBus] ${label} rate limited by the RGS; retrying in ${delay}ms ` +
+            `(attempt ${attempt} of ${ATTEMPTS}, bet spacing now ${playFloorMs}ms)`,
+        );
+        await wait(delay);
+        delay *= 2;
+      }
+    }
+  }
+
+  /**
+   * Pointer or keyboard focus is on the barred Inside button.
+   *
+   * Tracked in state rather than done with CSS :hover because the explanation
+   * has to be rendered outside .choice-square - that box is overflow:hidden, so
+   * anything positioned inside it gets clipped to the rounded square.
+   */
+  let insideBlockedHover = $state(false);
+
   // --- Picking, and un-picking -----------------------------------------------
   // Every choice toggles: clicking the option already selected clears it. There
   // is no other way to undo a guess - the four groups have no "none" button -
@@ -562,6 +660,12 @@
   }
 
   function setIoChoice(next: InsideOutsideChoice) {
+    // Load-bearing, not defensive. The Inside button is marked aria-disabled
+    // rather than disabled, so that it still receives hover and can explain why
+    // it is off - and an aria-disabled button is fully clickable. Without this
+    // the player could select equal + inside, which is the one combination the
+    // math publishes no bet mode for, and the /wallet/play would be rejected.
+    if (!isCombinationPlayable(hlChoice, next)) return;
     ioChoice = toggle(ioChoice, next);
   }
 
@@ -766,7 +870,11 @@
     } else if (!isEngineRound()) {
       // Local-fallback has no server - credit the win locally.
       stateBet.balanceAmount += wonAmount;
-    } else if (wonAmount > 0) {
+    } else if (wonAmount <= 0) {
+      // A zero-payout round auto-closes on the RGS, so there is nothing to
+      // settle and calling end-round would just be a 400.
+      engineRoundOpen = false;
+    } else {
       // A WINNING engine round must be settled with /wallet/end-round: this
       // credits the payout and closes the round. Without it the round stays
       // "active" and the NEXT /wallet/play is rejected with ERR_VAL - which is
@@ -774,16 +882,49 @@
       // (0 payout) auto-close on the RGS, so they need no end-round (that's
       // why consecutive losses kept working). Use the end-round balance as the
       // post-win source of truth.
+      //
+      // The credit MUST land one way or the other. /wallet/play already
+      // debited the stake and set the tracked balance to the post-debit
+      // figure, so if end-round neither returns a usable balance nor throws
+      // somewhere we notice, the win is simply never added back. The tracked
+      // balance then only ever falls - a stake every round, a credit never -
+      // and after enough rounds it drops under the bet, betIsValid() goes
+      // false and the autoplay loop stops for "insufficient funds" while the
+      // real balance is fine. That failure is invisible locally, because the
+      // local-fallback branch above credits wins directly.
+      let credited = false;
       try {
-        const endData = await requestEndRound({
-          rgsUrl: stateUrlDerived.rgsUrl(),
-          sessionID: stateUrlDerived.sessionID(),
-        });
-        if ((endData as any)?.balance?.amount !== undefined) {
-          stateBet.balanceAmount = (endData as any).balance.amount / API_AMOUNT_MULTIPLIER;
+        const endData = await withRateLimitRetry('end-round', () =>
+          requestEndRound({
+            rgsUrl: stateUrlDerived.rgsUrl(),
+            sessionID: stateUrlDerived.sessionID(),
+          }),
+        );
+        const amount = (endData as any)?.balance?.amount;
+        // Checked as a finite number, not `!== undefined`. That older guard let
+        // null through, and `null / 1_000_000` is 0 - so a response carrying
+        // `balance: { amount: null }` zeroed the balance outright and killed the
+        // run on the very next affordability check. A string would have given
+        // NaN, which compares false against everything and is worse again.
+        if (typeof amount === 'number' && Number.isFinite(amount)) {
+          stateBet.balanceAmount = amount / API_AMOUNT_MULTIPLIER;
+          credited = true;
         }
+        // Settled, whatever the body looked like - the call came back without
+        // throwing, so the round is closed.
+        engineRoundOpen = false;
       } catch (err) {
+        // Still open. The defensive settle at the top of the next round will
+        // retry it, which is the case that guard exists for.
         console.error('end-round failed', err);
+      }
+      if (!credited) {
+        // Fall back to the arithmetic the RGS would have done. The server is
+        // still the authority - the next /wallet/play overwrites this with its
+        // own figure - but until then the tracked balance stays honest instead
+        // of silently missing a payout.
+        console.warn('[RideTheBus] end-round returned no usable balance; crediting the win locally');
+        stateBet.balanceAmount += wonAmount;
       }
     }
     gameState = wonAmount > 0 ? 'won' : 'lost';
@@ -818,7 +959,7 @@
     // the auto loop awaits runRound, so the run pauses without the loop needing
     // to know the takeover exists.
     if (celebrationTier) {
-      await showWinCelebration(wonAmount, lastWinMultiplier);
+      await showWinCelebration(celebrationTier, wonAmount, lastWinMultiplier);
     }
   }
 
@@ -938,6 +1079,9 @@
     if (!bet?.state || !bet.active) return;
     resumeStarted = true;
     resumeInProgress = true;
+    // authenticate only parks a round here when it is still active, so the RGS
+    // has one open and the defensive settle should be allowed to run.
+    engineRoundOpen = true;
 
     // Put the guess squares back to the combination the round was bought with,
     // so the board the player returns to matches what they actually bet on.
@@ -984,16 +1128,24 @@
       // /wallet/play with ERR_VAL - which is why that error cleared on a page
       // refresh (a refresh starts a fresh session). Ending it here lets the
       // game self-heal on the next Start instead of needing a manual refresh.
-      // Harmless when there's nothing open (the RGS just no-ops / errors, which
-      // we swallow). This game is stateless, so there's never a round we want
-      // to resume rather than close.
-      try {
-        await requestEndRound({
-          rgsUrl: stateUrlDerived.rgsUrl(),
-          sessionID: stateUrlDerived.sessionID(),
-        });
-      } catch {
-        /* no open round to settle - fine */
+      // Gated on engineRoundOpen. Firing it unconditionally - which is what
+      // this did - meant a 400 from the RGS before every single spin, because
+      // there is normally nothing to settle. This game is stateless, so there
+      // is never a round we want to resume rather than close.
+      if (engineRoundOpen) {
+        try {
+          await withRateLimitRetry('end-round (settling previous)', () =>
+            requestEndRound({
+              rgsUrl: stateUrlDerived.rgsUrl(),
+              sessionID: stateUrlDerived.sessionID(),
+            }),
+          );
+          engineRoundOpen = false;
+        } catch (err) {
+          // Leave the flag set: the round is still open, and the play below
+          // will tell us plainly if that is a problem.
+          console.warn('[RideTheBus] could not settle the previous round', err);
+        }
       }
 
       const mode = `${colorChoice}_${hlChoice}_${ioChoice}_${suitChoice}`;
@@ -1019,13 +1171,17 @@
           allowedBetLevels: stateConfig.betAmountOptions,
         });
       }
-      const data = await requestBet({
-        rgsUrl: stateUrlDerived.rgsUrl(),
-        sessionID: stateUrlDerived.sessionID(),
-        currency: stateBet.currency || 'USD',
-        mode,
-        amount: initialBet,
-      });
+      // Turbo-independent spacing, so autoplay cannot outrun the RGS.
+      await throttlePlay();
+      const data = await withRateLimitRetry('play', () =>
+        requestBet({
+          rgsUrl: stateUrlDerived.rgsUrl(),
+          sessionID: stateUrlDerived.sessionID(),
+          currency: stateBet.currency || 'USD',
+          mode,
+          amount: initialBet,
+        }),
+      );
       if (import.meta.env.DEV) console.log('[RideTheBus] /wallet/play response:', data);
 
       // The RGS returns a failure in the body (status.statusCode !== SUCCESS,
@@ -1041,9 +1197,14 @@
         throw new Error(`RGS rejected play (${statusCode ?? 'error'})${detail ? `: ${detail}` : ''}`);
       }
 
-      if (data?.balance?.amount !== undefined) {
-        stateBet.balanceAmount = data.balance.amount / API_AMOUNT_MULTIPLIER;
+      // Same finite-number check as the end-round credit below, and for the
+      // same reason: `!== undefined` accepts null, and null / 1_000_000 is 0.
+      const playBalance = (data as any)?.balance?.amount;
+      if (typeof playBalance === 'number' && Number.isFinite(playBalance)) {
+        stateBet.balanceAmount = playBalance / API_AMOUNT_MULTIPLIER;
       }
+      // The RGS now holds an open round for this session.
+      engineRoundOpen = true;
 
       await animateRoundFromEvents(
         data?.round?.state,
@@ -1072,7 +1233,7 @@
   // first iteration would place a second bet on top of the still-running tap
   // round. Callers that arrive mid-round get the in-flight promise instead,
   // which is exactly the "wait for it, then carry on" the auto loop wants.
-  let roundInFlight: Promise<void> | null = null;
+  let roundInFlight: Promise<boolean> | null = null;
   // True while a settled round is being held open to satisfy the regulator's
   // minimum round duration. Feeds spinDisabled so the button stays dead.
   let roundGateHeld = $state(false);
@@ -1085,20 +1246,20 @@
     const s = jurisdiction.minimumRoundDurationMs() / 1000;
     return Number.isInteger(s) ? String(s) : s.toFixed(1);
   };
-  function runRound(): Promise<void> {
+  function runRound(): Promise<boolean> {
     if (roundInFlight) return roundInFlight;
     const started = performance.now();
     roundInFlight = playRound()
-      .then(async () => {
+      .then(async (played) => {
         // Enforce jurisdiction.minimumRoundDuration. Deliberately applied
         // AFTER the result is on screen rather than by slowing the reveal:
         // the rule exists so a player can register the outcome, so padding
         // the gap before the next spin is what it actually asks for. Covers
         // manual and autoplay alike, since the auto loop awaits runRound.
         const min = jurisdiction.minimumRoundDurationMs();
-        if (min <= 0) return;
+        if (min <= 0) return played;
         const remaining = min - (performance.now() - started);
-        if (remaining <= 0) return;
+        if (remaining <= 0) return played;
         roundGateHeld = true;
         cooldownProgress = 0;
         // Drive the ring off the clock rather than a CSS transition, so it
@@ -1115,6 +1276,7 @@
           cooldownProgress = 0;
           roundGateHeld = false;
         }
+        return played;
       })
       .finally(() => {
         roundInFlight = null;
@@ -1171,9 +1333,18 @@
     introPhase = 'start';
   });
 
-  async function playRound() {
+  /**
+   * Play one round. Returns false when it REFUSED to play.
+   *
+   * That distinction is what the auto loop needs. This used to return void, so
+   * a refusal was indistinguishable from a completed round: the loop counted it
+   * as played, decremented the counter and went round again, silently burning
+   * the remaining spins in a fraction of a second. From the player's side an
+   * autoplay run just ended early for no visible reason.
+   */
+  async function playRound(): Promise<boolean> {
     // The Start button is disabled unless these hold, but guard anyway.
-    if (!betIsValid() || !allChoicesMade()) return;
+    if (!betIsValid() || !allChoicesMade()) return false;
     roundError = false;
     hasPlayed = true;
 
@@ -1186,7 +1357,7 @@
 
     if (roundSeedData.source === 'engine-auth' || roundSeedData.source === 'engine-replay') {
       await startGameEngineFlow(roundSeedData);
-      return;
+      return true;
     }
 
     // Local deterministic fallback - DEV ONLY. resolveRoundSeed already refuses
@@ -1216,6 +1387,7 @@
     wonAmount = 0;
     gameState = 'playing';
     await playRevealSequence();
+    return true;
   }
 
   // Auto play: loop the single-bet round with the player's locked-in guesses
@@ -1250,12 +1422,18 @@
       while ((hold ? spaceHoldRunning : autoRemaining > 0) && !autoStopRequested) {
         // Bet this round's amount (advanced strategy may have grown / reset it).
         betInput = String(nextBet);
-        // Stop if the next bet is no longer affordable (prod: server balance;
-        // local: the debited fallback balance) - the same guard the SDK's
-        // autobet uses (createIntermediateMachineAutoBet.ts:checkInsufficientFunds).
-        if (betValue() > stateBet.balanceAmount + 1e-9) break;
+        // Affordability and limits, asked of betIsValid rather than re-derived.
+        // This used to be its own `betValue() > balance + 1e-9` comparison,
+        // which disagreed with betIsValid in two ways: betIsValid has no
+        // epsilon, and it also checks minBet/maxBet, which this did not. Either
+        // gap let the loop start a round that playRound then refused - and a
+        // refusal was silent, so the counter kept ticking down and the run
+        // appeared to stop early.
+        if (!betIsValid()) break;
 
-        await runRound();
+        const played = await runRound();
+        // A round that refused to play must not count as a spin.
+        if (!played) break;
         // Bail on a placement/settlement error rather than repeating it, and
         // honour a Stop pressed during the round (the in-flight bet finished).
         if (roundError || autoStopRequested) break;
@@ -1744,27 +1922,11 @@
 
   <!-- Inside: the card lands BETWEEN the two bounds, so the arrows converge. -->
   {#snippet iconInside()}
-    <svg class="io-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M2.6 5v14" />
-      <path d="M21.4 5v14" />
-      <path d="M6 12h4.4" />
-      <path d="M8.2 9.6 10.6 12l-2.4 2.4" />
-      <path d="M18 12h-4.4" />
-      <path d="M15.8 9.6 13.4 12l2.4 2.4" />
-    </svg>
+    <ChoiceIcon name="inside" />
   {/snippet}
 
-  <!-- Outside: the card lands BEYOND the bounds, so the arrows diverge. Same
-       parts as Inside, mirrored - the pair has to read as opposites. -->
   {#snippet iconOutside()}
-    <svg class="io-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M10.2 5v14" />
-      <path d="M13.8 5v14" />
-      <path d="M7.6 12H3.2" />
-      <path d="M5.4 9.6 3 12l2.4 2.4" />
-      <path d="M16.4 12h4.4" />
-      <path d="M18.6 9.6 21 12l-2.4 2.4" />
-    </svg>
+    <ChoiceIcon name="outside" />
   {/snippet}
 
   <!-- Lemniscate: two symmetric loops crossing at the centre. The viewBox hugs
@@ -1793,28 +1955,15 @@
     </svg>
   {/snippet}
 
-  <!-- Higher / Lower. Solid triangles, matching the typed U+25B2/U+25BC they
-       replace - a filled wedge reads as a value direction where the stepper's
-       open chevron reads as a nudge, so the two stay deliberately different. -->
   {#snippet iconTriangleUp()}
-    <svg class="hl-icon" viewBox="0 0 24 20" fill="currentColor" aria-hidden="true">
-      <path d="M12 1.6 23 18.4H1Z" />
-    </svg>
+    <ChoiceIcon name="triangleUp" />
   {/snippet}
   {#snippet iconTriangleDown()}
-    <svg class="hl-icon" viewBox="0 0 24 20" fill="currentColor" aria-hidden="true">
-      <path d="M12 18.4 1 1.6h22Z" />
-    </svg>
+    <ChoiceIcon name="triangleDown" />
   {/snippet}
 
-  <!-- The "=" pick. Typed, its ink sat 2px low in an 18px button (the glyph
-       rides the font's math axis, not the line box's centre, so flex centring
-       cannot fix it). Drawn, the two bars are centred by construction. -->
   {#snippet iconEquals()}
-    <svg class="eq-icon" viewBox="0 0 24 12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true">
-      <path d="M3 3.5h18" />
-      <path d="M3 8.5h18" />
-    </svg>
+    <ChoiceIcon name="equals" />
   {/snippet}
 
   <!-- Bet nudge +/-, drawn to match rather than typed as "+" and U+2212. -->
@@ -2034,13 +2183,24 @@
             class="half-btn inside-half"
             class:selected={ioChoice === 'inside'}
             onclick={() => setIoChoice('inside')}
-            disabled={!insideIsPossible()}
-            title={insideIsPossible() ? undefined : t('Not possible after guessing Equal')}
+            aria-disabled={!insideIsPossible()}
             aria-label={t('Inside')}
+            onmouseenter={() => (insideBlockedHover = true)}
+            onmouseleave={() => (insideBlockedHover = false)}
+            onfocus={() => (insideBlockedHover = true)}
+            onblur={() => (insideBlockedHover = false)}
           >{@render iconInside()}</button>
           <button type="button" class="half-btn outside-half" class:selected={ioChoice === 'outside'} onclick={() => setIoChoice('outside')} aria-label={t('Outside')}>{@render iconOutside()}</button>
           <button type="button" class="equal-btn" class:selected={ioChoice === 'equal'} onclick={() => setIoChoice('equal')} aria-label={t('Equal')}>{@render iconEquals()}</button>
         </div>
+        <!-- Why Inside is off, in words. Rendered here rather than inside the
+             square because .choice-square is overflow:hidden and would clip it
+             to the rounded box. -->
+        {#if !insideIsPossible() && insideBlockedHover}
+          <div class="choice-tip" role="status">
+            {t('You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.')}
+          </div>
+        {/if}
       </div>
 
       <div class="choice-column">

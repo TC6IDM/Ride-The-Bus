@@ -180,4 +180,13 @@ export default {
 	'Skip win animations on autoplay': 'Пропускать анимации выигрыша в автоигре',
 	'Skip big win animations during autoplay':
 		'Пропускать анимации крупных выигрышей во время автоигры',
+	'Guess the color of card 1: red or black.': 'Угадайте цвет карты 1: красный или чёрный.',
+	'Guess whether card 2 is higher or lower than card 1, or equal to it.':
+		'Угадайте, будет ли карта 2 старше или младше карты 1 — или равной ей.',
+	'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either of the first 2 cards. If you pick Equal on step 2, Inside becomes impossible: nothing can fall between two cards of the same rank.':
+		'Угадайте, попадёт ли карта 3 между картами 1 и 2, за их пределы, или сравняется с одной из первых двух. Если на шаге 2 выбрать «Равно», «Внутри» становится невозможным: между двумя картами одного достоинства ничего нет.',
+	'Guess the suit of card 4: hearts, diamonds, clubs or spades.':
+		'Угадайте масть карты 4: черви, бубны, трефы или пики.',
+	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
+		'Вы выбрали «Равно», значит карты 1 и 2 одного достоинства. Между ними ничего нет, поэтому «Внутри» не может выиграть.',
 };

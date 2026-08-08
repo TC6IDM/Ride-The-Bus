@@ -174,4 +174,13 @@ export default {
 	'Tap to skip': '点击跳过',
 	'Skip win animations on autoplay': '自动游戏时跳过获胜动画',
 	'Skip big win animations during autoplay': '自动游戏期间跳过大奖动画',
+	'Guess the color of card 1: red or black.': '猜第 1 张牌的颜色：红色还是黑色。',
+	'Guess whether card 2 is higher or lower than card 1, or equal to it.':
+		'猜第 2 张牌比第 1 张大还是小，或者相同。',
+	'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either of the first 2 cards. If you pick Equal on step 2, Inside becomes impossible: nothing can fall between two cards of the same rank.':
+		'猜第 3 张牌落在第 1、2 张之间、之外，还是与前两张中的任意一张相同。如果你在第 2 步选择相同，之内就不可能出现：两张点数相同的牌之间没有任何牌。',
+	'Guess the suit of card 4: hearts, diamonds, clubs or spades.':
+		'猜第 4 张牌的花色：红桃、方块、梅花或黑桃。',
+	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
+		'你选择了相同，因此第 1、2 张牌点数一样。它们之间没有任何牌，所以之内无法获胜。',
 };

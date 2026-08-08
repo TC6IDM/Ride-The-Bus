@@ -181,4 +181,13 @@ export default {
 	'Skip win animations on autoplay': 'Pular animações de ganho no jogo automático',
 	'Skip big win animations during autoplay':
 		'Pular animações de grandes ganhos durante o jogo automático',
+	'Guess the color of card 1: red or black.': 'Adivinhe a cor da carta 1: vermelho ou preto.',
+	'Guess whether card 2 is higher or lower than card 1, or equal to it.':
+		'Adivinhe se a carta 2 é maior ou menor que a carta 1, ou igual a ela.',
+	'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either of the first 2 cards. If you pick Equal on step 2, Inside becomes impossible: nothing can fall between two cards of the same rank.':
+		'Adivinhe se a carta 3 cai entre as cartas 1 e 2, fora delas, ou iguala qualquer uma das duas primeiras. Se escolher Igual no passo 2, Dentro fica impossível: nada pode cair entre duas cartas do mesmo valor.',
+	'Guess the suit of card 4: hearts, diamonds, clubs or spades.':
+		'Adivinhe o naipe da carta 4: copas, ouros, paus ou espadas.',
+	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
+		'Você escolheu Igual, então as cartas 1 e 2 têm o mesmo valor. Nada pode cair entre elas, portanto Dentro não pode ganhar.',
 };

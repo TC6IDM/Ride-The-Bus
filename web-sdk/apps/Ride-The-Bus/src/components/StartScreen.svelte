@@ -3,6 +3,93 @@
 	import { numberToCurrencyString } from 'utils-shared/amount';
 	import { t } from '../i18n/i18nDerived';
 	import gameConfig from '../game/config';
+	import ChoiceIcon from './ChoiceIcon.svelte';
+
+	/**
+	 * The how-to-play picks behave like the real ones on the board.
+	 *
+	 *   click  - locks a guess in, and clicking it again clears it, exactly as
+	 *            setColorChoice and friends do in Game.svelte
+	 *   hover  - previews, without disturbing whatever is locked
+	 *
+	 * `locked` starts with a pick already made in every step, so the screen opens
+	 * on a complete four-stage guess rather than four blank controls. Clearing
+	 * one falls back to DEFAULTS for the worked example, so the demo never goes
+	 * empty even when nothing is selected.
+	 */
+	let locked = $state<{ color: string | null; hl: string | null; io: string | null; suit: string | null }>({
+		color: 'black',
+		hl: 'higher',
+		io: 'inside',
+		suit: 'heart',
+	});
+	let hover = $state<{ color: string | null; hl: string | null; io: string | null; suit: string | null }>({
+		color: null,
+		hl: null,
+		io: null,
+		suit: null,
+	});
+
+	const DEFAULTS = { color: 'black', hl: 'higher', io: 'inside', suit: 'heart' } as const;
+
+	/** What the worked example is currently showing. */
+	const demo = $derived({
+		color: hover.color ?? locked.color ?? DEFAULTS.color,
+		hl: hover.hl ?? locked.hl ?? DEFAULTS.hl,
+		io: hover.io ?? locked.io ?? DEFAULTS.io,
+		suit: hover.suit ?? locked.suit ?? DEFAULTS.suit,
+	});
+
+	/** Click to lock in, click again to clear - the board's toggle behaviour. */
+	function lock(step: 'color' | 'hl' | 'io' | 'suit', value: string) {
+		locked[step] = locked[step] === value ? null : value;
+	}
+
+	/*
+	 * NOTE: the board disables Inside once Equal is picked at stage 2, because
+	 * that combination is unwinnable and the math publishes no such bet mode.
+	 * This screen deliberately does NOT copy that rule. Nothing here is a bet -
+	 * the four controls are a demonstration - so greying out a pick the player
+	 * is only reading about would stop them seeing what Inside even means. The
+	 * "?" on this panel explains the restriction in words instead, and the board
+	 * enforces it where it actually matters.
+	 */
+
+	/** The reference cards the examples are built around. */
+	const HL_REF = { rank: '7', suit: '♦', red: true };
+	const IO_LOW = { rank: '4', suit: '♣', red: false };
+	const IO_HIGH = { rank: '10', suit: '♥', red: true };
+
+	/** Card 2 for each Higher / Lower pick, against the 7. */
+	const HL_RESULT: Record<string, { rank: string; suit: string; red: boolean }> = {
+		higher: { rank: 'J', suit: '♠', red: false },
+		lower: { rank: '3', suit: '♥', red: true },
+		equal: { rank: '7', suit: '♣', red: false },
+	};
+
+	/** Card 3 for the Inside and Outside picks, against the 4 and the 10. */
+	const IO_RESULT: Record<string, { rank: string; suit: string; red: boolean }> = {
+		inside: { rank: '7', suit: '♠', red: false },
+		outside: { rank: '2', suit: '♦', red: true },
+		equal: { rank: '4', suit: '♥', red: true },
+	};
+
+	/**
+	 * Equal at stage 3 is satisfied by matching the rank of EITHER reference
+	 * card, not just the first - so both are shown. Suits deliberately differ
+	 * from the cards they match, because only the rank counts.
+	 */
+	const IO_EQUAL_RESULTS = [
+		{ rank: '4', suit: '♥', red: true },
+		{ rank: '10', suit: '♠', red: false },
+	];
+
+	const SUIT_GLYPH: Record<string, { glyph: string; red: boolean; label: string }> = {
+		heart: { glyph: '♥', red: true, label: 'Heart' },
+		spade: { glyph: '♠', red: false, label: 'Spade' },
+		club: { glyph: '♣', red: false, label: 'Club' },
+		diamond: { glyph: '♦', red: true, label: 'Diamond' },
+	};
 
 	type Props = {
 		phase: 'loading' | 'start' | 'replay-info' | 'playing';
@@ -34,6 +121,26 @@
 	}
 </script>
 
+<!-- A miniature of the real playing card, for the worked examples. Same face
+     colours and corner layout as cards.css, at a size that fits four examples
+     across without the row wrapping. -->
+{#snippet card(rank: string, suit: string, red: boolean)}
+	<span class="ss-card-mini" class:red>
+		<span class="ss-card-rank">{rank}</span>
+		<span class="ss-card-suit">{suit}</span>
+	</span>
+{/snippet}
+
+<!-- The "?" badge in each panel's top-right corner.
+     Focusable rather than a bare hover target, so the explanation is reachable
+     by keyboard and by tap - hover alone would hide it from every phone. -->
+{#snippet help(text: Parameters<typeof t>[0])}
+	<span class="ss-help" tabindex="0" role="note" aria-label={t(text)}>
+		?
+		<span class="ss-tip">{t(text)}</span>
+	</span>
+{/snippet}
+
 <div class="ss-overlay" style={`--logo-url: url(${base}/logo.png)`}>
 	{#if props.phase === 'start'}
 		<!-- ---- Start / intro screen ----
@@ -50,55 +157,141 @@
 
 			<p class="ss-lead" style="--d: 3">{t('Guess your way through four cards:')}</p>
 
+			<!-- The four picks, using the SAME controls as the board (ChoiceIcon,
+			     and the same half/third/quad button shapes) so the start screen
+			     teaches the actual interface rather than an illustration of it.
+			     Hover, focus or tap a pick to see a worked example underneath. -->
 			<ol class="ss-steps">
 				<!-- 1: colour of card 1 -->
 				<li class="ss-step" style="--d: 4">
 					<span class="ss-step-n">1</span>
-					<span class="ss-step-art" aria-hidden="true">
-						<span class="ss-mini-card">
-							<span class="ss-halfsplit"></span>
-						</span>
-					</span>
+					{@render help('Guess the color of card 1: red or black.')}
 					<span class="ss-step-label">{t('Color')}</span>
+
+					<div class="choice-square color-square" role="group" onmouseleave={() => (hover.color = null)} aria-label={t('Pick a color')}>
+						<button
+							type="button" class="half-btn black-half" class:selected={locked.color === 'black'}
+							aria-label={t('Black')}
+							onmouseenter={() => (hover.color = 'black')} onfocus={() => (hover.color = 'black')}
+							onclick={() => lock('color', 'black')}
+						></button>
+						<button
+							type="button" class="half-btn red-half" class:selected={locked.color === 'red'}
+							aria-label={t('Red')}
+							onmouseenter={() => (hover.color = 'red')} onfocus={() => (hover.color = 'red')}
+							onclick={() => lock('color', 'red')}
+						></button>
+					</div>
+
+					<div class="ss-demo">
+						{@render card('K', demo.color === 'black' ? '♠' : '♥', demo.color === 'red')}
+						<span class="ss-mark ok">✓</span>
+						{@render card('K', demo.color === 'black' ? '♥' : '♠', demo.color === 'black')}
+						<span class="ss-mark no">✕</span>
+					</div>
 				</li>
 
-				<!-- 2: higher or lower than card 1 -->
+				<!-- 2: higher, lower or equal against card 1 -->
 				<li class="ss-step" style="--d: 5">
 					<span class="ss-step-n">2</span>
-					<span class="ss-step-art" aria-hidden="true">
-						<span class="ss-arrows">
-							<span class="ss-arrow up">▲</span>
-							<span class="ss-arrow down">▼</span>
-						</span>
-					</span>
+					{@render help('Guess whether card 2 is higher or lower than card 1, or equal to it.')}
 					<span class="ss-step-label">{t('Higher')} / {t('Lower')}</span>
+
+					<div class="choice-square hl-square" role="group" onmouseleave={() => (hover.hl = null)} aria-label={t('Higher, lower, or equal')}>
+						<button
+							type="button" class="third-btn higher-third" class:selected={locked.hl === 'higher'}
+							aria-label={t('Higher')}
+							onmouseenter={() => (hover.hl = 'higher')} onfocus={() => (hover.hl = 'higher')}
+							onclick={() => lock('hl', 'higher')}
+						><ChoiceIcon name="triangleUp" /></button>
+						<button
+							type="button" class="third-btn lower-third" class:selected={locked.hl === 'lower'}
+							aria-label={t('Lower')}
+							onmouseenter={() => (hover.hl = 'lower')} onfocus={() => (hover.hl = 'lower')}
+							onclick={() => lock('hl', 'lower')}
+						><ChoiceIcon name="triangleDown" /></button>
+						<button
+							type="button" class="equal-btn" class:selected={locked.hl === 'equal'}
+							aria-label={t('Equal')}
+							onmouseenter={() => (hover.hl = 'equal')} onfocus={() => (hover.hl = 'equal')}
+							onclick={() => lock('hl', 'equal')}
+						><ChoiceIcon name="equals" /></button>
+					</div>
+
+					<div class="ss-demo">
+						{@render card(HL_REF.rank, HL_REF.suit, HL_REF.red)}
+						<span class="ss-arrow">→</span>
+						{@render card(HL_RESULT[demo.hl].rank, HL_RESULT[demo.hl].suit, HL_RESULT[demo.hl].red)}
+						<span class="ss-mark ok">✓</span>
+					</div>
 				</li>
 
-				<!-- 3: inside or outside cards 1 and 2 -->
+				<!-- 3: inside, outside or equal against cards 1 and 2 -->
 				<li class="ss-step" style="--d: 6">
 					<span class="ss-step-n">3</span>
-					<span class="ss-step-art" aria-hidden="true">
-						<span class="ss-range">
-							<span class="ss-range-pip"></span>
-							<span class="ss-range-bar"></span>
-							<span class="ss-range-pip"></span>
-						</span>
-					</span>
+					{@render help('Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either of the first 2 cards. If you pick Equal on step 2, Inside becomes impossible: nothing can fall between two cards of the same rank.')}
 					<span class="ss-step-label">{t('Inside')} / {t('Outside')}</span>
+
+					<div class="choice-square io-square" role="group" onmouseleave={() => (hover.io = null)} aria-label={t('Inside, outside, or equal')}>
+						<button
+							type="button" class="half-btn inside-half" class:selected={locked.io === 'inside'}
+							aria-label={t('Inside')}
+							onmouseenter={() => (hover.io = 'inside')} onfocus={() => (hover.io = 'inside')}
+							onclick={() => lock('io', 'inside')}
+						><ChoiceIcon name="inside" /></button>
+						<button
+							type="button" class="half-btn outside-half" class:selected={locked.io === 'outside'}
+							aria-label={t('Outside')}
+							onmouseenter={() => (hover.io = 'outside')} onfocus={() => (hover.io = 'outside')}
+							onclick={() => lock('io', 'outside')}
+						><ChoiceIcon name="outside" /></button>
+						<button
+							type="button" class="equal-btn" class:selected={locked.io === 'equal'}
+							aria-label={t('Equal')}
+							onmouseenter={() => (hover.io = 'equal')} onfocus={() => (hover.io = 'equal')}
+							onclick={() => lock('io', 'equal')}
+						><ChoiceIcon name="equals" /></button>
+					</div>
+
+					<!-- is-wide: this step carries three cards, or four on Equal, so its
+					     minis are a shade narrower than the other panels'. -->
+					<div class="ss-demo is-wide">
+						{@render card(IO_LOW.rank, IO_LOW.suit, IO_LOW.red)}
+						{@render card(IO_HIGH.rank, IO_HIGH.suit, IO_HIGH.red)}
+						<span class="ss-arrow">→</span>
+						{#if demo.io === 'equal'}
+							{#each IO_EQUAL_RESULTS as result, i}
+								{#if i > 0}<span class="ss-or">/</span>{/if}
+								{@render card(result.rank, result.suit, result.red)}
+							{/each}
+						{:else}
+							{@render card(IO_RESULT[demo.io].rank, IO_RESULT[demo.io].suit, IO_RESULT[demo.io].red)}
+						{/if}
+						<span class="ss-mark ok">✓</span>
+					</div>
 				</li>
 
 				<!-- 4: suit of card 4 -->
 				<li class="ss-step" style="--d: 7">
 					<span class="ss-step-n">4</span>
-					<span class="ss-step-art" aria-hidden="true">
-						<span class="ss-suits">
-							<span class="ss-suit red">♥</span>
-							<span class="ss-suit red">♦</span>
-							<span class="ss-suit">♣</span>
-							<span class="ss-suit">♠</span>
-						</span>
-					</span>
+					{@render help('Guess the suit of card 4: hearts, diamonds, clubs or spades.')}
 					<span class="ss-step-label">{t('Suit')}</span>
+
+					<div class="choice-square suit-square" role="group" onmouseleave={() => (hover.suit = null)} aria-label={t('Pick a suit')}>
+						{#each ['heart', 'spade', 'club', 'diamond'] as suit}
+							<button
+								type="button" class="quad-btn" class:red-suit={SUIT_GLYPH[suit].red}
+								class:selected={locked.suit === suit} aria-label={t(SUIT_GLYPH[suit].label)}
+								onmouseenter={() => (hover.suit = suit)} onfocus={() => (hover.suit = suit)}
+								onclick={() => lock('suit', suit)}
+							>{SUIT_GLYPH[suit].glyph}</button>
+						{/each}
+					</div>
+
+					<div class="ss-demo">
+						{@render card('A', SUIT_GLYPH[demo.suit].glyph, SUIT_GLYPH[demo.suit].red)}
+						<span class="ss-mark ok">✓</span>
+					</div>
 				</li>
 			</ol>
 
@@ -172,4 +365,9 @@
 
 <style>
 	@import '../styles/start-screen.css';
+	/* The board's guess controls, imported so this screen shows the REAL thing
+	   rather than a lookalike - see the note by .ss-step in start-screen.css.
+	   choices.css is sized entirely off custom properties, which .ss-step
+	   declares at start-screen scale. */
+	@import '../styles/choices.css';
 </style>

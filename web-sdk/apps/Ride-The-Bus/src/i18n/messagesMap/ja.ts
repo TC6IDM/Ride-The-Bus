@@ -180,4 +180,13 @@ export default {
 	'Tap to skip': 'タップしてスキップ',
 	'Skip win animations on autoplay': 'オートプレイ中は勝利演出をスキップ',
 	'Skip big win animations during autoplay': 'オートプレイ中は大当たり演出をスキップします',
+	'Guess the color of card 1: red or black.': 'カード1の色を予想します。赤か黒か。',
+	'Guess whether card 2 is higher or lower than card 1, or equal to it.':
+		'カード2がカード1より高いか低いか、または同じかを予想します。',
+	'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either of the first 2 cards. If you pick Equal on step 2, Inside becomes impossible: nothing can fall between two cards of the same rank.':
+		'カード3がカード1と2の間か、その外側か、最初の2枚のどちらかと同じかを予想します。ステップ2でイコールを選ぶとインサイドは不可能になります。同じ数字の2枚のあいだには何も入りません。',
+	'Guess the suit of card 4: hearts, diamonds, clubs or spades.':
+		'カード4のスートを予想します。ハート、ダイヤ、クラブ、スペード。',
+	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
+		'イコールを選んだため、カード1と2は同じ数字です。その間には何も入らないので、インサイドは当たりません。',
 };

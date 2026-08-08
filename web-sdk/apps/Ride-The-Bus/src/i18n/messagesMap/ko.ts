@@ -179,4 +179,13 @@ export default {
 	'Tap to skip': '탭하여 건너뛰기',
 	'Skip win animations on autoplay': '자동 플레이 시 당첨 연출 건너뛰기',
 	'Skip big win animations during autoplay': '자동 플레이 중 빅 윈 연출 건너뛰기',
+	'Guess the color of card 1: red or black.': '카드 1의 색을 예상하세요: 빨강 또는 검정.',
+	'Guess whether card 2 is higher or lower than card 1, or equal to it.':
+		'카드 2가 카드 1보다 높은지 낮은지, 또는 같은지 예상하세요.',
+	'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either of the first 2 cards. If you pick Equal on step 2, Inside becomes impossible: nothing can fall between two cards of the same rank.':
+		'카드 3이 카드 1과 2 사이인지, 바깥인지, 또는 처음 두 장 중 하나와 같은지 예상하세요. 2단계에서 같음을 고르면 인사이드는 불가능해집니다: 같은 숫자의 두 카드 사이에는 아무것도 올 수 없습니다.',
+	'Guess the suit of card 4: hearts, diamonds, clubs or spades.':
+		'카드 4의 무늬를 예상하세요: 하트, 다이아, 클로버, 스페이드.',
+	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
+		'같음을 골랐으므로 카드 1과 2는 숫자가 같습니다. 그 사이에는 아무것도 올 수 없어 인사이드는 이길 수 없습니다.',
 };

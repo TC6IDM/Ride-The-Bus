@@ -115,6 +115,10 @@ export default {
 	Black: 'Black',
 	Equal: 'Equal',
 	'Not possible after guessing Equal': 'Not possible after guessing Equal',
+	// Shown on hovering the barred Inside pick. The short label above stays as
+	// the accessible name; this is the visible explanation.
+	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
+		'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.',
 	Heart: 'Heart',
 	Diamond: 'Diamond',
 	Club: 'Club',
@@ -214,6 +218,16 @@ export default {
 	'Mega Win': 'Mega Win',
 	'Epic Win': 'Epic Win',
 	'Tap to skip': 'Tap to skip',
+
+	// Start-screen "?" badges. One per stage, explaining what that pick means
+	// before the player has ever seen a round.
+	'Guess the color of card 1: red or black.': 'Guess the color of card 1: red or black.',
+	'Guess whether card 2 is higher or lower than card 1, or equal to it.':
+		'Guess whether card 2 is higher or lower than card 1, or equal to it.',
+	'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either of the first 2 cards. If you pick Equal on step 2, Inside becomes impossible: nothing can fall between two cards of the same rank.':
+		'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either of the first 2 cards. If you pick Equal on step 2, Inside becomes impossible: nothing can fall between two cards of the same rank.',
+	'Guess the suit of card 4: hearts, diamonds, clubs or spades.':
+		'Guess the suit of card 4: hearts, diamonds, clubs or spades.',
 	'Skip win animations on autoplay': 'Skip win animations on autoplay',
 	'Skip big win animations during autoplay': 'Skip big win animations during autoplay',
 };

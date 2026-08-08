@@ -183,4 +183,13 @@ export default {
 	'Tap to skip': 'Chạm để bỏ qua',
 	'Skip win animations on autoplay': 'Bỏ qua hiệu ứng thắng khi tự động chơi',
 	'Skip big win animations during autoplay': 'Bỏ qua hiệu ứng thắng lớn trong khi tự động chơi',
+	'Guess the color of card 1: red or black.': 'Đoán màu của lá bài 1: đỏ hay đen.',
+	'Guess whether card 2 is higher or lower than card 1, or equal to it.':
+		'Đoán xem lá bài 2 cao hơn hay thấp hơn lá bài 1, hoặc bằng nhau.',
+	'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either of the first 2 cards. If you pick Equal on step 2, Inside becomes impossible: nothing can fall between two cards of the same rank.':
+		'Đoán xem lá bài 3 nằm giữa lá 1 và 2, ngoài chúng, hay bằng một trong hai lá đầu tiên. Nếu bạn chọn Bằng ở bước 2, Trong sẽ trở nên bất khả thi: không có gì nằm giữa hai lá bài cùng giá trị.',
+	'Guess the suit of card 4: hearts, diamonds, clubs or spades.':
+		'Đoán chất của lá bài 4: cơ, rô, tép hay bích.',
+	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
+		'Bạn đã chọn Bằng, nên lá 1 và lá 2 cùng giá trị. Không có gì nằm giữa chúng, vì vậy Trong không thể thắng.',
 };
