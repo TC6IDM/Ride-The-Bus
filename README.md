@@ -189,6 +189,12 @@ guesses that stayed editable across the two round trips of placing a bet, and a
 replay that started animating behind the loading screen. Play real rounds
 through a Developer-page session before submitting, replay included.
 
+[RGS_TEST_PLAN.md](RGS_TEST_PLAN.md) is that pass, written out: 52 checks
+covering settlement, autoplay endurance, the jurisdiction flags, currency
+display, replay and the compliance surface, each with the reason it exists. It
+is weighted towards the paths the local fallback never executes, because that is
+where every late bug in this project has come from.
+
 The quality rating itself is three anonymous reviewers scoring 0 to 3 in
 fractional steps, averaged and rounded. Below 1.0 is not approved; 1 star is
 published at the bottom of New Releases; 2 stars may reach Burst Games and Stake
