@@ -62,10 +62,10 @@ export default {
 		'A carta 1 continua a terminar a ronda. Depois, o teu primeiro erro é perdoado e o jogo continua.',
 	'Misses keep only 20%, so every correct guess is worth more.':
 		'Os erros mantêm apenas 20%, por isso cada acerto vale mais.',
-	'Skip card reveal on spacebar': 'Ignorar a revelação com a barra de espaço',
-	'Skip the card reveal on rounds started with the spacebar':
+	'Skip card reveal on spacebar hold': 'Ignorar a revelação com a barra de espaço',
+	'Skip the card reveal while the spacebar is held':
 		'Ignorar a revelação das cartas em rondas iniciadas com a barra de espaço',
-	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'Ignorar a revelação com a barra de espaço (o botão de controlos) joga as rondas iniciadas com a barra sem a animação das cartas. Altera apenas a animação, nunca as cartas, as probabilidades ou o pagamento.',
 	'Stop on full game win': 'Parar ao vencer o jogo completo',
 

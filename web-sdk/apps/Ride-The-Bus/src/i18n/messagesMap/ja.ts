@@ -62,9 +62,9 @@ export default {
 		'カード1は変わらずラウンド終了です。その後の最初のミスは免除され、続行します。',
 	'Misses keep only 20%, so every correct guess is worth more.':
 		'ミスは20%しか残らないぶん、的中1つ1つの価値が高くなります。',
-	'Skip card reveal on spacebar': 'スペースキーでカード演出をスキップ',
-	'Skip the card reveal on rounds started with the spacebar': 'スペースキーで開始したラウンドのカード演出をスキップします',
-	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+	'Skip card reveal on spacebar hold': 'スペースキーでカード演出をスキップ',
+	'Skip the card reveal while the spacebar is held': 'スペースキーで開始したラウンドのカード演出をスキップします',
+	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'スペースキーでカード演出をスキップ（スライダーボタン）は、スペースキーで始めたラウンドをカードのアニメーションなしで進めます。変わるのは演出だけで、カードや確率、配当には影響しません。',
 	'Stop on full game win': 'フルゲーム達成で停止',
 

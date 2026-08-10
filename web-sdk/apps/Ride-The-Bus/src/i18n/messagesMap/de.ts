@@ -62,10 +62,10 @@ export default {
 		'Karte 1 beendet die Runde weiterhin. Danach wird dein erster Fehler verziehen und es geht weiter.',
 	'Misses keep only 20%, so every correct guess is worth more.':
 		'Fehler behalten nur 20%, dadurch ist jeder richtige Tipp mehr wert.',
-	'Skip card reveal on spacebar': 'Kartenaufdeckung bei Leertaste überspringen',
-	'Skip the card reveal on rounds started with the spacebar':
+	'Skip card reveal on spacebar hold': 'Kartenaufdeckung bei Leertaste überspringen',
+	'Skip the card reveal while the spacebar is held':
 		'Die Kartenaufdeckung bei Runden überspringen, die mit der Leertaste gestartet wurden',
-	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'Kartenaufdeckung bei Leertaste überspringen (die Schieberegler-Taste) spielt mit der Leertaste gestartete Runden ohne die Kartenanimation. Das ändert nur die Animation, nie die Karten, die Chancen oder die Auszahlung.',
 	'Stop on full game win': 'Bei Komplettgewinn stoppen',
 

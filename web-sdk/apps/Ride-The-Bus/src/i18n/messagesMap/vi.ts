@@ -62,10 +62,10 @@ export default {
 		'Lá 1 vẫn kết thúc vòng. Sau đó lần đoán sai đầu tiên được bỏ qua và trò chơi tiếp tục.',
 	'Misses keep only 20%, so every correct guess is worth more.':
 		'Sai chỉ giữ lại 20%, nên mỗi lần đoán đúng có giá trị hơn.',
-	'Skip card reveal on spacebar': 'Bỏ qua phần lật bài khi dùng phím cách',
-	'Skip the card reveal on rounds started with the spacebar':
+	'Skip card reveal on spacebar hold': 'Bỏ qua phần lật bài khi dùng phím cách',
+	'Skip the card reveal while the spacebar is held':
 		'Bỏ qua phần lật bài ở các vòng bắt đầu bằng phím cách',
-	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'Bỏ qua phần lật bài khi dùng phím cách (nút thanh trượt) chơi các vòng bắt đầu bằng phím cách mà không có hoạt ảnh lật bài. Nó chỉ thay đổi hoạt ảnh, không bao giờ thay đổi lá bài, tỷ lệ hay mức trả thưởng.',
 	'Stop on full game win': 'Dừng khi thắng toàn ván',
 

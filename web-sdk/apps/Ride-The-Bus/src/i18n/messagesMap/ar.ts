@@ -63,10 +63,10 @@ export default {
 		'البطاقة الأولى ما زالت تنهي الجولة. بعدها يُسامَح أول تخمين خاطئ ويستمر اللعب.',
 	'Misses keep only 20%, so every correct guess is worth more.':
 		'الأخطاء تحتفظ بنسبة 20% فقط، لذا تصبح كل تخمينة صحيحة أثمن.',
-	'Skip card reveal on spacebar': 'تخطي كشف البطاقات بمفتاح المسافة',
-	'Skip the card reveal on rounds started with the spacebar':
+	'Skip card reveal on spacebar hold': 'تخطي كشف البطاقات بمفتاح المسافة',
+	'Skip the card reveal while the spacebar is held':
 		'تخطي كشف البطاقات في الجولات التي تبدأ بمفتاح المسافة',
-	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'تخطي كشف البطاقات بمفتاح المسافة (زر المؤشرات) يشغّل الجولات التي تبدأ بمفتاح المسافة بدون حركة البطاقات. يغيّر الحركة فقط، ولا يمس البطاقات أو الاحتمالات أو الأرباح.',
 	'Stop on full game win': 'التوقف عند الفوز الكامل',
 

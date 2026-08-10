@@ -62,10 +62,10 @@ export default {
 		'Карта 1 по-прежнему завершает раунд. После неё первый промах прощается и игра продолжается.',
 	'Misses keep only 20%, so every correct guess is worth more.':
 		'Промахи сохраняют лишь 20%, поэтому каждая верная догадка стоит дороже.',
-	'Skip card reveal on spacebar': 'Пропускать раздачу карт при пробеле',
-	'Skip the card reveal on rounds started with the spacebar':
+	'Skip card reveal on spacebar hold': 'Пропускать раздачу карт при пробеле',
+	'Skip the card reveal while the spacebar is held':
 		'Пропускать раздачу карт в раундах, начатых пробелом',
-	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'Пропускать раздачу карт при пробеле (кнопка с ползунками) проводит раунды, начатые пробелом, без анимации карт. Меняется только анимация — карты, шансы и выплата остаются прежними.',
 	'Stop on full game win': 'Остановить при полной победе',
 

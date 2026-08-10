@@ -62,10 +62,10 @@ export default {
 		'Kartu 1 tetap mengakhiri ronde. Setelah itu tebakan salah pertama Anda dimaafkan dan permainan berlanjut.',
 	'Misses keep only 20%, so every correct guess is worth more.':
 		'Kesalahan hanya menyimpan 20%, jadi setiap tebakan benar bernilai lebih.',
-	'Skip card reveal on spacebar': 'Lewati pembukaan kartu dengan spasi',
-	'Skip the card reveal on rounds started with the spacebar':
+	'Skip card reveal on spacebar hold': 'Lewati pembukaan kartu dengan spasi',
+	'Skip the card reveal while the spacebar is held':
 		'Lewati pembukaan kartu pada ronde yang dimulai dengan spasi',
-	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'Lewati pembukaan kartu dengan spasi (tombol penggeser) menjalankan ronde yang dimulai dengan spasi tanpa animasi kartu. Ini hanya mengubah animasi, bukan kartu, peluang, atau pembayaran.',
 	'Stop on full game win': 'Berhenti saat menang penuh',
 

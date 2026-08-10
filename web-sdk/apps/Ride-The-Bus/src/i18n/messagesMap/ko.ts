@@ -62,9 +62,9 @@ export default {
 		'카드 1은 여전히 라운드를 끝냅니다. 그 뒤 첫 오답은 면제되어 계속 진행됩니다.',
 	'Misses keep only 20%, so every correct guess is worth more.':
 		'실수가 20%만 남기므로 정답 하나하나의 가치가 커집니다.',
-	'Skip card reveal on spacebar': '스페이스바에서 카드 공개 건너뛰기',
-	'Skip the card reveal on rounds started with the spacebar': '스페이스바로 시작한 라운드의 카드 공개를 건너뜁니다',
-	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+	'Skip card reveal on spacebar hold': '스페이스바에서 카드 공개 건너뛰기',
+	'Skip the card reveal while the spacebar is held': '스페이스바로 시작한 라운드의 카드 공개를 건너뜁니다',
+	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'스페이스바에서 카드 공개 건너뛰기(슬라이더 버튼)는 스페이스바로 시작한 라운드를 카드 애니메이션 없이 진행합니다. 애니메이션만 바뀌며 카드나 확률, 배당은 달라지지 않습니다.',
 	'Stop on full game win': '풀 게임 성공 시 중지',
 

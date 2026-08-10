@@ -62,10 +62,10 @@ export default {
 		'कार्ड 1 अब भी राउंड खत्म करता है। उसके बाद आपका पहला गलत अनुमान माफ होता है और खेल चलता रहता है।',
 	'Misses keep only 20%, so every correct guess is worth more.':
 		'गलतियाँ केवल 20% रखती हैं, इसलिए हर सही अनुमान ज्यादा कीमती है।',
-	'Skip card reveal on spacebar': 'स्पेसबार पर कार्ड खुलना छोड़ें',
-	'Skip the card reveal on rounds started with the spacebar':
+	'Skip card reveal on spacebar hold': 'स्पेसबार पर कार्ड खुलना छोड़ें',
+	'Skip the card reveal while the spacebar is held':
 		'स्पेसबार से शुरू हुए राउंड में कार्ड खुलना छोड़ें',
-	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'स्पेसबार पर कार्ड खुलना छोड़ें (स्लाइडर बटन) स्पेसबार से शुरू हुए राउंड को कार्ड एनिमेशन के बिना चलाता है। यह केवल एनिमेशन बदलता है, कार्ड, संभावनाएँ या भुगतान कभी नहीं।',
 	'Stop on full game win': 'पूरी जीत पर रोकें',
 

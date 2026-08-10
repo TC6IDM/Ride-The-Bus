@@ -62,10 +62,10 @@ export default {
 		'Kart 1 turu yine bitirir. Sonrasında ilk yanlış tahmininiz affedilir ve oyun sürer.',
 	'Misses keep only 20%, so every correct guess is worth more.':
 		'Hatalar yalnızca %20 tuttuğu için her doğru tahmin daha değerlidir.',
-	'Skip card reveal on spacebar': 'Boşluk tuşunda kart açılışını atla',
-	'Skip the card reveal on rounds started with the spacebar':
+	'Skip card reveal on spacebar hold': 'Boşluk tuşunda kart açılışını atla',
+	'Skip the card reveal while the spacebar is held':
 		'Boşluk tuşuyla başlatılan turlarda kart açılışını atla',
-	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'Boşluk tuşunda kart açılışını atla (kaydırıcı düğmesi) boşluk tuşuyla başlatılan turları kart animasyonu olmadan oynar. Yalnızca animasyonu değiştirir; kartları, oranları veya ödemeyi asla değiştirmez.',
 	'Stop on full game win': 'Tam oyun kazancında durdur',
 

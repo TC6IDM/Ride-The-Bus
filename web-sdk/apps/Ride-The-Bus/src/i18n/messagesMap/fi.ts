@@ -62,10 +62,10 @@ export default {
 		'Kortti 1 päättää yhä kierroksen. Sen jälkeen ensimmäinen virhe annetaan anteeksi ja peli jatkuu.',
 	'Misses keep only 20%, so every correct guess is worth more.':
 		'Virheet säilyttävät vain 20%, joten jokainen oikea arvaus on arvokkaampi.',
-	'Skip card reveal on spacebar': 'Ohita korttien paljastus välilyönnillä',
-	'Skip the card reveal on rounds started with the spacebar':
+	'Skip card reveal on spacebar hold': 'Ohita korttien paljastus välilyönnillä',
+	'Skip the card reveal while the spacebar is held':
 		'Ohita korttien paljastus kierroksilla, jotka aloitetaan välilyönnillä',
-	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'Ohita korttien paljastus välilyönnillä (liukusäädinpainike) pelaa välilyönnillä aloitetut kierrokset ilman korttianimaatiota. Se muuttaa vain animaatiota, ei koskaan kortteja, todennäköisyyksiä tai voittoa.',
 	'Stop on full game win': 'Pysäytä täydellä voitolla',
 

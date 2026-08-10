@@ -434,3 +434,12 @@
   text-transform: uppercase;
   line-height: 1;
 }
+
+/* The active mode, riding on the BET caption. Same gold as the MODE button, so
+   the two read as one thing; shown only when it is not the default, because
+   "BET — Classic" is noise on the mode most players never leave. */
+.cb-cap-mode {
+  color: #f5d78c;
+  font-weight: 800;
+  white-space: nowrap;
+}

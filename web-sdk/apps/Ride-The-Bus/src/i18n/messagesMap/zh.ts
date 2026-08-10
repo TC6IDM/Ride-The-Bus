@@ -61,9 +61,9 @@ export default {
 	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
 		'第一张牌仍会结束本局。此后第一次猜错可获豁免并继续游戏。',
 	'Misses keep only 20%, so every correct guess is worth more.': '猜错仅保留20%，因此每一次猜对都更有价值。',
-	'Skip card reveal on spacebar': '按空格键时跳过发牌动画',
-	'Skip the card reveal on rounds started with the spacebar': '在以空格键开始的回合中跳过发牌动画',
-	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+	'Skip card reveal on spacebar hold': '按空格键时跳过发牌动画',
+	'Skip the card reveal while the spacebar is held': '在以空格键开始的回合中跳过发牌动画',
+	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'按空格键时跳过发牌动画（滑块按钮）会在没有发牌动画的情况下进行以空格键开始的回合。它只改变动画，绝不影响牌面、赔率或赔付。',
 	'Stop on full game win': '全中时停止',
 

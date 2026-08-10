@@ -83,6 +83,33 @@
 	font-size: calc(var(--ui-bar) * 1.14);
 }
 
+/* A numeric header sits over a right-aligned column, so it right-aligns too.
+   Left-aligned headings above right-aligned figures was the misalignment: the
+   word and its numbers were at opposite ends of the same column. */
+.pay-table th.num {
+	text-align: right;
+}
+
+/* Two narrow numeric columns beside one wide prose column. The shared fixed
+   layout splits the width evenly, which strands the mode descriptions in a
+   third of the table while the cost column carries "2x". */
+.pay-table-modes {
+	table-layout: auto;
+}
+
+.pay-table-modes th.num,
+.pay-table-modes .pay-amount {
+	width: calc(var(--ui-bar) * 7);
+	white-space: nowrap;
+}
+
+/* The mode name and its description share a cell; the description is the
+   quieter half. */
+.pay-table-modes td strong {
+	color: #fff;
+	font-weight: 800;
+}
+
 .pay-table th {
 	padding: calc(var(--ui-bar) * 0.36) calc(var(--ui-bar) * 0.45);
 	border-bottom: 1px solid rgba(255, 255, 255, 0.18);

@@ -62,10 +62,10 @@ export default {
 		'La carte 1 met toujours fin à la manche. Ensuite, votre première erreur est pardonnée et le jeu continue.',
 	'Misses keep only 20%, so every correct guess is worth more.':
 		'Les erreurs ne conservent que 20%, chaque bonne réponse vaut donc davantage.',
-	'Skip card reveal on spacebar': 'Ignorer la révélation avec la barre d’espace',
-	'Skip the card reveal on rounds started with the spacebar':
+	'Skip card reveal on spacebar hold': 'Ignorer la révélation avec la barre d’espace',
+	'Skip the card reveal while the spacebar is held':
 		'Ignorer la révélation des cartes pour les manches lancées avec la barre d’espace',
-	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'Ignorer la révélation avec la barre d’espace (le bouton curseurs) joue les manches lancées à la barre d’espace sans l’animation des cartes. Cela ne change que l’animation, jamais les cartes, les probabilités ni le gain.',
 	'Stop on full game win': 'Arrêter sur partie complète',
 

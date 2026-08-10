@@ -332,23 +332,14 @@
   // and nothing else.
   let slamOnAuto = $state(false);
 
-  // Skip the card reveal on rounds started with the spacebar - tap or hold.
+  // Skip the card reveal while the spacebar is HELD.
   //
-  // Separate from slamOnAuto because they answer different questions. That one
-  // is about unattended runs; this is about a player driving the game from the
-  // keyboard, who is usually after throughput and has both hands off the
-  // mouse. Default OFF, like the other skip.
-  let slamOnSpace = $state(false);
-
-  /**
-   * Was the round in progress started from the spacebar?
-   *
-   * Set on keydown rather than inferred, because by the time the reveal runs
-   * there is nothing left to tell a spacebar round from a clicked one - and a
-   * hold run has already handed off to startAuto. Cleared when the reveal
-   * finishes, so the next clicked round is not skipped by inheritance.
-   */
-  let roundFromSpace = $state(false);
+  // Hold only, not the single tap. A tap is one deliberate round and the reveal
+  // is the point of it; a hold is a run, and a run is where throughput matters.
+  // Separate from slamOnAuto because they answer different questions - that one
+  // is about unattended runs, this is about a player driving from the keyboard.
+  // Default OFF, like the other skip.
+  let slamOnSpaceHold = $state(false);
 
   // ---- Big-win takeover ----------------------------------------------------
   // The round flow awaits dismissal, so the celebration naturally holds the
@@ -886,11 +877,9 @@
     // skipping the animation bars it here too, however it was requested.
     // Bet spacing is governed by rgsPacing regardless, so this cannot outrun
     // the RGS no matter how short the reveal becomes.
-    // spaceHoldRunning covers a hold run, roundFromSpace the single tap that
-    // starts one - both are "the player is on the keyboard".
-    const skipForSpace = slamOnSpace && (roundFromSpace || spaceHoldRunning);
+    const skipForHold = slamOnSpaceHold && spaceHoldRunning;
     const skipForAuto = autoRunning && slamOnAuto;
-    slamRequested = (skipForAuto || skipForSpace) && !jurisdiction.slamstopDisabled();
+    slamRequested = (skipForAuto || skipForHold) && !jurisdiction.slamstopDisabled();
     let running = 1;
     let busted = false;
     let forgivenessSpent = false;
@@ -926,7 +915,6 @@
       }
     }
 
-    roundFromSpace = false;
     await revealWait(300, 120);
     // Prefer the server's authoritative payout on engine rounds; fall back to
     // the local formula (identical maths) when there's no RGS session.
@@ -1768,7 +1756,6 @@
     // Keyboard activation isn't a click, so it never reaches the delegated
     // handler - sound it here, as the primary control Space stands in for.
     sound.playPress('primary');
-    roundFromSpace = true;
     onSpin(); // the tap: one round, straight away
     spaceHoldTimer = setTimeout(() => {
       spaceHoldTimer = null;
@@ -2197,7 +2184,13 @@
 
     <div class="cb-panel cb-panel-dark cb-bet">
       <button class="cb-bet-display" class:active={openPopup === 'bet'} onclick={() => togglePopup('bet')} disabled={stateUrlDerived.replay()} aria-label={t('Choose bet amount')}>
-        <span class="cb-cap">{t('Bet')}</span>
+        <!-- The mode rides on the BET caption so it is visible without opening
+             anything. It is the one setting that changes what a round costs and
+             can pay, and having to open a popup to remember which one you are
+             on is exactly how a player buys a 2x round by accident. -->
+        <span class="cb-cap">
+          {t('Bet')}{#if betFamily !== 'base'} <span class="cb-cap-mode">— {t(familyRules().label)}</span>{/if}
+        </span>
         <!-- The figure shown IS what leaves the balance, so it is the round's
              cost rather than the base bet. On a multiplied mode it turns blue
              and the base bet moves to a line underneath: one number to read,
@@ -2450,8 +2443,8 @@
                switch for a key that does nothing is worse than no switch. -->
           {#if !jurisdiction.spacebarDisabled()}
             <div class="advanced-row">
-              <span class="control-label">{t('Skip card reveal on spacebar')}</span>
-              <button type="button" class="switch" class:on={slamOnSpace} role="switch" aria-checked={slamOnSpace} aria-label={t('Skip the card reveal on rounds started with the spacebar')} onclick={() => (slamOnSpace = !slamOnSpace)}><span class="switch-knob"></span></button>
+              <span class="control-label">{t('Skip card reveal on spacebar hold')}</span>
+              <button type="button" class="switch" class:on={slamOnSpaceHold} role="switch" aria-checked={slamOnSpaceHold} aria-label={t('Skip the card reveal while the spacebar is held')} onclick={() => (slamOnSpaceHold = !slamOnSpaceHold)}><span class="switch-knob"></span></button>
             </div>
           {/if}
         {/if}

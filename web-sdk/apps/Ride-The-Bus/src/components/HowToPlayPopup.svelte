@@ -85,7 +85,7 @@
           <tr>
             <th scope="col">{t('Card')}</th>
             <th scope="col">{t('Pick')}</th>
-            <th scope="col">{t('Pays')}</th>
+            <th scope="col" class="num">{t('Pays')}</th>
           </tr>
         </thead>
         <tbody>
@@ -105,12 +105,12 @@
            FAMILY_RULES / FAMILY_BLURB, which the payout maths uses too, so this
            table cannot advertise a mode the game does not actually deal. -->
       <h4 class="info-h">{t('Game modes')}</h4>
-      <table class="pay-table">
+      <table class="pay-table pay-table-modes">
         <thead>
           <tr>
             <th scope="col">{t('Mode')}</th>
-            <th scope="col">{t('Bet')}</th>
-            <th scope="col">{t('Max win')}</th>
+            <th scope="col" class="num">{t('Bet')}</th>
+            <th scope="col" class="num">{t('Max win')}</th>
           </tr>
         </thead>
         <tbody>
@@ -151,7 +151,7 @@
         <li>{t('Autoplay (the circular arrows) replays the same four guesses for a set number of rounds, or unlimited. The round counter sits on the button while it runs — press the red square to stop, and the round already in play finishes first.')}</li>
         <li>{t('Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.')}</li>
         <li>{t('Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.')}</li>
-        <li>{t('Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.')}</li>
+        <li>{t('Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.')}</li>
         <li>{t('Tap the spacebar to play one round, or hold it to keep spinning until you let go.')}</li>
       </ul>
 

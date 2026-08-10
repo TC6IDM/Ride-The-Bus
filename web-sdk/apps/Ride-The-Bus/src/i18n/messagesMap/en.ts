@@ -85,11 +85,11 @@ export default {
 
 	// Advanced popup
 	Advanced: 'Advanced',
-	'Skip card reveal on spacebar': 'Skip card reveal on spacebar',
-	'Skip the card reveal on rounds started with the spacebar':
-		'Skip the card reveal on rounds started with the spacebar',
-	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
-		'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.',
+	'Skip card reveal on spacebar hold': 'Skip card reveal on spacebar hold',
+	'Skip the card reveal while the spacebar is held':
+		'Skip the card reveal while the spacebar is held',
+	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
+		'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.',
 	'Stop on full game win': 'Stop on full game win',
 
 	// How to play
