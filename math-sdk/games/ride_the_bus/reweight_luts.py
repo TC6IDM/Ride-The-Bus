@@ -42,7 +42,7 @@ before). Run automatically at the end of run.py.
 import csv
 import os
 
-from game_calculations import all_mode_combinations, mode_name
+from game_calculations import MODE_FAMILIES, all_published_modes, mode_name
 
 # Integer scale for the winning-outcome weight. Large enough that rounding the
 # losing weight to an integer perturbs RTP by well under 0.001x.
@@ -114,10 +114,22 @@ def reweight_mode(game_dir: str, mode: str, target_rtp: float) -> dict:
 
 
 def reweight_all(game_dir: str, target_rtp: float) -> list:
-    """Reweight every bet mode's published lookup table to the common target."""
+    """
+    Reweight every published mode's lookup table onto the common target.
+
+    The target is scaled by each mode's COST. Stake reads RTP as
+    mean_payout / cost, and payoutMultiplier is expressed against the base bet,
+    so a 2x-cost mode has to average 1.92x to return the same 96%. gamestate
+    already scales its multipliers by cost for exactly this reason; this is the
+    matching half, and without it the 2x families would be reweighted down to
+    48% RTP and fail the RTP band outright.
+    """
     results = []
-    for combo in all_mode_combinations():
-        results.append(reweight_mode(game_dir, mode_name(*combo), target_rtp))
+    for family, combo in all_published_modes():
+        cost = MODE_FAMILIES[family]["cost"]
+        result = reweight_mode(game_dir, mode_name(*combo, family=family), target_rtp * cost)
+        result["cost"] = cost
+        results.append(result)
     return results
 
 
@@ -127,6 +139,8 @@ if __name__ == "__main__":
 
     cfg = GameConfig()
     out = reweight_all(here, cfg.rtp)
-    rtps = [r["realized_rtp"] for r in out]
-    print(f"Reweighted {len(out)} modes to target {cfg.rtp:.4f}")
+    # Realized RTP is recorded per-cost, so normalise before comparing across
+    # families - otherwise the 2x modes look like a 96-point spread.
+    rtps = [r["realized_rtp"] / r["cost"] for r in out]
+    print(f"Reweighted {len(out)} modes to target {cfg.rtp:.4f} (x cost)")
     print(f"  realized RTP min={min(rtps)*100:.4f}%  max={max(rtps)*100:.4f}%  spread={(max(rtps)-min(rtps))*100:.4f}%")

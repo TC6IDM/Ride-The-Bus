@@ -13,7 +13,7 @@ from src.config.config import Config
 from src.config.distributions import Distribution
 from src.config.config import BetMode
 
-from game_calculations import all_mode_combinations, mode_name
+from game_calculations import MODE_FAMILIES, all_published_modes, mode_name
 
 
 class GameConfig(Config):
@@ -96,10 +96,13 @@ class GameConfig(Config):
         # guesses before pressing Play, so one bet mode = one full 4-stage
         # choice combination (2 * 3 * 3 * 4 = 72 modes), each resolved fully
         # in a single atomic play() call.
+        # Three families x 64 combinations = 192 published modes. The base
+        # family keeps its unprefixed names, so every replay event ID already
+        # recorded against it stays valid.
         self.bet_modes = [
             BetMode(
-                name=mode_name(*combo),
-                cost=1.0,
+                name=mode_name(*combo, family=family),
+                cost=MODE_FAMILIES[family]["cost"],
                 rtp=self.rtp,
                 max_win=self.wincap,
                 auto_close_disabled=False,
@@ -117,5 +120,5 @@ class GameConfig(Config):
                     ),
                 ],
             )
-            for combo in all_mode_combinations()
+            for family, combo in all_published_modes()
         ]

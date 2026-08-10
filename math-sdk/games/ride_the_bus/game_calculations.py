@@ -22,6 +22,85 @@ SUIT_CHOICES = ["heart", "diamond", "club", "spade"]
 SUIT_NAME_TO_SYMBOL = {"heart": "♥", "diamond": "♦", "club": "♣", "spade": "♠"}
 
 
+# ---------------------------------------------------------------------------
+# Mode families
+#
+# Every family plays the same four guesses against the same deck; what differs
+# is what a MISS keeps, and that alone reshapes the whole payout curve. Because
+# reweight_luts.py pins every mode to the same RTP afterwards, a family that
+# forgives more cannot also pay more - the two are the same dial viewed from
+# opposite ends.
+#
+#   base     the shipping game. A first-card miss loses the round outright,
+#            later misses keep 30%.
+#   sc       Second Chance. Card 1 still busts the round outright, but from
+#            card 2 on the first miss keeps half and PLAYS ON; a second miss
+#            ends it on the usual terms.
+#
+#            Card 1 is deliberately NOT forgiven, and the reason is mechanical
+#            rather than aesthetic. Forgiving it too left barely any round
+#            paying zero, which pushed the mode's win-conditional mean (1.81x)
+#            BELOW its 1.92x reweight target - and reweight_luts.py can only
+#            move RTP by re-weighting losses, so with almost none to work with
+#            it refuses outright rather than emit a non-compliant table.
+#            Keeping the first card lethal preserves the ~50% zero rate the
+#            reweighter needs, and it leaves the opening card its tension.
+#   hs       High Stakes. Misses keep 20% instead of 30%, so wins are worth
+#            more - the ceiling is nearly three times base's, at the same
+#            roughly-one-in-two chance of a round paying nothing.
+#
+# The retention numbers are not free choices. Stake measures CVaR and Expected
+# Tail Liability as the worst value across all modes, and a failed class shrinks
+# the game's bet-level template. High Stakes at 0.20 gives CVaR 648 against a
+# 700 limit; at 0.15 it is 730 and over. That is why it is 0.20.
+#
+# Costs stay at or above the base's 1.0x, which Stake requires to be the
+# cheapest mode.
+# ---------------------------------------------------------------------------
+
+BASE_RETENTION = (0.0, 0.3, 0.3, 0.3)
+
+MODE_FAMILIES = {
+    "base": {
+        "prefix": "",
+        "cost": 1.0,
+        "retention": BASE_RETENTION,
+        # None = no forgiveness; the first miss ends the round.
+        "forgive": None,
+        "forgive_from": 0,
+    },
+    "sc": {
+        "prefix": "sc_",
+        "cost": 2.0,
+        "retention": BASE_RETENTION,
+        "forgive": 0.5,
+        # Card 1 (stage 0) is never forgiven - see the note above.
+        "forgive_from": 1,
+    },
+    "hs": {
+        "prefix": "hs_",
+        "cost": 2.0,
+        "retention": (0.0, 0.2, 0.2, 0.2),
+        "forgive": None,
+        "forgive_from": 0,
+    },
+}
+
+# Longest prefix first, so "sc_" is tested before the empty base prefix.
+_PREFIXES = sorted(
+    ((cfg["prefix"], key) for key, cfg in MODE_FAMILIES.items()),
+    key=lambda pair: -len(pair[0]),
+)
+
+
+def family_of(mode: str) -> str:
+    """Family key for a published mode name."""
+    for prefix, key in _PREFIXES:
+        if prefix and mode.startswith(prefix):
+            return key
+    return "base"
+
+
 def all_mode_combinations():
     """
     Every (color, higher_lower, inside_outside, suit) choice combination that
@@ -41,15 +120,33 @@ def all_mode_combinations():
                     yield (color, higher_lower, inside_outside, suit)
 
 
-def mode_name(color: str, higher_lower: str, inside_outside: str, suit: str) -> str:
-    """Bet mode name encoding one full pre-selected 4-stage choice combination."""
-    return f"{color}_{higher_lower}_{inside_outside}_{suit}"
+def mode_name(
+    color: str, higher_lower: str, inside_outside: str, suit: str, family: str = "base"
+) -> str:
+    """
+    Bet mode name: one full pre-selected 4-stage choice combination, prefixed
+    with its family.
+
+    The base family carries NO prefix, deliberately. Its 64 names are already
+    published and every replay event ID recorded against them stays valid.
+    """
+    prefix = MODE_FAMILIES[family]["prefix"]
+    return f"{prefix}{color}_{higher_lower}_{inside_outside}_{suit}"
 
 
 def parse_mode_name(name: str) -> tuple:
-    """Inverse of mode_name(): '<color>_<higher_lower>_<inside_outside>_<suit>' -> tuple."""
-    color, higher_lower, inside_outside, suit = name.split("_")
-    return color, higher_lower, inside_outside, suit
+    """Inverse of mode_name(): -> (family, color, higher_lower, inside_outside, suit)."""
+    family = family_of(name)
+    body = name[len(MODE_FAMILIES[family]["prefix"]) :]
+    color, higher_lower, inside_outside, suit = body.split("_")
+    return family, color, higher_lower, inside_outside, suit
+
+
+def all_published_modes():
+    """Every (family, combo) pair the game publishes - 3 families x 64 = 192."""
+    for family in MODE_FAMILIES:
+        for combo in all_mode_combinations():
+            yield family, combo
 
 
 def rank_value(rank: str) -> int:
@@ -104,7 +201,9 @@ class GameCalculations(Executables):
         """Per-stage decay constant such that decay**4 == config.target_rtp."""
         return self.config.target_rtp**0.25
 
-    def partial_multiplier(self, probability: float, stage_index: int) -> float:
+    def partial_multiplier(
+        self, probability: float, stage_index: int, retention: float = None
+    ) -> float:
         """
         Win-multiplier for stage `stage_index` at true win-probability
         `probability`. Derived from requiring
@@ -114,10 +213,19 @@ class GameCalculations(Executables):
         "correct" branch can never fire then, so this multiplier is never
         actually applied; the round just busts at this stage and banks the
         retention fraction like any other miss (gamestate.run_spin).
+
+        `retention` is passed in rather than read from STAGE_RETENTION because
+        it now varies two ways: by mode family, and within a Second Chance round
+        by whether the forgiveness is still in hand. It is the retention this
+        stage's miss would actually bank, and the martingale only holds if the
+        two agree - pay a stage as though a miss kept 0.3 while the miss really
+        keeps 0.5 and the mode's RTP drifts off target.
+        Defaults to the base table so existing callers are unaffected.
         """
         if probability <= 0:
             return 0.0
-        retention = self.STAGE_RETENTION[stage_index]
+        if retention is None:
+            retention = self.STAGE_RETENTION[stage_index]
         decay = self.target_rtp_decay()
         return (decay - (1 - probability) * retention) / probability
 
@@ -135,27 +243,27 @@ class GameCalculations(Executables):
         quantized = math.floor(raw * 10) / 10
         return quantized if quantized > 0 else 0.1
 
-    def color_payouts(self, remaining: list) -> dict:
+    def color_payouts(self, remaining: list, retention: float = None) -> dict:
         total = len(remaining)
         red = sum(1 for _, suit in remaining if suit in RED_SUITS)
         black = total - red
         return {
-            "red": self.partial_multiplier(red / total, 0),
-            "black": self.partial_multiplier(black / total, 0),
+            "red": self.partial_multiplier(red / total, 0, retention),
+            "black": self.partial_multiplier(black / total, 0, retention),
         }
 
-    def higher_lower_payouts(self, remaining: list, ref_value: int) -> dict:
+    def higher_lower_payouts(self, remaining: list, ref_value: int, retention: float = None) -> dict:
         total = len(remaining)
         higher = sum(1 for rank, _ in remaining if rank_value(rank) > ref_value)
         lower = sum(1 for rank, _ in remaining if rank_value(rank) < ref_value)
         equal = total - higher - lower
         return {
-            "higher": self.partial_multiplier(higher / total, 1),
-            "lower": self.partial_multiplier(lower / total, 1),
-            "equal": self.partial_multiplier(equal / total, 1),
+            "higher": self.partial_multiplier(higher / total, 1, retention),
+            "lower": self.partial_multiplier(lower / total, 1, retention),
+            "equal": self.partial_multiplier(equal / total, 1, retention),
         }
 
-    def inside_outside_payouts(self, remaining: list, val_a: int, val_b: int) -> dict:
+    def inside_outside_payouts(self, remaining: list, val_a: int, val_b: int, retention: float = None) -> dict:
         total = len(remaining)
         min_val, max_val = min(val_a, val_b), max(val_a, val_b)
         inside = sum(1 for rank, _ in remaining if min_val < rank_value(rank) < max_val)
@@ -164,19 +272,19 @@ class GameCalculations(Executables):
         )
         equal = total - inside - outside
         return {
-            "inside": self.partial_multiplier(inside / total, 2),
-            "outside": self.partial_multiplier(outside / total, 2),
-            "equal": self.partial_multiplier(equal / total, 2),
+            "inside": self.partial_multiplier(inside / total, 2, retention),
+            "outside": self.partial_multiplier(outside / total, 2, retention),
+            "equal": self.partial_multiplier(equal / total, 2, retention),
         }
 
-    def suit_payouts(self, remaining: list) -> dict:
+    def suit_payouts(self, remaining: list, retention: float = None) -> dict:
         total = len(remaining)
         counts = {suit: 0 for suit in SUITS}
         for _, suit in remaining:
             counts[suit] += 1
         return {
-            "heart": self.partial_multiplier(counts["♥"] / total, 3),
-            "diamond": self.partial_multiplier(counts["♦"] / total, 3),
-            "club": self.partial_multiplier(counts["♣"] / total, 3),
-            "spade": self.partial_multiplier(counts["♠"] / total, 3),
+            "heart": self.partial_multiplier(counts["♥"] / total, 3, retention),
+            "diamond": self.partial_multiplier(counts["♦"] / total, 3, retention),
+            "club": self.partial_multiplier(counts["♣"] / total, 3, retention),
+            "spade": self.partial_multiplier(counts["♠"] / total, 3, retention),
         }
