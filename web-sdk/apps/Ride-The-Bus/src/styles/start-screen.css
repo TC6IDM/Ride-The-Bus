@@ -35,8 +35,13 @@
 	align-items: center;
 	gap: calc(var(--ss) * 1.5);
 	padding: calc(var(--ss) * 2.5) calc(var(--ss) * 2);
-	/* Wide enough for four step panels side by side without wrapping. */
-	max-width: min(calc(var(--ss) * 62), 96vw);
+	/* Wide enough for four SQUARE step panels side by side.
+	   62 --ss was only wide enough for them to fit, which left each panel 136px
+	   across and 254px tall on a 1920 screen - a tall sliver, on a page with
+	   1300px of unused width either side. 128 --ss gives each panel about 300px,
+	   which is what its content is tall, so the panels come out square.
+	   The 96vw cap still binds on phones and popouts, so neither changes. */
+	max-width: min(calc(var(--ss) * 128), 96vw);
 	width: 100%;
 	text-align: center;
 	/* Centres like align-items: center, but without the trap that comes with it:
@@ -148,9 +153,17 @@
 	position: relative;
 	flex: 1 1 0;
 	min-width: 0;
+	/* Square, given the room. This is a suggestion rather than a constraint:
+	   a flex item's min-height is auto, so where the panel is narrower than its
+	   content is tall - a phone, a popout, a small desktop window where the
+	   96vw cap bites - the content still wins and the panel simply grows. So it
+	   is square wherever there is width for it and never clips where there is
+	   not. */
+	aspect-ratio: 1;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	justify-content: center;
 	gap: calc(var(--ss) * 0.7);
 	padding: calc(var(--ss) * 1.5) calc(var(--ss) * 0.6) calc(var(--ss) * 0.9);
 	border: 1px solid #2e4224;
@@ -228,8 +241,14 @@
 	   desktop and stays inside the share at every size down to 640px wide; 1.5
 	   overflows everywhere. It was 0.84 - a 70px square on a screen with room
 	   for 117px - which is what made the intro read as a shrunken diagram of
-	   the game rather than the game's own controls. */
-	--ui: calc(var(--ss) * 1.4);
+	   the game rather than the game's own controls.
+
+	   Raised again to 1.7 once the card widened to make the panels square: at
+	   1.4 the control filled under 40% of a 300px panel and looked marooned in
+	   it. The panel's height is roughly 1.85 times the square plus its label
+	   and worked example, so the square can never fill more than about half a
+	   panel that is square - 1.7 puts it at 142px, which is that half. */
+	--ui: calc(var(--ss) * 1.7);
 	--choice-size: calc(var(--ui) * 8.36);
 	--choice-fs: calc(var(--ui) * 2.04);
 	--quad-fs: calc(var(--ui) * 2.33);
