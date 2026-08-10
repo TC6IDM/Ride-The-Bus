@@ -278,3 +278,68 @@
 .stepper-btn:active { background: rgba(255, 255, 255, 0.22); }
 
 .stepper-btn:first-child { border-bottom: 1px solid rgba(255, 255, 255, 0.12); }
+
+/* ---- Bet mode picker -----------------------------------------------------
+   Approval requires each mode's cost and what it buys to be stated, so the
+   cost sits on the row itself rather than in a paytable elsewhere. */
+.mode-list {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ui-bar) * 0.73);
+}
+
+.mode-option {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ui-bar) * 0.36);
+  padding: calc(var(--ui-bar) * 1) calc(var(--ui-bar) * 1.09);
+  border-radius: calc(var(--ui-bar) * 0.73);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: #cfe0f0;
+  text-align: left;
+  cursor: pointer;
+  text-transform: none;
+  transition: border-color 0.12s, background 0.12s;
+}
+
+.mode-option:hover { border-color: #4c9ffe; background: rgba(76, 159, 254, 0.1); }
+
+.mode-option.selected {
+  border-color: #2f8fff;
+  background: rgba(47, 143, 255, 0.18);
+  color: #fff;
+}
+
+.mode-option-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: calc(var(--ui-bar) * 0.9);
+}
+
+.mode-option-name { font-size: calc(var(--ui-bar) * 1.36); font-weight: 800; }
+
+/* The cost is the thing a player must not miss, so it is the accent. */
+.mode-option-cost {
+  font-size: calc(var(--ui-bar) * 1.09);
+  font-weight: 800;
+  color: #4c9ffe;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.mode-option-blurb {
+  font-size: calc(var(--ui-bar) * 1.02);
+  line-height: 1.4;
+  color: #93a4b5;
+}
+
+.mode-option.selected .mode-option-blurb { color: #cfe0f0; }
+
+.mode-note {
+  margin: calc(var(--ui-bar) * 1) 0 0;
+  font-size: calc(var(--ui-bar) * 0.98);
+  line-height: 1.4;
+  color: #93a4b5;
+}

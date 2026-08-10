@@ -22,6 +22,7 @@
 	// Derived from payout.ts rather than written out, so the paytable a player
 	// reads cannot drift from what the RGS credits - see payoutTable.ts.
 	import { PAYOUT_ROWS } from '../game/payoutTable';
+	import { FAMILY_BLURB, FAMILY_RULES, MODE_FAMILIES } from '../game/modes';
 	import gameConfig from '../game/config';
 	import { t } from '../i18n/i18nDerived';
 
@@ -90,6 +91,32 @@
         </tbody>
       </table>
       <p>{t('Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.')}</p>
+
+      <!-- Approval requires every mode's cost and what it buys to be stated
+           here, not only in the picker. The costs and blurbs are read from
+           FAMILY_RULES / FAMILY_BLURB, which the payout maths uses too, so this
+           table cannot advertise a mode the game does not actually deal. -->
+      <h4 class="info-h">{t('Game modes')}</h4>
+      <table class="pay-table">
+        <thead>
+          <tr>
+            <th scope="col">{t('Mode')}</th>
+            <th scope="col">{t('Bet')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each MODE_FAMILIES as family}
+            <tr>
+              <td>
+                <strong>{t(FAMILY_RULES[family].label)}</strong><br />
+                {t(FAMILY_BLURB[family])}
+              </td>
+              <td class="pay-amount">{FAMILY_RULES[family].cost}×</td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+      <p>{t('Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.')}</p>
 
       <h4 class="info-h">{t('If you guess wrong')}</h4>
       <ul>

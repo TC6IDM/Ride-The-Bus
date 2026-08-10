@@ -110,6 +110,23 @@ export const FAMILY_RULES: Record<ModeFamily, FamilyRules> = {
   },
 };
 
+/**
+ * One line per family, for the mode picker and the rules screen.
+ *
+ * English text doubles as the i18n key, and the literal union is what lets
+ * `t()` accept it - the same reason winTiers.ts types its labels that way.
+ * The numbers are the measured ceilings, so they cannot drift into marketing.
+ */
+export const FAMILY_BLURB: Record<ModeFamily, string> & {
+  base: 'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.';
+  sc: 'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.';
+  hs: 'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.';
+} = {
+  base: 'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.',
+  sc: 'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.',
+  hs: 'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.',
+};
+
 /** Longest prefix first, so "sc_" is tested before base's empty one. */
 const PREFIXED_FAMILIES = MODE_FAMILIES.slice()
   .sort((a, b) => FAMILY_RULES[b].prefix.length - FAMILY_RULES[a].prefix.length)

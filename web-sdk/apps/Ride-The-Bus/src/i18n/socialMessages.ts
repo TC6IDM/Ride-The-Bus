@@ -114,6 +114,23 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 	'A gambling limit on your account has been reached.':
 		'A play limit on your account has been reached.',
 
+	// Bet mode picker.
+	//
+	// Two of these the prohibited-terms regex does NOT catch, and they are here
+	// anyway: "High Stakes" and "staked" both derive from "stake", which is on
+	// Stake's list, but \bstake\b does not match either. A word-boundary check
+	// is a guard against the obvious cases, not a substitute for reading the
+	// copy - a US reviewer is looking at the words, not the regex.
+	'High Stakes': 'High Risk',
+	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
+		'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your play amount.',
+	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
+		'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit played.',
+	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
+		'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit played.',
+	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
+		'Every mode returns the same 96.00% over many rounds. What changes is how often a round wins and how much it can win.',
+
 	// Auto-slam toggle in the interaction guide. "payout" is prohibited; the
 	// toggle's own label carries no restricted terms and passes through.
 	'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.':

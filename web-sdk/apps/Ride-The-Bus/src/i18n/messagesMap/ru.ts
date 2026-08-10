@@ -40,6 +40,21 @@ export default {
 	'Number of Spins': 'Количество раундов',
 
 	Advanced: 'Дополнительно',
+	'Game Mode': 'Режим игры',
+	'Choose game mode': 'Выбрать режим игры',
+	Classic: 'Классический',
+	'Second Chance': 'Второй шанс',
+	'High Stakes': 'Высокие ставки',
+	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
+		'Ошибка на первой карте завершает раунд. Последующие промахи сохраняют 30%. До 1354,2× вашей ставки.',
+	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
+		'Карта 1 по-прежнему завершает раунд, но после неё первый промах прощается и игра продолжается. До 438,6× на единицу ставки.',
+	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
+		'Промахи сохраняют лишь 20%, поэтому верные догадки стоят дороже. До 1910,2× на единицу ставки.',
+	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
+		'Все режимы возвращают одни и те же 96,00% на дистанции. Меняется лишь то, как часто и сколько платит раунд.',
+	Forgiven: 'Прощено',
+	'Game modes': 'Режимы игры',
 	'Stop on full game win': 'Остановить при полной победе',
 
 	'How to Play': 'Как играть',

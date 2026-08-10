@@ -40,6 +40,21 @@ export default {
 	'Number of Spins': 'Liczba rund',
 
 	Advanced: 'Zaawansowane',
+	'Game Mode': 'Tryb gry',
+	'Choose game mode': 'Wybierz tryb gry',
+	Classic: 'Klasyczny',
+	'Second Chance': 'Druga szansa',
+	'High Stakes': 'Wysoka stawka',
+	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
+		'Błąd przy pierwszej karcie kończy rundę. Późniejsze pomyłki zachowują 30%. Do 1354,2× twojego zakładu.',
+	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
+		'Karta 1 nadal kończy rundę, ale potem pierwsza pomyłka jest wybaczana i gra trwa dalej. Do 438,6× na jednostkę stawki.',
+	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
+		'Pomyłki zachowują tylko 20%, więc trafienia są warte więcej. Do 1910,2× na jednostkę stawki.',
+	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
+		'Każdy tryb zwraca te same 96,00% na przestrzeni wielu rund. Zmienia się tylko to, jak często i ile runda wypłaca.',
+	Forgiven: 'Wybaczone',
+	'Game modes': 'Tryby gry',
 	'Stop on full game win': 'Zatrzymaj przy pełnej wygranej',
 
 	'How to Play': 'Jak grać',

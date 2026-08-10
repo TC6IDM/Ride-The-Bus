@@ -233,3 +233,23 @@
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.85);
   background: rgba(0, 0, 0, 0.35);
 }
+
+/* A miss a Second Chance round forgave.
+   Same overlay geometry as .bust-x, deliberately NOT the same mark: a red
+   cross says the round ended here, and this one carried on. An amber return
+   arrow says "that one was let off" without borrowing the language of a loss. */
+.forgiven-mark {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f5c451;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.forgiven-mark svg {
+  width: calc(var(--ui) * 4.9);
+  height: calc(var(--ui) * 4.9);
+  filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.85));
+}

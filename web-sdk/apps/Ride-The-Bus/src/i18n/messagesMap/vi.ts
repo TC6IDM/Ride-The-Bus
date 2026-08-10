@@ -40,6 +40,21 @@ export default {
 	'Number of Spins': 'Số vòng',
 
 	Advanced: 'Nâng cao',
+	'Game Mode': 'Chế độ chơi',
+	'Choose game mode': 'Chọn chế độ chơi',
+	Classic: 'Cổ điển',
+	'Second Chance': 'Cơ hội thứ hai',
+	'High Stakes': 'Cược lớn',
+	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
+		'Sai lá bài đầu tiên là kết thúc vòng. Các lần sai sau giữ lại 30%. Lên tới 1354,2× tiền cược của bạn.',
+	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
+		'Lá 1 vẫn kết thúc vòng, nhưng sau đó lần đoán sai đầu tiên được bỏ qua và trò chơi tiếp tục. Lên tới 438,6× mỗi đơn vị cược.',
+	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
+		'Sai chỉ giữ lại 20%, nên đoán đúng có giá trị hơn. Lên tới 1910,2× mỗi đơn vị cược.',
+	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
+		'Mọi chế độ đều trả về cùng mức 96,00% qua nhiều vòng. Chỉ khác ở tần suất và mức trả thưởng của mỗi vòng.',
+	Forgiven: 'Được bỏ qua',
+	'Game modes': 'Chế độ chơi',
 	'Stop on full game win': 'Dừng khi thắng toàn ván',
 
 	'How to Play': 'Cách chơi',

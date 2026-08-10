@@ -56,6 +56,26 @@ export default {
 	Autoplay: 'Autoplay',
 	'Number of Spins': 'Number of Spins',
 
+	// Bet mode picker. The three ways to buy the same four guesses; only what a
+	// miss keeps differs. Blurbs quote the measured ceilings so the copy cannot
+	// drift from the maths.
+	'Game Mode': 'Game Mode',
+	// Shown on the card a Second Chance round let off.
+	Forgiven: 'Forgiven',
+	'Game modes': 'Game modes',
+	'Choose game mode': 'Choose game mode',
+	Classic: 'Classic',
+	'Second Chance': 'Second Chance',
+	'High Stakes': 'High Stakes',
+	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
+		'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.',
+	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
+		'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.',
+	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
+		'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.',
+	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
+		'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.',
+
 	// Advanced popup
 	Advanced: 'Advanced',
 	'Stop on full game win': 'Stop on full game win',

@@ -46,7 +46,14 @@
   import { requestBet, requestEndRound } from 'rgs-requests';
   import { pacedPlay, pacedRequest } from '../game/rgsPacing';
   import { sound, type PressKind } from '../game/sound';
-  import { isCombinationPlayable } from '../game/modes';
+  import {
+    FAMILY_BLURB,
+    FAMILY_RULES,
+    MODE_FAMILIES,
+    isCombinationPlayable,
+    modeName,
+    type ModeFamily,
+  } from '../game/modes';
   import { gameReady, loaderGone } from '../game/ready.svelte';
   import { jurisdiction, TURBO_CAP_WITHOUT_SUPER } from '../game/jurisdiction.svelte';
   // Payout maths and bet-grid arithmetic live in plain modules so they can be
@@ -55,8 +62,8 @@
   // matches the number the RGS credits.
   import {
     DECAY,
-    STAGE_RETENTION,
     computeFinalMultiplier,
+    forgivenessAvailable,
     quantizeMultiplier,
   } from '../game/payout';
   import { betDecimals, betWithinRange, snapBetToGrid, snapToStep } from '../game/betLimits';
@@ -197,6 +204,14 @@
   let revealEvents = $state<RevealEvent[]>([]);
   let revealedCards = $state<(Card | null)[]>([null, null, null, null]);
   let bustedIndex = $state<number | null>(null);
+  /**
+   * The card a Second Chance round forgave, or null.
+   *
+   * Kept apart from bustedIndex because the two mean opposite things to the
+   * board: a bust ends the reveal, a forgiven miss does not. Sharing one marker
+   * would stop the remaining cards being turned.
+   */
+  let forgivenIndex = $state<number | null>(null);
   // Cumulative (quantized) win multiplier shown above each card as it is
   // revealed - climbs while the streak holds, then shows the banked value on
   // the bust card. null = not revealed yet.
@@ -254,7 +269,7 @@
   });
 
   // Bottom control-bar UI: which popup (if any) is open, plus mute state.
-  let openPopup = $state<null | 'bet' | 'turbo' | 'autospin' | 'advanced' | 'info'>(null);
+  let openPopup = $state<null | 'bet' | 'mode' | 'turbo' | 'autospin' | 'advanced' | 'info'>(null);
   // Seeded from the persisted preference so mute survives a reload.
   let muted = $state(sound.isMuted());
   function toggleMuted() {
@@ -397,9 +412,22 @@
   // The bet is live now (no Set button): the input + / - drive it directly and
   // the Start button only enables when the amount is actually playable.
   const betValue = () => Number(betInput);
+  /* ---- Bet mode family ---------------------------------------------------
+     Which of the three ways to buy the same four guesses. See FAMILY_RULES.
+     Only the family's COST touches the money: a 2x mode debits twice the bet
+     shown, and the payout multiplier is expressed against the bet, not the
+     cost - so everything below that spends money uses roundCost(), and
+     everything that pays out still multiplies by the bet. */
+  let betFamily = $state<ModeFamily>('base');
+  const familyRules = () => FAMILY_RULES[betFamily];
+  /** What one round actually costs at the current bet. */
+  const roundCost = (bet: number = betValue()) => bet * familyRules().cost;
+
   const betIsValid = () => {
     const v = betValue();
-    if (!(v > 0) || v > stateBet.balanceAmount) return false;
+    // Affordability is against the COST, not the bet: at 2x a player with $10
+    // cannot buy a $6 round, and letting them try just earns an RGS rejection.
+    if (!(v > 0) || roundCost(v) > stateBet.balanceAmount) return false;
     // On a real session the RGS enforces minBet/maxBet, so check against those
     // rather than the min/max of betLevels - betLevels is a suggestion list and
     // need not span the full allowed range. Divisibility by stepBet is NOT
@@ -843,6 +871,7 @@
     slamRequested = autoRunning && slamOnAuto && !jurisdiction.slamstopDisabled();
     let running = 1;
     let busted = false;
+    let forgivenessSpent = false;
     for (let i = 0; i < revealEvents.length; i++) {
       await revealWait(650, 0);
       revealedCards[i] = revealEvents[i].card;
@@ -852,12 +881,22 @@
         running *= event.payout;
         sound.playStageWin(i);
       } else if (!busted) {
-        bustedIndex = i;
-        running *= STAGE_RETENTION[i] * DECAY ** (3 - i);
-        busted = true;
-        sound.playBust();
+        // A forgiven miss keeps its fraction and the round plays on - no bust
+        // marker, no decay term (that stands in for stages a bust skips, and
+        // these will be played for real). Mirrors gamestate.py:run_spin.
+        if (forgivenessAvailable(familyRules(), i, forgivenessSpent)) {
+          running *= familyRules().forgive!;
+          forgivenessSpent = true;
+          forgivenIndex = i;
+          sound.playBust();
+        } else {
+          bustedIndex = i;
+          running *= familyRules().retention[i]! * DECAY ** (3 - i);
+          busted = true;
+          sound.playBust();
+        }
       }
-      stageMultipliers[i] = quantizeMultiplier(running);
+      stageMultipliers[i] = quantizeMultiplier(running * familyRules().cost);
       runningWin = stageMultipliers[i]! * initialBet;
       if (busted) {
         await revealWait(900, 150);
@@ -868,7 +907,7 @@
     await revealWait(300, 120);
     // Prefer the server's authoritative payout on engine rounds; fall back to
     // the local formula (identical maths) when there's no RGS session.
-    const multiplier = engineFinalMultiplier ?? computeFinalMultiplier(revealEvents);
+    const multiplier = engineFinalMultiplier ?? computeFinalMultiplier(revealEvents, familyRules());
     wonAmount = multiplier * initialBet;
     runningWin = wonAmount;
     if (stateUrlDerived.replay()) {
@@ -940,7 +979,9 @@
     lastWinAmount = wonAmount;
     lastWinMultiplier = initialBet > 0 ? wonAmount / initialBet : 0;
     // Net position for this session: payout minus the stake actually placed.
-    sessionNet = Math.round((sessionNet + (wonAmount - initialBet)) * 100) / 100;
+    // Against the round's COST, not the bet - a 2x mode takes twice the bet,
+    // and a net position that ignored that would read as a steady profit.
+    sessionNet = Math.round((sessionNet + (wonAmount - roundCost(initialBet))) * 100) / 100;
 
     // A win big enough to celebrate gets the takeover, which plays its own
     // escalating fanfare - so the ordinary win sting is suppressed rather than
@@ -1010,6 +1051,7 @@
     stageMultipliers = [null, null, null, null];
     runningWin = 0;
     bustedIndex = null;
+    forgivenIndex = null;
     wonAmount = 0;
     gameState = 'playing';
     await playRevealSequence();
@@ -1156,7 +1198,19 @@
         }
       }
 
-      const mode = `${colorChoice}_${hlChoice}_${ioChoice}_${suitChoice}`;
+      // Built through modeName so the family prefix and the choice order come
+      // from one place; string concatenation here is what once sent a mode the
+      // math had never published.
+      //
+      // Re-checked rather than asserted non-null. playRound already refuses
+      // without all four, but that guard is several branches back, and the
+      // failure if it ever stopped holding is a mode string containing "null"
+      // - rejected by the RGS with an error naming nothing useful.
+      if (!colorChoice || !hlChoice || !ioChoice || !suitChoice) {
+        roundError = true;
+        return false;
+      }
+      const mode = modeName(colorChoice, hlChoice, ioChoice, suitChoice, betFamily);
       // Keep the shared bet state's active mode in sync with what we actually
       // play, so any framework helper that reads activeBetModeKey agrees.
       stateBet.activeBetModeKey = mode;
@@ -1380,7 +1434,8 @@
 
     // Simulate the debit a real /wallet/play call would make, so balance
     // behaves like prod.
-    stateBet.balanceAmount -= initialBet;
+    // Local fallback only - the RGS debits the real thing. Cost, not bet.
+    stateBet.balanceAmount -= roundCost(initialBet);
     const [{ createRoundContract }, { buildLocalRevealEvents }] = await Promise.all([
       import('../game/roundContract'),
       import('../game/localRound'),
@@ -1389,17 +1444,17 @@
     roundSequence += 1;
     lastRoundId = round.roundId;
     roundSource = roundSeedData.source;
-    revealEvents = buildLocalRevealEvents(round.deck, [
-      colorChoice as string,
-      hlChoice as string,
-      ioChoice as string,
-      suitChoice as string,
-    ]);
+    revealEvents = buildLocalRevealEvents(
+      round.deck,
+      [colorChoice as string, hlChoice as string, ioChoice as string, suitChoice as string],
+      familyRules(),
+    );
     engineFinalMultiplier = null; // local round computes its own payout
     revealedCards = [null, null, null, null];
     stageMultipliers = [null, null, null, null];
     runningWin = 0;
     bustedIndex = null;
+    forgivenIndex = null;
     wonAmount = 0;
     gameState = 'playing';
     await playRevealSequence();
@@ -1455,7 +1510,7 @@
         if (roundError || autoStopRequested) break;
 
         // Tally this round's net result (payout minus the stake actually placed).
-        const roundBet = initialBet;
+        const roundBet = roundCost(initialBet);
         const won = wonAmount > roundBet;
         autoProfit = Math.round((autoProfit + (wonAmount - roundBet)) * 100) / 100;
 
@@ -1535,7 +1590,7 @@
   }
 
   // --- Bottom control-bar handlers ---
-  function togglePopup(name: 'bet' | 'turbo' | 'autospin' | 'advanced' | 'info') {
+  function togglePopup(name: NonNullable<typeof openPopup>) {
     openPopup = openPopup === name ? null : name;
   }
   // The big spin button: acts as Stop while an auto run is live, otherwise
@@ -1628,6 +1683,7 @@
       stageMultipliers = [null, null, null, null];
       runningWin = 0;
       bustedIndex = null;
+    forgivenIndex = null;
       wonAmount = 0;
       gameState = 'playing';
       playRevealSequence();
@@ -1963,6 +2019,16 @@
                   {/if}
                   {#if index === bustedIndex}
                     <div class="bust-x" aria-hidden="true">✕</div>
+                  {:else if index === forgivenIndex}
+                    <!-- A Second Chance round survived this one. Marked
+                         differently from a bust on purpose: the same cross
+                         would say the round ended, when it carried on. -->
+                    <div class="forgiven-mark" aria-label={t('Forgiven')}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M20 12a8 8 0 1 1-2.34-5.66" />
+                        <path d="M20 3v5h-5" />
+                      </svg>
+                    </div>
                   {/if}
                 </div>
               </div>
@@ -2089,10 +2155,32 @@
       </div>
     </div>
 
+    <!-- Bet mode. Locked during an auto run and in replay, like the bet itself:
+         the run was started on one mode's odds and the replay is a record of a
+         round already played on one. -->
+    <div class="cb-panel cb-panel-dark cb-mode">
+      <button
+        class="cb-mode-display"
+        class:active={openPopup === 'mode'}
+        onclick={() => togglePopup('mode')}
+        disabled={autoRunning || stateUrlDerived.replay()}
+        aria-label={t('Choose game mode')}
+      >
+        <span class="cb-cap">{t('Mode')}</span>
+        <span class="cb-val cb-mode-name">{t(familyRules().label)}</span>
+      </button>
+    </div>
+
     <div class="cb-panel cb-panel-dark cb-bet">
       <button class="cb-bet-display" class:active={openPopup === 'bet'} onclick={() => togglePopup('bet')} disabled={stateUrlDerived.replay()} aria-label={t('Choose bet amount')}>
         <span class="cb-cap">{t('Bet')}</span>
         <span class="cb-val">{numberToCurrencyString(betValue() > 0 ? betValue() : 0)}</span>
+        <!-- What the round actually costs, shown only when it differs from the
+             bet. A 2x mode debiting twice the figure beside it, with nothing
+             saying so, is the kind of surprise that becomes a support ticket. -->
+        {#if familyRules().cost !== 1}
+          <span class="cb-mode-cost">{familyRules().cost}× = {numberToCurrencyString(roundCost())}</span>
+        {/if}
       </button>
       <div class="cb-betstep">
         <button class="cb-step" onclick={() => stepBet(1)} disabled={autoRunning || stateUrlDerived.replay()} aria-label={t('Increase bet')}>{@render iconPlus()}</button>
@@ -2185,6 +2273,34 @@
 
   {#if openPopup}
     <button class="popup-backdrop" aria-label={t('Close menu')} onclick={() => (openPopup = null)}></button>
+  {/if}
+
+  <!-- Bet mode. Approval requires each mode's cost and what it buys to be
+       stated, so the cost sits on every row and the trade-off is spelled out
+       rather than left to the paytable. -->
+  {#if openPopup === 'mode'}
+    <div class="popup popup-mode" role="dialog" aria-label={t('Game Mode')}>
+      <div class="popup-head"><span>{t('Game Mode')}</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label={t('Close')}>✕</button></div>
+      <div class="mode-list">
+        {#each MODE_FAMILIES as family}
+          {@const rules = FAMILY_RULES[family]}
+          <button
+            type="button"
+            class="mode-option"
+            class:selected={betFamily === family}
+            aria-pressed={betFamily === family}
+            onclick={() => { betFamily = family; openPopup = null; }}
+          >
+            <span class="mode-option-head">
+              <span class="mode-option-name">{t(rules.label)}</span>
+              <span class="mode-option-cost">{rules.cost}× {t('Bet')}</span>
+            </span>
+            <span class="mode-option-blurb">{t(FAMILY_BLURB[family])}</span>
+          </button>
+        {/each}
+      </div>
+      <p class="mode-note">{t('Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.')}</p>
+    </div>
   {/if}
 
   {#if openPopup === 'bet'}

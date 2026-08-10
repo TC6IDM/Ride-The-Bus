@@ -40,6 +40,21 @@ export default {
 	'Number of Spins': 'राउंड की संख्या',
 
 	Advanced: 'उन्नत',
+	'Game Mode': 'गेम मोड',
+	'Choose game mode': 'गेम मोड चुनें',
+	Classic: 'क्लासिक',
+	'Second Chance': 'दूसरा मौका',
+	'High Stakes': 'हाई स्टेक्स',
+	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
+		'पहला कार्ड गलत होने पर राउंड खत्म। बाद की गलतियाँ 30% रखती हैं। आपकी बाजी का 1354.2× तक।',
+	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
+		'कार्ड 1 अब भी राउंड खत्म करता है, पर उसके बाद आपका पहला गलत अनुमान माफ होता है और खेल चलता रहता है। प्रति इकाई 438.6× तक।',
+	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
+		'गलतियाँ केवल 20% रखती हैं, इसलिए सही अनुमान ज्यादा कीमती हैं। प्रति इकाई 1910.2× तक।',
+	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
+		'हर मोड कई राउंड में वही 96.00% लौटाता है। बदलता सिर्फ यह है कि राउंड कितनी बार और कितना भुगतान करता है।',
+	Forgiven: 'माफ किया',
+	'Game modes': 'गेम मोड',
 	'Stop on full game win': 'पूरी जीत पर रोकें',
 
 	'How to Play': 'कैसे खेलें',

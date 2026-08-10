@@ -40,6 +40,21 @@ export default {
 	'Number of Spins': 'Kierrosten määrä',
 
 	Advanced: 'Lisäasetukset',
+	'Game Mode': 'Pelitila',
+	'Choose game mode': 'Valitse pelitila',
+	Classic: 'Klassinen',
+	'Second Chance': 'Toinen mahdollisuus',
+	'High Stakes': 'Suuret panokset',
+	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
+		'Väärä ensimmäinen kortti päättää kierroksen. Myöhemmät virheet säilyttävät 30%. Jopa 1354,2× panoksesi.',
+	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
+		'Kortti 1 päättää yhä kierroksen, mutta sen jälkeen ensimmäinen virhe annetaan anteeksi ja peli jatkuu. Jopa 438,6× panosyksikköä kohden.',
+	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
+		'Virheet säilyttävät vain 20%, joten oikeat arvaukset ovat arvokkaampia. Jopa 1910,2× panosyksikköä kohden.',
+	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
+		'Jokainen tila palauttaa saman 96,00% monen kierroksen aikana. Vaihtelee vain se, kuinka usein kierros maksaa ja kuinka paljon.',
+	Forgiven: 'Annettu anteeksi',
+	'Game modes': 'Pelitilat',
 	'Stop on full game win': 'Pysäytä täydellä voitolla',
 
 	'How to Play': 'Näin pelaat',

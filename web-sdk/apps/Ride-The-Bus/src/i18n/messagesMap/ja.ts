@@ -40,6 +40,21 @@ export default {
 	'Number of Spins': 'ラウンド数',
 
 	Advanced: '詳細設定',
+	'Game Mode': 'ゲームモード',
+	'Choose game mode': 'ゲームモードを選択',
+	Classic: 'クラシック',
+	'Second Chance': 'セカンドチャンス',
+	'High Stakes': 'ハイステークス',
+	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
+		'1枚目を外すとラウンド終了。以降のミスは30%を保持します。ベットの最大1354.2倍。',
+	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
+		'カード1は変わらずラウンド終了ですが、その後の最初のミスは免除され続行します。賭け単位あたり最大438.6倍。',
+	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
+		'ミスは20%しか残らないぶん、的中の価値が高くなります。賭け単位あたり最大1910.2倍。',
+	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
+		'どのモードも多数のラウンドで同じ96.00%を還元します。変わるのは配当の頻度と大きさです。',
+	Forgiven: '免除',
+	'Game modes': 'ゲームモード',
 	'Stop on full game win': 'フルゲーム達成で停止',
 
 	'How to Play': '遊び方',

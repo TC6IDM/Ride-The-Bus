@@ -41,6 +41,21 @@ export default {
 	'Number of Spins': 'عدد الجولات',
 
 	Advanced: 'متقدم',
+	'Game Mode': 'وضع اللعبة',
+	'Choose game mode': 'اختر وضع اللعبة',
+	Classic: 'كلاسيكي',
+	'Second Chance': 'فرصة ثانية',
+	'High Stakes': 'رهانات عالية',
+	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
+		'خطأ في البطاقة الأولى ينهي الجولة. الأخطاء اللاحقة تحتفظ بنسبة 30%. حتى 1354.2× من رهانك.',
+	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
+		'البطاقة الأولى ما زالت تنهي الجولة، لكن بعدها يُسامَح أول تخمين خاطئ ويستمر اللعب. حتى 438.6× لكل وحدة مراهنة.',
+	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
+		'الأخطاء تحتفظ بنسبة 20% فقط، لذا تصبح التخمينات الصحيحة أثمن. حتى 1910.2× لكل وحدة مراهنة.',
+	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
+		'كل الأوضاع تعيد النسبة نفسها 96.00% على مدى جولات كثيرة. ما يتغير هو عدد مرات الربح ومقداره.',
+	Forgiven: 'مُتسامَح عنها',
+	'Game modes': 'أوضاع اللعبة',
 	'Stop on full game win': 'التوقف عند الفوز الكامل',
 
 	'How to Play': 'كيفية اللعب',

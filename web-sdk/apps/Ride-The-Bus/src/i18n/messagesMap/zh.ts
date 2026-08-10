@@ -40,6 +40,21 @@ export default {
 	'Number of Spins': '局数',
 
 	Advanced: '高级',
+	'Game Mode': '游戏模式',
+	'Choose game mode': '选择游戏模式',
+	Classic: '经典',
+	'Second Chance': '第二次机会',
+	'High Stakes': '高额投注',
+	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
+		'第一张牌猜错即结束本局。之后猜错保留30%。最高可达投注额的1354.2倍。',
+	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
+		'第一张牌仍会结束本局，但此后第一次猜错可获豁免并继续游戏。每单位投注最高438.6倍。',
+	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
+		'猜错仅保留20%，因此猜对更有价值。每单位投注最高1910.2倍。',
+	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
+		'所有模式在多局之后的回报率都是96.00%。不同之处在于中奖的频率和金额。',
+	Forgiven: '已豁免',
+	'Game modes': '游戏模式',
 	'Stop on full game win': '全中时停止',
 
 	'How to Play': '玩法说明',

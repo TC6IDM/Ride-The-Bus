@@ -396,3 +396,36 @@
 .cb-advanced:hover, .cb-advanced.active { border-color: #a98cff; color: #d0bcff; background: rgba(169, 140, 255, 0.16); box-shadow: 0 0 12px rgba(169, 140, 255, 0.45); }
 
 .cb-float:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ---- Bet mode readout ----------------------------------------------------
+   Sits beside the bet, because the two together are what a round costs. */
+.cb-mode-display {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(var(--ui-bar) * 0.09);
+  padding: calc(var(--ui-bar) * 0.36) calc(var(--ui-bar) * 0.73);
+  border: none;
+  border-radius: calc(var(--ui-bar) * 0.64);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-transform: none;
+}
+
+.cb-mode-display:hover:not(:disabled) { background: rgba(255, 255, 255, 0.06); }
+.cb-mode-display.active { background: rgba(76, 159, 254, 0.16); }
+.cb-mode-display:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.cb-mode-name { white-space: nowrap; }
+
+/* Shown only when the mode costs more than the bet beside it - a 2x mode
+   debiting twice the figure on screen, unannounced, is a support ticket. */
+.cb-mode-cost {
+  display: block;
+  font-size: calc(var(--ui-bar) * 0.86);
+  font-weight: 700;
+  color: #4c9ffe;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

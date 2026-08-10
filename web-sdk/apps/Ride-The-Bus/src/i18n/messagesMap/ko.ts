@@ -40,6 +40,21 @@ export default {
 	'Number of Spins': '라운드 수',
 
 	Advanced: '고급',
+	'Game Mode': '게임 모드',
+	'Choose game mode': '게임 모드 선택',
+	Classic: '클래식',
+	'Second Chance': '세컨드 챈스',
+	'High Stakes': '하이 스테이크',
+	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
+		'첫 카드를 틀리면 라운드가 끝납니다. 이후 실수는 30%를 남깁니다. 베팅의 최대 1354.2배.',
+	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
+		'카드 1은 여전히 라운드를 끝내지만, 그 뒤 첫 오답은 면제되어 계속 진행됩니다. 베팅 단위당 최대 438.6배.',
+	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
+		'실수가 20%만 남기므로 정답의 가치가 커집니다. 베팅 단위당 최대 1910.2배.',
+	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
+		'모든 모드는 여러 라운드에 걸쳐 동일한 96.00%를 돌려줍니다. 달라지는 것은 배당 빈도와 크기입니다.',
+	Forgiven: '면제됨',
+	'Game modes': '게임 모드',
 	'Stop on full game win': '풀 게임 성공 시 중지',
 
 	'How to Play': '게임 방법',

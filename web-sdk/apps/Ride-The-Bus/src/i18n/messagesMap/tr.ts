@@ -40,6 +40,21 @@ export default {
 	'Number of Spins': 'Tur sayısı',
 
 	Advanced: 'Gelişmiş',
+	'Game Mode': 'Oyun Modu',
+	'Choose game mode': 'Oyun modunu seç',
+	Classic: 'Klasik',
+	'Second Chance': 'İkinci Şans',
+	'High Stakes': 'Yüksek Bahis',
+	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
+		'İlk kartı bilememek turu bitirir. Sonraki hatalar %30 tutar. Bahsinizin 1354,2 katına kadar.',
+	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
+		'Kart 1 turu yine bitirir, ama sonrasında ilk yanlış tahmininiz affedilir ve oyun sürer. Bahis birimi başına 438,6 katına kadar.',
+	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
+		'Hatalar yalnızca %20 tuttuğu için doğru tahminler daha değerlidir. Bahis birimi başına 1910,2 katına kadar.',
+	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
+		'Her mod çok sayıda turda aynı %96,00 oranını döndürür. Değişen, bir turun ne sıklıkta ve ne kadar ödediğidir.',
+	Forgiven: 'Affedildi',
+	'Game modes': 'Oyun modları',
 	'Stop on full game win': 'Tam oyun kazancında durdur',
 
 	'How to Play': 'Nasıl oynanır',

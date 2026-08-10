@@ -40,6 +40,21 @@ export default {
 	'Number of Spins': 'Jumlah ronde',
 
 	Advanced: 'Lanjutan',
+	'Game Mode': 'Mode Permainan',
+	'Choose game mode': 'Pilih mode permainan',
+	Classic: 'Klasik',
+	'Second Chance': 'Kesempatan Kedua',
+	'High Stakes': 'Taruhan Tinggi',
+	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
+		'Kartu pertama yang salah mengakhiri ronde. Kesalahan berikutnya menyimpan 30%. Hingga 1354,2× taruhan Anda.',
+	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
+		'Kartu 1 tetap mengakhiri ronde, tetapi setelah itu tebakan salah pertama Anda dimaafkan dan permainan berlanjut. Hingga 438,6× per unit taruhan.',
+	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
+		'Kesalahan hanya menyimpan 20%, jadi tebakan benar bernilai lebih. Hingga 1910,2× per unit taruhan.',
+	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
+		'Setiap mode mengembalikan 96,00% yang sama selama banyak ronde. Yang berubah adalah seberapa sering ronde membayar dan seberapa besar.',
+	Forgiven: 'Dimaafkan',
+	'Game modes': 'Mode permainan',
 	'Stop on full game win': 'Berhenti saat menang penuh',
 
 	'How to Play': 'Cara bermain',

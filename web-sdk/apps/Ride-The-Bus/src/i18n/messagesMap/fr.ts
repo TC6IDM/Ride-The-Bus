@@ -40,6 +40,21 @@ export default {
 	'Number of Spins': 'Nombre de tours',
 
 	Advanced: 'Avancé',
+	'Game Mode': 'Mode de jeu',
+	'Choose game mode': 'Choisir le mode de jeu',
+	Classic: 'Classique',
+	'Second Chance': 'Seconde chance',
+	'High Stakes': 'Gros enjeux',
+	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
+		'Une première carte manquée met fin à la manche. Les erreurs suivantes conservent 30%. Jusqu’à 1354,2× votre mise.',
+	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
+		'La carte 1 met toujours fin à la manche, mais ensuite votre première erreur est pardonnée et le jeu continue. Jusqu’à 438,6× par unité misée.',
+	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
+		'Les erreurs ne conservent que 20%, les bonnes réponses valent donc davantage. Jusqu’à 1910,2× par unité misée.',
+	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
+		'Tous les modes rendent les mêmes 96,00% sur de nombreuses manches. Seules changent la fréquence des gains et leur ampleur.',
+	Forgiven: 'Pardonné',
+	'Game modes': 'Modes de jeu',
 	'Stop on full game win': 'Arrêter sur partie complète',
 
 	'How to Play': 'Comment jouer',
