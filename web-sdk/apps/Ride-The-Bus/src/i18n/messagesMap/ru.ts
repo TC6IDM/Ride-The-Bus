@@ -61,6 +61,14 @@ export default {
 		'Каждый верный прогноз оплачивается по его реальной вероятности: чем менее вероятен ваш выбор, тем больше выплата — и это зависит от уже открытых карт.',
 	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
 		'Если на столе тройка, «Меньше» платит около 4,75×, потому что лишь 8 из 51 оставшейся карты младше, а «Больше» — около 1,19×, потому что таких карт 40. Замените тройку на восьмёрку, и всё меняется: «Меньше» падает примерно до 1,57×, а «Больше» растёт до 2,08×. «Равно» всегда самый маловероятный вариант — около 12×.',
+	'Payout table': 'Таблица выплат',
+	Card: 'Карта',
+	Pick: 'Выбор',
+	Pays: 'Выплата',
+	'Red or Black': 'Красная или чёрная',
+	'Any suit': 'Любая масть',
+	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
+		'Каждый этап умножает предыдущий, поэтому все четыре складываются в итоговую выплату раунда. Текущий множитель рядом с картами округляется вниз до одного знака после запятой, поэтому может выглядеть немного меньше этих значений.',
 	'If you guess wrong': 'Если вы ошиблись',
 	'Card 1 — the round pays nothing.': 'Карта 1 — раунд не приносит выплаты.',
 	'Card 2 — you get 0.5× your bet back.': 'Карта 2 — вы получаете обратно 0,5× ставки.',
@@ -83,6 +91,8 @@ export default {
 		'Автоигра (круговые стрелки) повторяет те же четыре прогноза заданное число раундов или без ограничения. Счётчик раундов отображается на кнопке — нажмите красный квадрат, чтобы остановить; текущий раунд сначала завершится.',
 	'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.':
 		'«Остановить при полной победе» (кнопка с ползунками) завершает автоигру, как только в раунде совпадут все четыре карты. Останавливается только серия; ставка не меняется.',
+	'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'Пропускать раздачу карт в автоигре (кнопка с ползунками) запускает автоигру без анимации карт. Меняется только анимация — карты, шансы и выплата остаются прежними.',
 	'Tap the spacebar to play one round, or hold it to keep spinning until you let go.':
 		'Нажмите пробел для одного раунда или удерживайте его, чтобы игра продолжалась, пока не отпустите.',
 
@@ -177,6 +187,8 @@ export default {
 	'Mega Win': 'Мега-выигрыш',
 	'Epic Win': 'Эпический выигрыш',
 	'Tap to skip': 'Нажмите, чтобы пропустить',
+	'Skip card reveal on autoplay': 'Пропускать раздачу карт в автоигре',
+	'Skip the card reveal during autoplay': 'Пропускать раздачу карт во время автоигры',
 	'Skip win animations on autoplay': 'Пропускать анимации выигрыша в автоигре',
 	'Skip big win animations during autoplay':
 		'Пропускать анимации крупных выигрышей во время автоигры',

@@ -61,6 +61,14 @@ export default {
 		'Mỗi dự đoán đúng được trả theo đúng xác suất thực, nên lựa chọn càng khó xảy ra thì trả càng cao — và điều đó phụ thuộc vào các lá bài đã lật.',
 	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
 		'Khi trên bàn là lá 3, Nhỏ hơn trả khoảng 4,75× vì chỉ 8 trong 51 lá còn lại nhỏ hơn, còn Lớn hơn chỉ trả khoảng 1,19× vì có tới 40 lá lớn hơn. Đổi lá 3 thành lá 8 thì ngược lại: Nhỏ hơn giảm còn khoảng 1,57× và Lớn hơn tăng lên khoảng 2,08×. Bằng nhau luôn khó nhất, khoảng 12×.',
+	'Payout table': 'Bảng trả thưởng',
+	Card: 'Lá bài',
+	Pick: 'Lựa chọn',
+	Pays: 'Trả',
+	'Red or Black': 'Đỏ hoặc đen',
+	'Any suit': 'Bất kỳ chất nào',
+	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
+		'Mỗi chặng nhân với chặng trước đó, nên cả bốn kết hợp thành mức trả thưởng cuối cùng của vòng. Tổng lũy kế hiển thị bên cạnh các lá bài được làm tròn xuống một chữ số thập phân, nên có thể thấp hơn các con số này một chút.',
 	'If you guess wrong': 'Nếu bạn đoán sai',
 	'Card 1 — the round pays nothing.': 'Lá 1 — vòng chơi không trả gì.',
 	'Card 2 — you get 0.5× your bet back.': 'Lá 2 — bạn nhận lại 0,5× tiền cược.',
@@ -84,6 +92,8 @@ export default {
 		'Tự động chơi (mũi tên vòng tròn) lặp lại cùng bốn dự đoán trong số vòng đã đặt hoặc không giới hạn. Bộ đếm vòng hiển thị trên nút khi đang chạy — nhấn ô vuông đỏ để dừng; vòng đang diễn ra sẽ hoàn tất trước.',
 	'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.':
 		'Dừng khi thắng toàn ván (nút thanh trượt) kết thúc lượt tự động ngay khi một vòng đoán đúng cả bốn lá. Nó chỉ dừng lượt chạy; mức cược của bạn không thay đổi.',
+	'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'Bỏ qua phần lật bài khi tự động chơi (nút thanh trượt) chạy tự động chơi mà không có hoạt ảnh lật bài. Nó chỉ thay đổi hoạt ảnh, không bao giờ thay đổi lá bài, tỷ lệ hay mức trả thưởng.',
 	'Tap the spacebar to play one round, or hold it to keep spinning until you let go.':
 		'Nhấn phím cách để chơi một vòng, hoặc giữ phím để tiếp tục chơi cho đến khi bạn thả ra.',
 
@@ -181,6 +191,8 @@ export default {
 	'Mega Win': 'Siêu Thắng',
 	'Epic Win': 'Thắng Huyền Thoại',
 	'Tap to skip': 'Chạm để bỏ qua',
+	'Skip card reveal on autoplay': 'Bỏ qua phần lật bài khi tự động chơi',
+	'Skip the card reveal during autoplay': 'Bỏ qua phần lật bài trong khi tự động chơi',
 	'Skip win animations on autoplay': 'Bỏ qua hiệu ứng thắng khi tự động chơi',
 	'Skip big win animations during autoplay': 'Bỏ qua hiệu ứng thắng lớn trong khi tự động chơi',
 	'Guess the color of card 1: red or black.': 'Đoán màu của lá bài 1: đỏ hay đen.',

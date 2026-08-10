@@ -20,8 +20,10 @@
  * the module can be dropped from a production build. That only holds while
  * nothing imports it statically.
  */
-import { partialMultiplier } from './payout';
-import { rankValue, type Card } from './roundContract';
+// `.ts` extensions so `node --test` can load this module - its ESM resolver
+// will not resolve an extensionless relative import. See payoutTable.ts.
+import { partialMultiplier } from './payout.ts';
+import { rankValue, type Card } from './roundContract.ts';
 
 export type RevealEvent = {
   stage: number;

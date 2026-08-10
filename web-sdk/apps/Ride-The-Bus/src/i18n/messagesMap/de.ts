@@ -61,6 +61,14 @@ export default {
 		'Jeder richtige Tipp wird zu seinen echten Chancen ausgezahlt: Je unwahrscheinlicher deine Wahl, desto mehr bringt sie — und das hängt von den bereits offenen Karten ab.',
 	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
 		'Liegt eine 3 auf dem Tisch, zahlt Tiefer etwa 4,75×, weil nur 8 der 51 verbleibenden Karten niedriger sind, während Höher nur etwa 1,19× zahlt, weil 40 davon höher sind. Wird aus der 3 eine 8, dreht sich das um: Tiefer fällt auf etwa 1,57× und Höher steigt auf etwa 2,08×. Gleich ist mit rund 12× immer der weiteste Schuss.',
+	'Payout table': 'Auszahlungstabelle',
+	Card: 'Karte',
+	Pick: 'Tipp',
+	Pays: 'Zahlt',
+	'Red or Black': 'Rot oder Schwarz',
+	'Any suit': 'Beliebige Farbe',
+	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
+		'Jede Stufe multipliziert die vorherige, sodass die vier zusammen die Endauszahlung der Runde ergeben. Der neben den Karten angezeigte Zwischenstand wird auf eine Nachkommastelle abgerundet und kann daher etwas unter diesen Werten liegen.',
 	'If you guess wrong': 'Wenn du falsch tippst',
 	'Card 1 — the round pays nothing.': 'Karte 1 — die Runde zahlt nichts.',
 	'Card 2 — you get 0.5× your bet back.':
@@ -85,6 +93,8 @@ export default {
 		'Autoplay (die kreisförmigen Pfeile) wiederholt dieselben vier Tipps für eine festgelegte oder unbegrenzte Anzahl an Runden. Der Rundenzähler steht während des Laufs auf der Schaltfläche — drücke das rote Quadrat zum Stoppen; die laufende Runde wird noch zu Ende gespielt.',
 	'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.':
 		'Bei Komplettgewinn stoppen (die Regler-Schaltfläche) beendet einen Autoplay-Lauf, sobald eine Runde alle vier Karten trifft. Es stoppt nur den Lauf; dein Einsatz ändert sich nie.',
+	'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'Kartenaufdeckung bei Autoplay überspringen (die Schieberegler-Taste) lässt Autoplay ohne die Kartenanimation laufen. Das ändert nur die Animation, nie die Karten, die Chancen oder die Auszahlung.',
 	'Tap the spacebar to play one round, or hold it to keep spinning until you let go.':
 		'Tippe die Leertaste für eine Runde oder halte sie gedrückt, um weiterzuspielen, bis du loslässt.',
 
@@ -183,6 +193,9 @@ export default {
 	'Mega Win': 'Mega-Gewinn',
 	'Epic Win': 'Epischer Gewinn',
 	'Tap to skip': 'Zum Überspringen tippen',
+	'Skip card reveal on autoplay': 'Kartenaufdeckung bei Autoplay überspringen',
+	'Skip the card reveal during autoplay':
+		'Die Kartenaufdeckung während des Autoplays überspringen',
 	'Skip win animations on autoplay': 'Gewinnanimationen bei Autoplay überspringen',
 	'Skip big win animations during autoplay':
 		'Große Gewinnanimationen während Autoplay überspringen',

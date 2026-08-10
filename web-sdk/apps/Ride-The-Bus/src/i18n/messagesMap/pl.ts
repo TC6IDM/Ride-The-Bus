@@ -61,6 +61,14 @@ export default {
 		'Każdy trafny typ jest wypłacany zgodnie z rzeczywistym prawdopodobieństwem: im mniej prawdopodobny wybór, tym wyższa wypłata — a to zależy od kart już odkrytych.',
 	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
 		'Gdy na stole leży 3, Niżej płaci około 4,75×, bo tylko 8 z 51 pozostałych kart jest niższych, a Wyżej około 1,19×, bo takich kart jest 40. Zamień tę 3 na 8, a wszystko się odwraca: Niżej spada do około 1,57×, a Wyżej rośnie do około 2,08×. Równo zawsze jest najtrudniejsze — około 12×.',
+	'Payout table': 'Tabela wypłat',
+	Card: 'Karta',
+	Pick: 'Wybór',
+	Pays: 'Wypłaca',
+	'Red or Black': 'Czerwony lub czarny',
+	'Any suit': 'Dowolny kolor',
+	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
+		'Każdy etap mnoży poprzedni, więc cztery razem składają się na końcową wypłatę rundy. Suma bieżąca wyświetlana obok kart jest zaokrąglana w dół do jednego miejsca po przecinku, więc może być nieco niższa niż te wartości.',
 	'If you guess wrong': 'Jeśli się pomylisz',
 	'Card 1 — the round pays nothing.': 'Karta 1 — runda nie wypłaca nic.',
 	'Card 2 — you get 0.5× your bet back.': 'Karta 2 — odzyskujesz 0,5× stawki.',
@@ -84,6 +92,8 @@ export default {
 		'Autogra (okrągłe strzałki) powtarza te same cztery typy przez ustaloną liczbę rund lub bez limitu. Licznik rund widnieje na przycisku podczas gry — naciśnij czerwony kwadrat, aby zatrzymać; trwająca runda zakończy się jako pierwsza.',
 	'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.':
 		'Zatrzymaj przy pełnej wygranej (przycisk z suwakami) kończy autogrę w chwili, gdy runda trafi wszystkie cztery karty. Zatrzymuje tylko serię; Twoja stawka się nie zmienia.',
+	'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'Pomiń odkrywanie kart przy autograniu (przycisk suwaków) uruchamia autogranie bez animacji kart. Zmienia tylko animację, nigdy kart, szans ani wypłaty.',
 	'Tap the spacebar to play one round, or hold it to keep spinning until you let go.':
 		'Naciśnij spację, aby zagrać jedną rundę, lub przytrzymaj ją, aby grać dalej, aż ją puścisz.',
 
@@ -180,6 +190,8 @@ export default {
 	'Mega Win': 'Mega Wygrana',
 	'Epic Win': 'Epicka Wygrana',
 	'Tap to skip': 'Dotknij, aby pominąć',
+	'Skip card reveal on autoplay': 'Pomiń odkrywanie kart przy autograniu',
+	'Skip the card reveal during autoplay': 'Pomiń odkrywanie kart podczas autogrania',
 	'Skip win animations on autoplay': 'Pomijaj animacje wygranych w autoodtwarzaniu',
 	'Skip big win animations during autoplay':
 		'Pomijaj animacje dużych wygranych podczas autoodtwarzania',

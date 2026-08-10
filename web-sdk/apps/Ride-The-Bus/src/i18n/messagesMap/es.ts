@@ -61,6 +61,14 @@ export default {
 		'Cada acierto se paga según sus probabilidades reales, así que cuanto menos probable sea tu elección, más paga — y eso depende de las cartas ya visibles.',
 	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
 		'Con un 3 sobre la mesa, Menor paga unas 4,75× porque solo 8 de las 51 cartas restantes son menores, mientras que Mayor paga unas 1,19× porque 40 lo son. Cambia ese 3 por un 8 y se invierte: Menor baja a unas 1,57× y Mayor sube a unas 2,08×. Igual es siempre la apuesta más difícil, con unas 12×.',
+	'Payout table': 'Tabla de pagos',
+	Card: 'Carta',
+	Pick: 'Elección',
+	Pays: 'Paga',
+	'Red or Black': 'Rojo o negro',
+	'Any suit': 'Cualquier palo',
+	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
+		'Cada etapa multiplica la anterior, así que las cuatro se combinan en el pago final de la ronda. El total mostrado junto a las cartas se redondea hacia abajo a un decimal, por lo que puede quedar algo por debajo de estas cifras.',
 	'If you guess wrong': 'Si fallas',
 	'Card 1 — the round pays nothing.': 'Carta 1 — la ronda no paga nada.',
 	'Card 2 — you get 0.5× your bet back.': 'Carta 2 — recuperas 0,5× tu apuesta.',
@@ -83,6 +91,8 @@ export default {
 		'El juego automático (las flechas circulares) repite las mismas cuatro predicciones durante un número fijo de rondas, o sin límite. El contador aparece sobre el botón mientras se ejecuta — pulsa el cuadrado rojo para parar; la ronda en curso termina primero.',
 	'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.':
 		'Parar al ganar el juego completo (el botón de controles) termina la serie automática en cuanto una ronda acierta las cuatro cartas. Solo detiene la serie; tu apuesta nunca cambia.',
+	'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'Omitir el reparto de cartas en el juego automático (el botón de controles) ejecuta el juego automático sin la animación de las cartas. Solo cambia la animación, nunca las cartas, las probabilidades ni el pago.',
 	'Tap the spacebar to play one round, or hold it to keep spinning until you let go.':
 		'Pulsa la barra espaciadora para jugar una ronda, o mantenla pulsada para seguir jugando hasta soltarla.',
 
@@ -180,6 +190,9 @@ export default {
 	'Mega Win': 'Mega Ganancia',
 	'Epic Win': 'Ganancia Épica',
 	'Tap to skip': 'Toca para saltar',
+	'Skip card reveal on autoplay': 'Omitir el reparto de cartas en el juego automático',
+	'Skip the card reveal during autoplay':
+		'Omitir el reparto de cartas durante el juego automático',
 	'Skip win animations on autoplay': 'Saltar animaciones de ganancia en juego automático',
 	'Skip big win animations during autoplay':
 		'Saltar las animaciones de grandes ganancias durante el juego automático',

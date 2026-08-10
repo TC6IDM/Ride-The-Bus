@@ -61,6 +61,14 @@ export default {
 		'的中はすべて本来の確率どおりに支払われます。選択が起こりにくいほど配当は高くなり、それは場に出ているカードによって決まります。',
 	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
 		'場に3がある場合、残り51枚のうち3より小さいのは8枚だけなのでローは約4.75倍、逆に大きいのは40枚あるためハイは約1.19倍です。3が8になると関係は逆転し、ローは約1.57倍、ハイは約2.08倍になります。イコールは常に最も起こりにくく、およそ12倍です。',
+	'Payout table': '配当表',
+	Card: 'カード',
+	Pick: '予想',
+	Pays: '配当',
+	'Red or Black': '赤か黒',
+	'Any suit': '任意のスート',
+	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
+		'各ステージは前のステージに掛け合わされ、4つ合わせてラウンドの最終配当になります。カードの横に表示される累計は小数第1位に切り捨てられるため、ここの数値よりわずかに低く見えることがあります。',
 	'If you guess wrong': '予想が外れた場合',
 	'Card 1 — the round pays nothing.': '1枚目 — 配当はありません。',
 	'Card 2 — you get 0.5× your bet back.': '2枚目 — ベット額の0.5倍が戻ります。',
@@ -82,6 +90,8 @@ export default {
 		'オートプレイ（円形の矢印）は同じ4つの予想を指定回数または無制限に繰り返します。実行中はボタン上に残りラウンド数が表示されます。赤い四角を押すと停止しますが、進行中のラウンドは最後まで実行されます。',
 	'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.':
 		'「フルゲーム達成で停止」（スライダーのボタン）は、4枚すべて的中した時点でオートプレイを終了します。停止するだけで、ベット額が変わることはありません。',
+	'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'オートプレイでカード演出をスキップ（スライダーボタン）は、カードのアニメーションなしでオートプレイを進めます。変わるのは演出だけで、カードや確率、配当には影響しません。',
 	'Tap the spacebar to play one round, or hold it to keep spinning until you let go.':
 		'スペースキーを押すと1ラウンド、押し続けると離すまで連続してプレイします。',
 
@@ -178,6 +188,8 @@ export default {
 	'Mega Win': 'メガウィン',
 	'Epic Win': 'エピックウィン',
 	'Tap to skip': 'タップしてスキップ',
+	'Skip card reveal on autoplay': 'オートプレイでカード演出をスキップ',
+	'Skip the card reveal during autoplay': 'オートプレイ中のカード演出をスキップします',
 	'Skip win animations on autoplay': 'オートプレイ中は勝利演出をスキップ',
 	'Skip big win animations during autoplay': 'オートプレイ中は大当たり演出をスキップします',
 	'Guess the color of card 1: red or black.': 'カード1の色を予想します。赤か黒か。',

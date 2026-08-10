@@ -71,6 +71,57 @@
   color: #93a4b5;
 }
 
+/* The paytable. Every pick's range, which approval requires stated.
+   Full width and fixed layout so the three columns line up no matter how long
+   the translated pick names get - German and Finnish run much longer than the
+   English, and a shrink-to-fit table reflowed on every language. */
+.pay-table {
+	width: 100%;
+	table-layout: fixed;
+	border-collapse: collapse;
+	margin: calc(var(--ui-bar) * 0.6) 0 calc(var(--ui-bar) * 0.4);
+	font-size: calc(var(--ui-bar) * 1.14);
+}
+
+.pay-table th {
+	padding: calc(var(--ui-bar) * 0.36) calc(var(--ui-bar) * 0.45);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+	font-size: calc(var(--ui-bar) * 0.93);
+	letter-spacing: 0.07em;
+	text-transform: uppercase;
+	color: #93a4b5;
+	text-align: left;
+	font-weight: 700;
+}
+
+.pay-table td {
+	padding: calc(var(--ui-bar) * 0.36) calc(var(--ui-bar) * 0.45);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+	color: #cfe0f0;
+}
+
+.pay-table tr:last-child td {
+	border-bottom: none;
+}
+
+/* The card number is an index, not a quantity - keep it narrow and quiet so the
+   pick and the amount carry the row. */
+.pay-stage {
+	width: calc(var(--ui-bar) * 3.2);
+	color: #93a4b5;
+	font-variant-numeric: tabular-nums;
+}
+
+/* Right-aligned and tabular so the ranges stack into a readable column rather
+   than a ragged edge. */
+.pay-amount {
+	text-align: right;
+	font-weight: 700;
+	color: #fff;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
 /* Section heading inside the how-to-play body. The popup now covers odds,
    losses and max wins, which needs signposting to stay skimmable. */
 .info-h {

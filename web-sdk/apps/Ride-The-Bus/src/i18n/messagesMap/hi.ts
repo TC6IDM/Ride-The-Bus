@@ -60,6 +60,14 @@ export default {
 		'हर सही अनुमान का भुगतान उसकी वास्तविक संभावना के अनुसार होता है, इसलिए आपका चयन जितना कम संभावित होगा, भुगतान उतना अधिक होगा — और यह पहले से खुले कार्डों पर निर्भर करता है।',
 	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
 		'यदि मेज़ पर 3 है, तो शेष 51 कार्डों में से केवल 8 ही छोटे हैं, इसलिए छोटा लगभग 4.75× देता है, जबकि 40 कार्ड बड़े होने के कारण बड़ा केवल 1.19× देता है। उस 3 को 8 कर दें तो स्थिति उलट जाती है: छोटा घटकर लगभग 1.57× और बड़ा बढ़कर लगभग 2.08× हो जाता है। बराबर हमेशा सबसे कठिन होता है, लगभग 12×।',
+	'Payout table': 'भुगतान तालिका',
+	Card: 'कार्ड',
+	Pick: 'चुनाव',
+	Pays: 'भुगतान',
+	'Red or Black': 'लाल या काला',
+	'Any suit': 'कोई भी सूट',
+	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
+		'हर चरण पिछले चरण को गुणा करता है, इसलिए चारों मिलकर राउंड का अंतिम भुगतान बनाते हैं। कार्ड के पास दिखने वाला चालू योग एक दशमलव तक नीचे की ओर पूर्णांकित होता है, इसलिए यह इन आंकड़ों से थोड़ा कम दिख सकता है।',
 	'If you guess wrong': 'यदि अनुमान गलत हो',
 	'Card 1 — the round pays nothing.': 'कार्ड 1 — राउंड में कुछ भुगतान नहीं मिलता।',
 	'Card 2 — you get 0.5× your bet back.': 'कार्ड 2 — आपको दांव का 0.5× वापस मिलता है।',
@@ -81,6 +89,8 @@ export default {
 		'ऑटोप्ले (गोल तीर) उन्हीं चार अनुमानों को तय संख्या में या असीमित राउंड तक दोहराता है। चलने के दौरान बटन पर राउंड काउंटर दिखता है — रोकने के लिए लाल वर्ग दबाएं; चल रहा राउंड पहले पूरा होगा।',
 	'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.':
 		'पूरी जीत पर रोकें (स्लाइडर बटन) किसी राउंड में चारों कार्ड सही होते ही ऑटोप्ले समाप्त कर देता है। यह केवल क्रम रोकता है; आपका दांव कभी नहीं बदलता।',
+	'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'ऑटोप्ले में कार्ड खुलना छोड़ें (स्लाइडर बटन) ऑटोप्ले को कार्ड एनिमेशन के बिना चलाता है। यह केवल एनिमेशन बदलता है, कार्ड, संभावनाएँ या भुगतान कभी नहीं।',
 	'Tap the spacebar to play one round, or hold it to keep spinning until you let go.':
 		'एक राउंड खेलने के लिए स्पेसबार दबाएं, या छोड़ने तक लगातार खेलने के लिए दबाए रखें।',
 
@@ -176,6 +186,8 @@ export default {
 	'Mega Win': 'मेगा जीत',
 	'Epic Win': 'अद्भुत जीत',
 	'Tap to skip': 'छोड़ने के लिए टैप करें',
+	'Skip card reveal on autoplay': 'ऑटोप्ले में कार्ड खुलना छोड़ें',
+	'Skip the card reveal during autoplay': 'ऑटोप्ले के दौरान कार्ड खुलना छोड़ें',
 	'Skip win animations on autoplay': 'ऑटोप्ले पर जीत एनिमेशन छोड़ें',
 	'Skip big win animations during autoplay': 'ऑटोप्ले के दौरान बड़ी जीत के एनिमेशन छोड़ें',
 	'Guess the color of card 1: red or black.': 'कार्ड 1 का रंग बताएं: लाल या काला।',

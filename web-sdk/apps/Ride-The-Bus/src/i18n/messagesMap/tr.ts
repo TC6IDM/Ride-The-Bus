@@ -61,6 +61,14 @@ export default {
 		'Her doğru tahmin gerçek olasılığına göre ödenir; seçiminiz ne kadar olası değilse o kadar çok kazandırır — bu da açıkta duran kartlara bağlıdır.',
 	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
 		'Masada 3 varsa, kalan 51 karttan yalnızca 8’i daha düşük olduğu için Düşük yaklaşık 4,75× öder; 40’ı daha yüksek olduğu için Yüksek yalnızca 1,19× öder. O 3’ü 8 yapın, durum tersine döner: Düşük yaklaşık 1,57×’e iner, Yüksek 2,08×’e çıkar. Eşit her zaman en zor olanıdır, yaklaşık 12×.',
+	'Payout table': 'Ödeme tablosu',
+	Card: 'Kart',
+	Pick: 'Seçim',
+	Pays: 'Öder',
+	'Red or Black': 'Kırmızı veya siyah',
+	'Any suit': 'Herhangi bir sembol',
+	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
+		'Her aşama bir öncekini çarpar, böylece dördü birleşerek turun nihai ödemesini oluşturur. Kartların yanında gösterilen toplam bir ondalık basamağa aşağı yuvarlanır, bu yüzden bu değerlerin biraz altında görünebilir.',
 	'If you guess wrong': 'Yanlış tahmin ederseniz',
 	'Card 1 — the round pays nothing.': '1. kart — tur hiçbir ödeme yapmaz.',
 	'Card 2 — you get 0.5× your bet back.': '2. kart — bahsinizin 0,5 katını geri alırsınız.',
@@ -84,6 +92,8 @@ export default {
 		'Otomatik oyun (dairesel oklar) aynı dört tahmini belirlenen tur sayısı kadar veya sınırsız tekrarlar. Çalışırken tur sayacı düğmenin üzerinde görünür — durdurmak için kırmızı kareye basın; devam eden tur önce tamamlanır.',
 	'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.':
 		'Tam oyun kazancında durdur (sürgü düğmesi), bir turda dört kart da tutturulduğu anda otomatik oyunu sonlandırır. Yalnızca çalışmayı durdurur; bahsiniz değişmez.',
+	'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'Otomatik oyunda kart açılışını atla (kaydırıcı düğmesi) otomatik oyunu kart animasyonu olmadan çalıştırır. Yalnızca animasyonu değiştirir; kartları, oranları veya ödemeyi asla değiştirmez.',
 	'Tap the spacebar to play one round, or hold it to keep spinning until you let go.':
 		'Bir tur oynamak için boşluk tuşuna basın, bırakana kadar oynamaya devam etmek için basılı tutun.',
 
@@ -179,6 +189,8 @@ export default {
 	'Mega Win': 'Mega Kazanç',
 	'Epic Win': 'Efsanevi Kazanç',
 	'Tap to skip': 'Atlamak için dokunun',
+	'Skip card reveal on autoplay': 'Otomatik oyunda kart açılışını atla',
+	'Skip the card reveal during autoplay': 'Otomatik oyun sırasında kart açılışını atla',
 	'Skip win animations on autoplay': 'Otomatik oyunda kazanç animasyonlarını atla',
 	'Skip big win animations during autoplay':
 		'Otomatik oyun sırasında büyük kazanç animasyonlarını atla',

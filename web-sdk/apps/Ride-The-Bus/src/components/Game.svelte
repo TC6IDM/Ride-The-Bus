@@ -307,6 +307,16 @@
   // every celebration can switch it off.
   let skipWinOnAuto = $state(true);
 
+  // Skip the card reveal during an auto run - the same effect as pressing Skip
+  // on every round, applied automatically.
+  //
+  // Default OFF, unlike the takeover skip above. That one removes a wait the
+  // player did not ask for; this one removes the game's main animation, which
+  // is a taste question rather than an annoyance. Turbo already covers "faster"
+  // for anyone who wants it by degrees; this is for players who want the result
+  // and nothing else.
+  let slamOnAuto = $state(false);
+
   // ---- Big-win takeover ----------------------------------------------------
   // The round flow awaits dismissal, so the celebration naturally holds the
   // next auto round rather than needing the loop to know about it.
@@ -822,7 +832,15 @@
     // only quantize for the per-card display and the final payout, so the
     // last card's shown multiplier equals the credited win.
     // Each round starts un-slammed; the flag only lives for one reveal.
-    slamRequested = false;
+    //
+    // Unless the player has asked autoplay to skip the reveal outright, which
+    // is the same thing the Skip button does - so it reuses the same flag and
+    // inherits the instant-turbo pacing rather than inventing a faster path.
+    // Still gated on the regulator's slam-stop rule: a jurisdiction that bars
+    // skipping the animation bars it here too, however it was requested.
+    // Bet spacing is governed by rgsPacing regardless, so this cannot outrun
+    // the RGS no matter how short the reveal becomes.
+    slamRequested = autoRunning && slamOnAuto && !jurisdiction.slamstopDisabled();
     let running = 1;
     let busted = false;
     for (let i = 0; i < revealEvents.length; i++) {
@@ -2049,10 +2067,16 @@
       </button>
 
       <div class="cb-readouts">
-        <div class="cb-balance">
-          <span class="cb-cap">{t('Balance')}</span>
-          <span class="cb-val">{numberToCurrencyString(stateBet.balanceAmount)}</span>
-        </div>
+        <!-- Hidden in replay. A replay is viewable without a session - the URL
+             can be shared publicly - so there is no player whose balance this
+             would be, and Stake's replay guidance asks for it to go. The Last
+             Win beside it stays: the payout IS what a replay is showing. -->
+        {#if !stateUrlDerived.replay()}
+          <div class="cb-balance">
+            <span class="cb-cap">{t('Balance')}</span>
+            <span class="cb-val">{numberToCurrencyString(stateBet.balanceAmount)}</span>
+          </div>
+        {/if}
         <!-- Always rendered (even before the first spin) so it can't pop into
              existence mid-session and shove the rest of the bar sideways. -->
         <div class="cb-lastwin" class:won={lastWinAmount > 0}>
@@ -2253,6 +2277,15 @@
           <span class="control-label">{t('Skip win animations on autoplay')}</span>
           <button type="button" class="switch" class:on={skipWinOnAuto} role="switch" aria-checked={skipWinOnAuto} aria-label={t('Skip big win animations during autoplay')} onclick={() => (skipWinOnAuto = !skipWinOnAuto)}><span class="switch-knob"></span></button>
         </div>
+        <!-- Hidden rather than disabled where the regulator bars slam-stop: a
+             switch that cannot do anything is worse than no switch, and the
+             reveal itself already refuses to skip in that case. -->
+        {#if !jurisdiction.slamstopDisabled()}
+          <div class="advanced-row">
+            <span class="control-label">{t('Skip card reveal on autoplay')}</span>
+            <button type="button" class="switch" class:on={slamOnAuto} role="switch" aria-checked={slamOnAuto} aria-label={t('Skip the card reveal during autoplay')} onclick={() => (slamOnAuto = !slamOnAuto)}><span class="switch-knob"></span></button>
+          </div>
+        {/if}
       </div>
     </div>
   {/if}

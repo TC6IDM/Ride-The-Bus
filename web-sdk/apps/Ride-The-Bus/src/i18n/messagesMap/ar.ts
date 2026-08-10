@@ -62,6 +62,14 @@ export default {
 		'كل تخمين صحيح يُدفع وفق احتمالاته الحقيقية، فكلما قل احتمال اختيارك زاد ما يدفعه — وذلك يعتمد على البطاقات الظاهرة بالفعل.',
 	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
 		'مع وجود 3 على الطاولة، يدفع «أقل» نحو 4.75× لأن 8 فقط من البطاقات الـ51 المتبقية أقل منها، بينما يدفع «أعلى» نحو 1.19× لأن 40 منها أعلى. حوّل الـ3 إلى 8 فينقلب الأمر: ينخفض «أقل» إلى نحو 1.57× ويرتفع «أعلى» إلى نحو 2.08×. و«متساوٍ» هو دائمًا الأبعد احتمالًا بنحو 12×.',
+	'Payout table': 'جدول الأرباح',
+	Card: 'البطاقة',
+	Pick: 'الاختيار',
+	Pays: 'يدفع',
+	'Red or Black': 'أحمر أو أسود',
+	'Any suit': 'أي شكل',
+	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
+		'كل مرحلة تضاعف ما قبلها، لذا تتجمع الأربع معًا في الأرباح النهائية للجولة. ويُقرَّب الإجمالي الظاهر بجانب البطاقات إلى منزلة عشرية واحدة للأسفل، لذا قد يظهر أقل قليلًا من هذه الأرقام.',
 	'If you guess wrong': 'إذا خمّنت خطأ',
 	'Card 1 — the round pays nothing.': 'البطاقة الأولى — الجولة لا تدفع شيئًا.',
 	'Card 2 — you get 0.5× your bet back.': 'البطاقة الثانية — تسترد 0.5× من رهانك.',
@@ -85,6 +93,8 @@ export default {
 		'اللعب التلقائي (الأسهم الدائرية) يعيد التخمينات الأربعة نفسها لعدد محدد من الجولات أو بلا حد. يظهر عداد الجولات على الزر أثناء التشغيل — اضغط المربع الأحمر للإيقاف، وتُستكمل الجولة الجارية أولًا.',
 	'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.':
 		'«التوقف عند الفوز الكامل» (زر المؤشرات) ينهي تشغيل اللعب التلقائي فور نجاح جولة في البطاقات الأربع. وهو يوقف التشغيل فقط؛ ولا يغيّر رهانك أبدًا.',
+	'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'تخطي كشف البطاقات في اللعب التلقائي (زر المؤشرات) يشغّل اللعب التلقائي بدون حركة البطاقات. يغيّر الحركة فقط، ولا يمس البطاقات أو الاحتمالات أو الأرباح.',
 	'Tap the spacebar to play one round, or hold it to keep spinning until you let go.':
 		'اضغط مفتاح المسافة للعب جولة واحدة، أو استمر بالضغط لمواصلة اللعب حتى ترفع إصبعك.',
 
@@ -179,6 +189,8 @@ export default {
 	'Mega Win': 'فوز هائل',
 	'Epic Win': 'فوز أسطوري',
 	'Tap to skip': 'اضغط للتخطي',
+	'Skip card reveal on autoplay': 'تخطي كشف البطاقات في اللعب التلقائي',
+	'Skip the card reveal during autoplay': 'تخطي كشف البطاقات أثناء اللعب التلقائي',
 	'Skip win animations on autoplay': 'تخطي مؤثرات الفوز أثناء اللعب التلقائي',
 	'Skip big win animations during autoplay': 'تخطي مؤثرات الفوز الكبير أثناء اللعب التلقائي',
 	'Guess the color of card 1: red or black.': 'خمّن لون البطاقة الأولى: أحمر أم أسود.',

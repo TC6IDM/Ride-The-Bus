@@ -61,6 +61,14 @@ export default {
 		'Jokainen oikea arvaus maksetaan sen todellisen todennäköisyyden mukaan: mitä epätodennäköisempi valintasi, sitä enemmän se maksaa — ja se riippuu jo näkyvissä olevista korteista.',
 	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
 		'Kun pöydällä on 3, Pienempi maksaa noin 4,75×, koska vain 8 jäljellä olevasta 51 kortista on pienempiä, kun taas Suurempi maksaa noin 1,19×, koska niitä on 40. Vaihda kolmonen kahdeksikoksi ja tilanne kääntyy: Pienempi laskee noin 1,57×:een ja Suurempi nousee noin 2,08×:een. Yhtä suuri on aina epätodennäköisin, noin 12×.',
+	'Payout table': 'Maksutaulukko',
+	Card: 'Kortti',
+	Pick: 'Valinta',
+	Pays: 'Maksaa',
+	'Red or Black': 'Punainen tai musta',
+	'Any suit': 'Mikä tahansa maa',
+	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
+		'Jokainen vaihe kertoo edellisen, joten neljä yhdessä muodostavat kierroksen lopullisen voiton. Korttien vieressä näkyvä juokseva summa pyöristetään alaspäin yhteen desimaaliin, joten se voi näyttää hieman näitä lukuja pienemmältä.',
 	'If you guess wrong': 'Jos arvaat väärin',
 	'Card 1 — the round pays nothing.': 'Kortti 1 — kierros ei maksa mitään.',
 	'Card 2 — you get 0.5× your bet back.': 'Kortti 2 — saat takaisin 0,5× panoksesi.',
@@ -84,6 +92,8 @@ export default {
 		'Automaattipeli (pyöreät nuolet) toistaa samat neljä arvausta valitun kierrosmäärän ajan tai rajattomasti. Kierroslaskuri näkyy painikkeessa pelin aikana — pysäytä painamalla punaista neliötä; käynnissä oleva kierros pelataan ensin loppuun.',
 	'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.':
 		'Pysäytä täydellä voitolla (liukusäädinpainike) päättää automaattipelin heti, kun kierros osuu kaikkiin neljään korttiin. Se vain pysäyttää sarjan; panoksesi ei muutu.',
+	'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'Ohita korttien paljastus automaattipelissä (liukusäädinpainike) ajaa automaattipelin ilman korttianimaatiota. Se muuttaa vain animaatiota, ei koskaan kortteja, todennäköisyyksiä tai voittoa.',
 	'Tap the spacebar to play one round, or hold it to keep spinning until you let go.':
 		'Paina välilyöntiä pelataksesi yhden kierroksen tai pidä se pohjassa jatkaaksesi, kunnes päästät irti.',
 
@@ -179,6 +189,8 @@ export default {
 	'Mega Win': 'Megavoitto',
 	'Epic Win': 'Eeppinen voitto',
 	'Tap to skip': 'Ohita napauttamalla',
+	'Skip card reveal on autoplay': 'Ohita korttien paljastus automaattipelissä',
+	'Skip the card reveal during autoplay': 'Ohita korttien paljastus automaattipelin aikana',
 	'Skip win animations on autoplay': 'Ohita voittoanimaatiot automaattipelissä',
 	'Skip big win animations during autoplay':
 		'Ohita suurten voittojen animaatiot automaattipelin aikana',

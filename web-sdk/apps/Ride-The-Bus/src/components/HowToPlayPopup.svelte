@@ -19,8 +19,15 @@
 	// `ranks` is imported rather than the order being retyped here, so the strip
 	// below can never drift from the order the game and the math-sdk actually use.
 	import { ranks } from '../game/roundContract';
+	// Derived from payout.ts rather than written out, so the paytable a player
+	// reads cannot drift from what the RGS credits - see payoutTable.ts.
+	import { PAYOUT_ROWS } from '../game/payoutTable';
 	import gameConfig from '../game/config';
 	import { t } from '../i18n/i18nDerived';
+
+	/** "1.99×" for a fixed row, "1.04× – 9.19×" for one that swings. */
+	const payRange = (min: number, max: number) =>
+		min === max ? `${min.toFixed(2)}×` : `${min.toFixed(2)}× – ${max.toFixed(2)}×`;
 
 	type Props = { onclose: () => void };
 
@@ -59,6 +66,31 @@
       <p>{t('With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.')}</p>
       <p>{t('Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.')}</p>
 
+      <!-- Approval requires payout amounts to be stated for every pick. There
+           is no fixed paytable to print - each stage pays its true odds against
+           the remaining deck - so what is stated is the full range each pick
+           can pay, generated from the same function the game pays out with. -->
+      <h4 class="info-h">{t('Payout table')}</h4>
+      <table class="pay-table">
+        <thead>
+          <tr>
+            <th scope="col">{t('Card')}</th>
+            <th scope="col">{t('Pick')}</th>
+            <th scope="col">{t('Pays')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each PAYOUT_ROWS as row}
+            <tr>
+              <td class="pay-stage">{row.stage}</td>
+              <td>{t(row.label)}</td>
+              <td class="pay-amount">{payRange(row.min, row.max)}</td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+      <p>{t('Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.')}</p>
+
       <h4 class="info-h">{t('If you guess wrong')}</h4>
       <ul>
         <li>{t('Card 1 — the round pays nothing.')}</li>
@@ -80,6 +112,7 @@
         <li>{t('Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.')}</li>
         <li>{t('Autoplay (the circular arrows) replays the same four guesses for a set number of rounds, or unlimited. The round counter sits on the button while it runs — press the red square to stop, and the round already in play finishes first.')}</li>
         <li>{t('Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.')}</li>
+        <li>{t('Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.')}</li>
         <li>{t('Tap the spacebar to play one round, or hold it to keep spinning until you let go.')}</li>
       </ul>
 

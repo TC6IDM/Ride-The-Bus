@@ -114,6 +114,19 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 	'A gambling limit on your account has been reached.':
 		'A play limit on your account has been reached.',
 
+	// Auto-slam toggle in the interaction guide. "payout" is prohibited; the
+	// toggle's own label carries no restricted terms and passes through.
+	'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the win.',
+
+	// Paytable. "Payout" and "Pays" are both on the prohibited list, so the
+	// heading and the amount column need social wording. "Card", "Pick", "Red or
+	// Black" and "Any suit" carry no restricted terms and pass through unchanged.
+	'Payout table': 'Win table',
+	Pays: 'Wins',
+	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
+		'Each stage multiplies the one before it, so the four combine into the round’s final win. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.',
+
 	// Replay start screen
 	Payout: 'Won',
 

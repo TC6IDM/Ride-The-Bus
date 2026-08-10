@@ -253,6 +253,31 @@
 	z-index: 3;
 }
 
+/* The badge is deliberately small - it sits in a panel corner and must not
+   compete with the worked example - so on touch it gets a hit area larger than
+   its paint. A transparent ::before rather than padding, because padding would
+   grow the visible circle too. Nothing sits close enough for the overspill to
+   steal a tap: the badges are one per panel, in opposite corners. */
+.ss-help::before {
+	content: '';
+	position: absolute;
+	/* Centres a 44px target on a badge that draws at ~1.9 --ss. */
+	top: 50%;
+	left: 50%;
+	width: max(100%, 44px);
+	height: max(100%, 44px);
+	transform: translate(-50%, -50%);
+}
+
+@media (pointer: fine) {
+	/* A mouse does not need the overspill, and it would otherwise trigger the
+	   tooltip before the cursor reaches the badge. */
+	.ss-help::before {
+		width: 100%;
+		height: 100%;
+	}
+}
+
 .ss-help:hover,
 .ss-help:focus-visible {
 	background: #f5d78c;
@@ -641,3 +666,44 @@
 .ss-choice-badge.suit-diamond { background: #8b1a1a; color: #fdd; }
 .ss-choice-badge.suit-club    { background: #1a1a2e; color: #ccc; }
 .ss-choice-badge.suit-spade   { background: #111; color: #ccc; border: 1px solid #555; }
+
+/* ---- Narrow portrait: two steps per row ----------------------------------
+   The 1.15vw term in --ss exists only so four step panels fit across one row.
+   On a phone that is what makes the whole screen tiny: at 390px wide it
+   resolves to 4.5px, so the guess squares come out ~60px, their thirds ~20px,
+   and the "?" explanation renders at about 5px.
+
+   Two per row removes that constraint - each panel gets half the width instead
+   of a quarter - so the vw term can roughly double and everything on the screen
+   grows with it. The vh term tightens to 1.0 because the steps now occupy two
+   rows rather than one, and the Play button must stay above the fold.
+
+   Portrait only: in landscape there is width to spare and height is the scarce
+   axis, where a second row is exactly the wrong trade. */
+@media (max-width: 620px) and (orientation: portrait) {
+	.ss-overlay {
+		--ss: clamp(5px, min(2.2vw, 1vh), 11px);
+	}
+
+	.ss-steps {
+		flex-wrap: wrap;
+	}
+
+	.ss-step {
+		/* Half the row, less half the gap between the pair. */
+		flex: 1 1 calc(50% - var(--ss) * 0.6);
+		/* The intro's guess squares are tappable too - the player toggles them
+		   to see each rule explained. Same treatment as the board (see
+		   responsive.css): taller squares so the thirds are reachable, width
+		   left alone so two panels still fit across. */
+		--choice-h: max(var(--choice-size), 84px);
+	}
+
+	/* The explanation is the point of the badge, so it gets a readable floor
+	   rather than scaling all the way down with --ss. */
+	.ss-tip {
+		font-size: max(calc(var(--ss) * 1.05), 13px);
+		width: max(calc(var(--ss) * 22), 190px);
+		max-width: 78vw;
+	}
+}

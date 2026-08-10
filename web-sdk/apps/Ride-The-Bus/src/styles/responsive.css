@@ -18,6 +18,40 @@
   .cb-lastwin { min-width: calc(var(--ui-bar) * 13.09); }
 }
 
+/* ---- Touch targets on phones ---------------------------------------------
+   The layout is WIDTH-constrained in portrait: --ui resolves from min(2vw,
+   1.55vh), so on a 390x844 phone the 2vw term wins at ~7.8px and every control
+   is sized from that, while ~400px of vertical space goes unused. Measured on
+   that viewport, the guess thirds came out at 21px and the bet steppers at
+   22x18px - below the 24px WCAG floor, let alone the 44px comfortable target.
+
+   The fix spends the spare height rather than scaling --ui up, which would
+   widen the row past the viewport. The guess squares grow taller (their width
+   is untouched, so the four still fit across), and the bar's own controls get
+   explicit minimums.
+
+   Pointer-coarse only. A narrow DESKTOP window is the same width but has a
+   mouse, where 21px is precise enough and stretching everything would just look
+   wrong. */
+@media (max-width: 620px) and (orientation: portrait) and (pointer: coarse) {
+  /* 132px gives 44px thirds, 66px halves, and 66px-tall quadrants. */
+  .game-layout { --choice-h: max(var(--choice-size), 132px); }
+
+  /* The icon buttons sit apart from each other, so padding-free growth is safe. */
+  .cb-icon,
+  .cb-round {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* The +/- pair is stacked and adjacent, so they get the 24px floor rather
+     than 44px - two 44px halves would be taller than the panel they sit in. */
+  .cb-step {
+    min-width: 44px;
+    min-height: 26px;
+  }
+}
+
 /* Very tight: drop the inline +/- (the bet is still settable from the bet
    menu) so the remaining controls keep a usable size. */
 @media (max-width: 360px) {

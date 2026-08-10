@@ -61,6 +61,14 @@ export default {
 		'모든 적중은 실제 확률에 따라 지급되므로, 선택이 일어나기 어려울수록 배당이 커집니다. 이는 이미 공개된 카드에 따라 달라집니다.',
 	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
 		'테이블에 3이 있으면 남은 51장 중 더 낮은 카드는 8장뿐이라 로우는 약 4.75배, 더 높은 카드는 40장이라 하이는 약 1.19배입니다. 3을 8로 바꾸면 반대가 되어 로우는 약 1.57배로 낮아지고 하이는 약 2.08배로 올라갑니다. 이퀄은 언제나 가장 어려워 약 12배입니다.',
+	'Payout table': '배당표',
+	Card: '카드',
+	Pick: '선택',
+	Pays: '배당',
+	'Red or Black': '빨강 또는 검정',
+	'Any suit': '모든 무늬',
+	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
+		'각 단계는 이전 단계에 곱해지며, 네 단계가 합쳐져 라운드의 최종 배당이 됩니다. 카드 옆에 표시되는 누적 배수는 소수점 첫째 자리에서 내림되므로 여기 수치보다 조금 낮게 보일 수 있습니다.',
 	'If you guess wrong': '예측이 틀린 경우',
 	'Card 1 — the round pays nothing.': '첫 번째 카드 — 배당이 없습니다.',
 	'Card 2 — you get 0.5× your bet back.': '두 번째 카드 — 베팅 금액의 0.5배를 돌려받습니다.',
@@ -82,6 +90,8 @@ export default {
 		'자동 플레이(원형 화살표)는 같은 네 가지 예측을 지정한 라운드 수만큼 또는 무제한으로 반복합니다. 실행 중에는 버튼에 남은 라운드 수가 표시되며, 빨간 사각형을 누르면 중지되지만 진행 중인 라운드는 먼저 끝납니다.',
 	'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.':
 		'풀 게임 성공 시 중지(슬라이더 버튼)는 어떤 라운드에서 네 장이 모두 맞는 순간 자동 플레이를 종료합니다. 실행만 멈출 뿐 베팅 금액은 바뀌지 않습니다.',
+	'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'자동 플레이에서 카드 공개 건너뛰기(슬라이더 버튼)는 카드 애니메이션 없이 자동 플레이를 진행합니다. 애니메이션만 바뀌며 카드나 확률, 배당은 달라지지 않습니다.',
 	'Tap the spacebar to play one round, or hold it to keep spinning until you let go.':
 		'스페이스바를 한 번 누르면 한 라운드를 플레이하고, 누르고 있으면 뗄 때까지 계속 진행됩니다.',
 
@@ -177,6 +187,8 @@ export default {
 	'Mega Win': '메가 윈',
 	'Epic Win': '에픽 윈',
 	'Tap to skip': '탭하여 건너뛰기',
+	'Skip card reveal on autoplay': '자동 플레이에서 카드 공개 건너뛰기',
+	'Skip the card reveal during autoplay': '자동 플레이 중 카드 공개를 건너뜁니다',
 	'Skip win animations on autoplay': '자동 플레이 시 당첨 연출 건너뛰기',
 	'Skip big win animations during autoplay': '자동 플레이 중 빅 윈 연출 건너뛰기',
 	'Guess the color of card 1: red or black.': '카드 1의 색을 예상하세요: 빨강 또는 검정.',

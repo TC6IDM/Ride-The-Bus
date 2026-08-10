@@ -62,6 +62,14 @@ export default {
 		'Setiap tebakan benar dibayar sesuai peluang sebenarnya, jadi makin kecil kemungkinan pilihan Anda, makin besar bayarannya — dan itu tergantung pada kartu yang sudah terbuka.',
 	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
 		'Dengan kartu 3 di meja, Lebih kecil membayar sekitar 4,75× karena hanya 8 dari 51 kartu tersisa yang lebih kecil, sedangkan Lebih besar membayar sekitar 1,19× karena ada 40 kartu yang lebih besar. Ubah 3 menjadi 8 dan keadaannya terbalik: Lebih kecil turun ke sekitar 1,57× dan Lebih besar naik ke sekitar 2,08×. Sama selalu paling sulit, sekitar 12×.',
+	'Payout table': 'Tabel pembayaran',
+	Card: 'Kartu',
+	Pick: 'Pilihan',
+	Pays: 'Membayar',
+	'Red or Black': 'Merah atau Hitam',
+	'Any suit': 'Semua jenis',
+	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
+		'Setiap tahap mengalikan tahap sebelumnya, sehingga keempatnya bergabung menjadi pembayaran akhir ronde. Total berjalan yang tampil di samping kartu dibulatkan ke bawah ke satu desimal, jadi bisa terlihat sedikit di bawah angka-angka ini.',
 	'If you guess wrong': 'Jika tebakan Anda salah',
 	'Card 1 — the round pays nothing.': 'Kartu 1 — ronde tidak membayar apa pun.',
 	'Card 2 — you get 0.5× your bet back.': 'Kartu 2 — Anda menerima kembali 0,5× taruhan.',
@@ -84,6 +92,8 @@ export default {
 		'Main otomatis (panah melingkar) mengulang keempat tebakan yang sama untuk sejumlah ronde tertentu atau tanpa batas. Penghitung ronde muncul di tombol saat berjalan — tekan kotak merah untuk berhenti; ronde yang sedang berlangsung diselesaikan lebih dulu.',
 	'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.':
 		'Berhenti saat menang penuh (tombol penggeser) mengakhiri main otomatis begitu sebuah ronde menebak keempat kartu. Ini hanya menghentikan rangkaian; taruhan Anda tidak pernah berubah.',
+	'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'Lewati pembukaan kartu saat putar otomatis (tombol penggeser) menjalankan putar otomatis tanpa animasi kartu. Ini hanya mengubah animasi, bukan kartu, peluang, atau pembayaran.',
 	'Tap the spacebar to play one round, or hold it to keep spinning until you let go.':
 		'Tekan spasi untuk memainkan satu ronde, atau tahan untuk terus bermain sampai Anda melepasnya.',
 
@@ -181,6 +191,8 @@ export default {
 	'Mega Win': 'Kemenangan Mega',
 	'Epic Win': 'Kemenangan Epik',
 	'Tap to skip': 'Ketuk untuk melewati',
+	'Skip card reveal on autoplay': 'Lewati pembukaan kartu saat putar otomatis',
+	'Skip the card reveal during autoplay': 'Lewati pembukaan kartu selama putar otomatis',
 	'Skip win animations on autoplay': 'Lewati animasi kemenangan saat putar otomatis',
 	'Skip big win animations during autoplay':
 		'Lewati animasi kemenangan besar selama putar otomatis',

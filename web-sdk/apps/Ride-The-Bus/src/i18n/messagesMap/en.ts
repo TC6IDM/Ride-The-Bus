@@ -80,6 +80,16 @@ export default {
 		'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.',
 	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
 		'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.',
+	// Paytable. The rows themselves are generated from payout.ts; these are the
+	// headings and the two pick names that are not already guess-selector labels.
+	'Payout table': 'Payout table',
+	Card: 'Card',
+	Pick: 'Pick',
+	Pays: 'Pays',
+	'Red or Black': 'Red or Black',
+	'Any suit': 'Any suit',
+	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
+		'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.',
 	'If you guess wrong': 'If you guess wrong',
 	'Card 1 — the round pays nothing.': 'Card 1 — the round pays nothing.',
 	'Card 2 — you get 0.5× your bet back.': 'Card 2 — you get 0.5× your bet back.',
@@ -103,6 +113,8 @@ export default {
 		'Autoplay (the circular arrows) replays the same four guesses for a set number of rounds, or unlimited. The round counter sits on the button while it runs — press the red square to stop, and the round already in play finishes first.',
 	'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.':
 		'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.',
+	'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.',
 	'Tap the spacebar to play one round, or hold it to keep spinning until you let go.':
 		'Tap the spacebar to play one round, or hold it to keep spinning until you let go.',
 
@@ -228,6 +240,8 @@ export default {
 		'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either of the first 2 cards. If you pick Equal on step 2, Inside becomes impossible: nothing can fall between two cards of the same rank.',
 	'Guess the suit of card 4: hearts, diamonds, clubs or spades.':
 		'Guess the suit of card 4: hearts, diamonds, clubs or spades.',
+	'Skip card reveal on autoplay': 'Skip card reveal on autoplay',
+	'Skip the card reveal during autoplay': 'Skip the card reveal during autoplay',
 	'Skip win animations on autoplay': 'Skip win animations on autoplay',
 	'Skip big win animations during autoplay': 'Skip big win animations during autoplay',
 };

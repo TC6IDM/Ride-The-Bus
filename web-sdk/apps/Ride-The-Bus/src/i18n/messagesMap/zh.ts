@@ -61,6 +61,14 @@ export default {
 		'每次猜中都按其真实概率赔付，因此你的选择越难出现，赔付越高——而这取决于已经亮出的牌。',
 	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
 		'若桌上是 3，剩余 51 张牌中只有 8 张更小，因此「更小」约赔 4.75 倍；而更大的有 40 张，因此「更大」仅约 1.19 倍。把 3 换成 8，情况就反过来：「更小」降至约 1.57 倍，「更大」升至约 2.08 倍。「相同」始终是最难中的，约 12 倍。',
+	'Payout table': '赔付表',
+	Card: '牌',
+	Pick: '选择',
+	Pays: '赔付',
+	'Red or Black': '红色或黑色',
+	'Any suit': '任意花色',
+	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
+		'每个阶段都会与前一个阶段相乘，四个阶段共同构成本局的最终赔付。牌旁显示的累计倍数会向下取整到一位小数，因此可能略低于上述数值。',
 	'If you guess wrong': '若猜错',
 	'Card 1 — the round pays nothing.': '第 1 张 — 本局无赔付。',
 	'Card 2 — you get 0.5× your bet back.': '第 2 张 — 返还 0.5 倍投注额。',
@@ -83,6 +91,8 @@ export default {
 		'自动游戏（环形箭头）会以相同的四项预测重复指定局数或不限局数。运行时按钮上会显示剩余局数——按红色方块停止，正在进行的一局会先完成。',
 	'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.':
 		'「全中时停止」（滑杆按钮）会在某一局四张全中时结束自动游戏。它只停止运行，绝不改变你的投注额。',
+	'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'自动游戏时跳过发牌动画（滑块按钮）会在没有发牌动画的情况下运行自动游戏。它只改变动画，绝不影响牌面、赔率或赔付。',
 	'Tap the spacebar to play one round, or hold it to keep spinning until you let go.':
 		'点按空格键玩一局，或按住不放持续游戏，松开即停。',
 
@@ -172,6 +182,8 @@ export default {
 	'Mega Win': '超级大奖',
 	'Epic Win': '史诗大奖',
 	'Tap to skip': '点击跳过',
+	'Skip card reveal on autoplay': '自动游戏时跳过发牌动画',
+	'Skip the card reveal during autoplay': '在自动游戏过程中跳过发牌动画',
 	'Skip win animations on autoplay': '自动游戏时跳过获胜动画',
 	'Skip big win animations during autoplay': '自动游戏期间跳过大奖动画',
 	'Guess the color of card 1: red or black.': '猜第 1 张牌的颜色：红色还是黑色。',

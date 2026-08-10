@@ -62,6 +62,14 @@ export default {
 		'Chaque bon pronostic est payé selon ses probabilités réelles : moins votre choix est probable, plus il rapporte — et cela dépend des cartes déjà visibles.',
 	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
 		"Avec un 3 sur la table, Plus bas rapporte environ 4,75× car seules 8 des 51 cartes restantes sont plus basses, tandis que Plus haut rapporte environ 1,19× car 40 le sont. Remplacez ce 3 par un 8 et tout s'inverse : Plus bas tombe à environ 1,57× et Plus haut monte à environ 2,08×. Égal reste toujours le pari le plus improbable, à environ 12×.",
+	'Payout table': 'Table des gains',
+	Card: 'Carte',
+	Pick: 'Choix',
+	Pays: 'Rapporte',
+	'Red or Black': 'Rouge ou noir',
+	'Any suit': 'N’importe quelle couleur',
+	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
+		'Chaque étape multiplie la précédente, si bien que les quatre se combinent pour former le gain final de la manche. Le total affiché à côté des cartes est arrondi à l’inférieur à une décimale et peut donc paraître légèrement inférieur à ces valeurs.',
 	'If you guess wrong': 'Si vous vous trompez',
 	'Card 1 — the round pays nothing.': 'Carte 1 — le tour ne rapporte rien.',
 	'Card 2 — you get 0.5× your bet back.': 'Carte 2 — vous récupérez 0,5× votre mise.',
@@ -84,6 +92,8 @@ export default {
 		"Le jeu automatique (les flèches circulaires) rejoue les mêmes quatre pronostics sur un nombre défini de tours, ou sans limite. Le compteur s'affiche sur le bouton pendant l'exécution — appuyez sur le carré rouge pour arrêter ; le tour en cours se termine d'abord.",
 	'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.':
 		"Arrêter sur partie complète (le bouton curseurs) met fin à la série automatique dès qu'un tour réussit les quatre cartes. Cela n'arrête que la série ; votre mise ne change jamais.",
+	'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'Ignorer la révélation des cartes en jeu automatique (le bouton curseurs) fait tourner le jeu automatique sans l’animation des cartes. Cela ne change que l’animation, jamais les cartes, les probabilités ni le gain.',
 	'Tap the spacebar to play one round, or hold it to keep spinning until you let go.':
 		"Appuyez sur la barre d'espace pour jouer un tour, ou maintenez-la pour continuer jusqu'à ce que vous relâchiez.",
 
@@ -181,6 +191,9 @@ export default {
 	'Mega Win': 'Méga Gain',
 	'Epic Win': 'Gain Épique',
 	'Tap to skip': 'Appuyez pour passer',
+	'Skip card reveal on autoplay': 'Ignorer la révélation des cartes en jeu automatique',
+	'Skip the card reveal during autoplay':
+		'Ignorer la révélation des cartes pendant le jeu automatique',
 	'Skip win animations on autoplay': 'Passer les animations de gain en jeu automatique',
 	'Skip big win animations during autoplay':
 		'Passer les animations de gros gains pendant le jeu automatique',
