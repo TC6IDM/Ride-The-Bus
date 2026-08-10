@@ -112,9 +112,16 @@
 
 	/* The drawn "=", sized to the ~11x5px ink of the glyph it replaces so the
 	   badge looks unchanged apart from finally being centred. */
+	/* Sized through overridable variables rather than --ui directly, so a caller
+	   can put a floor under the glyph.
+	   A custom property is the only lever that works here: this element carries
+	   THIS component's scope class, so a selector written in the parent's
+	   stylesheet can never match it - but custom properties inherit across the
+	   boundary normally. The start screen uses that to keep the equals badge
+	   legible on phones and popouts, where --ui bottoms out near 3px. */
 	.eq-icon {
 		display: block;
-		width: calc(var(--ui) * 1);
-		height: calc(var(--ui) * 0.5);
+		width: var(--eq-icon-w, calc(var(--ui) * 1));
+		height: var(--eq-icon-h, calc(var(--ui) * 0.5));
 	}
 </style>

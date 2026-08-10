@@ -226,6 +226,24 @@
 	flex: 0 0 auto;
 }
 
+/* The equals badge carries a whole rule on its own - that a tie is a third
+   option - in a glyph roughly a sixth the width of the square holding it. On
+   the board that is fine because the board is the biggest thing on screen; on
+   this screen four panels share the width, so the same proportion bottoms out
+   illegibly on a phone and vanishes on a popout.
+   A floor rather than a bigger ratio, so it only ever grows where the
+   proportional size would be too small to read, and desktop is untouched
+   (--ui is 8.4px there, giving 13.8px against this 14px floor). */
+.ss-step .equal-btn {
+	width: max(calc(var(--ui) * 1.64), 14px);
+	height: max(calc(var(--ui) * 1.64), 14px);
+	/* The bars inside size themselves from --ui too, so flooring the badge alone
+	   would grow the box around an unchanged glyph. These keep the drawn "="
+	   at the same 61% / 30% of the badge it has at full size. */
+	--eq-icon-w: max(calc(var(--ui) * 1), 8.5px);
+	--eq-icon-h: max(calc(var(--ui) * 0.5), 4.25px);
+}
+
 /* ---- Help badge ----
    Top-right of each panel. Focusable rather than hover-only so the explanation
    is reachable by keyboard and by tap. */
@@ -612,6 +630,17 @@
 /* ---- Responsive: very short viewports (Popout S ~225px tall) ------------- */
 @media (max-height: 320px) {
 	.ss-overlay {
+		/* --ss's 1.3vh term is budgeted for the FULL column: logo, subtitle, lead,
+		   four panels with worked examples, stats and the button. By this height
+		   the rules above have already dropped the logo, the subtitle, the lead
+		   and the demos, so that budget is being paid for content that is no
+		   longer on screen - and 1.3vh of a 225px popout lands on the 3px clamp
+		   floor, which renders the equals badge at about 4px.
+
+		   3vh against what actually remains, and 1.6vw because four panels across
+		   400px have more room than 1.15vw assumes. Together that roughly doubles
+		   every control on the intro at popout size. */
+		--ss: clamp(4.5px, min(1.6vw, 3vh), 10px);
 		/* Slightly smaller floor so text shrinks further when height is tiny. */
 		--ui: clamp(3.2px, min(2vw, 1.55vh), 11px);
 		align-items: flex-start; /* don't center — let scroll reveal from top */
