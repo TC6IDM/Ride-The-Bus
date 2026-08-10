@@ -5,7 +5,7 @@ import subprocess
 
 from gamestate import GameState
 from game_config import GameConfig
-from game_calculations import all_mode_combinations, mode_name
+from game_calculations import MODE_FAMILIES, all_published_modes, mode_name
 from reweight_luts import reweight_all
 from src.state.run_sims import create_books
 from src.write_data.write_configs import generate_configs
@@ -13,8 +13,9 @@ from utils.rgs_verification import execute_all_tests
 
 if __name__ == "__main__":
 
-    # This build is ~13.8M simulations across the 64 bet modes, so it runs in
-    # parallel. src/state/run_sims.py spawns real multiprocessing.Process
+    # This build is ~43M simulations across the 192 bet modes - 64 choice
+    # combinations in each of three families - so it runs in parallel.
+    # src/state/run_sims.py spawns real multiprocessing.Process
     # workers (not GIL-bound threads), each taking a disjoint slice of the
     # global simulation index.
     #
@@ -26,7 +27,7 @@ if __name__ == "__main__":
     # Keep this a power of two. sims_per_thread is computed with int()
     # truncation, so a count that doesn't divide evenly silently drops
     # simulations - 12 workers, for instance, would lose 512 of them. 8 divides
-    # all three per-mode counts (80k / 200k / 800k) exactly and leaves a couple
+    # all three per-mode counts (100k / 200k / 800k) exactly and leaves a couple
     # of cores free on a 12-CPU machine. Set to 1 if you need to profile
     # (run_sims.py rejects profiling with threads > 1).
     num_threads = 8
@@ -46,8 +47,12 @@ if __name__ == "__main__":
     # asks for 100,000 to 1,000,000 simulations per bet mode, and the 32 combos
     # with no "equal" pick sat under that at 80k - fine for accuracy, since
     # those are the common combos and their RTP was never noisy, but it is a
-    # stated threshold and cheap to clear. It costs 640k extra simulations,
-    # about 4.6% on top of the previous 13.76M total.
+    # stated threshold and cheap to clear.
+    #
+    # The same counts apply to every family. Second Chance wins more often, so
+    # its rare combos are actually LESS noisy than Classic's at the same count -
+    # over-provisioning there is cheap insurance, and keeping one table means a
+    # family cannot be added with a count nobody checked.
     MIN_SIMS_PER_MODE = 100_000
     SIMS_BY_EQUAL_COUNT = {0: int(1e5), 1: int(2e5), 2: int(8e5)}
 
@@ -55,7 +60,14 @@ if __name__ == "__main__":
         equal_count = sum(1 for choice in combo[1:3] if choice == "equal")
         return SIMS_BY_EQUAL_COUNT[equal_count]
 
-    num_sim_args = {mode_name(*combo): _sim_count(combo) for combo in all_mode_combinations()}
+    # EVERY published mode, not every choice combination. all_mode_combinations()
+    # yields the 64 combinations; each is published once per family, so keying
+    # off it simulated only the 64 base modes and left generate_configs to fail
+    # on the first sc_ mode with no lookup table to copy.
+    num_sim_args = {
+        mode_name(*combo, family=family): _sim_count(combo)
+        for family, combo in all_published_modes()
+    }
 
     # Assert the floor rather than trust the table above. Two ways this could
     # silently regress: someone edits SIMS_BY_EQUAL_COUNT, or num_threads is
@@ -69,6 +81,15 @@ if __name__ == "__main__":
             f"{_mode}: {_effective} simulations after splitting across "
             f"{num_threads} workers, below the {MIN_SIMS_PER_MODE} approval floor"
         )
+
+    print(f"Simulating {len(num_sim_args)} bet modes, "
+          f"{sum(num_sim_args.values()):,} simulations total:")
+    for _family in MODE_FAMILIES:
+        _mine = {m: c for m, c in num_sim_args.items()
+                 if (m.startswith(MODE_FAMILIES[_family]["prefix"])
+                     if MODE_FAMILIES[_family]["prefix"]
+                     else not m.startswith(("sc_", "hs_")))}
+        print(f"  {_family:5} {len(_mine):3} modes, {sum(_mine.values()):>11,} simulations")
 
     run_conditions = {"run_sims": True}
 
@@ -95,7 +116,7 @@ if __name__ == "__main__":
     print(f"\nReweighting all modes to {config.rtp:.4f} RTP...")
     here = os.path.dirname(os.path.abspath(__file__))
     stats = reweight_all(here, config.rtp)
-    realized = [s["realized_rtp"] for s in stats]
+    realized = [s["realized_rtp"] / s["cost"] for s in stats]
     print(
         f"Reweighted {len(stats)} modes to {config.rtp:.4f}: "
         f"realized RTP {min(realized)*100:.4f}%-{max(realized)*100:.4f}% "
