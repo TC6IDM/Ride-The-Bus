@@ -45,16 +45,27 @@ export default {
 	Classic: '클래식',
 	'Second Chance': '세컨드 챈스',
 	'High Stakes': '하이 스테이크',
-	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
-		'첫 카드를 틀리면 라운드가 끝납니다. 이후 실수는 30%를 남깁니다. 베팅의 최대 1354.2배.',
-	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
-		'카드 1은 여전히 라운드를 끝내지만, 그 뒤 첫 오답은 면제되어 계속 진행됩니다. 베팅 단위당 최대 438.6배.',
-	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
-		'실수가 20%만 남기므로 정답의 가치가 커집니다. 베팅 단위당 최대 1910.2배.',
 	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
 		'모든 모드는 여러 라운드에 걸쳐 동일한 96.00%를 돌려줍니다. 달라지는 것은 배당 빈도와 크기입니다.',
 	Forgiven: '면제됨',
 	'Game modes': '게임 모드',
+	'Max win': '최대 배당',
+	'Both figures are multiples of your bet, not of what the round costs.':
+		'두 수치 모두 라운드 비용이 아니라 베팅액의 배수입니다.',
+	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
+		'환수율(RTP)은 모든 게임 모드에서 %s이며, 각 모드는 여러 라운드에 걸쳐 같은 수치를 돌려줍니다. 이 게임의 최대 배당은 하이 스테이크에서 베팅의 %m입니다.',
+	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
+		'같음 2회 — 평균 1329.2배, 최대 1354.2배로 클래식의 상한입니다.',
+	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
+		'첫 카드를 틀리면 라운드가 끝납니다. 이후 실수는 쌓아둔 배수의 30%를 남깁니다.',
+	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
+		'카드 1은 여전히 라운드를 끝냅니다. 그 뒤 첫 오답은 면제되어 계속 진행됩니다.',
+	'Misses keep only 20%, so every correct guess is worth more.':
+		'실수가 20%만 남기므로 정답 하나하나의 가치가 커집니다.',
+	'Skip card reveal on spacebar': '스페이스바에서 카드 공개 건너뛰기',
+	'Skip the card reveal on rounds started with the spacebar': '스페이스바로 시작한 라운드의 카드 공개를 건너뜁니다',
+	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'스페이스바에서 카드 공개 건너뛰기(슬라이더 버튼)는 스페이스바로 시작한 라운드를 카드 애니메이션 없이 진행합니다. 애니메이션만 바뀌며 카드나 확률, 배당은 달라지지 않습니다.',
 	'Stop on full game win': '풀 게임 성공 시 중지',
 
 	'How to Play': '게임 방법',
@@ -94,8 +105,6 @@ export default {
 		'네 장을 모두 맞히면 배당은 예측의 난이도에 따라 달라집니다:',
 	'No Equal picks — averages 17.3×, up to 317.4×.': '이퀄 없음 — 평균 17.3배, 최대 317.4배.',
 	'One Equal pick — averages 67.5×, up to 381.9×.': '이퀄 1회 — 평균 67.5배, 최대 381.9배.',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
-		'이퀄 2회 — 평균 1329.2배, 최대 1354.2배로 이 게임의 상한입니다.',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
 		'이퀄은 가장 드문 예측이므로 이를 포함한 라운드는 배당이 가장 크고 달성하기도 가장 어렵습니다.',
 	'Speed and autoplay': '속도와 자동 플레이',
@@ -165,8 +174,6 @@ export default {
 	'Close menu': '메뉴 닫기',
 	Close: '닫기',
 	'Game information': '게임 정보',
-	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
-		'환수율(RTP)은 %s입니다. 모든 예측 조합은 베팅액의 1배이며 많은 라운드에 걸쳐 동일한 수치를 돌려줍니다. 이 게임의 최대 지급액은 베팅액의 1354.2배입니다.',
 	Disclaimer: '면책 조항',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
 		'오작동 시 모든 당첨과 플레이가 무효가 됩니다. 안정적인 인터넷 연결이 필요합니다. 연결이 끊긴 경우 게임을 다시 불러와 완료되지 않은 라운드를 마치십시오. 기대 환수율은 다수의 플레이를 기준으로 계산됩니다. 게임 화면은 실제 기기를 나타내지 않으며 예시용입니다. 당첨금은 웹 브라우저 내의 이벤트가 아니라 Remote Game Server에서 수신한 금액에 따라 정산됩니다. TM 및 (c) 2026 Stake Engine.',

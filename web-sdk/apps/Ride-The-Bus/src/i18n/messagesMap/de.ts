@@ -45,16 +45,28 @@ export default {
 	Classic: 'Klassisch',
 	'Second Chance': 'Zweite Chance',
 	'High Stakes': 'Hoher Einsatz',
-	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
-		'Eine falsche erste Karte beendet die Runde. Spätere Fehler behalten 30%. Bis zu 1354,2× deines Einsatzes.',
-	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
-		'Karte 1 beendet die Runde weiterhin, danach wird dein erster Fehler verziehen und es geht weiter. Bis zu 438,6× pro eingesetzter Einheit.',
-	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
-		'Fehler behalten nur 20%, dadurch sind richtige Tipps mehr wert. Bis zu 1910,2× pro eingesetzter Einheit.',
 	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
 		'Jeder Modus gibt über viele Runden dieselben 96,00% zurück. Es ändert sich nur, wie oft und wie viel eine Runde auszahlt.',
 	Forgiven: 'Verziehen',
 	'Game modes': 'Spielmodi',
+	'Max win': 'Maximalgewinn',
+	'Both figures are multiples of your bet, not of what the round costs.':
+		'Beide Werte sind Vielfache deines Einsatzes, nicht der Rundenkosten.',
+	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
+		'Die Auszahlungsquote (RTP) beträgt %s in jedem Spielmodus, und jeder Modus gibt diesen Wert über viele Runden zurück. Am meisten kann dieses Spiel %m deines Einsatzes auszahlen, im Modus Hoher Einsatz.',
+	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
+		'Zwei Gleich-Tipps — im Schnitt 1329,2×, bis zu 1354,2×, das Maximum im Klassisch-Modus.',
+	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
+		'Eine falsche erste Karte beendet die Runde. Spätere Fehler behalten 30% des Aufgebauten.',
+	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
+		'Karte 1 beendet die Runde weiterhin. Danach wird dein erster Fehler verziehen und es geht weiter.',
+	'Misses keep only 20%, so every correct guess is worth more.':
+		'Fehler behalten nur 20%, dadurch ist jeder richtige Tipp mehr wert.',
+	'Skip card reveal on spacebar': 'Kartenaufdeckung bei Leertaste überspringen',
+	'Skip the card reveal on rounds started with the spacebar':
+		'Die Kartenaufdeckung bei Runden überspringen, die mit der Leertaste gestartet wurden',
+	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'Kartenaufdeckung bei Leertaste überspringen (die Schieberegler-Taste) spielt mit der Leertaste gestartete Runden ohne die Kartenanimation. Das ändert nur die Animation, nie die Karten, die Chancen oder die Auszahlung.',
 	'Stop on full game win': 'Bei Komplettgewinn stoppen',
 
 	'How to Play': 'Spielanleitung',
@@ -97,8 +109,6 @@ export default {
 		'Kein Gleich-Tipp — im Schnitt 17,3×, bis zu 317,4×.',
 	'One Equal pick — averages 67.5×, up to 381.9×.':
 		'Ein Gleich-Tipp — im Schnitt 67,5×, bis zu 381,9×.',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
-		'Zwei Gleich-Tipps — im Schnitt 1329,2×, bis zu 1354,2×, das Maximum dieses Spiels.',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
 		'Gleich ist der seltenste Tipp, deshalb bringen darauf aufgebaute Runden die größten Gewinne — und sind am schwersten zu treffen.',
 	'Speed and autoplay': 'Geschwindigkeit und Autoplay',
@@ -170,8 +180,6 @@ export default {
 	'Close menu': 'Menü schließen',
 	Close: 'Schließen',
 	'Game information': 'Spielinformationen',
-	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
-		'Die Auszahlungsquote (RTP) beträgt %s. Jede Kombination von Tipps kostet das 1-Fache deines Einsatzes und gibt über viele Runden denselben Wert zurück. Das Maximum, das dieses Spiel auszahlen kann, beträgt das 1354,2-Fache deines Einsatzes.',
 	Disclaimer: 'Haftungsausschluss',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
 		'Eine Fehlfunktion macht alle Gewinne und Spiele ungültig. Eine stabile Internetverbindung ist erforderlich. Lade das Spiel bei einer Verbindungsunterbrechung neu, um nicht abgeschlossene Runden zu beenden. Die erwartete Auszahlung wird über viele Spiele berechnet. Die Spieldarstellung bildet kein physisches Gerät ab und dient nur der Veranschaulichung. Gewinne werden nach dem vom Remote Game Server erhaltenen Betrag abgerechnet und nicht nach Ereignissen im Webbrowser. TM und (c) 2026 Stake Engine.',

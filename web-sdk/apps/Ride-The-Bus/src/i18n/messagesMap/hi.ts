@@ -45,16 +45,28 @@ export default {
 	Classic: 'क्लासिक',
 	'Second Chance': 'दूसरा मौका',
 	'High Stakes': 'हाई स्टेक्स',
-	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
-		'पहला कार्ड गलत होने पर राउंड खत्म। बाद की गलतियाँ 30% रखती हैं। आपकी बाजी का 1354.2× तक।',
-	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
-		'कार्ड 1 अब भी राउंड खत्म करता है, पर उसके बाद आपका पहला गलत अनुमान माफ होता है और खेल चलता रहता है। प्रति इकाई 438.6× तक।',
-	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
-		'गलतियाँ केवल 20% रखती हैं, इसलिए सही अनुमान ज्यादा कीमती हैं। प्रति इकाई 1910.2× तक।',
 	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
 		'हर मोड कई राउंड में वही 96.00% लौटाता है। बदलता सिर्फ यह है कि राउंड कितनी बार और कितना भुगतान करता है।',
 	Forgiven: 'माफ किया',
 	'Game modes': 'गेम मोड',
+	'Max win': 'अधिकतम जीत',
+	'Both figures are multiples of your bet, not of what the round costs.':
+		'दोनों आंकड़े आपकी बाजी के गुणक हैं, राउंड की लागत के नहीं।',
+	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
+		'हर गेम मोड में रिटर्न टू प्लेयर (RTP) %s है, और हर मोड कई राउंड में वही आंकड़ा लौटाता है। यह गेम अधिकतम %m आपकी बाजी दे सकता है, हाई स्टेक्स पर।',
+	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
+		'दो बराबर चुनाव — औसतन 1329.2×, अधिकतम 1354.2×, क्लासिक में सबसे अधिक।',
+	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
+		'पहला कार्ड गलत होने पर राउंड खत्म। बाद की गलतियाँ जमा राशि का 30% रखती हैं।',
+	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
+		'कार्ड 1 अब भी राउंड खत्म करता है। उसके बाद आपका पहला गलत अनुमान माफ होता है और खेल चलता रहता है।',
+	'Misses keep only 20%, so every correct guess is worth more.':
+		'गलतियाँ केवल 20% रखती हैं, इसलिए हर सही अनुमान ज्यादा कीमती है।',
+	'Skip card reveal on spacebar': 'स्पेसबार पर कार्ड खुलना छोड़ें',
+	'Skip the card reveal on rounds started with the spacebar':
+		'स्पेसबार से शुरू हुए राउंड में कार्ड खुलना छोड़ें',
+	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'स्पेसबार पर कार्ड खुलना छोड़ें (स्लाइडर बटन) स्पेसबार से शुरू हुए राउंड को कार्ड एनिमेशन के बिना चलाता है। यह केवल एनिमेशन बदलता है, कार्ड, संभावनाएँ या भुगतान कभी नहीं।',
 	'Stop on full game win': 'पूरी जीत पर रोकें',
 
 	'How to Play': 'कैसे खेलें',
@@ -93,8 +105,6 @@ export default {
 		'चारों कार्ड सही होने पर भुगतान इस बात पर निर्भर करता है कि आपके चयन कितने कठिन थे:',
 	'No Equal picks — averages 17.3×, up to 317.4×.': 'कोई बराबर नहीं — औसतन 17.3×, अधिकतम 317.4×।',
 	'One Equal pick — averages 67.5×, up to 381.9×.': 'एक बराबर — औसतन 67.5×, अधिकतम 381.9×।',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
-		'दो बराबर — औसतन 1329.2×, अधिकतम 1354.2×, जो इस खेल का उच्चतम भुगतान है।',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
 		'बराबर सबसे दुर्लभ अनुमान है, इसलिए उस पर आधारित राउंड सबसे बड़ी जीत देते हैं — और उन्हें हासिल करना सबसे कठिन होता है।',
 	'Speed and autoplay': 'गति और ऑटोप्ले',
@@ -164,8 +174,6 @@ export default {
 	'Close menu': 'मेन्यू बंद करें',
 	Close: 'बंद करें',
 	'Game information': 'गेम जानकारी',
-	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
-		'खिलाड़ी को वापसी (RTP) %s है। अनुमानों का हर संयोजन आपकी शर्त का 1x खर्च करता है और कई राउंड में वही आंकड़ा लौटाता है। यह गेम अधिकतम आपकी शर्त का 1354.2x दे सकता है।',
 	Disclaimer: 'अस्वीकरण',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
 		'खराबी से सभी जीत और खेल रद्द हो जाते हैं। स्थिर इंटरनेट कनेक्शन आवश्यक है। कनेक्शन टूटने पर अधूरे राउंड पूरे करने के लिए गेम फिर से लोड करें। अपेक्षित वापसी कई खेलों में गणना की जाती है। गेम डिस्प्ले किसी भौतिक उपकरण का प्रतिनिधित्व नहीं करता और केवल उदाहरण के लिए है। जीत का निपटान Remote Game Server से प्राप्त राशि के अनुसार होता है, ब्राउज़र की घटनाओं से नहीं। TM और (c) 2026 Stake Engine.',

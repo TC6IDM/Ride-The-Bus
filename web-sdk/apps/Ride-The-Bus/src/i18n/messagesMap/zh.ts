@@ -45,16 +45,26 @@ export default {
 	Classic: '经典',
 	'Second Chance': '第二次机会',
 	'High Stakes': '高额投注',
-	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
-		'第一张牌猜错即结束本局。之后猜错保留30%。最高可达投注额的1354.2倍。',
-	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
-		'第一张牌仍会结束本局，但此后第一次猜错可获豁免并继续游戏。每单位投注最高438.6倍。',
-	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
-		'猜错仅保留20%，因此猜对更有价值。每单位投注最高1910.2倍。',
 	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
 		'所有模式在多局之后的回报率都是96.00%。不同之处在于中奖的频率和金额。',
 	Forgiven: '已豁免',
 	'Game modes': '游戏模式',
+	'Max win': '最高赔付',
+	'Both figures are multiples of your bet, not of what the round costs.':
+		'两个数值都是投注额的倍数，而非本局费用的倍数。',
+	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
+		'所有游戏模式的返奖率（RTP）均为 %s，每种模式在多局之后都返还同一数值。本游戏的最高赔付为投注额的 %m，出现在高额投注模式。',
+	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
+		'两次“相等”选择 — 平均1329.2倍，最高1354.2倍，这是经典模式的上限。',
+	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
+		'第一张牌猜错即结束本局。之后猜错保留已累积的30%。',
+	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
+		'第一张牌仍会结束本局。此后第一次猜错可获豁免并继续游戏。',
+	'Misses keep only 20%, so every correct guess is worth more.': '猜错仅保留20%，因此每一次猜对都更有价值。',
+	'Skip card reveal on spacebar': '按空格键时跳过发牌动画',
+	'Skip the card reveal on rounds started with the spacebar': '在以空格键开始的回合中跳过发牌动画',
+	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'按空格键时跳过发牌动画（滑块按钮）会在没有发牌动画的情况下进行以空格键开始的回合。它只改变动画，绝不影响牌面、赔率或赔付。',
 	'Stop on full game win': '全中时停止',
 
 	'How to Play': '玩法说明',
@@ -95,8 +105,6 @@ export default {
 	'No Equal picks — averages 17.3×, up to 317.4×.': '未选「相同」 — 平均 17.3 倍，最高 317.4 倍。',
 	'One Equal pick — averages 67.5×, up to 381.9×.':
 		'选一次「相同」 — 平均 67.5 倍，最高 381.9 倍。',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
-		'选两次「相同」 — 平均 1329.2 倍，最高 1354.2 倍，为本游戏上限。',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
 		'「相同」是最罕见的预测，因此以它为基础的局赔付最高，也最难达成。',
 	'Speed and autoplay': '速度与自动游戏',
@@ -163,8 +171,6 @@ export default {
 	'Close menu': '关闭菜单',
 	Close: '关闭',
 	'Game information': '游戏信息',
-	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
-		'玩家回报率（RTP）为 %s。任何猜测组合的成本均为投注额的 1 倍，并在多轮中返还相同比例。本游戏的最高派彩为投注额的 1354.2 倍。',
 	Disclaimer: '免责声明',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
 		'故障将使所有奖金和游戏无效。需要稳定的网络连接。如果断开连接，请重新加载游戏以完成未结束的回合。预期回报是基于大量游戏计算得出的。游戏画面不代表任何实体设备，仅供示意。奖金依据从 Remote Game Server 收到的金额结算，而非依据网页浏览器中的事件。TM 和 (c) 2026 Stake Engine.',

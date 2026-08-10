@@ -45,16 +45,28 @@ export default {
 	Classic: 'Klassinen',
 	'Second Chance': 'Toinen mahdollisuus',
 	'High Stakes': 'Suuret panokset',
-	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
-		'Väärä ensimmäinen kortti päättää kierroksen. Myöhemmät virheet säilyttävät 30%. Jopa 1354,2× panoksesi.',
-	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
-		'Kortti 1 päättää yhä kierroksen, mutta sen jälkeen ensimmäinen virhe annetaan anteeksi ja peli jatkuu. Jopa 438,6× panosyksikköä kohden.',
-	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
-		'Virheet säilyttävät vain 20%, joten oikeat arvaukset ovat arvokkaampia. Jopa 1910,2× panosyksikköä kohden.',
 	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
 		'Jokainen tila palauttaa saman 96,00% monen kierroksen aikana. Vaihtelee vain se, kuinka usein kierros maksaa ja kuinka paljon.',
 	Forgiven: 'Annettu anteeksi',
 	'Game modes': 'Pelitilat',
+	'Max win': 'Enimmäisvoitto',
+	'Both figures are multiples of your bet, not of what the round costs.':
+		'Molemmat luvut ovat panoksesi kerrannaisia, eivät kierroksen hinnan.',
+	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
+		'Palautusprosentti (RTP) on %s jokaisessa pelitilassa, ja jokainen palauttaa saman luvun monen kierroksen aikana. Eniten tämä peli voi maksaa %m panoksestasi, Suuret panokset -tilassa.',
+	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
+		'Kaksi Tasan-valintaa — keskimäärin 1329,2×, enintään 1354,2×, Klassisen enimmäismäärä.',
+	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
+		'Väärä ensimmäinen kortti päättää kierroksen. Myöhemmät virheet säilyttävät 30% kertyneestä.',
+	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
+		'Kortti 1 päättää yhä kierroksen. Sen jälkeen ensimmäinen virhe annetaan anteeksi ja peli jatkuu.',
+	'Misses keep only 20%, so every correct guess is worth more.':
+		'Virheet säilyttävät vain 20%, joten jokainen oikea arvaus on arvokkaampi.',
+	'Skip card reveal on spacebar': 'Ohita korttien paljastus välilyönnillä',
+	'Skip the card reveal on rounds started with the spacebar':
+		'Ohita korttien paljastus kierroksilla, jotka aloitetaan välilyönnillä',
+	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'Ohita korttien paljastus välilyönnillä (liukusäädinpainike) pelaa välilyönnillä aloitetut kierrokset ilman korttianimaatiota. Se muuttaa vain animaatiota, ei koskaan kortteja, todennäköisyyksiä tai voittoa.',
 	'Stop on full game win': 'Pysäytä täydellä voitolla',
 
 	'How to Play': 'Näin pelaat',
@@ -96,8 +108,6 @@ export default {
 		'Ei Yhtä suuri -valintoja — keskimäärin 17,3×, enintään 317,4×.',
 	'One Equal pick — averages 67.5×, up to 381.9×.':
 		'Yksi Yhtä suuri — keskimäärin 67,5×, enintään 381,9×.',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
-		'Kaksi Yhtä suuri -valintaa — keskimäärin 1329,2×, enintään 1354,2×, pelin suurin mahdollinen voitto.',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
 		'Yhtä suuri on harvinaisin arvaus, joten siihen perustuvat kierrokset tuottavat suurimmat voitot — ja ovat vaikeimpia osua.',
 	'Speed and autoplay': 'Nopeus ja automaattipeli',
@@ -167,8 +177,6 @@ export default {
 	'Close menu': 'Sulje valikko',
 	Close: 'Sulje',
 	'Game information': 'Pelin tiedot',
-	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
-		'Palautusprosentti (RTP) on %s. Jokainen arvausyhdistelmä maksaa 1x panoksesi ja palauttaa saman osuuden monen kierroksen aikana. Eniten tämä peli voi maksaa 1354,2x panoksesi.',
 	Disclaimer: 'Vastuuvapauslauseke',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
 		'Toimintahäiriö mitätöi kaikki voitot ja pelit. Vakaa internetyhteys vaaditaan. Jos yhteys katkeaa, lataa peli uudelleen viimeistelläksesi keskeneräiset kierrokset. Odotettu palautus lasketaan monen pelin ajalta. Pelin näkymä ei vastaa mitään fyysistä laitetta ja on vain havainnollistava. Voitot maksetaan Remote Game Serveriltä saadun summan mukaan eikä verkkoselaimen tapahtumien perusteella. TM ja (c) 2026 Stake Engine.',

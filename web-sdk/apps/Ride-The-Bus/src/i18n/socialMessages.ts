@@ -75,8 +75,6 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 		'No Equal picks — averages 17.3×, up to 317.4×.',
 	'One Equal pick — averages 67.5×, up to 381.9×.':
 		'One Equal pick — averages 67.5×, up to 381.9×.',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
-		'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can win.',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
 		'Equal is the rarest guess, so the rounds built on it carry the largest winnings — and are the hardest to land.',
 
@@ -93,8 +91,6 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 
 	// Game information
 	'Game information': 'Game information',
-	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
-		'Return to player (RTP) is %s. Every combination of guesses costs 1x your play amount and returns that same figure over many rounds. The most this game can win is 1354.2× your play amount.',
 
 	// Dynamic payout statement (new key — also added to en.ts)
 	'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.':
@@ -122,17 +118,21 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 	// is a guard against the obvious cases, not a substitute for reading the
 	// copy - a US reviewer is looking at the words, not the regex.
 	'High Stakes': 'High Risk',
-	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
-		'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your play amount.',
-	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
-		'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit played.',
-	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
-		'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit played.',
+	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
+		'A wrong first card ends the round. Later misses keep 30% of what you had built.',
+	'Both figures are multiples of your bet, not of what the round costs.':
+		'Both figures are multiples of your play amount, not of what the round costs.',
+	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
+		'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can win is %m your play amount, on High Risk.',
+	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
+		'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can win.',
 	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
 		'Every mode returns the same 96.00% over many rounds. What changes is how often a round wins and how much it can win.',
 
 	// Auto-slam toggle in the interaction guide. "payout" is prohibited; the
 	// toggle's own label carries no restricted terms and passes through.
+	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the win.',
 	'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.':
 		'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the win.',
 

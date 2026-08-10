@@ -21,18 +21,26 @@
 	import { ranks } from '../game/roundContract';
 	// Derived from payout.ts rather than written out, so the paytable a player
 	// reads cannot drift from what the RGS credits - see payoutTable.ts.
-	import { PAYOUT_ROWS } from '../game/payoutTable';
-	import { FAMILY_BLURB, FAMILY_RULES, MODE_FAMILIES } from '../game/modes';
+	import { payoutRowsFor } from '../game/payoutTable';
+	import { FAMILY_BLURB, FAMILY_RULES, MODE_FAMILIES, type ModeFamily } from '../game/modes';
 	import gameConfig from '../game/config';
 	import { t } from '../i18n/i18nDerived';
+
+	/** The biggest figure any mode can pay, for the RTP statement below. */
+	const maxWinOverall = Math.max(...MODE_FAMILIES.map((f) => FAMILY_RULES[f].maxWin));
 
 	/** "1.99×" for a fixed row, "1.04× – 9.19×" for one that swings. */
 	const payRange = (min: number, max: number) =>
 		min === max ? `${min.toFixed(2)}×` : `${min.toFixed(2)}× – ${max.toFixed(2)}×`;
 
-	type Props = { onclose: () => void };
+	// The live bet mode. The paytable below is ITS table: retention is what every
+	// stage's multiplier is solved against, so High Stakes genuinely pays
+	// different figures, and showing Classic's to a player on another mode would
+	// be the same mistake as pricing a stage one way and paying it another.
+	type Props = { onclose: () => void; family?: ModeFamily };
 
 	const props: Props = $props();
+	const rows = $derived(payoutRowsFor(FAMILY_RULES[props.family ?? 'base']));
 </script>
 
   <div class="popup popup-info" role="dialog" aria-label={t('How to play')}>
@@ -71,7 +79,7 @@
            is no fixed paytable to print - each stage pays its true odds against
            the remaining deck - so what is stated is the full range each pick
            can pay, generated from the same function the game pays out with. -->
-      <h4 class="info-h">{t('Payout table')}</h4>
+      <h4 class="info-h">{t('Payout table')} — {t(FAMILY_RULES[props.family ?? 'base'].label)}</h4>
       <table class="pay-table">
         <thead>
           <tr>
@@ -81,7 +89,7 @@
           </tr>
         </thead>
         <tbody>
-          {#each PAYOUT_ROWS as row}
+          {#each rows as row}
             <tr>
               <td class="pay-stage">{row.stage}</td>
               <td>{t(row.label)}</td>
@@ -102,6 +110,7 @@
           <tr>
             <th scope="col">{t('Mode')}</th>
             <th scope="col">{t('Bet')}</th>
+            <th scope="col">{t('Max win')}</th>
           </tr>
         </thead>
         <tbody>
@@ -112,10 +121,12 @@
                 {t(FAMILY_BLURB[family])}
               </td>
               <td class="pay-amount">{FAMILY_RULES[family].cost}×</td>
+              <td class="pay-amount">{FAMILY_RULES[family].maxWin}×</td>
             </tr>
           {/each}
         </tbody>
       </table>
+      <p>{t('Both figures are multiples of your bet, not of what the round costs.')}</p>
       <p>{t('Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.')}</p>
 
       <h4 class="info-h">{t('If you guess wrong')}</h4>
@@ -125,12 +136,12 @@
         <li>{t('Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.')}</li>
       </ul>
 
-      <h4 class="info-h">{t('Full game wins')}</h4>
+      <h4 class="info-h">{t('Full game wins')} — {t('Classic')}</h4>
       <p>{t('Guess all four cards right and the payout depends on how hard your picks were:')}</p>
       <ul>
         <li>{t('No Equal picks — averages 17.3×, up to 317.4×.')}</li>
         <li>{t('One Equal pick — averages 67.5×, up to 381.9×.')}</li>
-        <li>{t('Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.')}</li>
+        <li>{t('Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.')}</li>
       </ul>
       <p>{t('Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.')}</p>
 
@@ -140,6 +151,7 @@
         <li>{t('Autoplay (the circular arrows) replays the same four guesses for a set number of rounds, or unlimited. The round counter sits on the button while it runs — press the red square to stop, and the round already in play finishes first.')}</li>
         <li>{t('Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.')}</li>
         <li>{t('Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.')}</li>
+        <li>{t('Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.')}</li>
         <li>{t('Tap the spacebar to play one round, or hold it to keep spinning until you let go.')}</li>
       </ul>
 
@@ -163,7 +175,13 @@
            out, so the figure a player is shown cannot drift from the one the
            math is actually built and reweighted to. -->
       <p>
-        {t('Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.').replace('%s', `${(gameConfig.rtp * 100).toFixed(2)}%`)}
+        <!-- The max win is interpolated from FAMILY_RULES, not written out.
+             It used to state 1354.2x flatly, which stopped being true the
+             moment High Stakes reached 3820.5x - and "the most this game can
+             pay" is exactly the claim a reviewer checks. -->
+        {t('Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.')
+          .replace('%s', `${(gameConfig.rtp * 100).toFixed(2)}%`)
+          .replace('%m', `${maxWinOverall}×`)}
       </p>
 
       <h4 class="info-h">{t('Disclaimer')}</h4>

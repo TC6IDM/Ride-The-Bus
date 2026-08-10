@@ -45,16 +45,27 @@ export default {
 	Classic: 'クラシック',
 	'Second Chance': 'セカンドチャンス',
 	'High Stakes': 'ハイステークス',
-	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
-		'1枚目を外すとラウンド終了。以降のミスは30%を保持します。ベットの最大1354.2倍。',
-	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
-		'カード1は変わらずラウンド終了ですが、その後の最初のミスは免除され続行します。賭け単位あたり最大438.6倍。',
-	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
-		'ミスは20%しか残らないぶん、的中の価値が高くなります。賭け単位あたり最大1910.2倍。',
 	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
 		'どのモードも多数のラウンドで同じ96.00%を還元します。変わるのは配当の頻度と大きさです。',
 	Forgiven: '免除',
 	'Game modes': 'ゲームモード',
+	'Max win': '最大配当',
+	'Both figures are multiples of your bet, not of what the round costs.':
+		'どちらの数値もラウンドの費用ではなく、ベット額の倍数です。',
+	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
+		'還元率（RTP）はどのゲームモードでも %s で、いずれも多数のラウンドで同じ数値を還元します。このゲームの最大配当はハイステークスでベットの %m です。',
+	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
+		'イコール2回 — 平均1329.2倍、最大1354.2倍。クラシックの上限です。',
+	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
+		'1枚目を外すとラウンド終了。以降のミスは積み上げた分の30%を保持します。',
+	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
+		'カード1は変わらずラウンド終了です。その後の最初のミスは免除され、続行します。',
+	'Misses keep only 20%, so every correct guess is worth more.':
+		'ミスは20%しか残らないぶん、的中1つ1つの価値が高くなります。',
+	'Skip card reveal on spacebar': 'スペースキーでカード演出をスキップ',
+	'Skip the card reveal on rounds started with the spacebar': 'スペースキーで開始したラウンドのカード演出をスキップします',
+	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'スペースキーでカード演出をスキップ（スライダーボタン）は、スペースキーで始めたラウンドをカードのアニメーションなしで進めます。変わるのは演出だけで、カードや確率、配当には影響しません。',
 	'Stop on full game win': 'フルゲーム達成で停止',
 
 	'How to Play': '遊び方',
@@ -94,8 +105,6 @@ export default {
 		'4枚すべて的中した場合、配当は選択の難しさによって変わります：',
 	'No Equal picks — averages 17.3×, up to 317.4×.': 'イコールなし — 平均17.3倍、最大317.4倍。',
 	'One Equal pick — averages 67.5×, up to 381.9×.': 'イコール1つ — 平均67.5倍、最大381.9倍。',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
-		'イコール2つ — 平均1329.2倍、最大1354.2倍。このゲームの上限です。',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
 		'イコールは最も珍しい予想なので、それを含むラウンドは配当が最も大きく、同時に最も達成が困難です。',
 	'Speed and autoplay': '速度とオートプレイ',
@@ -166,8 +175,6 @@ export default {
 	'Close menu': 'メニューを閉じる',
 	Close: '閉じる',
 	'Game information': 'ゲーム情報',
-	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
-		'還元率（RTP）は %s です。どの予想の組み合わせもベット額の1倍で、多数のラウンドを通じて同じ還元率になります。このゲームの最大配当はベット額の1354.2倍です。',
 	Disclaimer: '免責事項',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
 		'不具合が発生した場合、すべての勝利とプレイは無効となります。安定したインターネット接続が必要です。接続が切断された場合は、ゲームを再読み込みして未完了のラウンドを終了してください。期待還元率は多数のプレイを通じて算出されます。ゲーム画面は実在の機器を表すものではなく、説明目的のみです。勝利金はウェブブラウザ内の事象ではなく、Remote Game Server から受信した金額に基づいて精算されます。TM および (c) 2026 Stake Engine.',

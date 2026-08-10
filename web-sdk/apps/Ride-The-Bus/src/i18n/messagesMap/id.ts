@@ -45,16 +45,28 @@ export default {
 	Classic: 'Klasik',
 	'Second Chance': 'Kesempatan Kedua',
 	'High Stakes': 'Taruhan Tinggi',
-	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
-		'Kartu pertama yang salah mengakhiri ronde. Kesalahan berikutnya menyimpan 30%. Hingga 1354,2× taruhan Anda.',
-	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
-		'Kartu 1 tetap mengakhiri ronde, tetapi setelah itu tebakan salah pertama Anda dimaafkan dan permainan berlanjut. Hingga 438,6× per unit taruhan.',
-	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
-		'Kesalahan hanya menyimpan 20%, jadi tebakan benar bernilai lebih. Hingga 1910,2× per unit taruhan.',
 	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
 		'Setiap mode mengembalikan 96,00% yang sama selama banyak ronde. Yang berubah adalah seberapa sering ronde membayar dan seberapa besar.',
 	Forgiven: 'Dimaafkan',
 	'Game modes': 'Mode permainan',
+	'Max win': 'Kemenangan maks',
+	'Both figures are multiples of your bet, not of what the round costs.':
+		'Kedua angka adalah kelipatan taruhan Anda, bukan biaya ronde.',
+	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
+		'Return to player (RTP) adalah %s di setiap mode, dan masing-masing mengembalikan angka yang sama selama banyak ronde. Maksimum yang dapat dibayar game ini adalah %m taruhan Anda, di Taruhan Tinggi.',
+	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
+		'Dua pilihan Sama — rata-rata 1329,2×, hingga 1354,2×, maksimum mode Klasik.',
+	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
+		'Kartu pertama yang salah mengakhiri ronde. Kesalahan berikutnya menyimpan 30% dari yang terkumpul.',
+	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
+		'Kartu 1 tetap mengakhiri ronde. Setelah itu tebakan salah pertama Anda dimaafkan dan permainan berlanjut.',
+	'Misses keep only 20%, so every correct guess is worth more.':
+		'Kesalahan hanya menyimpan 20%, jadi setiap tebakan benar bernilai lebih.',
+	'Skip card reveal on spacebar': 'Lewati pembukaan kartu dengan spasi',
+	'Skip the card reveal on rounds started with the spacebar':
+		'Lewati pembukaan kartu pada ronde yang dimulai dengan spasi',
+	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'Lewati pembukaan kartu dengan spasi (tombol penggeser) menjalankan ronde yang dimulai dengan spasi tanpa animasi kartu. Ini hanya mengubah animasi, bukan kartu, peluang, atau pembayaran.',
 	'Stop on full game win': 'Berhenti saat menang penuh',
 
 	'How to Play': 'Cara bermain',
@@ -96,8 +108,6 @@ export default {
 	'No Equal picks — averages 17.3×, up to 317.4×.':
 		'Tanpa pilihan Sama — rata-rata 17,3×, hingga 317,4×.',
 	'One Equal pick — averages 67.5×, up to 381.9×.': 'Satu Sama — rata-rata 67,5×, hingga 381,9×.',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
-		'Dua Sama — rata-rata 1329,2×, hingga 1354,2×, pembayaran tertinggi permainan ini.',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
 		'Sama adalah tebakan paling langka, sehingga ronde yang dibangun di atasnya memberi kemenangan terbesar — sekaligus paling sulit dicapai.',
 	'Speed and autoplay': 'Kecepatan dan main otomatis',
@@ -169,8 +179,6 @@ export default {
 	'Close menu': 'Tutup menu',
 	Close: 'Tutup',
 	'Game information': 'Informasi permainan',
-	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
-		'Return to player (RTP) adalah %s. Setiap kombinasi tebakan berbiaya 1x taruhan Anda dan mengembalikan angka yang sama selama banyak putaran. Pembayaran maksimum permainan ini adalah 1354,2x taruhan Anda.',
 	Disclaimer: 'Penafian',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
 		'Kerusakan membatalkan semua kemenangan dan permainan. Koneksi internet yang stabil diperlukan. Jika terputus, muat ulang permainan untuk menyelesaikan putaran yang belum selesai. Pengembalian yang diharapkan dihitung selama banyak permainan. Tampilan permainan tidak mewakili perangkat fisik mana pun dan hanya untuk ilustrasi. Kemenangan diselesaikan sesuai jumlah yang diterima dari Remote Game Server, bukan dari peristiwa di peramban. TM dan (c) 2026 Stake Engine.',

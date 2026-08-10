@@ -332,6 +332,24 @@
   // and nothing else.
   let slamOnAuto = $state(false);
 
+  // Skip the card reveal on rounds started with the spacebar - tap or hold.
+  //
+  // Separate from slamOnAuto because they answer different questions. That one
+  // is about unattended runs; this is about a player driving the game from the
+  // keyboard, who is usually after throughput and has both hands off the
+  // mouse. Default OFF, like the other skip.
+  let slamOnSpace = $state(false);
+
+  /**
+   * Was the round in progress started from the spacebar?
+   *
+   * Set on keydown rather than inferred, because by the time the reveal runs
+   * there is nothing left to tell a spacebar round from a clicked one - and a
+   * hold run has already handed off to startAuto. Cleared when the reveal
+   * finishes, so the next clicked round is not skipped by inheritance.
+   */
+  let roundFromSpace = $state(false);
+
   // ---- Big-win takeover ----------------------------------------------------
   // The round flow awaits dismissal, so the celebration naturally holds the
   // next auto round rather than needing the loop to know about it.
@@ -868,7 +886,11 @@
     // skipping the animation bars it here too, however it was requested.
     // Bet spacing is governed by rgsPacing regardless, so this cannot outrun
     // the RGS no matter how short the reveal becomes.
-    slamRequested = autoRunning && slamOnAuto && !jurisdiction.slamstopDisabled();
+    // spaceHoldRunning covers a hold run, roundFromSpace the single tap that
+    // starts one - both are "the player is on the keyboard".
+    const skipForSpace = slamOnSpace && (roundFromSpace || spaceHoldRunning);
+    const skipForAuto = autoRunning && slamOnAuto;
+    slamRequested = (skipForAuto || skipForSpace) && !jurisdiction.slamstopDisabled();
     let running = 1;
     let busted = false;
     let forgivenessSpent = false;
@@ -904,6 +926,7 @@
       }
     }
 
+    roundFromSpace = false;
     await revealWait(300, 120);
     // Prefer the server's authoritative payout on engine rounds; fall back to
     // the local formula (identical maths) when there's no RGS session.
@@ -1745,6 +1768,7 @@
     // Keyboard activation isn't a click, so it never reaches the delegated
     // handler - sound it here, as the primary control Space stands in for.
     sound.playPress('primary');
+    roundFromSpace = true;
     onSpin(); // the tap: one round, straight away
     spaceHoldTimer = setTimeout(() => {
       spaceHoldTimer = null;
@@ -2132,6 +2156,22 @@
         <span class="cb-glyph cb-info-i">i</span>
       </button>
 
+      <!-- Bet mode. Locked during an auto run and in replay, like the bet
+           itself: the run was started on one mode's odds, and a replay is a
+           record of a round already played on one.
+           Gold rather than the bar's usual slate so it reads as the one control
+           that changes what a round IS, not how it looks. -->
+      <button
+        class="cb-icon cb-mode-btn"
+        class:active={openPopup === 'mode'}
+        onclick={() => togglePopup('mode')}
+        disabled={autoRunning || stateUrlDerived.replay()}
+        aria-label={t('Choose game mode')}
+        title={t(familyRules().label)}
+      >
+        <span class="cb-mode-word">{t('Mode')}</span>
+      </button>
+
       <div class="cb-readouts">
         <!-- Hidden in replay. A replay is viewable without a session - the URL
              can be shared publicly - so there is no player whose balance this
@@ -2155,31 +2195,21 @@
       </div>
     </div>
 
-    <!-- Bet mode. Locked during an auto run and in replay, like the bet itself:
-         the run was started on one mode's odds and the replay is a record of a
-         round already played on one. -->
-    <div class="cb-panel cb-panel-dark cb-mode">
-      <button
-        class="cb-mode-display"
-        class:active={openPopup === 'mode'}
-        onclick={() => togglePopup('mode')}
-        disabled={autoRunning || stateUrlDerived.replay()}
-        aria-label={t('Choose game mode')}
-      >
-        <span class="cb-cap">{t('Mode')}</span>
-        <span class="cb-val cb-mode-name">{t(familyRules().label)}</span>
-      </button>
-    </div>
-
     <div class="cb-panel cb-panel-dark cb-bet">
       <button class="cb-bet-display" class:active={openPopup === 'bet'} onclick={() => togglePopup('bet')} disabled={stateUrlDerived.replay()} aria-label={t('Choose bet amount')}>
         <span class="cb-cap">{t('Bet')}</span>
-        <span class="cb-val">{numberToCurrencyString(betValue() > 0 ? betValue() : 0)}</span>
-        <!-- What the round actually costs, shown only when it differs from the
-             bet. A 2x mode debiting twice the figure beside it, with nothing
-             saying so, is the kind of surprise that becomes a support ticket. -->
+        <!-- The figure shown IS what leaves the balance, so it is the round's
+             cost rather than the base bet. On a multiplied mode it turns blue
+             and the base bet moves to a line underneath: one number to read,
+             coloured to say "this is not the plain bet", with the arithmetic
+             available for anyone who wants it. -->
+        <span class="cb-val" class:cb-val-multiplied={familyRules().cost !== 1}>
+          {numberToCurrencyString(roundCost() > 0 ? roundCost() : 0)}
+        </span>
         {#if familyRules().cost !== 1}
-          <span class="cb-mode-cost">{familyRules().cost}× = {numberToCurrencyString(roundCost())}</span>
+          <span class="cb-bet-base">
+            {numberToCurrencyString(betValue() > 0 ? betValue() : 0)} × {familyRules().cost}
+          </span>
         {/if}
       </button>
       <div class="cb-betstep">
@@ -2296,6 +2326,10 @@
               <span class="mode-option-cost">{rules.cost}× {t('Bet')}</span>
             </span>
             <span class="mode-option-blurb">{t(FAMILY_BLURB[family])}</span>
+            <!-- Approval requires the maximum win per mode. Read from
+                 FAMILY_RULES rather than written into the blurb, so the figure
+                 exists once and a test can pin it to the payout maths. -->
+            <span class="mode-option-max">{t('Max win')} {rules.maxWin}× {t('Bet')}</span>
           </button>
         {/each}
       </div>
@@ -2311,9 +2345,20 @@
         <input class="bet-entry-input" type="text" inputmode="decimal" bind:value={betInput} onblur={formatBetInput} placeholder="0.00" aria-label={t('Custom bet amount')} />
       </div>
       <span class="popup-sub">{t('Quick Bets')}</span>
+      <!-- Quick picks show what the round will COST, matching the control bar.
+           Showing the base bet here and the cost there would leave a player
+           tapping "10.00" and being charged 20.00 with no way to connect the
+           two. The base bet is on the second line where the mode multiplies. -->
       <div class="bet-grid">
         {#each betLevels() as lv}
-          <button class="bet-cell" class:active={Math.abs(betValue() - lv) < 1e-9} onclick={() => setBetLevel(lv)}>{numberToCurrencyString(lv)}</button>
+          <button class="bet-cell" class:active={Math.abs(betValue() - lv) < 1e-9} onclick={() => setBetLevel(lv)}>
+            <span class:cb-val-multiplied={familyRules().cost !== 1}>
+              {numberToCurrencyString(roundCost(lv))}
+            </span>
+            {#if familyRules().cost !== 1}
+              <span class="bet-cell-base">{numberToCurrencyString(lv)} × {familyRules().cost}</span>
+            {/if}
+          </button>
         {/each}
       </div>
     </div>
@@ -2401,13 +2446,21 @@
             <span class="control-label">{t('Skip card reveal on autoplay')}</span>
             <button type="button" class="switch" class:on={slamOnAuto} role="switch" aria-checked={slamOnAuto} aria-label={t('Skip the card reveal during autoplay')} onclick={() => (slamOnAuto = !slamOnAuto)}><span class="switch-knob"></span></button>
           </div>
+          <!-- Also hidden where the spacebar shortcut itself is barred - a
+               switch for a key that does nothing is worse than no switch. -->
+          {#if !jurisdiction.spacebarDisabled()}
+            <div class="advanced-row">
+              <span class="control-label">{t('Skip card reveal on spacebar')}</span>
+              <button type="button" class="switch" class:on={slamOnSpace} role="switch" aria-checked={slamOnSpace} aria-label={t('Skip the card reveal on rounds started with the spacebar')} onclick={() => (slamOnSpace = !slamOnSpace)}><span class="switch-knob"></span></button>
+            </div>
+          {/if}
         {/if}
       </div>
     </div>
   {/if}
 
   {#if openPopup === 'info'}
-    <HowToPlayPopup onclose={() => (openPopup = null)} />
+    <HowToPlayPopup family={betFamily} onclose={() => (openPopup = null)} />
   {/if}
 </div>
 

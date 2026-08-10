@@ -397,35 +397,40 @@
 
 .cb-float:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* ---- Bet mode readout ----------------------------------------------------
-   Sits beside the bet, because the two together are what a round costs. */
-.cb-mode-display {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: calc(var(--ui-bar) * 0.09);
-  padding: calc(var(--ui-bar) * 0.36) calc(var(--ui-bar) * 0.73);
-  border: none;
-  border-radius: calc(var(--ui-bar) * 0.64);
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  text-transform: none;
-}
+/* The bet figure when the mode multiplies it. Blue says "this is not the plain
+   bet" without needing a sentence; the arithmetic sits underneath for anyone
+   who wants it. Used in the control bar and the bet menu alike, so the two
+   can never show different numbers for the same selection. */
+.cb-val-multiplied { color: #4c9ffe; }
 
-.cb-mode-display:hover:not(:disabled) { background: rgba(255, 255, 255, 0.06); }
-.cb-mode-display.active { background: rgba(76, 159, 254, 0.16); }
-.cb-mode-display:disabled { opacity: 0.55; cursor: not-allowed; }
-
-.cb-mode-name { white-space: nowrap; }
-
-/* Shown only when the mode costs more than the bet beside it - a 2x mode
-   debiting twice the figure on screen, unannounced, is a support ticket. */
-.cb-mode-cost {
+.cb-bet-base,
+.bet-cell-base {
   display: block;
   font-size: calc(var(--ui-bar) * 0.86);
-  font-weight: 700;
-  color: #4c9ffe;
+  font-weight: 600;
+  color: #93a4b5;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+/* The MODE button. Gold rather than the bar's slate, because it is the one
+   control that changes what a round IS rather than how it looks. */
+.cb-mode-btn {
+  background: radial-gradient(circle at 50% 35%, #6a5216, #2a2008 78%);
+  border-color: #f5d78c;
+  color: #f5d78c;
+}
+
+.cb-mode-btn:hover:not(:disabled) { box-shadow: 0 0 14px rgba(245, 215, 140, 0.55); }
+.cb-mode-btn.active { background: radial-gradient(circle at 50% 35%, #8a6a1c, #3a2c0b 78%); }
+.cb-mode-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* "MODE" has to fit a round button roughly 3.3 units across, so it is set
+   small, tight and uppercase rather than scaled down as a whole. */
+.cb-mode-word {
+  font-size: calc(var(--ui-bar) * 0.86);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1;
 }

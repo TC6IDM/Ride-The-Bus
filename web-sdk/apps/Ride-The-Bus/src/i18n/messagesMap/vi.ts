@@ -45,16 +45,28 @@ export default {
 	Classic: 'Cổ điển',
 	'Second Chance': 'Cơ hội thứ hai',
 	'High Stakes': 'Cược lớn',
-	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
-		'Sai lá bài đầu tiên là kết thúc vòng. Các lần sai sau giữ lại 30%. Lên tới 1354,2× tiền cược của bạn.',
-	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
-		'Lá 1 vẫn kết thúc vòng, nhưng sau đó lần đoán sai đầu tiên được bỏ qua và trò chơi tiếp tục. Lên tới 438,6× mỗi đơn vị cược.',
-	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
-		'Sai chỉ giữ lại 20%, nên đoán đúng có giá trị hơn. Lên tới 1910,2× mỗi đơn vị cược.',
 	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
 		'Mọi chế độ đều trả về cùng mức 96,00% qua nhiều vòng. Chỉ khác ở tần suất và mức trả thưởng của mỗi vòng.',
 	Forgiven: 'Được bỏ qua',
 	'Game modes': 'Chế độ chơi',
+	'Max win': 'Thắng tối đa',
+	'Both figures are multiples of your bet, not of what the round costs.':
+		'Cả hai con số đều là bội số của tiền cược, không phải chi phí vòng chơi.',
+	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
+		'Tỷ lệ trả thưởng (RTP) là %s ở mọi chế độ, và mỗi chế độ đều trả về cùng con số đó qua nhiều vòng. Mức trả thưởng cao nhất của trò chơi là %m tiền cược của bạn, ở chế độ Cược lớn.',
+	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
+		'Hai lựa chọn Bằng — trung bình 1329,2×, tối đa 1354,2×, mức cao nhất của Cổ điển.',
+	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
+		'Sai lá bài đầu tiên là kết thúc vòng. Các lần sai sau giữ lại 30% số đã tích lũy.',
+	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
+		'Lá 1 vẫn kết thúc vòng. Sau đó lần đoán sai đầu tiên được bỏ qua và trò chơi tiếp tục.',
+	'Misses keep only 20%, so every correct guess is worth more.':
+		'Sai chỉ giữ lại 20%, nên mỗi lần đoán đúng có giá trị hơn.',
+	'Skip card reveal on spacebar': 'Bỏ qua phần lật bài khi dùng phím cách',
+	'Skip the card reveal on rounds started with the spacebar':
+		'Bỏ qua phần lật bài ở các vòng bắt đầu bằng phím cách',
+	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'Bỏ qua phần lật bài khi dùng phím cách (nút thanh trượt) chơi các vòng bắt đầu bằng phím cách mà không có hoạt ảnh lật bài. Nó chỉ thay đổi hoạt ảnh, không bao giờ thay đổi lá bài, tỷ lệ hay mức trả thưởng.',
 	'Stop on full game win': 'Dừng khi thắng toàn ván',
 
 	'How to Play': 'Cách chơi',
@@ -96,8 +108,6 @@ export default {
 		'Không chọn Bằng nhau — trung bình 17,3×, tối đa 317,4×.',
 	'One Equal pick — averages 67.5×, up to 381.9×.':
 		'Một lần Bằng nhau — trung bình 67,5×, tối đa 381,9×.',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
-		'Hai lần Bằng nhau — trung bình 1329,2×, tối đa 1354,2×, mức cao nhất trò chơi có thể trả.',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
 		'Bằng nhau là dự đoán hiếm gặp nhất, nên các vòng dựa vào nó mang lại tiền thắng lớn nhất — và cũng khó đạt nhất.',
 	'Speed and autoplay': 'Tốc độ và tự động chơi',
@@ -169,8 +179,6 @@ export default {
 	'Close menu': 'Đóng menu',
 	Close: 'Đóng',
 	'Game information': 'Thong tin tro choi',
-	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
-		'Tỷ lệ hoàn trả cho người chơi (RTP) là %s. Mỗi tổ hợp dự đoán đều có giá 1x tiền cược của bạn và trả lại đúng tỷ lệ đó qua nhiều vòng chơi. Mức chi trả cao nhất của trò chơi này là 1354,2x tiền cược của bạn.',
 	Disclaimer: 'Mien tru trach nhiem',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
 		'Sự cố làm vô hiệu mọi khoản thắng và lượt chơi. Cần có kết nối internet ổn định. Nếu bị mất kết nối, hãy tải lại trò chơi để hoàn tất các vòng chưa xong. Mức hoàn trả dự kiến được tính trên nhiều lượt chơi. Hình ảnh trò chơi không đại diện cho bất kỳ thiết bị vật lý nào và chỉ mang tính minh họa. Tiền thắng được thanh toán theo số tiền nhận từ Remote Game Server chứ không theo các sự kiện trong trình duyệt web. TM và (c) 2026 Stake Engine.',

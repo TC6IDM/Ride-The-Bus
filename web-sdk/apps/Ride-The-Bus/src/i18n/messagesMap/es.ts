@@ -45,16 +45,28 @@ export default {
 	Classic: 'Clásico',
 	'Second Chance': 'Segunda oportunidad',
 	'High Stakes': 'Apuesta alta',
-	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
-		'Fallar la primera carta termina la ronda. Los fallos posteriores conservan el 30%. Hasta 1354,2× tu apuesta.',
-	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
-		'La carta 1 sigue terminando la ronda, pero después se perdona tu primer fallo y el juego continúa. Hasta 438,6× por unidad apostada.',
-	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
-		'Los fallos conservan solo el 20%, así que los aciertos valen más. Hasta 1910,2× por unidad apostada.',
 	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
 		'Todos los modos devuelven el mismo 96,00% a lo largo de muchas rondas. Lo que cambia es con qué frecuencia paga una ronda y cuánto puede pagar.',
 	Forgiven: 'Perdonado',
 	'Game modes': 'Modos de juego',
+	'Max win': 'Ganancia máxima',
+	'Both figures are multiples of your bet, not of what the round costs.':
+		'Ambas cifras son múltiplos de tu apuesta, no de lo que cuesta la ronda.',
+	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
+		'El retorno al jugador (RTP) es del %s en todos los modos, y cada uno devuelve esa misma cifra a lo largo de muchas rondas. Lo máximo que puede pagar este juego es %m tu apuesta, en Apuesta alta.',
+	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
+		'Dos elecciones Igual: promedia 1329,2×, hasta 1354,2×, lo máximo que paga el modo Clásico.',
+	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
+		'Fallar la primera carta termina la ronda. Los fallos posteriores conservan el 30% de lo acumulado.',
+	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
+		'La carta 1 sigue terminando la ronda. Después, tu primer fallo se perdona y el juego continúa.',
+	'Misses keep only 20%, so every correct guess is worth more.':
+		'Los fallos conservan solo el 20%, así que cada acierto vale más.',
+	'Skip card reveal on spacebar': 'Omitir el reparto con la barra espaciadora',
+	'Skip the card reveal on rounds started with the spacebar':
+		'Omitir el reparto de cartas en rondas iniciadas con la barra espaciadora',
+	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'Omitir el reparto con la barra espaciadora (el botón de controles) juega las rondas iniciadas con la barra sin la animación de las cartas. Solo cambia la animación, nunca las cartas, las probabilidades ni el pago.',
 	'Stop on full game win': 'Parar al ganar el juego completo',
 
 	'How to Play': 'Cómo jugar',
@@ -95,8 +107,6 @@ export default {
 	'No Equal picks — averages 17.3×, up to 317.4×.':
 		'Sin elegir Igual — promedia 17,3×, hasta 317,4×.',
 	'One Equal pick — averages 67.5×, up to 381.9×.': 'Con un Igual — promedia 67,5×, hasta 381,9×.',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
-		'Con dos Igual — promedia 1329,2×, hasta 1354,2×, lo máximo que paga este juego.',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
 		'Igual es la predicción más rara, así que las rondas basadas en ella dan las mayores ganancias — y son las más difíciles de acertar.',
 	'Speed and autoplay': 'Velocidad y juego automático',
@@ -167,8 +177,6 @@ export default {
 	'Close menu': 'Cerrar menú',
 	Close: 'Cerrar',
 	'Game information': 'Informacion del juego',
-	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
-		'El retorno al jugador (RTP) es %s. Cada combinación de predicciones cuesta 1x tu apuesta y devuelve esa misma cifra a lo largo de muchas rondas. Lo máximo que este juego puede pagar es 1354,2x tu apuesta.',
 	Disclaimer: 'Aviso legal',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
 		'Cualquier fallo anula todas las ganancias y jugadas. Se requiere una conexión a internet estable. En caso de desconexión, vuelve a cargar el juego para terminar las rondas incompletas. El retorno esperado se calcula a lo largo de muchas jugadas. La representación del juego no corresponde a ningún dispositivo físico y es solo ilustrativa. Las ganancias se liquidan según el importe recibido del Remote Game Server y no según los eventos del navegador web. TM y (c) 2026 Stake Engine.',

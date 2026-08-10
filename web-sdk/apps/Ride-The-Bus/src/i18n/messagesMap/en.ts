@@ -60,6 +60,13 @@ export default {
 	// miss keeps differs. Blurbs quote the measured ceilings so the copy cannot
 	// drift from the maths.
 	'Game Mode': 'Game Mode',
+	'Max win': 'Max win',
+	'Both figures are multiples of your bet, not of what the round costs.':
+		'Both figures are multiples of your bet, not of what the round costs.',
+	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
+		'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.',
+	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
+		'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.',
 	// Shown on the card a Second Chance round let off.
 	Forgiven: 'Forgiven',
 	'Game modes': 'Game modes',
@@ -67,17 +74,22 @@ export default {
 	Classic: 'Classic',
 	'Second Chance': 'Second Chance',
 	'High Stakes': 'High Stakes',
-	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
-		'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.',
-	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
-		'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.',
-	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
-		'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.',
+	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
+		'A wrong first card ends the round. Later misses keep 30% of what you had built.',
+	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
+		'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.',
+	'Misses keep only 20%, so every correct guess is worth more.':
+		'Misses keep only 20%, so every correct guess is worth more.',
 	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
 		'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.',
 
 	// Advanced popup
 	Advanced: 'Advanced',
+	'Skip card reveal on spacebar': 'Skip card reveal on spacebar',
+	'Skip the card reveal on rounds started with the spacebar':
+		'Skip the card reveal on rounds started with the spacebar',
+	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.',
 	'Stop on full game win': 'Stop on full game win',
 
 	// How to play
@@ -122,8 +134,6 @@ export default {
 		'No Equal picks — averages 17.3×, up to 317.4×.',
 	'One Equal pick — averages 67.5×, up to 381.9×.':
 		'One Equal pick — averages 67.5×, up to 381.9×.',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
-		'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
 		'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.',
 	'Speed and autoplay': 'Speed and autoplay',
@@ -204,8 +214,6 @@ export default {
 	'Close menu': 'Close menu',
 	Close: 'Close',
 	'Game information': 'Game information',
-	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
-		'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.',
 	Disclaimer: 'Disclaimer',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
 		'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.',

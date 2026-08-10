@@ -45,16 +45,28 @@ export default {
 	Classic: 'Clássico',
 	'Second Chance': 'Segunda Oportunidade',
 	'High Stakes': 'Apostas Altas',
-	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
-		'Errar a primeira carta termina a ronda. Erros seguintes mantêm 30%. Até 1354,2× a tua aposta.',
-	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
-		'A carta 1 continua a terminar a ronda, mas depois o teu primeiro erro é perdoado e o jogo continua. Até 438,6× por unidade apostada.',
-	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
-		'Os erros mantêm apenas 20%, por isso os acertos valem mais. Até 1910,2× por unidade apostada.',
 	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
 		'Todos os modos devolvem os mesmos 96,00% ao longo de muitas rondas. O que muda é a frequência e o tamanho dos pagamentos.',
 	Forgiven: 'Perdoado',
 	'Game modes': 'Modos de jogo',
+	'Max win': 'Ganho máximo',
+	'Both figures are multiples of your bet, not of what the round costs.':
+		'Ambos os valores são múltiplos da tua aposta, não do custo da ronda.',
+	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
+		'O retorno ao jogador (RTP) é de %s em todos os modos, e cada um devolve esse mesmo valor ao longo de muitas rondas. O máximo que este jogo pode pagar é %m a tua aposta, em Apostas Altas.',
+	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
+		'Duas escolhas Igual — em média 1329,2×, até 1354,2×, o máximo do modo Clássico.',
+	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
+		'Errar a primeira carta termina a ronda. Erros seguintes mantêm 30% do acumulado.',
+	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
+		'A carta 1 continua a terminar a ronda. Depois, o teu primeiro erro é perdoado e o jogo continua.',
+	'Misses keep only 20%, so every correct guess is worth more.':
+		'Os erros mantêm apenas 20%, por isso cada acerto vale mais.',
+	'Skip card reveal on spacebar': 'Ignorar a revelação com a barra de espaço',
+	'Skip the card reveal on rounds started with the spacebar':
+		'Ignorar a revelação das cartas em rondas iniciadas com a barra de espaço',
+	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'Ignorar a revelação com a barra de espaço (o botão de controlos) joga as rondas iniciadas com a barra sem a animação das cartas. Altera apenas a animação, nunca as cartas, as probabilidades ou o pagamento.',
 	'Stop on full game win': 'Parar ao vencer o jogo completo',
 
 	'How to Play': 'Como jogar',
@@ -94,8 +106,6 @@ export default {
 	'No Equal picks — averages 17.3×, up to 317.4×.':
 		'Sem escolher Igual — média de 17,3×, até 317,4×.',
 	'One Equal pick — averages 67.5×, up to 381.9×.': 'Com um Igual — média de 67,5×, até 381,9×.',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
-		'Com dois Igual — média de 1329,2×, até 1354,2×, o máximo que este jogo pode pagar.',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
 		'Igual é o palpite mais raro, por isso as rodadas baseadas nele trazem os maiores ganhos — e são as mais difíceis de acertar.',
 	'Speed and autoplay': 'Velocidade e jogo automático',
@@ -166,8 +176,6 @@ export default {
 	'Close menu': 'Fechar menu',
 	Close: 'Fechar',
 	'Game information': 'Informacoes do jogo',
-	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
-		'O retorno ao jogador (RTP) é %s. Cada combinação de palpites custa 1x sua aposta e devolve esse mesmo valor ao longo de muitas rodadas. O máximo que este jogo pode pagar é 1354,2x sua aposta.',
 	Disclaimer: 'Aviso legal',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
 		'Qualquer falha anula todos os ganhos e jogadas. É necessária uma conexão de internet estável. Em caso de desconexão, recarregue o jogo para concluir as rodadas não finalizadas. O retorno esperado é calculado ao longo de muitas jogadas. A exibição do jogo não representa nenhum dispositivo físico e é apenas ilustrativa. Os ganhos são liquidados de acordo com o valor recebido do Remote Game Server e não com os eventos ocorridos no navegador web. TM e (c) 2026 Stake Engine.',

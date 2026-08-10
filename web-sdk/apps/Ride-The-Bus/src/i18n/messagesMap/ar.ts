@@ -46,16 +46,28 @@ export default {
 	Classic: 'كلاسيكي',
 	'Second Chance': 'فرصة ثانية',
 	'High Stakes': 'رهانات عالية',
-	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
-		'خطأ في البطاقة الأولى ينهي الجولة. الأخطاء اللاحقة تحتفظ بنسبة 30%. حتى 1354.2× من رهانك.',
-	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
-		'البطاقة الأولى ما زالت تنهي الجولة، لكن بعدها يُسامَح أول تخمين خاطئ ويستمر اللعب. حتى 438.6× لكل وحدة مراهنة.',
-	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
-		'الأخطاء تحتفظ بنسبة 20% فقط، لذا تصبح التخمينات الصحيحة أثمن. حتى 1910.2× لكل وحدة مراهنة.',
 	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
 		'كل الأوضاع تعيد النسبة نفسها 96.00% على مدى جولات كثيرة. ما يتغير هو عدد مرات الربح ومقداره.',
 	Forgiven: 'مُتسامَح عنها',
 	'Game modes': 'أوضاع اللعبة',
+	'Max win': 'أقصى ربح',
+	'Both figures are multiples of your bet, not of what the round costs.':
+		'كلا الرقمين مضاعفات لرهانك، وليس لتكلفة الجولة.',
+	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
+		'نسبة العائد للاعب (RTP) هي %s في كل أوضاع اللعبة، ويعيد كل وضع النسبة نفسها على مدى جولات كثيرة. وأقصى ما يمكن أن تدفعه هذه اللعبة هو %m من رهانك، في وضع الرهانات العالية.',
+	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
+		'اختياران متساويان — بمتوسط 1329.2×، وحتى 1354.2×، وهو أقصى ما يدفعه الوضع الكلاسيكي.',
+	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
+		'خطأ في البطاقة الأولى ينهي الجولة. الأخطاء اللاحقة تحتفظ بنسبة 30% مما جمعته.',
+	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
+		'البطاقة الأولى ما زالت تنهي الجولة. بعدها يُسامَح أول تخمين خاطئ ويستمر اللعب.',
+	'Misses keep only 20%, so every correct guess is worth more.':
+		'الأخطاء تحتفظ بنسبة 20% فقط، لذا تصبح كل تخمينة صحيحة أثمن.',
+	'Skip card reveal on spacebar': 'تخطي كشف البطاقات بمفتاح المسافة',
+	'Skip the card reveal on rounds started with the spacebar':
+		'تخطي كشف البطاقات في الجولات التي تبدأ بمفتاح المسافة',
+	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'تخطي كشف البطاقات بمفتاح المسافة (زر المؤشرات) يشغّل الجولات التي تبدأ بمفتاح المسافة بدون حركة البطاقات. يغيّر الحركة فقط، ولا يمس البطاقات أو الاحتمالات أو الأرباح.',
 	'Stop on full game win': 'التوقف عند الفوز الكامل',
 
 	'How to Play': 'كيفية اللعب',
@@ -97,8 +109,6 @@ export default {
 		'بدون اختيار «متساوٍ» — بمتوسط 17.3×، وحتى 317.4×.',
 	'One Equal pick — averages 67.5×, up to 381.9×.':
 		'اختيار «متساوٍ» واحد — بمتوسط 67.5×، وحتى 381.9×.',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
-		'اختياران «متساويان» — بمتوسط 1329.2×، وحتى 1354.2×، وهو أقصى ما تدفعه هذه اللعبة.',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
 		'«متساوٍ» هو أندر التخمينات، لذا تحمل الجولات المبنية عليه أكبر الأرباح — وهي الأصعب تحقيقًا.',
 	'Speed and autoplay': 'السرعة واللعب التلقائي',
@@ -168,8 +178,6 @@ export default {
 	'Close menu': 'إغلاق القائمة',
 	Close: 'إغلاق',
 	'Game information': 'معلومات اللعبة',
-	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
-		'نسبة العائد للاعب (RTP) هي %s. كل تركيبة من التخمينات تكلف 1x من رهانك وتعيد النسبة نفسها على مدى جولات كثيرة. أقصى ما يمكن أن تدفعه هذه اللعبة هو 1354.2x من رهانك.',
 	Disclaimer: 'إخلاء المسؤولية',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
 		'أي خلل يلغي جميع المكاسب والجولات. يلزم اتصال إنترنت مستقر. في حالة انقطاع الاتصال، أعد تحميل اللعبة لإكمال أي جولات غير منتهية. يُحسب العائد المتوقع على مدى عدد كبير من الجولات. لا تمثل شاشة اللعبة أي جهاز فعلي وهي لأغراض توضيحية فقط. تتم تسوية المكاسب وفقًا للمبلغ الوارد من خادم اللعبة البعيد وليس وفقًا للأحداث داخل متصفح الويب. TM و (c) 2026 Stake Engine.',

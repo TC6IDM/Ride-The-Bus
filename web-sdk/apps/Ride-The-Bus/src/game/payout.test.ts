@@ -232,6 +232,31 @@ describe('mode families', () => {
     assert.equal(maxWinFor('hs'), 3820.5);
   });
 
+  test('the advertised max win is the one the maths reaches', () => {
+    // FAMILY_RULES.maxWin is what the picker, the rules screen and the
+    // disclaimer all print. Stake requires the maximum win to be stated per
+    // mode, so a figure that drifts from the payout model is a compliance
+    // failure, not just a typo - and this game has already shipped one
+    // display/actual mismatch (1.99x priced, 1.90x shown).
+    for (const family of MODE_FAMILIES) {
+      assert.equal(
+        FAMILY_RULES[family].maxWin,
+        maxWinFor(family),
+        `${family}: advertised max win disagrees with the payout maths`,
+      );
+    }
+  });
+
+  test('every max win is stated against the BET, not the cost', () => {
+    // The unit that caused the 3820.5 / 1910.2 confusion. payoutMultiplier is
+    // always against the base bet, so a 2x mode's ceiling must NOT be halved.
+    assert.ok(
+      FAMILY_RULES.hs.maxWin > FAMILY_RULES.base.maxWin,
+      'High Stakes pays more per bet than Classic; expressing it per unit ' +
+        'staked would make it look smaller',
+    );
+  });
+
   test('no family exceeds Stake 500,000x payout ceiling', () => {
     for (const family of MODE_FAMILIES) {
       assert.ok(maxWinFor(family) <= 500_000, `${family} pays too much`);

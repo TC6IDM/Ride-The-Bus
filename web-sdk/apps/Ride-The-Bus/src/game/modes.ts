@@ -76,6 +76,19 @@ export type FamilyRules = {
   forgiveFrom: number;
   /** English label, which is also the i18n key. */
   label: 'Classic' | 'Second Chance' | 'High Stakes';
+  /**
+   * The most this family can pay, as a multiple of the BET.
+   *
+   * Stake's convention throughout: payoutMultiplier is expressed against the
+   * base bet, never against the cost. Mixing the two is what produced a game
+   * claiming 3820.5x in one place and 1910.2x in another for the same mode -
+   * both were arithmetically right, and one of them had to go.
+   *
+   * Data rather than prose so the figure lives in one place, needs no
+   * translation, and cannot drift: payout.test.ts asserts it equals what the
+   * payout maths actually reaches.
+   */
+  maxWin: number;
 };
 
 const BASE_RETENTION = [0, 0.3, 0.3, 0.3] as const;
@@ -88,6 +101,7 @@ export const FAMILY_RULES: Record<ModeFamily, FamilyRules> = {
     forgive: null,
     forgiveFrom: 0,
     label: 'Classic',
+    maxWin: 1354.2,
   },
   sc: {
     prefix: 'sc_',
@@ -99,6 +113,7 @@ export const FAMILY_RULES: Record<ModeFamily, FamilyRules> = {
     // target and made the table unbuildable - see the Python for the full note.
     forgiveFrom: 1,
     label: 'Second Chance',
+    maxWin: 1170.4,
   },
   hs: {
     prefix: 'hs_',
@@ -107,6 +122,7 @@ export const FAMILY_RULES: Record<ModeFamily, FamilyRules> = {
     forgive: null,
     forgiveFrom: 0,
     label: 'High Stakes',
+    maxWin: 3820.5,
   },
 };
 
@@ -118,13 +134,13 @@ export const FAMILY_RULES: Record<ModeFamily, FamilyRules> = {
  * The numbers are the measured ceilings, so they cannot drift into marketing.
  */
 export const FAMILY_BLURB: Record<ModeFamily, string> & {
-  base: 'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.';
-  sc: 'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.';
-  hs: 'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.';
+  base: 'A wrong first card ends the round. Later misses keep 30% of what you had built.';
+  sc: 'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.';
+  hs: 'Misses keep only 20%, so every correct guess is worth more.';
 } = {
-  base: 'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.',
-  sc: 'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.',
-  hs: 'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.',
+  base: 'A wrong first card ends the round. Later misses keep 30% of what you had built.',
+  sc: 'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.',
+  hs: 'Misses keep only 20%, so every correct guess is worth more.',
 };
 
 /** Longest prefix first, so "sc_" is tested before base's empty one. */

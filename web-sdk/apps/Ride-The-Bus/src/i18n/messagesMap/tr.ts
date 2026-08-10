@@ -45,16 +45,28 @@ export default {
 	Classic: 'Klasik',
 	'Second Chance': 'İkinci Şans',
 	'High Stakes': 'Yüksek Bahis',
-	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
-		'İlk kartı bilememek turu bitirir. Sonraki hatalar %30 tutar. Bahsinizin 1354,2 katına kadar.',
-	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
-		'Kart 1 turu yine bitirir, ama sonrasında ilk yanlış tahmininiz affedilir ve oyun sürer. Bahis birimi başına 438,6 katına kadar.',
-	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
-		'Hatalar yalnızca %20 tuttuğu için doğru tahminler daha değerlidir. Bahis birimi başına 1910,2 katına kadar.',
 	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
 		'Her mod çok sayıda turda aynı %96,00 oranını döndürür. Değişen, bir turun ne sıklıkta ve ne kadar ödediğidir.',
 	Forgiven: 'Affedildi',
 	'Game modes': 'Oyun modları',
+	'Max win': 'Maksimum kazanç',
+	'Both figures are multiples of your bet, not of what the round costs.':
+		'Her iki değer de turun maliyetinin değil, bahsinizin katıdır.',
+	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
+		'Oyuncuya dönüş (RTP) her oyun modunda %s olup her mod çok sayıda turda aynı oranı döndürür. Bu oyunun ödeyebileceği en yüksek tutar, Yüksek Bahis modunda bahsinizin %m katıdır.',
+	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
+		'İki Eşit seçimi — ortalama 1329,2×, en fazla 1354,2×, Klasik modun üst sınırı.',
+	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
+		'İlk kartı bilememek turu bitirir. Sonraki hatalar biriktirdiğinizin %30 unu tutar.',
+	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
+		'Kart 1 turu yine bitirir. Sonrasında ilk yanlış tahmininiz affedilir ve oyun sürer.',
+	'Misses keep only 20%, so every correct guess is worth more.':
+		'Hatalar yalnızca %20 tuttuğu için her doğru tahmin daha değerlidir.',
+	'Skip card reveal on spacebar': 'Boşluk tuşunda kart açılışını atla',
+	'Skip the card reveal on rounds started with the spacebar':
+		'Boşluk tuşuyla başlatılan turlarda kart açılışını atla',
+	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'Boşluk tuşunda kart açılışını atla (kaydırıcı düğmesi) boşluk tuşuyla başlatılan turları kart animasyonu olmadan oynar. Yalnızca animasyonu değiştirir; kartları, oranları veya ödemeyi asla değiştirmez.',
 	'Stop on full game win': 'Tam oyun kazancında durdur',
 
 	'How to Play': 'Nasıl oynanır',
@@ -96,8 +108,6 @@ export default {
 		'Eşit seçilmediğinde — ortalama 17,3×, en fazla 317,4×.',
 	'One Equal pick — averages 67.5×, up to 381.9×.':
 		'Bir Eşit ile — ortalama 67,5×, en fazla 381,9×.',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
-		'İki Eşit ile — ortalama 1329,2×, en fazla 1354,2×; bu oyunun ödeyebileceği en yüksek tutar.',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
 		'Eşit en nadir tahmindir; bu nedenle ona dayanan turlar en büyük kazançları taşır ve tutturması en zor olanlardır.',
 	'Speed and autoplay': 'Hız ve otomatik oyun',
@@ -167,8 +177,6 @@ export default {
 	'Close menu': 'Menüyü kapat',
 	Close: 'Kapat',
 	'Game information': 'Oyun bilgileri',
-	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
-		'Oyuncuya dönüş oranı (RTP) %s değerindedir. Her tahmin kombinasyonu bahsinizin 1 katına mal olur ve birçok tur boyunca aynı oranı geri verir. Bu oyunun ödeyebileceği en yüksek tutar bahsinizin 1354,2 katıdır.',
 	Disclaimer: 'Yasal uyari',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
 		'Arızalar tüm kazançları ve oyunları geçersiz kılar. İstikrarlı bir internet bağlantısı gereklidir. Bağlantı kesilirse tamamlanmamış turları bitirmek için oyunu yeniden yükleyin. Beklenen getiri birçok oyun üzerinden hesaplanır. Oyun görüntüsü herhangi bir fiziksel cihazı temsil etmez ve yalnızca açıklama amaçlıdır. Kazançlar, web tarayıcısındaki olaylara göre değil, Remote Game Server üzerinden alınan tutara göre ödenir. TM ve (c) 2026 Stake Engine.',

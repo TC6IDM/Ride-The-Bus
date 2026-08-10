@@ -45,16 +45,28 @@ export default {
 	Classic: 'Классический',
 	'Second Chance': 'Второй шанс',
 	'High Stakes': 'Высокие ставки',
-	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
-		'Ошибка на первой карте завершает раунд. Последующие промахи сохраняют 30%. До 1354,2× вашей ставки.',
-	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
-		'Карта 1 по-прежнему завершает раунд, но после неё первый промах прощается и игра продолжается. До 438,6× на единицу ставки.',
-	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
-		'Промахи сохраняют лишь 20%, поэтому верные догадки стоят дороже. До 1910,2× на единицу ставки.',
 	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
 		'Все режимы возвращают одни и те же 96,00% на дистанции. Меняется лишь то, как часто и сколько платит раунд.',
 	Forgiven: 'Прощено',
 	'Game modes': 'Режимы игры',
+	'Max win': 'Макс. выигрыш',
+	'Both figures are multiples of your bet, not of what the round costs.':
+		'Обе величины кратны вашей ставке, а не стоимости раунда.',
+	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
+		'Возврат игроку (RTP) составляет %s в каждом режиме, и каждый возвращает эту же величину на дистанции. Максимум, который может выплатить игра, — %m вашей ставки, в режиме Высокие ставки.',
+	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
+		'Два выбора «Равно» — в среднем 1329,2×, до 1354,2×, максимум Классического режима.',
+	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
+		'Ошибка на первой карте завершает раунд. Последующие промахи сохраняют 30% накопленного.',
+	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
+		'Карта 1 по-прежнему завершает раунд. После неё первый промах прощается и игра продолжается.',
+	'Misses keep only 20%, so every correct guess is worth more.':
+		'Промахи сохраняют лишь 20%, поэтому каждая верная догадка стоит дороже.',
+	'Skip card reveal on spacebar': 'Пропускать раздачу карт при пробеле',
+	'Skip the card reveal on rounds started with the spacebar':
+		'Пропускать раздачу карт в раундах, начатых пробелом',
+	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'Пропускать раздачу карт при пробеле (кнопка с ползунками) проводит раунды, начатые пробелом, без анимации карт. Меняется только анимация — карты, шансы и выплата остаются прежними.',
 	'Stop on full game win': 'Остановить при полной победе',
 
 	'How to Play': 'Как играть',
@@ -95,8 +107,6 @@ export default {
 	'No Equal picks — averages 17.3×, up to 317.4×.':
 		'Без выбора «Равно» — в среднем 17,3×, до 317,4×.',
 	'One Equal pick — averages 67.5×, up to 381.9×.': 'Одно «Равно» — в среднем 67,5×, до 381,9×.',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
-		'Два «Равно» — в среднем 1329,2×, до 1354,2×: максимум для этой игры.',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
 		'«Равно» — самый редкий прогноз, поэтому построенные на нём раунды дают наибольшие выигрыши и труднее всего достижимы.',
 	'Speed and autoplay': 'Скорость и автоигра',
@@ -165,8 +175,6 @@ export default {
 	'Close menu': 'Закрыть меню',
 	Close: 'Закрыть',
 	'Game information': 'Информация об игре',
-	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
-		'Возврат игроку (RTP) составляет %s. Любая комбинация догадок стоит 1x вашей ставки и возвращает тот же показатель на протяжении многих раундов. Максимальная выплата в этой игре — 1354,2x вашей ставки.',
 	Disclaimer: 'Отказ от ответственности',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
 		'Сбой аннулирует все выигрыши и игры. Требуется стабильное интернет-соединение. При разрыве соединения перезагрузите игру, чтобы завершить незаконченные раунды. Ожидаемый возврат рассчитывается на большом числе игр. Экран игры не изображает какое-либо физическое устройство и приведён только для иллюстрации. Выигрыши рассчитываются по сумме, полученной от Remote Game Server, а не по событиям в браузере. TM и (c) 2026 Stake Engine.',

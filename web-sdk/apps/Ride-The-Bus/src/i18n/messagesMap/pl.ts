@@ -45,16 +45,28 @@ export default {
 	Classic: 'Klasyczny',
 	'Second Chance': 'Druga szansa',
 	'High Stakes': 'Wysoka stawka',
-	'A wrong first card ends the round. Later misses keep 30%. Up to 1354.2× your bet.':
-		'Błąd przy pierwszej karcie kończy rundę. Późniejsze pomyłki zachowują 30%. Do 1354,2× twojego zakładu.',
-	'Card 1 still ends the round, but after that your first wrong guess is forgiven and play continues. Up to 438.6× per unit staked.':
-		'Karta 1 nadal kończy rundę, ale potem pierwsza pomyłka jest wybaczana i gra trwa dalej. Do 438,6× na jednostkę stawki.',
-	'Misses keep only 20%, so correct guesses are worth more. Up to 1910.2× per unit staked.':
-		'Pomyłki zachowują tylko 20%, więc trafienia są warte więcej. Do 1910,2× na jednostkę stawki.',
 	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
 		'Każdy tryb zwraca te same 96,00% na przestrzeni wielu rund. Zmienia się tylko to, jak często i ile runda wypłaca.',
 	Forgiven: 'Wybaczone',
 	'Game modes': 'Tryby gry',
+	'Max win': 'Maks. wygrana',
+	'Both figures are multiples of your bet, not of what the round costs.':
+		'Obie wartości to wielokrotności twojego zakładu, nie kosztu rundy.',
+	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
+		'Zwrot dla gracza (RTP) wynosi %s w każdym trybie, a każdy zwraca tę samą wartość na przestrzeni wielu rund. Najwięcej, ile ta gra może wypłacić, to %m twojego zakładu, w trybie Wysoka stawka.',
+	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
+		'Dwa wybory Równe — średnio 1329,2×, do 1354,2×, najwięcej w trybie Klasycznym.',
+	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
+		'Błąd przy pierwszej karcie kończy rundę. Późniejsze pomyłki zachowują 30% zgromadzonej kwoty.',
+	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
+		'Karta 1 nadal kończy rundę. Potem pierwsza pomyłka jest wybaczana i gra trwa dalej.',
+	'Misses keep only 20%, so every correct guess is worth more.':
+		'Pomyłki zachowują tylko 20%, więc każde trafienie jest warte więcej.',
+	'Skip card reveal on spacebar': 'Pomiń odkrywanie kart przy spacji',
+	'Skip the card reveal on rounds started with the spacebar':
+		'Pomiń odkrywanie kart w rundach rozpoczętych spacją',
+	'Skip card reveal on spacebar (the sliders button) plays rounds started with the spacebar without the card animation. It changes only the animation, never the cards, the odds or the payout.':
+		'Pomiń odkrywanie kart przy spacji (przycisk suwaków) rozgrywa rundy rozpoczęte spacją bez animacji kart. Zmienia tylko animację, nigdy kart, szans ani wypłaty.',
 	'Stop on full game win': 'Zatrzymaj przy pełnej wygranej',
 
 	'How to Play': 'Jak grać',
@@ -96,8 +108,6 @@ export default {
 		'Bez typu Równo — średnio 17,3×, maksymalnie 317,4×.',
 	'One Equal pick — averages 67.5×, up to 381.9×.':
 		'Jedno Równo — średnio 67,5×, maksymalnie 381,9×.',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most this game can pay.':
-		'Dwa Równo — średnio 1329,2×, maksymalnie 1354,2×, czyli najwięcej, ile ta gra może wypłacić.',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
 		'Równo to najrzadszy typ, dlatego oparte na nim rundy dają największe wygrane — i są najtrudniejsze do trafienia.',
 	'Speed and autoplay': 'Prędkość i autogra',
@@ -167,8 +177,6 @@ export default {
 	'Close menu': 'Zamknij menu',
 	Close: 'Zamknij',
 	'Game information': 'Informacje o grze',
-	'Return to player (RTP) is %s. Every combination of guesses costs 1x your bet and returns that same figure over many rounds. The most this game can pay is 1354.2x your bet.':
-		'Zwrot dla gracza (RTP) wynosi %s. Każda kombinacja typów kosztuje 1x twojego zakładu i zwraca tę samą wartość w wielu rundach. Najwięcej, ile ta gra może wypłacić, to 1354,2x twojego zakładu.',
 	Disclaimer: 'Zastrzezenie',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
 		'Awaria unieważnia wszystkie wygrane i rozgrywki. Wymagane jest stabilne połączenie internetowe. W razie rozłączenia załaduj grę ponownie, aby dokończyć nieukończone rundy. Oczekiwany zwrot jest obliczany na podstawie wielu rozgrywek. Wyświetlacz gry nie przedstawia żadnego urządzenia fizycznego i ma charakter wyłącznie poglądowy. Wygrane są rozliczane według kwoty otrzymanej z Remote Game Server, a nie na podstawie zdarzeń w przeglądarce internetowej. TM i (c) 2026 Stake Engine.',
