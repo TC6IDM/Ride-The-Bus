@@ -101,7 +101,8 @@ so this section is genuinely untested until upload.
   **Expect:** Inside is struck through and dimmed, hovering explains why, and it
   cannot be selected by click, keyboard or tap. Tying the rank leaves nothing
   strictly between the two cards, so the math publishes no such mode -
-  2 x (3x3 - 1) x 4 = **64**, not 72. Sending the missing mode earns `ERR_VAL`.
+  2 x (3x3 - 1) x 4 = **64** per mode family, not 72, and 192 published in
+  total across the three families. Sending the missing mode earns `ERR_VAL`.
 
 - [ ] **BET-04 · Sample the mode space** — *Major*
   Play at least one round in each guess family, checking the mode string sent in
@@ -109,6 +110,38 @@ so this section is genuinely untested until upload.
   Higher/Lower only, Equal at Inside/Outside only, and Equal at both.
   **Expect:** all accepted; the mode string is always `colour_hl_io_suit` and
   matches the four buttons lit on screen.
+
+- [ ] **BET-06 · Every bet mode is accepted** — *Blocker*
+  Play at least one round in each of the three modes — Classic, Second Chance,
+  High Stakes — and check the mode string sent in `/wallet/play`.
+  **Expect:** Classic sends an unprefixed name, the others `sc_`/`hs_`. All
+  accepted. There are 192 published modes; a rejection here means the math
+  version live on the site predates the three-family build.
+
+- [ ] **BET-07 · A 2× mode debits twice the bet** — *Blocker*
+  On Second Chance or High Stakes, note the balance, place one round, and check
+  what was actually taken.
+  **Expect:** exactly 2× the bet shown. The bet display carries a second line
+  reading `2× = <amount>`; that figure is what should leave the balance. A mode
+  that debits the bet rather than the cost is returning half the RTP it claims.
+
+- [ ] **BET-08 · Affordability is against the cost, not the bet** — *Major*
+  On the near-empty account, set a bet that is affordable at 1× but not at 2×,
+  then switch to a 2× mode.
+  **Expect:** spin becomes unavailable and explains why, rather than sending a
+  bet the RGS will reject.
+
+- [ ] **BET-09 · Second Chance forgives exactly once, never on card 1** — *Major*
+  Play Second Chance until a round misses card 1, then until one misses a later
+  card, then until one misses twice.
+  **Expect:** card 1 wrong ends the round and pays nothing, exactly like
+  Classic. A later miss shows the amber return mark, and the reveal
+  **continues**. A second miss ends the round with the usual bust cross.
+
+- [ ] **BET-10 · Mode is locked during an autoplay run** — *Minor*
+  Start autoplay, then try to change mode.
+  **Expect:** the mode control is disabled for the duration. The run was
+  started on one mode's odds and cost.
 
 - [ ] **BET-05 · A rejected bet recovers** — *Major*
   Provoke an `ERR_VAL` (an out-of-range amount is easiest).

@@ -8,8 +8,42 @@ The player commits to all four guesses **before** the bet is placed, and the
 whole round then resolves in a single `/wallet/play` call — there is no
 cash-out and no mid-round decision. Stake Engine requires every bet to be one
 independent, stateless outcome, so the four choices are encoded in the bet
-mode instead (64 modes, one per combination). Everything after the bet is
+mode instead. Everything after the bet is
 animation of an already-determined result.
+
+## Bet modes
+
+The same four guesses can be bought three ways. Only what a **miss** keeps
+differs, and because every mode is reweighted onto the same 96.00% RTP, a mode
+that forgives more cannot also pay more — the two are one dial seen from
+opposite ends.
+
+| Mode | Cost | A miss keeps | Max win | Pays something |
+|---|---|---|---|---|
+| Classic | 1.0× | nothing on card 1, 30% after | 1354.2× | ~1 in 2 |
+| Second Chance | 2.0× | card 1 still ends it; after that the first miss keeps 50% and **play continues** | 1170.4× | ~1 in 2 |
+| High Stakes | 2.0× | nothing on card 1, 20% after | 3820.5× | ~1 in 2 |
+
+That is 3 families × 64 guess combinations = **192 published modes**. The
+Classic family keeps its original unprefixed names, so replay event IDs
+recorded against it stay valid; the others are prefixed `sc_` and `hs_`.
+
+Two numbers here are not free choices:
+
+- **High Stakes retention is 0.20**, not a rounder figure. Stake reads CVaR and
+  Expected Tail Liability as the worst value across all modes, and a failed
+  class shrinks the game's bet-level template. 0.20 gives CVaR 648 against a
+  700 limit; 0.15 gives 730 and fails.
+- **Card 1 is never forgiven.** Forgiving it left almost no round paying zero,
+  which pushed Second Chance's win-conditional mean below its reweight target —
+  and `reweight_luts.py` can only move RTP by re-weighting losses, so with
+  almost none to work with it refuses rather than emit a non-compliant table.
+
+Both are recorded in `math-sdk/games/ride_the_bus/game_calculations.py`
+(`MODE_FAMILIES`) and mirrored in `web-sdk/apps/Ride-The-Bus/src/game/modes.ts`
+(`FAMILY_RULES`). The client resolves every round locally to draw it, so those
+numbers necessarily exist twice; `payout.test.ts` and `modes.test.ts` are what
+stop them drifting.
 
 The project has two halves, matching Stake Engine's split between frontend
 and math/RGS backend:
@@ -60,7 +94,7 @@ python -m venv .venv
 .venv\Scripts\python.exe games\ride_the_bus\run.py
 ```
 
-This is a long run - 14.4M simulations across the 64 bet modes, on 8 worker
+This is a long run - simulations across all 192 bet modes, on 8 worker
 processes - and it writes everything under
 `math-sdk\games\ride_the_bus\library\`.
 
@@ -167,7 +201,7 @@ Verified against Stake's math, RGS and frontend approval criteria:
 
 | | |
 | --- | --- |
-| RTP 90-98%, all modes within 0.5% | 96.00% on all 64 modes, spread 0.000000 |
+| RTP 90-96.70%, all modes within 0.5% | 96.00% on every mode, spread 0.000051% |
 | Simulations per bet mode | 100k minimum, asserted in `run.py` |
 | Non-zero win hit rate, target better than 1 in 20 | about 1 in 2 |
 | Max win obtainable, target better than 1 in 10,000,000 | 1354.2x at about 1 in 3,833 |
@@ -205,7 +239,7 @@ bet modes and mechanics are frozen.
 ### Replay event IDs
 
 Approval requires replay event IDs **per bet mode**, covering normal win, big
-win, win cap and loss. With 64 bet modes that is 256 IDs, so they are derived
+win, win cap and loss. With 192 bet modes that is 768 IDs, so they are derived
 from the published lookup tables rather than collected by hand, into
 [REPLAY_EVENTS.md](REPLAY_EVENTS.md) - the full table, with the payout
 multiplier beside each ID so a reviewer can see what the round is meant to
