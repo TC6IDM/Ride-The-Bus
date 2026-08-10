@@ -160,14 +160,14 @@
 
 .ss-step-n {
 	position: absolute;
-	top: calc(var(--ss) * -0.9);
-	left: calc(var(--ss) * -0.7);
-	width: calc(var(--ss) * 2);
-	height: calc(var(--ss) * 2);
+	top: calc(var(--ui) * -0.9);
+	left: calc(var(--ui) * -0.7);
+	width: calc(var(--ui) * 2);
+	height: calc(var(--ui) * 2);
 	border-radius: 50%;
 	background: #f5d78c;
 	color: #12220f;
-	font-size: calc(var(--ss) * 1.15);
+	font-size: calc(var(--ui) * 1.15);
 	font-weight: 800;
 	display: flex;
 	align-items: center;
@@ -178,7 +178,7 @@
 	/* Floored, because this names the pick the control below demonstrates and
 	   is useless once it drops under about 11px - which is where --ss alone put
 	   it on every small screen. */
-	font-size: max(calc(var(--ss) * 1.05), 11px);
+	font-size: max(calc(var(--ui) * 1.05), 11px);
 	font-weight: 700;
 	color: #e8e0d0;
 	text-align: center;
@@ -188,12 +188,18 @@
 	   quarter of the card wide - nowrap pushed it past the panel edge in those
 	   locales. Two lines are reserved either way, so a language that wraps and
 	   one that does not produce the same panel height and the row stays even. */
-	height: calc(var(--ss) * 2.5);
+	height: calc(var(--ui) * 2.5);
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	overflow-wrap: anywhere;
-	width: 100%;
+	/* Keeps clear of the "?" badge, which is absolutely positioned in the
+	   panel's top-right corner and so does not push this out of its way. The
+	   inset is taken off BOTH sides rather than just the right, because the
+	   text is centred - trimming one side alone would shift it off-centre. The
+	   badge grew with the panel, so a label that used to clear it no longer
+	   does, and the longer translations ran underneath it. */
+	width: calc(100% - var(--ui) * 2.8);
 }
 
 /* ---- The controls ----
@@ -262,17 +268,17 @@
    browser's defaults push the "?" off centre and swap the game's font out. */
 .ss-help {
 	position: absolute;
-	top: calc(var(--ss) * 0.4);
-	right: calc(var(--ss) * 0.4);
-	width: calc(var(--ss) * 1.9);
-	height: calc(var(--ss) * 1.9);
+	top: calc(var(--ui) * 0.4);
+	right: calc(var(--ui) * 0.4);
+	width: calc(var(--ui) * 1.9);
+	height: calc(var(--ui) * 1.9);
 	padding: 0;
 	border-radius: 50%;
 	background: #2e4224;
 	border: 1px solid #6b8a58;
 	color: #cfe3bd;
 	font-family: inherit;
-	font-size: calc(var(--ss) * 1.1);
+	font-size: calc(var(--ui) * 1.1);
 	font-weight: 800;
 	line-height: 1;
 	display: flex;
@@ -324,12 +330,12 @@
 	   which is why the badge carries a z-index. */
 	width: max(calc(var(--ss) * 22), 150px);
 	max-width: 46vw;
-	padding: calc(var(--ss) * 0.8) calc(var(--ss) * 1);
-	border-radius: calc(var(--ss) * 0.6);
+	padding: calc(var(--ui) * 0.8) calc(var(--ui) * 1);
+	border-radius: calc(var(--ui) * 0.6);
 	background: #0b1a09;
 	border: 1px solid #6b8a58;
 	color: #e8e0d0;
-	font-size: calc(var(--ss) * 1.05);
+	font-size: calc(var(--ui) * 1.05);
 	font-weight: 500;
 	line-height: 1.35;
 	text-align: left;
@@ -362,8 +368,8 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	gap: calc(var(--ss) * 0.3);
-	height: calc(var(--ss) * 4.6);
+	gap: calc(var(--ui) * 0.3);
+	height: calc(var(--ui) * 4.6);
 	width: 100%;
 	min-width: 0;
 }
@@ -375,12 +381,12 @@
 	   give a little is better than letting the row escape the panel. */
 	flex: 0 1 auto;
 	min-width: 0;
-	width: calc(var(--ss) * 2.5);
-	height: calc(var(--ss) * 3.5);
-	border-radius: calc(var(--ss) * 0.35);
+	width: calc(var(--ui) * 2.5);
+	height: calc(var(--ui) * 3.5);
+	border-radius: calc(var(--ui) * 0.35);
 	background: #f4efe2;
 	color: #1b1b1b;
-	box-shadow: 0 calc(var(--ss) * 0.15) calc(var(--ss) * 0.4) rgba(0, 0, 0, 0.45);
+	box-shadow: 0 calc(var(--ui) * 0.15) calc(var(--ui) * 0.4) rgba(0, 0, 0, 0.45);
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -396,21 +402,21 @@
    row inside the panel. Fixed rather than conditional on the pick, so the strip
    does not resize as the pointer moves between picks. */
 .ss-demo.is-wide .ss-card-mini {
-	width: calc(var(--ss) * 2.05);
-	height: calc(var(--ss) * 2.9);
+	width: calc(var(--ui) * 2.05);
+	height: calc(var(--ui) * 2.9);
 }
-.ss-demo.is-wide .ss-card-rank { font-size: calc(var(--ss) * 1.05); }
-.ss-demo.is-wide .ss-card-suit { font-size: calc(var(--ss) * 0.95); }
+.ss-demo.is-wide .ss-card-rank { font-size: calc(var(--ui) * 1.05); }
+.ss-demo.is-wide .ss-card-suit { font-size: calc(var(--ui) * 0.95); }
 
 /* "or" between the two ranks Equal accepts. A slash rather than a word, so it
    needs no translation. */
 .ss-or {
 	color: #a0a080;
-	font-size: calc(var(--ss) * 1.1);
+	font-size: calc(var(--ui) * 1.1);
 	font-weight: 700;
 }
-.ss-card-rank { font-size: calc(var(--ss) * 1.25); }
-.ss-card-suit { font-size: calc(var(--ss) * 1.15); }
+.ss-card-rank { font-size: calc(var(--ui) * 1.25); }
+.ss-card-suit { font-size: calc(var(--ui) * 1.15); }
 
 .ss-arrow {
 	color: #a0a080;
@@ -438,11 +444,11 @@
 		display: none;
 	}
 	.ss-demo {
-		height: calc(var(--ss) * 3.6);
+		height: calc(var(--ui) * 3.6);
 	}
 	.ss-card-mini {
-		width: calc(var(--ss) * 2);
-		height: calc(var(--ss) * 2.8);
+		width: calc(var(--ui) * 2);
+		height: calc(var(--ui) * 2.8);
 	}
 }
 
@@ -736,6 +742,16 @@
 		flex-wrap: wrap;
 	}
 
+	/* Two rows of panels at this size leaves the column about 9px inside the
+	   viewport, and the failure that costs is the Play button dropping below
+	   the fold. The lead line is the cheapest thing to give up: it is a
+	   sentence of rules prose sitting directly above four panels that say the
+	   same thing as pictures, and the max-height rules already drop it for the
+	   same reason. */
+	.ss-lead {
+		display: none;
+	}
+
 	.ss-step {
 		/* Half the row, less half the gap between the pair. */
 		flex: 1 1 calc(50% - var(--ss) * 0.6);
@@ -751,18 +767,24 @@
 		   Deliberately square. An earlier version stretched these to 84px tall
 		   to enlarge the thirds, which made the intro teach a shape the board
 		   does not have. Growing the whole square gets the same reach without
-		   the distortion. */
-		--ui: calc(var(--ss) * 1.6);
+		   the distortion.
+
+		   1.45 and not higher: at 1.6 the two rows of panels put the column
+		   within 14px of the shortest supported viewport, and what that costs
+		   is the Play button dropping below the fold. 1.45 keeps a ~42px margin
+		   at every phone size while still taking the square from 59px to
+		   102px. */
+		--ui: calc(var(--ss) * 1.45);
 	}
 
 	/* The pick names sit above each control and were rendering around 9px. */
 	.ss-step-label {
-		font-size: max(calc(var(--ss) * 1.15), 14px);
+		font-size: max(calc(var(--ui) * 1.15), 14px);
 		/* Two lines are still reserved so the row stays even, but as a minimum
 		   rather than a fixed height - at this size a fixed one clips the
 		   longer translations instead of letting them wrap. */
 		height: auto;
-		min-height: calc(var(--ss) * 3.4);
+		min-height: calc(var(--ui) * 3.4);
 	}
 
 	/* The explanation is the point of the badge, so it gets a readable floor

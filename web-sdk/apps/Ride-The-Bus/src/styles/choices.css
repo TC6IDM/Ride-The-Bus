@@ -56,21 +56,18 @@
 .choice-square {
   position: relative;
   width: var(--choice-size);
-  /* Falls back to the width, so this stays a square unless a caller opts in.
-     The fallback is load-bearing, not tidiness: choices.css is imported by the
-     start screen as well as the board, and the start screen sets its own
-     --choice-size without --choice-h. Without the fallback the declaration is
-     invalid there, the squares collapse to nothing, and the colour picker
-     disappears from the intro entirely. */
-  height: var(--choice-h, var(--choice-size));
+  /* ALWAYS square, on every screen. A previous pass stretched these taller on
+     phones to enlarge the thirds for touch, and the result read as a different
+     control from the one on the intro - and from the one on desktop. Reach is
+     bought by growing the whole square instead, which keeps one shape
+     everywhere. */
+  height: var(--choice-size);
   /* The corner radius, shared with the segments inside so the two cannot drift.
      18px is the design figure, but a radius can never exceed half the box or
      the browser scales it down - and on a short popout these squares are only
      ~29px across, where 18px would be over-specified and the square renders as
      a circle. Taking the min explicitly means the value here is the EFFECTIVE
-     radius at every size, which is what the segments below have to match.
-     Measured against the WIDTH, which is the smaller side wherever --choice-h
-     has been raised for touch. */
+     radius at every size, which is what the segments below have to match. */
   --choice-radius: min(18px, calc(var(--choice-size) / 2));
   border-radius: var(--choice-radius);
   overflow: hidden;

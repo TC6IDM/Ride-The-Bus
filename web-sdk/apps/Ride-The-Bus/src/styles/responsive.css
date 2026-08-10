@@ -34,8 +34,20 @@
    mouse, where 21px is precise enough and stretching everything would just look
    wrong. */
 @media (max-width: 620px) and (orientation: portrait) and (pointer: coarse) {
-  /* 132px gives 44px thirds, 66px halves, and 66px-tall quadrants. */
-  .game-layout { --choice-h: max(var(--choice-size), 132px); }
+  /* Grow the whole square rather than stretching it taller. An earlier version
+     set a separate height, which bought 44px thirds but left the control a
+     rectangle on phones and a square everywhere else - two different-looking
+     controls for the same thing.
+
+     The row is 4 squares of 8.36 --ui plus 3 gaps of 2.18 --ui, so the GAP is
+     what caps the square: at the shipping gap the row already fills the
+     viewport and --ui cannot rise at all. Tightening the gap to 0.9 --ui frees
+     enough width for --ui to go from 2vw to 2.5vw, taking the square from 65px
+     to 82px and the thirds from 21px to 27px - past the 24px floor, and square. */
+  .game-layout {
+    --ui: clamp(4px, min(2.5vw, 1.55vh), 11px);
+    --gap: calc(var(--ui) * 0.9);
+  }
 
   /* The icon buttons sit apart from each other, so padding-free growth is safe. */
   .cb-icon,
