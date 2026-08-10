@@ -48,25 +48,106 @@ export function isCombinationPlayable(
   return !(higherLower === 'equal' && insideOutside === 'inside');
 }
 
+/* ---- Mode families --------------------------------------------------------
+ *
+ * The same four guesses can be bought three ways. What differs is only what a
+ * MISS keeps, and because the math reweights every mode onto the same RTP, a
+ * family that forgives more cannot also pay more - the two are one dial seen
+ * from opposite ends.
+ *
+ * Must stay in step with math-sdk game_calculations.py:MODE_FAMILIES. The
+ * retention and forgiveness numbers below are what the stage multipliers are
+ * priced against; if they drift from the Python the game shows a player one
+ * number while the RGS credits another. payoutTable.test.ts pins them.
+ */
+export const MODE_FAMILIES = ['base', 'sc', 'hs'] as const;
+export type ModeFamily = (typeof MODE_FAMILIES)[number];
+
+export type FamilyRules = {
+  /** Prepended to the mode name. Empty for base, whose names are published. */
+  prefix: string;
+  /** Cost multiplier. The base mode is 1.0 and must stay the cheapest. */
+  cost: number;
+  /** Fraction of the running multiplier kept on a miss, per stage. */
+  retention: readonly [number, number, number, number];
+  /** Fraction kept by a FORGIVEN miss, or null when the family forgives none. */
+  forgive: number | null;
+  /** First stage forgiveness can apply to. Card 1 is never forgiven. */
+  forgiveFrom: number;
+  /** English label, which is also the i18n key. */
+  label: 'Classic' | 'Second Chance' | 'High Stakes';
+};
+
+const BASE_RETENTION = [0, 0.3, 0.3, 0.3] as const;
+
+export const FAMILY_RULES: Record<ModeFamily, FamilyRules> = {
+  base: {
+    prefix: '',
+    cost: 1,
+    retention: BASE_RETENTION,
+    forgive: null,
+    forgiveFrom: 0,
+    label: 'Classic',
+  },
+  sc: {
+    prefix: 'sc_',
+    cost: 2,
+    retention: BASE_RETENTION,
+    forgive: 0.5,
+    // Card 1 still ends the round. Forgiving it too left almost no round paying
+    // zero, which pushed the mode's win-conditional mean below its reweight
+    // target and made the table unbuildable - see the Python for the full note.
+    forgiveFrom: 1,
+    label: 'Second Chance',
+  },
+  hs: {
+    prefix: 'hs_',
+    cost: 2,
+    retention: [0, 0.2, 0.2, 0.2],
+    forgive: null,
+    forgiveFrom: 0,
+    label: 'High Stakes',
+  },
+};
+
+/** Longest prefix first, so "sc_" is tested before base's empty one. */
+const PREFIXED_FAMILIES = MODE_FAMILIES.slice()
+  .sort((a, b) => FAMILY_RULES[b].prefix.length - FAMILY_RULES[a].prefix.length)
+  .filter((family) => FAMILY_RULES[family].prefix.length > 0);
+
+/** The family a published mode name belongs to. */
+export function familyOf(mode: string): ModeFamily {
+  for (const family of PREFIXED_FAMILIES) {
+    if (mode.startsWith(FAMILY_RULES[family].prefix)) return family;
+  }
+  return 'base';
+}
+
 /** Bet mode name. Must match math-sdk game_calculations.py:mode_name exactly. */
 export function modeName(
   color: ColorChoice,
   higherLower: HigherLowerChoice,
   insideOutside: InsideOutsideChoice,
   suit: SuitChoice,
+  family: ModeFamily = 'base',
 ): string {
-  return `${color}_${higherLower}_${insideOutside}_${suit}`;
+  return `${FAMILY_RULES[family].prefix}${color}_${higherLower}_${insideOutside}_${suit}`;
 }
 
-/** Every playable mode name. Mirrors all_mode_combinations() on the math side. */
+/**
+ * Every playable mode name, across all families. Mirrors all_published_modes()
+ * on the math side - 3 x 64 = 192.
+ */
 export function allPlayableModes(): string[] {
   const names: string[] = [];
-  for (const color of COLOR_CHOICES) {
-    for (const higherLower of HIGHER_LOWER_CHOICES) {
-      for (const insideOutside of INSIDE_OUTSIDE_CHOICES) {
-        if (!isCombinationPlayable(higherLower, insideOutside)) continue;
-        for (const suit of SUIT_CHOICES) {
-          names.push(modeName(color, higherLower, insideOutside, suit));
+  for (const family of MODE_FAMILIES) {
+    for (const color of COLOR_CHOICES) {
+      for (const higherLower of HIGHER_LOWER_CHOICES) {
+        for (const insideOutside of INSIDE_OUTSIDE_CHOICES) {
+          if (!isCombinationPlayable(higherLower, insideOutside)) continue;
+          for (const suit of SUIT_CHOICES) {
+            names.push(modeName(color, higherLower, insideOutside, suit, family));
+          }
         }
       }
     }

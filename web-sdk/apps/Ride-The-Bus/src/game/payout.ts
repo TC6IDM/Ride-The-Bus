@@ -15,7 +15,13 @@
  *   STAGE_RETENTION   -> game_calculations.py:STAGE_RETENTION
  *   partialMultiplier -> game_calculations.py:partial_multiplier
  *   quantizeMultiplier-> game_calculations.py:quantize_multiplier
+ *   stageRetention    -> the stage_retention branch in gamestate.py:run_spin
+ *
+ * STAGE_RETENTION below is the BASE family's table and stays the default, so
+ * every existing caller behaves exactly as before. The other two families pass
+ * their own rules from modes.ts.
  */
+import { FAMILY_RULES, type FamilyRules } from './modes.ts';
 
 /** Solved so decay**4 == target_rtp; see partialMultiplier. */
 export const TARGET_RTP = 0.99;
@@ -43,10 +49,42 @@ export const STAGE_RETENTION = [0, 0.3, 0.3, 0.3];
  * Returns 0 for an impossible guess (p <= 0): the "correct" branch can never
  * fire, so the multiplier is never applied.
  */
-export function partialMultiplier(probability: number, stageIndex: number): number {
+export function partialMultiplier(
+  probability: number,
+  stageIndex: number,
+  retention: number = STAGE_RETENTION[stageIndex],
+): number {
   if (probability <= 0) return 0;
-  const retention = STAGE_RETENTION[stageIndex];
   return (DECAY - (1 - probability) * retention) / probability;
+}
+
+/**
+ * The retention a miss at this stage would actually bank.
+ *
+ * Load-bearing for pricing: the martingale only holds if a stage's win
+ * multiplier is solved against the SAME number its miss would keep. While a
+ * Second Chance round still holds its forgiveness, that number is the
+ * forgiveness value, not the bust table - price it against 0.3 while the miss
+ * really keeps 0.5 and the mode's RTP drifts off target.
+ *
+ * Mirrors the stage_retention branch in math-sdk gamestate.py:run_spin.
+ */
+export function stageRetention(
+  rules: Pick<FamilyRules, 'retention' | 'forgive' | 'forgiveFrom'>,
+  stageIndex: number,
+  forgivenessSpent: boolean,
+): number {
+  if (forgivenessAvailable(rules, stageIndex, forgivenessSpent)) return rules.forgive!;
+  return rules.retention[stageIndex]!;
+}
+
+/** Can a miss at this stage still be forgiven? */
+export function forgivenessAvailable(
+  rules: Pick<FamilyRules, 'forgive' | 'forgiveFrom'>,
+  stageIndex: number,
+  forgivenessSpent: boolean,
+): boolean {
+  return rules.forgive !== null && !forgivenessSpent && stageIndex >= rules.forgiveFrom;
 }
 
 /**
@@ -74,18 +112,33 @@ export type PayoutStage = {
  * decayed by the stages that will now never be played - so a bust at stage i
  * is worth the same in expectation as playing on would have been.
  */
-export function computeFinalMultiplier(stages: PayoutStage[]): number {
+export function computeFinalMultiplier(
+  stages: PayoutStage[],
+  rules: Pick<FamilyRules, 'retention' | 'forgive' | 'forgiveFrom' | 'cost'> = FAMILY_RULES.base,
+): number {
   let running = 1;
   let busted = false;
+  let forgivenessSpent = false;
   for (let stage = 0; stage < stages.length; stage += 1) {
     const event = stages[stage];
-    if (!busted && event.correct) {
+    if (busted) break;
+    if (event.correct) {
       running *= event.payout;
-    } else if (!busted) {
-      running *= STAGE_RETENTION[stage];
-      running *= DECAY ** (3 - stage);
-      busted = true;
+      continue;
     }
+    if (forgivenessAvailable(rules, stage, forgivenessSpent)) {
+      // Forgiven: bank the fraction and play on. No decay term - that stands in
+      // for stages a bust skips, and this round will play them for real.
+      running *= rules.forgive!;
+      forgivenessSpent = true;
+      continue;
+    }
+    running *= rules.retention[stage]!;
+    running *= DECAY ** (3 - stage);
+    busted = true;
   }
-  return quantizeMultiplier(running);
+  // Scaled by cost BEFORE quantizing, matching gamestate.py. payoutMultiplier is
+  // expressed against the base bet, so a 2x mode has to pay twice as much to
+  // return the same RTP.
+  return quantizeMultiplier(running * rules.cost);
 }

@@ -18,13 +18,17 @@ import { resolve } from 'node:path';
 
 import {
   COLOR_CHOICES,
+  FAMILY_RULES,
   HIGHER_LOWER_CHOICES,
   INSIDE_OUTSIDE_CHOICES,
+  MODE_FAMILIES,
   SUIT_CHOICES,
   allPlayableModes,
+  familyOf,
   isCombinationPlayable,
   modeName,
 } from './modes.ts';
+import { DECAY } from './payout.ts';
 
 const INDEX_PATH = resolve(
   import.meta.dirname,
@@ -56,23 +60,75 @@ describe('isCombinationPlayable', () => {
 });
 
 describe('allPlayableModes', () => {
-  test('is 64, being 72 minus the 8 that pair equal with inside', () => {
+  test('is 64 per family, being 72 minus the 8 that pair equal with inside', () => {
     const all = allPlayableModes();
     assert.equal(
       COLOR_CHOICES.length * HIGHER_LOWER_CHOICES.length * INSIDE_OUTSIDE_CHOICES.length * SUIT_CHOICES.length,
       72,
     );
-    assert.equal(all.length, 64);
-    assert.equal(new Set(all).size, 64, 'no duplicates');
+    assert.equal(all.length, 64 * MODE_FAMILIES.length);
+    assert.equal(new Set(all).size, all.length, 'no duplicates');
+
+    for (const family of MODE_FAMILIES) {
+      const mine = all.filter((name) => familyOf(name) === family);
+      assert.equal(mine.length, 64, `${family} should offer 64 combinations`);
+    }
   });
 
-  test('contains no equal-then-inside mode', () => {
+  test('contains no equal-then-inside mode, in any family', () => {
     for (const name of allPlayableModes()) {
-      const [, higherLower, insideOutside] = name.split('_');
+      const body = name.slice(FAMILY_RULES[familyOf(name)].prefix.length);
+      const [, higherLower, insideOutside] = body.split('_');
       assert.ok(
         !(higherLower === 'equal' && insideOutside === 'inside'),
         `${name} should not be offered`,
       );
+    }
+  });
+
+  test('base names carry no prefix, so published replay IDs stay valid', () => {
+    for (const name of allPlayableModes()) {
+      if (familyOf(name) !== 'base') continue;
+      assert.ok(
+        !name.startsWith('sc_') && !name.startsWith('hs_'),
+        `${name} must keep its original unprefixed name`,
+      );
+    }
+  });
+});
+
+describe('family rules match the math', () => {
+  test('base is the cheapest mode, which Stake requires', () => {
+    const costs = MODE_FAMILIES.map((f) => FAMILY_RULES[f].cost);
+    assert.equal(FAMILY_RULES.base.cost, 1);
+    assert.equal(Math.min(...costs), FAMILY_RULES.base.cost);
+  });
+
+  test('no cost multiplier exceeds Stake 2,000x ceiling', () => {
+    for (const family of MODE_FAMILIES) {
+      assert.ok(FAMILY_RULES[family].cost <= 2000, `${family} cost is too high`);
+    }
+  });
+
+  test('card 1 is never forgiven', () => {
+    // Forgiving it left almost no round paying zero, which pushed the mode's
+    // win-conditional mean below its reweight target and made the lookup table
+    // unbuildable. See MODE_FAMILIES in game_calculations.py.
+    for (const family of MODE_FAMILIES) {
+      const rules = FAMILY_RULES[family];
+      if (rules.forgive === null) continue;
+      assert.ok(rules.forgiveFrom >= 1, `${family} must not forgive the first card`);
+    }
+  });
+
+  test('a forgiven miss keeps less than the decay, or a win would pay under 1x', () => {
+    // m = (decay - (1-p)*retention) / p, so retention at or above decay drives
+    // the multiplier for a near-certain pick to 1x or below - a "win" that
+    // shrinks the running total.
+    for (const family of MODE_FAMILIES) {
+      const { forgive } = FAMILY_RULES[family];
+      if (forgive === null) continue;
+      assert.ok(forgive < DECAY, `${family} forgiveness must stay under ${DECAY}`);
     }
   });
 });
@@ -87,32 +143,72 @@ describe('parity with the published math', () => {
     assert.ok(true);
   });
 
-  test('the client offers exactly the modes the math published', { skip: !available }, () => {
-    const published: string[] = JSON.parse(readFileSync(INDEX_PATH, 'utf8')).modes.map(
-      (mode: { name: string }) => mode.name,
-    );
-    const offered = allPlayableModes();
+  /**
+   * Checked PER FAMILY, so the check keeps working while the math build catches
+   * up with the client.
+   *
+   * A family the client offers but the math has not published yet is reported
+   * rather than failed - that is the expected state between adding a family here
+   * and regenerating the books, and a test that is red for a known reason gets
+   * ignored, which is how a decoy typecheck survived in this repo for weeks.
+   * A family that IS published is compared exactly, in both directions, so the
+   * moment the build lands the full check is live again with no edit here.
+   */
+  const publishedModes = () =>
+    available
+      ? (JSON.parse(readFileSync(INDEX_PATH, 'utf8')).modes as { name: string }[]).map(
+          (mode) => mode.name,
+        )
+      : [];
 
-    const missing = published.filter((name) => !offered.includes(name));
-    const invented = offered.filter((name) => !published.includes(name));
-
-    assert.deepEqual(invented, [], 'client would send modes the math never published');
+  test('every published mode is one the client can select', { skip: !available }, () => {
+    const offered = new Set(allPlayableModes());
+    const missing = publishedModes().filter((name) => !offered.has(name));
     assert.deepEqual(missing, [], 'math published modes the client can never select');
-    assert.equal(offered.length, published.length);
   });
 
-  test('every mode name round-trips through modeName', { skip: !available }, () => {
-    const published: string[] = JSON.parse(readFileSync(INDEX_PATH, 'utf8')).modes.map(
-      (mode: { name: string }) => mode.name,
+  test('the client invents no mode within a published family', { skip: !available }, () => {
+    const published = publishedModes();
+    const builtFamilies = new Set(published.map(familyOf));
+    const invented = allPlayableModes().filter(
+      (name) => builtFamilies.has(familyOf(name)) && !published.includes(name),
     );
-    for (const name of published) {
-      const [color, higherLower, insideOutside, suit] = name.split('_') as [
+    assert.deepEqual(invented, [], 'client would send modes the math never published');
+
+    const notBuilt = MODE_FAMILIES.filter((family) => !builtFamilies.has(family));
+    if (notBuilt.length) {
+      console.warn(
+        `  ! families not in the published math yet: ${notBuilt.join(', ')} ` +
+          '- run the math build before selecting them against a real RGS',
+      );
+    }
+  });
+
+  test('every published mode name round-trips through modeName', { skip: !available }, () => {
+    for (const name of publishedModes()) {
+      const family = familyOf(name);
+      const body = name.slice(FAMILY_RULES[family].prefix.length);
+      const [color, higherLower, insideOutside, suit] = body.split('_') as [
         (typeof COLOR_CHOICES)[number],
         (typeof HIGHER_LOWER_CHOICES)[number],
         (typeof INSIDE_OUTSIDE_CHOICES)[number],
         (typeof SUIT_CHOICES)[number],
       ];
-      assert.equal(modeName(color, higherLower, insideOutside, suit), name);
+      assert.equal(modeName(color, higherLower, insideOutside, suit, family), name);
+    }
+  });
+
+  test('published costs match the client family rules', { skip: !available }, () => {
+    const modes = JSON.parse(readFileSync(INDEX_PATH, 'utf8')).modes as {
+      name: string;
+      cost: number;
+    }[];
+    for (const mode of modes) {
+      assert.equal(
+        mode.cost,
+        FAMILY_RULES[familyOf(mode.name)].cost,
+        `${mode.name}: published cost disagrees with the client's family rules`,
+      );
     }
   });
 });

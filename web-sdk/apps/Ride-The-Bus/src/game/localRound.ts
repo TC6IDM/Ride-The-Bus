@@ -22,7 +22,8 @@
  */
 // `.ts` extensions so `node --test` can load this module - its ESM resolver
 // will not resolve an extensionless relative import. See payoutTable.ts.
-import { partialMultiplier } from './payout.ts';
+import { forgivenessAvailable, partialMultiplier, stageRetention } from './payout.ts';
+import { FAMILY_RULES, type FamilyRules } from './modes.ts';
 import { rankValue, type Card } from './roundContract.ts';
 
 export type RevealEvent = {
@@ -33,26 +34,26 @@ export type RevealEvent = {
   payout: number;
 };
 
-export function localColorPayouts(remaining: Card[]) {
+export function localColorPayouts(remaining: Card[], retention?: number) {
   const total = remaining.length;
   const red = remaining.filter((card) => card.suit === '♥' || card.suit === '♦').length;
   const black = total - red;
-  return { red: partialMultiplier(red / total, 0), black: partialMultiplier(black / total, 0) };
+  return { red: partialMultiplier(red / total, 0, retention), black: partialMultiplier(black / total, 0, retention) };
 }
 
-export function localHigherLowerPayouts(remaining: Card[], ref: number) {
+export function localHigherLowerPayouts(remaining: Card[], ref: number, retention?: number) {
   const total = remaining.length;
   const higher = remaining.filter((card) => rankValue[card.rank] > ref).length;
   const lower = remaining.filter((card) => rankValue[card.rank] < ref).length;
   const equal = total - higher - lower;
   return {
-    higher: partialMultiplier(higher / total, 1),
-    lower: partialMultiplier(lower / total, 1),
-    equal: partialMultiplier(equal / total, 1),
+    higher: partialMultiplier(higher / total, 1, retention),
+    lower: partialMultiplier(lower / total, 1, retention),
+    equal: partialMultiplier(equal / total, 1, retention),
   };
 }
 
-export function localInsideOutsidePayouts(remaining: Card[], a: number, b: number) {
+export function localInsideOutsidePayouts(remaining: Card[], a: number, b: number, retention?: number) {
   const total = remaining.length;
   const minVal = Math.min(a, b);
   const maxVal = Math.max(a, b);
@@ -60,13 +61,13 @@ export function localInsideOutsidePayouts(remaining: Card[], a: number, b: numbe
   const outside = remaining.filter((card) => rankValue[card.rank] < minVal || rankValue[card.rank] > maxVal).length;
   const equal = total - inside - outside;
   return {
-    inside: partialMultiplier(inside / total, 2),
-    outside: partialMultiplier(outside / total, 2),
-    equal: partialMultiplier(equal / total, 2),
+    inside: partialMultiplier(inside / total, 2, retention),
+    outside: partialMultiplier(outside / total, 2, retention),
+    equal: partialMultiplier(equal / total, 2, retention),
   };
 }
 
-export function localSuitPayouts(remaining: Card[]) {
+export function localSuitPayouts(remaining: Card[], retention?: number) {
   const total = remaining.length;
   const counts = { heart: 0, diamond: 0, club: 0, spade: 0 };
   for (const card of remaining) {
@@ -76,10 +77,10 @@ export function localSuitPayouts(remaining: Card[]) {
     else counts.spade += 1;
   }
   return {
-    heart: partialMultiplier(counts.heart / total, 3),
-    diamond: partialMultiplier(counts.diamond / total, 3),
-    club: partialMultiplier(counts.club / total, 3),
-    spade: partialMultiplier(counts.spade / total, 3),
+    heart: partialMultiplier(counts.heart / total, 3, retention),
+    diamond: partialMultiplier(counts.diamond / total, 3, retention),
+    club: partialMultiplier(counts.club / total, 3, retention),
+    spade: partialMultiplier(counts.spade / total, 3, retention),
   };
 }
 
@@ -108,24 +109,49 @@ export function isCorrectGuess(stageIndex: number, choice: string, card: Card, r
 // Mirrors games/ride_the_bus/gamestate.py:run_spin - draws the same 4
 // cards from a deterministic local deck and resolves them against the
 // player's pre-selected choices, exactly like the real math-sdk book does.
-export function buildLocalRevealEvents(deck: Card[], choices: string[]): RevealEvent[] {
+export function buildLocalRevealEvents(
+  deck: Card[],
+  choices: string[],
+  rules: FamilyRules = FAMILY_RULES.base,
+): RevealEvent[] {
   const drawn = deck.slice(0, 4);
   const ranks = drawn.map((card) => rankValue[card.rank]);
-  const stagePayouts = [
-    localColorPayouts(deck.slice(0)),
-    localHigherLowerPayouts(deck.slice(1), ranks[0]),
-    localInsideOutsidePayouts(deck.slice(2), ranks[0], ranks[1]),
-    localSuitPayouts(deck.slice(3)),
-  ] as Record<string, number>[];
 
-  return drawn.map((card, index) => {
-    const choice = choices[index];
-    return {
+  /** One stage's table, priced against the retention its miss would bank. */
+  const tableFor = (index: number, retention: number): Record<string, number> => {
+    if (index === 0) return localColorPayouts(deck.slice(0), retention);
+    if (index === 1) return localHigherLowerPayouts(deck.slice(1), ranks[0], retention);
+    if (index === 2) return localInsideOutsidePayouts(deck.slice(2), ranks[0], ranks[1], retention);
+    return localSuitPayouts(deck.slice(3), retention);
+  };
+
+  // Walked stage by stage rather than built upfront: once a family can forgive,
+  // the price of a stage depends on whether an earlier one has already missed,
+  // which is not known until we get there. Mirrors the loop in
+  // gamestate.py:run_spin.
+  const events: RevealEvent[] = [];
+  let busted = false;
+  let forgivenessSpent = false;
+
+  for (let index = 0; index < drawn.length; index += 1) {
+    const card = drawn[index]!;
+    const choice = choices[index]!;
+    const retention = stageRetention(rules, index, forgivenessSpent);
+    const correct = !busted && isCorrectGuess(index, choice, card, ranks);
+
+    events.push({
       stage: index + 1,
       card,
       choice,
-      correct: isCorrectGuess(index, choice, card, ranks),
-      payout: stagePayouts[index][choice],
-    };
-  });
+      correct,
+      payout: tableFor(index, retention)[choice]!,
+    });
+
+    if (!busted && !correct) {
+      if (forgivenessAvailable(rules, index, forgivenessSpent)) forgivenessSpent = true;
+      else busted = true;
+    }
+  }
+
+  return events;
 }
