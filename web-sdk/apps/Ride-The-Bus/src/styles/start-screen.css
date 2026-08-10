@@ -175,7 +175,10 @@
 }
 
 .ss-step-label {
-	font-size: calc(var(--ss) * 1.05);
+	/* Floored, because this names the pick the control below demonstrates and
+	   is useless once it drops under about 11px - which is where --ss alone put
+	   it on every small screen. */
+	font-size: max(calc(var(--ss) * 1.05), 11px);
 	font-weight: 700;
 	color: #e8e0d0;
 	text-align: center;
@@ -211,8 +214,16 @@
 	   8.36 --ui leaves the icons mis-scaled against it. At --choice-size: 7 --ss
 	   with --ui still at --ss, every icon came out 8.36/7 = 19% oversized, which
 	   is what made the higher/lower triangles collide with the equals badge and
-	   pushed the inside/outside arrows past their halves. */
-	--ui: calc(var(--ss) * 0.84);
+	   pushed the inside/outside arrows past their halves.
+
+	   The multiplier itself is set by how much room four panels have. Each panel
+	   takes (card - 3 gaps) / 4, and the square plus its padding has to fit
+	   inside that. 1.4 puts the row at 552px of the 580px available on a 1920
+	   desktop and stays inside the share at every size down to 640px wide; 1.5
+	   overflows everywhere. It was 0.84 - a 70px square on a screen with room
+	   for 117px - which is what made the intro read as a shrunken diagram of
+	   the game rather than the game's own controls. */
+	--ui: calc(var(--ss) * 1.4);
 	--choice-size: calc(var(--ui) * 8.36);
 	--choice-fs: calc(var(--ui) * 2.04);
 	--quad-fs: calc(var(--ui) * 2.33);
@@ -656,6 +667,13 @@
 		margin-bottom: calc(var(--ui) * 0.3);
 	}
 	.ss-subtitle { display: none; }
+	/* The logo, subtitle, lead and worked examples are all hidden by this
+	   height, so the four controls have the panel to themselves and can be
+	   drawn bigger - about 56px against the 21px they had before. Same reason
+	   as the phone rule: raise --ui and let the 8.36 ratio carry the square. */
+	.ss-step {
+		--ui: calc(var(--ss) * 1.05);
+	}
 	.ss-stats { gap: calc(var(--ui) * 1.5); margin-top: 0; }
 	.ss-stat-val { font-size: calc(var(--ui) * 2); }
 	.ss-stat-cap { font-size: calc(var(--ui) * 1); }
@@ -721,11 +739,30 @@
 	.ss-step {
 		/* Half the row, less half the gap between the pair. */
 		flex: 1 1 calc(50% - var(--ss) * 0.6);
-		/* The intro's guess squares are tappable too - the player toggles them
-		   to see each rule explained. Same treatment as the board (see
-		   responsive.css): taller squares so the thirds are reachable, width
-		   left alone so two panels still fit across. */
-		--choice-h: max(var(--choice-size), 84px);
+		/* Two panels per row instead of four leaves roughly double the width,
+		   so the controls can be drawn far larger - about 113px against the
+		   59px they had at four across.
+
+		   Raised through --ui, NOT --choice-size: the 8.36 ratio declared above
+		   then carries the square with it and every icon inside stays correctly
+		   proportioned. Setting --choice-size directly is the mistake that
+		   warning describes.
+
+		   Deliberately square. An earlier version stretched these to 84px tall
+		   to enlarge the thirds, which made the intro teach a shape the board
+		   does not have. Growing the whole square gets the same reach without
+		   the distortion. */
+		--ui: calc(var(--ss) * 1.6);
+	}
+
+	/* The pick names sit above each control and were rendering around 9px. */
+	.ss-step-label {
+		font-size: max(calc(var(--ss) * 1.15), 14px);
+		/* Two lines are still reserved so the row stays even, but as a minimum
+		   rather than a fixed height - at this size a fixed one clips the
+		   longer translations instead of letting them wrap. */
+		height: auto;
+		min-height: calc(var(--ss) * 3.4);
 	}
 
 	/* The explanation is the point of the badge, so it gets a readable floor
