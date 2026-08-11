@@ -1,30 +1,47 @@
 /**
  * How big a win has to be before the game stops to celebrate it.
  *
- * The thresholds are not invented - they were read off the published lookup
- * tables (math-sdk .../library/publish_files/lookUpTable_*.csv), weighting each
- * mode equally because all 192 cost 1x and a player picks exactly one per round.
- * The frequencies below are the CLASSIC family's; the other two shift them (High
- * Stakes pays a busted round less, so it reaches further up the ladder), but the
- * band edges are shared and only the top one is per-family - see winTiersFor.
- * The resulting frequencies are:
+ * EVERY BAND IS PER FAMILY, because a tier is a statement about RARITY and the
+ * three families spread their payouts differently. Sharing one set of
+ * thresholds made the same word mean different things: at a flat 300x, "Epic"
+ * was 1 in 16,198 on Classic but 1 in 26,768 on Second Chance - nearly as rare
+ * as that mode's Max Win, so the top of its ladder was squashed into a single
+ * step - and only 1 in 12,238 on High Stakes, which pays a busted round less and
+ * so climbs higher. Second Chance could not reach 300x often enough for Epic to
+ * mean anything, and High Stakes reached it too easily.
  *
- *     Big    >=   10x     1 in 70
- *     Huge   >=   40x     1 in 305
- *     Mega   >=  120x     1 in 3,093
- *     Epic   >=  300x     1 in 15,561
- *     Max    = 1354.2x    1 in 36,384
+ * So each family's bands are solved to land on the SAME rarities, which are
+ * Classic's originals: roughly 1 in 70, 1 in 305, 1 in 3,093 and 1 in 15,561,
+ * with Max Win being exactly that family's ceiling (~1 in 36,400 in all three).
  *
- * Epic sits at 300x rather than the rounder 400x deliberately: nothing in this
- * game pays between 400x and 1000x, so a tier at 400x would fire 1 in 100,000 -
- * RARER than the Max Win above it, which makes the ladder read backwards.
+ * The figures come from exhaustive enumeration of the payout model - every
+ * ordered four-card draw against all 64 combinations, reweighted the way
+ * reweight_luts.py reweights the published tables, and averaged over the
+ * combinations with equal weight because every mode costs the same and a player
+ * picks exactly one per round. That reproduces the Classic frequencies this
+ * ladder originally shipped with (70 / 304 / 3,083 / 16,198 measured against
+ * 70 / 305 / 3,093 / 15,561 documented), which is what makes the other two
+ * families' numbers trustworthy.
+ *
+ *                    Big        Huge        Mega         Epic          Max
+ *   Classic        10x  1:70   40x 1:304  120x 1:3083  300x 1:16198  1354.2x 1:36380
+ *   Second Chance  11x  1:70   28x 1:290   60x 1:3048  130x 1:15730   585.2x 1:36435
+ *   High Stakes    12x  1:72   50x 1:297  130x 1:3437  440x 1:16107  1910.2x 1:36335
+ *
+ * Each family's Epic sits below a gap in its own distribution, for the reason
+ * Classic's sits at 300x rather than a rounder 400x: nothing pays between 381.9x
+ * and 1260x there, so a threshold inside the gap would be RARER than the Max Win
+ * above it and the ladder would read backwards. The gaps are at 381.9x->1260x
+ * (Classic), 172.2x->549.1x (Second Chance) and 531.3x->1771.8x (High Stakes).
  *
  * Tiering is on PAYOUT SIZE, not on surviving all four cards. Busting on card 3
- * or 4 still keeps 30% of the multiplier built so far and reaches 129x, which
- * pays more than a typical full-game win (no-equal modes average 17.3x). A
+ * or 4 still keeps a share of the multiplier built so far and reaches 129x,
+ * which pays more than a typical full-game win (no-equal modes average 17.3x). A
  * celebration keyed on "all four correct" would fire on 3x wins while passing
- * over the biggest partials in silence.
+ * over the biggest partials in silence. The one place that flag still matters is
+ * per family - see celebrateEveryFullWin in modes.ts.
  */
+import { FAMILY_RULES, type ModeFamily } from './modes.ts';
 
 /** CLASSIC's true ceiling, proven by exhaustive enumeration - see math-sdk
  * games/ride_the_bus/game_config.py. The published `max_win` of 1400 is a
@@ -33,7 +50,7 @@
  * This is the BASE family's ceiling, not the game's. Second Chance stops at
  * 585.2x and High Stakes reaches 1910.2x - use winTiersFor to get a family's
  * own ladder. Kept as the default so callers with no family behave as before. */
-export const MAX_WIN_MULTIPLIER = 1354.2;
+export const MAX_WIN_MULTIPLIER = FAMILY_RULES.base.maxWin;
 
 /**
  * The smallest possible full-game win, from exhaustive enumeration of all
@@ -65,32 +82,63 @@ export type WinTier = {
   oneIn: number;
 };
 
-/** Ordered LOW to HIGH. winTierFor scans backwards, so order is load-bearing.
- *  The Classic ladder, and the default for callers that name no family. */
-export const WIN_TIERS: readonly WinTier[] = [
-  { id: 'big', minMultiplier: 10, label: 'Big Win', oneIn: 70 },
-  { id: 'huge', minMultiplier: 40, label: 'Huge Win', oneIn: 305 },
-  { id: 'mega', minMultiplier: 120, label: 'Mega Win', oneIn: 3093 },
-  { id: 'epic', minMultiplier: 300, label: 'Epic Win', oneIn: 15561 },
-  { id: 'max', minMultiplier: MAX_WIN_MULTIPLIER, label: 'Max Win', oneIn: 36384 },
+/**
+ * Each family's four lower bands, as measured multipliers.
+ *
+ * The Max band is not here: its floor IS the family's ceiling, which already
+ * lives in FAMILY_RULES.maxWin, and restating it would be a second copy of a
+ * number the tests pin to the payout maths.
+ */
+const FAMILY_BANDS: Record<ModeFamily, readonly [number, number, number, number]> = {
+  base: [10, 40, 120, 300],
+  sc: [11, 28, 60, 130],
+  hs: [12, 50, 130, 440],
+};
+
+/** Measured frequency of each band or better, including Max. For the rules
+ *  screen and the test plan - nothing branches on these. */
+const FAMILY_ONE_IN: Record<ModeFamily, readonly [number, number, number, number, number]> = {
+  base: [70, 304, 3083, 16198, 36380],
+  sc: [70, 290, 3048, 15730, 36435],
+  hs: [72, 297, 3437, 16107, 36335],
+};
+
+const TIER_META = [
+  { id: 'big', label: 'Big Win' },
+  { id: 'huge', label: 'Huge Win' },
+  { id: 'mega', label: 'Mega Win' },
+  { id: 'epic', label: 'Epic Win' },
 ] as const;
 
 /**
- * One family's ladder: the same bands, with the top one at ITS ceiling.
+ * One family's ladder, ordered LOW to HIGH.
  *
- * The max tier's floor IS the family's largest possible win, so it must move
- * with the family. Left fixed at Classic's 1354.2x it was wrong in both
- * directions at once: High Stakes reaches 1910.2x, so every win from 1354.2x
- * upward was announced as a Max Win when it was not one; and Second Chance
- * tops out at 585.2x, so its real ceiling - the rarest thing that can happen in
- * that mode - could only ever earn "Epic Win", with the Max tier unreachable.
- *
- * Only the top band moves. The lower four are payout sizes, and a 40x win is
- * the same event whichever mode produced it.
+ * winTierFor scans backwards, so the order is load-bearing - and so is the
+ * invariant that each band sits above the one below it. winTiers.test.ts
+ * asserts both, per family, because a ladder that is merely plausible is not
+ * enough: an out-of-order band silently makes a tier unreachable.
  */
-export function winTiersFor(maxWin: number): readonly WinTier[] {
-	return WIN_TIERS.map((tier) => (tier.id === 'max' ? { ...tier, minMultiplier: maxWin } : tier));
+export function winTiersFor(family: ModeFamily): readonly WinTier[] {
+  const bands = FAMILY_BANDS[family];
+  const oneIn = FAMILY_ONE_IN[family];
+  return [
+    ...TIER_META.map((meta, i) => ({
+      id: meta.id,
+      minMultiplier: bands[i]!,
+      label: meta.label,
+      oneIn: oneIn[i]!,
+    })),
+    {
+      id: 'max' as const,
+      minMultiplier: FAMILY_RULES[family].maxWin,
+      label: 'Max Win' as const,
+      oneIn: oneIn[4]!,
+    },
+  ];
 }
+
+/** The Classic ladder, and the default for callers that name no family. */
+export const WIN_TIERS: readonly WinTier[] = winTiersFor('base');
 
 /**
  * Floating-point slack on the Max Win comparison.

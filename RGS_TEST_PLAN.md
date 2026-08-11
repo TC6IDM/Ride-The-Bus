@@ -328,22 +328,28 @@ Tiers are keyed on payout size, not on surviving all four cards - except that
 a full-game win is floored into the bottom tier, because the smallest possible
 one pays 6.6x and would otherwise pass in silence.
 
-Two things about this ladder are PER MODE, and both are easy to test wrong by
-assuming Classic's figures hold everywhere:
+**Every band is per mode.** A tier is a claim about how RARE something is, and
+the three families spread their payouts differently, so one shared set of
+thresholds made the same word mean different things. Each ladder is solved to
+land on the same rarities - Classic's originals - with Max Win being exactly
+that mode's ceiling:
 
-| Tier | From | Roughly (Classic) |
-| --- | ---: | ---: |
-| Big Win | 10x | 1 in 70 |
-| Huge Win | 40x | 1 in 305 |
-| Mega Win | 120x | 1 in 3,093 |
-| Epic Win | 300x | 1 in 15,561 |
-| Max Win | **the playing mode's own ceiling** | 1 in ~3,830 |
+| Tier | Classic | Second Chance | High Stakes | Roughly |
+| --- | ---: | ---: | ---: | ---: |
+| Big Win | 10x | 11x | 12x | 1 in 70 |
+| Huge Win | 40x | 28x | 50x | 1 in 300 |
+| Mega Win | 120x | 60x | 130x | 1 in 3,100 |
+| Epic Win | 300x | 130x | 440x | 1 in 15,800 |
+| Max Win | 1354.2x | 585.2x | 1910.2x | 1 in 36,400 |
 
-- **Max Win sits on the family's ceiling** - 1354.2x Classic, 585.2x Second
-  Chance, 1910.2x High Stakes. The four lower bands are shared.
-- **The full-game-win floor is off for Second Chance.** Forgiveness means most
-  of its rounds reach card 4, so treating that as remarkable made the takeover
-  fire on nearly every round. It still celebrates on size.
+At the old shared thresholds, "Epic" was 1 in 16,198 on Classic but 1 in 26,768
+on Second Chance - nearly as rare as that mode's Max Win, squashing the top of
+its ladder into one step - and 1 in 12,238 on High Stakes, which pays a busted
+round less and so climbs higher.
+
+**The full-game-win floor is off for Second Chance.** Forgiveness means most of
+its rounds reach card 4, so treating that as remarkable made the takeover fire
+on nearly every round. It still celebrates on size.
 
 - [ ] **WIN-01 · The headline never contradicts the number** — *Major*
   Over a long run, check each takeover's title against its final multiplier.
@@ -375,6 +381,13 @@ assuming Classic's figures hold everywhere:
   1910.2x in High Stakes. Two specific failures to watch for: a High Stakes win
   of 1354.2x - which is NOT its maximum - announcing "Max Win", and a Second
   Chance ceiling of 585.2x announcing only "Epic Win".
+
+- [ ] **WIN-10 · The lower bands differ per mode too** — *Minor*
+  Win about 30x on Second Chance, then about 30x on High Stakes.
+  **Expect:** "Huge Win" on Second Chance (its band opens at 28x) and only "Big
+  Win" on High Stakes (whose Huge band opens at 50x). Same payout, different
+  titles - that is correct, because it is a far rarer result in one than the
+  other. If both read the same, the ladders have been collapsed back into one.
 
 - [ ] **WIN-03 · Count-up, skip and dismiss** — *Minor*
   On a multi-tier win: let it climb, tap mid-climb, then tap again once settled.

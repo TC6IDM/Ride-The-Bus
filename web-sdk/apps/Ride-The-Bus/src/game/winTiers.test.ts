@@ -333,7 +333,7 @@ describe('the Max Win tier follows the family ceiling', () => {
   // THE BUG THIS EXISTS FOR. The ladder's top band was fixed at Classic's
   // 1354.2x while the other two families reach elsewhere, so it was wrong in
   // both directions at once.
-  const tiersFor = (family: ModeFamily) => winTiersFor(FAMILY_RULES[family].maxWin);
+  const tiersFor = (family: ModeFamily) => winTiersFor(family);
 
   test('each family tops out on its own ceiling', () => {
     for (const family of MODE_FAMILIES) {
@@ -387,7 +387,7 @@ describe('the Max Win tier follows the family ceiling', () => {
   });
 
   test('the default ladder is unchanged for callers naming no family', () => {
-    assert.deepEqual(winTiersFor(FAMILY_RULES.base.maxWin), WIN_TIERS);
+    assert.deepEqual(winTiersFor('base'), WIN_TIERS);
   });
 });
 
@@ -400,7 +400,7 @@ describe('the full-game-win floor is per family', () => {
       const tier = winTierFor(
         SMALL_FULL_WIN,
         FAMILY_RULES[family].celebrateEveryFullWin,
-        winTiersFor(FAMILY_RULES[family].maxWin),
+        winTiersFor(family),
       );
       assert.equal(tier?.id, 'big', `${family} should celebrate a small full win`);
     }
@@ -411,19 +411,96 @@ describe('the full-game-win floor is per family', () => {
     const tier = winTierFor(
       SMALL_FULL_WIN,
       FAMILY_RULES.sc.celebrateEveryFullWin,
-      winTiersFor(FAMILY_RULES.sc.maxWin),
+      winTiersFor('sc'),
     );
     assert.equal(tier, null, 'a 6.6x Second Chance round should not take the screen over');
   });
 
-  test('Second Chance still celebrates on size, at the same thresholds', () => {
+  test('Second Chance still celebrates on size, on its own ladder', () => {
     // The floor is gone; the ladder is not. This is the half of the change that
-    // is easy to lose - suppressing the takeover entirely would mean a 1000x
+    // is easy to lose - suppressing the takeover entirely would mean a 500x
     // Second Chance round passed in silence.
-    const tiers = winTiersFor(FAMILY_RULES.sc.maxWin);
-    for (const [multiplier, expected] of [[10, 'big'], [40, 'huge'], [120, 'mega'], [300, 'epic']] as const) {
-      assert.equal(winTierFor(multiplier, false, tiers)?.id, expected);
+    //
+    // Read off winTiersFor rather than typed out: this test is about the floor
+    // being absent, not about where the bands sit, and hardcoding 10/40/120/300
+    // here is what made it fail when the bands became per family.
+    const tiers = winTiersFor('sc');
+    for (const tier of tiers) {
+      assert.equal(
+        winTierFor(tier.minMultiplier, false, tiers)?.id,
+        tier.id,
+        `a ${tier.minMultiplier}x Second Chance win should earn ${tier.id}`,
+      );
     }
-    assert.equal(winTierFor(FAMILY_RULES.sc.maxWin, false, tiers)?.id, 'max');
+    // ...and still nothing at all below the entry band.
+    assert.equal(winTierFor(tiers[0]!.minMultiplier - 0.1, false, tiers), null);
+  });
+});
+
+describe('every band is per family, not just the top one', () => {
+  test('the three ladders are genuinely different below Max', () => {
+    // If a refactor ever collapses these back to one shared set of bands, the
+    // tiers stop meaning the same thing in each mode - which is the bug this
+    // whole arrangement exists to prevent.
+    const lower = (family: ModeFamily) =>
+      winTiersFor(family).filter((t) => t.id !== 'max').map((t) => t.minMultiplier);
+    assert.notDeepEqual(lower('base'), lower('sc'));
+    assert.notDeepEqual(lower('base'), lower('hs'));
+    assert.notDeepEqual(lower('sc'), lower('hs'));
+  });
+
+  test('each ladder lands on the same rarities, within tolerance', () => {
+    // Classic's originals are the target: a tier is a claim about how often it
+    // happens, so "Epic" must be about as rare in one mode as in another.
+    const TARGET = [70, 305, 3093, 15561];
+    for (const family of MODE_FAMILIES) {
+      const tiers = winTiersFor(family).filter((t) => t.id !== 'max');
+      tiers.forEach((tier, i) => {
+        const ratio = tier.oneIn / TARGET[i]!;
+        assert.ok(
+          ratio > 0.7 && ratio < 1.3,
+          `${family} ${tier.id}: 1 in ${tier.oneIn} against a target of 1 in ${TARGET[i]}`,
+        );
+      });
+    }
+  });
+
+  test('Max is the rarest band in every family, by a clear margin', () => {
+    // Classic's Epic sits at 300x rather than 400x precisely because a band
+    // inside a payout gap ends up rarer than the Max above it, which makes the
+    // ladder read backwards. This asserts that never happens again.
+    for (const family of MODE_FAMILIES) {
+      const tiers = winTiersFor(family);
+      const max = tiers.at(-1)!;
+      const epic = tiers.at(-2)!;
+      assert.equal(max.id, 'max');
+      assert.ok(
+        max.oneIn > epic.oneIn * 1.5,
+        `${family}: Max (1 in ${max.oneIn}) is not clearly rarer than Epic (1 in ${epic.oneIn})`,
+      );
+    }
+  });
+
+  test('rarity rises with every step up each ladder', () => {
+    for (const family of MODE_FAMILIES) {
+      const tiers = winTiersFor(family);
+      for (let i = 1; i < tiers.length; i += 1) {
+        assert.ok(
+          tiers[i]!.oneIn > tiers[i - 1]!.oneIn,
+          `${family}: ${tiers[i]!.id} is not rarer than ${tiers[i - 1]!.id}`,
+        );
+      }
+    }
+  });
+
+  test('no band exceeds the ceiling it climbs toward', () => {
+    for (const family of MODE_FAMILIES) {
+      for (const tier of winTiersFor(family)) {
+        assert.ok(
+          tier.minMultiplier <= FAMILY_RULES[family].maxWin,
+          `${family}: ${tier.id} starts above the mode's ceiling and can never fire`,
+        );
+      }
+    }
   });
 });

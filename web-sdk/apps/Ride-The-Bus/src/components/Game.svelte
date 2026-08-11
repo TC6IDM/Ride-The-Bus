@@ -3,12 +3,13 @@
   import './app.css';
   // TYPE ONLY, deliberately - this line erases at build time.
   //
-  // roundContract is otherwise reached only by the dynamic import inside the
-  // DEV-only branch of playRound, which is what lets Vite drop the card
-  // shuffler from a production build. That was previously undone by this same
-  // line importing createRoundContract and rankValue as values: the dynamic
-  // import was there, but the module was already in the graph, so a real-money
-  // bundle still carried a card generator.
+  // The card GENERATOR now lives in roundShuffler.ts, reached only by the
+  // dynamic import inside the DEV-only branch of playRound, which is what lets
+  // Vite drop it from a production build. Splitting the two was the point:
+  // while the shuffler shared this module, the paytable and the rules screen
+  // imported it statically for `ranks` and `rankValue`, so the module was in
+  // the graph regardless and a real-money bundle still carried a shuffler.
+  // Vite warned about exactly this on every build.
   import type { Card } from '../game/roundContract';
   import { stateBet, stateUrlDerived, stateMeta, stateConfig, stateModal } from 'state-shared';
   import ErrorModal from './ErrorModal.svelte';
@@ -445,11 +446,12 @@
   /** What one round actually costs at the current bet. */
   const roundCost = (bet: number = betValue()) => bet * familyRules().cost;
 
-  // The celebration ladder for the mode in play. Only its top band moves: the
-  // Max Win tier has to sit on THIS family's ceiling, or High Stakes announces
-  // a max win at Classic's 1354.2x (it reaches 1910.2x) and Second Chance can
-  // never announce one at all (it tops out at 585.2x, below that threshold).
-  const winTiers = () => winTiersFor(familyRules().maxWin);
+  // The celebration ladder for the mode in play. EVERY band is per family, not
+  // just the top one: a tier is a claim about rarity, and the three families
+  // spread their payouts differently enough that one shared set of thresholds
+  // made the same word mean different things - see winTiers.ts for the measured
+  // table. The Max band sits on this family's own ceiling.
+  const winTiers = () => winTiersFor(betFamily);
 
   const betIsValid = () => {
     const v = betValue();
@@ -1475,7 +1477,7 @@
     // Local fallback only - the RGS debits the real thing. Cost, not bet.
     stateBet.balanceAmount -= roundCost(initialBet);
     const [{ createRoundContract }, { buildLocalRevealEvents }] = await Promise.all([
-      import('../game/roundContract'),
+      import('../game/roundShuffler'),
       import('../game/localRound'),
     ]);
     const round = createRoundContract(`${roundSeedData.seed}:${roundSequence}`);
