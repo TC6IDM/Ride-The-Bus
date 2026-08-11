@@ -50,23 +50,27 @@ export default {
 	Forgiven: 'Wybaczone',
 	'Game modes': 'Tryby gry',
 	'Max win': 'Maks. wygrana',
-	'Both figures are multiples of your bet, not of what the round costs.':
-		'Obie wartości to wielokrotności twojego zakładu, nie kosztu rundy.',
+	'Every mode costs 1× your bet.': 'Każdy tryb kosztuje 1× twojego zakładu.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Zwrot dla gracza (RTP) wynosi %s w każdym trybie, a każdy zwraca tę samą wartość na przestrzeni wielu rund. Najwięcej, ile ta gra może wypłacić, to %m twojego zakładu, w trybie Wysoka stawka.',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
-		'Dwa wybory Równe — średnio 1329,2×, do 1354,2×, najwięcej w trybie Klasycznym.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'Błąd przy pierwszej karcie kończy rundę. Późniejsze pomyłki zachowują 30% zgromadzonej kwoty.',
 	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
 		'Karta 1 nadal kończy rundę. Potem pierwsza pomyłka jest wybaczana i gra trwa dalej.',
-	'Misses keep only 20%, so every correct guess is worth more.':
-		'Pomyłki zachowują tylko 20%, więc każde trafienie jest warte więcej.',
 	'Skip card reveal on spacebar hold': 'Pomiń odkrywanie kart przy spacji',
 	'Skip the card reveal while the spacebar is held':
 		'Pomiń odkrywanie kart w rundach rozpoczętych spacją',
 	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'Pomiń odkrywanie kart przy spacji (przycisk suwaków) rozgrywa rundy rozpoczęte spacją bez animacji kart. Zmienia tylko animację, nigdy kart, szans ani wypłaty.',
+	'Card 1': 'Karta 1',
+	'Your first wrong guess': 'Twoja pierwsza pomyłka',
+	'Your second wrong guess': 'Twoja druga pomyłka',
+	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
+		'Równe to najrzadszy typ, więc rundy na nim oparte niosą największe wygrane — i są najtrudniejsze. Dwa trafienia Równe naraz to maksimum tego trybu, %m twojego zakładu.',
+	Playing: 'W grze',
+	'Card 2, 3 or 4': 'Karta 2, 3 lub 4',
+	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
+		'Błąd przy pierwszej karcie kończy rundę. Późniejsze pomyłki zachowują tylko 20%, więc każde trafienie jest warte więcej.',
 	'Stop on full game win': 'Zatrzymaj przy pełnej wygranej',
 
 	'How to Play': 'Jak grać',
@@ -97,19 +101,9 @@ export default {
 	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
 		'Każdy etap mnoży poprzedni, więc cztery razem składają się na końcową wypłatę rundy. Suma bieżąca wyświetlana obok kart jest zaokrąglana w dół do jednego miejsca po przecinku, więc może być nieco niższa niż te wartości.',
 	'If you guess wrong': 'Jeśli się pomylisz',
-	'Card 1 — the round pays nothing.': 'Karta 1 — runda nie wypłaca nic.',
-	'Card 2 — you get 0.5× your bet back.': 'Karta 2 — odzyskujesz 0,5× stawki.',
-	'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.':
-		'Karta 3 lub 4 — zachowujesz 30 % zgromadzonego mnożnika, czyli od 0,6× do 129×.',
 	'Full game wins': 'Pełne wygrane',
 	'Guess all four cards right and the payout depends on how hard your picks were:':
 		'Jeśli trafisz wszystkie cztery karty, wypłata zależy od tego, jak trudne były Twoje typy:',
-	'No Equal picks — averages 17.3×, up to 317.4×.':
-		'Bez typu Równo — średnio 17,3×, maksymalnie 317,4×.',
-	'One Equal pick — averages 67.5×, up to 381.9×.':
-		'Jedno Równo — średnio 67,5×, maksymalnie 381,9×.',
-	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
-		'Równo to najrzadszy typ, dlatego oparte na nim rundy dają największe wygrane — i są najtrudniejsze do trafienia.',
 	'Speed and autoplay': 'Prędkość i autogra',
 	'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.':
 		'Turbo (przycisk z błyskawicą) reguluje się od Normalnej do Natychmiastowej i zmienia wyłącznie szybkość odkrywania kart. Nigdy nie zmienia kart, prawdopodobieństwa ani wypłaty.',
@@ -186,6 +180,8 @@ export default {
 	'Round details': 'Szczegóły rundy',
 	'Play amount': 'Kwota zakładu',
 	Mode: 'Tryb',
+	'Game mode': 'Tryb gry',
+	Guesses: 'Typy',
 	Event: 'Zdarzenie',
 	Payout: 'Wypłata',
 	Play: 'Odtwórz',

@@ -447,15 +447,37 @@
 .ss-card-rank { font-size: calc(var(--ui) * 1.25); }
 .ss-card-suit { font-size: calc(var(--ui) * 1.15); }
 
+/* In --ui, for the same reason as .ss-mark below - it stands in the same row as
+   the mini cards and has to shrink and grow with them, not with --ss. Sized
+   between the slash (1.1) and the tick (1.5): it is a connector rather than a
+   verdict, but "->" needs enough width to read as a direction. */
 .ss-arrow {
 	color: #a0a080;
-	font-size: calc(var(--ss) * 1.3);
+	font-size: calc(var(--ui) * 1.3);
 }
 
+/* The Inside / Outside row runs narrower cards and steps every glyph down with
+   them - rank, suit and tick already do, so the arrow and the slash follow. */
+.ss-demo.is-wide .ss-arrow { font-size: calc(var(--ui) * 1.1); }
+.ss-demo.is-wide .ss-or { font-size: calc(var(--ui) * 0.95); }
+
+/* Sized in --ui, like every other thing standing in this row.
+   It used to be --ss * 1.4 while the mini cards beside it are --ui * 3.5 tall,
+   and --ui is --ss * 1.7 here - so the tick rendered at about 0.8 units against
+   a 3.5-unit card, a quarter of its height. Worse, --ui stops being a multiple
+   of --ss on small screens (it takes its own clamp), so the two drifted apart
+   at different viewport sizes rather than staying merely small.
+   1.5 puts the glyph at ~43% of the card it marks. line-height keeps it from
+   adding to the row's height. */
 .ss-mark {
-	font-size: calc(var(--ss) * 1.4);
+	font-size: calc(var(--ui) * 1.5);
 	font-weight: 900;
+	line-height: 1;
 }
+
+/* The Inside / Outside row runs narrower cards, and its rank and suit glyphs
+   already step down with them - the tick follows at the same ratio. */
+.ss-demo.is-wide .ss-mark { font-size: calc(var(--ui) * 1.25); }
 .ss-mark.ok { color: #7fd18a; }
 .ss-mark.no { color: #d98a8a; }
 
@@ -479,6 +501,11 @@
 		width: calc(var(--ui) * 2);
 		height: calc(var(--ui) * 2.8);
 	}
+	.ss-mark { font-size: calc(var(--ui) * 1.2); }
+	.ss-demo.is-wide .ss-mark { font-size: calc(var(--ui) * 1); }
+	.ss-arrow { font-size: calc(var(--ui) * 1.05); }
+	.ss-demo.is-wide .ss-arrow { font-size: calc(var(--ui) * 0.9); }
+	.ss-demo.is-wide .ss-or { font-size: calc(var(--ui) * 0.8); }
 }
 
 /* Narrow AND short - a phone in landscape. Drop the worked examples entirely

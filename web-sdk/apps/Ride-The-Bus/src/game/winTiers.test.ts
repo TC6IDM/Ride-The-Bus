@@ -12,6 +12,7 @@ import { test, describe } from 'node:test';
 
 import {
   MAX_WIN_MULTIPLIER,
+  winTiersFor,
   MIN_FULL_GAME_WIN_MULTIPLIER,
   WIN_TIERS,
   CEILING_PAUSE_MS,
@@ -21,6 +22,7 @@ import {
   winTierFor,
   type WinTierId,
 } from './winTiers.ts';
+import { FAMILY_RULES, MODE_FAMILIES, type ModeFamily } from './modes.ts';
 
 const idAt = (multiplier: number): WinTierId | null => winTierFor(multiplier)?.id ?? null;
 
@@ -324,5 +326,104 @@ describe('autoHoldMs', () => {
       const ms = autoHoldMs(tier);
       assert.ok(ms >= 1500 && ms <= 4000, `${tier.id} holds ${ms}ms, outside the usable range`);
     }
+  });
+});
+
+describe('the Max Win tier follows the family ceiling', () => {
+  // THE BUG THIS EXISTS FOR. The ladder's top band was fixed at Classic's
+  // 1354.2x while the other two families reach elsewhere, so it was wrong in
+  // both directions at once.
+  const tiersFor = (family: ModeFamily) => winTiersFor(FAMILY_RULES[family].maxWin);
+
+  test('each family tops out on its own ceiling', () => {
+    for (const family of MODE_FAMILIES) {
+      const top = tiersFor(family).at(-1)!;
+      assert.equal(top.id, 'max');
+      assert.equal(
+        top.minMultiplier,
+        FAMILY_RULES[family].maxWin,
+        `${family} celebrates a max win at the wrong figure`,
+      );
+    }
+  });
+
+  test('every family can actually reach its Max Win', () => {
+    // Second Chance stops at 585.2x. Against Classic's 1354.2x threshold its
+    // real ceiling - the rarest outcome in the mode - could only earn "Epic".
+    for (const family of MODE_FAMILIES) {
+      const maxWin = FAMILY_RULES[family].maxWin;
+      const tier = winTierFor(maxWin, true, tiersFor(family));
+      assert.equal(tier?.id, 'max', `${family} cannot reach its own Max Win`);
+    }
+  });
+
+  test('High Stakes does not call a non-maximum win a Max Win', () => {
+    // 1354.2x is Classic's ceiling and an ordinary large win on High Stakes,
+    // which pays up to 1910.2x. It must not be announced as a max win.
+    const tier = winTierFor(FAMILY_RULES.base.maxWin, false, tiersFor('hs'));
+    assert.equal(tier?.id, 'epic');
+  });
+
+  test('a family ladder stays ordered, so the count-up never runs backwards', () => {
+    for (const family of MODE_FAMILIES) {
+      const tiers = tiersFor(family);
+      for (let i = 1; i < tiers.length; i += 1) {
+        assert.ok(
+          tiers[i]!.minMultiplier > tiers[i - 1]!.minMultiplier,
+          `${family}: band ${tiers[i]!.id} does not sit above ${tiers[i - 1]!.id}`,
+        );
+      }
+    }
+  });
+
+  test('the count-up climbs to the family ceiling, not the base one', () => {
+    const tiers = tiersFor('hs');
+    const maxWin = FAMILY_RULES.hs.maxWin;
+    const segments = countUpSegments(maxWin, winTierFor(maxWin, true, tiers)!, tiers);
+    assert.equal(segments.at(-1)!.toMultiplier, maxWin);
+    // The leg below the top one must hand over at the same figure it starts.
+    const epicLeg = segments.find((seg) => seg.tier.id === 'epic')!;
+    assert.equal(epicLeg.toMultiplier, maxWin);
+  });
+
+  test('the default ladder is unchanged for callers naming no family', () => {
+    assert.deepEqual(winTiersFor(FAMILY_RULES.base.maxWin), WIN_TIERS);
+  });
+});
+
+describe('the full-game-win floor is per family', () => {
+  const SMALL_FULL_WIN = MIN_FULL_GAME_WIN_MULTIPLIER; // 6.6x, under the 10x entry tier
+
+  test('Classic and High Stakes celebrate any completed round', () => {
+    for (const family of ['base', 'hs'] as const) {
+      assert.equal(FAMILY_RULES[family].celebrateEveryFullWin, true);
+      const tier = winTierFor(
+        SMALL_FULL_WIN,
+        FAMILY_RULES[family].celebrateEveryFullWin,
+        winTiersFor(FAMILY_RULES[family].maxWin),
+      );
+      assert.equal(tier?.id, 'big', `${family} should celebrate a small full win`);
+    }
+  });
+
+  test('Second Chance does not, because forgiveness makes it the common case', () => {
+    assert.equal(FAMILY_RULES.sc.celebrateEveryFullWin, false);
+    const tier = winTierFor(
+      SMALL_FULL_WIN,
+      FAMILY_RULES.sc.celebrateEveryFullWin,
+      winTiersFor(FAMILY_RULES.sc.maxWin),
+    );
+    assert.equal(tier, null, 'a 6.6x Second Chance round should not take the screen over');
+  });
+
+  test('Second Chance still celebrates on size, at the same thresholds', () => {
+    // The floor is gone; the ladder is not. This is the half of the change that
+    // is easy to lose - suppressing the takeover entirely would mean a 1000x
+    // Second Chance round passed in silence.
+    const tiers = winTiersFor(FAMILY_RULES.sc.maxWin);
+    for (const [multiplier, expected] of [[10, 'big'], [40, 'huge'], [120, 'mega'], [300, 'epic']] as const) {
+      assert.equal(winTierFor(multiplier, false, tiers)?.id, expected);
+    }
+    assert.equal(winTierFor(FAMILY_RULES.sc.maxWin, false, tiers)?.id, 'max');
   });
 });

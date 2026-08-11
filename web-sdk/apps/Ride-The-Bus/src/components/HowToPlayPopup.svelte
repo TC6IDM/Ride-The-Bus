@@ -21,7 +21,7 @@
 	import { ranks } from '../game/roundContract';
 	// Derived from payout.ts rather than written out, so the paytable a player
 	// reads cannot drift from what the RGS credits - see payoutTable.ts.
-	import { payoutRowsFor } from '../game/payoutTable';
+	import { bustRowsFor, payoutRowsFor } from '../game/payoutTable';
 	import { FAMILY_BLURB, FAMILY_RULES, MODE_FAMILIES, type ModeFamily } from '../game/modes';
 	import gameConfig from '../game/config';
 	import { t } from '../i18n/i18nDerived';
@@ -40,7 +40,13 @@
 	type Props = { onclose: () => void; family?: ModeFamily };
 
 	const props: Props = $props();
-	const rows = $derived(payoutRowsFor(FAMILY_RULES[props.family ?? 'base']));
+	// Which mode's rules are on screen. Starts at the live one and is only
+	// changed by the tabs; the component is destroyed on close, so reopening
+	// always lands back on whatever the player is actually playing.
+	let viewing = $state<ModeFamily>(props.family ?? 'base');
+	const viewingRules = $derived(FAMILY_RULES[viewing]);
+	const rows = $derived(payoutRowsFor(viewingRules));
+	const bustRules = $derived(bustRowsFor(viewingRules));
 </script>
 
   <div class="popup popup-info" role="dialog" aria-label={t('How to play')}>
@@ -75,75 +81,91 @@
       <p>{t('With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.')}</p>
       <p>{t('Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.')}</p>
 
-      <!-- Approval requires payout amounts to be stated for every pick. There
-           is no fixed paytable to print - each stage pays its true odds against
-           the remaining deck - so what is stated is the full range each pick
-           can pay, generated from the same function the game pays out with. -->
-      <h4 class="info-h">{t('Payout table')} — {t(FAMILY_RULES[props.family ?? 'base'].label)}</h4>
-      <table class="pay-table">
-        <thead>
-          <tr>
-            <th scope="col">{t('Card')}</th>
-            <th scope="col">{t('Pick')}</th>
-            <th scope="col" class="num">{t('Pays')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each rows as row}
-            <tr>
-              <td class="pay-stage">{row.stage}</td>
-              <td>{t(row.label)}</td>
-              <td class="pay-amount">{payRange(row.min, row.max)}</td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
-      <p>{t('Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.')}</p>
+      <!-- ---- Game modes ------------------------------------------------
+           One switchable block rather than three sections each fixed to the
+           live mode. A player comparing modes should not have to close this,
+           change mode, and reopen it - and a reviewer checking that every mode
+           states its cost, ceiling and rules should not have to either.
 
-      <!-- Approval requires every mode's cost and what it buys to be stated
-           here, not only in the picker. The costs and blurbs are read from
-           FAMILY_RULES / FAMILY_BLURB, which the payout maths uses too, so this
-           table cannot advertise a mode the game does not actually deal. -->
+           `viewing` is local and starts at the live mode. The popup is inside
+           an {#if} in Game.svelte, so closing it destroys this component and
+           reopening builds a fresh one - which is what makes it snap back to
+           whatever the player is actually on, with no reset logic. -->
       <h4 class="info-h">{t('Game modes')}</h4>
-      <table class="pay-table pay-table-modes">
-        <thead>
-          <tr>
-            <th scope="col">{t('Mode')}</th>
-            <th scope="col" class="num">{t('Bet')}</th>
-            <th scope="col" class="num">{t('Max win')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each MODE_FAMILIES as family}
-            <tr>
-              <td>
-                <strong>{t(FAMILY_RULES[family].label)}</strong><br />
-                {t(FAMILY_BLURB[family])}
-              </td>
-              <td class="pay-amount">{FAMILY_RULES[family].cost}×</td>
-              <td class="pay-amount">{FAMILY_RULES[family].maxWin}×</td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
-      <p>{t('Both figures are multiples of your bet, not of what the round costs.')}</p>
+      <p>{t('Every mode costs 1× your bet.')}</p>
       <p>{t('Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.')}</p>
 
-      <h4 class="info-h">{t('If you guess wrong')}</h4>
-      <ul>
-        <li>{t('Card 1 — the round pays nothing.')}</li>
-        <li>{t('Card 2 — you get 0.5× your bet back.')}</li>
-        <li>{t('Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.')}</li>
-      </ul>
+      <div class="mode-tabs" role="tablist" aria-label={t('Game modes')}>
+        {#each MODE_FAMILIES as family}
+          <button
+            type="button"
+            role="tab"
+            class="mode-tab"
+            class:selected={viewing === family}
+            aria-selected={viewing === family}
+            onclick={() => (viewing = family)}
+          >
+            {t(FAMILY_RULES[family].label)}
+            {#if family === (props.family ?? 'base')}
+              <span class="mode-tab-live">{t('Playing')}</span>
+            {/if}
+          </button>
+        {/each}
+      </div>
 
-      <h4 class="info-h">{t('Full game wins')} — {t('Classic')}</h4>
-      <p>{t('Guess all four cards right and the payout depends on how hard your picks were:')}</p>
-      <ul>
-        <li>{t('No Equal picks — averages 17.3×, up to 317.4×.')}</li>
-        <li>{t('One Equal pick — averages 67.5×, up to 381.9×.')}</li>
-        <li>{t('Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.')}</li>
-      </ul>
-      <p>{t('Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.')}</p>
+      <div class="mode-panel">
+        <p class="mode-panel-blurb">{t(FAMILY_BLURB[viewing])}</p>
+        <p class="mode-panel-max">
+          {t('Max win')} <strong>{viewingRules.maxWin}×</strong> {t('Bet')}
+        </p>
+
+        <!-- Approval requires payout amounts stated for every pick. There is no
+             fixed paytable to print - each stage pays its true odds against the
+             remaining deck - so what is stated is the range each pick can pay,
+             generated from the same function the game pays out with. Retention
+             differs per mode, so every figure here moves with the tab. -->
+        <h5 class="info-sub">{t('Payout table')}</h5>
+        <table class="pay-table">
+          <thead>
+            <tr>
+              <th scope="col">{t('Card')}</th>
+              <th scope="col">{t('Pick')}</th>
+              <th scope="col" class="num">{t('Pays')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each rows as row}
+              <tr>
+                <td class="pay-stage">{row.stage}</td>
+                <td>{t(row.label)}</td>
+                <td class="pay-amount">{payRange(row.min, row.max)}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+        <p>{t('Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.')}</p>
+
+        <!-- Computed per mode. This was once a single fixed list saying both
+             "Card 2 - you get 0.5x your bet back" AND "you keep 30%", which
+             reads as a contradiction: both are true of Classic (30% of the
+             running total at card 2 IS 0.5x the bet) and only of Classic. -->
+        <h5 class="info-sub">{t('If you guess wrong')}</h5>
+        <ul>
+          {#each bustRules as row}
+            <li><strong>{t(row.label)}</strong> — {row.detail}</li>
+          {/each}
+        </ul>
+
+        <!-- The per-Equal-count averages this used to list were Classic's, from
+             an exhaustive enumeration of all 6,497,400 draws. They are wrong for
+             the other modes and cannot be re-derived cheaply per family, so what
+             is stated is the exact ceiling - which IS known exactly - and the
+             ordering, which holds everywhere. -->
+        <h5 class="info-sub">{t('Full game wins')}</h5>
+        <p>{t('Guess all four cards right and the payout depends on how hard your picks were:')}</p>
+        <p>{t('Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.')
+          .replace('%m', `${viewingRules.maxWin}×`)}</p>
+      </div>
 
       <h4 class="info-h">{t('Speed and autoplay')}</h4>
       <ul>

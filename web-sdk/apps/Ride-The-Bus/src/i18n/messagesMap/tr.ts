@@ -50,23 +50,27 @@ export default {
 	Forgiven: 'Affedildi',
 	'Game modes': 'Oyun modları',
 	'Max win': 'Maksimum kazanç',
-	'Both figures are multiples of your bet, not of what the round costs.':
-		'Her iki değer de turun maliyetinin değil, bahsinizin katıdır.',
+	'Every mode costs 1× your bet.': 'Her mod bahsinizin 1 katıdır.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Oyuncuya dönüş (RTP) her oyun modunda %s olup her mod çok sayıda turda aynı oranı döndürür. Bu oyunun ödeyebileceği en yüksek tutar, Yüksek Bahis modunda bahsinizin %m katıdır.',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
-		'İki Eşit seçimi — ortalama 1329,2×, en fazla 1354,2×, Klasik modun üst sınırı.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'İlk kartı bilememek turu bitirir. Sonraki hatalar biriktirdiğinizin %30 unu tutar.',
 	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
 		'Kart 1 turu yine bitirir. Sonrasında ilk yanlış tahmininiz affedilir ve oyun sürer.',
-	'Misses keep only 20%, so every correct guess is worth more.':
-		'Hatalar yalnızca %20 tuttuğu için her doğru tahmin daha değerlidir.',
 	'Skip card reveal on spacebar hold': 'Boşluk tuşunda kart açılışını atla',
 	'Skip the card reveal while the spacebar is held':
 		'Boşluk tuşuyla başlatılan turlarda kart açılışını atla',
 	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'Boşluk tuşunda kart açılışını atla (kaydırıcı düğmesi) boşluk tuşuyla başlatılan turları kart animasyonu olmadan oynar. Yalnızca animasyonu değiştirir; kartları, oranları veya ödemeyi asla değiştirmez.',
+	'Card 1': 'Kart 1',
+	'Your first wrong guess': 'İlk yanlış tahmininiz',
+	'Your second wrong guess': 'İkinci yanlış tahmininiz',
+	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
+		'Eşit en nadir tahmindir, bu yüzden ona dayanan turlar en büyük kazançları taşır ve en zorudur. İki Eşit tahminin birlikte tutması bu modun üst sınırıdır, bahsinizin %m katı.',
+	Playing: 'Oynanıyor',
+	'Card 2, 3 or 4': 'Kart 2, 3 veya 4',
+	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
+		'İlk kartı bilememek turu bitirir. Sonraki hatalar yalnızca %20 tutar, bu yüzden her doğru tahmin daha değerlidir.',
 	'Stop on full game win': 'Tam oyun kazancında durdur',
 
 	'How to Play': 'Nasıl oynanır',
@@ -97,19 +101,9 @@ export default {
 	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
 		'Her aşama bir öncekini çarpar, böylece dördü birleşerek turun nihai ödemesini oluşturur. Kartların yanında gösterilen toplam bir ondalık basamağa aşağı yuvarlanır, bu yüzden bu değerlerin biraz altında görünebilir.',
 	'If you guess wrong': 'Yanlış tahmin ederseniz',
-	'Card 1 — the round pays nothing.': '1. kart — tur hiçbir ödeme yapmaz.',
-	'Card 2 — you get 0.5× your bet back.': '2. kart — bahsinizin 0,5 katını geri alırsınız.',
-	'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.':
-		'3. veya 4. kart — o ana kadar biriktirdiğiniz çarpanın %30’u sizde kalır; bu 0,6× ile 129× arasında değişir.',
 	'Full game wins': 'Tam oyun kazançları',
 	'Guess all four cards right and the payout depends on how hard your picks were:':
 		'Dört kartı da doğru bilirseniz ödeme, seçimlerinizin ne kadar zor olduğuna bağlıdır:',
-	'No Equal picks — averages 17.3×, up to 317.4×.':
-		'Eşit seçilmediğinde — ortalama 17,3×, en fazla 317,4×.',
-	'One Equal pick — averages 67.5×, up to 381.9×.':
-		'Bir Eşit ile — ortalama 67,5×, en fazla 381,9×.',
-	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
-		'Eşit en nadir tahmindir; bu nedenle ona dayanan turlar en büyük kazançları taşır ve tutturması en zor olanlardır.',
 	'Speed and autoplay': 'Hız ve otomatik oyun',
 	'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.':
 		'Turbo (şimşek düğmesi) Normal’den Anında’ya kadar ayarlanır ve yalnızca kartların açılma hızını değiştirir. Kartları, olasılıkları veya ödemeyi asla değiştirmez.',
@@ -186,6 +180,8 @@ export default {
 	'Round details': 'Tur ayrıntıları',
 	'Play amount': 'Bahis tutarı',
 	Mode: 'Mod',
+	'Game mode': 'Oyun modu',
+	Guesses: 'Tahminler',
 	Event: 'Olay',
 	Payout: 'Ödeme',
 	Play: 'Oynat',

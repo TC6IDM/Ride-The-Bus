@@ -12,6 +12,32 @@ from typing import Dict
 from src.write_data.write_data import output_lookup_and_force_files
 
 
+def format_elapsed(seconds: float) -> str:
+    """
+    Human-readable duration: "38m 12s 480ms" rather than "2292.4801034927368".
+
+    A raw float of seconds is fine for a ten-second run and useless for a
+    forty-minute one - nobody divides 2292.48 by 60 in their head to find out
+    whether a build is getting slower. Leading zero units are dropped so a short
+    run stays short, and milliseconds are always shown because that is the part
+    a raw float was actually good at.
+    """
+    total_ms = int(round(seconds * 1000))
+    hours, rem = divmod(total_ms, 3_600_000)
+    minutes, rem = divmod(rem, 60_000)
+    secs, millis = divmod(rem, 1000)
+
+    parts = []
+    if hours:
+        parts.append(f"{hours}h")
+    if hours or minutes:
+        parts.append(f"{minutes}m")
+    if hours or minutes or secs:
+        parts.append(f"{secs}s")
+    parts.append(f"{millis}ms")
+    return " ".join(parts)
+
+
 def create_books(
     gamestate: object,
     config: object,
@@ -77,7 +103,7 @@ def create_books(
                 compress=compress,
             )
     shutil.rmtree(gamestate.output_files.temp_path)
-    print("\nFinished creating books in", time.time() - startTime, "seconds.\n")
+    print(f"\nFinished creating books in {format_elapsed(time.time() - startTime)}.\n")
 
 
 def get_sim_splits(gamestate: object, num_sims: int, betmode_name: str) -> Dict[str, int]:

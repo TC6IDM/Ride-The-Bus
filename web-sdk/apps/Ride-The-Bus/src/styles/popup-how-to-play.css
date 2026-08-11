@@ -90,24 +90,85 @@
 	text-align: right;
 }
 
-/* Two narrow numeric columns beside one wide prose column. The shared fixed
-   layout splits the width evenly, which strands the mode descriptions in a
-   third of the table while the cost column carries "2x". */
-.pay-table-modes {
-	table-layout: auto;
+/* ---- Mode tabs ----------------------------------------------------------
+   Three buttons that switch which mode's rules are shown, so a player can
+   compare without closing this and changing mode. Wrap rather than shrink: the
+   translated labels run much longer than the English, and three squeezed
+   buttons are worse than two rows of readable ones. */
+.mode-tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: calc(var(--ui-bar) * 0.45);
+	margin: calc(var(--ui-bar) * 0.8) 0;
 }
 
-.pay-table-modes th.num,
-.pay-table-modes .pay-amount {
-	width: calc(var(--ui-bar) * 7);
-	white-space: nowrap;
+.mode-tab {
+	flex: 1 1 auto;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: calc(var(--ui-bar) * 0.18);
+	padding: calc(var(--ui-bar) * 0.73) calc(var(--ui-bar) * 0.9);
+	border-radius: calc(var(--ui-bar) * 0.64);
+	border: 1px solid rgba(255, 255, 255, 0.14);
+	background: rgba(255, 255, 255, 0.05);
+	color: #cfe0f0;
+	font-size: calc(var(--ui-bar) * 1.09);
+	font-weight: 700;
+	cursor: pointer;
+	text-transform: none;
+	transition: border-color 0.12s, background 0.12s, color 0.12s;
 }
 
-/* The mode name and its description share a cell; the description is the
-   quieter half. */
-.pay-table-modes td strong {
+.mode-tab:hover { border-color: #4c9ffe; color: #fff; }
+
+.mode-tab.selected {
+	border-color: #2f8fff;
+	background: rgba(47, 143, 255, 0.2);
 	color: #fff;
+}
+
+/* Marks the mode actually in play, so switching tabs to read another mode's
+   rules cannot be mistaken for having changed mode. */
+.mode-tab-live {
+	font-size: calc(var(--ui-bar) * 0.82);
 	font-weight: 800;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: #f5d78c;
+}
+
+/* The panel the tabs drive. Bordered so it reads as one switchable unit
+   rather than three loose sections that happen to follow the buttons. */
+.mode-panel {
+	padding: calc(var(--ui-bar) * 0.9) calc(var(--ui-bar) * 1.09);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: calc(var(--ui-bar) * 0.73);
+	background: rgba(255, 255, 255, 0.03);
+}
+
+.mode-panel-blurb { color: #cfe0f0; }
+
+.mode-panel-max {
+	font-size: calc(var(--ui-bar) * 1.16);
+	color: #cfe0f0;
+}
+
+.mode-panel-max strong {
+	color: #4c9ffe;
+	font-weight: 800;
+	font-variant-numeric: tabular-nums;
+}
+
+/* Sub-heading inside the mode panel. Quieter than .info-h, which marks the
+   screen's top-level sections - these sit one level down, inside one of them. */
+.info-sub {
+	margin: calc(var(--ui-bar) * 1) 0 calc(var(--ui-bar) * 0.27);
+	font-size: calc(var(--ui-bar) * 1.05);
+	font-weight: 800;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: #93a4b5;
 }
 
 .pay-table th {

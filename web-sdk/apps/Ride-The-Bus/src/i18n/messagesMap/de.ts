@@ -50,23 +50,27 @@ export default {
 	Forgiven: 'Verziehen',
 	'Game modes': 'Spielmodi',
 	'Max win': 'Maximalgewinn',
-	'Both figures are multiples of your bet, not of what the round costs.':
-		'Beide Werte sind Vielfache deines Einsatzes, nicht der Rundenkosten.',
+	'Every mode costs 1× your bet.': 'Jeder Modus kostet 1× deinen Einsatz.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Die Auszahlungsquote (RTP) beträgt %s in jedem Spielmodus, und jeder Modus gibt diesen Wert über viele Runden zurück. Am meisten kann dieses Spiel %m deines Einsatzes auszahlen, im Modus Hoher Einsatz.',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
-		'Zwei Gleich-Tipps — im Schnitt 1329,2×, bis zu 1354,2×, das Maximum im Klassisch-Modus.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'Eine falsche erste Karte beendet die Runde. Spätere Fehler behalten 30% des Aufgebauten.',
 	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
 		'Karte 1 beendet die Runde weiterhin. Danach wird dein erster Fehler verziehen und es geht weiter.',
-	'Misses keep only 20%, so every correct guess is worth more.':
-		'Fehler behalten nur 20%, dadurch ist jeder richtige Tipp mehr wert.',
 	'Skip card reveal on spacebar hold': 'Kartenaufdeckung bei Leertaste überspringen',
 	'Skip the card reveal while the spacebar is held':
 		'Die Kartenaufdeckung bei Runden überspringen, die mit der Leertaste gestartet wurden',
 	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'Kartenaufdeckung bei Leertaste überspringen (die Schieberegler-Taste) spielt mit der Leertaste gestartete Runden ohne die Kartenanimation. Das ändert nur die Animation, nie die Karten, die Chancen oder die Auszahlung.',
+	'Card 1': 'Karte 1',
+	'Your first wrong guess': 'Dein erster Fehler',
+	'Your second wrong guess': 'Dein zweiter Fehler',
+	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
+		'Gleich ist der seltenste Tipp, also tragen die darauf gebauten Runden die größten Gewinne — und sind am schwersten zu treffen. Zwei Gleich-Tipps zusammen sind das Maximum dieses Modus, bei %m deines Einsatzes.',
+	Playing: 'Aktiv',
+	'Card 2, 3 or 4': 'Karte 2, 3 oder 4',
+	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
+		'Eine falsche erste Karte beendet die Runde. Spätere Fehler behalten nur 20%, dadurch ist jeder richtige Tipp mehr wert.',
 	'Stop on full game win': 'Bei Komplettgewinn stoppen',
 
 	'How to Play': 'Spielanleitung',
@@ -97,20 +101,9 @@ export default {
 	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
 		'Jede Stufe multipliziert die vorherige, sodass die vier zusammen die Endauszahlung der Runde ergeben. Der neben den Karten angezeigte Zwischenstand wird auf eine Nachkommastelle abgerundet und kann daher etwas unter diesen Werten liegen.',
 	'If you guess wrong': 'Wenn du falsch tippst',
-	'Card 1 — the round pays nothing.': 'Karte 1 — die Runde zahlt nichts.',
-	'Card 2 — you get 0.5× your bet back.':
-		'Karte 2 — du erhältst das 0,5-Fache deines Einsatzes zurück.',
-	'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.':
-		'Karte 3 oder 4 — du behältst 30 % des bis dahin aufgebauten Multiplikators, was zwischen 0,6× und 129× liegt.',
 	'Full game wins': 'Komplettgewinne',
 	'Guess all four cards right and the payout depends on how hard your picks were:':
 		'Errätst du alle vier Karten, hängt die Auszahlung davon ab, wie schwer deine Tipps waren:',
-	'No Equal picks — averages 17.3×, up to 317.4×.':
-		'Kein Gleich-Tipp — im Schnitt 17,3×, bis zu 317,4×.',
-	'One Equal pick — averages 67.5×, up to 381.9×.':
-		'Ein Gleich-Tipp — im Schnitt 67,5×, bis zu 381,9×.',
-	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
-		'Gleich ist der seltenste Tipp, deshalb bringen darauf aufgebaute Runden die größten Gewinne — und sind am schwersten zu treffen.',
 	'Speed and autoplay': 'Geschwindigkeit und Autoplay',
 	'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.':
 		'Turbo (die Blitz-Schaltfläche) reicht von Normal bis Sofort und ändert nur, wie schnell die Karten umgedreht werden. Karten, Chancen und Auszahlung bleiben davon unberührt.',
@@ -189,6 +182,8 @@ export default {
 	'Round details': 'Rundendetails',
 	'Play amount': 'Einsatz',
 	Mode: 'Modus',
+	'Game mode': 'Spielmodus',
+	Guesses: 'Tipps',
 	Event: 'Ereignis',
 	Payout: 'Auszahlung',
 	Play: 'Abspielen',

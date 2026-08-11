@@ -51,23 +51,27 @@ export default {
 	Forgiven: 'مُتسامَح عنها',
 	'Game modes': 'أوضاع اللعبة',
 	'Max win': 'أقصى ربح',
-	'Both figures are multiples of your bet, not of what the round costs.':
-		'كلا الرقمين مضاعفات لرهانك، وليس لتكلفة الجولة.',
+	'Every mode costs 1× your bet.': 'كل وضع يكلّف 1× من رهانك.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'نسبة العائد للاعب (RTP) هي %s في كل أوضاع اللعبة، ويعيد كل وضع النسبة نفسها على مدى جولات كثيرة. وأقصى ما يمكن أن تدفعه هذه اللعبة هو %m من رهانك، في وضع الرهانات العالية.',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
-		'اختياران متساويان — بمتوسط 1329.2×، وحتى 1354.2×، وهو أقصى ما يدفعه الوضع الكلاسيكي.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'خطأ في البطاقة الأولى ينهي الجولة. الأخطاء اللاحقة تحتفظ بنسبة 30% مما جمعته.',
 	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
 		'البطاقة الأولى ما زالت تنهي الجولة. بعدها يُسامَح أول تخمين خاطئ ويستمر اللعب.',
-	'Misses keep only 20%, so every correct guess is worth more.':
-		'الأخطاء تحتفظ بنسبة 20% فقط، لذا تصبح كل تخمينة صحيحة أثمن.',
 	'Skip card reveal on spacebar hold': 'تخطي كشف البطاقات بمفتاح المسافة',
 	'Skip the card reveal while the spacebar is held':
 		'تخطي كشف البطاقات في الجولات التي تبدأ بمفتاح المسافة',
 	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'تخطي كشف البطاقات بمفتاح المسافة (زر المؤشرات) يشغّل الجولات التي تبدأ بمفتاح المسافة بدون حركة البطاقات. يغيّر الحركة فقط، ولا يمس البطاقات أو الاحتمالات أو الأرباح.',
+	'Card 1': 'البطاقة 1',
+	'Your first wrong guess': 'أول تخمين خاطئ لك',
+	'Your second wrong guess': 'ثاني تخمين خاطئ لك',
+	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
+		'الاختيار "متساوٍ" هو الأندر، لذا تحمل الجولات المبنية عليه أكبر الأرباح — وهي الأصعب. وتحقيق اختيارين متساويين معًا هو أقصى ما يدفعه هذا الوضع، عند %m من رهانك.',
+	Playing: 'قيد اللعب',
+	'Card 2, 3 or 4': 'البطاقة 2 أو 3 أو 4',
+	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
+		'خطأ في البطاقة الأولى ينهي الجولة. والأخطاء اللاحقة تحتفظ بنسبة 20% فقط، لذا تصبح كل تخمينة صحيحة أثمن.',
 	'Stop on full game win': 'التوقف عند الفوز الكامل',
 
 	'How to Play': 'كيفية اللعب',
@@ -98,19 +102,9 @@ export default {
 	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
 		'كل مرحلة تضاعف ما قبلها، لذا تتجمع الأربع معًا في الأرباح النهائية للجولة. ويُقرَّب الإجمالي الظاهر بجانب البطاقات إلى منزلة عشرية واحدة للأسفل، لذا قد يظهر أقل قليلًا من هذه الأرقام.',
 	'If you guess wrong': 'إذا خمّنت خطأ',
-	'Card 1 — the round pays nothing.': 'البطاقة الأولى — الجولة لا تدفع شيئًا.',
-	'Card 2 — you get 0.5× your bet back.': 'البطاقة الثانية — تسترد 0.5× من رهانك.',
-	'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.':
-		'البطاقة الثالثة أو الرابعة — تحتفظ بـ30٪ من المضاعف الذي بنيته، ويتراوح ذلك بين 0.6× و129×.',
 	'Full game wins': 'الفوز الكامل',
 	'Guess all four cards right and the payout depends on how hard your picks were:':
 		'إذا خمّنت البطاقات الأربع بشكل صحيح، فإن المكافأة تعتمد على مدى صعوبة اختياراتك:',
-	'No Equal picks — averages 17.3×, up to 317.4×.':
-		'بدون اختيار «متساوٍ» — بمتوسط 17.3×، وحتى 317.4×.',
-	'One Equal pick — averages 67.5×, up to 381.9×.':
-		'اختيار «متساوٍ» واحد — بمتوسط 67.5×، وحتى 381.9×.',
-	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
-		'«متساوٍ» هو أندر التخمينات، لذا تحمل الجولات المبنية عليه أكبر الأرباح — وهي الأصعب تحقيقًا.',
 	'Speed and autoplay': 'السرعة واللعب التلقائي',
 	'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.':
 		'التيربو (زر البرق) يتدرج من عادي إلى فوري ويغيّر سرعة قلب البطاقات فقط. وهو لا يغيّر البطاقات ولا الاحتمالات ولا المكافأة أبدًا.',
@@ -187,6 +181,8 @@ export default {
 	'Round details': 'تفاصيل الجولة',
 	'Play amount': 'مبلغ الرهان',
 	Mode: 'الوضع',
+	'Game mode': 'وضع اللعبة',
+	Guesses: 'التخمينات',
 	Event: 'الحدث',
 	Payout: 'العائد',
 	Play: 'تشغيل',

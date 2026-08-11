@@ -50,23 +50,27 @@ export default {
 	Forgiven: 'Được bỏ qua',
 	'Game modes': 'Chế độ chơi',
 	'Max win': 'Thắng tối đa',
-	'Both figures are multiples of your bet, not of what the round costs.':
-		'Cả hai con số đều là bội số của tiền cược, không phải chi phí vòng chơi.',
+	'Every mode costs 1× your bet.': 'Mỗi chế độ có giá 1× tiền cược của bạn.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Tỷ lệ trả thưởng (RTP) là %s ở mọi chế độ, và mỗi chế độ đều trả về cùng con số đó qua nhiều vòng. Mức trả thưởng cao nhất của trò chơi là %m tiền cược của bạn, ở chế độ Cược lớn.',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
-		'Hai lựa chọn Bằng — trung bình 1329,2×, tối đa 1354,2×, mức cao nhất của Cổ điển.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'Sai lá bài đầu tiên là kết thúc vòng. Các lần sai sau giữ lại 30% số đã tích lũy.',
 	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
 		'Lá 1 vẫn kết thúc vòng. Sau đó lần đoán sai đầu tiên được bỏ qua và trò chơi tiếp tục.',
-	'Misses keep only 20%, so every correct guess is worth more.':
-		'Sai chỉ giữ lại 20%, nên mỗi lần đoán đúng có giá trị hơn.',
 	'Skip card reveal on spacebar hold': 'Bỏ qua phần lật bài khi dùng phím cách',
 	'Skip the card reveal while the spacebar is held':
 		'Bỏ qua phần lật bài ở các vòng bắt đầu bằng phím cách',
 	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'Bỏ qua phần lật bài khi dùng phím cách (nút thanh trượt) chơi các vòng bắt đầu bằng phím cách mà không có hoạt ảnh lật bài. Nó chỉ thay đổi hoạt ảnh, không bao giờ thay đổi lá bài, tỷ lệ hay mức trả thưởng.',
+	'Card 1': 'Lá 1',
+	'Your first wrong guess': 'Lần đoán sai đầu tiên',
+	'Your second wrong guess': 'Lần đoán sai thứ hai',
+	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
+		'Bằng là lựa chọn hiếm nhất, nên các vòng dựa vào nó mang lại phần thắng lớn nhất — và khó nhất. Hai lựa chọn Bằng cùng trúng là mức cao nhất của chế độ này, ở %m tiền cược của bạn.',
+	Playing: 'Đang chơi',
+	'Card 2, 3 or 4': 'Lá 2, 3 hoặc 4',
+	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
+		'Sai lá bài đầu tiên là kết thúc vòng. Các lần sai sau chỉ giữ lại 20%, nên mỗi lần đoán đúng có giá trị hơn.',
 	'Stop on full game win': 'Dừng khi thắng toàn ván',
 
 	'How to Play': 'Cách chơi',
@@ -97,19 +101,9 @@ export default {
 	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
 		'Mỗi chặng nhân với chặng trước đó, nên cả bốn kết hợp thành mức trả thưởng cuối cùng của vòng. Tổng lũy kế hiển thị bên cạnh các lá bài được làm tròn xuống một chữ số thập phân, nên có thể thấp hơn các con số này một chút.',
 	'If you guess wrong': 'Nếu bạn đoán sai',
-	'Card 1 — the round pays nothing.': 'Lá 1 — vòng chơi không trả gì.',
-	'Card 2 — you get 0.5× your bet back.': 'Lá 2 — bạn nhận lại 0,5× tiền cược.',
-	'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.':
-		'Lá 3 hoặc 4 — bạn giữ 30 % hệ số đã tích lũy, dao động từ 0,6× đến 129×.',
 	'Full game wins': 'Thắng toàn ván',
 	'Guess all four cards right and the payout depends on how hard your picks were:':
 		'Nếu đoán đúng cả bốn lá, tiền thưởng phụ thuộc vào độ khó của các lựa chọn:',
-	'No Equal picks — averages 17.3×, up to 317.4×.':
-		'Không chọn Bằng nhau — trung bình 17,3×, tối đa 317,4×.',
-	'One Equal pick — averages 67.5×, up to 381.9×.':
-		'Một lần Bằng nhau — trung bình 67,5×, tối đa 381,9×.',
-	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
-		'Bằng nhau là dự đoán hiếm gặp nhất, nên các vòng dựa vào nó mang lại tiền thắng lớn nhất — và cũng khó đạt nhất.',
 	'Speed and autoplay': 'Tốc độ và tự động chơi',
 	'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.':
 		'Turbo (nút tia chớp) điều chỉnh từ Bình thường đến Tức thì và chỉ thay đổi tốc độ lật bài. Nó không bao giờ thay đổi lá bài, xác suất hay tiền thưởng.',
@@ -188,6 +182,8 @@ export default {
 	'Round details': 'Chi tiết vòng chơi',
 	'Play amount': 'Số tiền cược',
 	Mode: 'Chế độ',
+	'Game mode': 'Chế độ chơi',
+	Guesses: 'Dự đoán',
 	Event: 'Sự kiện',
 	Payout: 'Tiền thưởng',
 	Play: 'Phát',

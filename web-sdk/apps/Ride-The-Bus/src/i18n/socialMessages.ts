@@ -64,19 +64,9 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
 		'Every correct guess wins at its true odds, so the less likely your pick, the more it wins — and that depends on the cards already showing.',
 	'If you guess wrong': 'If you guess wrong',
-	'Card 1 — the round pays nothing.': 'Card 1 — the round wins nothing.',
-	'Card 2 — you get 0.5× your bet back.': 'Card 2 — you get 0.5× of your play amount back.',
-	'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.':
-		'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.',
 	'Full game wins': 'Full game wins',
 	'Guess all four cards right and the payout depends on how hard your picks were:':
 		'Guess all four cards right and the winnings depend on how hard your picks were:',
-	'No Equal picks — averages 17.3×, up to 317.4×.':
-		'No Equal picks — averages 17.3×, up to 317.4×.',
-	'One Equal pick — averages 67.5×, up to 381.9×.':
-		'One Equal pick — averages 67.5×, up to 381.9×.',
-	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
-		'Equal is the rarest guess, so the rounds built on it carry the largest winnings — and are the hardest to land.',
 
 	// Speed and autoplay
 	'Speed and autoplay': 'Speed and auto play',
@@ -118,14 +108,13 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 	// is a guard against the obvious cases, not a substitute for reading the
 	// copy - a US reviewer is looking at the words, not the regex.
 	'High Stakes': 'High Risk',
+	'Every mode costs 1× your bet.': 'Every mode costs 1× your play amount.',
+	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
+		'Equal is the rarest guess, so the rounds built on it carry the largest winnings — and are the hardest to land. Two Equal picks landing together is the most this mode can win, at %m your play amount.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'A wrong first card ends the round. Later misses keep 30% of what you had built.',
-	'Both figures are multiples of your bet, not of what the round costs.':
-		'Both figures are multiples of your play amount, not of what the round costs.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can win is %m your play amount, on High Risk.',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
-		'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can win.',
 	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
 		'Every mode returns the same 96.00% over many rounds. What changes is how often a round wins and how much it can win.',
 

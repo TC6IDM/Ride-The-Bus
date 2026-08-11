@@ -50,23 +50,27 @@ export default {
 	Forgiven: 'Perdonado',
 	'Game modes': 'Modos de juego',
 	'Max win': 'Ganancia máxima',
-	'Both figures are multiples of your bet, not of what the round costs.':
-		'Ambas cifras son múltiplos de tu apuesta, no de lo que cuesta la ronda.',
+	'Every mode costs 1× your bet.': 'Cada modo cuesta 1× tu apuesta.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'El retorno al jugador (RTP) es del %s en todos los modos, y cada uno devuelve esa misma cifra a lo largo de muchas rondas. Lo máximo que puede pagar este juego es %m tu apuesta, en Apuesta alta.',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
-		'Dos elecciones Igual: promedia 1329,2×, hasta 1354,2×, lo máximo que paga el modo Clásico.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'Fallar la primera carta termina la ronda. Los fallos posteriores conservan el 30% de lo acumulado.',
 	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
 		'La carta 1 sigue terminando la ronda. Después, tu primer fallo se perdona y el juego continúa.',
-	'Misses keep only 20%, so every correct guess is worth more.':
-		'Los fallos conservan solo el 20%, así que cada acierto vale más.',
 	'Skip card reveal on spacebar hold': 'Omitir el reparto con la barra espaciadora',
 	'Skip the card reveal while the spacebar is held':
 		'Omitir el reparto de cartas en rondas iniciadas con la barra espaciadora',
 	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'Omitir el reparto con la barra espaciadora (el botón de controles) juega las rondas iniciadas con la barra sin la animación de las cartas. Solo cambia la animación, nunca las cartas, las probabilidades ni el pago.',
+	'Card 1': 'Carta 1',
+	'Your first wrong guess': 'Tu primer fallo',
+	'Your second wrong guess': 'Tu segundo fallo',
+	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
+		'Igual es la elección más rara, así que las rondas basadas en ella traen las mayores ganancias — y son las más difíciles. Dos aciertos Igual juntos es lo máximo que paga este modo, con %m tu apuesta.',
+	Playing: 'En juego',
+	'Card 2, 3 or 4': 'Carta 2, 3 o 4',
+	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
+		'Fallar la primera carta termina la ronda. Los fallos posteriores conservan solo el 20%, así que cada acierto vale más.',
 	'Stop on full game win': 'Parar al ganar el juego completo',
 
 	'How to Play': 'Cómo jugar',
@@ -97,18 +101,9 @@ export default {
 	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
 		'Cada etapa multiplica la anterior, así que las cuatro se combinan en el pago final de la ronda. El total mostrado junto a las cartas se redondea hacia abajo a un decimal, por lo que puede quedar algo por debajo de estas cifras.',
 	'If you guess wrong': 'Si fallas',
-	'Card 1 — the round pays nothing.': 'Carta 1 — la ronda no paga nada.',
-	'Card 2 — you get 0.5× your bet back.': 'Carta 2 — recuperas 0,5× tu apuesta.',
-	'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.':
-		'Carta 3 o 4 — conservas el 30 % del multiplicador acumulado, que va de 0,6× a 129×.',
 	'Full game wins': 'Juegos completos',
 	'Guess all four cards right and the payout depends on how hard your picks were:':
 		'Si aciertas las cuatro cartas, el pago depende de lo difíciles que fueran tus elecciones:',
-	'No Equal picks — averages 17.3×, up to 317.4×.':
-		'Sin elegir Igual — promedia 17,3×, hasta 317,4×.',
-	'One Equal pick — averages 67.5×, up to 381.9×.': 'Con un Igual — promedia 67,5×, hasta 381,9×.',
-	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
-		'Igual es la predicción más rara, así que las rondas basadas en ella dan las mayores ganancias — y son las más difíciles de acertar.',
 	'Speed and autoplay': 'Velocidad y juego automático',
 	'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.':
 		'Turbo (el botón del rayo) va de Normal a Instantáneo y solo cambia la rapidez con que se voltean las cartas. Nunca cambia las cartas, las probabilidades ni el pago.',
@@ -186,6 +181,8 @@ export default {
 	'Round details': 'Detalles de la ronda',
 	'Play amount': 'Importe de la apuesta',
 	Mode: 'Modo',
+	'Game mode': 'Modo de juego',
+	Guesses: 'Apuestas',
 	Event: 'Evento',
 	Payout: 'Pago',
 	Play: 'Reproducir',

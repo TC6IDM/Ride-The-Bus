@@ -3,7 +3,12 @@
 	import { numberToCurrencyString } from 'utils-shared/amount';
 	import { t } from '../i18n/i18nDerived';
 	import gameConfig from '../game/config';
+	import { FAMILY_RULES, MODE_FAMILIES, familyOf, parseModeName } from '../game/modes';
 	import ChoiceIcon from './ChoiceIcon.svelte';
+
+	/** The biggest figure any mode can pay - High Stakes', at the time of
+	 *  writing. Derived so it cannot drift from the maths. */
+	const maxWinOverall = Math.max(...MODE_FAMILIES.map((f) => FAMILY_RULES[f].maxWin));
 	import SuitIcon from './SuitIcon.svelte';
 
 	/**
@@ -114,16 +119,41 @@
 	const props: Props = $props();
 
 	/** Turn a mode name like "red_higher_inside_heart" into a list of {label, cssClass} badges. */
+	/**
+	 * The four guesses a replayed round was placed on, as badges.
+	 *
+	 * Parsed through parseModeName so the family prefix comes off first. The old
+	 * version split on "_" and bailed unless it found exactly four parts, which
+	 * every Second Chance and High Stakes mode fails - "sc_red_higher_equal_spade"
+	 * has five - so those rounds printed the raw slug instead of their picks.
+	 *
+	 * Labels are title-cased English, which is also the i18n key: the choice
+	 * words are already translated for the board's own controls, so they are
+	 * looked up rather than shown as the lowercase identifiers they are on the
+	 * wire.
+	 */
+	const CHOICE_LABEL = {
+		red: 'Red', black: 'Black',
+		higher: 'Higher', lower: 'Lower',
+		inside: 'Inside', outside: 'Outside', equal: 'Equal',
+		heart: 'Heart', diamond: 'Diamond', club: 'Club', spade: 'Spade',
+	} as const;
+
 	function modeBadges(mode: string): { label: string; cssClass: string }[] {
-		const parts = mode.split('_');
-		if (parts.length !== 4) return [{ label: mode, cssClass: '' }];
-		const [color, hl, io, suit] = parts;
+		const parsed = parseModeName(mode);
+		if (!parsed) return [{ label: mode, cssClass: '' }];
+		const { color, higherLower, insideOutside, suit } = parsed;
 		return [
-			{ label: color, cssClass: `color-${color}` },
-			{ label: hl, cssClass: `choice-${hl}` },
-			{ label: io, cssClass: `choice-${io}` },
-			{ label: suit, cssClass: `suit-${suit}` },
+			{ label: t(CHOICE_LABEL[color]), cssClass: `color-${color}` },
+			{ label: t(CHOICE_LABEL[higherLower]), cssClass: `choice-${higherLower}` },
+			{ label: t(CHOICE_LABEL[insideOutside]), cssClass: `choice-${insideOutside}` },
+			{ label: t(CHOICE_LABEL[suit]), cssClass: `suit-${suit}` },
 		];
+	}
+
+	/** Which of the three modes the replayed round was played on. */
+	function modeFamilyLabel(mode: string): string {
+		return t(FAMILY_RULES[parseModeName(mode)?.family ?? familyOf(mode)].label);
 	}
 </script>
 
@@ -313,7 +343,11 @@
 					<span class="ss-stat-cap">{t('RTP')}</span>
 				</div>
 				<div class="ss-stat">
-					<span class="ss-stat-val">1,354.2×</span>
+					<!-- The biggest figure ANY mode can reach, from FAMILY_RULES rather
+					     than typed out. It read 1,354.2x - Classic's ceiling - on a
+					     screen shown before a mode is chosen, so it understated the
+					     game by the whole of High Stakes. -->
+					<span class="ss-stat-val">{maxWinOverall.toLocaleString()}×</span>
 					<span class="ss-stat-cap">{t('Max Win')}</span>
 				</div>
 			</div>
@@ -347,7 +381,12 @@
 				</div>
 
 				<div class="ss-detail-row">
-					<span class="ss-detail-cap">{t('Mode')}</span>
+					<span class="ss-detail-cap">{t('Game mode')}</span>
+					<span class="ss-detail-val">{modeFamilyLabel(props.mode)}</span>
+				</div>
+
+				<div class="ss-detail-row">
+					<span class="ss-detail-cap">{t('Guesses')}</span>
 					<span class="ss-choices">
 						{#each modeBadges(props.mode) as badge}
 							<span class="ss-choice-badge {badge.cssClass}">{badge.label}</span>

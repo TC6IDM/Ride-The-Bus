@@ -168,7 +168,8 @@ describe('parity with the published books', () => {
     const mismatches: string[] = [];
 
     // A slice of every mode - enough to catch a formula change, fast enough
-    // to stay a unit test (all 64 modes x 215k rounds is a build-time job).
+    // to stay a unit test (all 192 modes x their full book counts is a
+    // build-time job).
     for (const file of files) {
       // books_<mode>.jsonl.zst - the mode name carries its family prefix, and
       // the family decides retention, forgiveness and the cost the multiplier
@@ -184,7 +185,18 @@ describe('parity with the published books', () => {
         const want = book.payoutMultiplier / 100;
         if (Math.abs(got - want) > 1e-9) {
           if (mismatches.length < 5) {
-            mismatches.push(`${file} id=${book.id}: client ${got} vs book ${want}`);
+            // A book that stops exactly at a round number while the client
+            // computes more is the signature of the win cap clipping it:
+            // events.py pays min(win, config.wincap), and run_sims loads that
+            // from the mode's declared max_win. Saying so turns a puzzling
+            // mismatch into a diagnosis - this is how High Stakes was caught
+            // being clipped to 1400x when it reaches 3820.5x.
+            const clipped = got > want && Number.isInteger(want) && want % 100 === 0;
+            const hint = clipped
+              ? ` - book stops at a round ${want}, which looks like the wincap for` +
+                ` this family clipping it; check MODE_FAMILIES wincap and rebuild`
+              : '';
+            mismatches.push(`${file} id=${book.id}: client ${got} vs book ${want}${hint}`);
           }
         }
         checked += 1;
@@ -228,8 +240,8 @@ describe('mode families', () => {
 
   test('each family reaches the ceiling its design was chosen for', () => {
     assert.equal(maxWinFor('base'), 1354.2);
-    assert.equal(maxWinFor('sc'), 1170.4);
-    assert.equal(maxWinFor('hs'), 3820.5);
+    assert.equal(maxWinFor('sc'), 585.2);
+    assert.equal(maxWinFor('hs'), 1910.2);
   });
 
   test('the advertised max win is the one the maths reaches', () => {
@@ -292,8 +304,8 @@ describe('mode families', () => {
       { correct: true, payout: 3 },
       { correct: true, payout: 4 },
     ];
-    // sc: 1 * 2 * 0.5 (forgiven) * 3 * 4 = 12, doubled by the 2x cost.
-    assert.equal(computeFinalMultiplier(stages, FAMILY_RULES.sc), 24);
+    // sc: 1 * 2 * 0.5 (forgiven) * 3 * 4 = 12, and every family costs 1x.
+    assert.equal(computeFinalMultiplier(stages, FAMILY_RULES.sc), 12);
     // base: busts, keeping 0.3 and the decay for the two stages never played.
     const base = computeFinalMultiplier(stages, FAMILY_RULES.base);
     assert.ok(base > 0 && base < 1, `base should bank a fraction, got ${base}`);
@@ -308,7 +320,7 @@ describe('mode families', () => {
     ];
     // The stage-4 payout must never be applied - the round ended at stage 3.
     const got = computeFinalMultiplier(stages, FAMILY_RULES.sc);
-    assert.ok(got < 24, `forgiveness must only apply once, got ${got}`);
+    assert.ok(got < 12, `forgiveness must only apply once, got ${got}`);
   });
 
   test('forgiveness is offered from card 2 and only once', () => {

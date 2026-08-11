@@ -141,28 +141,73 @@ export function payoutRowsFor(rules: FamilyRules = FAMILY_RULES.base): PayoutRow
 /** The Classic table, kept for callers that predate the mode families. */
 export const PAYOUT_ROWS: readonly PayoutRow[] = payoutRowsFor(FAMILY_RULES.base);
 
+/* FULL_WIN_ROWS used to live here: a three-row breakdown of what a full win
+   pays by how many Equal picks it used (17.3x / 67.5x / 1329.2x average, topping
+   out at 1354.2x). It was removed rather than made per-family because nothing
+   renders it any more - How to Play states each family's ceiling from
+   FAMILY_RULES.maxWin - and as BASE-ONLY figures sitting next to a per-family
+   panel it was a trap: the obvious way to use it would have shown Classic's
+   numbers on all three modes, which is the same bug winTiersFor exists to fix.
+   Recover it from git history if the breakdown is ever wanted back, per family. */
+
 /**
- * What a full four-stage win pays, by how many Equal picks it used.
+ * What a wrong guess costs, for one mode family.
  *
- * Measured by exhaustive enumeration of all 6,497,400 ordered four-card draws
- * against payout.ts - the same figures the win-tier design was built on. Stated
- * as data so the rules and the tests quote one source.
+ * Per family and computed, because the answer genuinely differs and used to be
+ * stated as though it did not. The old fixed list said "Card 2 - you get 0.5x
+ * your bet back" AND "you keep 30%", which reads as a contradiction: both are
+ * true of Classic (30% of the running total at card 2 happens to be 0.5x the
+ * bet) but only of Classic. High Stakes keeps 20%, and Second Chance forgives
+ * the first miss entirely.
+ *
+ * The card-2 figure is derived rather than typed. The running multiplier
+ * entering stage 1 is always the colour pick, which is always 26 of 52, so the
+ * value is fixed per family and can be quoted exactly.
  */
-export type WinFamilyRow = {
-	label: string;
-	average: number;
-	max: number;
+export type BustRow = {
+	/** English text, which is also the i18n key. */
+	label: 'Card 1' | 'Card 2, 3 or 4' | 'Your first wrong guess' | 'Your second wrong guess';
+	/** Already-substituted sentence; the caller renders it as-is. */
+	detail: string;
 };
 
-export const FULL_WIN_ROWS: readonly WinFamilyRow[] = [
-	{ label: 'No Equal picks', average: 17.3, max: 317.4 },
-	{ label: 'One Equal pick', average: 67.5, max: 381.9 },
-	{ label: 'Two Equal picks', average: 1329.2, max: 1354.2 },
-] as const;
+/**
+ * ONE UNIT PER RULE, which is why every row below speaks in percent.
+ *
+ * The retention is a share of the RUNNING MULTIPLIER. A bet multiple is a
+ * different quantity, and listing "Card 2 - 0.5x your bet" beside "Card 3 or 4
+ * - keep 30%" put both in one list and read as two rules when it is one rule
+ * seen twice: 30% of the colour pick's 1.99x IS 0.5x the bet. On High Stakes it
+ * was worse, because "0.3x" sits close enough to "20%" to be read as a third
+ * number. Do not reintroduce a bet multiple here - payoutTable.test.ts fails if
+ * one appears.
+ */
+export function bustRowsFor(rules: FamilyRules = FAMILY_RULES.base): BustRow[] {
+	const laterPercent = Math.round(rules.retention[1]! * 100);
 
-/** What a wrong guess keeps, by the stage it happened at. */
-export const BUST_ROWS: readonly { label: string; detail: string }[] = [
-	{ label: 'Card 1', detail: 'The round pays nothing.' },
-	{ label: 'Card 2', detail: 'You get 0.5× your bet back.' },
-	{ label: 'Card 3 or 4', detail: 'You keep 30% of the multiplier built so far.' },
-] as const;
+	// Card 1 is never forgiven in any family, so it always reads the same.
+	const first: BustRow = { label: 'Card 1', detail: 'The round ends and pays nothing.' };
+
+	if (rules.forgive !== null) {
+		const kept = Math.round(rules.forgive * 100);
+		return [
+			first,
+			{
+				label: 'Your first wrong guess',
+				detail: `From card 2 on, it is forgiven — you keep ${kept}% of what you had built and the round carries on.`,
+			},
+			{
+				label: 'Your second wrong guess',
+				detail: `The round ends, keeping ${laterPercent}% of what you had built.`,
+			},
+		];
+	}
+
+	return [
+		first,
+		{
+			label: 'Card 2, 3 or 4',
+			detail: `The round ends, keeping ${laterPercent}% of what you had built.`,
+		},
+	];
+}

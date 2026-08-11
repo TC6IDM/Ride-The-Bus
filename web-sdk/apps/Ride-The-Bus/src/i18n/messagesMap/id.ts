@@ -50,23 +50,27 @@ export default {
 	Forgiven: 'Dimaafkan',
 	'Game modes': 'Mode permainan',
 	'Max win': 'Kemenangan maks',
-	'Both figures are multiples of your bet, not of what the round costs.':
-		'Kedua angka adalah kelipatan taruhan Anda, bukan biaya ronde.',
+	'Every mode costs 1× your bet.': 'Setiap mode berbiaya 1× taruhan Anda.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Return to player (RTP) adalah %s di setiap mode, dan masing-masing mengembalikan angka yang sama selama banyak ronde. Maksimum yang dapat dibayar game ini adalah %m taruhan Anda, di Taruhan Tinggi.',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
-		'Dua pilihan Sama — rata-rata 1329,2×, hingga 1354,2×, maksimum mode Klasik.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'Kartu pertama yang salah mengakhiri ronde. Kesalahan berikutnya menyimpan 30% dari yang terkumpul.',
 	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
 		'Kartu 1 tetap mengakhiri ronde. Setelah itu tebakan salah pertama Anda dimaafkan dan permainan berlanjut.',
-	'Misses keep only 20%, so every correct guess is worth more.':
-		'Kesalahan hanya menyimpan 20%, jadi setiap tebakan benar bernilai lebih.',
 	'Skip card reveal on spacebar hold': 'Lewati pembukaan kartu dengan spasi',
 	'Skip the card reveal while the spacebar is held':
 		'Lewati pembukaan kartu pada ronde yang dimulai dengan spasi',
 	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'Lewati pembukaan kartu dengan spasi (tombol penggeser) menjalankan ronde yang dimulai dengan spasi tanpa animasi kartu. Ini hanya mengubah animasi, bukan kartu, peluang, atau pembayaran.',
+	'Card 1': 'Kartu 1',
+	'Your first wrong guess': 'Tebakan salah pertama Anda',
+	'Your second wrong guess': 'Tebakan salah kedua Anda',
+	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
+		'Sama adalah tebakan paling langka, jadi ronde yang dibangun di atasnya membawa kemenangan terbesar — dan paling sulit. Dua tebakan Sama sekaligus adalah maksimum mode ini, sebesar %m taruhan Anda.',
+	Playing: 'Sedang dimainkan',
+	'Card 2, 3 or 4': 'Kartu 2, 3 atau 4',
+	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
+		'Kartu pertama yang salah mengakhiri ronde. Kesalahan berikutnya hanya menyimpan 20%, jadi setiap tebakan benar bernilai lebih.',
 	'Stop on full game win': 'Berhenti saat menang penuh',
 
 	'How to Play': 'Cara bermain',
@@ -98,18 +102,9 @@ export default {
 	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
 		'Setiap tahap mengalikan tahap sebelumnya, sehingga keempatnya bergabung menjadi pembayaran akhir ronde. Total berjalan yang tampil di samping kartu dibulatkan ke bawah ke satu desimal, jadi bisa terlihat sedikit di bawah angka-angka ini.',
 	'If you guess wrong': 'Jika tebakan Anda salah',
-	'Card 1 — the round pays nothing.': 'Kartu 1 — ronde tidak membayar apa pun.',
-	'Card 2 — you get 0.5× your bet back.': 'Kartu 2 — Anda menerima kembali 0,5× taruhan.',
-	'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.':
-		'Kartu 3 atau 4 — Anda menyimpan 30 % dari pengali yang sudah terkumpul, berkisar 0,6× hingga 129×.',
 	'Full game wins': 'Kemenangan penuh',
 	'Guess all four cards right and the payout depends on how hard your picks were:':
 		'Jika keempat kartu benar, pembayarannya tergantung seberapa sulit pilihan Anda:',
-	'No Equal picks — averages 17.3×, up to 317.4×.':
-		'Tanpa pilihan Sama — rata-rata 17,3×, hingga 317,4×.',
-	'One Equal pick — averages 67.5×, up to 381.9×.': 'Satu Sama — rata-rata 67,5×, hingga 381,9×.',
-	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
-		'Sama adalah tebakan paling langka, sehingga ronde yang dibangun di atasnya memberi kemenangan terbesar — sekaligus paling sulit dicapai.',
 	'Speed and autoplay': 'Kecepatan dan main otomatis',
 	'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.':
 		'Turbo (tombol petir) dapat diatur dari Normal hingga Instan dan hanya mengubah kecepatan kartu terbuka. Ia tidak pernah mengubah kartu, peluang, atau pembayaran.',
@@ -188,6 +183,8 @@ export default {
 	'Round details': 'Detail ronde',
 	'Play amount': 'Jumlah taruhan',
 	Mode: 'Mode',
+	'Game mode': 'Mode permainan',
+	Guesses: 'Tebakan',
 	Event: 'Peristiwa',
 	Payout: 'Pembayaran',
 	Play: 'Putar',

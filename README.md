@@ -21,8 +21,16 @@ opposite ends.
 | Mode | Cost | A miss keeps | Max win | Pays something |
 |---|---|---|---|---|
 | Classic | 1.0× | nothing on card 1, 30% after | 1354.2× | ~1 in 2 |
-| Second Chance | 2.0× | card 1 still ends it; after that the first miss keeps 50% and **play continues** | 1170.4× | ~1 in 2 |
-| High Stakes | 2.0× | nothing on card 1, 20% after | 3820.5× | ~1 in 2 |
+| Second Chance | 1.0× | card 1 still ends it; after that the first miss keeps 50% and **play continues** | 585.2× | ~1 in 2 |
+| High Stakes | 1.0× | nothing on card 1, 20% after | 1910.2× | ~1 in 2 |
+
+A volatility ladder at one price, rather than paid feature modes. That is
+forced, not chosen: `etl40b` — the expected payout from wins of at least 40× the
+cost — is summed as an **absolute** figure against a fixed 0.9 limit and is not
+divided by cost. A 2× mode must average 1.92× to return 96%, so it pays twice as
+much for the same shape and its `etl40b` doubles. Even Classic's own shape fails
+at 2× (1.120); only a low-volatility family survives the doubling, which is the
+opposite of what High Stakes is for.
 
 That is 3 families × 64 guess combinations = **192 published modes**. The
 Classic family keeps its original unprefixed names, so replay event IDs
@@ -30,10 +38,35 @@ recorded against it stay valid; the others are prefixed `sc_` and `hs_`.
 
 Two numbers here are not free choices:
 
-- **High Stakes retention is 0.20**, not a rounder figure. Stake reads CVaR and
-  Expected Tail Liability as the worst value across all modes, and a failed
-  class shrinks the game's bet-level template. 0.20 gives CVaR 648 against a
-  700 limit; 0.15 gives 730 and fails.
+- **High Stakes retention is 0.20.** Stake reads CVaR and Expected Tail
+  Liability as the worst value across all modes, and a failed class shrinks the
+  game's bet-level template. The binding metric is `etl40b` (limit 0.9), not
+  CVaR (limit 800), and the build measures 0.695 and 568.8 against them.
+
+  Retention could go lower than 0.20 — but not much, and the margin is what
+  runs out first. Exact enumeration of all 64 combinations at each retention,
+  reweighted the way `reweight_luts.py` does, gives:
+
+  | Retention | etl40b (limit 0.9) | CVaR (limit 800) | Max win |
+  | --- | --- | --- | --- |
+  | 0.30 (Classic) | 0.553 | 429 | 1354.2× |
+  | **0.20 (shipped)** | **0.689** | **551** | **1910.2×** |
+  | 0.15 | 0.764 | 618 | 2237.3× |
+  | 0.10 | 0.842 | 689 | 2599.5× |
+  | 0.05 | 0.880 | 763 | 2998.5× |
+  | 0.025 | 0.898 | **802 ✗** | 3212.3× |
+  | 0.00 | **0.960 ✗** | 329 | 3436.1× |
+
+  The published build reads 1–3% above these (it samples its tail where this
+  enumerates it), so 0.05 and below is not safely buildable and 0.10 is the
+  practical floor. 0.20 keeps a 23% margin, which is what a metric read as a
+  worst-case across 64 modes needs.
+
+  Zero is not the end of a gradient, it is a cliff: with nothing kept, the only
+  rounds that pay are the 4-for-4 ones, so the reweighter has to make wins rare
+  enough to hit 96% RTP and the hit rate collapses from ~1 in 2 to **1 in 3,530**.
+  Anything below 0.20 also breaks the family's 2000× wincap, which would have to
+  be raised with it.
 - **Card 1 is never forgiven.** Forgiving it left almost no round paying zero,
   which pushed Second Chance's win-conditional mean below its reweight target —
   and `reweight_luts.py` can only move RTP by re-weighting losses, so with
@@ -112,8 +145,11 @@ already produced valid files.
 
 **Upload the contents of `math-sdk\games\ride_the_bus\library\publish_files\`**
 to Stake Engine's Files page, under the Math/RGS section for this game. That is
-129 files: one `books_<mode>.jsonl.zst` and one `lookUpTable_<mode>_0.csv` per
-bet mode (64 of each), plus a single `index.json`.
+385 files: one `books_<mode>.jsonl.zst` and one `lookUpTable_<mode>_0.csv` per
+bet mode (192 of each), plus a single `index.json`. Around 1.6 GB in total -
+well inside Stake's limits, which cap a single events file at 4.2 GB and a
+single mode at 10,000,000 events (the largest book here is ~15 MB, and the
+biggest mode simulates 800,000 rounds).
 
 ### Test the math
 
@@ -201,10 +237,10 @@ Verified against Stake's math, RGS and frontend approval criteria:
 
 | | |
 | --- | --- |
-| RTP 90-96.70%, all modes within 0.5% | 96.00% on every mode, spread 0.000051% |
+| RTP 90-96.70%, all modes within 0.5% | 96.00% on every one of the 192 modes, spread 0.000000% |
 | Simulations per bet mode | 100k minimum, asserted in `run.py` |
-| Non-zero win hit rate, target better than 1 in 20 | about 1 in 2 |
-| Max win obtainable, target better than 1 in 10,000,000 | 1354.2x at about 1 in 3,833 |
+| Non-zero win hit rate, target better than 1 in 20 | 1 in 1.45 to 1 in 2.03 across all modes |
+| Max win obtainable, target better than 1 in 10,000,000 | 1354.2x / 585.2x / 1910.2x per family, each at about 1 in 3,830 |
 | No jackpot, gamble or cash-out | none - the single-bet design rules them out |
 | Static files only, no external requests | the only network call is the RGS itself |
 | Bet levels, `stepBet`, min/max from `authenticate` | honoured; nothing hardcoded |

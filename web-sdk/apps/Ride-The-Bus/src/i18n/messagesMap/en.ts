@@ -61,12 +61,9 @@ export default {
 	// drift from the maths.
 	'Game Mode': 'Game Mode',
 	'Max win': 'Max win',
-	'Both figures are multiples of your bet, not of what the round costs.':
-		'Both figures are multiples of your bet, not of what the round costs.',
+	'Every mode costs 1× your bet.': 'Every mode costs 1× your bet.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
-		'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.',
 	// Shown on the card a Second Chance round let off.
 	Forgiven: 'Forgiven',
 	'Game modes': 'Game modes',
@@ -78,8 +75,6 @@ export default {
 		'A wrong first card ends the round. Later misses keep 30% of what you had built.',
 	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
 		'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.',
-	'Misses keep only 20%, so every correct guess is worth more.':
-		'Misses keep only 20%, so every correct guess is worth more.',
 	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
 		'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.',
 
@@ -90,6 +85,15 @@ export default {
 		'Skip the card reveal while the spacebar is held',
 	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.',
+	'Card 1': 'Card 1',
+	'Your first wrong guess': 'Your first wrong guess',
+	'Your second wrong guess': 'Your second wrong guess',
+	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
+		'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.',
+	Playing: 'Playing',
+	'Card 2, 3 or 4': 'Card 2, 3 or 4',
+	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
+		'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.',
 	'Stop on full game win': 'Stop on full game win',
 
 	// How to play
@@ -123,19 +127,9 @@ export default {
 	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
 		'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.',
 	'If you guess wrong': 'If you guess wrong',
-	'Card 1 — the round pays nothing.': 'Card 1 — the round pays nothing.',
-	'Card 2 — you get 0.5× your bet back.': 'Card 2 — you get 0.5× your bet back.',
-	'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.':
-		'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.',
 	'Full game wins': 'Full game wins',
 	'Guess all four cards right and the payout depends on how hard your picks were:':
 		'Guess all four cards right and the payout depends on how hard your picks were:',
-	'No Equal picks — averages 17.3×, up to 317.4×.':
-		'No Equal picks — averages 17.3×, up to 317.4×.',
-	'One Equal pick — averages 67.5×, up to 381.9×.':
-		'One Equal pick — averages 67.5×, up to 381.9×.',
-	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
-		'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.',
 	'Speed and autoplay': 'Speed and autoplay',
 	'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.':
 		'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.',
@@ -225,6 +219,8 @@ export default {
 	'Round details': 'Round details',
 	'Play amount': 'Play amount',
 	Mode: 'Mode',
+	'Game mode': 'Game mode',
+	Guesses: 'Guesses',
 	Event: 'Event',
 	Payout: 'Payout',
 	Play: 'Play',

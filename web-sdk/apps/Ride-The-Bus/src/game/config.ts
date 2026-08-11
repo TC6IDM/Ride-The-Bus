@@ -8,15 +8,21 @@ export default {
 	// games/ride_the_bus/game_config.py:rtp and reweight_luts.py. Keep both in
 	// step; 0.96 sits inside Stake's 90%-96.70% band with headroom below the top.
 	rtp: 0.96,
+	// INERT. Nothing in this app reads it - the sibling template apps derive a
+	// type from `config.betModes`, but our types.ts does not, and the live bet
+	// modes arrive from the RGS as stateMeta.betModeMeta (192 of them, across
+	// three families). Kept only so this config keeps the template's shape.
+	//
+	// Do not treat the figures below as the game's. Each family declares its own
+	// wincap in math-sdk game_calculations.py:MODE_FAMILIES (1400 / 700 / 2000)
+	// against true ceilings of 1354.2x / 585.2x / 1910.2x, and the frontend's
+	// copy of those lives in game/modes.ts:FAMILY_RULES.
 	betModes: {
 		base: {
 			cost: 1.0,
 			feature: true,
 			buyBonus: false,
 			rtp: 0.96,
-			// Keep in step with math-sdk games/ride_the_bus/game_config.py:wincap.
-			// The game's true ceiling is 1354.2x (proven by exhaustive
-			// enumeration - see that file), so 1400 never binds.
 			max_win: 1400,
 		},
 	},

@@ -24,25 +24,29 @@ class GameConfig(Config):
         self.game_id = "ride_the_bus"
         self.provider_number = 0
         self.working_name = "Ride The Bus"
-        # Declared max win, published per bet mode as "maxWin" in config.json.
+        # Fallback declared max win. The REAL cap is per family - see
+        # MODE_FAMILIES["<family>"]["wincap"], which each BetMode below takes as
+        # its max_win, and which run_sims.py loads into config.wincap before
+        # simulating that mode.
         #
-        # The true ceiling is 1354.2x: the rarest winning path is a mode with
-        # two "equal" picks, and the largest product the four stage multipliers
-        # can reach is red/black_equal_equal_<suit> on cards like A A A / 2.
-        # That is EXHAUSTIVE, not sampled - enumerating all 6,497,400 ordered
-        # 4-card draws against partial_multiplier() tops out at exactly 1354.2x,
-        # which also matches the highest max_win in library/stats_summary.json
-        # and the prob5k = 0 recorded for every mode.
+        # Per family because the families reach different ceilings. Classic tops
+        # out at 1354.2x and Second Chance at 1170.4x, but High Stakes reaches
+        # 3820.5x - a miss there keeps less, so every correct guess is priced
+        # higher. A single 1400 cap silently CLIPPED High Stakes' biggest wins,
+        # which the frontend's book-parity test caught as "client 3820.5 vs book
+        # 1400": the client computed the real figure while the book carried the
+        # clipped one.
         #
-        # 1400 sits just above that, so it can never actually bind (payouts go
-        # through min(running_bet_win, wincap) in src/events/events.py), while
-        # keeping the DECLARED worst-case exposure - maxBet x maxWin, which is
-        # what the operator sizes the bet-level template against - 3.6x lower
-        # than the old 5000. The previous 5000 predated the partial-credit /
-        # martingale payout rework and its "~3000-3400x" note no longer holds.
+        # Each family's cap sits just ABOVE what it can reach, so it never
+        # binds. That matters twice over: payouts go through
+        # min(running_bet_win, wincap) in src/events/events.py, and a cap ON the
+        # true ceiling would also trip the wincap-triggered event path for the
+        # max-win round.
         #
-        # NB: this bound follows from target_rtp and STAGE_RETENTION below. If
-        # either changes, re-derive the max before trusting this number.
+        # The ceilings are EXHAUSTIVE, not sampled - enumerating all 6,497,400
+        # ordered 4-card draws against partial_multiplier() reaches exactly
+        # those figures. NB: they follow from target_rtp and each family's
+        # retention. If either changes, re-derive before trusting them.
         self.wincap = 1400
         self.win_type = "other"
         # Common RTP every bet mode is reweighted to land on exactly (see
@@ -59,7 +63,8 @@ class GameConfig(Config):
         # The maths allows far more than the band does: the reweighter's real
         # limit is each mode's win-conditional mean payout (where the loss weight
         # would fall below 1 and it raises rather than emit a bad table), and the
-        # lowest of those across the 64 modes is 1.492x, i.e. ~149% RTP. At 0.96
+        # lowest of those across the 192 modes is 1.457x, i.e. ~146% RTP (High
+        # Stakes, whose thinner retention makes its wins rarer but larger). At 0.96
         # the smallest loss weight is still ~554,400, so there is no risk of that
         # guard tripping.
         #
@@ -104,7 +109,7 @@ class GameConfig(Config):
                 name=mode_name(*combo, family=family),
                 cost=MODE_FAMILIES[family]["cost"],
                 rtp=self.rtp,
-                max_win=self.wincap,
+                max_win=MODE_FAMILIES[family]["wincap"],
                 auto_close_disabled=False,
                 is_feature=True,
                 is_buybonus=False,

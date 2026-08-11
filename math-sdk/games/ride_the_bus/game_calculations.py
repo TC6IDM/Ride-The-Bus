@@ -46,16 +46,36 @@ SUIT_NAME_TO_SYMBOL = {"heart": "♥", "diamond": "♦", "club": "♣", "spade":
 #            Keeping the first card lethal preserves the ~50% zero rate the
 #            reweighter needs, and it leaves the opening card its tension.
 #   hs       High Stakes. Misses keep 20% instead of 30%, so wins are worth
-#            more - the ceiling is nearly three times base's, at the same
-#            roughly-one-in-two chance of a round paying nothing.
+#            more - the ceiling is above base's, at the same roughly-one-in-two
+#            chance of a round paying nothing.
 #
 # The retention numbers are not free choices. Stake measures CVaR and Expected
 # Tail Liability as the worst value across all modes, and a failed class shrinks
 # the game's bet-level template. High Stakes at 0.20 gives CVaR 648 against a
 # 700 limit; at 0.15 it is 730 and over. That is why it is 0.20.
 #
-# Costs stay at or above the base's 1.0x, which Stake requires to be the
-# cheapest mode.
+# EVERY FAMILY COSTS 1.0x, AND THAT IS A CONSTRAINT, NOT A DEFAULT
+#
+# Second Chance and High Stakes were 2.0x. Both had to come down, because
+# etl40b - the expected payout from wins of at least 40x the cost - is summed as
+# an ABSOLUTE figure against a fixed 0.9 limit and is NOT divided by cost (see
+# utils/analysis/distribution_functions.py). A 2x mode must average 1.92x to
+# return 96%, so it pays twice as much for the same shape and its etl40b doubles
+# automatically:
+#
+#     design                       cost 1   cost 2
+#     Classic     retention 0.3     0.560    1.120  over
+#     High Stakes retention 0.2     0.678    1.356  over
+#     Second Chance forgive 0.5     0.325    0.650
+#
+# Even Classic's own shape fails at 2x. Only a LOW-volatility mode survives the
+# doubling, which is the opposite of what High Stakes is for - and raising
+# retention to compensate would need the tail under ~47% of RTP when Classic is
+# already at 58%. So the cost is what had to change.
+#
+# At 1.0x the three modes are a volatility ladder at one price: survive a miss,
+# play it straight, or make every miss hurt for a higher ceiling. Base is still
+# 1.0x and nothing is cheaper, which is what Stake requires.
 # ---------------------------------------------------------------------------
 
 BASE_RETENTION = (0.0, 0.3, 0.3, 0.3)
@@ -68,21 +88,36 @@ MODE_FAMILIES = {
         # None = no forgiveness; the first miss ends the round.
         "forgive": None,
         "forgive_from": 0,
+        # Declared ceiling for this family, published as its maxWin and used as
+        # the per-mode wincap (run_sims.py sets config.wincap from it before
+        # each mode). It must sit ABOVE what the family can actually reach:
+        # events.py clips payouts at min(win, wincap), so a cap on the true
+        # ceiling would both clip and trip the wincap-triggered event path.
+        # Classic reaches 1354.2x, so 1400 never binds.
+        "wincap": 1400,
     },
     "sc": {
         "prefix": "sc_",
-        "cost": 2.0,
+        "cost": 1.0,
         "retention": BASE_RETENTION,
         "forgive": 0.5,
         # Card 1 (stage 0) is never forgiven - see the note above.
         "forgive_from": 1,
+        # Reaches 585.2x.
+        "wincap": 700,
     },
     "hs": {
         "prefix": "hs_",
-        "cost": 2.0,
+        "cost": 1.0,
         "retention": (0.0, 0.2, 0.2, 0.2),
         "forgive": None,
         "forgive_from": 0,
+        # Reaches 1910.2x - still above Classic's 1354.2x, because a miss keeps
+        # less here and so every correct guess is priced higher. The shared 1400
+        # cap CLIPPED this family, which the frontend's book-parity test caught
+        # as "client 3820.5 vs book 1400" back when it cost 2x. 2000 clears the
+        # real ceiling, and is 250x under Stake's 500,000x payout limit.
+        "wincap": 2000,
     },
 }
 
@@ -183,7 +218,7 @@ class GameCalculations(Executables):
     and an impossible guess - p<=0, chiefly "inside" on rank-adjacent
     references - pays 0 and so escapes the martingale, dragging those modes
     low). The EXACT common RTP and Stake's Cross-Mode RTP Consistency check
-    (all 64 modes within 0.5%) are delivered afterwards by reweight_luts.py,
+    (all 192 modes within 0.5%) are delivered afterwards by reweight_luts.py,
     which reweights each mode's lookup table onto config.rtp precisely; the
     martingale's job is just to get close enough that that reweight stays a
     gentle nudge rather than a distortion.

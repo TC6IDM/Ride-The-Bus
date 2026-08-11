@@ -50,23 +50,27 @@ export default {
 	Forgiven: 'माफ किया',
 	'Game modes': 'गेम मोड',
 	'Max win': 'अधिकतम जीत',
-	'Both figures are multiples of your bet, not of what the round costs.':
-		'दोनों आंकड़े आपकी बाजी के गुणक हैं, राउंड की लागत के नहीं।',
+	'Every mode costs 1× your bet.': 'हर मोड की लागत आपकी बाजी का 1× है।',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'हर गेम मोड में रिटर्न टू प्लेयर (RTP) %s है, और हर मोड कई राउंड में वही आंकड़ा लौटाता है। यह गेम अधिकतम %m आपकी बाजी दे सकता है, हाई स्टेक्स पर।',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
-		'दो बराबर चुनाव — औसतन 1329.2×, अधिकतम 1354.2×, क्लासिक में सबसे अधिक।',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'पहला कार्ड गलत होने पर राउंड खत्म। बाद की गलतियाँ जमा राशि का 30% रखती हैं।',
 	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
 		'कार्ड 1 अब भी राउंड खत्म करता है। उसके बाद आपका पहला गलत अनुमान माफ होता है और खेल चलता रहता है।',
-	'Misses keep only 20%, so every correct guess is worth more.':
-		'गलतियाँ केवल 20% रखती हैं, इसलिए हर सही अनुमान ज्यादा कीमती है।',
 	'Skip card reveal on spacebar hold': 'स्पेसबार पर कार्ड खुलना छोड़ें',
 	'Skip the card reveal while the spacebar is held':
 		'स्पेसबार से शुरू हुए राउंड में कार्ड खुलना छोड़ें',
 	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'स्पेसबार पर कार्ड खुलना छोड़ें (स्लाइडर बटन) स्पेसबार से शुरू हुए राउंड को कार्ड एनिमेशन के बिना चलाता है। यह केवल एनिमेशन बदलता है, कार्ड, संभावनाएँ या भुगतान कभी नहीं।',
+	'Card 1': 'कार्ड 1',
+	'Your first wrong guess': 'आपका पहला गलत अनुमान',
+	'Your second wrong guess': 'आपका दूसरा गलत अनुमान',
+	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
+		'बराबर सबसे दुर्लभ अनुमान है, इसलिए उस पर बने राउंड सबसे बड़ी जीत देते हैं — और सबसे कठिन हैं। दो बराबर एक साथ लगना इस मोड का अधिकतम है, आपकी बाजी का %m।',
+	Playing: 'खेल रहे हैं',
+	'Card 2, 3 or 4': 'कार्ड 2, 3 या 4',
+	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
+		'पहला कार्ड गलत होने पर राउंड खत्म। बाद की गलतियाँ केवल 20% रखती हैं, इसलिए हर सही अनुमान ज्यादा कीमती है।',
 	'Stop on full game win': 'पूरी जीत पर रोकें',
 
 	'How to Play': 'कैसे खेलें',
@@ -96,17 +100,9 @@ export default {
 	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
 		'हर चरण पिछले चरण को गुणा करता है, इसलिए चारों मिलकर राउंड का अंतिम भुगतान बनाते हैं। कार्ड के पास दिखने वाला चालू योग एक दशमलव तक नीचे की ओर पूर्णांकित होता है, इसलिए यह इन आंकड़ों से थोड़ा कम दिख सकता है।',
 	'If you guess wrong': 'यदि अनुमान गलत हो',
-	'Card 1 — the round pays nothing.': 'कार्ड 1 — राउंड में कुछ भुगतान नहीं मिलता।',
-	'Card 2 — you get 0.5× your bet back.': 'कार्ड 2 — आपको दांव का 0.5× वापस मिलता है।',
-	'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.':
-		'कार्ड 3 या 4 — अब तक बने गुणक का 30% आपके पास रहता है, जो 0.6× से 129× तक होता है।',
 	'Full game wins': 'पूरी जीत के भुगतान',
 	'Guess all four cards right and the payout depends on how hard your picks were:':
 		'चारों कार्ड सही होने पर भुगतान इस बात पर निर्भर करता है कि आपके चयन कितने कठिन थे:',
-	'No Equal picks — averages 17.3×, up to 317.4×.': 'कोई बराबर नहीं — औसतन 17.3×, अधिकतम 317.4×।',
-	'One Equal pick — averages 67.5×, up to 381.9×.': 'एक बराबर — औसतन 67.5×, अधिकतम 381.9×।',
-	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
-		'बराबर सबसे दुर्लभ अनुमान है, इसलिए उस पर आधारित राउंड सबसे बड़ी जीत देते हैं — और उन्हें हासिल करना सबसे कठिन होता है।',
 	'Speed and autoplay': 'गति और ऑटोप्ले',
 	'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.':
 		'टर्बो (बिजली वाला बटन) सामान्य से तत्काल तक समायोजित होता है और केवल कार्ड पलटने की गति बदलता है। यह कार्ड, संभावना या भुगतान को कभी नहीं बदलता।',
@@ -183,6 +179,8 @@ export default {
 	'Round details': 'राउंड विवरण',
 	'Play amount': 'दांव राशि',
 	Mode: 'मोड',
+	'Game mode': 'गेम मोड',
+	Guesses: 'अनुमान',
 	Event: 'इवेंट',
 	Payout: 'भुगतान',
 	Play: 'चलाएं',

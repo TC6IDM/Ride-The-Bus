@@ -50,22 +50,26 @@ export default {
 	Forgiven: '면제됨',
 	'Game modes': '게임 모드',
 	'Max win': '최대 배당',
-	'Both figures are multiples of your bet, not of what the round costs.':
-		'두 수치 모두 라운드 비용이 아니라 베팅액의 배수입니다.',
+	'Every mode costs 1× your bet.': '모든 모드는 베팅액의 1배입니다.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'환수율(RTP)은 모든 게임 모드에서 %s이며, 각 모드는 여러 라운드에 걸쳐 같은 수치를 돌려줍니다. 이 게임의 최대 배당은 하이 스테이크에서 베팅의 %m입니다.',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
-		'같음 2회 — 평균 1329.2배, 최대 1354.2배로 클래식의 상한입니다.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'첫 카드를 틀리면 라운드가 끝납니다. 이후 실수는 쌓아둔 배수의 30%를 남깁니다.',
 	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
 		'카드 1은 여전히 라운드를 끝냅니다. 그 뒤 첫 오답은 면제되어 계속 진행됩니다.',
-	'Misses keep only 20%, so every correct guess is worth more.':
-		'실수가 20%만 남기므로 정답 하나하나의 가치가 커집니다.',
 	'Skip card reveal on spacebar hold': '스페이스바에서 카드 공개 건너뛰기',
 	'Skip the card reveal while the spacebar is held': '스페이스바로 시작한 라운드의 카드 공개를 건너뜁니다',
 	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'스페이스바에서 카드 공개 건너뛰기(슬라이더 버튼)는 스페이스바로 시작한 라운드를 카드 애니메이션 없이 진행합니다. 애니메이션만 바뀌며 카드나 확률, 배당은 달라지지 않습니다.',
+	'Card 1': '카드 1',
+	'Your first wrong guess': '첫 오답',
+	'Your second wrong guess': '두 번째 오답',
+	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
+		'같음은 가장 드문 예상이라 이를 기반으로 한 라운드가 가장 큰 배당을 주며 가장 어렵습니다. 같음 2회가 함께 맞는 것이 이 모드의 상한으로, 베팅의 %m입니다.',
+	Playing: '플레이 중',
+	'Card 2, 3 or 4': '카드 2, 3 또는 4',
+	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
+		'첫 카드를 틀리면 라운드가 끝납니다. 이후 실수는 20%만 남기므로 정답 하나하나의 가치가 커집니다.',
 	'Stop on full game win': '풀 게임 성공 시 중지',
 
 	'How to Play': '게임 방법',
@@ -96,17 +100,9 @@ export default {
 	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
 		'각 단계는 이전 단계에 곱해지며, 네 단계가 합쳐져 라운드의 최종 배당이 됩니다. 카드 옆에 표시되는 누적 배수는 소수점 첫째 자리에서 내림되므로 여기 수치보다 조금 낮게 보일 수 있습니다.',
 	'If you guess wrong': '예측이 틀린 경우',
-	'Card 1 — the round pays nothing.': '첫 번째 카드 — 배당이 없습니다.',
-	'Card 2 — you get 0.5× your bet back.': '두 번째 카드 — 베팅 금액의 0.5배를 돌려받습니다.',
-	'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.':
-		'세 번째 또는 네 번째 카드 — 그때까지 쌓은 배수의 30%가 남으며, 0.6배에서 129배 사이입니다.',
 	'Full game wins': '풀 게임 배당',
 	'Guess all four cards right and the payout depends on how hard your picks were:':
 		'네 장을 모두 맞히면 배당은 예측의 난이도에 따라 달라집니다:',
-	'No Equal picks — averages 17.3×, up to 317.4×.': '이퀄 없음 — 평균 17.3배, 최대 317.4배.',
-	'One Equal pick — averages 67.5×, up to 381.9×.': '이퀄 1회 — 평균 67.5배, 최대 381.9배.',
-	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
-		'이퀄은 가장 드문 예측이므로 이를 포함한 라운드는 배당이 가장 크고 달성하기도 가장 어렵습니다.',
 	'Speed and autoplay': '속도와 자동 플레이',
 	'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.':
 		'터보(번개 버튼)는 보통에서 즉시까지 조절되며 카드가 뒤집히는 속도만 바꿉니다. 카드나 확률, 배당은 절대 달라지지 않습니다.',
@@ -183,6 +179,8 @@ export default {
 	'Round details': '라운드 상세',
 	'Play amount': '베팅 금액',
 	Mode: '모드',
+	'Game mode': '게임 모드',
+	Guesses: '예측',
 	Event: '이벤트',
 	Payout: '지급액',
 	Play: '재생',

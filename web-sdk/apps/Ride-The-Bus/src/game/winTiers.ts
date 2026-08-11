@@ -3,7 +3,10 @@
  *
  * The thresholds are not invented - they were read off the published lookup
  * tables (math-sdk .../library/publish_files/lookUpTable_*.csv), weighting each
- * mode equally because all 64 cost 1x and a player picks exactly one per round.
+ * mode equally because all 192 cost 1x and a player picks exactly one per round.
+ * The frequencies below are the CLASSIC family's; the other two shift them (High
+ * Stakes pays a busted round less, so it reaches further up the ladder), but the
+ * band edges are shared and only the top one is per-family - see winTiersFor.
  * The resulting frequencies are:
  *
  *     Big    >=   10x     1 in 70
@@ -23,9 +26,13 @@
  * over the biggest partials in silence.
  */
 
-/** The game's true ceiling, proven by exhaustive enumeration - see math-sdk
+/** CLASSIC's true ceiling, proven by exhaustive enumeration - see math-sdk
  * games/ride_the_bus/game_config.py. The published `max_win` of 1400 is a
- * declared bound that never binds, so it is NOT the right number to celebrate. */
+ * declared bound that never binds, so it is NOT the right number to celebrate.
+ *
+ * This is the BASE family's ceiling, not the game's. Second Chance stops at
+ * 585.2x and High Stakes reaches 1910.2x - use winTiersFor to get a family's
+ * own ladder. Kept as the default so callers with no family behave as before. */
 export const MAX_WIN_MULTIPLIER = 1354.2;
 
 /**
@@ -58,7 +65,8 @@ export type WinTier = {
   oneIn: number;
 };
 
-/** Ordered LOW to HIGH. winTierFor scans backwards, so order is load-bearing. */
+/** Ordered LOW to HIGH. winTierFor scans backwards, so order is load-bearing.
+ *  The Classic ladder, and the default for callers that name no family. */
 export const WIN_TIERS: readonly WinTier[] = [
   { id: 'big', minMultiplier: 10, label: 'Big Win', oneIn: 70 },
   { id: 'huge', minMultiplier: 40, label: 'Huge Win', oneIn: 305 },
@@ -66,6 +74,23 @@ export const WIN_TIERS: readonly WinTier[] = [
   { id: 'epic', minMultiplier: 300, label: 'Epic Win', oneIn: 15561 },
   { id: 'max', minMultiplier: MAX_WIN_MULTIPLIER, label: 'Max Win', oneIn: 36384 },
 ] as const;
+
+/**
+ * One family's ladder: the same bands, with the top one at ITS ceiling.
+ *
+ * The max tier's floor IS the family's largest possible win, so it must move
+ * with the family. Left fixed at Classic's 1354.2x it was wrong in both
+ * directions at once: High Stakes reaches 1910.2x, so every win from 1354.2x
+ * upward was announced as a Max Win when it was not one; and Second Chance
+ * tops out at 585.2x, so its real ceiling - the rarest thing that can happen in
+ * that mode - could only ever earn "Epic Win", with the Max tier unreachable.
+ *
+ * Only the top band moves. The lower four are payout sizes, and a 40x win is
+ * the same event whichever mode produced it.
+ */
+export function winTiersFor(maxWin: number): readonly WinTier[] {
+	return WIN_TIERS.map((tier) => (tier.id === 'max' ? { ...tier, minMultiplier: maxWin } : tier));
+}
 
 /**
  * Floating-point slack on the Max Win comparison.
@@ -94,12 +119,16 @@ const EPSILON = 1e-6;
  * A win can still be celebrated on size alone without being a full game win: a
  * bust on card 4 keeps 30% of the built multiplier and reaches 129x.
  */
-export function winTierFor(multiplier: number, fullGameWin = false): WinTier | null {
+export function winTierFor(
+  multiplier: number,
+  fullGameWin = false,
+  tiers: readonly WinTier[] = WIN_TIERS,
+): WinTier | null {
   if (!Number.isFinite(multiplier) || multiplier <= 0) return null;
-  for (let i = WIN_TIERS.length - 1; i >= 0; i--) {
-    if (multiplier >= WIN_TIERS[i]!.minMultiplier - EPSILON) return WIN_TIERS[i]!;
+  for (let i = tiers.length - 1; i >= 0; i--) {
+    if (multiplier >= tiers[i]!.minMultiplier - EPSILON) return tiers[i]!;
   }
-  return fullGameWin ? WIN_TIERS[0]! : null;
+  return fullGameWin ? tiers[0]! : null;
 }
 
 /**
@@ -183,16 +212,20 @@ export const CEILING_PAUSE_MS = 1000;
  * A win below the entry tier (a full-game win as small as 6.6x) yields exactly
  * one leg, 0 -> the amount, labelled "Big Win".
  */
-export function countUpSegments(finalMultiplier: number, earned: WinTier): CountUpSegment[] {
-  const earnedIndex = WIN_TIERS.findIndex((tier) => tier.id === earned.id);
+export function countUpSegments(
+  finalMultiplier: number,
+  earned: WinTier,
+  tiers: readonly WinTier[] = WIN_TIERS,
+): CountUpSegment[] {
+  const earnedIndex = tiers.findIndex((tier) => tier.id === earned.id);
   if (earnedIndex < 0) return [];
 
   const segments: CountUpSegment[] = [];
   for (let i = 0; i <= earnedIndex; i++) {
-    const tier = WIN_TIERS[i]!;
+    const tier = tiers[i]!;
     const isLast = i === earnedIndex;
     const fromMultiplier = i === 0 ? 0 : tier.minMultiplier;
-    const toMultiplier = isLast ? finalMultiplier : WIN_TIERS[i + 1]!.minMultiplier;
+    const toMultiplier = isLast ? finalMultiplier : tiers[i + 1]!.minMultiplier;
     const isHold = toMultiplier <= fromMultiplier;
 
     segments.push({

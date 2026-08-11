@@ -4,7 +4,7 @@
  *   node scripts/replay-events.js
  *
  * Stake's frontend approval asks for replay event IDs per bet mode covering
- * normal win, big win, win cap and loss. With 64 bet modes that is 256 IDs, so
+ * normal win, big win, win cap and loss. With 192 bet modes that is 768 IDs, so
  * they are derived from the published lookup tables rather than collected by
  * hand.
  *

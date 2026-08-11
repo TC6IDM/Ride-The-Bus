@@ -50,23 +50,27 @@ export default {
 	Forgiven: 'Annettu anteeksi',
 	'Game modes': 'Pelitilat',
 	'Max win': 'Enimmäisvoitto',
-	'Both figures are multiples of your bet, not of what the round costs.':
-		'Molemmat luvut ovat panoksesi kerrannaisia, eivät kierroksen hinnan.',
+	'Every mode costs 1× your bet.': 'Jokainen tila maksaa 1× panoksesi.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Palautusprosentti (RTP) on %s jokaisessa pelitilassa, ja jokainen palauttaa saman luvun monen kierroksen aikana. Eniten tämä peli voi maksaa %m panoksestasi, Suuret panokset -tilassa.',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
-		'Kaksi Tasan-valintaa — keskimäärin 1329,2×, enintään 1354,2×, Klassisen enimmäismäärä.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'Väärä ensimmäinen kortti päättää kierroksen. Myöhemmät virheet säilyttävät 30% kertyneestä.',
 	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
 		'Kortti 1 päättää yhä kierroksen. Sen jälkeen ensimmäinen virhe annetaan anteeksi ja peli jatkuu.',
-	'Misses keep only 20%, so every correct guess is worth more.':
-		'Virheet säilyttävät vain 20%, joten jokainen oikea arvaus on arvokkaampi.',
 	'Skip card reveal on spacebar hold': 'Ohita korttien paljastus välilyönnillä',
 	'Skip the card reveal while the spacebar is held':
 		'Ohita korttien paljastus kierroksilla, jotka aloitetaan välilyönnillä',
 	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'Ohita korttien paljastus välilyönnillä (liukusäädinpainike) pelaa välilyönnillä aloitetut kierrokset ilman korttianimaatiota. Se muuttaa vain animaatiota, ei koskaan kortteja, todennäköisyyksiä tai voittoa.',
+	'Card 1': 'Kortti 1',
+	'Your first wrong guess': 'Ensimmäinen virheesi',
+	'Your second wrong guess': 'Toinen virheesi',
+	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
+		'Tasan on harvinaisin valinta, joten sille rakentuvat kierrokset tuovat suurimmat voitot — ja ovat vaikeimpia osua. Kaksi Tasan-osumaa yhdessä on tämän tilan enimmäismäärä, %m panoksestasi.',
+	Playing: 'Pelissä',
+	'Card 2, 3 or 4': 'Kortti 2, 3 tai 4',
+	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
+		'Väärä ensimmäinen kortti päättää kierroksen. Myöhemmät virheet säilyttävät vain 20%, joten jokainen oikea arvaus on arvokkaampi.',
 	'Stop on full game win': 'Pysäytä täydellä voitolla',
 
 	'How to Play': 'Näin pelaat',
@@ -97,19 +101,9 @@ export default {
 	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
 		'Jokainen vaihe kertoo edellisen, joten neljä yhdessä muodostavat kierroksen lopullisen voiton. Korttien vieressä näkyvä juokseva summa pyöristetään alaspäin yhteen desimaaliin, joten se voi näyttää hieman näitä lukuja pienemmältä.',
 	'If you guess wrong': 'Jos arvaat väärin',
-	'Card 1 — the round pays nothing.': 'Kortti 1 — kierros ei maksa mitään.',
-	'Card 2 — you get 0.5× your bet back.': 'Kortti 2 — saat takaisin 0,5× panoksesi.',
-	'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.':
-		'Kortti 3 tai 4 — pidät 30 % siihen mennessä kertyneestä kertoimesta, eli 0,6×–129×.',
 	'Full game wins': 'Täydet voitot',
 	'Guess all four cards right and the payout depends on how hard your picks were:':
 		'Jos arvaat kaikki neljä korttia oikein, voitto riippuu siitä, kuinka vaikeita valintasi olivat:',
-	'No Equal picks — averages 17.3×, up to 317.4×.':
-		'Ei Yhtä suuri -valintoja — keskimäärin 17,3×, enintään 317,4×.',
-	'One Equal pick — averages 67.5×, up to 381.9×.':
-		'Yksi Yhtä suuri — keskimäärin 67,5×, enintään 381,9×.',
-	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
-		'Yhtä suuri on harvinaisin arvaus, joten siihen perustuvat kierrokset tuottavat suurimmat voitot — ja ovat vaikeimpia osua.',
 	'Speed and autoplay': 'Nopeus ja automaattipeli',
 	'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.':
 		'Turbo (salamapainike) säätyy Normaalista Välittömään ja muuttaa vain korttien kääntymisnopeutta. Se ei koskaan muuta kortteja, todennäköisyyksiä tai voittoa.',
@@ -186,6 +180,8 @@ export default {
 	'Round details': 'Kierroksen tiedot',
 	'Play amount': 'Panoksen määrä',
 	Mode: 'Tila',
+	'Game mode': 'Pelitila',
+	Guesses: 'Arvaukset',
 	Event: 'Tapahtuma',
 	Payout: 'Maksu',
 	Play: 'Toista',

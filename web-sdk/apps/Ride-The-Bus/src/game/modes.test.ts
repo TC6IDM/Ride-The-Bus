@@ -27,6 +27,7 @@ import {
   familyOf,
   isCombinationPlayable,
   modeName,
+  parseModeName,
 } from './modes.ts';
 import { DECAY } from './payout.ts';
 
@@ -209,6 +210,45 @@ describe('parity with the published math', () => {
         FAMILY_RULES[familyOf(mode.name)].cost,
         `${mode.name}: published cost disagrees with the client's family rules`,
       );
+    }
+  });
+});
+
+describe('parseModeName', () => {
+  test('round-trips every one of the 192 published modes', () => {
+    for (const name of allPlayableModes()) {
+      const parsed = parseModeName(name);
+      assert.ok(parsed, `${name} did not parse`);
+      assert.equal(
+        modeName(parsed.color, parsed.higherLower, parsed.insideOutside, parsed.suit, parsed.family),
+        name,
+      );
+    }
+  });
+
+  test('parses the prefixed families, which a plain split cannot', () => {
+    // THE BUG THIS EXISTS FOR. The replay screen split on "_" and required
+    // exactly four parts; "sc_red_higher_equal_spade" has five, so every
+    // Second Chance and High Stakes round fell through to printing its slug.
+    assert.equal('sc_red_higher_equal_spade'.split('_').length, 5);
+    assert.deepEqual(parseModeName('sc_red_higher_equal_spade'), {
+      family: 'sc',
+      color: 'red',
+      higherLower: 'higher',
+      insideOutside: 'equal',
+      suit: 'spade',
+    });
+    assert.equal(parseModeName('hs_black_lower_outside_club')?.family, 'hs');
+    assert.equal(parseModeName('black_lower_outside_club')?.family, 'base');
+  });
+
+  test('rejects rather than throws on strings that are not modes', () => {
+    // These arrive from the RGS and from replay URLs, so a bad one is an
+    // expected input. Every case must be null, not an exception or a partial.
+    for (const bad of ['', 'BASE', 'sc_', 'red_higher_equal', 'red_higher_equal_spade_extra',
+                       'purple_higher_equal_spade', 'red_sideways_equal_spade',
+                       'sc_red_higher_equal_wand']) {
+      assert.equal(parseModeName(bad), null, `"${bad}" should not parse`);
     }
   });
 });

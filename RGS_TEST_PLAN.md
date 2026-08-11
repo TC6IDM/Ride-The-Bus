@@ -118,18 +118,12 @@ so this section is genuinely untested until upload.
   accepted. There are 192 published modes; a rejection here means the math
   version live on the site predates the three-family build.
 
-- [ ] **BET-07 · A 2× mode debits twice the bet** — *Blocker*
-  On Second Chance or High Stakes, note the balance, place one round, and check
-  what was actually taken.
-  **Expect:** exactly 2× the bet shown. The bet display carries a second line
-  reading `2× = <amount>`; that figure is what should leave the balance. A mode
-  that debits the bet rather than the cost is returning half the RTP it claims.
-
-- [ ] **BET-08 · Affordability is against the cost, not the bet** — *Major*
-  On the near-empty account, set a bet that is affordable at 1× but not at 2×,
-  then switch to a 2× mode.
-  **Expect:** spin becomes unavailable and explains why, rather than sending a
-  bet the RGS will reject.
+- [ ] **BET-07 · Every mode debits exactly the bet** — *Blocker*
+  Note the balance, place one round in each mode, and check what was taken.
+  **Expect:** exactly the bet shown, in all three. Every mode costs 1.0×, so no
+  mode should ever debit a multiple — and the bet display should show a single
+  plain figure with no multiplier line. If a multiplied amount appears, a cost
+  has drifted away from 1.0 in `FAMILY_RULES` or `MODE_FAMILIES`.
 
 - [ ] **BET-09 · Second Chance forgives exactly once, never on card 1** — *Major*
   Play Second Chance until a round misses card 1, then until one misses a later
@@ -331,16 +325,25 @@ currencies. Only these five are shown with no decimal places.
 ## 07 · Win presentation
 
 Tiers are keyed on payout size, not on surviving all four cards - except that
-any full-game win is floored into the bottom tier, because the smallest possible
+a full-game win is floored into the bottom tier, because the smallest possible
 one pays 6.6x and would otherwise pass in silence.
 
-| Tier | From | Roughly |
+Two things about this ladder are PER MODE, and both are easy to test wrong by
+assuming Classic's figures hold everywhere:
+
+| Tier | From | Roughly (Classic) |
 | --- | ---: | ---: |
 | Big Win | 10x | 1 in 70 |
 | Huge Win | 40x | 1 in 305 |
 | Mega Win | 120x | 1 in 3,093 |
 | Epic Win | 300x | 1 in 15,561 |
-| Max Win | 1354.2x | 1 in 36,384 |
+| Max Win | **the playing mode's own ceiling** | 1 in ~3,830 |
+
+- **Max Win sits on the family's ceiling** - 1354.2x Classic, 585.2x Second
+  Chance, 1910.2x High Stakes. The four lower bands are shared.
+- **The full-game-win floor is off for Second Chance.** Forgiveness means most
+  of its rounds reach card 4, so treating that as remarkable made the takeover
+  fire on nearly every round. It still celebrates on size.
 
 - [ ] **WIN-01 · The headline never contradicts the number** — *Major*
   Over a long run, check each takeover's title against its final multiplier.
@@ -348,10 +351,30 @@ one pays 6.6x and would otherwise pass in silence.
   max win reading "Epic Win" - the payout arrives as a division of two rounded
   numbers and can land at 1354.1999...
 
-- [ ] **WIN-02 · A small full-game win still celebrates** — *Major*
-  Land all four guesses on a round paying under 10x.
+- [ ] **WIN-02 · A small full-game win still celebrates (Classic, High Stakes)** — *Major*
+  On Classic, and again on High Stakes, land all four guesses on a round paying
+  under 10x.
   **Expect:** the takeover appears, titled Big Win. Landing all four is the
-  point of the game and must never pass unmarked.
+  point of the game in these modes and must never pass unmarked.
+
+- [ ] **WIN-07 · Second Chance does NOT celebrate every completed round** — *Major*
+  On Second Chance, play until a round lands all four cards for under 10x -
+  including one where the first wrong guess was forgiven and play carried on.
+  **Expect:** no takeover, just the ordinary win. Because forgiveness makes
+  finishing the round the common case, a takeover here would fire on most rounds.
+
+- [ ] **WIN-08 · Second Chance still celebrates on size** — *Major*
+  On Second Chance, reach a round paying 10x or more.
+  **Expect:** the takeover appears at the usual thresholds (10x / 40x / 120x /
+  300x). Suppressing the floor must not have suppressed the ladder - this is the
+  half of WIN-07 that is easy to break.
+
+- [ ] **WIN-09 · Max Win is announced on each mode's own ceiling** — *Major*
+  Use a max-win replay ID for each family (see REPLAY_EVENTS.md).
+  **Expect:** "Max Win" on 1354.2x in Classic, on 585.2x in Second Chance and on
+  1910.2x in High Stakes. Two specific failures to watch for: a High Stakes win
+  of 1354.2x - which is NOT its maximum - announcing "Max Win", and a Second
+  Chance ceiling of 585.2x announcing only "Epic Win".
 
 - [ ] **WIN-03 · Count-up, skip and dismiss** — *Minor*
   On a multi-tier win: let it climb, tap mid-climb, then tap again once settled.
@@ -402,6 +425,15 @@ time you see this**; that is the missing evidence needed to settle it.
   In replay, press every control you can - spin, autoplay, the bet stepper.
   **Expect:** no `/wallet/play` and no `end-round` in the Network tab, the
   balance never moves, and spin re-runs the same round only.
+
+- [ ] **REP-05 · The replay details name the mode and its guesses** — *Major*
+  Open a replay for a `sc_` mode and one for an `hs_` mode, e.g.
+  `sc_red_higher_equal_spade`.
+  **Expect:** a "Game mode" row reading Classic, Second Chance or High Stakes,
+  and a "Guesses" row of four labelled badges. **Fail if the raw mode slug is
+  printed** - the parser used to split on `_` and require four parts, which every
+  prefixed mode fails, so those rounds showed their identifier instead of their
+  picks.
 
 - [ ] **REP-04 · Currency in the replay URL is honoured** — *Major*
   Open a replay with an explicit `?currency=`, including a zero-decimal one.

@@ -320,15 +320,6 @@
 
 .mode-option-name { font-size: calc(var(--ui-bar) * 1.36); font-weight: 800; }
 
-/* The cost is the thing a player must not miss, so it is the accent. */
-.mode-option-cost {
-  font-size: calc(var(--ui-bar) * 1.09);
-  font-weight: 800;
-  color: #4c9ffe;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-
 .mode-option-blurb {
   font-size: calc(var(--ui-bar) * 1.02);
   line-height: 1.4;
@@ -336,6 +327,19 @@
 }
 
 .mode-option.selected .mode-option-blurb { color: #cfe0f0; }
+
+/* The ceiling, which approval requires stated per mode. Quiet like the blurb -
+   it is reference, not the thing being chosen - but the figure itself carries
+   weight, because with every mode at the same cost this is what actually
+   separates them. */
+.mode-option-max {
+  font-size: calc(var(--ui-bar) * 1.02);
+  font-weight: 700;
+  color: #93a4b5;
+  font-variant-numeric: tabular-nums;
+}
+
+.mode-option.selected .mode-option-max { color: #fff; }
 
 .mode-note {
   margin: calc(var(--ui-bar) * 1) 0 0;

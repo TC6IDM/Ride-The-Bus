@@ -23,12 +23,12 @@ install in the venv (`pip install -e .`, see the Makefile).
 
 That runs four phases:
 
-1. **`create_books`** — ~13.8M simulations across the 64 bet modes, in parallel
+1. **`create_books`** — ~13.8M simulations across the 192 bet modes, in parallel
    (`num_threads = 8` in `run.py`).
 2. **`generate_configs`** — writes `library/configs/config.json`,
    `library/publish_files/index.json` and the per-mode event configs.
 3. **`reweight_all`** (`reweight_luts.py`) — rewrites every published `_0` lookup
-   table so each mode lands on exactly `config.rtp`. **This is what makes all 64
+   table so each mode lands on exactly `config.rtp`. **This is what makes all 192
    modes report the same RTP**, so the Cross-Mode RTP Consistency check passes.
 4. **`execute_all_tests`** (`utils/rgs_verification.py`) — verifies the published
    books/tables and writes `library/stats_summary.json`, the RTP / variance /
@@ -57,7 +57,7 @@ itself, so the bundled phase 4 works from anywhere.
 `run.py` prints this near the end — the spread should be ~0:
 
 ```
-Reweighted 64 modes to 0.9600: realized RTP 96.0000%-96.0000% (spread 0.0000%)
+Reweighted 192 modes to 0.9600: realized RTP 96.0000%-96.0000% (spread 0.0000%)
 ```
 
 Then spot-check the published config and stats:
@@ -67,7 +67,7 @@ cd games/ride_the_bus
 grep -o '"maxWin": [0-9]*' library/configs/config.json | sort -u   # -> 1400
 ```
 
-`library/stats_summary.json` should show `rtp` 0.96 for all 64 modes and
+`library/stats_summary.json` should show `rtp` 0.96 for all 192 modes and
 `max_win` topping out at 135420 (= 1354.2x, the payout ceiling, which no RTP
 target changes).
 

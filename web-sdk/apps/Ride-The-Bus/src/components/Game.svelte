@@ -23,7 +23,7 @@
   import TableScene from './TableScene.svelte';
   import HowToPlayPopup from './HowToPlayPopup.svelte';
   import WinCelebration from './WinCelebration.svelte';
-  import { autoHoldMs, winTierFor, type WinTier } from '../game/winTiers';
+  import { autoHoldMs, winTierFor, winTiersFor, type WinTier } from '../game/winTiers';
   // Of the five documented RGS endpoints this game uses three: authenticate
   // (via <Authenticate>), play and end-round. The other two are deliberately
   // not called, recorded here so the omissions read as decisions:
@@ -121,16 +121,19 @@
     stateBet.balanceAmount = 1_000_000;
   }
 
-  // This game has no "BASE" bet mode - every one of its 64 modes encodes a
-  // full guess combination (see math-sdk mode_name). The shared bet state
+  // This game has no "BASE" bet mode - every one of its 192 modes encodes a
+  // full guess combination in one of three families (see math-sdk mode_name:
+  // 64 combinations x base / sc_ / hs_). The shared bet state
   // defaults activeBetModeKey to 'BASE', and the framework's bet-cost
   // helpers (stateBetDerived.betCostMultiplier -> activeBetMode().type)
   // dereference the looked-up mode without a null guard - so once the RGS
   // loads our modes, 'BASE' resolves to null and Set Bet / any cost check
   // throws "Cannot read properties of null (reading 'type')". Keep the active
-  // key pointed at a mode that actually exists in betModeMeta. All our modes
-  // cost 1.0x, so any is fine for cost purposes; the real per-round mode is
-  // sent explicitly to /wallet/play in startGameEngineFlow.
+  // key pointed at a mode that actually exists in betModeMeta. Every one of the
+  // 192 costs 1.0x, so any of them is fine for cost purposes - and that is not
+  // an accident, it is why this guard can stay this simple. The real per-round
+  // mode, family prefix and all, is sent explicitly to /wallet/play in
+  // startGameEngineFlow.
   $effect(() => {
     const meta = stateMeta.betModeMeta ?? {};
     const key = stateBet.activeBetModeKey ?? '';
@@ -344,7 +347,12 @@
   // ---- Big-win takeover ----------------------------------------------------
   // The round flow awaits dismissal, so the celebration naturally holds the
   // next auto round rather than needing the loop to know about it.
-  let celebration = $state<{ tier: WinTier; amount: number; multiplier: number } | null>(null);
+  let celebration = $state<{
+    tier: WinTier;
+    amount: number;
+    multiplier: number;
+    tiers: readonly WinTier[];
+  } | null>(null);
   let celebrationResolve: (() => void) | null = null;
 
   /**
@@ -358,8 +366,13 @@
    * landing all four guesses on the least likely-looking round in the game
    * passed in silence.
    */
-  function showWinCelebration(tier: WinTier, amount: number, multiplier: number): Promise<void> {
-    celebration = { tier, amount, multiplier };
+  function showWinCelebration(
+    tier: WinTier,
+    amount: number,
+    multiplier: number,
+    tiers: readonly WinTier[],
+  ): Promise<void> {
+    celebration = { tier, amount, multiplier, tiers };
     return new Promise((resolve) => {
       celebrationResolve = resolve;
     });
@@ -431,6 +444,12 @@
   const familyRules = () => FAMILY_RULES[betFamily];
   /** What one round actually costs at the current bet. */
   const roundCost = (bet: number = betValue()) => bet * familyRules().cost;
+
+  // The celebration ladder for the mode in play. Only its top band moves: the
+  // Max Win tier has to sit on THIS family's ceiling, or High Stakes announces
+  // a max win at Classic's 1354.2x (it reaches 1910.2x) and Second Chance can
+  // never announce one at all (it tops out at 585.2x, below that threshold).
+  const winTiers = () => winTiersFor(familyRules().maxWin);
 
   const betIsValid = () => {
     const v = betValue();
@@ -590,7 +609,7 @@
   // --- The one impossible pairing --------------------------------------------
   // Stage 2 "equal" ties card 2 to card 1's rank, which leaves nothing strictly
   // between them for stage 3 "inside" to land on. The math does not publish that
-  // combination (64 modes, not 72 - see game/modes.ts), so the client must not
+  // combination (64 per family, not 72 - see game/modes.ts), so the client must not
   // offer it either: the mode string is built by concatenating the four choices,
   // and naming a mode that does not exist gets the bet rejected by the RGS.
   //
@@ -998,12 +1017,20 @@
     // escalating fanfare - so the ordinary win sting is suppressed rather than
     // stacked underneath it.
     //
-    // Tiering is on payout size, so a bust on card 4 that kept 30% of a big
+    // Tiering is on payout size, so a bust on card 4 that kept a share of a big
     // multiplier still celebrates. The second argument floors a FULL game win
     // at the entry tier regardless of size: the smallest one possible is 6.6x
     // (exhaustively enumerated - see winTiers.ts), which would otherwise slip
     // under the 10x threshold and land the game's defining moment in silence.
-    const celebrationTier = winTierFor(lastWinMultiplier, bustedIndex === null && wonAmount > 0);
+    //
+    // That floor is per family. Second Chance forgives a wrong guess, so most
+    // of its rounds reach card 4 and the takeover fired on nearly all of them -
+    // see celebrateEveryFullWin in modes.ts. It still celebrates on size.
+    const celebrationTier = winTierFor(
+      lastWinMultiplier,
+      bustedIndex === null && wonAmount > 0 && familyRules().celebrateEveryFullWin,
+      winTiers(),
+    );
 
     if (wonAmount <= 0) {
       sound.playRoundLoss();
@@ -1019,7 +1046,7 @@
     // the auto loop awaits runRound, so the run pauses without the loop needing
     // to know the takeover exists.
     if (celebrationTier) {
-      await showWinCelebration(celebrationTier, wonAmount, lastWinMultiplier);
+      await showWinCelebration(celebrationTier, wonAmount, lastWinMultiplier, winTiers());
     }
   }
 
@@ -1891,6 +1918,7 @@
       tier={celebration.tier}
       amount={celebration.amount}
       multiplier={celebration.multiplier}
+      tiers={celebration.tiers}
       autoSkipMs={celebrationAutoSkipMs()}
       ondismiss={dismissCelebration}
     />
@@ -2184,13 +2212,7 @@
 
     <div class="cb-panel cb-panel-dark cb-bet">
       <button class="cb-bet-display" class:active={openPopup === 'bet'} onclick={() => togglePopup('bet')} disabled={stateUrlDerived.replay()} aria-label={t('Choose bet amount')}>
-        <!-- The mode rides on the BET caption so it is visible without opening
-             anything. It is the one setting that changes what a round costs and
-             can pay, and having to open a popup to remember which one you are
-             on is exactly how a player buys a 2x round by accident. -->
-        <span class="cb-cap">
-          {t('Bet')}{#if betFamily !== 'base'} <span class="cb-cap-mode">— {t(familyRules().label)}</span>{/if}
-        </span>
+        <span class="cb-cap">{t('Bet')}</span>
         <!-- The figure shown IS what leaves the balance, so it is the round's
              cost rather than the base bet. On a multiplied mode it turns blue
              and the base bet moves to a line underneath: one number to read,
@@ -2203,6 +2225,8 @@
           <span class="cb-bet-base">
             {numberToCurrencyString(betValue() > 0 ? betValue() : 0)} × {familyRules().cost}
           </span>
+        {:else if betFamily !== 'base'}
+          <span class="cb-bet-mode">{t(familyRules().label)}</span>
         {/if}
       </button>
       <div class="cb-betstep">
@@ -2316,7 +2340,6 @@
           >
             <span class="mode-option-head">
               <span class="mode-option-name">{t(rules.label)}</span>
-              <span class="mode-option-cost">{rules.cost}× {t('Bet')}</span>
             </span>
             <span class="mode-option-blurb">{t(FAMILY_BLURB[family])}</span>
             <!-- Approval requires the maximum win per mode. Read from

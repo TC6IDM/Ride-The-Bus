@@ -50,23 +50,27 @@ export default {
 	Forgiven: 'Прощено',
 	'Game modes': 'Режимы игры',
 	'Max win': 'Макс. выигрыш',
-	'Both figures are multiples of your bet, not of what the round costs.':
-		'Обе величины кратны вашей ставке, а не стоимости раунда.',
+	'Every mode costs 1× your bet.': 'Каждый режим стоит 1× вашей ставки.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Возврат игроку (RTP) составляет %s в каждом режиме, и каждый возвращает эту же величину на дистанции. Максимум, который может выплатить игра, — %m вашей ставки, в режиме Высокие ставки.',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
-		'Два выбора «Равно» — в среднем 1329,2×, до 1354,2×, максимум Классического режима.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'Ошибка на первой карте завершает раунд. Последующие промахи сохраняют 30% накопленного.',
 	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
 		'Карта 1 по-прежнему завершает раунд. После неё первый промах прощается и игра продолжается.',
-	'Misses keep only 20%, so every correct guess is worth more.':
-		'Промахи сохраняют лишь 20%, поэтому каждая верная догадка стоит дороже.',
 	'Skip card reveal on spacebar hold': 'Пропускать раздачу карт при пробеле',
 	'Skip the card reveal while the spacebar is held':
 		'Пропускать раздачу карт в раундах, начатых пробелом',
 	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'Пропускать раздачу карт при пробеле (кнопка с ползунками) проводит раунды, начатые пробелом, без анимации карт. Меняется только анимация — карты, шансы и выплата остаются прежними.',
+	'Card 1': 'Карта 1',
+	'Your first wrong guess': 'Ваш первый промах',
+	'Your second wrong guess': 'Ваш второй промах',
+	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
+		'«Равно» — самый редкий выбор, поэтому построенные на нём раунды дают наибольшие выигрыши и даются труднее всего. Два «Равно» подряд — максимум этого режима, %m вашей ставки.',
+	Playing: 'В игре',
+	'Card 2, 3 or 4': 'Карта 2, 3 или 4',
+	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
+		'Ошибка на первой карте завершает раунд. Последующие промахи сохраняют лишь 20%, поэтому каждая верная догадка стоит дороже.',
 	'Stop on full game win': 'Остановить при полной победе',
 
 	'How to Play': 'Как играть',
@@ -97,18 +101,9 @@ export default {
 	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
 		'Каждый этап умножает предыдущий, поэтому все четыре складываются в итоговую выплату раунда. Текущий множитель рядом с картами округляется вниз до одного знака после запятой, поэтому может выглядеть немного меньше этих значений.',
 	'If you guess wrong': 'Если вы ошиблись',
-	'Card 1 — the round pays nothing.': 'Карта 1 — раунд не приносит выплаты.',
-	'Card 2 — you get 0.5× your bet back.': 'Карта 2 — вы получаете обратно 0,5× ставки.',
-	'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.':
-		'Карта 3 или 4 — вы сохраняете 30 % накопленного множителя, то есть от 0,6× до 129×.',
 	'Full game wins': 'Полные победы',
 	'Guess all four cards right and the payout depends on how hard your picks were:':
 		'Если угаданы все четыре карты, выплата зависит от того, насколько сложным был ваш выбор:',
-	'No Equal picks — averages 17.3×, up to 317.4×.':
-		'Без выбора «Равно» — в среднем 17,3×, до 317,4×.',
-	'One Equal pick — averages 67.5×, up to 381.9×.': 'Одно «Равно» — в среднем 67,5×, до 381,9×.',
-	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
-		'«Равно» — самый редкий прогноз, поэтому построенные на нём раунды дают наибольшие выигрыши и труднее всего достижимы.',
 	'Speed and autoplay': 'Скорость и автоигра',
 	'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.':
 		'Турбо (кнопка с молнией) меняется от обычной скорости до мгновенной и влияет только на скорость переворота карт. Карты, вероятности и выплата остаются прежними.',
@@ -184,6 +179,8 @@ export default {
 	'Round details': 'Детали раунда',
 	'Play amount': 'Сумма ставки',
 	Mode: 'Режим',
+	'Game mode': 'Режим игры',
+	Guesses: 'Догадки',
 	Event: 'Событие',
 	Payout: 'Выплата',
 	Play: 'Воспроизвести',

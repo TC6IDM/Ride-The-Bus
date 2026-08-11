@@ -50,22 +50,26 @@ export default {
 	Forgiven: '免除',
 	'Game modes': 'ゲームモード',
 	'Max win': '最大配当',
-	'Both figures are multiples of your bet, not of what the round costs.':
-		'どちらの数値もラウンドの費用ではなく、ベット額の倍数です。',
+	'Every mode costs 1× your bet.': 'どのモードもベット額の1倍です。',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'還元率（RTP）はどのゲームモードでも %s で、いずれも多数のラウンドで同じ数値を還元します。このゲームの最大配当はハイステークスでベットの %m です。',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
-		'イコール2回 — 平均1329.2倍、最大1354.2倍。クラシックの上限です。',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'1枚目を外すとラウンド終了。以降のミスは積み上げた分の30%を保持します。',
 	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
 		'カード1は変わらずラウンド終了です。その後の最初のミスは免除され、続行します。',
-	'Misses keep only 20%, so every correct guess is worth more.':
-		'ミスは20%しか残らないぶん、的中1つ1つの価値が高くなります。',
 	'Skip card reveal on spacebar hold': 'スペースキーでカード演出をスキップ',
 	'Skip the card reveal while the spacebar is held': 'スペースキーで開始したラウンドのカード演出をスキップします',
 	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'スペースキーでカード演出をスキップ（スライダーボタン）は、スペースキーで始めたラウンドをカードのアニメーションなしで進めます。変わるのは演出だけで、カードや確率、配当には影響しません。',
+	'Card 1': 'カード1',
+	'Your first wrong guess': '最初のミス',
+	'Your second wrong guess': '2度目のミス',
+	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
+		'イコールは最も出にくい予想なので、それを軸にしたラウンドが最大の配当を生み、同時に最も難しくなります。イコール2回が揃うのがこのモードの上限で、ベットの %m です。',
+	Playing: 'プレイ中',
+	'Card 2, 3 or 4': 'カード2・3・4',
+	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
+		'1枚目を外すとラウンド終了です。以降のミスは20%しか残らないぶん、的中1つ1つの価値が高くなります。',
 	'Stop on full game win': 'フルゲーム達成で停止',
 
 	'How to Play': '遊び方',
@@ -96,17 +100,9 @@ export default {
 	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
 		'各ステージは前のステージに掛け合わされ、4つ合わせてラウンドの最終配当になります。カードの横に表示される累計は小数第1位に切り捨てられるため、ここの数値よりわずかに低く見えることがあります。',
 	'If you guess wrong': '予想が外れた場合',
-	'Card 1 — the round pays nothing.': '1枚目 — 配当はありません。',
-	'Card 2 — you get 0.5× your bet back.': '2枚目 — ベット額の0.5倍が戻ります。',
-	'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.':
-		'3枚目または4枚目 — それまでに積み上げた倍率の30％が残り、0.6倍から129倍の範囲になります。',
 	'Full game wins': 'フルゲーム達成時の配当',
 	'Guess all four cards right and the payout depends on how hard your picks were:':
 		'4枚すべて的中した場合、配当は選択の難しさによって変わります：',
-	'No Equal picks — averages 17.3×, up to 317.4×.': 'イコールなし — 平均17.3倍、最大317.4倍。',
-	'One Equal pick — averages 67.5×, up to 381.9×.': 'イコール1つ — 平均67.5倍、最大381.9倍。',
-	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
-		'イコールは最も珍しい予想なので、それを含むラウンドは配当が最も大きく、同時に最も達成が困難です。',
 	'Speed and autoplay': '速度とオートプレイ',
 	'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.':
 		'ターボ（稲妻のボタン）は通常から瞬時まで調整でき、カードがめくれる速さだけを変えます。カードや確率、配当が変わることはありません。',
@@ -184,6 +180,8 @@ export default {
 	'Round details': 'ラウンド詳細',
 	'Play amount': 'ベット額',
 	Mode: 'モード',
+	'Game mode': 'ゲームモード',
+	Guesses: '予想',
 	Event: 'イベント',
 	Payout: '配当',
 	Play: '再生',

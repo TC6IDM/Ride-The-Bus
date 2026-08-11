@@ -66,7 +66,15 @@ export type ModeFamily = (typeof MODE_FAMILIES)[number];
 export type FamilyRules = {
   /** Prepended to the mode name. Empty for base, whose names are published. */
   prefix: string;
-  /** Cost multiplier. The base mode is 1.0 and must stay the cheapest. */
+  /**
+   * Cost multiplier. The base mode is 1.0 and must stay the cheapest.
+   *
+   * All three are 1.0 today, and that is forced rather than chosen: etl40b is
+   * an absolute sum against a fixed limit and is not divided by cost, so a 2x
+   * mode's figure doubles for the same shape and only a low-volatility family
+   * survives it. See MODE_FAMILIES in game_calculations.py for the table.
+   * The multiplied-bet display in Game.svelte is kept and simply goes quiet.
+   */
   cost: number;
   /** Fraction of the running multiplier kept on a miss, per stage. */
   retention: readonly [number, number, number, number];
@@ -89,6 +97,22 @@ export type FamilyRules = {
    * payout maths actually reaches.
    */
   maxWin: number;
+  /**
+   * Does landing all four cards celebrate on its own, however small it pays?
+   *
+   * winTierFor takes a `fullGameWin` flag that floors a complete round at the
+   * bottom tier, so the game's defining moment is never met with silence - the
+   * smallest possible full win is 6.6x, under the 10x entry threshold.
+   *
+   * False for Second Chance, and only there. Forgiveness means a round survives
+   * its first wrong guess, so "all four cards" stops being the rare event the
+   * floor was written for and becomes the ordinary one - the takeover fired on
+   * most rounds, which is not a celebration but an interruption. Second Chance
+   * still celebrates on SIZE, at the same thresholds as everything else; it
+   * just no longer treats finishing the round as remarkable in itself, because
+   * in that mode it is not.
+   */
+  celebrateEveryFullWin: boolean;
 };
 
 const BASE_RETENTION = [0, 0.3, 0.3, 0.3] as const;
@@ -102,10 +126,11 @@ export const FAMILY_RULES: Record<ModeFamily, FamilyRules> = {
     forgiveFrom: 0,
     label: 'Classic',
     maxWin: 1354.2,
+    celebrateEveryFullWin: true,
   },
   sc: {
     prefix: 'sc_',
-    cost: 2,
+    cost: 1,
     retention: BASE_RETENTION,
     forgive: 0.5,
     // Card 1 still ends the round. Forgiving it too left almost no round paying
@@ -113,16 +138,18 @@ export const FAMILY_RULES: Record<ModeFamily, FamilyRules> = {
     // target and made the table unbuildable - see the Python for the full note.
     forgiveFrom: 1,
     label: 'Second Chance',
-    maxWin: 1170.4,
+    maxWin: 585.2,
+    celebrateEveryFullWin: false,
   },
   hs: {
     prefix: 'hs_',
-    cost: 2,
+    cost: 1,
     retention: [0, 0.2, 0.2, 0.2],
     forgive: null,
     forgiveFrom: 0,
     label: 'High Stakes',
-    maxWin: 3820.5,
+    maxWin: 1910.2,
+    celebrateEveryFullWin: true,
   },
 };
 
@@ -136,11 +163,11 @@ export const FAMILY_RULES: Record<ModeFamily, FamilyRules> = {
 export const FAMILY_BLURB: Record<ModeFamily, string> & {
   base: 'A wrong first card ends the round. Later misses keep 30% of what you had built.';
   sc: 'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.';
-  hs: 'Misses keep only 20%, so every correct guess is worth more.';
+  hs: 'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.';
 } = {
   base: 'A wrong first card ends the round. Later misses keep 30% of what you had built.',
   sc: 'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.',
-  hs: 'Misses keep only 20%, so every correct guess is worth more.',
+  hs: 'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.',
 };
 
 /** Longest prefix first, so "sc_" is tested before base's empty one. */
@@ -165,6 +192,49 @@ export function modeName(
   family: ModeFamily = 'base',
 ): string {
   return `${FAMILY_RULES[family].prefix}${color}_${higherLower}_${insideOutside}_${suit}`;
+}
+
+/** A published mode name taken apart. Null when the string is not one. */
+export type ParsedMode = {
+  family: ModeFamily;
+  color: ColorChoice;
+  higherLower: HigherLowerChoice;
+  insideOutside: InsideOutsideChoice;
+  suit: SuitChoice;
+};
+
+/**
+ * Inverse of modeName(). Mirrors math-sdk game_calculations.py:parse_mode_name.
+ *
+ * The family prefix is stripped BEFORE splitting, which is the whole point:
+ * "sc_red_higher_equal_spade" has five underscore-separated parts, not four, so
+ * anything that splits first and counts second reads every non-base mode as
+ * malformed. The replay screen did exactly that and printed the raw slug.
+ *
+ * Returns null rather than throwing - it parses strings that arrive from the
+ * RGS and from URLs, so a bad one is an expected input, not a bug.
+ */
+export function parseModeName(mode: string): ParsedMode | null {
+  const family = familyOf(mode);
+  const body = mode.slice(FAMILY_RULES[family].prefix.length);
+  const parts = body.split('_');
+  if (parts.length !== 4) return null;
+  const [color, higherLower, insideOutside, suit] = parts as [string, string, string, string];
+  if (
+    !(COLOR_CHOICES as readonly string[]).includes(color) ||
+    !(HIGHER_LOWER_CHOICES as readonly string[]).includes(higherLower) ||
+    !(INSIDE_OUTSIDE_CHOICES as readonly string[]).includes(insideOutside) ||
+    !(SUIT_CHOICES as readonly string[]).includes(suit)
+  ) {
+    return null;
+  }
+  return {
+    family,
+    color: color as ColorChoice,
+    higherLower: higherLower as HigherLowerChoice,
+    insideOutside: insideOutside as InsideOutsideChoice,
+    suit: suit as SuitChoice,
+  };
 }
 
 /**

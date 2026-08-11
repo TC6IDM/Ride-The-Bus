@@ -39,6 +39,13 @@
 		/** Final payout as a multiple of the bet, for the sub-caption. */
 		multiplier: number;
 		/**
+		 * The playing family's ladder. Passed in rather than read from the module
+		 * constant because the top band sits on the family's own ceiling - see
+		 * winTiersFor. The count-up needs it to know where the leg BELOW the
+		 * earned tier stops climbing.
+		 */
+		tiers: readonly WinTier[];
+		/**
 		 * Autoplay: show the finished figure, hold briefly, then leave on its own.
 		 * Counting up through a 100-round run would make autoplay unusable, and a
 		 * partial count cut off mid-climb looks broken - so this snaps straight to
@@ -71,7 +78,7 @@
 	 * The legs of the climb. Built once - the props for a given celebration never
 	 * change, and rebuilding mid-count would restart it.
 	 */
-	const segments = countUpSegments(props.multiplier, props.tier);
+	const segments = countUpSegments(props.multiplier, props.tier, props.tiers);
 
 	/** Display units per 1x, for converting a leg's multipliers into money. */
 	const perX = props.multiplier > 0 ? props.amount / props.multiplier : 0;

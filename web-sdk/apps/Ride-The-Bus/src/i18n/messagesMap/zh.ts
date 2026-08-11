@@ -50,21 +50,26 @@ export default {
 	Forgiven: '已豁免',
 	'Game modes': '游戏模式',
 	'Max win': '最高赔付',
-	'Both figures are multiples of your bet, not of what the round costs.':
-		'两个数值都是投注额的倍数，而非本局费用的倍数。',
+	'Every mode costs 1× your bet.': '每种模式的费用均为投注额的1倍。',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'所有游戏模式的返奖率（RTP）均为 %s，每种模式在多局之后都返还同一数值。本游戏的最高赔付为投注额的 %m，出现在高额投注模式。',
-	'Two Equal picks — averages 1329.2×, up to 1354.2×, the most Classic can pay.':
-		'两次“相等”选择 — 平均1329.2倍，最高1354.2倍，这是经典模式的上限。',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'第一张牌猜错即结束本局。之后猜错保留已累积的30%。',
 	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
 		'第一张牌仍会结束本局。此后第一次猜错可获豁免并继续游戏。',
-	'Misses keep only 20%, so every correct guess is worth more.': '猜错仅保留20%，因此每一次猜对都更有价值。',
 	'Skip card reveal on spacebar hold': '按空格键时跳过发牌动画',
 	'Skip the card reveal while the spacebar is held': '在以空格键开始的回合中跳过发牌动画',
 	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
 		'按空格键时跳过发牌动画（滑块按钮）会在没有发牌动画的情况下进行以空格键开始的回合。它只改变动画，绝不影响牌面、赔率或赔付。',
+	'Card 1': '第一张牌',
+	'Your first wrong guess': '你的第一次猜错',
+	'Your second wrong guess': '你的第二次猜错',
+	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
+		'“相等”是最难中的选择，因此以它为核心的回合赔付最高，也最难达成。两次“相等”同时命中是本模式的上限，为投注额的 %m。',
+	Playing: '游戏中',
+	'Card 2, 3 or 4': '第二、三或四张牌',
+	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
+		'第一张牌猜错即结束本局。之后猜错仅保留20%，因此每一次猜对都更有价值。',
 	'Stop on full game win': '全中时停止',
 
 	'How to Play': '玩法说明',
@@ -95,18 +100,9 @@ export default {
 	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
 		'每个阶段都会与前一个阶段相乘，四个阶段共同构成本局的最终赔付。牌旁显示的累计倍数会向下取整到一位小数，因此可能略低于上述数值。',
 	'If you guess wrong': '若猜错',
-	'Card 1 — the round pays nothing.': '第 1 张 — 本局无赔付。',
-	'Card 2 — you get 0.5× your bet back.': '第 2 张 — 返还 0.5 倍投注额。',
-	'Card 3 or 4 — you keep 30% of the multiplier you had built up, which ranges from 0.6× to 129×.':
-		'第 3 或第 4 张 — 保留已累积倍数的 30%，范围为 0.6 倍至 129 倍。',
 	'Full game wins': '全中赔付',
 	'Guess all four cards right and the payout depends on how hard your picks were:':
 		'四张全中时，赔付取决于你的预测有多难：',
-	'No Equal picks — averages 17.3×, up to 317.4×.': '未选「相同」 — 平均 17.3 倍，最高 317.4 倍。',
-	'One Equal pick — averages 67.5×, up to 381.9×.':
-		'选一次「相同」 — 平均 67.5 倍，最高 381.9 倍。',
-	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land.':
-		'「相同」是最罕见的预测，因此以它为基础的局赔付最高，也最难达成。',
 	'Speed and autoplay': '速度与自动游戏',
 	'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.':
 		'加速（闪电按钮）可从正常调到瞬间，只改变翻牌速度，绝不会改变牌面、概率或赔付。',
@@ -180,6 +176,8 @@ export default {
 	'Round details': '回合详情',
 	'Play amount': '投注金额',
 	Mode: '模式',
+	'Game mode': '游戏模式',
+	Guesses: '猜测',
 	Event: '事件',
 	Payout: '派彩',
 	Play: '播放',

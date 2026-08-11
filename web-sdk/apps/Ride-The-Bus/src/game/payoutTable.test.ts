@@ -13,7 +13,7 @@
 import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
 
-import { PAYOUT_ROWS, FULL_WIN_ROWS, BUST_ROWS } from './payoutTable.ts';
+import { PAYOUT_ROWS, bustRowsFor } from './payoutTable.ts';
 import {
 	localColorPayouts,
 	localHigherLowerPayouts,
@@ -21,6 +21,7 @@ import {
 	localSuitPayouts,
 } from './localRound.ts';
 import { createDeck, rankValue, ranks } from './roundContract.ts';
+import { FAMILY_RULES, MODE_FAMILIES } from './modes.ts';
 import { MAX_WIN_MULTIPLIER } from './winTiers.ts';
 
 const row = (stage: number, label: string) => {
@@ -130,24 +131,54 @@ describe('paytable is complete and self-consistent', () => {
 		}
 	});
 
-	test('the biggest full win matches the published max win', () => {
-		const biggest = Math.max(...FULL_WIN_ROWS.map((r) => r.max));
+	test('the celebration ceiling matches the base family the rules quote', () => {
+		// Replaces a check against FULL_WIN_ROWS, which restated 1354.2x as data
+		// and so only ever confirmed the constant agreed with itself. The claim
+		// worth pinning is that winTiers' DEFAULT ladder tops out where the base
+		// family actually does - every other family passes its own ceiling in.
 		assert.equal(
-			biggest,
 			MAX_WIN_MULTIPLIER,
-			'the rules must not advertise a ceiling different from winTiers',
+			FAMILY_RULES.base.maxWin,
+			'the default win ladder must not advertise a ceiling the base mode cannot reach',
 		);
 	});
 
-	test('full-win families are ordered and each average sits under its max', () => {
-		for (const r of FULL_WIN_ROWS) {
-			assert.ok(r.average < r.max, `${r.label}: average is not below max`);
+	test('every family says what a wrong guess costs, starting with card 1', () => {
+		for (const family of MODE_FAMILIES) {
+			const rows = bustRowsFor(FAMILY_RULES[family]);
+			assert.ok(rows.length >= 2, `${family} should state at least two outcomes`);
+			assert.equal(rows[0]!.label, 'Card 1', `${family} must start with card 1`);
+			for (const row of rows) {
+				assert.ok(row.detail.trim().length > 0, `${family}: empty detail`);
+			}
 		}
-		const maxes = FULL_WIN_ROWS.map((r) => r.max);
-		assert.deepEqual(maxes, [...maxes].sort((a, b) => a - b), 'families are out of order');
 	});
 
-	test('bust rules cover all four cards', () => {
-		assert.equal(BUST_ROWS.length, 3, 'card 1, card 2, and cards 3-or-4');
+	test('a retention is never quoted in two units in the same list', () => {
+		// THE BUG THIS EXISTS FOR. The rows used to read "Card 2 - 0.5x your bet"
+		// beside "Card 3 or 4 - keep 30%": one multiple of the BET and one share
+		// of the RUNNING MULTIPLIER, listed as though they were two rules. They
+		// are one rule seen twice. Every row must now speak in percent, and the
+		// bet-multiple lives in the note.
+		for (const family of MODE_FAMILIES) {
+			const rows = bustRowsFor(FAMILY_RULES[family]);
+			for (const row of rows) {
+				assert.ok(
+					!/\d× your bet/.test(row.detail),
+					`${family}: "${row.detail}" mixes a bet multiple into the rules list`,
+				);
+			}
+		}
+	});
+
+	test('each family quotes its own retention', () => {
+		assert.match(bustRowsFor(FAMILY_RULES.base)[1]!.detail, /30%/);
+		assert.match(bustRowsFor(FAMILY_RULES.hs)[1]!.detail, /20%/);
+	});
+
+	test('the forgiving family describes forgiveness, not a card-2 payout', () => {
+		const rows = bustRowsFor(FAMILY_RULES.sc);
+		assert.equal(rows[1]!.label, 'Your first wrong guess');
+		assert.match(rows[1]!.detail, /forgiven/);
 	});
 });
