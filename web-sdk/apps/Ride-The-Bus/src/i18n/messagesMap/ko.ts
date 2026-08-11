@@ -50,6 +50,7 @@ export default {
 	Forgiven: '면제됨',
 	'Game modes': '게임 모드',
 	'Max win': '최대 배당',
+	'Volatility %s of %t': '변동성 %t단계 중 %s',
 	'Every mode costs 1× your bet.': '모든 모드는 베팅액의 1배입니다.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'환수율(RTP)은 모든 게임 모드에서 %s이며, 각 모드는 여러 라운드에 걸쳐 같은 수치를 돌려줍니다. 이 게임의 최대 배당은 하이 스테이크에서 베팅의 %m입니다.',
@@ -97,8 +98,8 @@ export default {
 	Pays: '배당',
 	'Red or Black': '빨강 또는 검정',
 	'Any suit': '모든 무늬',
-	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
-		'각 단계는 이전 단계에 곱해지며, 네 단계가 합쳐져 라운드의 최종 배당이 됩니다. 카드 옆에 표시되는 누적 배수는 소수점 첫째 자리에서 내림되므로 여기 수치보다 조금 낮게 보일 수 있습니다.',
+	'Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.':
+		'각 단계는 이전 단계에 곱해지며 완전한 정밀도로 누적됩니다. 위 수치는 반올림하지 않은 정확한 값입니다. 소수점 한 자리로 내림하는 것은 라운드의 최종 배당에 대해 단 한 번만 적용됩니다. 카드 옆에 표시되는 누적 금액도 단계마다 같은 방식으로 처리되므로, 라운드 중에는 이 수치보다 약간 낮게 보일 수 있습니다.',
 	'If you guess wrong': '예측이 틀린 경우',
 	'Full game wins': '풀 게임 배당',
 	'Guess all four cards right and the payout depends on how hard your picks were:':

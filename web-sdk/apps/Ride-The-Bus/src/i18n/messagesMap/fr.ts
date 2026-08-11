@@ -50,6 +50,7 @@ export default {
 	Forgiven: 'Pardonné',
 	'Game modes': 'Modes de jeu',
 	'Max win': 'Gain maximum',
+	'Volatility %s of %t': 'Volatilité %s sur %t',
 	'Every mode costs 1× your bet.': 'Chaque mode coûte 1× votre mise.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Le taux de redistribution (RTP) est de %s dans tous les modes, et chacun rend ce même chiffre sur de nombreuses manches. Ce jeu peut rapporter au maximum %m votre mise, en mode Gros enjeux.',
@@ -99,8 +100,8 @@ export default {
 	Pays: 'Rapporte',
 	'Red or Black': 'Rouge ou noir',
 	'Any suit': 'N’importe quelle couleur',
-	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
-		'Chaque étape multiplie la précédente, si bien que les quatre se combinent pour former le gain final de la manche. Le total affiché à côté des cartes est arrondi à l’inférieur à une décimale et peut donc paraître légèrement inférieur à ces valeurs.',
+	'Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.':
+		'Chaque étape multiplie la précédente, et elles se cumulent en pleine précision — les chiffres ci-dessus sont exacts, non arrondis. Seul le gain final de la manche est arrondi à l’inférieur, une seule fois, à une décimale. Le total courant affiché près des cartes est arrondi de la même façon à chaque étape : en cours de manche, il peut donc paraître légèrement inférieur à ces chiffres.',
 	'If you guess wrong': 'Si vous vous trompez',
 	'Full game wins': 'Parties complètes',
 	'Guess all four cards right and the payout depends on how hard your picks were:':

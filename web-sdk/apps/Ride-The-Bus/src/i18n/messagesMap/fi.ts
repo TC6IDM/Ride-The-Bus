@@ -50,6 +50,7 @@ export default {
 	Forgiven: 'Annettu anteeksi',
 	'Game modes': 'Pelitilat',
 	'Max win': 'Enimmäisvoitto',
+	'Volatility %s of %t': 'Volatiliteetti %s / %t',
 	'Every mode costs 1× your bet.': 'Jokainen tila maksaa 1× panoksesi.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Palautusprosentti (RTP) on %s jokaisessa pelitilassa, ja jokainen palauttaa saman luvun monen kierroksen aikana. Eniten tämä peli voi maksaa %m panoksestasi, Suuret panokset -tilassa.',
@@ -98,8 +99,8 @@ export default {
 	Pays: 'Maksaa',
 	'Red or Black': 'Punainen tai musta',
 	'Any suit': 'Mikä tahansa maa',
-	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
-		'Jokainen vaihe kertoo edellisen, joten neljä yhdessä muodostavat kierroksen lopullisen voiton. Korttien vieressä näkyvä juokseva summa pyöristetään alaspäin yhteen desimaaliin, joten se voi näyttää hieman näitä lukuja pienemmältä.',
+	'Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.':
+		'Jokainen vaihe kertoo edellisen, ja ne kertautuvat täydellä tarkkuudella — yllä olevat luvut ovat tarkkoja eivätkä pyöristettyjä. Vain kierroksen lopullinen voitto pyöristetään alaspäin kerran yhteen desimaaliin. Korttien vieressä näkyvä juokseva summa pyöristetään samoin joka vaiheessa, joten kierroksen aikana se voi näyttää hieman näitä lukuja pienemmältä.',
 	'If you guess wrong': 'Jos arvaat väärin',
 	'Full game wins': 'Täydet voitot',
 	'Guess all four cards right and the payout depends on how hard your picks were:':

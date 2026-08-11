@@ -23,6 +23,7 @@
   import SoundIcon from './SoundIcon.svelte';
   import TableScene from './TableScene.svelte';
   import HowToPlayPopup from './HowToPlayPopup.svelte';
+  import BoltMeter from './BoltMeter.svelte';
   import WinCelebration from './WinCelebration.svelte';
   import { autoHoldMs, winTierFor, winTiersFor, type WinTier } from '../game/winTiers';
   // Of the five documented RGS endpoints this game uses three: authenticate
@@ -55,6 +56,13 @@
     modeName,
     type ModeFamily,
   } from '../game/modes';
+  import {
+    FAMILY_BOLTS,
+    FAMILY_BOLT_CEILING,
+    VOLATILITY_BOLTS,
+    boltsFor,
+    volatilityColorVar,
+  } from '../game/volatility';
   import { gameReady, loaderGone } from '../game/ready.svelte';
   import { jurisdiction, TURBO_CAP_WITHOUT_SUPER } from '../game/jurisdiction.svelte';
   // Payout maths and bet-grid arithmetic live in plain modules so they can be
@@ -445,6 +453,22 @@
   const familyRules = () => FAMILY_RULES[betFamily];
   /** What one round actually costs at the current bet. */
   const roundCost = (bet: number = betValue()) => bet * familyRules().cost;
+
+  /**
+   * Volatility of the bet as it currently stands - the mode plus the guesses.
+   *
+   * Reads the live choices, so it climbs the moment an Equal is picked and drops
+   * again if it is cleared. Before those two guesses are made the Equal count is
+   * zero, which is not a placeholder: no Equal picked IS the calm end of the
+   * scale, and the meter is showing the family's own floor honestly.
+   */
+  const liveBolts = () => boltsFor(betFamily, hlChoice, ioChoice);
+  /** The meter's screen-reader text. Both stops are substituted so the sentence
+   *  cannot go stale if the ruler ever gains a stop. */
+  const volatilityLabel = (lit: number) =>
+    t('Volatility %s of %t')
+      .replace('%s', String(lit))
+      .replace('%t', String(VOLATILITY_BOLTS));
 
   // The celebration ladder for the mode in play. EVERY band is per family, not
   // just the top one: a tier is a claim about rarity, and the three families
@@ -2227,9 +2251,30 @@
           <span class="cb-bet-base">
             {numberToCurrencyString(betValue() > 0 ? betValue() : 0)} × {familyRules().cost}
           </span>
-        {:else if betFamily !== 'base'}
-          <span class="cb-bet-mode">{t(familyRules().label)}</span>
         {/if}
+        <!-- The live mode, with its volatility. Shown on EVERY family, Classic
+             included - it used to be hidden there on the grounds that "Classic"
+             under every bet is noise, which was fair while the line was only a
+             name. It now carries the volatility rating, and hiding that on the
+             one mode most players never leave would be hiding it from most
+             players. Showing it always also stops the bar changing height when
+             the mode changes.
+
+             Same 5-bolt ruler as the mode picker, deliberately: two lightning
+             meters that counted differently would be the "two units on one
+             screen" mistake this game has already made three times. -->
+        <span
+          class="cb-bet-mode"
+          style={`--vol-color: ${volatilityColorVar(betFamily)}`}
+        >
+          <BoltMeter
+            lit={liveBolts()}
+            total={VOLATILITY_BOLTS}
+            overflowAfter={FAMILY_BOLT_CEILING}
+            label={volatilityLabel(liveBolts())}
+          />
+          {t(familyRules().label)}
+        </span>
       </button>
       <div class="cb-betstep">
         <button class="cb-step" onclick={() => stepBet(1)} disabled={autoRunning || stateUrlDerived.replay()} aria-label={t('Increase bet')}>{@render iconPlus()}</button>
@@ -2342,6 +2387,27 @@
           >
             <span class="mode-option-head">
               <span class="mode-option-name">{t(rules.label)}</span>
+              <!-- Volatility, opposite the name. Every mode returns the same
+                   96.00%, so the ceiling on the row below is only half the
+                   story - this is the other half, and the ordering behind it
+                   holds for every guess combination, not on average. See
+                   game/volatility.ts. -->
+              <!-- The FAMILY's own rating, without the guesses. The bet display
+                   adds one stop per Equal pick on top; this row is what the mode
+                   contributes before any of that, which is the only part of the
+                   number choosing a mode actually changes. Drawn on the same
+                   seven stops as the bar so the two are one ruler. -->
+              <span
+                class="mode-option-vol"
+                style={`--vol-color: ${volatilityColorVar(family)}`}
+              >
+                <BoltMeter
+                  lit={FAMILY_BOLTS[family]}
+                  total={VOLATILITY_BOLTS}
+                  overflowAfter={FAMILY_BOLT_CEILING}
+                  label={volatilityLabel(FAMILY_BOLTS[family])}
+                />
+              </span>
             </span>
             <span class="mode-option-blurb">{t(FAMILY_BLURB[family])}</span>
             <!-- Approval requires the maximum win per mode. Read from

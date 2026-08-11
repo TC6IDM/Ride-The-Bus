@@ -45,6 +45,23 @@
   --quad-fs: calc(var(--ui) * 2.33); /* 25.6px */
   --gap: calc(var(--ui) * 2.18); /* 24px */
   --pad: calc(var(--ui) * 2.18); /* 24px */
+
+  /* Volatility palette: green, yellow, red as the modes get wilder. Not
+     decorative - sc < base < hs holds for every one of the 64 guess
+     combinations in the published stats, so the three colours rank a real
+     ordering rather than labelling three flavours. See game/volatility.ts.
+
+     Declared here rather than beside either meter because there are two of them
+     now (the mode picker and the bet display) and they must burn the same
+     colours; a per-component copy is how the two would drift apart. */
+  --vol-sc: #3ddc84;
+  --vol-base: #ffc93c;
+  --vol-hs: #ff5c5c;
+  /* Stops past the family ceiling, which only Equal picks on High Stakes reach.
+     Deliberately off the green-yellow-red ramp rather than a deeper red: it is
+     not "more of the same", it is past the top of the scale the three modes
+     span. Kept bright enough to survive the drop-shadow on a dark bar. */
+  --vol-overflow: #9d4edd;
   height: 100vh;
   width: 100vw;
   display: flex;

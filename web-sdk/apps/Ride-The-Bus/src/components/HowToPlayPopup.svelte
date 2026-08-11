@@ -143,7 +143,18 @@
             {/each}
           </tbody>
         </table>
-        <p>{t('Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.')}</p>
+        <!-- WHY THIS PARAGRAPH IS SO EXACT ABOUT ROUNDING.
+             The table above quotes 1.99x for the colour pick, and the chip
+             beside card 1 reads 1.90x for the same pick - because that chip is
+             quantizeMultiplier() applied to the running total for display, while
+             the total the round is actually settled from is never touched. Two
+             numbers for the same thing on two screens is exactly the mistake
+             this game keeps making, so the paragraph states which is which
+             rather than leaving a player to reconcile them.
+             The figures in the table are the true factors and must stay at 2dp:
+             rounding them to 1.9x would make the table WRONG, because two 1.99x
+             stages compound to 3.96x, not 3.61x. -->
+        <p>{t('Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.')}</p>
 
         <!-- Computed per mode. This was once a single fixed list saying both
              "Card 2 - you get 0.5x your bet back" AND "you keep 30%", which

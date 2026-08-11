@@ -50,6 +50,7 @@ export default {
 	Forgiven: 'Được bỏ qua',
 	'Game modes': 'Chế độ chơi',
 	'Max win': 'Thắng tối đa',
+	'Volatility %s of %t': 'Độ biến động %s trên %t',
 	'Every mode costs 1× your bet.': 'Mỗi chế độ có giá 1× tiền cược của bạn.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Tỷ lệ trả thưởng (RTP) là %s ở mọi chế độ, và mỗi chế độ đều trả về cùng con số đó qua nhiều vòng. Mức trả thưởng cao nhất của trò chơi là %m tiền cược của bạn, ở chế độ Cược lớn.',
@@ -98,8 +99,8 @@ export default {
 	Pays: 'Trả',
 	'Red or Black': 'Đỏ hoặc đen',
 	'Any suit': 'Bất kỳ chất nào',
-	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
-		'Mỗi chặng nhân với chặng trước đó, nên cả bốn kết hợp thành mức trả thưởng cuối cùng của vòng. Tổng lũy kế hiển thị bên cạnh các lá bài được làm tròn xuống một chữ số thập phân, nên có thể thấp hơn các con số này một chút.',
+	'Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.':
+		'Mỗi chặng nhân với chặng trước đó và chúng cộng dồn ở độ chính xác đầy đủ — các con số ở trên là chính xác, không làm tròn. Chỉ khoản chi trả cuối cùng của ván mới được làm tròn xuống, một lần duy nhất, tới một chữ số thập phân. Tổng đang chạy bên cạnh các lá bài cũng được làm tròn theo cách đó ở từng bước, nên trong ván nó có thể hiển thị thấp hơn các con số này một chút.',
 	'If you guess wrong': 'Nếu bạn đoán sai',
 	'Full game wins': 'Thắng toàn ván',
 	'Guess all four cards right and the payout depends on how hard your picks were:':

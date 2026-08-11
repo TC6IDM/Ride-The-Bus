@@ -51,6 +51,7 @@ export default {
 	Forgiven: 'مُتسامَح عنها',
 	'Game modes': 'أوضاع اللعبة',
 	'Max win': 'أقصى ربح',
+	'Volatility %s of %t': 'التقلب %s من %t',
 	'Every mode costs 1× your bet.': 'كل وضع يكلّف 1× من رهانك.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'نسبة العائد للاعب (RTP) هي %s في كل أوضاع اللعبة، ويعيد كل وضع النسبة نفسها على مدى جولات كثيرة. وأقصى ما يمكن أن تدفعه هذه اللعبة هو %m من رهانك، في وضع الرهانات العالية.',
@@ -99,8 +100,8 @@ export default {
 	Pays: 'يدفع',
 	'Red or Black': 'أحمر أو أسود',
 	'Any suit': 'أي شكل',
-	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
-		'كل مرحلة تضاعف ما قبلها، لذا تتجمع الأربع معًا في الأرباح النهائية للجولة. ويُقرَّب الإجمالي الظاهر بجانب البطاقات إلى منزلة عشرية واحدة للأسفل، لذا قد يظهر أقل قليلًا من هذه الأرقام.',
+	'Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.':
+		'يضرب كل دور في الدور الذي قبله، وتتراكم القيم بدقة كاملة — الأرقام أعلاه دقيقة وغير مقرّبة. يُقرّب مكسب الجولة النهائي نزولاً مرة واحدة فقط إلى خانة عشرية واحدة. ويُقرّب الإجمالي الظاهر بجانب الأوراق بالطريقة نفسها في كل خطوة، لذا قد يبدو أقل قليلاً من هذه الأرقام أثناء الجولة.',
 	'If you guess wrong': 'إذا خمّنت خطأ',
 	'Full game wins': 'الفوز الكامل',
 	'Guess all four cards right and the payout depends on how hard your picks were:':

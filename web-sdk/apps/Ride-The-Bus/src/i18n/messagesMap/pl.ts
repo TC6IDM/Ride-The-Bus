@@ -50,6 +50,7 @@ export default {
 	Forgiven: 'Wybaczone',
 	'Game modes': 'Tryby gry',
 	'Max win': 'Maks. wygrana',
+	'Volatility %s of %t': 'Zmienność %s z %t',
 	'Every mode costs 1× your bet.': 'Każdy tryb kosztuje 1× twojego zakładu.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Zwrot dla gracza (RTP) wynosi %s w każdym trybie, a każdy zwraca tę samą wartość na przestrzeni wielu rund. Najwięcej, ile ta gra może wypłacić, to %m twojego zakładu, w trybie Wysoka stawka.',
@@ -98,8 +99,8 @@ export default {
 	Pays: 'Wypłaca',
 	'Red or Black': 'Czerwony lub czarny',
 	'Any suit': 'Dowolny kolor',
-	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
-		'Każdy etap mnoży poprzedni, więc cztery razem składają się na końcową wypłatę rundy. Suma bieżąca wyświetlana obok kart jest zaokrąglana w dół do jednego miejsca po przecinku, więc może być nieco niższa niż te wartości.',
+	'Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.':
+		'Każdy etap mnoży poprzedni, a wartości kumulują się z pełną dokładnością — liczby powyżej są dokładne, nie zaokrąglone. Tylko końcowa wypłata rundy jest zaokrąglana w dół, jeden raz, do jednego miejsca po przecinku. Suma bieżąca obok kart jest zaokrąglana tak samo na każdym kroku, więc w trakcie rundy może wyglądać nieco niżej niż te wartości.',
 	'If you guess wrong': 'Jeśli się pomylisz',
 	'Full game wins': 'Pełne wygrane',
 	'Guess all four cards right and the payout depends on how hard your picks were:':

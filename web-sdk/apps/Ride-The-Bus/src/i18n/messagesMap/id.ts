@@ -50,6 +50,7 @@ export default {
 	Forgiven: 'Dimaafkan',
 	'Game modes': 'Mode permainan',
 	'Max win': 'Kemenangan maks',
+	'Volatility %s of %t': 'Volatilitas %s dari %t',
 	'Every mode costs 1× your bet.': 'Setiap mode berbiaya 1× taruhan Anda.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Return to player (RTP) adalah %s di setiap mode, dan masing-masing mengembalikan angka yang sama selama banyak ronde. Maksimum yang dapat dibayar game ini adalah %m taruhan Anda, di Taruhan Tinggi.',
@@ -99,8 +100,8 @@ export default {
 	Pays: 'Membayar',
 	'Red or Black': 'Merah atau Hitam',
 	'Any suit': 'Semua jenis',
-	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
-		'Setiap tahap mengalikan tahap sebelumnya, sehingga keempatnya bergabung menjadi pembayaran akhir ronde. Total berjalan yang tampil di samping kartu dibulatkan ke bawah ke satu desimal, jadi bisa terlihat sedikit di bawah angka-angka ini.',
+	'Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.':
+		'Setiap tahap mengalikan tahap sebelumnya, dan semuanya digabungkan dengan presisi penuh — angka di atas akurat, bukan pembulatan. Hanya pembayaran akhir ronde yang dibulatkan ke bawah, satu kali, ke satu angka desimal. Total berjalan di samping kartu dibulatkan dengan cara yang sama di setiap langkah, jadi selama ronde nilainya bisa terlihat sedikit lebih rendah dari angka-angka ini.',
 	'If you guess wrong': 'Jika tebakan Anda salah',
 	'Full game wins': 'Kemenangan penuh',
 	'Guess all four cards right and the payout depends on how hard your picks were:':

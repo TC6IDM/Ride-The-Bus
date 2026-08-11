@@ -50,6 +50,7 @@ export default {
 	Forgiven: 'Affedildi',
 	'Game modes': 'Oyun modları',
 	'Max win': 'Maksimum kazanç',
+	'Volatility %s of %t': 'Oynaklık %t üzerinden %s',
 	'Every mode costs 1× your bet.': 'Her mod bahsinizin 1 katıdır.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Oyuncuya dönüş (RTP) her oyun modunda %s olup her mod çok sayıda turda aynı oranı döndürür. Bu oyunun ödeyebileceği en yüksek tutar, Yüksek Bahis modunda bahsinizin %m katıdır.',
@@ -98,8 +99,8 @@ export default {
 	Pays: 'Öder',
 	'Red or Black': 'Kırmızı veya siyah',
 	'Any suit': 'Herhangi bir sembol',
-	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
-		'Her aşama bir öncekini çarpar, böylece dördü birleşerek turun nihai ödemesini oluşturur. Kartların yanında gösterilen toplam bir ondalık basamağa aşağı yuvarlanır, bu yüzden bu değerlerin biraz altında görünebilir.',
+	'Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.':
+		'Her aşama bir öncekini çarpar ve değerler tam hassasiyetle birikir — yukarıdaki değerler yuvarlanmamış, kesin değerlerdir. Bir ondalık basamağa aşağı yuvarlama yalnızca turun son ödemesine, tek seferde uygulanır. Kartların yanında görünen güncel toplam da her adımda aynı şekilde yuvarlandığı için tur sırasında bu değerlerin biraz altında görünebilir.',
 	'If you guess wrong': 'Yanlış tahmin ederseniz',
 	'Full game wins': 'Tam oyun kazançları',
 	'Guess all four cards right and the payout depends on how hard your picks were:':

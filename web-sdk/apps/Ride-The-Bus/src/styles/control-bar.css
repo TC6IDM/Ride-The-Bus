@@ -436,13 +436,26 @@
 }
 
 /* The active mode, under the bet amount, in the line the cost multiplier used
-   to occupy. Same gold as the MODE button so the two read as one thing, and
-   shown only when it is not the default - "Classic" under every bet is noise on
-   the mode most players never leave. */
+   to occupy. Same gold as the MODE button so the two read as one thing.
+
+   Shown on every family now, Classic included. It was hidden there while the
+   line was only a name, which was right - but it carries the volatility meter
+   as well now, and that is the one thing distinguishing three modes that all
+   cost the same. It also means the bar no longer changes height when the mode
+   changes.
+
+   The bolts sit to the LEFT of the name and are sized at 1em, so they track this
+   line's own font rather than needing a second number kept in step with it. The
+   gold applies to the text only - the meter paints itself from --vol-color, set
+   inline per family. */
 .cb-bet-mode {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: calc(var(--ui-bar) * 0.36);
   font-size: calc(var(--ui-bar) * 0.86);
   font-weight: 800;
   color: #f5d78c;
   white-space: nowrap;
+  --bolt-size: 1em;
 }

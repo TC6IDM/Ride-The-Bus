@@ -50,6 +50,7 @@ export default {
 	Forgiven: 'माफ किया',
 	'Game modes': 'गेम मोड',
 	'Max win': 'अधिकतम जीत',
+	'Volatility %s of %t': 'अस्थिरता: %t में से %s',
 	'Every mode costs 1× your bet.': 'हर मोड की लागत आपकी बाजी का 1× है।',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'हर गेम मोड में रिटर्न टू प्लेयर (RTP) %s है, और हर मोड कई राउंड में वही आंकड़ा लौटाता है। यह गेम अधिकतम %m आपकी बाजी दे सकता है, हाई स्टेक्स पर।',
@@ -97,8 +98,8 @@ export default {
 	Pays: 'भुगतान',
 	'Red or Black': 'लाल या काला',
 	'Any suit': 'कोई भी सूट',
-	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
-		'हर चरण पिछले चरण को गुणा करता है, इसलिए चारों मिलकर राउंड का अंतिम भुगतान बनाते हैं। कार्ड के पास दिखने वाला चालू योग एक दशमलव तक नीचे की ओर पूर्णांकित होता है, इसलिए यह इन आंकड़ों से थोड़ा कम दिख सकता है।',
+	'Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.':
+		'हर चरण पिछले को गुणा करता है, और ये पूरी सटीकता के साथ जुड़ते हैं — ऊपर दिए गए आंकड़े सटीक हैं, गोल किए हुए नहीं। केवल राउंड का अंतिम भुगतान एक बार नीचे की ओर एक दशमलव तक किया जाता है। कार्डों के पास दिखने वाला चलता योग हर चरण में उसी तरह कम किया जाता है, इसलिए राउंड के दौरान वह इन आंकड़ों से थोड़ा कम दिख सकता है।',
 	'If you guess wrong': 'यदि अनुमान गलत हो',
 	'Full game wins': 'पूरी जीत के भुगतान',
 	'Guess all four cards right and the payout depends on how hard your picks were:':

@@ -50,6 +50,7 @@ export default {
 	Forgiven: '已豁免',
 	'Game modes': '游戏模式',
 	'Max win': '最高赔付',
+	'Volatility %s of %t': '波动性 %t 级中的 %s',
 	'Every mode costs 1× your bet.': '每种模式的费用均为投注额的1倍。',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'所有游戏模式的返奖率（RTP）均为 %s，每种模式在多局之后都返还同一数值。本游戏的最高赔付为投注额的 %m，出现在高额投注模式。',
@@ -97,8 +98,8 @@ export default {
 	Pays: '赔付',
 	'Red or Black': '红色或黑色',
 	'Any suit': '任意花色',
-	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
-		'每个阶段都会与前一个阶段相乘，四个阶段共同构成本局的最终赔付。牌旁显示的累计倍数会向下取整到一位小数，因此可能略低于上述数值。',
+	'Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.':
+		'每一阶段都乘以前一阶段，并以完整精度累乘 — 上方数字是精确值，未经舍入。只有本局的最终赔付会向下取整到一位小数，且仅此一次。牌旁显示的累计金额在每一步也按同样方式处理，因此局中可能看起来略低于这些数字。',
 	'If you guess wrong': '若猜错',
 	'Full game wins': '全中赔付',
 	'Guess all four cards right and the payout depends on how hard your picks were:':

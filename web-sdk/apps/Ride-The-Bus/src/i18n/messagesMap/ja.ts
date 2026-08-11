@@ -50,6 +50,7 @@ export default {
 	Forgiven: '免除',
 	'Game modes': 'ゲームモード',
 	'Max win': '最大配当',
+	'Volatility %s of %t': 'ボラティリティ %t段階中 %s',
 	'Every mode costs 1× your bet.': 'どのモードもベット額の1倍です。',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'還元率（RTP）はどのゲームモードでも %s で、いずれも多数のラウンドで同じ数値を還元します。このゲームの最大配当はハイステークスでベットの %m です。',
@@ -97,8 +98,8 @@ export default {
 	Pays: '配当',
 	'Red or Black': '赤か黒',
 	'Any suit': '任意のスート',
-	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
-		'各ステージは前のステージに掛け合わされ、4つ合わせてラウンドの最終配当になります。カードの横に表示される累計は小数第1位に切り捨てられるため、ここの数値よりわずかに低く見えることがあります。',
+	'Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.':
+		'各ステージは前のステージに掛け合わされ、完全な精度のまま累積されます。上記の数値は丸められていない正確な値です。小数点 1 桁への切り捨ては、ラウンド最終の配当に対して 1 度だけ行われます。カードの横に表示される進行中の合計も各段階で同じように切り捨てられるため、ラウンド中はこれらの数値よりわずかに少なく見えることがあります。',
 	'If you guess wrong': '予想が外れた場合',
 	'Full game wins': 'フルゲーム達成時の配当',
 	'Guess all four cards right and the payout depends on how hard your picks were:':

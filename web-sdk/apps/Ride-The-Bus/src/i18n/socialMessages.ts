@@ -130,8 +130,8 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 	// Black" and "Any suit" carry no restricted terms and pass through unchanged.
 	'Payout table': 'Win table',
 	Pays: 'Wins',
-	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
-		'Each stage multiplies the one before it, so the four combine into the round’s final win. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.',
+	'Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.':
+		'Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final win is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.',
 
 	// Replay start screen
 	Payout: 'Won',

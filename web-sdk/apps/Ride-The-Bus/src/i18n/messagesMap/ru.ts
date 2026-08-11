@@ -50,6 +50,7 @@ export default {
 	Forgiven: 'Прощено',
 	'Game modes': 'Режимы игры',
 	'Max win': 'Макс. выигрыш',
+	'Volatility %s of %t': 'Волатильность %s из %t',
 	'Every mode costs 1× your bet.': 'Каждый режим стоит 1× вашей ставки.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Возврат игроку (RTP) составляет %s в каждом режиме, и каждый возвращает эту же величину на дистанции. Максимум, который может выплатить игра, — %m вашей ставки, в режиме Высокие ставки.',
@@ -98,8 +99,8 @@ export default {
 	Pays: 'Выплата',
 	'Red or Black': 'Красная или чёрная',
 	'Any suit': 'Любая масть',
-	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
-		'Каждый этап умножает предыдущий, поэтому все четыре складываются в итоговую выплату раунда. Текущий множитель рядом с картами округляется вниз до одного знака после запятой, поэтому может выглядеть немного меньше этих значений.',
+	'Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.':
+		'Каждый этап умножает предыдущий, и они накапливаются с полной точностью — цифры выше точные, без округления. Округление вниз до одного знака после запятой применяется только один раз — к итоговой выплате раунда. Текущая сумма рядом с картами округляется так же на каждом шаге, поэтому по ходу раунда она может выглядеть чуть меньше этих значений.',
 	'If you guess wrong': 'Если вы ошиблись',
 	'Full game wins': 'Полные победы',
 	'Guess all four cards right and the payout depends on how hard your picks were:':

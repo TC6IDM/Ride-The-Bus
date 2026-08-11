@@ -50,6 +50,7 @@ export default {
 	Forgiven: 'Perdonado',
 	'Game modes': 'Modos de juego',
 	'Max win': 'Ganancia máxima',
+	'Volatility %s of %t': 'Volatilidad %s de %t',
 	'Every mode costs 1× your bet.': 'Cada modo cuesta 1× tu apuesta.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'El retorno al jugador (RTP) es del %s en todos los modos, y cada uno devuelve esa misma cifra a lo largo de muchas rondas. Lo máximo que puede pagar este juego es %m tu apuesta, en Apuesta alta.',
@@ -98,8 +99,8 @@ export default {
 	Pays: 'Paga',
 	'Red or Black': 'Rojo o negro',
 	'Any suit': 'Cualquier palo',
-	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
-		'Cada etapa multiplica la anterior, así que las cuatro se combinan en el pago final de la ronda. El total mostrado junto a las cartas se redondea hacia abajo a un decimal, por lo que puede quedar algo por debajo de estas cifras.',
+	'Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.':
+		'Cada etapa multiplica a la anterior y se acumulan con precisión total: las cifras de arriba son exactas, no redondeadas. Solo el pago final de la ronda se redondea hacia abajo, una sola vez, a un decimal. El total acumulado junto a las cartas se redondea igual en cada paso, por lo que durante la ronda puede verse algo por debajo de estas cifras.',
 	'If you guess wrong': 'Si fallas',
 	'Full game wins': 'Juegos completos',
 	'Guess all four cards right and the payout depends on how hard your picks were:':

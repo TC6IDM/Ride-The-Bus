@@ -61,6 +61,10 @@ export default {
 	// drift from the maths.
 	'Game Mode': 'Game Mode',
 	'Max win': 'Max win',
+	// Read out in place of the bolt meter on each mode row. The bolts are
+	// decorative one at a time and only mean anything as a count, so the meter
+	// carries this instead of labelling five separate images.
+	'Volatility %s of %t': 'Volatility %s of %t',
 	'Every mode costs 1× your bet.': 'Every mode costs 1× your bet.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.',
@@ -124,8 +128,8 @@ export default {
 	Pays: 'Pays',
 	'Red or Black': 'Red or Black',
 	'Any suit': 'Any suit',
-	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
-		'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.',
+	'Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.':
+		'Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.',
 	'If you guess wrong': 'If you guess wrong',
 	'Full game wins': 'Full game wins',
 	'Guess all four cards right and the payout depends on how hard your picks were:':

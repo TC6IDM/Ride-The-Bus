@@ -50,6 +50,7 @@ export default {
 	Forgiven: 'Verziehen',
 	'Game modes': 'Spielmodi',
 	'Max win': 'Maximalgewinn',
+	'Volatility %s of %t': 'Volatilität %s von %t',
 	'Every mode costs 1× your bet.': 'Jeder Modus kostet 1× deinen Einsatz.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Die Auszahlungsquote (RTP) beträgt %s in jedem Spielmodus, und jeder Modus gibt diesen Wert über viele Runden zurück. Am meisten kann dieses Spiel %m deines Einsatzes auszahlen, im Modus Hoher Einsatz.',
@@ -98,8 +99,8 @@ export default {
 	Pays: 'Zahlt',
 	'Red or Black': 'Rot oder Schwarz',
 	'Any suit': 'Beliebige Farbe',
-	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
-		'Jede Stufe multipliziert die vorherige, sodass die vier zusammen die Endauszahlung der Runde ergeben. Der neben den Karten angezeigte Zwischenstand wird auf eine Nachkommastelle abgerundet und kann daher etwas unter diesen Werten liegen.',
+	'Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.':
+		'Jede Stufe multipliziert die vorherige, und sie werden mit voller Genauigkeit verrechnet — die Werte oben sind exakt und nicht gerundet. Nur der Endgewinn der Runde wird einmal auf eine Nachkommastelle abgerundet. Die laufende Summe neben den Karten wird bei jedem Schritt genauso gerundet und kann während einer Runde daher etwas unter diesen Werten liegen.',
 	'If you guess wrong': 'Wenn du falsch tippst',
 	'Full game wins': 'Komplettgewinne',
 	'Guess all four cards right and the payout depends on how hard your picks were:':

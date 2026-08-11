@@ -50,6 +50,7 @@ export default {
 	Forgiven: 'Perdoado',
 	'Game modes': 'Modos de jogo',
 	'Max win': 'Ganho máximo',
+	'Volatility %s of %t': 'Volatilidade %s de %t',
 	'Every mode costs 1× your bet.': 'Cada modo custa 1× a tua aposta.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'O retorno ao jogador (RTP) é de %s em todos os modos, e cada um devolve esse mesmo valor ao longo de muitas rondas. O máximo que este jogo pode pagar é %m a tua aposta, em Apostas Altas.',
@@ -97,8 +98,8 @@ export default {
 	Pays: 'Paga',
 	'Red or Black': 'Vermelho ou preto',
 	'Any suit': 'Qualquer naipe',
-	'Each stage multiplies the one before it, so the four combine into the round’s final payout. The running total shown beside the cards is rounded down to one decimal place, so it can read a little under these figures.':
-		'Cada etapa multiplica a anterior, por isso as quatro combinam-se no pagamento final da ronda. O total apresentado junto às cartas é arredondado para baixo a uma casa decimal, pelo que pode ficar um pouco abaixo destes valores.',
+	'Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.':
+		'Cada etapa multiplica a anterior e elas se acumulam com precisão total — os valores acima são exatos, não arredondados. Apenas o pagamento final da rodada é arredondado para baixo, uma única vez, para uma casa decimal. O total corrente ao lado das cartas é arredondado da mesma forma a cada passo, portanto durante a rodada pode aparecer um pouco abaixo destes valores.',
 	'If you guess wrong': 'Se você errar',
 	'Full game wins': 'Vitórias completas',
 	'Guess all four cards right and the payout depends on how hard your picks were:':

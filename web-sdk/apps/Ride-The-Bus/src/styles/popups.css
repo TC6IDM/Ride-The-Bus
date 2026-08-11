@@ -318,6 +318,16 @@
   gap: calc(var(--ui-bar) * 0.9);
 }
 
+/* The meter sits opposite the mode's name on the head row, which is already
+   space-between - so it needs no positioning of its own, only alignment.
+   align-self overrides the row's baseline alignment: the bolts are an image,
+   not text, and baseline-aligning them hangs them off the name's descender
+   line. */
+.mode-option-vol {
+  align-self: center;
+  --bolt-size: calc(var(--ui-bar) * 1.27);
+}
+
 .mode-option-name { font-size: calc(var(--ui-bar) * 1.36); font-weight: 800; }
 
 .mode-option-blurb {
