@@ -177,6 +177,7 @@ export default {
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
 		'Cualquier fallo anula todas las ganancias y jugadas. Se requiere una conexión a internet estable. En caso de desconexión, vuelve a cargar el juego para terminar las rondas incompletas. El retorno esperado se calcula a lo largo de muchas jugadas. La representación del juego no corresponde a ningún dispositivo físico y es solo ilustrativa. Las ganancias se liquidan según el importe recibido del Remote Game Server y no según los eventos del navegador web. TM y (c) 2026 Stake Engine.',
 	'Loading replay…': 'Cargando repetición…',
+	'Loading Ride The Bus…': 'Cargando Ride The Bus…',
 	'Max Win': 'Ganancia máx.',
 	'Tap to continue': 'Toca para continuar',
 	'Round details': 'Detalles de la ronda',

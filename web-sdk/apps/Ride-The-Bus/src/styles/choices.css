@@ -263,40 +263,125 @@
   background: #d81ce0;
 }
 
-/* Shared small "equal" square, centered over hl/io squares */
+/* Nudge the arrows away from the seam so the equal badge cannot sit on top of
+   them - see the clearance note in ChoiceIcon.svelte. Each half pushes its icon
+   toward its own outer edge, which is also where there is room: the badge only
+   ever encroaches from the inner side. 0.25 --ui buys ~0.2 --ui of visible gap
+   and still leaves the icon 0.69 --ui clear of the outer edge, so nothing is
+   clipped. Only the io square needs this - the hl square splits horizontally,
+   and its triangles already clear the badge by 0.295 --ui. */
+.io-square .inside-half {
+  --io-icon-shift: calc(var(--ui) * -0.25);
+}
+
+.io-square .outside-half {
+  --io-icon-shift: calc(var(--ui) * 0.25);
+}
+
+/* ---- The shared "equal" pick -----------------------------------------------
+ * Centred on the seam of the hl / io squares, and the only control here that is
+ * not a slice of a square - it overlays two of them.
+ *
+ * It used to be a flat #f1c40f square with a hard 4px radius and a 2px black
+ * outline: a dark-edged element in a row whose whole language is white rings
+ * and radii that scale. It read as a placeholder because it was one - nothing
+ * about it had been drawn to match.
+ *
+ * Still a square, deliberately - it is a miniature of the squares it sits on,
+ * not a different kind of object. What changed is everything else. The ring and
+ * drop shadow are lifted verbatim from .choice-square so it belongs to the same
+ * family, the radial gradient gives it depth instead of a flat fill, and the
+ * radius is now PROPORTIONAL rather than a fixed 4px. That matters because the
+ * badge is sized from --ui and spans roughly 18px to 30px across the range: at
+ * 22% of its own width it holds the same corner as .choice-square (18px on an
+ * 82px box) at every size, where a hard 4px drifts from too round to too sharp
+ * depending on the viewport.
+ *
+ * SIZE IS ALSO A TOUCH-TARGET FIX. At 1.64 --ui this drew ~16px on a phone -
+ * under the 24px WCAG 2.2 AA floor, and the hardest control on the board to
+ * hit, because a miss does not do nothing: it buys higher or lower instead.
+ * The visible badge grows to 2.15 --ui, and responsive.css floors the HIT area
+ * (not the paint) well past that on touch. The two are separated on purpose -
+ * a badge large enough to tap comfortably would cover too much of the halves.
+ */
 .equal-btn {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: calc(var(--ui) * 1.64);
-  height: calc(var(--ui) * 1.64);
+  width: var(--equal-size, calc(var(--ui) * 1.95));
+  height: var(--equal-size, calc(var(--ui) * 1.95));
   padding: 0;
   margin: 0;
   box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f1c40f;
-  border: 2px solid rgba(0, 0, 0, 0.45);
-  border-radius: 4px;
+  /* Lit from above, so it has some depth instead of reading as a flat swatch. */
+  background: radial-gradient(circle at 50% 32%, #ffe680 0%, #f1c40f 55%, #d29d05 100%);
+  /* A real edge, so the badge reads as an object sitting ON the two halves
+     rather than a hole cut through them. Warm dark brown rather than the old
+     black: against yellow, black goes muddy at this size, and nothing else in
+     the choice row carries a black outline. 1px, not the original 2px - at
+     ~18px across, 2px was a sixth of the badge. */
+  border: 1px solid rgba(74, 48, 2, 0.62);
+  /* 22% of the width, which is .choice-square's own 18px-on-82px corner
+     expressed as a ratio - so the two hold the same shape at any --ui. */
+  border-radius: calc(var(--equal-size, calc(var(--ui) * 1.95)) * 0.22);
   line-height: 1;
   color: #16181c;
   cursor: pointer;
   z-index: 2;
+  /* Outer ring and drop shadow match .choice-square exactly. The inset is a
+     single hairline now rather than 2px - with a real border above it, more
+     than that turns an 18px badge into concentric rings. */
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.45),
+    0 0 0 2px rgba(255, 255, 255, 0.25),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.28);
   transition: box-shadow 0.15s, transform 0.15s, filter 0.15s;
+}
+
+/* The tap target, kept independent of the paint. Transparent and centred on
+   the seam, so it eats evenly from both halves and stays clear of the point a
+   thumb actually aims for on each one (their centres sit ~20px out, the target
+   reaches ~16px in). Floored for touch in responsive.css, where the square is
+   known to be big enough to host it - on a Popout S the square is ~29px across
+   and a fixed floor would spill past it. */
+.equal-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--equal-hit, 100%);
+  height: var(--equal-hit, 100%);
+  transform: translate(-50%, -50%);
 }
 
 /* Lighter than .selected, and a smaller lift, for the same reason as the
    halves above: hover previews the selection without imitating it. */
 .equal-btn:hover:not(.selected) {
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.65);
+  filter: brightness(1.12);
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.45),
+    0 0 0 2px rgba(255, 255, 255, 0.65),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.42);
   transform: translate(-50%, -50%) scale(1.08);
 }
 
+/* Brightness plus a white ring, which is the halves' own selected idiom - they
+   use an inset ring, but this element is small and sits on a busy seam, where
+   an outer ring is what actually reads. */
 .equal-btn.selected {
-  box-shadow: 0 0 0 3px #fff, 0 0 12px rgba(255, 255, 255, 0.7);
-  transform: translate(-50%, -50%) scale(1.15);
+  filter: brightness(1.18);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.5),
+    0 0 0 3px #fff,
+    0 0 14px rgba(255, 255, 255, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+  /* Trimmed from 1.14: the badge grows on select, and at 1.95 --ui a bigger
+     lift walked it back into the arrows this change just cleared. */
+  transform: translate(-50%, -50%) scale(1.1);
 }
 
 /* Suit square: 2x2 grid */

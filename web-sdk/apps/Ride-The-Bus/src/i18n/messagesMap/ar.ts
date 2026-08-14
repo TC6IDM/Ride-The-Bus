@@ -177,6 +177,7 @@ export default {
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
 		'أي خلل يلغي جميع المكاسب والجولات. يلزم اتصال إنترنت مستقر. في حالة انقطاع الاتصال، أعد تحميل اللعبة لإكمال أي جولات غير منتهية. يُحسب العائد المتوقع على مدى عدد كبير من الجولات. لا تمثل شاشة اللعبة أي جهاز فعلي وهي لأغراض توضيحية فقط. تتم تسوية المكاسب وفقًا للمبلغ الوارد من خادم اللعبة البعيد وليس وفقًا للأحداث داخل متصفح الويب. TM و (c) 2026 Stake Engine.',
 	'Loading replay…': 'جارٍ تحميل الإعادة…',
+	'Loading Ride The Bus…': 'جارٍ تحميل Ride The Bus…',
 	'Max Win': 'أقصى ربح',
 	'Tap to continue': 'اضغط للمتابعة',
 	'Round details': 'تفاصيل الجولة',

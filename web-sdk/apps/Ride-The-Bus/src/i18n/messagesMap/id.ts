@@ -179,6 +179,7 @@ export default {
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
 		'Kerusakan membatalkan semua kemenangan dan permainan. Koneksi internet yang stabil diperlukan. Jika terputus, muat ulang permainan untuk menyelesaikan putaran yang belum selesai. Pengembalian yang diharapkan dihitung selama banyak permainan. Tampilan permainan tidak mewakili perangkat fisik mana pun dan hanya untuk ilustrasi. Kemenangan diselesaikan sesuai jumlah yang diterima dari Remote Game Server, bukan dari peristiwa di peramban. TM dan (c) 2026 Stake Engine.',
 	'Loading replay…': 'Memuat tayangan ulang…',
+	'Loading Ride The Bus…': 'Memuat Ride The Bus…',
 	'Max Win': 'Kemenangan Maks',
 	'Tap to continue': 'Ketuk untuk melanjutkan',
 	'Round details': 'Detail ronde',

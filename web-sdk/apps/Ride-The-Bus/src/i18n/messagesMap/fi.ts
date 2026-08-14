@@ -176,6 +176,7 @@ export default {
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
 		'Toimintahäiriö mitätöi kaikki voitot ja pelit. Vakaa internetyhteys vaaditaan. Jos yhteys katkeaa, lataa peli uudelleen viimeistelläksesi keskeneräiset kierrokset. Odotettu palautus lasketaan monen pelin ajalta. Pelin näkymä ei vastaa mitään fyysistä laitetta ja on vain havainnollistava. Voitot maksetaan Remote Game Serveriltä saadun summan mukaan eikä verkkoselaimen tapahtumien perusteella. TM ja (c) 2026 Stake Engine.',
 	'Loading replay…': 'Ladataan uusintaa…',
+	'Loading Ride The Bus…': 'Ladataan Ride The Bus…',
 	'Max Win': 'Suurin voitto',
 	'Tap to continue': 'Jatka napauttamalla',
 	'Round details': 'Kierroksen tiedot',

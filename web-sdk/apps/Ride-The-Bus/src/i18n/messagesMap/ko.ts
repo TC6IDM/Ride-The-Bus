@@ -175,6 +175,7 @@ export default {
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
 		'오작동 시 모든 당첨과 플레이가 무효가 됩니다. 안정적인 인터넷 연결이 필요합니다. 연결이 끊긴 경우 게임을 다시 불러와 완료되지 않은 라운드를 마치십시오. 기대 환수율은 다수의 플레이를 기준으로 계산됩니다. 게임 화면은 실제 기기를 나타내지 않으며 예시용입니다. 당첨금은 웹 브라우저 내의 이벤트가 아니라 Remote Game Server에서 수신한 금액에 따라 정산됩니다. TM 및 (c) 2026 Stake Engine.',
 	'Loading replay…': '리플레이 불러오는 중…',
+	'Loading Ride The Bus…': 'Ride The Bus 불러오는 중…',
 	'Max Win': '최대 당첨금',
 	'Tap to continue': '탭하여 계속',
 	'Round details': '라운드 상세',

@@ -281,13 +281,20 @@
    proportional size would be too small to read, and desktop is untouched
    (--ui is 8.4px there, giving 13.8px against this 14px floor). */
 .ss-step .equal-btn {
-	width: max(calc(var(--ui) * 1.64), 14px);
-	height: max(calc(var(--ui) * 1.64), 14px);
+	/* Tracks the board's own badge (1.95 --ui in choices.css) rather than setting
+	   width/height, so there is one lever and the two screens cannot drift -
+	   which is the entire reason ChoiceIcon exists. The floor moved with it:
+	   14px was 1.64 --ui's, and 1.95/1.64 of that is 16.6px.
+	   Deliberately NOT floored higher. The floor exists so the badge stays
+	   legible when --ui bottoms out, but it does not shrink the half it sits in,
+	   so every pixel added here is taken off the inside/outside arrows beside
+	   it - and on a popout that half is only ~18px wide to begin with. */
+	--equal-size: max(calc(var(--ui) * 1.95), 16.6px);
 	/* The bars inside size themselves from --ui too, so flooring the badge alone
 	   would grow the box around an unchanged glyph. These keep the drawn "="
 	   at the same 61% / 30% of the badge it has at full size. */
-	--eq-icon-w: max(calc(var(--ui) * 1), 8.5px);
-	--eq-icon-h: max(calc(var(--ui) * 0.5), 4.25px);
+	--eq-icon-w: max(calc(var(--ui) * 1.19), 10.1px);
+	--eq-icon-h: max(calc(var(--ui) * 0.585), 5px);
 }
 
 /* ---- Help badge ----

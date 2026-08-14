@@ -178,6 +178,7 @@ export default {
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
 		'Sự cố làm vô hiệu mọi khoản thắng và lượt chơi. Cần có kết nối internet ổn định. Nếu bị mất kết nối, hãy tải lại trò chơi để hoàn tất các vòng chưa xong. Mức hoàn trả dự kiến được tính trên nhiều lượt chơi. Hình ảnh trò chơi không đại diện cho bất kỳ thiết bị vật lý nào và chỉ mang tính minh họa. Tiền thắng được thanh toán theo số tiền nhận từ Remote Game Server chứ không theo các sự kiện trong trình duyệt web. TM và (c) 2026 Stake Engine.',
 	'Loading replay…': 'Đang tải bản phát lại…',
+	'Loading Ride The Bus…': 'Đang tải Ride The Bus…',
 	'Max Win': 'Thắng tối đa',
 	'Tap to continue': 'Chạm để tiếp tục',
 	'Round details': 'Chi tiết vòng chơi',

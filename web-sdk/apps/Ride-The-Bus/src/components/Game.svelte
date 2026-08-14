@@ -1020,14 +1020,20 @@
       } catch (err) {
         // Still open. The defensive settle at the top of the next round will
         // retry it, which is the case that guard exists for.
-        console.error('end-round failed', err);
+        console.error('[RideTheBus] end-round failed', err);
       }
       if (!credited) {
-        // Fall back to the arithmetic the RGS would have done. The server is
-        // still the authority - the next /wallet/play overwrites this with its
-        // own figure - but until then the tracked balance stays honest instead
-        // of silently missing a payout.
-        console.warn('[RideTheBus] end-round returned no usable balance; crediting the win locally');
+        // The RGS has already settled and paid this round - end-round simply
+        // came back without a balance we could read. Only the DISPLAYED figure
+        // is being repaired here, so the affordability check does not start
+        // refusing bets the player can afford; the next /wallet/play response
+        // overwrites it with the server's own number. No payout is decided,
+        // altered or predicted on this side.
+        //
+        // The wording matters: an earlier version of this line said "crediting
+        // the win locally", which describes a client-side payout - the exact
+        // thing approval looks for - rather than what the code does.
+        console.warn('[RideTheBus] end-round returned no readable balance; refreshing the displayed balance until the next play response');
         stateBet.balanceAmount += wonAmount;
       }
     }
@@ -1266,7 +1272,7 @@
       .catch((err) => {
         // Don't trap the player on a broken resume - log it, mark the round
         // failed, and let the defensive end-round clear it on the next spin.
-        console.error('resume failed', err);
+        console.error('[RideTheBus] resume failed', err);
         roundError = true;
       })
       .finally(() => {
@@ -1381,7 +1387,7 @@
           `published/approved, or the bet amount isn't a valid level.`,
       );
     } catch (err) {
-      console.error(err);
+      console.error('[RideTheBus] round failed', err);
       roundError = true;
       // Surface through ErrorModal (mounted at the bottom of this
       // file) rather than a raw alert(), so a failed bet looks the same as the
@@ -1482,7 +1488,7 @@
       'engine-replay',
       'Replay returned no round state for this event.',
     ).catch((err) => {
-      console.error(err);
+      console.error('[RideTheBus] replay failed', err);
       stateModal.modal = { name: 'error', error: err };
     });
   }
@@ -1795,7 +1801,7 @@
       return;
     }
     if (spinDisabled()) return;
-    runRound().catch((err) => console.error('Play failed', err));
+    runRound().catch((err) => console.error('[RideTheBus] play failed', err));
   }
   // Bet menu: choose a preset level then close.
   function setBetLevel(v: number) {

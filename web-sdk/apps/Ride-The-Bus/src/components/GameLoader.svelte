@@ -3,6 +3,11 @@
   import { fade } from 'svelte/transition';
   import { base } from '$app/paths';
   import { gameReady, loaderGone } from '../game/ready.svelte';
+  // The loader renders before /wallet/authenticate returns, but t() needs no
+  // session - it reads ?lang= off the URL and the catalogues are static
+  // imports - so the very first thing a screen reader announces is localised
+  // too. This label was the one hardcoded English string left in the app.
+  import { t } from '../i18n/i18nDerived';
 
   type Props = { oncomplete?: () => void };
   const props: Props = $props();
@@ -110,7 +115,7 @@
     style={`--logo-url: url(${base}/logo.png)`}
     transition:fade={{ duration: 320 }}
     role="status"
-    aria-label="Loading Ride The Bus"
+    aria-label={t('Loading Ride The Bus…')}
   >
     <!-- Logo as the hero, with the game's name and the casino's stacked below
          it, matching the in-game title plate. -->

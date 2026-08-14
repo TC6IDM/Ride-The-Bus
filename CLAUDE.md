@@ -20,8 +20,13 @@ These override default behaviour. Follow them every time.
    npm run check         # tsc; ignore the ~258 vendored-SDK errors
    npm run check:svelte  # must be 0 errors AND 0 CSS warnings
    ```
-   `npm run lint` is currently broken for an unrelated reason (ESLint 9 needs an
-   `eslint.config.js`, and none exists). It is not a gate.
+   ```
+   npm run lint          # now a gate; must be clean
+   ```
+   `npm run lint` used to be dead — ESLint 9 reads `eslint.config.js` and every
+   app in the vendored SDK still ships only `.eslintrc.cjs`. This app now has a
+   flat config, so lint runs and must pass. The dead `.eslintrc.cjs` beside it
+   is ignored by ESLint 9 and kept only so the app still matches its siblings.
 
 ---
 
@@ -166,7 +171,7 @@ splitting on `_` — `sc_red_higher_equal_spade` has five parts, not four).
 
 ## Current state
 
-446/446 tests, 0 type errors, 0 CSS warnings, clean production build, and the
+447/447 tests, 0 type errors, 0 CSS warnings, lint clean, and the
 client reproduces all 76,800 published books exactly. The published math build
 (192 modes, RTP 96.0000% everywhere, spread 0.000000%, zero volatility
 violations) is generated and committed.
@@ -209,8 +214,13 @@ std 32.938 (limit 0.6–50.0), worst ETL 0.695 (limit 0.8), worst CVaR 568.8
 - **Approval-checklist gaps still open** (all from the verbatim criteria below):
   - Replay re-watch works, but through the spin button. The checklist asks for a
     **"Play Again"** button — a relabel in replay mode, not new behaviour.
-  - Touch targets measured at 21–39 px against a 44 px minimum
-    (`responsive.css:25`), and "Popout S/L" is a named responsive check.
+  - Touch targets **re-measured and now clear the 24 px WCAG AA floor
+    everywhere** — the old "21–39 px" note was stale. The one genuinely
+    undersized control was the equal badge (~21 px, and the most expensive miss
+    on the board); its tap area is floored at 32 px independently of its paint.
+    The guess segments are 41 px and cannot geometrically reach the 44 px
+    *comfortable* target while four squares share a phone's width. Table in
+    `RGS_TEST_PLAN.md` §11. "Popout S/L" is still a named responsive check.
   - Tile assets: **three** files with fixed names — `RideTheBus-BG.png`,
     `RideTheBus-FG.png`, `TakeoverCasino-Logo.png` — BG+FG ≤ 3 MB combined.
     README's older 4-layer Tile Editor description has been corrected.

@@ -103,11 +103,25 @@
 
 	/* The converge / diverge arrows. Kept narrower than the half they sit in so
 	   they clear the yellow "equal" badge, which is centred on the seam and
-	   overlaps both halves. */
+	   overlaps both halves.
+
+	   Both numbers here are clearance, not taste. The half is 4.18 --ui wide
+	   (8.36 --ui square, split in two) and the badge eats half its own width off
+	   the inner edge, so a centred icon of width I collides once
+	   I/2 + badge/2 > 2.09 --ui. At 2.55 it cleared the OLD 1.64 badge by
+	   nothing at all - they met exactly - which is why growing the badge put the
+	   arrows underneath it. 2.3 plus a small outward nudge restores a real gap
+	   and keeps the arrow heads clear of the yellow.
+
+	   The nudge is a custom property because of Svelte scoping: this element
+	   carries THIS component's scope class, so choices.css can never select it,
+	   but a custom property inherits across the boundary. The parent sets the
+	   direction per half - inside pushes left, outside pushes right. */
 	.io-icon {
 		display: block;
-		width: calc(var(--ui) * 2.55); /* 28px */
-		height: calc(var(--ui) * 2.55);
+		width: calc(var(--ui) * 2.3);
+		height: calc(var(--ui) * 2.3);
+		transform: translateX(var(--io-icon-shift, 0px));
 	}
 
 	/* The drawn "=", sized to the ~11x5px ink of the glyph it replaces so the
@@ -121,7 +135,7 @@
 	   legible on phones and popouts, where --ui bottoms out near 3px. */
 	.eq-icon {
 		display: block;
-		width: var(--eq-icon-w, calc(var(--ui) * 1));
-		height: var(--eq-icon-h, calc(var(--ui) * 0.5));
+		width: var(--eq-icon-w, calc(var(--ui) * 1.19));
+		height: var(--eq-icon-h, calc(var(--ui) * 0.585));
 	}
 </style>

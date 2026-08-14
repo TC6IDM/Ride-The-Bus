@@ -22,8 +22,14 @@
    The layout is WIDTH-constrained in portrait: --ui resolves from min(2vw,
    1.55vh), so on a 390x844 phone the 2vw term wins at ~7.8px and every control
    is sized from that, while ~400px of vertical space goes unused. Measured on
-   that viewport, the guess thirds came out at 21px and the bet steppers at
+   that viewport, the guess segments came out at 21px and the bet steppers at
    22x18px - below the 24px WCAG floor, let alone the 44px comfortable target.
+
+   NOTE ON THE NUMBERS BELOW: they date from when the hl square was three
+   stacked segments. It is now two halves plus an overlaid equal badge, so the
+   segments are 41px here, not 27px - comfortably past the floor. The one
+   control that was genuinely too small is the badge, handled at the end of this
+   block. `.third-btn` kept its name through that change and is a half.
 
    The fix spends the spare height rather than scaling --ui up, which would
    widen the row past the viewport. The guess squares grow taller (their width
@@ -47,6 +53,27 @@
   .game-layout {
     --ui: clamp(4px, min(2.5vw, 1.55vh), 11px);
     --gap: calc(var(--ui) * 0.9);
+  }
+
+  /* The equal badge was the worst target on the board and the most expensive to
+     miss - it sits on the seam between two halves, so a near-miss does not do
+     nothing, it buys the other bet. At 2.15 --ui it paints ~21px here; this
+     floors the TAP area at 32px without growing the paint (see
+     .equal-btn::before in choices.css).
+
+     32px, not 44px, and the arithmetic is the whole argument. The segments
+     either side are 41px across (82px square, split in two - vertically on the
+     hl square, horizontally on the io one). A 44px target would swallow both of
+     them whole. At 32px it reaches 16px either side of the seam, leaving each
+     segment 25px of its own - past the 24px WCAG 2.2 AA floor - and each
+     segment's centre, which is where a thumb actually lands, sits 20.5px out
+     and so stays clear by 4.5px.
+
+     Net effect: the badge goes from unhittable to comfortable, and the
+     ambiguous strip along the seam now resolves deliberately to Equal instead
+     of to whichever pixel happened to win. */
+  .equal-btn {
+    --equal-hit: 32px;
   }
 
   /* The icon buttons sit apart from each other, so padding-free growth is safe. */

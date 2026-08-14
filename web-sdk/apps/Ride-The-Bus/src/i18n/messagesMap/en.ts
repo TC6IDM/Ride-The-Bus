@@ -218,6 +218,7 @@ export default {
 
 	// Start screen / replay additions
 	'Loading replay…': 'Loading replay…',
+	'Loading Ride The Bus…': 'Loading Ride The Bus…',
 	'Max Win': 'Max Win',
 	'Tap to continue': 'Tap to continue',
 	'Round details': 'Round details',
