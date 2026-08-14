@@ -79,8 +79,8 @@ export default {
 		'A wrong first card ends the round. Later misses keep 30% of what you had built.',
 	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
 		'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.',
-	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
-		'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.',
+	'Every mode returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
+		'Every mode returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.',
 
 	// Advanced popup
 	Advanced: 'Advanced',

@@ -45,8 +45,8 @@ export default {
 	Classic: 'Klassinen',
 	'Second Chance': 'Toinen mahdollisuus',
 	'High Stakes': 'Suuret panokset',
-	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
-		'Jokainen tila palauttaa saman 96,00% monen kierroksen aikana. Vaihtelee vain se, kuinka usein kierros maksaa ja kuinka paljon.',
+	'Every mode returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
+		'Jokainen tila palauttaa saman %s monen kierroksen aikana. Vaihtelee vain se, kuinka usein kierros maksaa ja kuinka paljon.',
 	Forgiven: 'Annettu anteeksi',
 	'Game modes': 'Pelitilat',
 	'Max win': 'Enimmäisvoitto',

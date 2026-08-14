@@ -40,27 +40,30 @@ Two numbers here are not free choices:
 
 - **High Stakes retention is 0.20.** Stake reads CVaR and Expected Tail
   Liability as the worst value across all modes, and a failed class shrinks the
-  game's bet-level template. The binding metric is `etl40b` (limit 0.9), not
-  CVaR (limit 800), and the build measures 0.695 and 568.8 against them.
+  game's bet-level template. The binding metric is `etl40b`, not CVaR, and the
+  build measures 0.695 and 568.8 against them.
 
+  **The limits are per star tier**, and the binding pair for a new submission is
+  the 2-star one — ETL 0.8 and CVaR 700, not the 0.9 / 800 of the 3-star tier.
   Retention could go lower than 0.20 — but not much, and the margin is what
   runs out first. Exact enumeration of all 64 combinations at each retention,
   reweighted the way `reweight_luts.py` does, gives:
 
-  | Retention | etl40b (limit 0.9) | CVaR (limit 800) | Max win |
+  | Retention | etl40b (2★ 0.8 / 3★ 0.9) | CVaR (2★ 700 / 3★ 800) | Max win |
   | --- | --- | --- | --- |
   | 0.30 (Classic) | 0.553 | 429 | 1354.2× |
   | **0.20 (shipped)** | **0.689** | **551** | **1910.2×** |
   | 0.15 | 0.764 | 618 | 2237.3× |
-  | 0.10 | 0.842 | 689 | 2599.5× |
-  | 0.05 | 0.880 | 763 | 2998.5× |
-  | 0.025 | 0.898 | **802 ✗** | 3212.3× |
+  | 0.10 | **0.842 ✗ (2★)** | 689 | 2599.5× |
+  | 0.05 | **0.880 ✗ (2★)** | **763 ✗ (2★)** | 2998.5× |
+  | 0.025 | **0.898 ✗ (2★)** | **802 ✗** | 3212.3× |
   | 0.00 | **0.960 ✗** | 329 | 3436.1× |
 
   The published build reads 1–3% above these (it samples its tail where this
-  enumerates it), so 0.05 and below is not safely buildable and 0.10 is the
-  practical floor. 0.20 keeps a 23% margin, which is what a metric read as a
-  worst-case across 64 modes needs.
+  enumerates it). Against the 2-star limits that makes **0.15 the practical
+  floor**, not 0.10 — 0.10 enumerates at 0.842 and is already over 0.8 before
+  the build's own margin is added. 0.20 keeps 14% of headroom under ETL 0.8,
+  which is what a metric read as a worst-case across 64 modes needs.
 
   Zero is not the end of a gradient, it is a cliff: with nothing kept, the only
   rounds that pay are the 4-for-4 ones, so the reweighter has to make wins rare
@@ -266,11 +269,18 @@ is weighted towards the paths the local fallback never executes, because that is
 where every late bug in this project has come from.
 
 The quality rating itself is three anonymous reviewers scoring 0 to 3 in
-fractional steps, averaged and rounded. Below 1.0 is not approved; 1 star is
-published at the bottom of New Releases; 2 stars may reach Burst Games and Stake
+fractional steps, averaged and rounded. **1 star is not a publication** - the
+ranking table calls it "Not published. The developer will be asked to resubmit
+once improvements have been made." 2 stars may reach Burst Games and Stake
 Exclusives if demand supports it; 3 stars gets optimal positioning. Polish and
 originality drive it. Once approved, only cosmetic changes are permitted - math,
 bet modes and mechanics are frozen.
+
+Two of the named causes of a 1-star rating land directly on this build:
+"over-reliance on generic AI-generated assets - standard fonts, gradients, emoji
+icons and border effects are not sufficient for a quality release", and
+"missing engaging features". The art pass is therefore a gate, not polish. See
+the verbatim criteria in [CLAUDE.md](CLAUDE.md#game-quality-rankings).
 
 ### Replay event IDs
 
@@ -289,29 +299,28 @@ build warned that Node was missing:
 node scripts/replay-events.js
 ```
 
-One thing to confirm before sending that table to reviewers: it lists simulation
-IDs from the lookup tables, on the assumption that the `{event}` segment of
-`GET {rgs_url}/bet/replay/{game}/{version}/{mode}/{event}` accepts one. If
-reviewers expect a round or bet ID issued by the RGS during live play instead,
-the IDs need recapturing from a real session - the scenarios and payouts in the
-table still say which round to play in each mode.
+The table lists simulation IDs from the published lookup tables, and that is the
+right thing to send: Stake's replay documentation defines the `event` query
+parameter as the "unique simulation ID to replay", and the `{event}` segment of
+`GET {rgs_url}/bet/replay/{game}/{version}/{mode}/{event}` takes the same value.
+No recapture from a live session is needed.
 
 ### Game tile
 
-Tiles are composed in the Stake Engine dashboard's **Tile Editor**, not shipped
-in the build, so nothing in this repo produces them. Four layers are needed:
+Tiles are composed by Stake from assets submitted with the game, not shipped in
+the build, so nothing in this repo produces them. **Three** assets are required,
+with fixed naming, and **background + foreground must not exceed 3 MB combined**:
 
-| Layer | Requirement |
-|---|---|
-| Background | High-res PNG/JPG, **brighter than the Stake platform** - dark backgrounds blend into it. No dark edges. No text, no multipliers. |
-| Foreground | High-res PNG, transparent background, key character or item enlarged to fill the focus area. No text, no multipliers. |
-| Gradient | Light overlay in a colour already prominent in the artwork, enough to make the title readable without dominating. Avoid bright yellow, green and blue. |
-| Title | Fits the title guide's height, fills the text box width, at most two text sizes. |
+| Asset | Requirement | Filename |
+|---|---|---|
+| Background | Environmental background showing the world of the game. High-res PNG or JPG. | `RideTheBus-BG.png` |
+| Foreground | A feature character or key item representing the game. High-res PNG, transparent background. | `RideTheBus-FG.png` |
+| Provider logo | The studio logo. High-res PNG, transparent background, legible at small sizes. | `TakeoverCasino-Logo.png` |
 
-Tiles are rejected for dark edges, low-contrast backgrounds, or text and
-multipliers baked into the imagery. The provider logo is separate and set once
-under Team Settings -> Branding (PNG/JPG/GIF up to 10MB, square, transparent
-background recommended); it is applied to every tile automatically.
+Stake's guidance is that low-quality or visually unappealing artwork "often
+results in lower player trust, lower interest and ultimately lower game
+engagement" - the tile is judged, not just accepted. The full requirement is
+reproduced in [CLAUDE.md](CLAUDE.md#game-tile-visual-assets).
 
 ## Project structure notes
 

@@ -45,8 +45,8 @@ export default {
 	Classic: 'Классический',
 	'Second Chance': 'Второй шанс',
 	'High Stakes': 'Высокие ставки',
-	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
-		'Все режимы возвращают одни и те же 96,00% на дистанции. Меняется лишь то, как часто и сколько платит раунд.',
+	'Every mode returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
+		'Все режимы возвращают одни и те же %s на дистанции. Меняется лишь то, как часто и сколько платит раунд.',
 	Forgiven: 'Прощено',
 	'Game modes': 'Режимы игры',
 	'Max win': 'Макс. выигрыш',

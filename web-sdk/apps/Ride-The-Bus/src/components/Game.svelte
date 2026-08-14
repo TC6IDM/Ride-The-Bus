@@ -54,6 +54,7 @@
     MODE_FAMILIES,
     isCombinationPlayable,
     modeName,
+    parseModeName,
     type ModeFamily,
   } from '../game/modes';
   import {
@@ -1148,12 +1149,19 @@
     // Restore the guess squares to the combination the round was originally
     // played with, so the viewer sees which choices were made. The bet mode
     // IS the four guesses (see math-sdk mode_name).
-    const parts = String(bet.mode ?? stateUrlDerived.mode() ?? '').split('_');
-    if (parts.length === 4) {
-      colorChoice = parts[0] as ColorChoice;
-      hlChoice = parts[1] as HigherLowerChoice;
-      ioChoice = parts[2] as InsideOutsideChoice;
-      suitChoice = parts[3] as SuitChoice;
+    //
+    // Must go through parseModeName, which strips the family prefix BEFORE
+    // splitting: "sc_red_higher_equal_spade" has five underscore-separated
+    // parts, not four. Splitting first and counting second reads every Second
+    // Chance and High Stakes mode as malformed - 128 of the 192 - and silently
+    // left the board showing guesses that did not match the round being
+    // replayed. See the note atop parseModeName in game/modes.ts.
+    const parsed = parseModeName(String(bet.mode ?? stateUrlDerived.mode() ?? ''));
+    if (parsed) {
+      colorChoice = parsed.color;
+      hlChoice = parsed.higherLower;
+      ioChoice = parsed.insideOutside;
+      suitChoice = parsed.suit;
     }
 
     // The replay URL carries the original stake, so the multipliers shown
@@ -1161,6 +1169,35 @@
     initialBet = stateBet.wageredBetAmount || stateBet.betAmount || 0;
     betInput = String(initialBet);
     hasPlayed = true;
+
+    // REP-02 probe. A replay opened on the Stake Engine site once showed a bet
+    // amount of 1000 where the game rendered 1 - an exact 1000x gap, which is a
+    // units convention rather than a rounding bug. Stake documents ?amount= as
+    // "bet amount in units" and the RGS speaks micro-units (1_000_000 = 1.00),
+    // so Authenticate.svelte divides by API_AMOUNT_MULTIPLIER - but only the raw
+    // parameter from a real replay URL can say which convention Stake actually
+    // sends. This prints every value in the chain, so one replay settles it.
+    //
+    // HOW TO CAPTURE, given this is dev-only and the symptom is on the uploaded
+    // build: a replay needs no session ("player session is not required for
+    // viewing bet replay"), so copy the whole query string off the Stake replay
+    // URL onto localhost:3001 and the same data loads here, with this line. Do
+    // not reach for a production-visible flag instead - approval checks the
+    // network tab for game information being logged.
+    //
+    // import.meta.env.DEV written out literally so Vite proves the branch dead
+    // and drops it from the production bundle.
+    if (import.meta.env.DEV && typeof window !== 'undefined') {
+      const rawAmount = new URLSearchParams(window.location.search).get('amount');
+      console.log('[RideTheBus] REP-02 replay amount chain:', {
+        rawAmountParam: rawAmount,
+        parsedAmount: stateUrlDerived.amount(),
+        wageredBetAmount: stateBet.wageredBetAmount,
+        betAmount: stateBet.betAmount,
+        initialBet,
+        currency: stateBet.currency,
+      });
+    }
 
     // Read the payout multiplier from the book's finalWin event for the info
     // popup (amount is multiplier × 100 — see math-sdk events.py:final_win_event).
@@ -1200,12 +1237,16 @@
     // Put the guess squares back to the combination the round was bought with,
     // so the board the player returns to matches what they actually bet on.
     // The bet mode IS the four guesses (see math-sdk mode_name).
-    const parts = String(bet.mode ?? '').split('_');
-    if (parts.length === 4) {
-      colorChoice = parts[0] as ColorChoice;
-      hlChoice = parts[1] as HigherLowerChoice;
-      ioChoice = parts[2] as InsideOutsideChoice;
-      suitChoice = parts[3] as SuitChoice;
+    //
+    // parseModeName for the same reason as the replay path above: the prefix
+    // has to come off before the split, or every resumed sc_/hs_ round comes
+    // back with the wrong guesses on the board.
+    const parsed = parseModeName(String(bet.mode ?? ''));
+    if (parsed) {
+      colorChoice = parsed.color;
+      hlChoice = parsed.higherLower;
+      ioChoice = parsed.insideOutside;
+      suitChoice = parsed.suit;
     }
 
     // Authenticate populates these from round.amount, so the multipliers
@@ -2417,7 +2458,13 @@
           </button>
         {/each}
       </div>
-      <p class="mode-note">{t('Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.')}</p>
+      <!-- Interpolated from game/config.ts, not written into the string. The
+           figure used to be baked into all 17 locale files, where nothing could
+           compare it to the RTP the math is actually reweighted to. -->
+      <p class="mode-note">
+        {t('Every mode returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.')
+          .replace('%s', `${(gameConfig.rtp * 100).toFixed(2)}%`)}
+      </p>
     </div>
   {/if}
 

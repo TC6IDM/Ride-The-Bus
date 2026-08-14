@@ -93,7 +93,14 @@
            whatever the player is actually on, with no reset logic. -->
       <h4 class="info-h">{t('Game modes')}</h4>
       <p>{t('Every mode costs 1× your bet.')}</p>
-      <p>{t('Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.')}</p>
+      <!-- Interpolated from game/config.ts for the same reason as the RTP line
+           further down: this used to write "96.00%" into the string itself, in
+           all 17 locale files, so the one figure a reviewer checks against the
+           math lived in seventeen places that no test compared. -->
+      <p>
+        {t('Every mode returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.')
+          .replace('%s', `${(gameConfig.rtp * 100).toFixed(2)}%`)}
+      </p>
 
       <div class="mode-tabs" role="tablist" aria-label={t('Game modes')}>
         {#each MODE_FAMILIES as family}

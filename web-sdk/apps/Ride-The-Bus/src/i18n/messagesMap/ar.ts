@@ -46,8 +46,8 @@ export default {
 	Classic: 'كلاسيكي',
 	'Second Chance': 'فرصة ثانية',
 	'High Stakes': 'رهانات عالية',
-	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
-		'كل الأوضاع تعيد النسبة نفسها 96.00% على مدى جولات كثيرة. ما يتغير هو عدد مرات الربح ومقداره.',
+	'Every mode returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
+		'كل الأوضاع تعيد النسبة نفسها %s على مدى جولات كثيرة. ما يتغير هو عدد مرات الربح ومقداره.',
 	Forgiven: 'مُتسامَح عنها',
 	'Game modes': 'أوضاع اللعبة',
 	'Max win': 'أقصى ربح',

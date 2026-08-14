@@ -45,8 +45,8 @@ export default {
 	Classic: 'Klasik',
 	'Second Chance': 'İkinci Şans',
 	'High Stakes': 'Yüksek Bahis',
-	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
-		'Her mod çok sayıda turda aynı %96,00 oranını döndürür. Değişen, bir turun ne sıklıkta ve ne kadar ödediğidir.',
+	'Every mode returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
+		'Her mod çok sayıda turda aynı %s oranını döndürür. Değişen, bir turun ne sıklıkta ve ne kadar ödediğidir.',
 	Forgiven: 'Affedildi',
 	'Game modes': 'Oyun modları',
 	'Max win': 'Maksimum kazanç',

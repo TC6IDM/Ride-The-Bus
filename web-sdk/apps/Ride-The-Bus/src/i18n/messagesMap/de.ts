@@ -45,8 +45,8 @@ export default {
 	Classic: 'Klassisch',
 	'Second Chance': 'Zweite Chance',
 	'High Stakes': 'Hoher Einsatz',
-	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
-		'Jeder Modus gibt über viele Runden dieselben 96,00% zurück. Es ändert sich nur, wie oft und wie viel eine Runde auszahlt.',
+	'Every mode returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
+		'Jeder Modus gibt über viele Runden dieselben %s zurück. Es ändert sich nur, wie oft und wie viel eine Runde auszahlt.',
 	Forgiven: 'Verziehen',
 	'Game modes': 'Spielmodi',
 	'Max win': 'Maximalgewinn',

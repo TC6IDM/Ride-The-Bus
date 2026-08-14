@@ -115,8 +115,8 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 		'A wrong first card ends the round. Later misses keep 30% of what you had built.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can win is %m your play amount, on High Risk.',
-	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
-		'Every mode returns the same 96.00% over many rounds. What changes is how often a round wins and how much it can win.',
+	'Every mode returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
+		'Every mode returns the same %s over many rounds. What changes is how often a round wins and how much it can win.',
 
 	// Auto-slam toggle in the interaction guide. "payout" is prohibited; the
 	// toggle's own label carries no restricted terms and passes through.

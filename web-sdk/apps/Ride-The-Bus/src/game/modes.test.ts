@@ -251,4 +251,27 @@ describe('parseModeName', () => {
       assert.equal(parseModeName(bad), null, `"${bad}" should not parse`);
     }
   });
+
+  test('a plain four-part split silently drops 128 of the 192 modes', () => {
+    // The cost of getting this wrong, in numbers, because the failure is silent.
+    //
+    // Restoring the four guess squares from a mode name happens in three places:
+    // StartScreen.svelte, and the replay and resume effects in Game.svelte. Two
+    // of them used `split('_')` with a `length === 4` guard, which does not
+    // throw and does not warn - it just does not fire. Replayed and resumed
+    // Second Chance and High Stakes rounds therefore showed a board whose
+    // guesses did not match the mode being displayed, which is REP-01/REP-05.
+    //
+    // Anything reading a mode name must go through parseModeName.
+    const all = allPlayableModes();
+    assert.equal(all.length, 192);
+
+    const naive = all.filter((name) => name.split('_').length === 4);
+    assert.equal(naive.length, 64, 'a four-part split sees only the unprefixed Classic family');
+    assert.equal(all.length - naive.length, 128, 'sc_ and hs_ modes a naive split drops');
+    assert.ok(naive.every((name) => familyOf(name) === 'base'));
+
+    // parseModeName loses none of them.
+    assert.equal(all.filter((name) => parseModeName(name) !== null).length, 192);
+  });
 });

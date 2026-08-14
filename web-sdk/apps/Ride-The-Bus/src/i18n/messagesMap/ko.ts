@@ -45,8 +45,8 @@ export default {
 	Classic: '클래식',
 	'Second Chance': '세컨드 챈스',
 	'High Stakes': '하이 스테이크',
-	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
-		'모든 모드는 여러 라운드에 걸쳐 동일한 96.00%를 돌려줍니다. 달라지는 것은 배당 빈도와 크기입니다.',
+	'Every mode returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
+		'모든 모드는 여러 라운드에 걸쳐 동일한 %s를 돌려줍니다. 달라지는 것은 배당 빈도와 크기입니다.',
 	Forgiven: '면제됨',
 	'Game modes': '게임 모드',
 	'Max win': '최대 배당',

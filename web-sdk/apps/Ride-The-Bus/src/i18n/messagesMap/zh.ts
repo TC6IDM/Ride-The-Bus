@@ -45,8 +45,8 @@ export default {
 	Classic: '经典',
 	'Second Chance': '第二次机会',
 	'High Stakes': '高额投注',
-	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
-		'所有模式在多局之后的回报率都是96.00%。不同之处在于中奖的频率和金额。',
+	'Every mode returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
+		'所有模式在多局之后的回报率都是%s。不同之处在于中奖的频率和金额。',
 	Forgiven: '已豁免',
 	'Game modes': '游戏模式',
 	'Max win': '最高赔付',

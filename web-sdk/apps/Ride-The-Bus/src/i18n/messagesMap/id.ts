@@ -45,8 +45,8 @@ export default {
 	Classic: 'Klasik',
 	'Second Chance': 'Kesempatan Kedua',
 	'High Stakes': 'Taruhan Tinggi',
-	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
-		'Setiap mode mengembalikan 96,00% yang sama selama banyak ronde. Yang berubah adalah seberapa sering ronde membayar dan seberapa besar.',
+	'Every mode returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
+		'Setiap mode mengembalikan %s yang sama selama banyak ronde. Yang berubah adalah seberapa sering ronde membayar dan seberapa besar.',
 	Forgiven: 'Dimaafkan',
 	'Game modes': 'Mode permainan',
 	'Max win': 'Kemenangan maks',

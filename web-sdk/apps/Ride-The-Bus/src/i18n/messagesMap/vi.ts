@@ -45,8 +45,8 @@ export default {
 	Classic: 'Cổ điển',
 	'Second Chance': 'Cơ hội thứ hai',
 	'High Stakes': 'Cược lớn',
-	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
-		'Mọi chế độ đều trả về cùng mức 96,00% qua nhiều vòng. Chỉ khác ở tần suất và mức trả thưởng của mỗi vòng.',
+	'Every mode returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
+		'Mọi chế độ đều trả về cùng mức %s qua nhiều vòng. Chỉ khác ở tần suất và mức trả thưởng của mỗi vòng.',
 	Forgiven: 'Được bỏ qua',
 	'Game modes': 'Chế độ chơi',
 	'Max win': 'Thắng tối đa',

@@ -45,8 +45,8 @@ export default {
 	Classic: 'क्लासिक',
 	'Second Chance': 'दूसरा मौका',
 	'High Stakes': 'हाई स्टेक्स',
-	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
-		'हर मोड कई राउंड में वही 96.00% लौटाता है। बदलता सिर्फ यह है कि राउंड कितनी बार और कितना भुगतान करता है।',
+	'Every mode returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
+		'हर मोड कई राउंड में वही %s लौटाता है। बदलता सिर्फ यह है कि राउंड कितनी बार और कितना भुगतान करता है।',
 	Forgiven: 'माफ किया',
 	'Game modes': 'गेम मोड',
 	'Max win': 'अधिकतम जीत',

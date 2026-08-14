@@ -421,8 +421,30 @@ Event IDs per bet mode are in [REPLAY_EVENTS.md](REPLAY_EVENTS.md).
 **One known open question.** A replay opened on the Stake Engine site showed a
 bet amount of `1000` where the game rendered `1` - an exact 1000x disagreement,
 which points at a units convention (micro-units vs display units) rather than a
-rounding bug. **Capture the full replay URL and the raw response body the first
-time you see this**; that is the missing evidence needed to settle it.
+rounding bug.
+
+Stake documents the replay `amount` parameter as "bet amount in units", and the
+RGS speaks micro-units (1,000,000 = 1.00), so `Authenticate.svelte:121-122`
+divides by `API_AMOUNT_MULTIPLIER`. That matches the documented convention -
+what is unknown is what Stake actually puts in the parameter.
+
+**Capturing it is now one console line.** A replay needs no session ("player
+session is not required for viewing bet replay"), so the whole query string from
+a Stake replay URL can be pasted onto `localhost:3001` and the same round loads
+against the same `rgs_url`:
+
+```
+http://localhost:3001/?replay=true&game=...&version=1&mode=hs_red_equal_equal_spade&event=283&rgs_url=...&amount=...&currency=USD
+```
+
+Filter the console to `[RideTheBus]` and read `REP-02 replay amount chain`. It
+prints `rawAmountParam`, `parsedAmount`, `wageredBetAmount`, `betAmount`,
+`initialBet` and `currency`. Compare `rawAmountParam` against the stake shown on
+Stake's own replay view - that single pair settles which side is scaling wrong.
+
+The probe is behind `import.meta.env.DEV`, so it is compiled out of the uploaded
+build. That is deliberate: approval checks the network tab for game information
+being logged, so this must not become a production-visible flag.
 
 - [ ] **REP-01 · A replay renders the original round** — *Blocker*
   Take a round ID from a real session and open it in replay.

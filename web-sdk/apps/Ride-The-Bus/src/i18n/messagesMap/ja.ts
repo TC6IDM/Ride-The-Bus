@@ -45,8 +45,8 @@ export default {
 	Classic: 'クラシック',
 	'Second Chance': 'セカンドチャンス',
 	'High Stakes': 'ハイステークス',
-	'Every mode returns the same 96.00% over many rounds. What changes is how often a round pays and how much it can pay.':
-		'どのモードも多数のラウンドで同じ96.00%を還元します。変わるのは配当の頻度と大きさです。',
+	'Every mode returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
+		'どのモードも多数のラウンドで同じ%sを還元します。変わるのは配当の頻度と大きさです。',
 	Forgiven: '免除',
 	'Game modes': 'ゲームモード',
 	'Max win': '最大配当',
