@@ -359,13 +359,49 @@
 
 .ss-tip {
 	position: absolute;
-	bottom: calc(100% + var(--ss) * 0.6);
-	right: 0;
+	/* Sits above the panel, which is where it sat when it hung off the badge -
+	   the badge is inset 0.4 --ui from the panel's top-right corner and the old
+	   rule then backed off another 0.6 --ss, which came to about the same place.
+	   `right` repeats that inset so the two still line up.
+
+	   The extra 1.1 --ui clears the numbered circle, which hangs 0.9 --ui above
+	   its own panel's top-left corner: every tip opens leftward across its own
+	   panel, so without this each one covers the step number it belongs to. */
+	bottom: calc(100% + var(--ui) * 1.1);
+	right: calc(var(--ui) * 0.4);
+	z-index: 3;
 	/* Wider than its panel on purpose - a sentence squeezed into a quarter of
 	   the card would be a column of single words. It overlaps its neighbours,
-	   which is why the badge carries a z-index. */
-	width: max(calc(var(--ss) * 22), 150px);
-	max-width: 46vw;
+	   which is why it carries a z-index.
+
+	   About two panels wide, up from one. The tip grows UPWARDS from the top of
+	   its panel, and the panels sit near the top of the card, so a narrow tip is
+	   a tall one and a tall one runs off the top of the window: step 3's
+	   explanation is the longest of the four and at one panel wide it stood
+	   300px tall on a 675px screen, with its first three lines above the top
+	   edge and unreadable. Widening it is what makes it short. --tip-room caps
+	   it back to one panel where there is only one panel to open into. */
+	width: max(calc(var(--ss) * 44), 300px);
+	/* How far LEFT this tip may run before it leaves the card. Every tip opens
+	   leftward, so the room a tip has is its own panel plus every panel to its
+	   left, plus the gaps between them - set per position below, in percentages
+	   of the panel, which is why the tip has to be the panel's child and not the
+	   badge's.
+
+	   Without this the leftmost panel's tip was the odd one out: it opened
+	   RIGHTWARD instead, and landed on top of the next panel's numbered circle.
+	   Flipping it to match the others is only safe if something stops it
+	   walking off the left edge of the screen, and that is what --tip-room is.
+	   It also fixes the same overflow on the two-per-row phone layout, where
+	   panel 3 starts a new row and had been running ~39px off the left edge of
+	   a 320px screen.
+
+	   This replaced a flat 46vw cap. That was a stand-in for the same idea -
+	   "no wider than about half the window" - but it was blind to which panel
+	   it was capping, so it was slack where the tip had four panels to open
+	   into and binding where it had one. The card is itself capped at 96vw, so
+	   staying inside the card is already staying inside the window. */
+	max-width: var(--tip-room, 100%);
 	padding: calc(var(--ui) * 0.8) calc(var(--ui) * 1);
 	border-radius: calc(var(--ui) * 0.6);
 	background: #0b1a09;
@@ -384,18 +420,20 @@
 	pointer-events: none;
 }
 
-.ss-help:hover .ss-tip,
-.ss-help:focus-visible .ss-tip {
+/* Adjacent-sibling, because the tip is no longer inside the button. */
+.ss-help:hover + .ss-tip,
+.ss-help:focus-visible + .ss-tip {
 	opacity: 1;
 	visibility: visible;
 }
 
-/* The first panel's tooltip would run off the left edge if right-aligned like
-   the rest, since it is the leftmost thing on screen. */
-.ss-step:first-child .ss-tip {
-	right: auto;
-	left: 0;
-}
+/* ---- How far each tip may run --------------------------------------------
+   Four panels across, so panel n has n panels and n-1 gaps to its left. The
+   percentages resolve against the panel, which is the tip's containing block,
+   so these hold at every window size without knowing what a panel measures. */
+.ss-step:nth-child(2) .ss-tip { --tip-room: calc(200% + var(--ss) * 1.2); }
+.ss-step:nth-child(3) .ss-tip { --tip-room: calc(300% + var(--ss) * 2.4); }
+.ss-step:nth-child(4) .ss-tip { --tip-room: calc(400% + var(--ss) * 3.6); }
 
 /* ---- Worked example ----
    Fixed height so switching picks never reflows the row - without it the whole
@@ -854,7 +892,13 @@
 	   rather than scaling all the way down with --ss. */
 	.ss-tip {
 		font-size: max(calc(var(--ss) * 1.05), 13px);
-		width: max(calc(var(--ss) * 22), 190px);
-		max-width: 78vw;
+		width: max(calc(var(--ss) * 44), 380px);
+		max-width: var(--tip-room, 100%);
 	}
+
+	/* Two per row, so panels 3 and 4 restart the count: 3 is leftmost on the
+	   second row and has only its own width to open into, and 4 has the pair.
+	   Panel 3's tip is the one that was running off the left edge here. */
+	.ss-step:nth-child(3) .ss-tip { --tip-room: 100%; }
+	.ss-step:nth-child(4) .ss-tip { --tip-room: calc(200% + var(--ss) * 1.2); }
 }

@@ -157,6 +157,36 @@ splitting on `_` — `sc_red_higher_equal_spade` has five parts, not four).
 - **Sizing is fluid, not stepped.** Everything is a multiple of `--ui` /
   `--ui-bar` in `base.css`. `responsive.css` holds structural changes only.
   Vertical space is budgeted: cards + win readout + guess squares ≈ 30× `--ui`.
+
+### The seven target screen sizes
+
+Every layout change is checked at all seven. The first four are **exactly
+16:9**, which is what makes one arrangement work across the whole range.
+
+| Size | Viewport |
+|---|---|
+| Desktop | 1200 × 675 |
+| Laptop | 1024 × 576 |
+| Popout L | 800 × 450 |
+| Popout S | 400 × 225 |
+| Mobile L | 425 × 812 |
+| Mobile M | 375 × 667 |
+| Mobile S | 320 × 568 |
+
+**Mobile is the only place anything may be rearranged.** A phone is portrait,
+so a row of four that fits a 16:9 window cannot be assumed to fit, and the
+control bar breaks onto extra rows there by design. From Popout S up to
+Desktop the arrangement must be **identical** and only the scale changes —
+Popout S is Popout L at exactly half size, and is laid out that way.
+
+That is a constraint on the *clamp floors*, not on the media queries: whenever
+`--ui` or `--ui-bar` bottoms out, the layout stops scaling and starts
+restructuring, and every Popout S defect so far has been downstream of one of
+those floors. `--ui-bar` is solved from the bar's real width budget —
+`(100vw − 30px) / 96`, being ~95.5 units plus ~26px of 1px borders that cannot
+scale — rather than from a `vw` coefficient, because a coefficient ignores the
+fixed term and so is 4% too generous at 400px, which is exactly the difference
+between a one-row bar and a two-row one.
 - **i18n:** the English string *is* the key. `en.ts` is the source of truth, and
   all 16 other locales must cover every key with a genuinely different value —
   `locales.test.ts` fails on missing keys, stale keys, and values left identical
@@ -214,13 +244,14 @@ std 32.938 (limit 0.6–50.0), worst ETL 0.695 (limit 0.8), worst CVaR 568.8
 - **Approval-checklist gaps still open** (all from the verbatim criteria below):
   - Replay re-watch works, but through the spin button. The checklist asks for a
     **"Play Again"** button — a relabel in replay mode, not new behaviour.
-  - Touch targets **re-measured and now clear the 24 px WCAG AA floor
-    everywhere** — the old "21–39 px" note was stale. The one genuinely
-    undersized control was the equal badge (~21 px, and the most expensive miss
-    on the board); its tap area is floored at 32 px independently of its paint.
-    The guess segments are 41 px and cannot geometrically reach the 44 px
-    *comfortable* target while four squares share a phone's width. Table in
-    `RGS_TEST_PLAN.md` §11. "Popout S/L" is still a named responsive check.
+  - Touch targets **re-measured at every target viewport and clear the 24 px
+    WCAG AA floor everywhere** — guess segments 29/35/39 px at 320/375/425,
+    equal-badge tap area `min(32px, 45% of the square)`, bar icons 36 px. The
+    badge's ceiling is tied to the square rather than flat at 32 px because a
+    flat 32 px reaches past a segment's own centre on a 320 px screen and steals
+    it. Nothing reaches the 44 px *comfortable* target: four cards across cap
+    `--ui` at 2.265vw, and 44 px bar icons overflowed a 375 px viewport. Table
+    in `RGS_TEST_PLAN.md` §11. "Popout S/L" is still a named responsive check.
   - Tile assets: **three** files with fixed names — `RideTheBus-BG.png`,
     `RideTheBus-FG.png`, `TakeoverCasino-Logo.png` — BG+FG ≤ 3 MB combined.
     README's older 4-layer Tile Editor description has been corrected.

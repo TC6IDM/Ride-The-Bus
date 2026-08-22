@@ -541,35 +541,45 @@ live in the How to Play panel behind the `i` button.
 Test on real hardware. A desktop browser resized to phone dimensions does not
 reproduce touch target sizes, and this is the weakest area of the game.
 
-**Re-measured, and mostly no longer true.** This section used to warn that the
-guess controls land at 21-39 px and the help text at 3-6 px. Both figures
-predate their fixes and were misleading about where the actual problem was:
+**Re-measured in a browser at each target viewport.** This section used to warn
+that the guess controls land at 21-39 px and the help text at 3-6 px. Both
+figures predate their fixes. The figures below replace a second stale set (41 px
+segments, 44 px bar icons) that came from a `--ui` coefficient which was itself
+10% too large - it made every control look comfortable on paper while actually
+wrapping the card row and the guess row 3 + 1 on every phone.
 
-| Control | On a 390x844 phone | Against |
-| --- | --- | --- |
-| Guess segments (`.third-btn`, `.half-btn`) | **41 px** | 24 px AA floor |
-| Suit quadrants | **41 x 41 px** | 24 px AA floor |
-| Equal badge, tap area | **32 px** (paints ~21 px) | 24 px AA floor |
-| Control-bar icons | **44 px** | 44 px comfortable |
-| Bet steppers | **44 x 26 px** | 24 px AA floor |
-| Intro `?` badge | **44 px** overspill | 44 px comfortable |
-| Intro tip text | 13 px floor on popout | legibility |
+| Control | Mobile S 320 | Mobile M 375 | Mobile L 425 | Against |
+| --- | --- | --- | --- | --- |
+| Guess square | 59 px | 69 px | 78 px | — |
+| Guess segments (`.third-btn`, `.half-btn`) | **29 px** | **35 px** | **39 px** | 24 px AA floor |
+| Suit quadrants | **29 x 29** | **35 x 35** | **39 x 39** | 24 px AA floor |
+| Equal badge, tap area | **27 px** | **31 px** | **32 px** | 24 px AA floor |
+| Control-bar icons / round buttons | **36 px** | **36 px** | **36 px** | 24 px AA floor |
+| Bet steppers | hidden | hidden | **30 x 26** | 24 px AA floor |
+| Intro `?` badge | **44 px** overspill | **44 px** | **44 px** | 44 px comfortable |
+| Intro tip text | 13 px floor | 13 px floor | 13 px floor | legibility |
 
 The 21 px figure was the guess segments when the higher/lower square held three
-stacked thirds. It is now two halves plus an overlaid chip, so those segments
-are 41 px. The genuinely undersized control was the **equal badge at ~21 px** -
-the most expensive miss on the board, since it sits on the seam and a near-miss
-buys the other bet rather than doing nothing. Its tap area is now floored at
-32 px independently of its paint, which leaves each half 25 px of its own.
+stacked thirds. It is now two halves plus an overlaid chip. The genuinely
+undersized control was the **equal badge** - the most expensive miss on the
+board, since it sits on the seam and a near-miss buys the other bet rather than
+doing nothing. Its tap area is grown independently of its paint, to whichever is
+smaller of 32 px and 45% of the square: a flat 32 px reaches 16 px either side of
+the seam, and on a 320 px screen a segment's own centre is only 14.7 px out, so
+aiming at the middle of Higher would have bought Equal. Tied to the square, the
+reach is 13-16 px and the segment centre stays clear by 1.5-3.6 px everywhere.
 
 Nothing here is below the 24 px WCAG 2.2 AA floor. The remaining gap is against
 the 44 px *comfortable* target, which the guess controls cannot reach
-geometrically: four squares across a 390 px viewport caps the square at ~82 px,
-so its halves are 41 px and only a non-square control could do better.
+geometrically: four cards across a 375 px viewport cap `--ui` at 2.265vw, so the
+square is 69 px and its halves 35 px. Only a non-square control could do better,
+and a non-square control would be a different shape from the one every other
+screen draws. The bar's icons are floored at 36 px rather than 44 for the same
+reason - at 44 px the bar overflowed a 375 px viewport on both of its rows.
 
-**Still confirm on hardware** - these are computed from the CSS, not measured on
-a device, and the 41 px segments have a 32 px badge taking a bite out of their
-inner edge.
+**Still confirm on hardware** - these are computed and measured in a desktop
+browser at emulated viewports, not on a device, and the segments have the equal
+badge taking a bite out of their inner edge.
 
 - [ ] **DEV-01 · Phone, portrait - a full round is playable** — *Blocker*
   On a real phone, set all four guesses, spin, and read the result.

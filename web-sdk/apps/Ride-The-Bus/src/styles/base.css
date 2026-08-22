@@ -28,10 +28,19 @@
   /* The control bar is constrained by WIDTH, not height, so it gets its own
      unit that leans on vw - otherwise a tall narrow phone (lots of height,
      little width) would shrink the bar as if it were a tiny popout.
-     Laid out in one row the bar needs ~94x this unit (measured), hence ~1.02vw;
      responsive.css raises the coefficient once the readouts wrap onto their
-     own row and the width budget doubles. */
-  --ui-bar: clamp(6px, min(1.02vw, 2.4vh), 11px);
+     own row and the width budget doubles.
+
+     The budget is written out rather than folded into a vw coefficient, and
+     the reason is Popout S. Laid out in one row the bar measures 95.5x this
+     unit PLUS about 26px that cannot scale with it - fourteen 1px borders,
+     which have no half-pixel to shrink into. The old 1.02vw ignored that fixed
+     term, so it was right at 1024 and 1200 (where the 11px cap does the work
+     anyway) but 4% too generous at 400, and 4% was the whole difference
+     between one row and two. Solving (100vw - 30px) / 96 instead leaves the
+     same ~4px of slack at every width, which is what lets a 400x225 popout
+     draw the same one-row bar an 800x450 one does, at half the size. */
+  --ui-bar: clamp(3px, min(calc((100vw - 30px) / 96), 2.4vh), 11px);
 
   /* Cards / guess squares, expressed as multiples of --ui. The right-hand
      comments are the resulting desktop pixel sizes. */

@@ -175,12 +175,21 @@
      which is what makes the :focus-visible rule that reveals the tip work for
      keyboard users, and it needs no role. The span version carried role="note",
      which is non-interactive and cannot legally hold a tabindex.
-     type="button" so it never submits anything. -->
+     type="button" so it never submits anything.
+
+     The tip is the badge's SIBLING, not its child, and that is load-bearing
+     rather than tidiness. An absolutely positioned box is laid out against its
+     nearest positioned ancestor, and inside the button that was the ~20px badge
+     - so the tip could be told where to start but never how much room it had,
+     and it ran off the screen on the narrow layouts. As a sibling its
+     containing block is the step panel, which means a percentage max-width
+     resolves against something meaningful: see --tip-room in start-screen.css.
+
+     aria-hidden because the same sentence is already the button's aria-label;
+     without it a screen reader reads the explanation twice. -->
 {#snippet help(text: Parameters<typeof t>[0])}
-	<button type="button" class="ss-help" aria-label={t(text)}>
-		?
-		<span class="ss-tip">{t(text)}</span>
-	</button>
+	<button type="button" class="ss-help" aria-label={t(text)}>?</button>
+	<span class="ss-tip" aria-hidden="true">{t(text)}</span>
 {/snippet}
 
 <div class="ss-overlay" style={`--logo-url: url(${base}/logo.png)`}>

@@ -63,12 +63,15 @@
      everywhere. */
   height: var(--choice-size);
   /* The corner radius, shared with the segments inside so the two cannot drift.
-     18px is the design figure, but a radius can never exceed half the box or
-     the browser scales it down - and on a short popout these squares are only
-     ~29px across, where 18px would be over-specified and the square renders as
-     a circle. Taking the min explicitly means the value here is the EFFECTIVE
-     radius at every size, which is what the segments below have to match. */
-  --choice-radius: min(18px, calc(var(--choice-size) / 2));
+     A FRACTION of the square, not a fixed 18px. 18px is the design figure at
+     the reference desktop size, where the square is 92px - so 0.2 reproduces it
+     there and keeps the same shape at every other size. A fixed 18px does not:
+     it is 20% of a desktop square but 62% of a 29px popout-S one, where a
+     radius cannot exceed half the box and the browser clamps it to exactly
+     half - which is a circle. That is what made the guess controls on Popout S
+     read as four coins rather than the four rounded squares every larger
+     window draws. */
+  --choice-radius: calc(var(--choice-size) * 0.2);
   border-radius: var(--choice-radius);
   overflow: hidden;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35), 0 0 0 2px rgba(255, 255, 255, 0.25);

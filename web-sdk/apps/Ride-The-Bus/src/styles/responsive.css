@@ -2,12 +2,38 @@
    Sizing is handled fluidly by the --ui unit in base.css (every card, guess
    square, control-bar panel and font is a multiple of it), so there are no
    stepped size overrides here - just layout changes that a scale factor can't
-   express. Imported last so these always win. */
+   express. Imported last so these always win.
+
+   ---- The seven target viewports -------------------------------------------
+   These are the sizes the game is checked at (and the ones listed in
+   CLAUDE.md). The four landscape ones are all exactly 16:9, which is what
+   makes "the same layout, scaled" achievable across them:
+
+     Desktop   1200x675    Popout S   400x225
+     Laptop    1024x576    Mobile L   425x812
+     Popout L   800x450    Mobile M   375x667
+                           Mobile S   320x568
+
+   The rule the layout follows: PHONES may rearrange - a phone is portrait, so
+   a row of four that fits a 16:9 window cannot be assumed to fit here.
+   Everywhere from Popout S up to Desktop the arrangement is identical and only
+   the scale changes. The blocks below are grouped by which of those two jobs
+   they are doing. */
+
+/* ==========================================================================
+   1. Phones (narrow, portrait)
+   ========================================================================== */
 
 /* Narrow viewports: give the readouts their own top row, otherwise the
    advanced button wraps on its own and looks stranded. The Last Win multiplier
    chip is dropped here (the cash amount still shows) so the reserved readout
-   width fits - see .cb-lastwin in control-bar.css. */
+   width fits - see .cb-lastwin in control-bar.css.
+
+   Width-scoped rather than portrait-scoped because a narrow LANDSCAPE window
+   (a phone on its side, ~568x320) needs the same two rows for the same reason.
+   Popout S is narrower still but opts back out at the bottom of this file: it
+   is the one narrow window where lowering --ui-bar buys a one-row bar that is
+   still in proportion. */
 @media (max-width: 620px) {
   /* Two rows means each row only has to fit ~47x the unit instead of ~94x, so
      the bar can scale up relative to the viewport again. */
@@ -16,6 +42,18 @@
   .cb-readouts { justify-content: space-between; }
   .cb-lastwin-mult { display: none; }
   .cb-lastwin { min-width: calc(var(--ui-bar) * 13.09); }
+
+  /* The readouts drop to a line of their own INSIDE the light pill when the
+     icons beside them leave too little room. On a 320px phone the three icon
+     buttons plus the two reserved readout widths measure 351px against 303px
+     of usable bar, and the overspill is not clipped by anything - the pill and
+     its leftmost icon simply hang off both edges of the screen.
+
+     A flex-basis rather than a hard `flex-basis: 100%`, so the two share a
+     line wherever they actually fit (Mobile L at 425px does) and split only
+     where they do not. */
+  .cb-panel-light { flex-wrap: wrap; }
+  .cb-readouts { flex: 1 1 calc(var(--ui-bar) * 26); }
 }
 
 /* ---- Touch targets on phones ---------------------------------------------
@@ -25,16 +63,18 @@
    that viewport, the guess segments came out at 21px and the bet steppers at
    22x18px - below the 24px WCAG floor, let alone the 44px comfortable target.
 
-   NOTE ON THE NUMBERS BELOW: they date from when the hl square was three
+   NOTE ON THE NUMBERS ABOVE: they date from when the hl square was three
    stacked segments. It is now two halves plus an overlaid equal badge, so the
-   segments are 41px here, not 27px - comfortably past the floor. The one
-   control that was genuinely too small is the badge, handled at the end of this
-   block. `.third-btn` kept its name through that change and is a half.
+   segments measure 29px on Mobile S and 39px on Mobile L, not 27px - past the
+   floor at every phone width. `.third-btn` kept its name through that change
+   and is a half.
 
-   The fix spends the spare height rather than scaling --ui up, which would
-   widen the row past the viewport. The guess squares grow taller (their width
-   is untouched, so the four still fit across), and the bar's own controls get
-   explicit minimums.
+   The fix raises --ui as far as the CARD row can take it (see below) and pays
+   for that by tightening the gap, so the square grows without the row of four
+   growing past the viewport. The square stays a square at every size - an
+   earlier version stretched it taller instead, which made the phone show a
+   different-shaped control from every other screen. The bar's own controls,
+   which are sized off --ui-bar rather than --ui, get explicit pixel minimums.
 
    Pointer-coarse only. A narrow DESKTOP window is the same width but has a
    mouse, where 21px is precise enough and stretching everything would just look
@@ -45,68 +85,120 @@
      rectangle on phones and a square everywhere else - two different-looking
      controls for the same thing.
 
-     The row is 4 squares of 8.36 --ui plus 3 gaps of 2.18 --ui, so the GAP is
-     what caps the square: at the shipping gap the row already fills the
-     viewport and --ui cannot rise at all. Tightening the gap to 0.9 --ui frees
-     enough width for --ui to go from 2vw to 2.5vw, taking the square from 65px
-     to 82px and the thirds from 21px to 27px - past the 24px floor, and square. */
+     The row is 4 squares of 8.36 --ui plus 3 gaps, so the GAP is what caps the
+     square: at the shipping gap the row already fills the viewport and --ui
+     cannot rise at all. Tightening the gap to 0.9 --ui frees enough width for
+     --ui to rise above the 2vw baseline.
+
+     2.2vw, and the third decimal place matters. It is the CARD row that binds,
+     not the guess row: four cards of 9.27 --ui plus three 0.9 gaps plus the
+     play area's own 2.18 padding on each side comes to 44.14 --ui, so --ui
+     cannot exceed 1/44.14 of the width = 2.265vw. This was set to 2.5vw, which
+     is 10% over that line, and the visible result was the card row and the
+     guess row both wrapping 3 + 1 on every phone - the fourth card and the
+     Suit square dropped onto a second line, and the Suit square landed behind
+     the control bar. 2.2vw leaves ~3% of slack.
+
+     The guess row has more room than that (its own limit is 2.469vw), so it is
+     the cards that decide how big everything on a phone can be. */
   .game-layout {
-    --ui: clamp(4px, min(2.5vw, 1.55vh), 11px);
+    --ui: clamp(4px, min(2.2vw, 1.55vh), 11px);
     --gap: calc(var(--ui) * 0.9);
   }
 
   /* The equal badge was the worst target on the board and the most expensive to
      miss - it sits on the seam between two halves, so a near-miss does not do
-     nothing, it buys the other bet. At 2.15 --ui it paints ~21px here; this
-     floors the TAP area at 32px without growing the paint (see
-     .equal-btn::before in choices.css).
+     nothing, it buys the other bet. At 1.95 --ui it paints 14-17px here; this
+     grows the TAP area without growing the paint (see .equal-btn::before in
+     choices.css).
 
      32px, not 44px, and the arithmetic is the whole argument. The segments
-     either side are 41px across (82px square, split in two - vertically on the
-     hl square, horizontally on the io one). A 44px target would swallow both of
-     them whole. At 32px it reaches 16px either side of the seam, leaving each
-     segment 25px of its own - past the 24px WCAG 2.2 AA floor - and each
-     segment's centre, which is where a thumb actually lands, sits 20.5px out
-     and so stays clear by 4.5px.
+     either side are half a square across - 34px on Mobile M, 29px on Mobile S
+     (vertically on the hl square, horizontally on the io one). A 44px target
+     would swallow both of them whole.
+
+     The 0.45 term is what keeps 32px honest on the narrowest phone. A flat
+     32px reaches 16px either side of the seam, and on a 320px screen the
+     segment's own CENTRE - which is where a thumb actually lands - is only
+     14.7px out, so aiming at the middle of Higher would have bought Equal.
+     Tying the ceiling to the square instead puts the reach at 45% of a
+     segment's width everywhere: 13px of a 29px segment on Mobile S, 16px of a
+     39px one on Mobile L, with the segment's centre clear by 1.5-3.6px at
+     every size in between.
 
      Net effect: the badge goes from unhittable to comfortable, and the
-     ambiguous strip along the seam now resolves deliberately to Equal instead
-     of to whichever pixel happened to win. */
+     ambiguous strip along the seam resolves deliberately to Equal instead of
+     to whichever pixel happened to win - without ever reaching the point where
+     the seam swallows the segments it sits between. */
   .equal-btn {
-    --equal-hit: 32px;
+    --equal-hit: min(32px, calc(var(--choice-size) * 0.45));
   }
 
-  /* The icon buttons sit apart from each other, so padding-free growth is safe. */
+  /* 36px, not 44px, and the same argument the equal badge makes applies here:
+     a floor is only worth having if the control it floors still fits on the
+     screen. At 44px the three icons, the two floating buttons and the round
+     buttons together push both rows of the bar past a 375px viewport - the
+     mute button hangs off the left edge and the advanced button off the right,
+     and on Mobile M the row broke into a third line with the advanced button
+     stranded alone under it. 36px clears the 24px WCAG 2.2 AA floor by half
+     again and fits every phone width down to 320. */
   .cb-icon,
-  .cb-round {
-    min-width: 44px;
-    min-height: 44px;
+  .cb-round,
+  .cb-float {
+    min-width: 36px;
+    min-height: 36px;
   }
 
-  /* The +/- pair is stacked and adjacent, so they get the 24px floor rather
-     than 44px - two 44px halves would be taller than the panel they sit in. */
+  /* The +/- pair is stacked and adjacent, so they get a floor nearer the 24px
+     one than the 36px above - two tall halves would be deeper than the panel
+     they sit in, and 36px wide is width the bet figure needs more. */
   .cb-step {
-    min-width: 44px;
+    min-width: 30px;
     min-height: 26px;
+  }
+
+  /* The reserved width for the bet figure, trimmed. It is measured from
+     "$1,000,000.00", which is not a bet anyone places on a phone, and on this
+     row every pixel it reserves is taken off the four controls beside it. */
+  .cb-bet-display {
+    min-width: calc(var(--ui-bar) * 11);
   }
 }
 
 /* Very tight: drop the inline +/- (the bet is still settable from the bet
-   menu) so the remaining controls keep a usable size. */
-@media (max-width: 360px) {
+   menu) so the remaining controls keep a usable size. 400px rather than the
+   360px it was: with 36px floors on the buttons either side of it, Mobile M at
+   375px is 7px short of fitting the pair, and what that 7px costs is the whole
+   row breaking onto a third line.
+
+   Portrait-scoped, because Popout S is also 400px wide and is not tight in the
+   same way - its controls are half-size, not floored, so the steppers fit
+   there exactly as they do on Popout L. */
+@media (max-width: 400px) and (orientation: portrait) {
   .cb-betstep { display: none; }
 }
 
-/* Short landscape popouts have no vertical room for the title. */
+/* ==========================================================================
+   2. Short landscape windows
+   ========================================================================== */
+
+/* A phone on its side has no vertical room for the title. Popout S is shorter
+   still and DOES keep it - see the last block, which is scoped narrower and
+   comes later. */
 @media (orientation: landscape) and (max-height: 430px) {
   .game-title { display: none; }
 }
 
-/* Very short windows (e.g. a 400x225 popout): the control bar alone takes a
-   third of the height, so claw back vertical space by dropping the secondary
-   labels and tightening the stack. Without this the cards and guess squares
-   are pushed outside the play area and overlap each other. */
-@media (max-height: 320px) {
+/* Very short windows that are still too wide to be a Popout S - in practice a
+   phone in landscape at ~568x320. The control bar there is on two rows and
+   takes a third of the height, so claw back vertical space by dropping the
+   secondary labels and tightening the stack. Without this the cards and guess
+   squares are pushed outside the play area and overlap each other.
+
+   min-width, because Popout S is narrower AND shorter and needs none of it:
+   there the bar comes back to one row, which frees more height than every
+   label here is worth. */
+@media (max-height: 320px) and (min-width: 521px) {
   .choice-label { display: none; }
   .running-win-label { display: none; }
   .running-win-mult { display: none; }
@@ -114,31 +206,51 @@
   .play-area { gap: calc(var(--ui) * 1.1); padding: calc(var(--ui) * 0.8); }
 }
 
-/* Popout S only (~400x225 and smaller in landscape).
-   Both --ui and --ui-bar bottom out at their clamp floors here, so the layout
-   stops scaling with the window: the control bar freezes at ~87px - up to 58%
-   of the viewport - and the play area, which gets whatever is left, pushes the
-   multiplier chips off the top and the guess squares under the bar.
-   The bar genuinely cannot fit on one row at this width (its controls measure
-   637px against a 400px viewport), so the two-row layout stays; instead lower
-   the two floors so both units keep tracking height, and tighten the bar's own
-   padding and row gap - it is spending ~18px of a 225px window on whitespace.
-   Scoped to landscape and 320px so nothing else is touched: phones are taller
-   than this in portrait AND in landscape, and popout L / desktop clear it by a
-   wide margin. */
-@media (orientation: landscape) and (max-height: 320px) {
+/* ==========================================================================
+   3. Popout S - Popout L at half size
+   ========================================================================== */
+
+/* Popout S is 400x225 and Popout L is 800x450: the same window, exactly
+   halved. Everything about the layout scales, so the only thing that ever
+   stopped Popout S looking like a scaled Popout L was the clamp FLOORS - --ui
+   bottomed out and the bar's unit hit 6px, which forced the readouts onto a
+   second row, and the two-row bar then ate a third of the height and pushed the
+   title and the choice labels out to make space. Four separate rearrangements,
+   all downstream of one number.
+
+   min(2vw, 1.55vh) at 400x225 is 3.49px, which is exactly half of the 6.98px
+   Popout L resolves to, so lowering the floor is all that is needed: the cards,
+   the guess squares, the title and the labels then draw at half their Popout L
+   size and land in the same places. base.css does the same for --ui-bar by
+   solving the bar's real width budget rather than a vw coefficient.
+
+   Scoped by BOTH axes. max-height alone would catch a phone in landscape
+   (568x320), which is wider than the bar can fit on one row; 520px separates
+   the two with room to spare on each side. */
+@media (orientation: landscape) and (max-height: 320px) and (max-width: 520px) {
   .game-layout {
     --ui: clamp(2.6px, min(2vw, 1.55vh), 11px);
-    --ui-bar: clamp(4px, min(2.05vw, 2.4vh), 11px);
+    /* base.css's own formula, restored over the two-row coefficient the 620px
+       block sets. It resolves to 3.85px here - close to half of Popout L's
+       8.02px, the small shortfall being the ~26px of 1px borders in the bar
+       that cannot be halved. */
+    --ui-bar: clamp(3px, min(calc((100vw - 30px) / 96), 2.4vh), 11px);
   }
 
-  /* Reclaimed whitespace: the bar's bottom padding and the gap between its two
-     rows, plus a little off each panel's vertical padding. */
-  .control-bar {
-    gap: calc(var(--ui-bar) * 0.5);
-    padding: 0 calc(var(--ui-bar) * 1.27) calc(var(--ui-bar) * 0.5);
+  /* Back to the one-row bar. Undoing the 620px block above rather than
+     narrowing it, because that block is right for every OTHER window it
+     catches - this is the exception, not a correction. */
+  .cb-panel-light {
+    order: 0;
+    flex: 0 1 auto;
+    flex-wrap: nowrap;
   }
-  .cb-panel {
-    padding: calc(var(--ui-bar) * 0.4) calc(var(--ui-bar) * 1.09);
-  }
+  .cb-readouts { flex: 1 1 auto; }
+  .cb-lastwin-mult { display: inline; }
+  .cb-lastwin { min-width: calc(var(--ui-bar) * 20); }
+
+  /* And back to the full title, which the 430px rule above drops for phones in
+     landscape. It costs 24px of a 225px window - the same 11% it costs of
+     Popout L's 450 - which the one-row bar has already paid for. */
+  .game-title { display: flex; }
 }
