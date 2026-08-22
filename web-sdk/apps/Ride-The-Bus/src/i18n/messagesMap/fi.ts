@@ -50,6 +50,12 @@ export default {
 	Forgiven: 'Annettu anteeksi',
 	'Game modes': 'Pelitilat',
 	'Max win': 'Enimmäisvoitto',
+	// Confirmation before a bet mode is activated - required by the approval
+	// checklist, and worth having anyway: the three families cost the same but
+	// differ in what a miss keeps and how high they reach.
+	'Switch mode?': 'Vaihdetaanko tila?',
+	Cancel: 'Peruuta',
+	Switch: 'Vaihda',
 	'Volatility %s of %t': 'Volatiliteetti %s / %t',
 	'Every mode costs 1× your bet.': 'Jokainen tila maksaa 1× panoksesi.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':

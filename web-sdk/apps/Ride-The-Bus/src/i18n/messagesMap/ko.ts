@@ -50,6 +50,12 @@ export default {
 	Forgiven: '면제됨',
 	'Game modes': '게임 모드',
 	'Max win': '최대 배당',
+	// Confirmation before a bet mode is activated - required by the approval
+	// checklist, and worth having anyway: the three families cost the same but
+	// differ in what a miss keeps and how high they reach.
+	'Switch mode?': '모드를 변경할까요?',
+	Cancel: '취소',
+	Switch: '변경',
 	'Volatility %s of %t': '변동성 %t단계 중 %s',
 	'Every mode costs 1× your bet.': '모든 모드는 베팅액의 1배입니다.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':

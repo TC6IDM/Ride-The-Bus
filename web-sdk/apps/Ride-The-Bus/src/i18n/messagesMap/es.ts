@@ -50,6 +50,12 @@ export default {
 	Forgiven: 'Perdonado',
 	'Game modes': 'Modos de juego',
 	'Max win': 'Ganancia máxima',
+	// Confirmation before a bet mode is activated - required by the approval
+	// checklist, and worth having anyway: the three families cost the same but
+	// differ in what a miss keeps and how high they reach.
+	'Switch mode?': '¿Cambiar de modo?',
+	Cancel: 'Cancelar',
+	Switch: 'Cambiar',
 	'Volatility %s of %t': 'Volatilidad %s de %t',
 	'Every mode costs 1× your bet.': 'Cada modo cuesta 1× tu apuesta.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':

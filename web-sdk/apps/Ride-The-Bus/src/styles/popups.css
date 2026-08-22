@@ -89,7 +89,7 @@
 
 .turbo-slider { flex: 1 1 auto; min-width: 0; accent-color: var(--accent); cursor: pointer; }
 
-.turbo-readout { text-align: center; font-weight: 800; color: var(--accent); font-size: calc(var(--ui-bar) * 1.24); }
+.turbo-readout { text-align: center; font-weight: 800; color: var(--accent); font-size: calc(var(--ui-bar) * 1.24); font-variant-numeric: tabular-nums; }
 
 .autospin-body { display: flex; flex-direction: column; gap: calc(var(--ui-bar) * 0.91); }
 
@@ -225,7 +225,7 @@
   transition: background 0.15s;
 }
 
-.switch.on { background: #1f8fff; }
+.switch.on { background: var(--accent-strong); }
 
 .switch:disabled { opacity: 0.55; cursor: not-allowed; }
 
@@ -327,7 +327,7 @@
 
 .mode-option.selected {
   border-color: var(--accent-strong);
-  background: rgba(47, 143, 255, 0.18);
+  background: rgba(var(--accent-rgb), 0.18);
   color: var(--ink);
 }
 
@@ -434,5 +434,101 @@
   .mode-option:active,
   .action-button:not(:disabled):active {
     transform: none;
+  }
+}
+
+/* ---- Mode change confirmation --------------------------------------------
+ * Stake's approval checklist requires a confirmation step before a bet mode is
+ * activated. It lives inside the picker rather than in a second stacked dialog:
+ * a popup opening on top of a popup is how a player loses track of what they
+ * were doing, and the picker already has the panel to itself.
+ */
+.mode-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ui-bar) * 0.55);
+  padding: calc(var(--ui-bar) * 1) calc(var(--ui-bar) * 1.09);
+  border-radius: calc(var(--ui-bar) * 0.73);
+  border: 1px solid rgba(var(--ink-rgb), 0.14);
+  background: rgba(var(--ink-rgb), 0.05);
+}
+
+.mode-confirm-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--ui-bar) * 0.9);
+}
+
+.mode-confirm-name {
+  font-size: calc(var(--ui-bar) * 1.45);
+  font-weight: 800;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.mode-confirm-blurb {
+  margin: 0;
+  font-size: calc(var(--ui-bar) * 1.02);
+  line-height: 1.4;
+  color: var(--ink-body);
+}
+
+.mode-confirm-max {
+  margin: 0;
+  font-size: calc(var(--ui-bar) * 1.02);
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.mode-confirm-cost {
+  margin: 0;
+  font-size: calc(var(--ui-bar) * 0.98);
+  color: var(--ink-dim);
+}
+
+/* The destructive-ish action is on the right and filled; the way out is on the
+   left and quiet. Cancel is a real button rather than a link so it carries the
+   same hit area as the thing it is protecting against. */
+.mode-confirm-actions {
+  display: flex;
+  align-items: stretch;
+  gap: calc(var(--ui-bar) * 0.73);
+  margin-top: calc(var(--ui-bar) * 0.36);
+}
+
+.mode-confirm-cancel {
+  flex: 0 0 auto;
+  padding: calc(var(--ui-bar) * 1.27) calc(var(--ui-bar) * 1.6);
+  border-radius: 10px;
+  border: 1px solid rgba(var(--ink-rgb), 0.2);
+  background: none;
+  color: var(--ink-body);
+  font-size: calc(var(--ui-bar) * 1.53);
+  font-weight: 700;
+  cursor: pointer;
+  text-transform: none;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.mode-confirm-cancel:hover {
+  background: rgba(var(--ink-rgb), 0.1);
+  border-color: rgba(var(--ink-rgb), 0.32);
+}
+
+.mode-confirm-cancel:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.mode-confirm-go {
+  flex: 1 1 auto;
+  width: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mode-confirm-cancel {
+    transition: none;
   }
 }

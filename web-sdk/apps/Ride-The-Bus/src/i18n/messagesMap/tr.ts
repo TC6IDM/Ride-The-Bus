@@ -50,6 +50,12 @@ export default {
 	Forgiven: 'Affedildi',
 	'Game modes': 'Oyun modları',
 	'Max win': 'Maksimum kazanç',
+	// Confirmation before a bet mode is activated - required by the approval
+	// checklist, and worth having anyway: the three families cost the same but
+	// differ in what a miss keeps and how high they reach.
+	'Switch mode?': 'Mod değiştirilsin mi?',
+	Cancel: 'İptal',
+	Switch: 'Değiştir',
 	'Volatility %s of %t': 'Oynaklık %t üzerinden %s',
 	'Every mode costs 1× your bet.': 'Her mod bahsinizin 1 katıdır.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':

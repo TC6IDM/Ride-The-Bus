@@ -94,7 +94,8 @@
      #f4d47c (the loader title) were three values doing two jobs - the loader
      plate and the in-game plate are explicitly meant to read as the same
      lockup, and they were half a step apart. */
-  --gold: #f5d78c;
+  --gold-rgb: 245, 215, 140;
+  --gold: rgb(var(--gold-rgb));
   --gold-bright: #ffe08a;
 
   /* ==== Ink ==============================================================
@@ -136,11 +137,38 @@
   --panel-dark: rgba(8, 14, 22, 0.82);
   --panel-float: rgba(10, 17, 26, 0.82);
 
-  /* ==== Accent ===========================================================
-     The interactive blue. Two steps: the resting accent, and the one a
-     committed selection uses. */
+  /* ==== Accent ==========================================================
+     The interactive blue, and the per-control identity colours beside it.
+
+     This is a DELIBERATE choice, recorded here because it reads like drift and
+     is not. A pass replaced all of it with a single gold accent, on the
+     reasoning that one 40px control bar running five hues at once is four more
+     colour systems than it has ideas, and that blue is the hue AI-generated UI
+     reaches for by default. Both of those are fair points about colour theory
+     and neither survived contact with the game: the per-control tints are
+     WAYFINDING. Turbo is amber, autoplay is green, advanced is purple, and a
+     player who has opened one of those menus once finds it again by colour
+     rather than by re-reading four identical icons.
+
+     So the rule for this app is narrower than "one accent". It is: one accent
+     for anything that is CHOSEN (a bet, a mode, a tab), and a fixed identity
+     colour per control that OPENS something. Do not collapse the second set
+     into the first. */
   --accent: #4c9ffe;
   --accent-strong: #2f8fff;
+  --accent-rgb: 76, 159, 254;
+
+  /* Per-control identity. The -rgb pairs exist so a call site can pick its own
+     alpha for a wash or a glow and still name its colour. */
+  --ctl-turbo: #ffce3a;
+  --ctl-turbo-ink: #ffd54a;
+  --ctl-turbo-rgb: 255, 193, 7;
+  --ctl-autospin: #57d98a;
+  --ctl-autospin-ink: #9df0b8;
+  --ctl-autospin-rgb: 87, 217, 138;
+  --ctl-advanced: #a98cff;
+  --ctl-advanced-ink: #d0bcff;
+  --ctl-advanced-rgb: 169, 140, 255;
 
   /* ==== Translucency =====================================================
      Three colours the app paints at many different alphas: white hairlines and
@@ -158,7 +186,6 @@
      one-file job whenever it is taken on. */
   --ink-rgb: 255, 255, 255;
   --shadow-rgb: 0, 0, 0;
-  --accent-rgb: 76, 159, 254;
 
   /* ==== Focus ============================================================
      Two rings, not one, and the dark half is the load-bearing one. A single
@@ -257,15 +284,32 @@
      two meters burn them (the mode picker and the bet display) and a
      per-component copy is how the two would drift apart - which is this file's
      whole argument, made one file early. */
-  --vol-sc: #3ddc84;
-  --vol-base: #ffc93c;
-  --vol-hs: #ff5c5c;
+  /* Declared as triplets with the hex derived from them, the same way --gold
+     is. The bet panel tints its own controls with the live rating now, and a
+     border or a glow needs an alpha - so every one of these has to be
+     available both as a colour and as something rgba() can take. Two separate
+     lists would be one edit away from disagreeing. */
+  --vol-sc-rgb: 61, 220, 132;
+  --vol-base-rgb: 255, 201, 60;
+  --vol-hs-rgb: 255, 92, 92;
+  --vol-sc: rgb(var(--vol-sc-rgb));
+  --vol-base: rgb(var(--vol-base-rgb));
+  --vol-hs: rgb(var(--vol-hs-rgb));
   /* Stops past the family ceiling, which only Equal picks on High Stakes
      reach. Deliberately off the green-yellow-red ramp rather than a deeper
      red: it is not "more of the same", it is past the top of the scale the
      three modes span. Kept bright enough to survive the drop-shadow on a dark
      bar. */
   --vol-overflow: #9d4edd;
+  /* The same purple, lifted, for when it has to be TEXT rather than a bolt.
+     A bolt is a graphic and clears WCAG at 3:1; the mode name beside it is
+     ~9.5px and wants 4.5:1, which #9d4edd misses at 4.00 against the bet
+     panel. This measures 5.32 on the same ground and holds the hue, so the
+     word and the stops still read as one colour.
+     The bolt keeps the deeper value: it carries a drop-shadow that the text
+     does not, and it was tuned to survive that. */
+  --vol-overflow-ink-rgb: 176, 106, 232;
+  --vol-overflow-ink: rgb(var(--vol-overflow-ink-rgb));
 
   /* ==== Motion ===========================================================
      Five near-identical cubic-beziers were in use, plus ease-out ten times,

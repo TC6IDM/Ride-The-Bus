@@ -158,7 +158,18 @@
 
 .cb-bet-display .cb-cap { text-align: right; }
 
-.cb-bet-display:hover, .cb-bet-display.active { border-color: var(--accent); background: rgba(var(--accent-rgb), 0.12); box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.35); }
+/* The bet group tints with the DIFFICULTY, not with the interface accent.
+   Green on Second Chance, yellow on Classic, red on High Stakes, purple once
+   the Equal picks push the rating past what any family reaches alone - the
+   same ruler the bolts and the mode name are already reading.
+
+   The fallbacks matter: these controls exist in the markup before a mode has
+   been resolved, and --accent is what they were. */
+.cb-bet-display:hover, .cb-bet-display.active {
+  border-color: var(--mode-ink, var(--accent));
+  background: rgba(var(--mode-rgb, var(--accent-rgb)), 0.12);
+  box-shadow: 0 0 12px rgba(var(--mode-rgb, var(--accent-rgb)), 0.35);
+}
 
 .cb-betstep { display: flex; flex-direction: column; gap: calc(var(--ui-bar) * 0.36) /* 4px */; }
 
@@ -188,7 +199,10 @@
   height: calc(var(--ui-bar) * 1.8);
 }
 
-.cb-step:hover:not(:disabled) { border-color: var(--accent); box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.5); }
+.cb-step:hover:not(:disabled) {
+  border-color: var(--mode-ink, var(--accent));
+  box-shadow: 0 0 8px rgba(var(--mode-rgb, var(--accent-rgb)), 0.5);
+}
 
 .cb-step:disabled { opacity: 0.45; cursor: not-allowed; }
 
@@ -387,28 +401,22 @@
   filter: drop-shadow(0 1px 2px rgba(var(--shadow-rgb), 0.9));
 }
 
-/* Hover and active glows.
+/* Distinct hover glow per control: info blue, turbo amber, autoplay green,
+   advanced purple, mode gold. Plus an active (popup-open) highlight in the
+   same colour, so a control that has a menu open looks like it.
  *
- * This was five accent hues inside one 40px bar - blue for info, amber for
- * turbo, green for autospin, purple for advanced, gold for mode - which is
- * four more colour systems than the bar has ideas. The purple had no source
- * anywhere in the game, and the green collided with the volatility meter,
- * where green already means something specific and measured.
- *
- * Three roles now, each with a reason to exist:
- *   accent  everything that opens a menu
- *   amber   turbo, which shares it with .cb-spin.slammable - so amber means
- *           SPEED consistently rather than labelling one button
- *   gold    the MODE button, the one control that changes what a round IS
- *           rather than how it looks
- */
+ * The five hues are WAYFINDING and not decoration - see the note beside
+ * --ctl-* in tokens.css for why an attempt to collapse them into one accent
+ * was undone. These are five near-identical round icons in a 40px strip;
+ * colour is how a player finds the one they opened last time without reading
+ * every glyph again. */
 .cb-icon:hover, .cb-icon.active { border-color: var(--accent); color: var(--ink); background: rgba(var(--accent-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.45); }
 
-.cb-turbo:hover, .cb-turbo.active { border-color: #ffce3a; color: #ffd54a; background: rgba(255, 193, 7, 0.16); box-shadow: 0 0 12px rgba(255, 193, 7, 0.5); }
+.cb-turbo:hover, .cb-turbo.active { border-color: var(--ctl-turbo); color: var(--ctl-turbo-ink); background: rgba(var(--ctl-turbo-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--ctl-turbo-rgb), 0.5); }
 
-.cb-autospin:hover:not(:disabled), .cb-autospin.active { border-color: var(--accent); color: var(--ink); background: rgba(var(--accent-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.45); }
+.cb-autospin:hover:not(:disabled), .cb-autospin.active { border-color: var(--ctl-autospin); color: var(--ctl-autospin-ink); background: rgba(var(--ctl-autospin-rgb), 0.14); box-shadow: 0 0 12px rgba(var(--ctl-autospin-rgb), 0.45); }
 
-.cb-advanced:hover, .cb-advanced.active { border-color: var(--accent); color: var(--ink); background: rgba(var(--accent-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.45); }
+.cb-advanced:hover, .cb-advanced.active { border-color: var(--ctl-advanced); color: var(--ctl-advanced-ink); background: rgba(var(--ctl-advanced-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--ctl-advanced-rgb), 0.45); }
 
 .cb-float:disabled { opacity: 0.4; cursor: not-allowed; }
 
@@ -470,7 +478,21 @@
   gap: calc(var(--ui-bar) * 0.36);
   font-size: calc(var(--ui-bar) * 0.86);
   font-weight: 800;
-  color: var(--gold);
+  /* The mode name is written in its own volatility colour - green for Second
+     Chance, yellow for Classic, red for High Stakes, and purple once the
+     guesses push the rating past what any family reaches on its own.
+
+     It was gold, which said "this line is the mode" but nothing about which
+     one. The bolts beside it were already carrying that, so the word was the
+     only part of the readout not participating in the rating it sits on.
+     Same ruler, said twice in one place - which is the opposite of the two-
+     rulers-on-one-screen mistake, because both halves are counting the same
+     thing.
+
+     --mode-ink is set inline on the .cb-bet PANEL (see Game.svelte) so it
+     reaches the steppers as well as this line; the gold fallback is what shows
+     if it ever fails to resolve. */
+  color: var(--mode-ink, var(--gold));
   white-space: nowrap;
   --bolt-size: 1em;
 }

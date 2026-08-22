@@ -50,6 +50,12 @@ export default {
 	Forgiven: '免除',
 	'Game modes': 'ゲームモード',
 	'Max win': '最大配当',
+	// Confirmation before a bet mode is activated - required by the approval
+	// checklist, and worth having anyway: the three families cost the same but
+	// differ in what a miss keeps and how high they reach.
+	'Switch mode?': 'モードを変更しますか？',
+	Cancel: 'キャンセル',
+	Switch: '変更する',
 	'Volatility %s of %t': 'ボラティリティ %t段階中 %s',
 	'Every mode costs 1× your bet.': 'どのモードもベット額の1倍です。',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':

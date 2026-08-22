@@ -32,6 +32,7 @@ import {
   boltsFor,
   equalGuessCount,
   volatilityColorVar,
+  volatilityColorRgbVar,
   volatilityRank,
 } from './volatility.ts';
 
@@ -110,6 +111,27 @@ describe('volatility ruler', () => {
       // a scoped selector in the parent's stylesheet cannot reach into it, so a
       // hex literal here would silently never apply.
       assert.match(value, /^var\(--vol-[a-z]+\)$/, value);
+    }
+  });
+
+  /**
+   * The bet panel tints its own controls with the live rating, and a border
+   * wash or a glow needs an alpha - so every colour token has an rgb-triplet
+   * sibling that rgba() can take. The two are built from the same family name
+   * rather than from two lookup tables, and this is what holds them together:
+   * rename a family and BOTH have to move, or this fails rather than the glow
+   * silently falling back to nothing.
+   */
+  test('the colour token and its rgb sibling name the same family', () => {
+    for (const family of MODE_FAMILIES) {
+      const colour = volatilityColorVar(family);
+      const triplet = volatilityColorRgbVar(family);
+      assert.match(triplet, /^var\(--vol-[a-z]+-rgb\)$/, triplet);
+      assert.equal(
+        triplet,
+        colour.replace(/\)$/, '-rgb)'),
+        `${family}: ${colour} and ${triplet} do not name the same token`,
+      );
     }
   });
 });

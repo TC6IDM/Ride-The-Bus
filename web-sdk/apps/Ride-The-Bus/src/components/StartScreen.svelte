@@ -5,6 +5,7 @@
 	import gameConfig from '../game/config';
 	import { FAMILY_RULES, MODE_FAMILIES, familyOf, parseModeName } from '../game/modes';
 	import ChoiceIcon from './ChoiceIcon.svelte';
+	import TableScene from './TableScene.svelte';
 	import MarkIcon from './MarkIcon.svelte';
 
 	/** The biggest figure any mode can pay - High Stakes', at the time of
@@ -194,6 +195,13 @@
 {/snippet}
 
 <div class="ss-overlay" style={`--logo-url: url(${base}/logo.png)`}>
+	<!-- The same table the game is played on, so the first thing a player sees
+	     is the place rather than a green gradient standing in for one. Its props
+	     are off: the intro card is wider than the table at every landscape size,
+	     so every one of them would be drawn underneath a step panel. See the
+	     note on showProps in TableScene.svelte. -->
+	<TableScene showProps={false} />
+
 	{#if props.phase === 'start'}
 		<!-- ---- Start / intro screen ----
 		     Everything animates in on a stagger driven by --d (delay index), set

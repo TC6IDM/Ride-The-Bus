@@ -51,6 +51,12 @@ export default {
 	Forgiven: 'مُتسامَح عنها',
 	'Game modes': 'أوضاع اللعبة',
 	'Max win': 'أقصى ربح',
+	// Confirmation before a bet mode is activated - required by the approval
+	// checklist, and worth having anyway: the three families cost the same but
+	// differ in what a miss keeps and how high they reach.
+	'Switch mode?': 'تغيير الوضع؟',
+	Cancel: 'إلغاء',
+	Switch: 'تغيير',
 	'Volatility %s of %t': 'التقلب %s من %t',
 	'Every mode costs 1× your bet.': 'كل وضع يكلّف 1× من رهانك.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':

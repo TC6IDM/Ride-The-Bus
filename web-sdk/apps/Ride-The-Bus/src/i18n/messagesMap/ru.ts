@@ -50,6 +50,12 @@ export default {
 	Forgiven: 'Прощено',
 	'Game modes': 'Режимы игры',
 	'Max win': 'Макс. выигрыш',
+	// Confirmation before a bet mode is activated - required by the approval
+	// checklist, and worth having anyway: the three families cost the same but
+	// differ in what a miss keeps and how high they reach.
+	'Switch mode?': 'Сменить режим?',
+	Cancel: 'Отмена',
+	Switch: 'Сменить',
 	'Volatility %s of %t': 'Волатильность %s из %t',
 	'Every mode costs 1× your bet.': 'Каждый режим стоит 1× вашей ставки.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':

@@ -103,6 +103,7 @@
   color: var(--ink);
   border-color: var(--accent);
   background: rgba(var(--accent-rgb), 0.16);
+  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.5);
 }
 
 /* Keyboard focus on the close button. Shared by every popup and by How to

@@ -61,6 +61,12 @@ export default {
 	// drift from the maths.
 	'Game Mode': 'Game Mode',
 	'Max win': 'Max win',
+	// Confirmation before a bet mode is activated - required by the approval
+	// checklist, and worth having anyway: the three families cost the same but
+	// differ in what a miss keeps and how high they reach.
+	'Switch mode?': 'Switch mode?',
+	Cancel: 'Cancel',
+	Switch: 'Switch',
 	// Read out in place of the bolt meter on each mode row. The bolts are
 	// decorative one at a time and only mean anything as a count, so the meter
 	// carries this instead of labelling five separate images.

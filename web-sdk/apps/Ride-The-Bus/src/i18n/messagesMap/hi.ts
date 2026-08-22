@@ -50,6 +50,12 @@ export default {
 	Forgiven: 'माफ किया',
 	'Game modes': 'गेम मोड',
 	'Max win': 'अधिकतम जीत',
+	// Confirmation before a bet mode is activated - required by the approval
+	// checklist, and worth having anyway: the three families cost the same but
+	// differ in what a miss keeps and how high they reach.
+	'Switch mode?': 'मोड बदलें?',
+	Cancel: 'रद्द करें',
+	Switch: 'बदलें',
 	'Volatility %s of %t': 'अस्थिरता: %t में से %s',
 	'Every mode costs 1× your bet.': 'हर मोड की लागत आपकी बाजी का 1× है।',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':

@@ -158,10 +158,25 @@
      this was three of them in one lockup - it read as a badge someone dropped
      on the table rather than as the game's name.
      
-     Type on the felt instead, with the hierarchy doing the work. The name and
-     the studio line are now separated by a rule rather than boxed together,
-     which is what actually makes them a lockup. */
-  padding: calc(var(--ui) * 0.4) calc(var(--ui) * 1.2);
+     Type on the felt instead, with the hierarchy doing the work: the size,
+     weight and colour gap between the name and the studio line is what makes
+     them read as one lockup.
+
+     There IS a little backing, and deliberately not a plate. What the title
+     needs is for the wood behind it to be quieter, and that is a scrim rather
+     than a box - one colour fading to nothing, no edge to catch the eye, drawn
+     in the same radial vocabulary the table itself is lit with. Two stops, so
+     it stays a shadow rather than becoming a gradient.
+
+     The padding is wide enough that the fade finishes INSIDE the element. A
+     radial still visible at the padding box gets cut off square, which would
+     put back the hard edge this is avoiding. */
+  padding: calc(var(--ui) * 1.2) calc(var(--ui) * 3.4);
+  background: radial-gradient(
+    ellipse 58% 54% at 50% 50%,
+    rgba(var(--shadow-rgb), 0.52) 0%,
+    transparent 74%
+  );
 }
 
 .game-title-main {

@@ -64,6 +64,7 @@
     VOLATILITY_BOLTS,
     boltsFor,
     volatilityColorVar,
+    volatilityColorRgbVar,
   } from '../game/volatility';
   import { gameReady, loaderGone } from '../game/ready.svelte';
   import { jurisdiction, TURBO_CAP_WITHOUT_SUPER } from '../game/jurisdiction.svelte';
@@ -284,6 +285,19 @@
 
   // Bottom control-bar UI: which popup (if any) is open, plus mute state.
   let openPopup = $state<null | 'bet' | 'mode' | 'turbo' | 'autospin' | 'advanced' | 'info'>(null);
+  /**
+   * A mode the player has picked but not yet confirmed.
+   *
+   * Stake's approval checklist requires a confirmation step before a bet mode
+   * is activated. It is worth having here on its own merits too: the three
+   * families cost the same but pay very differently - what a miss keeps, what
+   * the ceiling is, how wild the ride gets - so switching is not the sort of
+   * change a player should be able to make by brushing a row on the way past.
+   *
+   * Null means the picker is showing its list. Non-null means it is showing
+   * the confirmation for that family instead, and betFamily has NOT moved yet.
+   */
+  let pendingFamily = $state<ModeFamily | null>(null);
   // Seeded from the persisted preference so mute survives a reload.
   let muted = $state(sound.isMuted());
   function toggleMuted() {
@@ -465,6 +479,33 @@
    * scale, and the meter is showing the family's own floor honestly.
    */
   const liveBolts = () => boltsFor(betFamily, hlChoice, ioChoice);
+  /**
+   * The colour the live mode name is written in - the rating's own colour
+   * rather than a fixed gold, so the word and the bolts beside it agree.
+   *
+   * Past FAMILY_BOLT_CEILING it goes to the overflow purple, which in practice
+   * means High Stakes with one or two Equal picks and nothing else: the
+   * families sit at 1 / 3 / 5 against a ceiling of 5, so only the 5 can be
+   * pushed over it. That is the same threshold BoltMeter uses to recolour the
+   * stops, passed to it as overflowAfter, so the word can never disagree with
+   * the meter.
+   *
+   * The -ink variant, not --vol-overflow itself: this is 9.5px text and wants
+   * 4.5:1 where a bolt only needs 3:1. See tokens.css.
+   */
+  const modeNameColor = () =>
+    liveBolts() > FAMILY_BOLT_CEILING
+      ? 'var(--vol-overflow-ink)'
+      : volatilityColorVar(betFamily);
+  /**
+   * The same colour as an rgb triplet, for the washes and glows on the bet
+   * panel's own controls. Derived through the same ceiling test as
+   * modeNameColor so the two can never name different colours.
+   */
+  const modeRgb = () =>
+    liveBolts() > FAMILY_BOLT_CEILING
+      ? 'var(--vol-overflow-ink-rgb)'
+      : volatilityColorRgbVar(betFamily);
   /** The meter's screen-reader text. Both stops are substituted so the sentence
    *  cannot go stale if the ruler ever gains a stop. */
   const volatilityLabel = (lit: number) =>
@@ -1704,6 +1745,16 @@
   // --- Bottom control-bar handlers ---
   function togglePopup(name: NonNullable<typeof openPopup>) {
     openPopup = openPopup === name ? null : name;
+    // Leaving the picker abandons an unconfirmed pick. Without this, reopening
+    // it would land straight back on a confirmation the player had already
+    // walked away from once.
+    pendingFamily = null;
+  }
+
+  /** Close any popup, discarding an unconfirmed mode pick with it. */
+  function closePopup() {
+    openPopup = null;
+    pendingFamily = null;
   }
   // The big spin button: acts as Stop while an auto run is live, otherwise
   // plays exactly one round. Disabled (greyed) until a bet + all 4 guesses are
@@ -2290,7 +2341,15 @@
       </div>
     </div>
 
-    <div class="cb-panel cb-panel-dark cb-bet">
+    <!-- The live rating is published to the whole bet panel, not just to the
+         mode line inside it: the +/- steppers are SIBLINGS of the bet display,
+         so a custom property set on the display could never reach them. Every
+         control in this group now tints with the difficulty of the round it is
+         about to buy. -->
+    <div
+      class="cb-panel cb-panel-dark cb-bet"
+      style={`--vol-color: ${volatilityColorVar(betFamily)}; --mode-ink: ${modeNameColor()}; --mode-rgb: ${modeRgb()}`}
+    >
       <button class="cb-bet-display" class:active={openPopup === 'bet'} onclick={() => togglePopup('bet')} disabled={stateUrlDerived.replay()} aria-label={t('Choose bet amount')}>
         <span class="cb-cap">{t('Bet')}</span>
         <!-- The figure shown IS what leaves the balance, so it is the round's
@@ -2317,10 +2376,7 @@
              Same 5-bolt ruler as the mode picker, deliberately: two lightning
              meters that counted differently would be the "two units on one
              screen" mistake this game has already made three times. -->
-        <span
-          class="cb-bet-mode"
-          style={`--vol-color: ${volatilityColorVar(betFamily)}`}
-        >
+        <span class="cb-bet-mode">
           <BoltMeter
             lit={liveBolts()}
             total={VOLATILITY_BOLTS}
@@ -2420,7 +2476,7 @@
   </footer>
 
   {#if openPopup}
-    <button class="popup-backdrop" aria-label={t('Close menu')} onclick={() => (openPopup = null)}></button>
+    <button class="popup-backdrop" aria-label={t('Close menu')} onclick={closePopup}></button>
   {/if}
 
   <!-- Bet mode. Approval requires each mode's cost and what it buys to be
@@ -2428,7 +2484,50 @@
        rather than left to the paytable. -->
   {#if openPopup === 'mode'}
     <div class="popup popup-mode" role="dialog" aria-label={t('Game Mode')}>
-      <div class="popup-head"><span>{t('Game Mode')}</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
+      <div class="popup-head">
+        <span>{pendingFamily ? t('Switch mode?') : t('Game Mode')}</span>
+        <button class="popup-close" onclick={closePopup} aria-label={t('Close')}><MarkIcon name="cross" /></button>
+      </div>
+
+      {#if pendingFamily}
+        <!-- The confirmation step approval asks for. It restates what the
+             player is about to buy - the mode, what a miss keeps, the ceiling
+             and the volatility - from the same FAMILY_RULES and FAMILY_BLURB
+             the list rows read, so the two can never describe a mode
+             differently. -->
+        {@const target = FAMILY_RULES[pendingFamily]}
+        <div class="mode-confirm">
+          <span class="mode-confirm-head">
+            <span class="mode-confirm-name">{t(target.label)}</span>
+            <span
+              class="mode-option-vol"
+              style={`--vol-color: ${volatilityColorVar(pendingFamily)}`}
+            >
+              <BoltMeter
+                lit={FAMILY_BOLTS[pendingFamily]}
+                total={VOLATILITY_BOLTS}
+                overflowAfter={FAMILY_BOLT_CEILING}
+                label={volatilityLabel(FAMILY_BOLTS[pendingFamily])}
+              />
+            </span>
+          </span>
+          <p class="mode-confirm-blurb">{t(FAMILY_BLURB[pendingFamily])}</p>
+          <p class="mode-confirm-max">{t('Max win')} {target.maxWin}× {t('Bet')}</p>
+          <p class="mode-confirm-cost">{t('Every mode costs 1× your bet.')}</p>
+          <div class="mode-confirm-actions">
+            <button type="button" class="mode-confirm-cancel" onclick={() => (pendingFamily = null)}>
+              {t('Cancel')}
+            </button>
+            <button
+              type="button"
+              class="action-button mode-confirm-go"
+              onclick={() => { betFamily = pendingFamily!; closePopup(); }}
+            >
+              {t('Switch')}
+            </button>
+          </div>
+        </div>
+      {:else}
       <div class="mode-list">
         {#each MODE_FAMILIES as family}
           {@const rules = FAMILY_RULES[family]}
@@ -2437,7 +2536,13 @@
             class="mode-option"
             class:selected={betFamily === family}
             aria-pressed={betFamily === family}
-            onclick={() => { betFamily = family; openPopup = null; }}
+            onclick={() => {
+              // Re-picking the mode already in play is a no-op, so it closes
+              // rather than asking the player to confirm something that would
+              // change nothing.
+              if (family === betFamily) closePopup();
+              else pendingFamily = family;
+            }}
           >
             <span class="mode-option-head">
               <span class="mode-option-name">{t(rules.label)}</span>
@@ -2471,6 +2576,7 @@
           </button>
         {/each}
       </div>
+      {/if}
       <!-- Interpolated from game/config.ts, not written into the string. The
            figure used to be baked into all 17 locale files, where nothing could
            compare it to the RTP the math is actually reweighted to. -->
@@ -2483,7 +2589,7 @@
 
   {#if openPopup === 'bet'}
     <div class="popup popup-bet" role="dialog" aria-label={t('Bet Menu')}>
-      <div class="popup-head"><span>{t('Bet Menu')}</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
+      <div class="popup-head"><span>{t('Bet Menu')}</span><button class="popup-close" onclick={closePopup} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
       <div class="bet-entry">
         <span class="bet-entry-cur">{currencySymbol()}</span>
         <input class="bet-entry-input" type="text" inputmode="decimal" bind:value={betInput} onblur={formatBetInput} placeholder="0.00" aria-label={t('Custom bet amount')} />
@@ -2510,7 +2616,7 @@
 
   {#if openPopup === 'turbo' && !jurisdiction.turboDisabled()}
     <div class="popup popup-turbo" role="dialog" aria-label={t('Turbo speed')}>
-      <div class="popup-head"><span>{t('Turbo Speed')}</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
+      <div class="popup-head"><span>{t('Turbo Speed')}</span><button class="popup-close" onclick={closePopup} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
       <div class="turbo-body">
         <div class="turbo-track">
           <span class="turbo-end">{t('Normal')}</span>
@@ -2536,7 +2642,7 @@
 
   {#if openPopup === 'autospin' && !jurisdiction.autoplayDisabled()}
     <div class="popup popup-autospin" role="dialog" aria-label={t('Autoplay')}>
-      <div class="popup-head"><span>{t('Autoplay')}</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
+      <div class="popup-head"><span>{t('Autoplay')}</span><button class="popup-close" onclick={closePopup} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
       <div class="autospin-body">
         <span class="popup-sub">{t('Number of Spins')}</span>
         <div class="spin-grid">
@@ -2569,7 +2675,7 @@
 
   {#if openPopup === 'advanced'}
     <div class="popup popup-advanced" role="dialog" aria-label={t('Advanced')}>
-      <div class="popup-head"><span>{t('Advanced')}</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
+      <div class="popup-head"><span>{t('Advanced')}</span><button class="popup-close" onclick={closePopup} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
       <div class="advanced-body">
         <div class="advanced-row">
           <span class="control-label">{t('Stop on full game win')}</span>
@@ -2604,7 +2710,7 @@
   {/if}
 
   {#if openPopup === 'info'}
-    <HowToPlayPopup family={betFamily} onclose={() => (openPopup = null)} />
+    <HowToPlayPopup family={betFamily} onclose={closePopup} />
   {/if}
 </div>
 

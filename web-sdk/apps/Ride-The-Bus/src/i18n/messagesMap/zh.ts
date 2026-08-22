@@ -50,6 +50,12 @@ export default {
 	Forgiven: '已豁免',
 	'Game modes': '游戏模式',
 	'Max win': '最高赔付',
+	// Confirmation before a bet mode is activated - required by the approval
+	// checklist, and worth having anyway: the three families cost the same but
+	// differ in what a miss keeps and how high they reach.
+	'Switch mode?': '切换模式？',
+	Cancel: '取消',
+	Switch: '切换',
 	'Volatility %s of %t': '波动性 %t 级中的 %s',
 	'Every mode costs 1× your bet.': '每种模式的费用均为投注额的1倍。',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':

@@ -148,3 +148,15 @@ export function volatilityRank(family: ModeFamily): number {
 export function volatilityColorVar(family: ModeFamily): string {
   return `var(--vol-${family})`;
 }
+
+/**
+ * The rgb-triplet token matching volatilityColorVar, for call sites that need
+ * an alpha - a border wash, a glow.
+ *
+ * Deliberately the same family suffix rather than a second lookup table: the
+ * two are asserted to agree in volatility.test.ts, so a family renamed here
+ * cannot leave the rgba() half pointing at a token that no longer exists.
+ */
+export function volatilityColorRgbVar(family: ModeFamily): string {
+  return `var(--vol-${family}-rgb)`;
+}

@@ -6,12 +6,14 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: radial-gradient(
-		ellipse at center,
-		var(--felt-lit) 0%,
-		var(--felt-mid) 55%,
-		var(--felt-edge) 100%
-	);
+	/* The floor under the table, and NOT dead paint - this one is reachable.
+	   TableScene draws the room over the top of it (.scene is inset:0 with an
+	   opaque stack), but .scene is absolutely positioned inside a container
+	   that scrolls, so on a viewport short enough to scroll the intro the table
+	   travels up with the content and leaves the bottom of the frame bare.
+	   A flat floor colour rather than a second gradient: anything more would be
+	   covered everywhere it is actually visible. */
+	background: var(--felt-edge);
 	font-family: var(--font-body);
 	color: var(--ink-warm);
 	/* The start screen's own scaling unit, and the reason the Play button no
@@ -35,6 +37,11 @@
 }
 
 .ss-card {
+	/* Above .scene, which is absolutely positioned and so would otherwise paint
+	   over this static content whatever the DOM order. Same relationship
+	   .play-area has with the table on the board. */
+	position: relative;
+	z-index: 1;
 	display: flex;
 	flex-direction: column;
 	align-items: center;

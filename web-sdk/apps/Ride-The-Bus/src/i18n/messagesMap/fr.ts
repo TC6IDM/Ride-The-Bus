@@ -50,6 +50,12 @@ export default {
 	Forgiven: 'Pardonné',
 	'Game modes': 'Modes de jeu',
 	'Max win': 'Gain maximum',
+	// Confirmation before a bet mode is activated - required by the approval
+	// checklist, and worth having anyway: the three families cost the same but
+	// differ in what a miss keeps and how high they reach.
+	'Switch mode?': 'Changer de mode ?',
+	Cancel: 'Annuler',
+	Switch: 'Changer',
 	'Volatility %s of %t': 'Volatilité %s sur %t',
 	'Every mode costs 1× your bet.': 'Chaque mode coûte 1× votre mise.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
