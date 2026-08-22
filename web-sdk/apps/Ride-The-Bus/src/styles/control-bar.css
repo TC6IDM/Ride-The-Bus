@@ -93,8 +93,6 @@
   transition: box-shadow 0.15s, border-color 0.15s, background 0.15s, color 0.15s;
 }
 
-.cb-glyph { font-size: calc(var(--ui-bar) * 1.67) /* 18.4px */; line-height: 1; font-weight: 700; }
-
 .cb-svg { width: calc(var(--ui-bar) * 1.82) /* 20px */; height: calc(var(--ui-bar) * 1.82); display: block; }
 
 .cb-autospin-svg { width: calc(var(--ui-bar) * 2.73) /* 30px */; height: calc(var(--ui-bar) * 2.73); }
@@ -104,7 +102,11 @@
 /* Tilt the spin arrows and scale them up so they fill the big play button. */
 .cb-spin-svg { width: calc(var(--ui-bar) * 5.27) /* 58px */; height: calc(var(--ui-bar) * 5.27); display: block; transform: rotate(45deg); }
 
-.cb-info-i { font-style: italic; font-family: Georgia, "Times New Roman", serif; font-weight: 700; }
+/* The info mark, sized to match .cb-svg so the three icons in the light pill
+   are one set. It used to be a lowercase i in italic Georgia - a system-font
+   fallback chain in an app that self-hosts its typeface precisely to avoid
+   one. See MarkIcon.svelte. */
+.cb-info { --mark-size: calc(var(--ui-bar) * 1.82); }
 
 /* Balance / bet text stacks */
 .cb-cap { display: block; font-size: calc(var(--ui-bar) * 0.87) /* 9.6px */; letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
@@ -385,15 +387,28 @@
   filter: drop-shadow(0 1px 2px rgba(var(--shadow-rgb), 0.9));
 }
 
-/* Distinct hover glow per control (info=blue, turbo=amber, autospin=green,
-   advanced=purple), plus an active (popup-open) highlight. */
+/* Hover and active glows.
+ *
+ * This was five accent hues inside one 40px bar - blue for info, amber for
+ * turbo, green for autospin, purple for advanced, gold for mode - which is
+ * four more colour systems than the bar has ideas. The purple had no source
+ * anywhere in the game, and the green collided with the volatility meter,
+ * where green already means something specific and measured.
+ *
+ * Three roles now, each with a reason to exist:
+ *   accent  everything that opens a menu
+ *   amber   turbo, which shares it with .cb-spin.slammable - so amber means
+ *           SPEED consistently rather than labelling one button
+ *   gold    the MODE button, the one control that changes what a round IS
+ *           rather than how it looks
+ */
 .cb-icon:hover, .cb-icon.active { border-color: var(--accent); color: var(--ink); background: rgba(var(--accent-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.45); }
 
 .cb-turbo:hover, .cb-turbo.active { border-color: #ffce3a; color: #ffd54a; background: rgba(255, 193, 7, 0.16); box-shadow: 0 0 12px rgba(255, 193, 7, 0.5); }
 
-.cb-autospin:hover:not(:disabled), .cb-autospin.active { border-color: #57d98a; color: #9df0b8; background: rgba(87, 217, 138, 0.14); box-shadow: 0 0 12px rgba(87, 217, 138, 0.45); }
+.cb-autospin:hover:not(:disabled), .cb-autospin.active { border-color: var(--accent); color: var(--ink); background: rgba(var(--accent-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.45); }
 
-.cb-advanced:hover, .cb-advanced.active { border-color: #a98cff; color: #d0bcff; background: rgba(169, 140, 255, 0.16); box-shadow: 0 0 12px rgba(169, 140, 255, 0.45); }
+.cb-advanced:hover, .cb-advanced.active { border-color: var(--accent); color: var(--ink); background: rgba(var(--accent-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.45); }
 
 .cb-float:disabled { opacity: 0.4; cursor: not-allowed; }
 
@@ -458,4 +473,49 @@
   color: var(--gold);
   white-space: nowrap;
   --bolt-size: 1em;
+}
+
+/* ---- Keyboard focus -------------------------------------------------------
+ * Every control in the bar. None of these had any focus style at all, so the
+ * whole bottom row was invisible to a keyboard user - including the spin
+ * button, which is the one control the spacebar is bound to.
+ *
+ * An outline rather than the choice row's inset ring: nothing here is clipped,
+ * and an offset outline follows border-radius, so it fits the round buttons
+ * without a second rule. Never transitioned - see the note in choices.css.
+ */
+.cb-icon:focus-visible,
+.cb-round:focus-visible,
+.cb-float:focus-visible,
+.cb-spin:focus-visible,
+.cb-step:focus-visible,
+.cb-bet-display:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ---- Reduced motion ----
+   Every glow and colour change stays and simply lands instantly; what goes is
+   the spin button growing under the pointer and the cooldown tip sliding up.
+   See the note in cards.css. */
+@media (prefers-reduced-motion: reduce) {
+  .cb-icon,
+  .cb-round,
+  .cb-float,
+  .cb-spin,
+  .cb-step,
+  .cb-bet-display,
+  .cb-cooldown-tip {
+    transition: none;
+  }
+
+  .cb-spin:not(:disabled):hover,
+  .cb-spin:not(:disabled):active {
+    transform: none;
+  }
+
+  .cb-cooldown-tip,
+  .cb-spin-wrap:hover .cb-cooldown-tip {
+    transform: translateX(-50%);
+  }
 }

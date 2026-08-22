@@ -6,8 +6,11 @@
   margin: 0;
 }
 
+/* No background here. app.html sets one inline as a pre-stylesheet flash
+   guard, and an inline style outranks any rule in this file - so a background
+   declared here would be dead paint, which is exactly the trap the felt
+   gradient on .game-layout used to sit in. See app.html. */
 :global(body) {
-  background: var(--page-bed);
   min-height: 100vh;
 }
 

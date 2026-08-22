@@ -25,6 +25,7 @@
 	import { FAMILY_BLURB, FAMILY_RULES, MODE_FAMILIES, type ModeFamily } from '../game/modes';
 	import gameConfig from '../game/config';
 	import { t } from '../i18n/i18nDerived';
+	import MarkIcon from './MarkIcon.svelte';
 
 	/** The biggest figure any mode can pay, for the RTP statement below. */
 	const maxWinOverall = Math.max(...MODE_FAMILIES.map((f) => FAMILY_RULES[f].maxWin));
@@ -50,7 +51,7 @@
 </script>
 
   <div class="popup popup-info" role="dialog" aria-label={t('How to play')}>
-    <div class="popup-head"><span>{t('How to Play')}</span><button class="popup-close" onclick={props.onclose} aria-label={t('Close')}>✕</button></div>
+    <div class="popup-head"><span>{t('How to Play')}</span><button class="popup-close" onclick={props.onclose} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
     <div class="info-body">
       <p>{t('Guess your way through four cards:')}</p>
       <ol>

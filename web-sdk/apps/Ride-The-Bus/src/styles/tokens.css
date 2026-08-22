@@ -76,9 +76,6 @@
   --felt-deep: #071c12;
   --felt-edge: #030d08;
 
-  /* The page behind everything, for the instant before the game paints. */
-  --page-bed: #0b1420;
-
   /* ==== Brand ============================================================
      Sampled from logo.png, and shared by the card backs, the deck prop on the
      table and the loader cards - which is the whole point: every card in the
@@ -148,6 +145,20 @@
   --shadow-rgb: 0, 0, 0;
   --accent-rgb: 76, 159, 254;
 
+  /* ==== Focus ============================================================
+     Two rings, not one, and the dark half is the load-bearing one. A single
+     white ring vanishes against the pale halves of the choice row, and a
+     single dark ring vanishes against the near-black ones - this game paints
+     controls on both, sometimes on the same square. A dark ring with a light
+     one just inside it reads on every fill in the app.
+
+     It also has to differ from SELECTED, which the choice row already draws as
+     a white inset ring. The dark outer edge is what separates them, and a
+     selected button keeps its brightness lift, so focus never hides the
+     selection it lands on. */
+  --focus-ring: #fff;
+  --focus-halo: rgba(0, 0, 0, 0.92);
+
   /* ==== State ============================================================ */
   --win: #7cffb2;
   --win-soft: #7ee2a8;
@@ -166,14 +177,44 @@
      whose felt is #123a26 and whose wood is #653008, so it reads as a hole cut
      in the table rather than as paper lying on it. Backs already use the brand
      tokens above. */
-  --card-paper: #fff;
-  --card-ink: #111;
-  --card-red: #c0392b;
+  --card-paper: #f7f2e6;
+  --card-ink: #16130f;
+  /* Not the #c0392b it was, which is Flat UI "Pomegranate" and reads orange
+     beside the brand crimson. Darker as well as truer, which is why the red
+     rank gains contrast on the warmer paper rather than losing it: 5.84:1 here
+     against 5.44:1 for the old red on pure white. */
+  --card-red: #b3252b;
+  /* The cut edge of the stock. The BACK carries a white-over-chrome double
+     edge, which works because it sits on brand red; on a paper-coloured face
+     the white half would be invisible, so the front gets the chrome half
+     alone, warmed to the paper. */
+  --card-edge: #cfc4ad;
 
   /* ==== Choice row =======================================================
      The one place in this UI where colour is DATA rather than decoration:
      these squares encode the bet. Red has to look red and black has to look
-     black, so those two do not get to be art-directed. See choices.css. */
+     black, so those two do not get art-directed.
+
+     These are the shipped fills, kept deliberately. A pass rederived all four
+     pairs from the scene - chip green, chip blue, the wood rim, the brand
+     crimson - and it was rejected on the look, which is the right call to
+     belong to whoever owns the game: the row is the most saturated thing on
+     screen and its colours are what players recognise it by.
+
+     WHAT THAT LEAVES OPEN, recorded here so it is not rediscovered later. The
+     icons are white, and WCAG 1.4.11 wants 3:1 for non-text graphics that
+     carry meaning:
+
+       Higher   white triangle on #2ecc71   2.10:1   FAILS
+       Inside   white arrows   on #00bcd4   2.30:1   FAILS
+       Outside  white arrows   on #d81ce0   4.07:1   passes
+       Lower    white triangle on #c0392b   5.44:1   passes
+
+     Note that the pair which has to read as OPPOSITES has very unequal
+     legibility either way. The fills do not have to move to fix this: giving
+     the two icons a dark stroke, or an outline, lifts them clear while leaving
+     every button exactly the colour it is now. That is the cheap fix if it is
+     ever wanted. */
   --choice-black: #16181c;
   --choice-red: #c0392b;
   --choice-higher: #2ecc71;

@@ -5,6 +5,7 @@
 	import gameConfig from '../game/config';
 	import { FAMILY_RULES, MODE_FAMILIES, familyOf, parseModeName } from '../game/modes';
 	import ChoiceIcon from './ChoiceIcon.svelte';
+	import MarkIcon from './MarkIcon.svelte';
 
 	/** The biggest figure any mode can pay - High Stakes', at the time of
 	 *  writing. Derived so it cannot drift from the maths. */
@@ -236,9 +237,9 @@
 
 					<div class="ss-demo">
 						{@render card('K', demo.color === 'black' ? '♠' : '♥', demo.color === 'red')}
-						<span class="ss-mark ok">✓</span>
+						<span class="ss-mark ok"><MarkIcon name="check" /></span>
 						{@render card('K', demo.color === 'black' ? '♥' : '♠', demo.color === 'black')}
-						<span class="ss-mark no">✕</span>
+						<span class="ss-mark no"><MarkIcon name="cross" /></span>
 					</div>
 				</li>
 
@@ -271,9 +272,9 @@
 
 					<div class="ss-demo">
 						{@render card(HL_REF.rank, HL_REF.suit, HL_REF.red)}
-						<span class="ss-arrow">→</span>
+						<span class="ss-arrow"><MarkIcon name="arrow" /></span>
 						{@render card(HL_RESULT[demo.hl].rank, HL_RESULT[demo.hl].suit, HL_RESULT[demo.hl].red)}
-						<span class="ss-mark ok">✓</span>
+						<span class="ss-mark ok"><MarkIcon name="check" /></span>
 					</div>
 				</li>
 
@@ -309,7 +310,7 @@
 					<div class="ss-demo is-wide">
 						{@render card(IO_LOW.rank, IO_LOW.suit, IO_LOW.red)}
 						{@render card(IO_HIGH.rank, IO_HIGH.suit, IO_HIGH.red)}
-						<span class="ss-arrow">→</span>
+						<span class="ss-arrow"><MarkIcon name="arrow" /></span>
 						{#if demo.io === 'equal'}
 							{#each IO_EQUAL_RESULTS as result, i}
 								{#if i > 0}<span class="ss-or">/</span>{/if}
@@ -318,7 +319,7 @@
 						{:else}
 							{@render card(IO_RESULT[demo.io].rank, IO_RESULT[demo.io].suit, IO_RESULT[demo.io].red)}
 						{/if}
-						<span class="ss-mark ok">✓</span>
+						<span class="ss-mark ok"><MarkIcon name="check" /></span>
 					</div>
 				</li>
 
@@ -341,7 +342,7 @@
 
 					<div class="ss-demo">
 						{@render card('A', SUIT_GLYPH[demo.suit].glyph, SUIT_GLYPH[demo.suit].red)}
-						<span class="ss-mark ok">✓</span>
+						<span class="ss-mark ok"><MarkIcon name="check" /></span>
 					</div>
 				</li>
 			</ol>

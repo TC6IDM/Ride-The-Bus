@@ -54,7 +54,7 @@
   border-radius: calc(var(--ui-bar) * 0.64);
   background: rgba(var(--ink-rgb), 0.08);
   color: var(--ink-body);
-  font-size: calc(var(--ui-bar) * 1.09);
+  --mark-size: calc(var(--ui-bar) * 0.86);
   cursor: pointer;
   text-transform: none;
   display: flex;
@@ -64,3 +64,10 @@
 }
 
 .popup-close:hover { color: var(--ink); box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.5); }
+
+/* Keyboard focus on the close button. Shared by every popup and by How to
+   Play, which is why it lives in the shell rather than beside either. */
+.popup-close:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}

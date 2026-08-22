@@ -20,6 +20,7 @@
   // Suits and the mute button are drawn, not typed: see SuitIcon.svelte for why
   // a font glyph was the wrong tool for the most important mark in a card game.
   import SuitIcon from './SuitIcon.svelte';
+  import MarkIcon from './MarkIcon.svelte';
   import SoundIcon from './SoundIcon.svelte';
   import TableScene from './TableScene.svelte';
   import HowToPlayPopup from './HowToPlayPopup.svelte';
@@ -2124,13 +2125,19 @@
                 <div class="card-front">
                   {#if card}
                     <div class="card-face" class:red-card={card.suit === '♥' || card.suit === '♦'} class:black-card={card.suit === '♠' || card.suit === '♣'}>
-                      <div class="rank top">{card.rank}</div>
+                      <div class="index top">
+                        <span class="index-rank">{card.rank}</span>
+                        <SuitIcon suit={card.suit} scale={0.66} />
+                      </div>
                       <div class="suit center"><SuitIcon suit={card.suit} /></div>
-                      <div class="rank bottom">{card.rank}</div>
+                      <div class="index bottom">
+                        <span class="index-rank">{card.rank}</span>
+                        <SuitIcon suit={card.suit} scale={0.66} />
+                      </div>
                     </div>
                   {/if}
                   {#if index === bustedIndex}
-                    <div class="bust-x" aria-hidden="true">✕</div>
+                    <div class="bust-x" aria-hidden="true"><MarkIcon name="cross" /></div>
                   {:else if index === forgivenIndex}
                     <!-- A Second Chance round survived this one. Marked
                          differently from a bust on purpose: the same cross
@@ -2240,8 +2247,8 @@
       <button class="cb-icon" onclick={toggleMuted} aria-pressed={muted} aria-label={muted ? t('Unmute') : t('Mute')}>
         <SoundIcon {muted} />
       </button>
-      <button class="cb-icon" class:active={openPopup === 'info'} onclick={() => togglePopup('info')} aria-label={t('How to play')}>
-        <span class="cb-glyph cb-info-i">i</span>
+      <button class="cb-icon cb-info" class:active={openPopup === 'info'} onclick={() => togglePopup('info')} aria-label={t('How to play')}>
+        <MarkIcon name="info" />
       </button>
 
       <!-- Bet mode. Locked during an auto run and in replay, like the bet
@@ -2421,7 +2428,7 @@
        rather than left to the paytable. -->
   {#if openPopup === 'mode'}
     <div class="popup popup-mode" role="dialog" aria-label={t('Game Mode')}>
-      <div class="popup-head"><span>{t('Game Mode')}</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label={t('Close')}>✕</button></div>
+      <div class="popup-head"><span>{t('Game Mode')}</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
       <div class="mode-list">
         {#each MODE_FAMILIES as family}
           {@const rules = FAMILY_RULES[family]}
@@ -2476,7 +2483,7 @@
 
   {#if openPopup === 'bet'}
     <div class="popup popup-bet" role="dialog" aria-label={t('Bet Menu')}>
-      <div class="popup-head"><span>{t('Bet Menu')}</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label={t('Close')}>✕</button></div>
+      <div class="popup-head"><span>{t('Bet Menu')}</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
       <div class="bet-entry">
         <span class="bet-entry-cur">{currencySymbol()}</span>
         <input class="bet-entry-input" type="text" inputmode="decimal" bind:value={betInput} onblur={formatBetInput} placeholder="0.00" aria-label={t('Custom bet amount')} />
@@ -2503,7 +2510,7 @@
 
   {#if openPopup === 'turbo' && !jurisdiction.turboDisabled()}
     <div class="popup popup-turbo" role="dialog" aria-label={t('Turbo speed')}>
-      <div class="popup-head"><span>{t('Turbo Speed')}</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label={t('Close')}>✕</button></div>
+      <div class="popup-head"><span>{t('Turbo Speed')}</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
       <div class="turbo-body">
         <div class="turbo-track">
           <span class="turbo-end">{t('Normal')}</span>
@@ -2529,7 +2536,7 @@
 
   {#if openPopup === 'autospin' && !jurisdiction.autoplayDisabled()}
     <div class="popup popup-autospin" role="dialog" aria-label={t('Autoplay')}>
-      <div class="popup-head"><span>{t('Autoplay')}</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label={t('Close')}>✕</button></div>
+      <div class="popup-head"><span>{t('Autoplay')}</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
       <div class="autospin-body">
         <span class="popup-sub">{t('Number of Spins')}</span>
         <div class="spin-grid">
@@ -2562,7 +2569,7 @@
 
   {#if openPopup === 'advanced'}
     <div class="popup popup-advanced" role="dialog" aria-label={t('Advanced')}>
-      <div class="popup-head"><span>{t('Advanced')}</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label={t('Close')}>✕</button></div>
+      <div class="popup-head"><span>{t('Advanced')}</span><button class="popup-close" onclick={() => (openPopup = null)} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
       <div class="advanced-body">
         <div class="advanced-row">
           <span class="control-label">{t('Stop on full game win')}</span>

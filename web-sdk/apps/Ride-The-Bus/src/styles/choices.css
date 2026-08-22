@@ -430,3 +430,51 @@
   box-shadow: 0 calc(var(--ui) * 0.6) calc(var(--ui) * 1.4) rgba(var(--shadow-rgb), 0.55);
   pointer-events: none;
 }
+
+/* ---- Keyboard focus -------------------------------------------------------
+ * The segments live inside .choice-square, which is overflow:hidden - so an
+ * `outline` on them is clipped away and a keyboard user got NO indication at
+ * all on the four primary controls of the game. That is why these are inset
+ * box-shadows: the same reason the .selected ring is one.
+ *
+ * Deliberately not animated. A focus ring has to be there the instant focus
+ * arrives; easing it in makes a keyboard user wait to find out where they are.
+ *
+ * Declared after .selected so a focused-and-selected segment shows the focus
+ * ring. Nothing is lost by that - .selected also lifts brightness, so the
+ * selection is still legible underneath.
+ */
+.half-btn:focus-visible,
+.third-btn:focus-visible,
+.quad-btn:focus-visible {
+  outline: none;
+  box-shadow:
+    inset 0 0 0 2px var(--focus-halo),
+    inset 0 0 0 5px var(--focus-ring);
+}
+
+/* The equal badge is position:absolute and sits OUTSIDE the clip, so it can
+   take a real outline - and needs to, being small and on a busy seam. */
+.equal-btn:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ---- Reduced motion ----
+   The hover and select cues stay - they are state, not decoration - they just
+   arrive instantly, and the badge stops growing. See the note in cards.css. */
+@media (prefers-reduced-motion: reduce) {
+  .half-btn,
+  .third-btn,
+  .quad-btn,
+  .equal-btn {
+    transition: none;
+  }
+
+  /* The translate is the badge's own centring, so it has to stay; only the
+     scale goes. */
+  .equal-btn:hover:not(.selected),
+  .equal-btn.selected {
+    transform: translate(-50%, -50%);
+  }
+}

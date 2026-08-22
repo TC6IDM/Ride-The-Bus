@@ -9,10 +9,22 @@
 		     neither of which this game names anywhere. It cost two third-party
 		     requests on every load and gave nothing back. Poppins is self-hosted
 		     in components/app.css. -->
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+		<!-- No maximum-scale / user-scalable=no here, deliberately. Stake's
+		     checklist asks for double-tap-to-zoom to be disabled on mobile, and
+		     that is what those two used to buy - but they buy it by disabling
+		     PINCH zoom as well, which fails WCAG 1.4.4. `touch-action:
+		     manipulation` in app.css drops the double-tap gesture on its own and
+		     leaves pinch alone, so the checklist item is met without taking
+		     magnification away from anyone who needs it. -->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 		%sveltekit.head%
 	</head>
-	<body style="margin: 0; padding: 0; overflow: hidden; background-color: black">
+	<!-- The background here is the flash guard for the moment before any
+	     stylesheet has loaded, which is why it is inline and a literal: a
+	     var() cannot resolve before the token block exists. It is the felt's
+	     darkest stop (--felt-edge) rather than black, so the first painted
+	     frame is already the game's own colour. -->
+	<body style="margin: 0; padding: 0; overflow: hidden; background-color: #030d08">
 		<div>%sveltekit.body%</div>
 	</body>
 </html>

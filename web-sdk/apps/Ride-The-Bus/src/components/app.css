@@ -126,6 +126,11 @@
 	margin: 0;
 	padding: 0;
 	box-sizing: border-box;
+	/* Disables the double-tap-to-zoom gesture and nothing else - `manipulation`
+	   still allows panning and pinch-zoom. This replaces the viewport meta's
+	   maximum-scale=1.0 / user-scalable=no, which met the same Stake checklist
+	   item by removing pinch-zoom too. See the note in app.html. */
+	touch-action: manipulation;
 }
 
 html,
