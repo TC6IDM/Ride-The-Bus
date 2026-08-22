@@ -118,6 +118,41 @@ rounding it to 2.0× would wipe out the house edge.
 - **One ruler.** Every meter draws `VOLATILITY_BOLTS` (7) stops. The mode picker
   lights the family's own rating (1/3/5); the bet display adds one per Equal
   pick. A second meter counting to a different maximum would be bug class 1.
+- **The bet panel is coloured by the rating, not by the accent.** The mode name,
+  the `+/−` steppers and the bet button all take the live volatility colour —
+  green / yellow / red, and `--vol-overflow-ink` purple once the guesses pass
+  `FAMILY_BOLT_CEILING`. In practice that is **High Stakes with one or two
+  Equals and nothing else**, because the families sit at 1/3/5 against a ceiling
+  of 5; `volatility.test.ts` asserts `hs` is the only family any guess
+  combination can push over. The properties are published on the `.cb-bet`
+  **panel**, not on the bet display — the steppers are its siblings and could
+  never inherit from it.
+- **Colour lives in `styles/tokens.css`.** Any colour used in more than one
+  place is named there and referenced by name; 193 literals across 357
+  occurrences is what the absence of that rule produced (four unrelated felt
+  greens, three card reds, three golds, two blues). Two deliberate exemptions:
+  `table.css`, whose colours are sampled measurements with the sampling recorded
+  beside them, and closed one-screen palettes (the five win-celebration tiers,
+  the eleven replay-info badges).
+  - Colours that need an alpha are declared as **rgb triplets** with the hex
+    derived from them (`--gold`, `--vol-*`), so a wash and a fill cannot drift
+    apart. `volatilityColorRgbVar` is the sibling of `volatilityColorVar` and a
+    test pins the two to the same family name.
+- **The accent rule is narrower than "one accent".** One accent (`--accent`,
+  blue) for anything **chosen** — a bet, a mode, a tab. A fixed identity colour
+  per control that **opens** something (`--ctl-turbo` amber, `--ctl-autospin`
+  green, `--ctl-advanced` purple). The live difficulty for the bet group. These
+  are **wayfinding, not drift**: a pass collapsed all five into one gold accent
+  on general colour-theory grounds and it was rejected — five near-identical
+  round icons in a 40 px strip are found by colour, not by re-reading glyphs.
+  Do not collapse them again.
+- **Glyphs are drawn when, and only when, the font does not own them.** Poppins
+  is self-hosted latin-only, and `✕` U+2715, `✓` U+2713, `→` U+2192 and the four
+  suits fall outside every declared `unicode-range` — they dropped to the system
+  font, which on Android and iOS means a colour emoji. `SuitIcon.svelte` and
+  `MarkIcon.svelte` draw those. The card **ranks are ASCII, inside U+0000–00FF,
+  and deliberately NOT drawn**: there is no fallback to fix, and hand-cutting
+  thirteen glyph outlines would trade a real typeface for a worse one.
 
 ---
 
@@ -187,6 +222,14 @@ those floors. `--ui-bar` is solved from the bar's real width budget —
 scale — rather than from a `vw` coefficient, because a coefficient ignores the
 fixed term and so is 4% too generous at 400px, which is exactly the difference
 between a one-row bar and a two-row one.
+- **Two colour worlds, now joined.** The table, chips, cups and card backs are
+  sampled warm measurements; the chrome over them was a generic cool
+  dark-SaaS palette, and the two never met. That was the audit's headline
+  finding. The join is `tokens.css` plus the popup/panel material borrowing the
+  table's own lighting — one light from the upper right, a lit top edge, a
+  shaded bottom edge, and the table's **two-part shadow** (a tight contact patch
+  plus a wide soft one; `table.css` explains that a single blurred blob "reads
+  as a sticker, not an object").
 - **i18n:** the English string *is* the key. `en.ts` is the source of truth, and
   all 16 other locales must cover every key with a genuinely different value —
   `locales.test.ts` fails on missing keys, stale keys, and values left identical
@@ -201,7 +244,7 @@ between a one-row bar and a two-row one.
 
 ## Current state
 
-447/447 tests, 0 type errors, 0 CSS warnings, lint clean, and the
+451/451 tests, 0 type errors, 0 CSS warnings, lint clean, and the
 client reproduces all 76,800 published books exactly. The published math build
 (192 modes, RTP 96.0000% everywhere, spread 0.000000%, zero volatility
 violations) is generated and committed.
@@ -216,15 +259,27 @@ std 32.938 (limit 0.6–50.0), worst ETL 0.695 (limit 0.8), worst CVaR 568.8
 
 ## Outstanding
 
-- **B2 — art pass. This is the gate, not polish.** `static/` holds one file
-  (`logo.png`); every card, suit and surface is CSS gradient or drawn SVG, and
-  all audio is Web-Audio-synthesised. Stake names
-  "over-reliance on generic AI-generated assets — standard fonts, gradients,
-  emoji icons and border effects" as a top cause of a 1-star rating, and 1 star
-  is **not published**. Note the tension before starting: `config-svelte` sets
-  `bundleStrategy: "inline"`, so anything Vite processes is base64'd into
-  `index.html`, and bundle size is itself a 3-star criterion — ship art from
-  `static/` via `${base}/…` like `logo.png` does, not through Vite.
+- **B2 — art pass. Half done; the remaining half is assets, not treatment.**
+  Stake names "over-reliance on generic AI-generated assets — standard fonts,
+  gradients, emoji icons and border effects" as a top cause of a 1-star rating,
+  and 1 star is **not published**.
+
+  **Done** (branch `ui-art-pass`): the emoji-substitution risk is gone (drawn
+  marks); the gradient-plus-border-plus-glow title plate is gone, replaced by a
+  two-stop scrim; the four-equal-panels intro grid is now a dealt fan on the
+  real table; the popup shell is a lit material rather than the default dark
+  modal; the 999 px multiplier badges are gone; the card face has warm paper,
+  the back's own edge and a real corner index. The audit that drove it found
+  5 critical / 10 major / 5 minor.
+
+  **Still open:** `static/` holds `logo.png` (726 KB, drawn at ~150 px — it wants
+  sized variants or an SVG) plus the two tile files. Whether the game needs any
+  *bitmap* art at all is still a judgement call: the table scene is hand-sampled
+  CSS and is the best work in the repo, so the honest risk is not "no assets" but
+  "does a reviewer read CSS art as art". Note the tension before adding any:
+  `config-svelte` sets `bundleStrategy: "inline"`, so anything Vite processes is
+  base64'd into `index.html`, and bundle size is itself a 3-star criterion —
+  ship art from `static/` via `${base}/…` like `logo.png` does, not through Vite.
 - **REP-02.** A replay on the Stake site showed bet amount 1000 where the game
   rendered 1 — an exact 1000× gap pointing at a units convention. Stake documents
   `?amount=` as "bet amount in units" and the RGS speaks micro-units, which is
@@ -254,8 +309,31 @@ std 32.938 (limit 0.6–50.0), worst ETL 0.695 (limit 0.8), worst CVaR 568.8
     in `RGS_TEST_PLAN.md` §11. "Popout S/L" is still a named responsive check.
   - Tile assets: **three** files with fixed names — `RideTheBus-BG.png`,
     `RideTheBus-FG.png`, `TakeoverCasino-Logo.png` — BG+FG ≤ 3 MB combined.
-    README's older 4-layer Tile Editor description has been corrected.
+    Two of three are in: `RideTheBus-BG.jpg` (499 KB) and `RideTheBus-FG.png`
+    (1.5 MB), 2.0 MB combined against the 3 MB cap. **`TakeoverCasino-Logo.png`
+    is missing** and has to come from the studio — it is a real company mark, not
+    something to generate. README's older 4-layer Tile Editor description has
+    been corrected.
   - The 52 live-session checks in `RGS_TEST_PLAN.md` remain unrun.
+  - **Closed on `ui-art-pass`, listed so they are not re-opened by accident:**
+    - *"High cost bet modes require confirmation before activation."* The mode
+      picker now proposes rather than applies: picking a different family shows
+      a confirmation restating its blurb, ceiling and volatility, read from the
+      same `FAMILY_RULES` / `FAMILY_BLURB` the list rows use. Every close path
+      runs through one `closePopup()` that discards an unconfirmed pick.
+    - *"Double tap to zoom is disabled on mobile."* Now `touch-action:
+      manipulation`, **not** `maximum-scale=1.0, user-scalable=no`. The old pair
+      met the checklist by disabling pinch zoom too, which fails WCAG 1.4.4. If
+      the viewport meta looks under-specified, this is why — do not add them back.
+    - Keyboard focus. There was no `:focus-visible` anywhere on the board, and
+      `.choice-square` is `overflow: hidden`, so the browser's own outline on the
+      four primary controls was **clipped away entirely**. Segments use inset
+      rings for the same reason `.selected` does; everything unclipped uses an
+      offset outline. Never transition a focus ring.
+    - `prefers-reduced-motion` now covers the board (`cards.css`, `choices.css`,
+      `control-bar.css`, `popups.css`), not just the loader, intro and
+      celebration. The card flip still *happens* — it is how the game says a card
+      was revealed — it just stops being a rotation.
 - Promo blurb for submission — **mandatory**, not optional: "approval requests
   must be accompanied by a short blurb describing your game theme and mechanics".
 - **Not yet submitted to Stake** — math, bet modes and mechanics are all still

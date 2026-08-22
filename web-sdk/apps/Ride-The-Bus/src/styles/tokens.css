@@ -1,3 +1,13 @@
+/* Hallmark - audit + redesign, not a greenfield build. Ride The Bus, Aug 2026.
+ * genre: atmospheric  ·  anchor: the table (felt #123a26, wood #663108, brand
+ * crimson #a80828)  ·  audit: 5 critical / 10 major / 5 minor
+ *
+ * The audit's headline was that this app shipped TWO design systems that never
+ * met: a hand-sampled warm table, and generic cool dark-SaaS chrome laid over
+ * it. This file is the join. Read the accent note below before changing any
+ * colour - two of the decisions in here were made, reverted, and remade, and
+ * the reasoning is recorded so that does not happen a third time.
+ */
 /* The shared vocabulary: colour, and the shapes motion moves in.
  *
  * WHY THIS FILE EXISTS
