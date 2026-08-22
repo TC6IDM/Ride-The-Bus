@@ -18,17 +18,30 @@
   gap: calc(var(--ui) * 0.73);
 }
 
+/* The running multiplier above each card.
+ *
+ * It was a 999px pill: green type on a dark fill inside a thin green border
+ * with its own drop shadow - which is the generic "badge" component, and there
+ * were four of them in a row across the middle of the table. Four badges is a
+ * lot of furniture for four numbers, and the numbers are the point.
+ *
+ * The container is gone. What is left is the figure itself, which is what the
+ * player is actually reading, sized up slightly now that it is not fighting a
+ * border for room and shadowed so it holds against the wood.
+ *
+ * tabular-nums is a fix rather than a refinement: this value changes on every
+ * card and the digits are not the same width in Poppins, so the number visibly
+ * shifted under its own card as it climbed. .running-win-amount already had
+ * this; the per-card figures never did.
+ */
 .card-mult {
   min-height: calc(var(--ui) * 2.18);
-  padding: calc(var(--ui) * 0.18) calc(var(--ui) * 1.09);
-  border-radius: 999px;
-  font-size: calc(var(--ui) * 1.38); /* 15.2px */
+  font-size: calc(var(--ui) * 1.55); /* 17px */
   font-weight: 800;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
   color: var(--win);
-  background: rgba(6, 24, 16, 0.72);
-  border: 1px solid rgba(124, 255, 178, 0.4);
-  box-shadow: 0 4px 12px rgba(var(--shadow-rgb), 0.3);
+  text-shadow: 0 calc(var(--ui) * 0.15) calc(var(--ui) * 0.7) rgba(var(--shadow-rgb), 0.9);
   opacity: 0;
   transform: translateY(6px);
   transition: opacity 0.2s var(--ease-out), transform 0.2s var(--ease-out);

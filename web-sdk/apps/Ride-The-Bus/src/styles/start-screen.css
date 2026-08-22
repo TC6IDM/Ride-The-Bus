@@ -99,6 +99,25 @@
 	animation-delay: calc(var(--d, 0) * 0.075s);
 }
 
+/* The steps need their own keyframe. ss-rise finishes on transform:none, which
+   would wipe out the fan above the moment the entrance completed - an animation
+   and a static transform cannot both own the property, so the animation has to
+   land on the resting pose rather than on nothing. */
+.ss-step {
+	animation-name: ss-step-in;
+}
+
+@keyframes ss-step-in {
+	from {
+		opacity: 0;
+		transform: translateY(calc(var(--ui) * 1.6)) rotate(0deg) scale(0.96);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(var(--step-lift, 0)) rotate(var(--step-tilt, 0deg)) scale(1);
+	}
+}
+
 /* The logo gets its own entrance - it is the first thing on screen and a plain
    rise reads as flat next to the title that follows it. */
 .ss-logo {
@@ -163,25 +182,58 @@
 	align-items: center;
 	gap: calc(var(--ss) * 0.7);
 	padding: calc(var(--ss) * 1.5) calc(var(--ss) * 0.6) calc(var(--ss) * 0.9);
-	border: 1px solid #2e4224;
-	border-radius: calc(var(--ss) * 1);
-	background: linear-gradient(160deg, rgba(38, 60, 32, 0.75), rgba(18, 34, 16, 0.75));
+	border: 1px solid var(--panel-edge);
+	border-radius: calc(var(--ss) * 0.9);
+	/* The same material as the popups, lit from the same upper right - see
+	   popup-base.css. These used to be a green gradient with a flat green
+	   border, which made them a fifth surface treatment in a game that already
+	   had four. */
+	background: var(--panel);
+	box-shadow:
+		0 2px 6px rgba(var(--shadow-rgb), 0.5),
+		0 14px 34px rgba(var(--shadow-rgb), 0.45),
+		inset 0 1px 0 var(--panel-lit),
+		inset 0 -1px 0 var(--panel-shade);
+	/* DEALT, not gridded.
+	 *
+	 * Four equal panels in an even row is the single most recognisable
+	 * AI-landing-page shape there is, and it was the first thing on screen. The
+	 * fix is not decoration: this game DEALS four cards, so the four panels
+	 * that teach those four cards sit the way a dealt hand sits - fanned, the
+	 * middle two lifted, each one turned a little off square.
+	 *
+	 * The angles are small on purpose. The tooltip is a child of the panel and
+	 * so rotates with it, which is right - it belongs to the panel - but only
+	 * while the angle stays low enough to read as a placed card rather than as
+	 * a layout bug. */
+	transform: translateY(var(--step-lift, 0)) rotate(var(--step-tilt, 0deg));
 }
 
+.ss-step:nth-child(1) { --step-lift: calc(var(--ss) * 0.5); --step-tilt: -1.5deg; }
+.ss-step:nth-child(2) { --step-lift: calc(var(--ss) * -0.5); --step-tilt: -0.5deg; }
+.ss-step:nth-child(3) { --step-lift: calc(var(--ss) * -0.5); --step-tilt: 0.5deg; }
+.ss-step:nth-child(4) { --step-lift: calc(var(--ss) * 0.5); --step-tilt: 1.5deg; }
+
+/* The step number, as a card index rather than a badge.
+ *
+ * It was a filled gold circle hanging off the panel's outer corner, which is
+ * the notification-dot every UI kit ships - and four of them across the top of
+ * four panels was the row's loudest feature, competing with the very controls
+ * the panels exist to demonstrate.
+ *
+ * Inside the panel now, top left, set the way the index on a playing card is:
+ * large, quiet, and out of the way. It reads as "this is card 1" rather than
+ * as "there is 1 notification". */
 .ss-step-n {
 	position: absolute;
-	top: calc(var(--ui) * -0.9);
-	left: calc(var(--ui) * -0.7);
-	width: calc(var(--ui) * 2);
-	height: calc(var(--ui) * 2);
-	border-radius: 50%;
-	background: var(--gold);
-	color: #12220f;
-	font-size: calc(var(--ui) * 1.15);
+	top: calc(var(--ui) * 0.3);
+	left: calc(var(--ui) * 0.55);
+	font-size: calc(var(--ui) * 1.75);
 	font-weight: 800;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+	line-height: 1;
+	color: var(--gold);
+	opacity: 0.45;
+	font-variant-numeric: tabular-nums;
 }
 
 .ss-step-label {
@@ -608,30 +660,44 @@
 	}
 }
 
+/* RTP and max win.
+ *
+ * These were two huge gold numerals with captions beneath, centred side by
+ * side - the "stat row" every generated landing page puts under its feature
+ * grid, and it gave two reference figures the visual weight of the game's own
+ * name.
+ *
+ * One line now, caption first and value after it. Both stay plainly legible:
+ * Stake requires RTP and maximum win to be clearly communicated, so this is
+ * quieter, not smaller than readable. The same two figures also appear in How
+ * to Play and on every row of the mode picker. */
 .ss-stats {
 	display: flex;
-	gap: calc(var(--ui) * 3);
-	margin-top: calc(var(--ui) * 0.6);
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: baseline;
+	gap: calc(var(--ui) * 0.6) calc(var(--ui) * 1.8);
+	margin-top: calc(var(--ui) * 0.4);
 }
 
 .ss-stat {
 	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: calc(var(--ui) * 0.3);
+	align-items: baseline;
+	gap: calc(var(--ui) * 0.5);
 }
 
 .ss-stat-val {
-	font-size: calc(var(--ui) * 2.4);
+	font-size: calc(var(--ui) * 1.35);
 	font-weight: 800;
 	color: var(--gold);
+	font-variant-numeric: tabular-nums;
 }
 
 .ss-stat-cap {
-	font-size: calc(var(--ui) * 1.1);
+	font-size: calc(var(--ui) * 1.05);
 	color: var(--ink-warm-mute);
 	text-transform: uppercase;
-	letter-spacing: 0.06em;
+	letter-spacing: 0.1em;
 }
 
 /* ---- Continue button ---- */
@@ -796,9 +862,9 @@
 	.ss-step {
 		--ui: calc(var(--ss) * 1.05);
 	}
-	.ss-stats { gap: calc(var(--ui) * 1.5); margin-top: 0; }
-	.ss-stat-val { font-size: calc(var(--ui) * 2); }
-	.ss-stat-cap { font-size: calc(var(--ui) * 1); }
+	.ss-stats { gap: calc(var(--ui) * 0.5) calc(var(--ui) * 1.2); margin-top: 0; }
+	.ss-stat-val { font-size: calc(var(--ui) * 1.2); }
+	.ss-stat-cap { font-size: calc(var(--ui) * 0.95); }
 	.ss-continue {
 		margin-top: calc(var(--ui) * 1);
 		padding: calc(var(--ui) * 1) calc(var(--ui) * 3);

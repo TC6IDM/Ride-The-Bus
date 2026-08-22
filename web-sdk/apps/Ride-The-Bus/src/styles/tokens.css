@@ -115,11 +115,26 @@
   /* ==== Panels ===========================================================
      Translucent because they float over the table and the felt has to show
      through; a solid panel reads as a hole cut in the scene. */
-  --panel: #141d2a;
+  /* Graphite, not blue-slate. #141d2a is the default dark-modal fill every
+     dark UI ships, and on a table of warm wood and green felt it read as a web
+     dialog parked on top of the game rather than as an object in the room.
+     Neutral-dark with a faint green cast keeps it kin to the felt without
+     becoming a second green, and lets the EDGE do the work of saying what the
+     panel is made of - see --panel-lit / --panel-shade below. */
+  --panel: #191c1b;
+  /* The scene lights everything from the upper right and lands every shadow to
+     the lower left (table.css says so four times over). Panels obey it too: a
+     warm lit edge along the top, a dark one along the bottom. A uniform 1px
+     hairline all the way round is the tell that a box was drawn rather than
+     lit. */
+  --panel-lit: rgba(255, 240, 220, 0.14);
+  --panel-shade: rgba(0, 0, 0, 0.55);
+  /* Hairlines on panels are warm, matching the light rather than the pure
+     white the rest of the app uses over felt. */
+  --panel-edge: rgba(255, 240, 220, 0.1);
   --panel-light: rgba(28, 42, 58, 0.72);
   --panel-dark: rgba(8, 14, 22, 0.82);
   --panel-float: rgba(10, 17, 26, 0.82);
-  --panel-plate: linear-gradient(180deg, rgba(10, 18, 28, 0.82), rgba(6, 11, 18, 0.72));
 
   /* ==== Accent ===========================================================
      The interactive blue. Two steps: the resting accent, and the one a

@@ -28,42 +28,82 @@
   overflow-y: auto;
   box-sizing: border-box;
   padding: calc(var(--ui-bar) * 1.27);
-  border-radius: calc(var(--ui-bar) * 1.27);
-  border: 1px solid rgba(var(--ink-rgb), 0.12);
+  border-radius: calc(var(--ui-bar) * 1.09);
+  border: 1px solid var(--panel-edge);
   background: var(--panel);
-  box-shadow: 0 14px 44px rgba(var(--shadow-rgb), 0.65);
+  /* FOUR layers, and the first two are the table's own idiom rather than a
+     modal drop-shadow.
+     
+     table.css builds every prop's shadow in two parts - "a tight dark contact
+     patch plus a wide soft one - because a single blurred blob reads as a
+     sticker, not an object" - and a popup floating over that table has the
+     same problem to solve. The single 0 14px 44px it had was exactly the blob
+     that note warns about.
+     
+     The two inset lines are the lit top edge and the shaded bottom one, from
+     the same light at the upper right that the table, the chips and the cups
+     are all lit by. That pair is what makes the panel read as having a
+     thickness. */
+  box-shadow:
+    0 2px 6px rgba(var(--shadow-rgb), 0.55),
+    0 18px 50px rgba(var(--shadow-rgb), 0.6),
+    inset 0 1px 0 var(--panel-lit),
+    inset 0 -1px 0 var(--panel-shade);
   color: var(--ink-strong);
 }
 
+/* The header, given some structure.
+ *
+ * It used to be accent-blue, weight 800, with a bare 12px gap under it and
+ * nothing else - which is the shape of a bootstrap modal title, and it made
+ * every panel in the game announce itself in the same colour the buttons
+ * inside it use for "this one is selected". A heading is not an action.
+ *
+ * White type, one weight down, and a rule beneath it: the rule is what
+ * actually separates the header from the body, and it lets the title stop
+ * shouting. The 12px was also the last hardcoded pixel gap in the shell, so
+ * the header no longer stays put while the box around it scales. */
 .popup-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
-  font-size: calc(var(--ui-bar) * 1.45);
-  font-weight: 800;
-  letter-spacing: 0.03em;
-  color: var(--accent);
+  gap: calc(var(--ui-bar) * 0.9);
+  margin-bottom: calc(var(--ui-bar) * 1.09);
+  padding-bottom: calc(var(--ui-bar) * 0.82);
+  border-bottom: 1px solid var(--panel-edge);
+  font-size: calc(var(--ui-bar) * 1.36);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--ink-strong);
 }
 
 .popup-close {
   width: calc(var(--ui-bar) * 2.36);
   height: calc(var(--ui-bar) * 2.36);
+  flex: 0 0 auto;
   padding: 0;
-  border: none;
-  border-radius: calc(var(--ui-bar) * 0.64);
-  background: rgba(var(--ink-rgb), 0.08);
-  color: var(--ink-body);
-  --mark-size: calc(var(--ui-bar) * 0.86);
+  /* Round, like every other icon button that floats rather than sits in a row
+     - the turbo and advanced buttons in the bar are circles for the same
+     reason. It was a rounded square, which made it the only control of its
+     kind in the game with corners. */
+  border-radius: 50%;
+  border: 1px solid var(--panel-edge);
+  background: rgba(var(--ink-rgb), 0.06);
+  color: var(--ink-dim);
+  --mark-size: calc(var(--ui-bar) * 0.8);
   cursor: pointer;
   text-transform: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: box-shadow 0.12s, color 0.12s;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
 
-.popup-close:hover { color: var(--ink); box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.5); }
+.popup-close:hover {
+  color: var(--ink);
+  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.16);
+}
 
 /* Keyboard focus on the close button. Shared by every popup and by How to
    Play, which is why it lives in the shell rather than beside either. */

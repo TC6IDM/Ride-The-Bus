@@ -151,29 +151,52 @@
   line-height: 1;
   text-align: center;
   pointer-events: none;
-  padding: calc(var(--ui) * 0.82) calc(var(--ui) * 2.36) calc(var(--ui) * 0.9);
-  border-radius: calc(var(--ui) * 1.27);
-  border: 1px solid rgba(255, 214, 130, 0.28);
-  background: var(--panel-plate);
-  box-shadow: 0 6px 22px rgba(var(--shadow-rgb), 0.55), inset 0 1px 0 rgba(var(--ink-rgb), 0.06);
+  /* NO plate. There was one, and it stacked four separate effects on a single
+     element: a gradient fill, a gold border, an outer box-shadow and a glow
+     text-shadow under a heavy letterspaced sans. Stake names "standard fonts,
+     gradients and border effects" as a top cause of a one-star rating, and
+     this was three of them in one lockup - it read as a badge someone dropped
+     on the table rather than as the game's name.
+     
+     Type on the felt instead, with the hierarchy doing the work. The name and
+     the studio line are now separated by a rule rather than boxed together,
+     which is what actually makes them a lockup. */
+  padding: calc(var(--ui) * 0.4) calc(var(--ui) * 1.2);
 }
 
 .game-title-main {
-  font-size: calc(var(--ui) * 2.84); /* 31px */
+  font-size: calc(var(--ui) * 3.1); /* 34px */
   font-weight: 900;
-  letter-spacing: 0.04em;
+  /* NEGATIVE tracking, and it is the single change that does the most here.
+     Letterspacing a 900 weight apart (this was +0.04em) is the most reliable
+     signature of type that was set rather than drawn - display weights are cut
+     to sit tight, and opening them up makes a wordmark read as a heading in a
+     slide deck. Pulling it in gives the name some mass. */
+  letter-spacing: -0.015em;
   color: var(--gold-bright);
-  text-shadow: 0 2px 10px rgba(var(--shadow-rgb), 0.75), 0 0 22px rgba(255, 200, 80, 0.28);
+  /* One shadow, for legibility on the wood. The second one was a 22px glow,
+     which is the border-effect tell doing its work in light instead of in a
+     line. */
+  text-shadow: 0 calc(var(--ui) * 0.18) calc(var(--ui) * 0.9) rgba(var(--shadow-rgb), 0.85);
 }
 
+/* The studio line, demoted properly. It was near-white at weight 700, which
+   put it within a step of the game's own name; it is a credit, not a title.
+   Wide tracking belongs HERE - on small caps at a light weight it is what the
+   letterspacing is for, which is the opposite of what it was doing above.
+   No rule between the two lines. There was one - the idea being that a
+   hairline binds two lines of type into a single mark - and it read as a
+   divider cutting the name off from its own credit rather than as a lockup.
+   The size, weight and colour gap between them is already doing that job; the
+   line was saying it a second time and louder. */
 .game-title-sub {
-  margin-top: calc(var(--ui) * 0.27);
-  font-size: calc(var(--ui) * 1.05); /* 11.5px */
-  font-weight: 700;
-  letter-spacing: 0.15em;
+  margin-top: calc(var(--ui) * 0.42);
+  font-size: calc(var(--ui) * 0.95); /* 10.5px */
+  font-weight: 600;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--ink-strong);
-  text-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.75);
+  color: rgba(255, 224, 170, 0.72);
+  text-shadow: 0 calc(var(--ui) * 0.15) calc(var(--ui) * 0.7) rgba(var(--shadow-rgb), 0.85);
 }
 
 /* Play area fills everything above the control bar; the game centres itself. */

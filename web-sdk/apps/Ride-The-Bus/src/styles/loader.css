@@ -45,37 +45,39 @@
   to { opacity: 1; transform: none; }
 }
 
+/* The same lockup as the board's .game-title, and it has to STAY the same -
+   the loader hands straight over to the board, so any difference between the
+   two shows as the title changing shape at the handover. Both dropped the
+   gradient plate, the border and the glow together. */
 .gl-title {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: calc(var(--lu) * 0.36);
-  padding: calc(var(--lu) * 1.1) calc(var(--lu) * 2.4);
-  border-radius: calc(var(--lu) * 1.1);
-  background: var(--panel-plate);
-  border: 1px solid rgba(var(--ink-rgb), 0.1);
-  box-shadow: 0 8px 26px rgba(var(--shadow-rgb), 0.5);
+  padding: calc(var(--lu) * 0.4) calc(var(--lu) * 1.2);
 }
 
 .gl-title-main {
-  font-size: calc(var(--lu) * 3.1);
-  font-weight: 800;
-  letter-spacing: 0.02em;
+  font-size: calc(var(--lu) * 3.4);
+  font-weight: 900;
+  /* Negative, matching .game-title-main. See the note there for why opening a
+     900 weight out is the tell this is undoing. */
+  letter-spacing: -0.015em;
   line-height: 1;
-  color: var(--gold);
-  text-shadow: 0 2px 6px rgba(var(--shadow-rgb), 0.6);
+  color: var(--gold-bright);
+  text-shadow: 0 calc(var(--lu) * 0.18) calc(var(--lu) * 0.9) rgba(var(--shadow-rgb), 0.85);
 }
 
-/* Matches .game-title-sub in base.css, so the loader plate and the in-game
-   plate read as the same lockup. */
+/* Matches .game-title-sub in base.css, so the loader and the board read as the
+   same lockup. Change one, change both. */
 .gl-title-sub {
-  font-size: calc(var(--lu) * 1.15);
-  font-weight: 700;
-  letter-spacing: 0.15em;
+  margin-top: calc(var(--lu) * 0.42);
+  font-size: calc(var(--lu) * 1.05);
+  font-weight: 600;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   line-height: 1;
-  color: var(--ink-strong);
-  text-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.75);
+  color: rgba(255, 224, 170, 0.72);
+  text-shadow: 0 calc(var(--lu) * 0.15) calc(var(--lu) * 0.7) rgba(var(--shadow-rgb), 0.85);
 }
 
 

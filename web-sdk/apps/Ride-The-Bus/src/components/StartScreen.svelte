@@ -349,16 +349,16 @@
 
 			<div class="ss-stats" style="--d: 8">
 				<div class="ss-stat">
-					<span class="ss-stat-val">{(gameConfig.rtp * 100).toFixed(2)}%</span>
 					<span class="ss-stat-cap">{t('RTP')}</span>
+					<span class="ss-stat-val">{(gameConfig.rtp * 100).toFixed(2)}%</span>
 				</div>
 				<div class="ss-stat">
 					<!-- The biggest figure ANY mode can reach, from FAMILY_RULES rather
 					     than typed out. It read 1,354.2x - Classic's ceiling - on a
 					     screen shown before a mode is chosen, so it understated the
 					     game by the whole of High Stakes. -->
-					<span class="ss-stat-val">{maxWinOverall.toLocaleString()}×</span>
 					<span class="ss-stat-cap">{t('Max Win')}</span>
+					<span class="ss-stat-val">{maxWinOverall.toLocaleString()}×</span>
 				</div>
 			</div>
 

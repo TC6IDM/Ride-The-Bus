@@ -212,13 +212,21 @@
 
 /* Section heading inside the how-to-play body. The popup now covers odds,
    losses and max wins, which needs signposting to stay skimmable. */
+/* Section heading inside the how-to-play body.
+ *
+ * Gold, not accent blue, and the reason is the ladder above it. The panel's own
+ * header is white now, so a blue section heading underneath was louder than the
+ * thing it sat under - and it was the same blue the controls use to say "this
+ * one is selected", which a heading has no business borrowing. Three levels,
+ * three treatments: white for the panel, gold for a section, dim for a
+ * sub-section. */
 .info-h {
   margin: calc(var(--ui-bar) * 1.1) 0 calc(var(--ui-bar) * 0.36);
   font-size: calc(var(--ui-bar) * 1.16);
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--gold);
 }
 
 /* Keyboard focus on the mode tabs. */
