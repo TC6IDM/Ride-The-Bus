@@ -7,7 +7,7 @@
 }
 
 :global(body) {
-  background: #0b1420;
+  background: var(--page-bed);
   min-height: 100vh;
 }
 
@@ -55,30 +55,23 @@
   --gap: calc(var(--ui) * 2.18); /* 24px */
   --pad: calc(var(--ui) * 2.18); /* 24px */
 
-  /* Volatility palette: green, yellow, red as the modes get wilder. Not
-     decorative - sc < base < hs holds for every one of the 64 guess
-     combinations in the published stats, so the three colours rank a real
-     ordering rather than labelling three flavours. See game/volatility.ts.
-
-     Declared here rather than beside either meter because there are two of them
-     now (the mode picker and the bet display) and they must burn the same
-     colours; a per-component copy is how the two would drift apart. */
-  --vol-sc: #3ddc84;
-  --vol-base: #ffc93c;
-  --vol-hs: #ff5c5c;
-  /* Stops past the family ceiling, which only Equal picks on High Stakes reach.
-     Deliberately off the green-yellow-red ramp rather than a deeper red: it is
-     not "more of the same", it is past the top of the scale the three modes
-     span. Kept bright enough to survive the drop-shadow on a dark bar. */
-  --vol-overflow: #9d4edd;
+  /* The volatility palette (--vol-sc / --vol-base / --vol-hs /
+     --vol-overflow) moved to styles/tokens.css. It was declared here
+     because two meters burn it and a per-component copy is how the two
+     would drift apart - which is exactly the argument tokens.css makes for
+     every other shared colour, so it belongs there with them. */
   height: 100vh;
   width: 100vw;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  /* Green felt. The table and its props are drawn on top of this by the .scene
-     element - see table.css. */
-  background: radial-gradient(ellipse at 50% 42%, #1e6f52 0%, #14523c 45%, #0a2f22 100%);
+  /* NO felt gradient here, deliberately. There used to be one, and nothing
+     could ever see it: .scene is position:absolute, inset:0, and its own
+     background stack ends in an opaque colour, so it covers this element
+     completely. The loader was then matched to THAT dead gradient rather
+     than to the live one, which is why the handover into the game was a
+     visible colour jump. The felt now has one definition, in
+     styles/tokens.css, and .scene is the only thing that paints it. */
   overflow: hidden;
   position: relative;
 }
@@ -106,9 +99,9 @@
   padding: calc(var(--ui-bar) * 0.64) calc(var(--ui-bar) * 1.09);
   border-radius: calc(var(--ui-bar) * 1.09);
   background: rgba(10, 18, 28, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(var(--ink-rgb), 0.1);
   backdrop-filter: blur(6px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 6px 20px rgba(var(--shadow-rgb), 0.45);
   pointer-events: none;
 }
 
@@ -125,9 +118,9 @@
   font-variant-numeric: tabular-nums;
 }
 
-.rg-item.up .cb-val { color: #7ee2a8; }
+.rg-item.up .cb-val { color: var(--win-soft); }
 
-.rg-item.down .cb-val { color: #ff8f8f; }
+.rg-item.down .cb-val { color: var(--loss-soft); }
 
 /* Too narrow for the panel to sit beside the centred title without covering
    it (measured: the title plate and the panel collide below ~700px). Drop it
@@ -158,16 +151,16 @@
   padding: calc(var(--ui) * 0.82) calc(var(--ui) * 2.36) calc(var(--ui) * 0.9);
   border-radius: calc(var(--ui) * 1.27);
   border: 1px solid rgba(255, 214, 130, 0.28);
-  background: linear-gradient(180deg, rgba(10, 18, 28, 0.82), rgba(6, 11, 18, 0.72));
-  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  background: var(--panel-plate);
+  box-shadow: 0 6px 22px rgba(var(--shadow-rgb), 0.55), inset 0 1px 0 rgba(var(--ink-rgb), 0.06);
 }
 
 .game-title-main {
   font-size: calc(var(--ui) * 2.84); /* 31px */
   font-weight: 900;
   letter-spacing: 0.04em;
-  color: #ffe08a;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.75), 0 0 22px rgba(255, 200, 80, 0.28);
+  color: var(--gold-bright);
+  text-shadow: 0 2px 10px rgba(var(--shadow-rgb), 0.75), 0 0 22px rgba(255, 200, 80, 0.28);
 }
 
 .game-title-sub {
@@ -176,8 +169,8 @@
   font-weight: 700;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #dfe8f2;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
+  color: var(--ink-strong);
+  text-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.75);
 }
 
 /* Play area fills everything above the control bar; the game centres itself. */

@@ -17,7 +17,7 @@
   width: min(calc(var(--ui-bar) * 45), calc(100vw - calc(var(--ui-bar) * 2.55)));
 }
 
-.info-body { font-size: calc(var(--ui-bar) * 1.24); line-height: 1.5; color: #cfe0f0; }
+.info-body { font-size: calc(var(--ui-bar) * 1.24); line-height: 1.5; color: var(--ink-body); }
 
 .info-body p { margin: 8px 0; }
 
@@ -46,19 +46,19 @@
   padding: calc(var(--ui-bar) * 0.4) 0;
   text-align: center;
   border-radius: calc(var(--ui-bar) * 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(var(--ink-rgb), 0.14);
+  background: rgba(var(--ink-rgb), 0.07);
   font-size: calc(var(--ui-bar) * 1.05);
   font-weight: 800;
   line-height: 1;
-  color: #fff;
+  color: var(--ink);
 }
 
 /* The two ends carry the actual message, so they get the accent. */
 .rank-chip:first-child,
 .rank-chip:last-child {
-  border-color: #4c9ffe;
-  background: rgba(76, 159, 254, 0.22);
+  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.22);
   color: #cfe4ff;
 }
 
@@ -68,7 +68,7 @@
   font-size: calc(var(--ui-bar) * 0.95);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #93a4b5;
+  color: var(--ink-dim);
 }
 
 /* The paytable. Every pick's range, which approval requires stated.
@@ -110,9 +110,9 @@
 	gap: calc(var(--ui-bar) * 0.18);
 	padding: calc(var(--ui-bar) * 0.73) calc(var(--ui-bar) * 0.9);
 	border-radius: calc(var(--ui-bar) * 0.64);
-	border: 1px solid rgba(255, 255, 255, 0.14);
-	background: rgba(255, 255, 255, 0.05);
-	color: #cfe0f0;
+	border: 1px solid rgba(var(--ink-rgb), 0.14);
+	background: rgba(var(--ink-rgb), 0.05);
+	color: var(--ink-body);
 	font-size: calc(var(--ui-bar) * 1.09);
 	font-weight: 700;
 	cursor: pointer;
@@ -120,12 +120,12 @@
 	transition: border-color 0.12s, background 0.12s, color 0.12s;
 }
 
-.mode-tab:hover { border-color: #4c9ffe; color: #fff; }
+.mode-tab:hover { border-color: var(--accent); color: var(--ink); }
 
 .mode-tab.selected {
-	border-color: #2f8fff;
+	border-color: var(--accent-strong);
 	background: rgba(47, 143, 255, 0.2);
-	color: #fff;
+	color: var(--ink);
 }
 
 /* Marks the mode actually in play, so switching tabs to read another mode's
@@ -135,27 +135,27 @@
 	font-weight: 800;
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
-	color: #f5d78c;
+	color: var(--gold);
 }
 
 /* The panel the tabs drive. Bordered so it reads as one switchable unit
    rather than three loose sections that happen to follow the buttons. */
 .mode-panel {
 	padding: calc(var(--ui-bar) * 0.9) calc(var(--ui-bar) * 1.09);
-	border: 1px solid rgba(255, 255, 255, 0.1);
+	border: 1px solid rgba(var(--ink-rgb), 0.1);
 	border-radius: calc(var(--ui-bar) * 0.73);
-	background: rgba(255, 255, 255, 0.03);
+	background: rgba(var(--ink-rgb), 0.03);
 }
 
-.mode-panel-blurb { color: #cfe0f0; }
+.mode-panel-blurb { color: var(--ink-body); }
 
 .mode-panel-max {
 	font-size: calc(var(--ui-bar) * 1.16);
-	color: #cfe0f0;
+	color: var(--ink-body);
 }
 
 .mode-panel-max strong {
-	color: #4c9ffe;
+	color: var(--accent);
 	font-weight: 800;
 	font-variant-numeric: tabular-nums;
 }
@@ -168,24 +168,24 @@
 	font-weight: 800;
 	letter-spacing: 0.05em;
 	text-transform: uppercase;
-	color: #93a4b5;
+	color: var(--ink-dim);
 }
 
 .pay-table th {
 	padding: calc(var(--ui-bar) * 0.36) calc(var(--ui-bar) * 0.45);
-	border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+	border-bottom: 1px solid rgba(var(--ink-rgb), 0.18);
 	font-size: calc(var(--ui-bar) * 0.93);
 	letter-spacing: 0.07em;
 	text-transform: uppercase;
-	color: #93a4b5;
+	color: var(--ink-dim);
 	text-align: left;
 	font-weight: 700;
 }
 
 .pay-table td {
 	padding: calc(var(--ui-bar) * 0.36) calc(var(--ui-bar) * 0.45);
-	border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-	color: #cfe0f0;
+	border-bottom: 1px solid rgba(var(--ink-rgb), 0.07);
+	color: var(--ink-body);
 }
 
 .pay-table tr:last-child td {
@@ -196,7 +196,7 @@
    pick and the amount carry the row. */
 .pay-stage {
 	width: calc(var(--ui-bar) * 3.2);
-	color: #93a4b5;
+	color: var(--ink-dim);
 	font-variant-numeric: tabular-nums;
 }
 
@@ -205,7 +205,7 @@
 .pay-amount {
 	text-align: right;
 	font-weight: 700;
-	color: #fff;
+	color: var(--ink);
 	font-variant-numeric: tabular-nums;
 	white-space: nowrap;
 }
@@ -218,5 +218,5 @@
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #4c9ffe;
+  color: var(--accent);
 }

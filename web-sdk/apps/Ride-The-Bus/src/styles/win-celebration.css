@@ -19,11 +19,11 @@
 	border: 0;
 	padding: 0;
 	background: radial-gradient(ellipse at center, rgba(8, 20, 8, 0.82) 0%, rgba(2, 6, 2, 0.94) 70%);
-	font-family: 'Poppins', sans-serif;
+	font-family: var(--font-body);
 	/* The overlay lives outside .game-layout, so it carries its own copy of the
 	   fluid unit - same definition as base.css and start-screen.css. */
 	--ui: clamp(4px, min(2vw, 1.55vh), 11px);
-	animation: wc-fade-in 0.44s ease-out both;
+	animation: wc-fade-in 0.44s var(--ease-out) both;
 }
 
 .wc-overlay:focus-visible {
@@ -32,7 +32,7 @@
 
 /* ---- Tier palettes ---- */
 .tier-big {
-	--wc-hot: #f5d78c;
+	--wc-hot: var(--gold);
 	--wc-cool: #b8923f;
 	--wc-ray: rgba(245, 215, 140, 0.16);
 }
@@ -55,7 +55,7 @@
    game's own moment rather than one more step up the same ramp. */
 .tier-max {
 	--wc-hot: #ffe9a8;
-	--wc-cool: #a80828;
+	--wc-cool: var(--brand-red);
 	--wc-ray: rgba(255, 233, 168, 0.3);
 }
 
@@ -81,7 +81,7 @@
 	border-radius: 50%;
 	background: radial-gradient(circle, var(--wc-cool) 0%, transparent 68%);
 	opacity: 0.4;
-	animation: wc-pulse 4.8s ease-in-out infinite;
+	animation: wc-pulse 4.8s var(--ease-in-out) infinite;
 }
 
 /* ---- Sparks ----
@@ -106,7 +106,7 @@
 	/* --angle, --dist and animation-delay are set inline per spark - see the
 	   SPARKS constant in WinCelebration.svelte for why they are not computed
 	   here. */
-	animation: wc-spark-out 3.8s cubic-bezier(0.15, 0.7, 0.3, 1) infinite;
+	animation: wc-spark-out 3.8s var(--ease-out) infinite;
 	opacity: 0;
 }
 
@@ -131,16 +131,16 @@
 	text-shadow:
 		0 0 calc(var(--ui) * 1.6) var(--wc-hot),
 		0 0 calc(var(--ui) * 4) var(--wc-cool),
-		0 calc(var(--ui) * 0.3) 0 rgba(0, 0, 0, 0.55);
+		0 calc(var(--ui) * 0.3) 0 rgba(var(--shadow-rgb), 0.55);
 	/* Runs once, on mount. The element is no longer torn down and rebuilt between
 	   tiers, so this cannot replay - promotions are a scale pop applied through
 	   element.animate(), see promoteTitle. */
-	animation: wc-title-in 1.24s cubic-bezier(0.2, 1.5, 0.4, 1) both;
-	/* The palette variables change under the element as the tier climbs, so ease
+	animation: wc-title-in 1.24s var(--ease-pop) both;
+	/* The palette variables change under the element as the tier climbs, so var(--ease-out)
 	   the colour across instead of letting it snap mid-pop. */
 	transition:
-		color 0.45s ease-out,
-		text-shadow 0.45s ease-out;
+		color 0.45s var(--ease-out),
+		text-shadow 0.45s var(--ease-out);
 }
 
 .wc-amount {
@@ -151,13 +151,13 @@
 	/* Tabular figures stop the width jittering as digits change during the
 	   count - without it the whole line shivers on every frame. */
 	font-variant-numeric: tabular-nums;
-	text-shadow: 0 0 calc(var(--ui) * 1.4) rgba(255, 255, 255, 0.35);
+	text-shadow: 0 0 calc(var(--ui) * 1.4) rgba(var(--ink-rgb), 0.35);
 	/* Runs once, on mount - nothing below may set `animation` on this element or
 	   it will replay. See .wc-amount.is-holding. */
-	animation: wc-amount-in 1s ease-out 0.32s both;
+	animation: wc-amount-in 1s var(--ease-out) 0.32s both;
 	transition:
-		color 0.45s ease-out,
-		text-shadow 0.35s ease-out;
+		color 0.45s var(--ease-out),
+		text-shadow 0.35s var(--ease-out);
 }
 
 .wc-amount.is-counting {
@@ -184,7 +184,7 @@
 	color: var(--wc-hot);
 	opacity: 0.85;
 	font-variant-numeric: tabular-nums;
-	animation: wc-amount-in 1s ease-out 0.56s both;
+	animation: wc-amount-in 1s var(--ease-out) 0.56s both;
 }
 
 .wc-prompt {
@@ -194,7 +194,7 @@
 	text-transform: uppercase;
 	color: #cfc6ae;
 	opacity: 0.6;
-	animation: wc-blink 3.6s ease-in-out infinite;
+	animation: wc-blink 3.6s var(--ease-in-out) infinite;
 }
 
 .wc-prompt.is-ready {

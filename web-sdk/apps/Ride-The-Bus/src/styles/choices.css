@@ -50,7 +50,7 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #fff6df;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+  text-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.7);
 }
 
 .choice-square {
@@ -74,7 +74,7 @@
   --choice-radius: calc(var(--choice-size) * 0.2);
   border-radius: var(--choice-radius);
   overflow: hidden;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35), 0 0 0 2px rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 18px rgba(var(--shadow-rgb), 0.35), 0 0 0 2px rgba(var(--ink-rgb), 0.25);
 }
 
 .half-btn,
@@ -88,7 +88,7 @@
   position: relative;
   padding: 0;
   margin: 0;
-  color: #fff;
+  color: var(--ink);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -107,14 +107,14 @@
 .third-btn:hover:not(.selected):not([aria-disabled='true']),
 .quad-btn:hover:not(.selected):not([aria-disabled='true']) {
   filter: brightness(1.16);
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.6), inset 0 0 12px rgba(255, 255, 255, 0.22);
+  box-shadow: inset 0 0 0 2px rgba(var(--ink-rgb), 0.6), inset 0 0 12px rgba(var(--ink-rgb), 0.22);
 }
 
 .half-btn.selected,
 .third-btn.selected,
 .quad-btn.selected {
   filter: brightness(1.3);
-  box-shadow: inset 0 0 0 3px #fff, inset 0 0 16px rgba(255, 255, 255, 0.5);
+  box-shadow: inset 0 0 0 3px var(--ink), inset 0 0 16px rgba(var(--ink-rgb), 0.5);
 }
 
 /* Keep the hover cue while the button is held down, so a click doesn't flash
@@ -164,7 +164,7 @@
   height: 3px;
   transform: rotate(-24deg);
   transform-origin: center;
-  background: #fff;
+  background: var(--ink);
   border-radius: 2px;
   pointer-events: none;
 }
@@ -181,7 +181,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(var(--shadow-rgb), 0.6);
   pointer-events: none;
 }
 
@@ -231,11 +231,11 @@
 }
 
 .black-half {
-  background: #16181c;
+  background: var(--choice-black);
 }
 
 .red-half {
-  background: #c0392b;
+  background: var(--choice-red);
 }
 
 /* Higher/Lower square: top/bottom halves + center equal square */
@@ -245,11 +245,11 @@
 }
 
 .higher-third {
-  background: #2ecc71;
+  background: var(--choice-higher);
 }
 
 .lower-third {
-  background: #c0392b;
+  background: var(--choice-lower);
 }
 
 /* Inside/Outside square: left/right halves */
@@ -259,11 +259,11 @@
 }
 
 .inside-half {
-  background: #00bcd4;
+  background: var(--choice-inside);
 }
 
 .outside-half {
-  background: #d81ce0;
+  background: var(--choice-outside);
 }
 
 /* Nudge the arrows away from the seam so the equal badge cannot sit on top of
@@ -321,27 +321,27 @@
   align-items: center;
   justify-content: center;
   /* Lit from above, so it has some depth instead of reading as a flat swatch. */
-  background: radial-gradient(circle at 50% 32%, #ffe680 0%, #f1c40f 55%, #d29d05 100%);
+  background: radial-gradient(circle at 50% 32%, var(--choice-equal-lit) 0%, var(--choice-equal) 55%, var(--choice-equal-deep) 100%);
   /* A real edge, so the badge reads as an object sitting ON the two halves
      rather than a hole cut through them. Warm dark brown rather than the old
      black: against yellow, black goes muddy at this size, and nothing else in
      the choice row carries a black outline. 1px, not the original 2px - at
      ~18px across, 2px was a sixth of the badge. */
-  border: 1px solid rgba(74, 48, 2, 0.62);
+  border: 1px solid var(--choice-equal-edge);
   /* 22% of the width, which is .choice-square's own 18px-on-82px corner
      expressed as a ratio - so the two hold the same shape at any --ui. */
   border-radius: calc(var(--equal-size, calc(var(--ui) * 1.95)) * 0.22);
   line-height: 1;
-  color: #16181c;
+  color: var(--choice-black);
   cursor: pointer;
   z-index: 2;
   /* Outer ring and drop shadow match .choice-square exactly. The inset is a
      single hairline now rather than 2px - with a real border above it, more
      than that turns an 18px badge into concentric rings. */
   box-shadow:
-    0 4px 10px rgba(0, 0, 0, 0.45),
-    0 0 0 2px rgba(255, 255, 255, 0.25),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+    0 4px 10px rgba(var(--shadow-rgb), 0.45),
+    0 0 0 2px rgba(var(--ink-rgb), 0.25),
+    inset 0 0 0 1px rgba(var(--ink-rgb), 0.28);
   transition: box-shadow 0.15s, transform 0.15s, filter 0.15s;
 }
 
@@ -366,9 +366,9 @@
 .equal-btn:hover:not(.selected) {
   filter: brightness(1.12);
   box-shadow:
-    0 4px 10px rgba(0, 0, 0, 0.45),
-    0 0 0 2px rgba(255, 255, 255, 0.65),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.42);
+    0 4px 10px rgba(var(--shadow-rgb), 0.45),
+    0 0 0 2px rgba(var(--ink-rgb), 0.65),
+    inset 0 0 0 1px rgba(var(--ink-rgb), 0.42);
   transform: translate(-50%, -50%) scale(1.08);
 }
 
@@ -378,10 +378,10 @@
 .equal-btn.selected {
   filter: brightness(1.18);
   box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.5),
-    0 0 0 3px #fff,
-    0 0 14px rgba(255, 255, 255, 0.55),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+    0 4px 12px rgba(var(--shadow-rgb), 0.5),
+    0 0 0 3px var(--ink),
+    0 0 14px rgba(var(--ink-rgb), 0.55),
+    inset 0 0 0 1px rgba(var(--ink-rgb), 0.55);
   /* Trimmed from 1.14: the badge grows on select, and at 1.95 --ui a bigger
      lift walked it back into the arrows this change just cleared. */
   transform: translate(-50%, -50%) scale(1.1);
@@ -395,12 +395,12 @@
 }
 
 .quad-btn {
-  background: #16181c;
+  background: var(--choice-black);
   font-size: var(--quad-fs);
 }
 
 .quad-btn.red-suit {
-  color: #e74c3c;
+  color: var(--suit-red);
 }
 
 /* ---- Why a pick is unavailable -------------------------------------------
@@ -418,15 +418,15 @@
   max-width: 60vw;
   padding: calc(var(--ui) * 0.8) calc(var(--ui) * 1);
   border-radius: calc(var(--ui) * 0.6);
-  background: #0b1a09;
-  border: 1px solid #6b8a58;
-  color: #e8e0d0;
+  background: var(--tip-bed);
+  border: 1px solid var(--tip-edge);
+  color: var(--ink-warm);
   font-size: calc(var(--ui) * 1.05);
   font-weight: 500;
   line-height: 1.35;
   text-align: center;
   text-transform: none;
   letter-spacing: 0;
-  box-shadow: 0 calc(var(--ui) * 0.6) calc(var(--ui) * 1.4) rgba(0, 0, 0, 0.55);
+  box-shadow: 0 calc(var(--ui) * 0.6) calc(var(--ui) * 1.4) rgba(var(--shadow-rgb), 0.55);
   pointer-events: none;
 }

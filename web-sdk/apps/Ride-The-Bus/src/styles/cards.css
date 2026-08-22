@@ -25,13 +25,13 @@
   font-size: calc(var(--ui) * 1.38); /* 15.2px */
   font-weight: 800;
   letter-spacing: 0.02em;
-  color: #7cffb2;
+  color: var(--win);
   background: rgba(6, 24, 16, 0.72);
   border: 1px solid rgba(124, 255, 178, 0.4);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(var(--shadow-rgb), 0.3);
   opacity: 0;
   transform: translateY(6px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.2s var(--ease-out), transform 0.2s var(--ease-out);
 }
 
 .card-mult.show {
@@ -52,27 +52,27 @@
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: #cfe8d8;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.6);
 }
 
 .running-win-amount {
   font-size: calc(var(--ui) * 2.76); /* 30.4px */
   font-weight: 900;
-  color: #7cffb2;
-  text-shadow: 0 3px 14px rgba(0, 0, 0, 0.65);
+  color: var(--win);
+  text-shadow: 0 3px 14px rgba(var(--shadow-rgb), 0.65);
 }
 
 .running-win-mult {
   font-size: calc(var(--ui) * 1.31); /* 14.4px */
   font-weight: 800;
-  color: #ffe08a;
+  color: var(--gold-bright);
 }
 
 .running-win.is-loss .running-win-label { color: #ff9a9a; }
 
 .running-win.is-loss .running-win-amount { color: #d8dee6; }
 
-.running-win.is-win .running-win-label { color: #ffe08a; }
+.running-win.is-win .running-win-label { color: var(--gold-bright); }
 
 /* Card = a 3D flip. .card-block is the perspective frame; .card-inner holds
    the two faces back-to-back and rotates 180deg when the card is revealed
@@ -89,7 +89,7 @@
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
-  transition: transform var(--flip-dur, 0.5s) cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition: transform var(--flip-dur, 0.5s) var(--ease-out);
 }
 
 .card-inner.flipped {
@@ -122,20 +122,20 @@
   background:
     repeating-linear-gradient(
       45deg,
-      rgba(255, 255, 255, 0.12) 0 calc(var(--ui) * 0.2),
+      rgba(var(--ink-rgb), 0.12) 0 calc(var(--ui) * 0.2),
       transparent calc(var(--ui) * 0.2) calc(var(--ui) * 0.58)
     ),
     repeating-linear-gradient(
       -45deg,
-      rgba(255, 255, 255, 0.12) 0 calc(var(--ui) * 0.2),
+      rgba(var(--ink-rgb), 0.12) 0 calc(var(--ui) * 0.2),
       transparent calc(var(--ui) * 0.2) calc(var(--ui) * 0.58)
     ),
-    linear-gradient(160deg, #b81030 0%, #a80828 55%, #78061e 100%);
+    linear-gradient(160deg, var(--brand-red-lit) 0%, var(--brand-red) 55%, var(--brand-red-deep) 100%);
   box-shadow:
-    inset 0 0 0 calc(var(--ui) * 0.32) #f8f8f8,
-    inset 0 0 0 calc(var(--ui) * 0.45) #c8c8c8,
-    inset 0 calc(var(--ui) * 0.1) calc(var(--ui) * 0.3) rgba(255, 255, 255, 0.16),
-    0 4px 8px rgba(0, 0, 0, 0.38);
+    inset 0 0 0 calc(var(--ui) * 0.32) var(--brand-paper),
+    inset 0 0 0 calc(var(--ui) * 0.45) var(--brand-chrome),
+    inset 0 calc(var(--ui) * 0.1) calc(var(--ui) * 0.3) rgba(var(--ink-rgb), 0.16),
+    0 4px 8px rgba(var(--shadow-rgb), 0.38);
 }
 
 /* Keyline inset from the chrome edge, the way a real card back is framed. */
@@ -143,7 +143,7 @@
   content: '';
   position: absolute;
   inset: calc(var(--ui) * 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.34);
+  border: 1px solid rgba(var(--ink-rgb), 0.34);
   border-radius: calc(var(--card-radius) * 0.55);
   pointer-events: none;
 }
@@ -160,25 +160,17 @@
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
   background: var(--logo-url) center / contain no-repeat;
-  filter: drop-shadow(0 0 calc(var(--ui) * 0.32) rgba(0, 0, 0, 0.85));
+  filter: drop-shadow(0 0 calc(var(--ui) * 0.32) rgba(var(--shadow-rgb), 0.85));
   pointer-events: none;
 }
 
 /* Revealed front - pre-rotated so it faces the viewer once .card-inner flips. */
 .card-front {
   transform: rotateY(180deg);
-  background: #fff;
-  color: #000;
+  background: var(--card-paper);
+  color: var(--card-ink);
   border: 2px solid #cfcfcf;
-  box-shadow: 0 6px 12px rgba(0,0,0,0.25);
-}
-
-.red-card {
-  color: #ff4d4d;
-}
-
-.black-card {
-  color: #fff;
+  box-shadow: 0 6px 12px rgba(var(--shadow-rgb), 0.25);
 }
 
 .card-face {
@@ -215,10 +207,10 @@
 }
 
 .card-face.red-card .suit.center,
-.card-face.red-card .rank { color: #c0392b; }
+.card-face.red-card .rank { color: var(--card-red); }
 
 .card-face.black-card .suit.center,
-.card-face.black-card .rank { color: #111; }
+.card-face.black-card .rank { color: var(--card-ink); }
 
 /* Bust ✕ drawn over the revealed front face. */
 .bust-x {
@@ -229,9 +221,9 @@
   justify-content: center;
   font-size: calc(var(--ui) * 5.82); /* 64px */
   font-weight: 900;
-  color: #ff3b3b;
-  text-shadow: 0 0 10px rgba(0, 0, 0, 0.85);
-  background: rgba(0, 0, 0, 0.35);
+  color: var(--loss);
+  text-shadow: 0 0 10px rgba(var(--shadow-rgb), 0.85);
+  background: rgba(var(--shadow-rgb), 0.35);
 }
 
 /* A miss a Second Chance round forgave.
@@ -244,12 +236,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #f5c451;
-  background: rgba(0, 0, 0, 0.3);
+  color: var(--forgiven);
+  background: rgba(var(--shadow-rgb), 0.3);
 }
 
 .forgiven-mark svg {
   width: calc(var(--ui) * 4.9);
   height: calc(var(--ui) * 4.9);
-  filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.85));
+  filter: drop-shadow(0 0 6px rgba(var(--shadow-rgb), 0.85));
 }

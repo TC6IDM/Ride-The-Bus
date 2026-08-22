@@ -23,7 +23,7 @@
   border: none;
   padding: 0;
   margin: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(var(--shadow-rgb), 0.5);
   cursor: pointer;
 }
 
@@ -36,9 +36,9 @@
 .bet-cell {
   padding: calc(var(--ui-bar) * 0.82) calc(var(--ui-bar) * 0.27);
   border-radius: calc(var(--ui-bar) * 0.73);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
-  color: #cfe0f0;
+  border: 1px solid rgba(var(--ink-rgb), 0.1);
+  background: rgba(var(--ink-rgb), 0.05);
+  color: var(--ink-body);
   font-size: calc(var(--ui-bar) * 1.16);
   font-weight: 700;
   cursor: pointer;
@@ -46,9 +46,9 @@
   transition: box-shadow 0.12s, border-color 0.12s, background 0.12s, color 0.12s;
 }
 
-.bet-cell:hover { border-color: #4c9ffe; color: #fff; box-shadow: 0 0 10px rgba(76, 159, 254, 0.4); }
+.bet-cell:hover { border-color: var(--accent); color: var(--ink); box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.4); }
 
-.bet-cell.active { background: #2f8fff; border-color: #2f8fff; color: #fff; }
+.bet-cell.active { background: var(--accent-strong); border-color: var(--accent-strong); color: var(--ink); }
 
 /* Free-entry bet field at the top of the bet menu (type any amount). */
 .bet-entry {
@@ -58,13 +58,13 @@
   padding: calc(var(--ui-bar) * 0.82) calc(var(--ui-bar) * 1.09);
   margin-bottom: 10px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(var(--ink-rgb), 0.18);
   background: rgba(5, 12, 18, 0.6);
 }
 
-.bet-entry:focus-within { border-color: #4c9ffe; box-shadow: 0 0 12px rgba(76, 159, 254, 0.35); }
+.bet-entry:focus-within { border-color: var(--accent); box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.35); }
 
-.bet-entry-cur { font-size: calc(var(--ui-bar) * 1.6); font-weight: 800; color: #fff; }
+.bet-entry-cur { font-size: calc(var(--ui-bar) * 1.6); font-weight: 800; color: var(--ink); }
 
 .bet-entry-input {
   flex: 1 1 auto;
@@ -74,7 +74,7 @@
   border: none;
   outline: none;
   background: transparent;
-  color: #fff;
+  color: var(--ink);
   font-size: calc(var(--ui-bar) * 1.6);
   font-weight: 800;
 }
@@ -85,15 +85,15 @@
 
 .turbo-track { display: flex; align-items: center; gap: calc(var(--ui-bar) * 0.91); }
 
-.turbo-end { font-size: calc(var(--ui-bar) * 1.02); color: #93a4b5; white-space: nowrap; }
+.turbo-end { font-size: calc(var(--ui-bar) * 1.02); color: var(--ink-dim); white-space: nowrap; }
 
-.turbo-slider { flex: 1 1 auto; min-width: 0; accent-color: #4c9ffe; cursor: pointer; }
+.turbo-slider { flex: 1 1 auto; min-width: 0; accent-color: var(--accent); cursor: pointer; }
 
-.turbo-readout { text-align: center; font-weight: 800; color: #4c9ffe; font-size: calc(var(--ui-bar) * 1.24); }
+.turbo-readout { text-align: center; font-weight: 800; color: var(--accent); font-size: calc(var(--ui-bar) * 1.24); }
 
 .autospin-body { display: flex; flex-direction: column; gap: calc(var(--ui-bar) * 0.91); }
 
-.popup-sub { font-size: calc(var(--ui-bar) * 0.93); letter-spacing: 0.09em; text-transform: uppercase; color: #93a4b5; font-weight: 700; }
+.popup-sub { font-size: calc(var(--ui-bar) * 0.93); letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-dim); font-weight: 700; }
 
 .autospin-input { align-self: stretch; }
 
@@ -108,7 +108,7 @@
   font-size: calc(var(--ui-bar) * 1.05);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #93a4b5;
+  color: var(--ink-dim);
 }
 
 .action-button {
@@ -119,8 +119,8 @@
   border: none;
   border-radius: 10px;
   cursor: pointer;
-  background: linear-gradient(180deg, #4c9ffe, #1f6fe0);
-  color: #fff;
+  background: linear-gradient(180deg, var(--accent), #1f6fe0);
+  color: var(--ink);
   letter-spacing: 0.03em;
   box-shadow: 0 6px 16px rgba(31, 111, 224, 0.35);
 }
@@ -139,7 +139,7 @@
   border-radius: 10px;
   overflow: hidden;
   background: rgba(5, 12, 18, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(var(--ink-rgb), 0.16);
 }
 
 .rounds-field {
@@ -159,18 +159,18 @@
   padding: 0;
   border: none;
   outline: none;
-  color: #fff;
+  color: var(--ink);
   background: transparent;
   box-sizing: border-box;
 }
 
-.rounds-input:disabled { color: rgba(255, 255, 255, 0.55); }
+.rounds-input:disabled { color: rgba(var(--ink-rgb), 0.55); }
 
 .rounds-infinite {
   display: flex;
   align-items: center;
   line-height: 1;
-  color: #fff;
+  color: var(--ink);
 }
 
 /* Widths are picked so the lemniscate's height (half its width, per the 2:1
@@ -200,7 +200,7 @@
   width: calc(var(--ui-bar) * 4.18);
   display: flex;
   flex-direction: column;
-  border-left: 1px solid rgba(255, 255, 255, 0.16);
+  border-left: 1px solid rgba(var(--ink-rgb), 0.16);
 }
 
 /* Advanced auto-bet panel (Stake-style): a switch that reveals On Win /
@@ -219,7 +219,7 @@
   padding: 0;
   border: none;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(var(--ink-rgb), 0.16);
   position: relative;
   cursor: pointer;
   transition: background 0.15s;
@@ -244,8 +244,8 @@
   width: calc(var(--ui-bar) * 2.18 - var(--knob-inset) * 2);
   height: calc(var(--ui-bar) * 2.18 - var(--knob-inset) * 2);
   border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  background: var(--ink);
+  box-shadow: 0 1px 3px rgba(var(--shadow-rgb), 0.4);
   transition: transform 0.15s;
 }
 
@@ -272,8 +272,8 @@
      typed triangle became a taller drawn chevron, so the button keeps its
      original ~31px height instead of growing the whole selector. */
   padding: calc(var(--ui-bar) * 0.6) 0;
-  background: rgba(255, 255, 255, 0.07);
-  color: #fff;
+  background: rgba(var(--ink-rgb), 0.07);
+  color: var(--ink);
   line-height: 1;
   cursor: pointer;
   display: flex;
@@ -293,11 +293,11 @@
   height: calc(var(--ui-bar) * 1.64);
 }
 
-.stepper-btn:hover { background: rgba(255, 255, 255, 0.16); }
+.stepper-btn:hover { background: rgba(var(--ink-rgb), 0.16); }
 
-.stepper-btn:active { background: rgba(255, 255, 255, 0.22); }
+.stepper-btn:active { background: rgba(var(--ink-rgb), 0.22); }
 
-.stepper-btn:first-child { border-bottom: 1px solid rgba(255, 255, 255, 0.12); }
+.stepper-btn:first-child { border-bottom: 1px solid rgba(var(--ink-rgb), 0.12); }
 
 /* ---- Bet mode picker -----------------------------------------------------
    Approval requires each mode's cost and what it buys to be stated, so the
@@ -314,21 +314,21 @@
   gap: calc(var(--ui-bar) * 0.36);
   padding: calc(var(--ui-bar) * 1) calc(var(--ui-bar) * 1.09);
   border-radius: calc(var(--ui-bar) * 0.73);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
-  color: #cfe0f0;
+  border: 1px solid rgba(var(--ink-rgb), 0.12);
+  background: rgba(var(--ink-rgb), 0.05);
+  color: var(--ink-body);
   text-align: left;
   cursor: pointer;
   text-transform: none;
   transition: border-color 0.12s, background 0.12s;
 }
 
-.mode-option:hover { border-color: #4c9ffe; background: rgba(76, 159, 254, 0.1); }
+.mode-option:hover { border-color: var(--accent); background: rgba(var(--accent-rgb), 0.1); }
 
 .mode-option.selected {
-  border-color: #2f8fff;
+  border-color: var(--accent-strong);
   background: rgba(47, 143, 255, 0.18);
-  color: #fff;
+  color: var(--ink);
 }
 
 .mode-option-head {
@@ -353,10 +353,10 @@
 .mode-option-blurb {
   font-size: calc(var(--ui-bar) * 1.02);
   line-height: 1.4;
-  color: #93a4b5;
+  color: var(--ink-dim);
 }
 
-.mode-option.selected .mode-option-blurb { color: #cfe0f0; }
+.mode-option.selected .mode-option-blurb { color: var(--ink-body); }
 
 /* The ceiling, which approval requires stated per mode. Quiet like the blurb -
    it is reference, not the thing being chosen - but the figure itself carries
@@ -365,15 +365,15 @@
 .mode-option-max {
   font-size: calc(var(--ui-bar) * 1.02);
   font-weight: 700;
-  color: #93a4b5;
+  color: var(--ink-dim);
   font-variant-numeric: tabular-nums;
 }
 
-.mode-option.selected .mode-option-max { color: #fff; }
+.mode-option.selected .mode-option-max { color: var(--ink); }
 
 .mode-note {
   margin: calc(var(--ui-bar) * 1) 0 0;
   font-size: calc(var(--ui-bar) * 0.98);
   line-height: 1.4;
-  color: #93a4b5;
+  color: var(--ink-dim);
 }

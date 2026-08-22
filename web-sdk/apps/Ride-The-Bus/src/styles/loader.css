@@ -13,8 +13,15 @@
   justify-content: center;
   gap: calc(var(--lu) * 2.4);
   overflow: hidden;
-  /* Same felt as the game, so the handover isn't a colour jump. */
-  background: radial-gradient(ellipse at 50% 42%, #1e6f52 0%, #14523c 45%, #0a2f22 100%);
+  /* Same felt as the game, so the handover is not a colour jump. It did not
+     used to be: this matched the gradient on .game-layout, which .scene covers
+     completely and nothing can ever see. Both now come from tokens.css. */
+  background: radial-gradient(
+    ellipse at 50% 42%,
+    var(--felt-lit) 0%,
+    var(--felt-mid) 45%,
+    var(--felt-deep) 100%
+  );
 
   /* Self-contained sizing unit - the loader mounts before .game-layout exists,
      so it can't inherit --ui. Tracks both axes for short landscape popouts. */
@@ -29,8 +36,8 @@
   width: min(calc(var(--lu) * 17), 46vh);
   aspect-ratio: 1;
   background: var(--logo-url) center / contain no-repeat;
-  filter: drop-shadow(0 calc(var(--lu) * 0.8) calc(var(--lu) * 1.6) rgba(0, 0, 0, 0.55));
-  animation: gl-logo-in 0.55s cubic-bezier(0.2, 0.8, 0.3, 1) backwards;
+  filter: drop-shadow(0 calc(var(--lu) * 0.8) calc(var(--lu) * 1.6) rgba(var(--shadow-rgb), 0.55));
+  animation: gl-logo-in 0.55s var(--ease-out) backwards;
 }
 
 @keyframes gl-logo-in {
@@ -45,9 +52,9 @@
   gap: calc(var(--lu) * 0.36);
   padding: calc(var(--lu) * 1.1) calc(var(--lu) * 2.4);
   border-radius: calc(var(--lu) * 1.1);
-  background: linear-gradient(180deg, rgba(10, 18, 28, 0.82), rgba(6, 11, 18, 0.72));
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.5);
+  background: var(--panel-plate);
+  border: 1px solid rgba(var(--ink-rgb), 0.1);
+  box-shadow: 0 8px 26px rgba(var(--shadow-rgb), 0.5);
 }
 
 .gl-title-main {
@@ -55,8 +62,8 @@
   font-weight: 800;
   letter-spacing: 0.02em;
   line-height: 1;
-  color: #f4d47c;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  color: var(--gold);
+  text-shadow: 0 2px 6px rgba(var(--shadow-rgb), 0.6);
 }
 
 /* Matches .game-title-sub in base.css, so the loader plate and the in-game
@@ -67,8 +74,8 @@
   letter-spacing: 0.15em;
   text-transform: uppercase;
   line-height: 1;
-  color: #dfe8f2;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
+  color: var(--ink-strong);
+  text-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.75);
 }
 
 
@@ -89,24 +96,24 @@
   background:
     repeating-linear-gradient(
       45deg,
-      rgba(255, 255, 255, 0.12) 0 calc(var(--lu) * 0.19),
+      rgba(var(--ink-rgb), 0.12) 0 calc(var(--lu) * 0.19),
       transparent calc(var(--lu) * 0.19) calc(var(--lu) * 0.55)
     ),
     repeating-linear-gradient(
       -45deg,
-      rgba(255, 255, 255, 0.12) 0 calc(var(--lu) * 0.19),
+      rgba(var(--ink-rgb), 0.12) 0 calc(var(--lu) * 0.19),
       transparent calc(var(--lu) * 0.19) calc(var(--lu) * 0.55)
     ),
-    linear-gradient(160deg, #b81030 0%, #a80828 55%, #78061e 100%);
+    linear-gradient(160deg, var(--brand-red-lit) 0%, var(--brand-red) 55%, var(--brand-red-deep) 100%);
   box-shadow:
-    inset 0 0 0 calc(var(--lu) * 0.3) #f8f8f8,
-    inset 0 0 0 calc(var(--lu) * 0.42) #c8c8c8,
-    0 calc(var(--lu) * 0.55) calc(var(--lu) * 1) rgba(0, 0, 0, 0.45);
+    inset 0 0 0 calc(var(--lu) * 0.3) var(--brand-paper),
+    inset 0 0 0 calc(var(--lu) * 0.42) var(--brand-chrome),
+    0 calc(var(--lu) * 0.55) calc(var(--lu) * 1) rgba(var(--shadow-rgb), 0.45);
   /* Deal in once, then breathe on a loop while we wait. `backwards` holds the
      first keyframe during the stagger delay so cards don't flash in first. */
   animation:
-    loader-deal 0.52s cubic-bezier(0.2, 0.8, 0.3, 1) backwards,
-    loader-breathe 1.9s ease-in-out 0.52s infinite;
+    loader-deal 0.52s var(--ease-out) backwards,
+    loader-breathe 1.9s var(--ease-in-out) 0.52s infinite;
 }
 
 /* Keyline and centre chip mark, matching .card-back's pseudo-elements. */
@@ -114,7 +121,7 @@
   content: '';
   position: absolute;
   inset: calc(var(--lu) * 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.34);
+  border: 1px solid rgba(var(--ink-rgb), 0.34);
   border-radius: calc(var(--lu) * 0.36);
 }
 
@@ -127,7 +134,7 @@
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
   background: var(--logo-url) center / contain no-repeat;
-  filter: drop-shadow(0 0 calc(var(--lu) * 0.3) rgba(0, 0, 0, 0.85));
+  filter: drop-shadow(0 0 calc(var(--lu) * 0.3) rgba(var(--shadow-rgb), 0.85));
 }
 
 .gl-card:nth-child(1) { animation-delay: 0s, 0.52s; }
@@ -160,16 +167,16 @@
   height: calc(var(--lu) * 0.64);
   border-radius: 999px;
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.38);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.09);
+  background: rgba(var(--shadow-rgb), 0.38);
+  box-shadow: inset 0 0 0 1px rgba(var(--ink-rgb), 0.09);
 }
 
 .gl-bar-fill {
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #2ecc71, #f4d47c);
+  background: linear-gradient(90deg, #2ecc71, var(--gold));
   box-shadow: 0 0 calc(var(--lu) * 0.9) rgba(244, 212, 124, 0.6);
-  transition: width 0.25s ease-out;
+  transition: width 0.25s var(--ease-out);
 }
 
 /* Respect a reduced-motion preference: the loader still shows and still

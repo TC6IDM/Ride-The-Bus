@@ -1,0 +1,233 @@
+/* The shared vocabulary: colour, and the shapes motion moves in.
+ *
+ * WHY THIS FILE EXISTS
+ *
+ * Before it, this app carried 193 distinct literal hex values across 357
+ * occurrences, and the only colour custom properties anywhere were the four
+ * --vol-* on .game-layout. Geometry was tokenised thoroughly - --ui, --ui-bar,
+ * --card-w, --flat, --upright, --choice-radius all derive from one another and
+ * carry the arithmetic that justifies them - while colour was improvised at
+ * every call site.
+ *
+ * The cost of that showed up as drift, not as ugliness: FOUR unrelated felt
+ * greens across four files (one of them painted where nothing could ever see
+ * it), THREE card reds (one fully overridden and reaching nothing), THREE golds
+ * and TWO blues. Nothing was wrong at any one call site. They simply could not
+ * be kept in step, because there was no step to keep.
+ *
+ * So the rule is now: a colour used in more than one place is named HERE, and
+ * every stylesheet references the name.
+ *
+ * WHAT IS DELIBERATELY NOT HERE
+ *
+ *   - styles/table.css. Every colour in it is a SAMPLED MEASUREMENT off the
+ *     reference render, with the sampling recorded beside it (the felt is
+ *     #0D381E, not "green"; the wood is #653008, not "brown"). Renaming those
+ *     would throw away the provenance and buy nothing - nothing else in the app
+ *     wants to paint a bullnose rim. Only the handful the UI genuinely borrows
+ *     is lifted out, below.
+ *   - The five win-celebration tier palettes. They are already local variables
+ *     (--wc-hot / --wc-cool / --wc-ray) and they are a closed set living on one
+ *     screen. They point AT tokens here where they match, and keep their own
+ *     values where they do not.
+ *   - The eleven .ss-choice-badge colours. One component, one screen, closed
+ *     set, no duplication.
+ *
+ * WHERE IT IS LOADED
+ *
+ * From components/app.css, which Game.svelte imports from its script block - a
+ * plain JS import, so Vite emits it WITHOUT Svelte scoping. That matters: a
+ * bare :root inside a scoped style block is rewritten to :root.svelte-HASH and
+ * matches nothing. Tokens have to be global to inherit into every component,
+ * including the ones that mount before the board (GameLoader) and the ones that
+ * sit outside it entirely (WinCelebration, ErrorModal, the popups).
+ */
+
+:root {
+  /* ==== Type =============================================================
+     Named because the game has to WIN an argument it did not pick. The web-sdk
+     ships packages/components-ui-html/src/components/global.scss, which sets
+     body font-family to proxima-nova - the SDK sample game's face, which this
+     game does not name anywhere and stopped loading when the use.typekit.net
+     link was removed. That rule and this game's own "html, body" declaration
+     have the SAME specificity, so which one won came down to whichever Vite
+     happened to emit last. app.css now selects "html body" (0,0,2) so the
+     question cannot be reopened by a bundle reshuffle. See the note there. */
+  --font-body: 'Poppins', sans-serif;
+
+  /* ==== Surfaces: the room ===============================================
+     The felt ramp, taken from the LIVE one in table.css .scene - the layer the
+     player actually sees.
+
+     This is a fix, not just a rename. There were three felts claiming to be
+     the same felt and none of them agreed:
+
+       .game-layout   #1e6f52 / #14523c / #0a2f22   never visible at all
+       .scene         #123a26 / #0e2e1e / #071c12   what the game draws
+       .game-loader   #1e6f52 / #14523c / #0a2f22   "same felt as the game"
+
+     .scene is position:absolute, inset:0, and its background stack ends in an
+     opaque #071a10 - so it covers .game-layout completely and that gradient was
+     dead paint. The loader was then carefully matched to the dead one. Its
+     comment says the handover is not a colour jump; it was, by a long way, and
+     in the more saturated direction. Pointing all of them here fixes it. */
+  --felt-lit: #123a26;
+  --felt-mid: #0e2e1e;
+  --felt-deep: #071c12;
+  --felt-edge: #030d08;
+
+  /* The page behind everything, for the instant before the game paints. */
+  --page-bed: #0b1420;
+
+  /* ==== Brand ============================================================
+     Sampled from logo.png, and shared by the card backs, the deck prop on the
+     table and the loader cards - which is the whole point: every card in the
+     game has to read as coming from one pack. An earlier back ran #C8392F,
+     which leans orange against the logo crimson. */
+  --brand-red: #a80828;
+  --brand-red-lit: #b81030;
+  --brand-red-deep: #78061e;
+  /* The double edge a card carries: white outside, chrome inside. */
+  --brand-paper: #f8f8f8;
+  --brand-chrome: #c8c8c8;
+
+  /* ==== Gold =============================================================
+     Two roles, not three. #f5d78c (titles, the MODE button, the intro stats),
+     #ffe08a (the in-game title, the running multiplier, the last-win chip) and
+     #f4d47c (the loader title) were three values doing two jobs - the loader
+     plate and the in-game plate are explicitly meant to read as the same
+     lockup, and they were half a step apart. */
+  --gold: #f5d78c;
+  --gold-bright: #ffe08a;
+
+  /* ==== Ink ==============================================================
+     Cool ramp - the control bar, the popups, the board. */
+  --ink: #fff;
+  --ink-strong: #dfe8f2;
+  --ink-body: #cfe0f0;
+  /* One dim, not two. #93a4b5 and #97a8b8 are separated by less than a
+     perceptible step and were used for the same job on adjacent lines of the
+     control bar. */
+  --ink-dim: #93a4b5;
+
+  /* Warm ramp - the intro, which sits on green rather than on slate. */
+  --ink-warm: #e8e0d0;
+  --ink-warm-dim: #c8c0b0;
+  --ink-warm-mute: #a0a080;
+
+  /* ==== Panels ===========================================================
+     Translucent because they float over the table and the felt has to show
+     through; a solid panel reads as a hole cut in the scene. */
+  --panel: #141d2a;
+  --panel-light: rgba(28, 42, 58, 0.72);
+  --panel-dark: rgba(8, 14, 22, 0.82);
+  --panel-float: rgba(10, 17, 26, 0.82);
+  --panel-plate: linear-gradient(180deg, rgba(10, 18, 28, 0.82), rgba(6, 11, 18, 0.72));
+
+  /* ==== Accent ===========================================================
+     The interactive blue. Two steps: the resting accent, and the one a
+     committed selection uses. */
+  --accent: #4c9ffe;
+  --accent-strong: #2f8fff;
+
+  /* ==== Translucency =====================================================
+     Three colours the app paints at many different alphas: white hairlines and
+     washes, black shadows and scrims, and the accent glow. They are triplets
+     rather than finished rgba() values so a call site can pick its own alpha
+     and STILL name its colour - rgba(var(--ink-rgb), 0.12).
+
+     The alphas themselves are not tokenised, and that is a deliberate stopping
+     point rather than an oversight. The app currently paints white at 22
+     distinct alphas and black at 16, across 102 declarations. That is not a
+     palette anyone chose; nothing distinguishes the 0.09 hairline from the 0.1
+     one. But collapsing 22 steps to three is a visual REDESIGN, and this file
+     is meant to be the change that moves no pixels. The triplets make every one
+     of those declarations name its colour today, and make the collapse a
+     one-file job whenever it is taken on. */
+  --ink-rgb: 255, 255, 255;
+  --shadow-rgb: 0, 0, 0;
+  --accent-rgb: 76, 159, 254;
+
+  /* ==== State ============================================================ */
+  --win: #7cffb2;
+  --win-soft: #7ee2a8;
+  --loss: #ff3b3b;
+  --loss-soft: #ff8f8f;
+  /* A miss a Second Chance round forgave. Deliberately NOT --loss: a red mark
+     says the round ended here, and this one carried on. */
+  --forgiven: #f5c451;
+
+  /* ==== Cards ============================================================
+     Fronts. These are the values the card front SHIPS today, named but not yet
+     changed - the point of doing it in that order is that the card redesign
+     then moves three numbers in one file instead of hunting them through four.
+
+     They will move. A pure-white card is the only pure-white object in a scene
+     whose felt is #123a26 and whose wood is #653008, so it reads as a hole cut
+     in the table rather than as paper lying on it. Backs already use the brand
+     tokens above. */
+  --card-paper: #fff;
+  --card-ink: #111;
+  --card-red: #c0392b;
+
+  /* ==== Choice row =======================================================
+     The one place in this UI where colour is DATA rather than decoration:
+     these squares encode the bet. Red has to look red and black has to look
+     black, so those two do not get to be art-directed. See choices.css. */
+  --choice-black: #16181c;
+  --choice-red: #c0392b;
+  --choice-higher: #2ecc71;
+  --choice-lower: #c0392b;
+  --choice-inside: #00bcd4;
+  --choice-outside: #d81ce0;
+  --choice-equal-lit: #ffe680;
+  --choice-equal: #f1c40f;
+  --choice-equal-deep: #d29d05;
+  --choice-equal-edge: rgba(74, 48, 2, 0.62);
+  --suit-red: #e74c3c;
+
+  /* The intro tooltip and the "why is Inside off" box - green on green, so
+     they belong to the table rather than to the slate chrome. */
+  --tip-bed: #0b1a09;
+  --tip-edge: #6b8a58;
+
+  /* ==== Volatility =======================================================
+     Green, yellow, red as the modes get wilder. NOT decorative: sc < base < hs
+     holds for every one of the 64 guess combinations in the published stats,
+     so the three colours rank a real ordering rather than labelling three
+     flavours. See game/volatility.ts.
+
+     Moved here from .game-layout in base.css. They were declared there because
+     two meters burn them (the mode picker and the bet display) and a
+     per-component copy is how the two would drift apart - which is this file's
+     whole argument, made one file early. */
+  --vol-sc: #3ddc84;
+  --vol-base: #ffc93c;
+  --vol-hs: #ff5c5c;
+  /* Stops past the family ceiling, which only Equal picks on High Stakes
+     reach. Deliberately off the green-yellow-red ramp rather than a deeper
+     red: it is not "more of the same", it is past the top of the scale the
+     three modes span. Kept bright enough to survive the drop-shadow on a dark
+     bar. */
+  --vol-overflow: #9d4edd;
+
+  /* ==== Motion ===========================================================
+     Five near-identical cubic-beziers were in use, plus ease-out ten times,
+     ease-in-out three times, and the browser default `ease` twice. The curves
+     differed in the third decimal place, which is not a design decision, it is
+     drift. Three named curves, plus one deliberate overshoot.
+
+     Never the bare `ease` keyword: it is the value you get when nobody
+     chose. */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.45, 0, 0.25, 1);
+  /* Overshoots past 1. For things ARRIVING that should feel physical - the
+     celebration title, a badge popping on select. Never for UI state changes:
+     a control that overshoots reads as unreliable. */
+  --ease-pop: cubic-bezier(0.2, 1.5, 0.4, 1);
+
+  /* No duration tokens yet, on purpose. The app runs 0.1s / 0.12s / 0.14s /
+     0.15s / 0.2s / 0.25s and up, and picking three winners out of that is the
+     same redesign the alpha note above defers. Curves were drift and are fixed;
+     durations are a decision, and belong with the motion pass. */
+}

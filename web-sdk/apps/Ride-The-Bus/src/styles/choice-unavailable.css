@@ -45,7 +45,7 @@
   height: 3px;
   transform: rotate(-24deg);
   transform-origin: center;
-  background: #fff;
+  background: var(--ink);
   border-radius: 2px;
   pointer-events: none;
 }
@@ -60,6 +60,6 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(var(--shadow-rgb), 0.6);
   pointer-events: none;
 }

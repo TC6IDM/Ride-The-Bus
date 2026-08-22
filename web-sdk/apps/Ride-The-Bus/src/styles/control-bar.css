@@ -33,15 +33,15 @@
   padding: calc(var(--ui-bar) * 0.64) calc(var(--ui-bar) * 1.09);
   border-radius: calc(var(--ui-bar) * 1.45);
   backdrop-filter: blur(6px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 6px 20px rgba(var(--shadow-rgb), 0.45);
 }
 .cb-panel-light {
-  background: rgba(28, 42, 58, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--panel-light);
+  border: 1px solid rgba(var(--ink-rgb), 0.1);
 }
 .cb-panel-dark {
-  background: rgba(8, 14, 22, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--panel-dark);
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
 }
 
 /* Balance pinned left / last win pinned right inside the light panel, with a
@@ -65,11 +65,11 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(10, 17, 26, 0.82);
+  border: 1px solid rgba(var(--ink-rgb), 0.14);
+  background: var(--panel-float);
   backdrop-filter: blur(6px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
-  color: #cfe0f0;
+  box-shadow: 0 6px 20px rgba(var(--shadow-rgb), 0.45);
+  color: var(--ink-body);
   cursor: pointer;
   text-transform: none;
   transition: box-shadow 0.15s, border-color 0.15s, background 0.15s, color 0.15s;
@@ -85,9 +85,9 @@
   align-items: center;
   justify-content: center;
   border-radius: calc(var(--ui-bar) * 1);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
-  color: #cfe0f0;
+  border: 1px solid rgba(var(--ink-rgb), 0.12);
+  background: rgba(var(--ink-rgb), 0.06);
+  color: var(--ink-body);
   cursor: pointer;
   text-transform: none;
   transition: box-shadow 0.15s, border-color 0.15s, background 0.15s, color 0.15s;
@@ -107,11 +107,11 @@
 .cb-info-i { font-style: italic; font-family: Georgia, "Times New Roman", serif; font-weight: 700; }
 
 /* Balance / bet text stacks */
-.cb-cap { display: block; font-size: calc(var(--ui-bar) * 0.87) /* 9.6px */; letter-spacing: 0.09em; text-transform: uppercase; color: #4c9ffe; font-weight: 700; }
+.cb-cap { display: block; font-size: calc(var(--ui-bar) * 0.87) /* 9.6px */; letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
 
 /* tabular-nums + the reserved min-widths below mean a value changing (a win
    landing, the bet stepping) never re-flows the bar. */
-.cb-val { display: block; font-size: calc(var(--ui-bar) * 1.53) /* 16.8px */; font-weight: 800; color: #fff; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.cb-val { display: block; font-size: calc(var(--ui-bar) * 1.53) /* 16.8px */; font-weight: 800; color: var(--ink); line-height: 1.1; font-variant-numeric: tabular-nums; }
 
 /* Reserved widths are measured from the widest value each field can ever show
    at this font (800 16.8px Poppins): balance up to $99,999,999.00 = 140px;
@@ -130,13 +130,13 @@
   text-align: right;
 }
 
-.cb-lastwin .cb-cap { color: #93a4b5; }
+.cb-lastwin .cb-cap { color: var(--ink-dim); }
 
-.cb-lastwin .cb-val { color: #97a8b8; }
+.cb-lastwin .cb-val { color: var(--ink-dim); }
 
-.cb-lastwin.won .cb-val { color: #7cffb2; }
+.cb-lastwin.won .cb-val { color: var(--win); }
 
-.cb-lastwin-mult { font-size: calc(var(--ui-bar) * 1.05) /* 11.5px */; font-weight: 800; color: #ffe08a; margin-left: calc(var(--ui-bar) * 0.27); }
+.cb-lastwin-mult { font-size: calc(var(--ui-bar) * 1.05) /* 11.5px */; font-weight: 800; color: var(--gold-bright); margin-left: calc(var(--ui-bar) * 0.27); }
 
 .cb-bet { gap: calc(var(--ui-bar) * 0.73); }
 
@@ -156,7 +156,7 @@
 
 .cb-bet-display .cb-cap { text-align: right; }
 
-.cb-bet-display:hover, .cb-bet-display.active { border-color: #4c9ffe; background: rgba(76, 159, 254, 0.12); box-shadow: 0 0 12px rgba(76, 159, 254, 0.35); }
+.cb-bet-display:hover, .cb-bet-display.active { border-color: var(--accent); background: rgba(var(--accent-rgb), 0.12); box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.35); }
 
 .cb-betstep { display: flex; flex-direction: column; gap: calc(var(--ui-bar) * 0.36) /* 4px */; }
 
@@ -168,9 +168,9 @@
   align-items: center;
   justify-content: center;
   border-radius: calc(var(--ui-bar) * 0.64);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.07);
-  color: #fff;
+  border: 1px solid rgba(var(--ink-rgb), 0.16);
+  background: rgba(var(--ink-rgb), 0.07);
+  color: var(--ink);
   font-size: calc(var(--ui-bar) * 1.6);
   font-weight: 800;
   line-height: 1;
@@ -186,7 +186,7 @@
   height: calc(var(--ui-bar) * 1.8);
 }
 
-.cb-step:hover:not(:disabled) { border-color: #4c9ffe; box-shadow: 0 0 8px rgba(76, 159, 254, 0.5); }
+.cb-step:hover:not(:disabled) { border-color: var(--accent); box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.5); }
 
 .cb-step:disabled { opacity: 0.45; cursor: not-allowed; }
 
@@ -221,11 +221,11 @@
   stroke-linecap: round;
 }
 
-.cb-cooldown-track { stroke: rgba(0, 0, 0, 0.45); }
+.cb-cooldown-track { stroke: rgba(var(--shadow-rgb), 0.45); }
 
 .cb-cooldown-fill {
-  stroke: #4c9ffe;
-  filter: drop-shadow(0 0 3px rgba(76, 159, 254, 0.8));
+  stroke: var(--accent);
+  filter: drop-shadow(0 0 3px rgba(var(--accent-rgb), 0.8));
 }
 
 /* Tooltip above the button. Shown on hovering the WRAPPER, because the button
@@ -239,17 +239,17 @@
   z-index: 60;
   padding: calc(var(--ui-bar) * 0.6) calc(var(--ui-bar) * 1);
   border-radius: calc(var(--ui-bar) * 0.64);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(var(--ink-rgb), 0.14);
   background: rgba(8, 14, 22, 0.96);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
-  color: #dfe8f2;
+  box-shadow: 0 6px 18px rgba(var(--shadow-rgb), 0.55);
+  color: var(--ink-strong);
   font-size: calc(var(--ui-bar) * 1.05);
   font-weight: 700;
   line-height: 1.2;
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.14s ease-out, transform 0.14s ease-out;
+  transition: opacity 0.14s var(--ease-out), transform 0.14s var(--ease-out);
 }
 
 .cb-spin-wrap:hover .cb-cooldown-tip {
@@ -278,9 +278,9 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.06);
-  color: #cfe0f0;
+  border: 1px solid rgba(var(--ink-rgb), 0.16);
+  background: rgba(var(--ink-rgb), 0.06);
+  color: var(--ink-body);
   cursor: pointer;
   text-transform: none;
   transition: box-shadow 0.15s, border-color 0.15s, background 0.15s, color 0.15s;
@@ -298,15 +298,15 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  border: max(2px, calc(var(--ui-bar) * 0.27)) solid rgba(255, 255, 255, 0.85);
+  border: max(2px, calc(var(--ui-bar) * 0.27)) solid rgba(var(--ink-rgb), 0.85);
   background: radial-gradient(circle at 50% 35%, #2a4d74, #12233a 75%);
-  color: #fff;
+  color: var(--ink);
   cursor: pointer;
   text-transform: none;
   transition: box-shadow 0.15s, border-color 0.15s, transform 0.1s;
 }
 
-.cb-spin:not(:disabled):hover { box-shadow: 0 0 20px rgba(76, 159, 254, 0.75); transform: scale(1.04); }
+.cb-spin:not(:disabled):hover { box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.75); transform: scale(1.04); }
 
 .cb-spin:not(:disabled):active { transform: scale(0.97); }
 
@@ -320,7 +320,7 @@
 
 .cb-spin.slammable:hover { box-shadow: 0 0 20px rgba(255, 206, 58, 0.7); }
 
-.cb-slam-svg { width: calc(var(--ui-bar) * 3.45); height: calc(var(--ui-bar) * 3.45); transform: none; color: #ffe08a; }
+.cb-slam-svg { width: calc(var(--ui-bar) * 3.45); height: calc(var(--ui-bar) * 3.45); transform: none; color: var(--gold-bright); }
 
 .cb-spin.stopping:hover { box-shadow: 0 0 20px rgba(255, 80, 80, 0.85); }
 
@@ -340,7 +340,7 @@
      the border ate six of those pixels and "999" overflowed it by a pixel.
      Keeping the border proportional holds the interior wide enough at every
      size, and 2px is still a visible outline on the smallest one. */
-  border: max(2px, calc(var(--ui-bar) * 0.38)) solid #ff3b3b;
+  border: max(2px, calc(var(--ui-bar) * 0.38)) solid var(--loss);
   border-radius: calc(var(--ui-bar) * 0.64);
   background: #0d0d10;
   box-shadow: 0 0 10px rgba(255, 59, 59, 0.7);
@@ -364,8 +364,8 @@
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   line-height: 1;
-  color: #fff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 6px rgba(0, 0, 0, 0.8);
+  color: var(--ink);
+  text-shadow: 0 1px 3px rgba(var(--shadow-rgb), 0.9), 0 0 6px rgba(var(--shadow-rgb), 0.8);
 }
 
 /* Nothing caps the rounds a player can enter, so the type steps down to keep
@@ -382,12 +382,12 @@
                                         of the 15px digits it stands in for,
                                         and inside the square's ~31px interior */
   height: calc(var(--ui-bar) * 0.98);
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.9));
+  filter: drop-shadow(0 1px 2px rgba(var(--shadow-rgb), 0.9));
 }
 
 /* Distinct hover glow per control (info=blue, turbo=amber, autospin=green,
    advanced=purple), plus an active (popup-open) highlight. */
-.cb-icon:hover, .cb-icon.active { border-color: #4c9ffe; color: #fff; background: rgba(76, 159, 254, 0.16); box-shadow: 0 0 12px rgba(76, 159, 254, 0.45); }
+.cb-icon:hover, .cb-icon.active { border-color: var(--accent); color: var(--ink); background: rgba(var(--accent-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.45); }
 
 .cb-turbo:hover, .cb-turbo.active { border-color: #ffce3a; color: #ffd54a; background: rgba(255, 193, 7, 0.16); box-shadow: 0 0 12px rgba(255, 193, 7, 0.5); }
 
@@ -401,14 +401,14 @@
    bet" without needing a sentence; the arithmetic sits underneath for anyone
    who wants it. Used in the control bar and the bet menu alike, so the two
    can never show different numbers for the same selection. */
-.cb-val-multiplied { color: #4c9ffe; }
+.cb-val-multiplied { color: var(--accent); }
 
 .cb-bet-base,
 .bet-cell-base {
   display: block;
   font-size: calc(var(--ui-bar) * 0.86);
   font-weight: 600;
-  color: #93a4b5;
+  color: var(--ink-dim);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -417,8 +417,8 @@
    control that changes what a round IS rather than how it looks. */
 .cb-mode-btn {
   background: radial-gradient(circle at 50% 35%, #6a5216, #2a2008 78%);
-  border-color: #f5d78c;
-  color: #f5d78c;
+  border-color: var(--gold);
+  color: var(--gold);
 }
 
 .cb-mode-btn:hover:not(:disabled) { box-shadow: 0 0 14px rgba(245, 215, 140, 0.55); }
@@ -455,7 +455,7 @@
   gap: calc(var(--ui-bar) * 0.36);
   font-size: calc(var(--ui-bar) * 0.86);
   font-weight: 800;
-  color: #f5d78c;
+  color: var(--gold);
   white-space: nowrap;
   --bolt-size: 1em;
 }

@@ -6,9 +6,14 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: radial-gradient(ellipse at center, #1a3a1a 0%, #0d1f0d 55%, #060f06 100%);
-	font-family: 'Poppins', sans-serif;
-	color: #e8e0d0;
+	background: radial-gradient(
+		ellipse at center,
+		var(--felt-lit) 0%,
+		var(--felt-mid) 55%,
+		var(--felt-edge) 100%
+	);
+	font-family: var(--font-body);
+	color: var(--ink-warm);
 	/* The start screen's own scaling unit, and the reason the Play button no
 	   longer falls below the fold.
 	   
@@ -63,7 +68,7 @@
 	font-size: calc(var(--ui) * 3.4);
 	font-weight: 900;
 	letter-spacing: 0.04em;
-	color: #f5d78c;
+	color: var(--gold);
 	text-transform: uppercase;
 	line-height: 1.15;
 }
@@ -71,7 +76,7 @@
 .ss-subtitle {
 	font-size: calc(var(--ui) * 1.5);
 	font-weight: 400;
-	color: #a0a080;
+	color: var(--ink-warm-mute);
 	margin-bottom: 0;
 }
 
@@ -90,7 +95,7 @@
 .ss-step,
 .ss-stats,
 .ss-continue {
-	animation: ss-rise 0.52s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+	animation: ss-rise 0.52s var(--ease-out) both;
 	animation-delay: calc(var(--d, 0) * 0.075s);
 }
 
@@ -126,7 +131,7 @@
 /* ---- Lead line ---- */
 .ss-lead {
 	font-size: calc(var(--ui) * 1.4);
-	color: #c8c0b0;
+	color: var(--ink-warm-dim);
 	max-width: calc(var(--ui) * 40);
 }
 
@@ -170,7 +175,7 @@
 	width: calc(var(--ui) * 2);
 	height: calc(var(--ui) * 2);
 	border-radius: 50%;
-	background: #f5d78c;
+	background: var(--gold);
 	color: #12220f;
 	font-size: calc(var(--ui) * 1.15);
 	font-weight: 800;
@@ -185,7 +190,7 @@
 	   it on every small screen. */
 	font-size: max(calc(var(--ui) * 1.05), 11px);
 	font-weight: 700;
-	color: #e8e0d0;
+	color: var(--ink-warm);
 	text-align: center;
 	line-height: 1.2;
 	/* Deliberately NOT nowrap. "Inside / Outside" is 16 characters in English
@@ -311,7 +316,7 @@
 	padding: 0;
 	border-radius: 50%;
 	background: #2e4224;
-	border: 1px solid #6b8a58;
+	border: 1px solid var(--tip-edge);
 	color: #cfe3bd;
 	font-family: inherit;
 	font-size: calc(var(--ui) * 1.1);
@@ -351,8 +356,8 @@
 
 .ss-help:hover,
 .ss-help:focus-visible {
-	background: #f5d78c;
-	border-color: #f5d78c;
+	background: var(--gold);
+	border-color: var(--gold);
 	color: #12220f;
 	outline: none;
 }
@@ -404,16 +409,16 @@
 	max-width: var(--tip-room, 100%);
 	padding: calc(var(--ui) * 0.8) calc(var(--ui) * 1);
 	border-radius: calc(var(--ui) * 0.6);
-	background: #0b1a09;
-	border: 1px solid #6b8a58;
-	color: #e8e0d0;
+	background: var(--tip-bed);
+	border: 1px solid var(--tip-edge);
+	color: var(--ink-warm);
 	font-size: calc(var(--ui) * 1.05);
 	font-weight: 500;
 	line-height: 1.35;
 	text-align: left;
 	text-transform: none;
 	letter-spacing: 0;
-	box-shadow: 0 calc(var(--ss) * 0.6) calc(var(--ss) * 1.4) rgba(0, 0, 0, 0.55);
+	box-shadow: 0 calc(var(--ss) * 0.6) calc(var(--ss) * 1.4) rgba(var(--shadow-rgb), 0.55);
 	opacity: 0;
 	visibility: hidden;
 	transition: opacity 0.15s;
@@ -460,7 +465,7 @@
 	border-radius: calc(var(--ui) * 0.35);
 	background: #f4efe2;
 	color: #1b1b1b;
-	box-shadow: 0 calc(var(--ui) * 0.15) calc(var(--ui) * 0.4) rgba(0, 0, 0, 0.45);
+	box-shadow: 0 calc(var(--ui) * 0.15) calc(var(--ui) * 0.4) rgba(var(--shadow-rgb), 0.45);
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -469,7 +474,7 @@
 	font-weight: 800;
 }
 
-.ss-card-mini.red { color: #c02434; }
+.ss-card-mini.red { color: var(--card-red); }
 
 /* The Inside / Outside panel shows three cards, or four when Equal is picked
    (either reference rank passes), so its minis run a shade narrower to keep the
@@ -485,7 +490,7 @@
 /* "or" between the two ranks Equal accepts. A slash rather than a word, so it
    needs no translation. */
 .ss-or {
-	color: #a0a080;
+	color: var(--ink-warm-mute);
 	font-size: calc(var(--ui) * 1.1);
 	font-weight: 700;
 }
@@ -497,7 +502,7 @@
    between the slash (1.1) and the tick (1.5): it is a connector rather than a
    verdict, but "->" needs enough width to read as a direction. */
 .ss-arrow {
-	color: #a0a080;
+	color: var(--ink-warm-mute);
 	font-size: calc(var(--ui) * 1.3);
 }
 
@@ -609,12 +614,12 @@
 .ss-stat-val {
 	font-size: calc(var(--ui) * 2.4);
 	font-weight: 800;
-	color: #f5d78c;
+	color: var(--gold);
 }
 
 .ss-stat-cap {
 	font-size: calc(var(--ui) * 1.1);
-	color: #a0a080;
+	color: var(--ink-warm-mute);
 	text-transform: uppercase;
 	letter-spacing: 0.06em;
 }
@@ -623,10 +628,10 @@
 .ss-continue {
 	margin-top: calc(var(--ui) * 2);
 	padding: calc(var(--ui) * 1.4) calc(var(--ui) * 4.5);
-	border: 2px solid #f5d78c;
+	border: 2px solid var(--gold);
 	border-radius: calc(var(--ui) * 0.8);
 	background: transparent;
-	color: #f5d78c;
+	color: var(--gold);
 	font-family: inherit;
 	font-size: calc(var(--ui) * 1.6);
 	font-weight: 700;
@@ -638,7 +643,7 @@
 
 .ss-continue:hover,
 .ss-continue:focus-visible {
-	background: #f5d78c;
+	background: var(--gold);
 	color: #0d1f0d;
 }
 
@@ -647,7 +652,7 @@
 	position: fixed;
 	inset: 0;
 	z-index: 1001;
-	background: rgba(0, 0, 0, 0.65);
+	background: rgba(var(--shadow-rgb), 0.65);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -672,13 +677,13 @@
 	align-items: center;
 	font-size: calc(var(--ui) * 2);
 	font-weight: 700;
-	color: #f5d78c;
+	color: var(--gold);
 }
 
 .ss-popup-close {
 	background: none;
 	border: none;
-	color: #a0a080;
+	color: var(--ink-warm-mute);
 	font-size: calc(var(--ui) * 2);
 	cursor: pointer;
 	padding: calc(var(--ui) * 0.4);
@@ -686,7 +691,7 @@
 }
 
 .ss-popup-close:hover {
-	color: #e8e0d0;
+	color: var(--ink-warm);
 }
 
 .ss-detail-row {
@@ -695,20 +700,20 @@
 	align-items: baseline;
 	font-size: calc(var(--ui) * 1.4);
 	padding: calc(var(--ui) * 0.5) 0;
-	border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+	border-bottom: 1px solid rgba(var(--ink-rgb), 0.06);
 }
 
 .ss-detail-cap {
-	color: #a0a080;
+	color: var(--ink-warm-mute);
 }
 
 .ss-detail-val {
-	color: #e8e0d0;
+	color: var(--ink-warm);
 	font-weight: 600;
 }
 
 .ss-detail-mode {
-	color: #f5d78c;
+	color: var(--gold);
 	font-weight: 700;
 	font-size: calc(var(--ui) * 1.6);
 	text-align: right;
@@ -728,7 +733,7 @@
 	padding: calc(var(--ui) * 1.2) calc(var(--ui) * 3.5);
 	border: none;
 	border-radius: calc(var(--ui) * 0.7);
-	background: #f5d78c;
+	background: var(--gold);
 	color: #0d1f0d;
 	font-family: inherit;
 	font-size: calc(var(--ui) * 1.6);

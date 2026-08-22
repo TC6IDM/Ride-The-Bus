@@ -1,3 +1,12 @@
+/* The shared colour + motion vocabulary. MUST be first: a CSS @import is only
+   legal before any other rule, and this file opens with @font-face blocks.
+
+   It lives here rather than in a Svelte <style> block because Game.svelte
+   imports app.css from its script block, so Vite emits it WITHOUT Svelte
+   scoping - and a bare :root inside a scoped block is rewritten to
+   :root.svelte-HASH and matches nothing. See styles/tokens.css. */
+@import '../styles/tokens.css';
+
 /* Poppins, self-hosted.
  *
  * The stylesheet asked for 'Poppins' and nothing ever loaded it: there was no
@@ -122,5 +131,20 @@
 html,
 body {
 	height: 100%;
-	font-family: 'Poppins', sans-serif;
+}
+
+/* TWO selectors deep (0,0,2), and that is load-bearing rather than tidy.
+ *
+ * The web-sdk ships packages/components-ui-html/src/components/global.scss,
+ * which sets body font-family to proxima-nova - the SDK sample game's face.
+ * This game names it nowhere and stopped loading it when the use.typekit.net
+ * link went. But the rule is still in the bundle, and as a bare "body" it has
+ * exactly the same specificity as the "html, body" rule above: which one wins
+ * is decided purely by which Vite emits last, so a dependency reshuffle could
+ * silently drop the whole game back to the system sans - the very failure the
+ * note at the top of this file describes.
+ *
+ * "html body" outranks it, and bundle order cannot reopen the question. */
+html body {
+	font-family: var(--font-body);
 }
