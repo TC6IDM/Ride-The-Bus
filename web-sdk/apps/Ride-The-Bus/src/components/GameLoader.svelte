@@ -119,7 +119,10 @@
   >
     <!-- Logo as the hero, with the game's name and the casino's stacked below
          it, matching the in-game title plate. -->
-    <div class="gl-logo"></div>
+    <!-- Decorative: the title beneath it already names the game, so a screen
+         reader announcing the mark as well would say it twice. The cards and
+         the progress bar below carry the same attribute for the same reason. -->
+    <div class="gl-logo" aria-hidden="true"></div>
     <div class="gl-title">
       <span class="gl-title-main">Ride The Bus</span>
       <span class="gl-title-sub">by Takeover Casino</span>
@@ -133,7 +136,7 @@
     </div>
 
     <div class="gl-bar" aria-hidden="true">
-      <div class="gl-bar-fill" style={`width: ${(progress * 100).toFixed(1)}%`}></div>
+      <div class="gl-bar-fill" style={`transform: scaleX(${progress.toFixed(3)})`}></div>
     </div>
   </div>
 {/if}

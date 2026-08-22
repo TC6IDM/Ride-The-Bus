@@ -239,7 +239,11 @@
 	font-weight: 800;
 	line-height: 1;
 	color: var(--gold);
-	opacity: 0.45;
+	/* 0.62, not the 0.45 this started at. Quiet was the intent - it is an index,
+	   not a headline - but 0.45 composites to 3.50:1 against the panel, and this
+	   is a NUMBER a player reads to follow the order of the four cards, not an
+	   ornament. 0.62 measures 5.4 and still sits well behind the control. */
+	opacity: 0.62;
 	font-variant-numeric: tabular-nums;
 }
 

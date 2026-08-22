@@ -164,7 +164,15 @@
   box-sizing: border-box;
 }
 
-.rounds-input:disabled { color: rgba(var(--ink-rgb), 0.55); }
+/* Three channels, not one. Colour alone leaves the field looking merely quiet
+   rather than unavailable - and it is genuinely unavailable here, because an
+   unlimited run has no count to type. The input keeps its native `disabled`
+   attribute, which is the third signal and the one assistive tech reads. */
+.rounds-input:disabled {
+  color: rgba(var(--ink-rgb), 0.55);
+  opacity: 0.55;
+  cursor: not-allowed;
+}
 
 .rounds-infinite {
   display: flex;
@@ -323,12 +331,35 @@
   transition: border-color 0.12s, background 0.12s;
 }
 
-.mode-option:hover { border-color: var(--accent); background: rgba(var(--accent-rgb), 0.1); }
+/* ---- The picker rows wear their own mode's colour ------------------------
+ * Yellow for Classic, green for Second Chance, red for High Stakes - the same
+ * three the bolts on each row are already burning, and the same three the bet
+ * display writes the live mode name in. The accent blue said only "this row is
+ * selectable", which every row is.
+ *
+ * --vol-color and --vol-rgb are set inline per row from the family (see
+ * Game.svelte). They are the FAMILY's colour, deliberately not the live one:
+ * the picker rates the mode, and the Equal picks that can push the rating past
+ * a family ceiling are a property of the bet, not of the mode being chosen. So
+ * no row is ever purple.
+ *
+ * The washes are 0.08 and 0.14. Red is what caps them: .mode-option-name is
+ * ~15px bold, which WCAG still counts as small text, and the name sits ON its
+ * own wash - at 0.18 red-on-red measures 4.43 and fails. 0.14 holds it at 4.74
+ * with the body copy above 10. */
+.mode-option:hover {
+  border-color: var(--vol-color, var(--accent));
+  background: rgba(var(--vol-rgb, var(--accent-rgb)), 0.08);
+}
 
 .mode-option.selected {
-  border-color: var(--accent-strong);
-  background: rgba(var(--accent-rgb), 0.18);
+  border-color: var(--vol-color, var(--accent));
+  background: rgba(var(--vol-rgb, var(--accent-rgb)), 0.14);
   color: var(--ink);
+}
+
+.mode-option.selected .mode-option-name {
+  color: var(--vol-color, var(--accent));
 }
 
 .mode-option-head {
@@ -443,14 +474,16 @@
  * a popup opening on top of a popup is how a player loses track of what they
  * were doing, and the picker already has the panel to itself.
  */
+/* The confirmation wears the colour of the mode it is about to switch TO, so
+   the whole panel answers the question it is asking. */
 .mode-confirm {
   display: flex;
   flex-direction: column;
   gap: calc(var(--ui-bar) * 0.55);
   padding: calc(var(--ui-bar) * 1) calc(var(--ui-bar) * 1.09);
   border-radius: calc(var(--ui-bar) * 0.73);
-  border: 1px solid rgba(var(--ink-rgb), 0.14);
-  background: rgba(var(--ink-rgb), 0.05);
+  border: 1px solid rgba(var(--vol-rgb, var(--ink-rgb)), 0.42);
+  background: rgba(var(--vol-rgb, var(--ink-rgb)), 0.08);
 }
 
 .mode-confirm-head {
@@ -463,8 +496,7 @@
 .mode-confirm-name {
   font-size: calc(var(--ui-bar) * 1.45);
   font-weight: 800;
-  color: var(--accent);
-  font-variant-numeric: tabular-nums;
+  color: var(--vol-color, var(--accent));
 }
 
 .mode-confirm-blurb {
@@ -522,9 +554,16 @@
   outline-offset: 2px;
 }
 
+/* Filled in the target mode's own colour, with dark ink on it - the three
+   volatility colours are all light, and --on-vol-ink is the token that stops
+   this reaching for a white that would not read. Overrides .action-button's
+   blue gradient, which is still right for every other primary action. */
 .mode-confirm-go {
   flex: 1 1 auto;
   width: auto;
+  background: var(--vol-color, var(--accent));
+  color: var(--on-vol-ink);
+  box-shadow: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

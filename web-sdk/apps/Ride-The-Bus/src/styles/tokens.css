@@ -318,6 +318,12 @@
      word and the stops still read as one colour.
      The bolt keeps the deeper value: it carries a drop-shadow that the text
      does not, and it was tuned to survive that. */
+  /* Text on a volatility FILL - the confirm button, once it takes the colour
+     of the mode it is about to switch to. Every one of the three is a light
+     colour, so this is dark: 10.56 on the green, 12.27 on the yellow, 6.23 on
+     the red. A hardcoded white would be the bug the accent-ink rule exists to
+     stop. */
+  --on-vol-ink: #14110a;
   --vol-overflow-ink-rgb: 176, 106, 232;
   --vol-overflow-ink: rgb(var(--vol-overflow-ink-rgb));
 

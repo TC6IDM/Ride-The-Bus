@@ -180,17 +180,38 @@
   box-shadow: inset 0 0 0 1px rgba(var(--ink-rgb), 0.09);
 }
 
+/* Scaled, not resized. Animating `width` is a layout property: every frame
+   re-runs layout on the bar and its parent, where a transform is composited on
+   its own. The element is full width at rest and scaled down to the progress
+   figure, which is why the inline style sets scaleX rather than a percentage. */
 .gl-bar-fill {
   height: 100%;
+  width: 100%;
+  transform-origin: left;
   border-radius: inherit;
   background: linear-gradient(90deg, #2ecc71, var(--gold));
   box-shadow: 0 0 calc(var(--lu) * 0.9) rgba(244, 212, 124, 0.6);
-  transition: width 0.25s var(--ease-out);
+  transition: transform 0.25s var(--ease-out);
+}
+
+/* Arabic is the one right-to-left language the RGS can request, and a bar that
+   empties from the wrong edge reads as broken rather than as loading.
+   transform-origin has no logical keyword, so this is the explicit flip. */
+:global([dir='rtl']) .gl-bar-fill {
+  transform-origin: right;
 }
 
 /* Respect a reduced-motion preference: the loader still shows and still
    progresses, it just stops dealing and breathing. */
 @media (prefers-reduced-motion: reduce) {
-  .gl-card { animation: none; }
-  .gl-bar-fill { transition: none; }
+  /* The logo belongs here too - it scales and rotates in, and it was the one
+     animated element on this screen the block had missed. */
+  .gl-logo,
+  .gl-card {
+    animation: none;
+  }
+
+  .gl-bar-fill {
+    transition: none;
+  }
 }

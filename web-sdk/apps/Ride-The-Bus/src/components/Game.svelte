@@ -2496,7 +2496,10 @@
              the list rows read, so the two can never describe a mode
              differently. -->
         {@const target = FAMILY_RULES[pendingFamily]}
-        <div class="mode-confirm">
+        <div
+          class="mode-confirm"
+          style={`--vol-color: ${volatilityColorVar(pendingFamily)}; --vol-rgb: ${volatilityColorRgbVar(pendingFamily)}`}
+        >
           <span class="mode-confirm-head">
             <span class="mode-confirm-name">{t(target.label)}</span>
             <span
@@ -2536,6 +2539,7 @@
             class="mode-option"
             class:selected={betFamily === family}
             aria-pressed={betFamily === family}
+            style={`--vol-color: ${volatilityColorVar(family)}; --vol-rgb: ${volatilityColorRgbVar(family)}`}
             onclick={() => {
               // Re-picking the mode already in play is a no-op, so it closes
               // rather than asking the player to confirm something that would
@@ -2556,10 +2560,10 @@
                    contributes before any of that, which is the only part of the
                    number choosing a mode actually changes. Drawn on the same
                    seven stops as the bar so the two are one ruler. -->
-              <span
-                class="mode-option-vol"
-                style={`--vol-color: ${volatilityColorVar(family)}`}
-              >
+              <!-- --vol-color now comes from the row itself, which needs it
+                   for its own border and wash - so the meter simply inherits
+                   it rather than carrying a second copy. -->
+              <span class="mode-option-vol">
                 <BoltMeter
                   lit={FAMILY_BOLTS[family]}
                   total={VOLATILITY_BOLTS}
