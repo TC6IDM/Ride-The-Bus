@@ -234,13 +234,16 @@
 }
 
 .card-face .index-rank {
-  font-size: 1em;
+  font-family: var(--font-display);
+  /* Condensed, so it can go up a size and still leave 10 - the one rank that is
+     two glyphs wide - sitting inside the corner index at the same width as
+     every other rank. That is the functional half of choosing this face; see
+     the note beside the @font-face block in components/app.css.
+     The tracking that used to squeeze 10 into place goes with it: the face is
+     already narrow, and negative tracking on top of it closes the counters. */
+  font-size: 1.18em;
   font-weight: 700;
   line-height: 1;
-  /* 10 is the one rank that is two glyphs wide. Tightened so it still reads as
-     a single index mark rather than as two numerals that happen to be next to
-     each other. */
-  letter-spacing: -0.03em;
 }
 
 .card-face .index.top {

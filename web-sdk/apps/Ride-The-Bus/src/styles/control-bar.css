@@ -466,7 +466,9 @@
 .bet-cell-base {
   display: block;
   font-size: calc(var(--ui-bar) * 0.86);
-  font-weight: 600;
+  /* 700: this was 600, which Poppins has no cut for and which was already
+     rendering as 700. Written down rather than left to the fallback. */
+  font-weight: 700;
   color: var(--ink-dim);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;

@@ -180,7 +180,11 @@
 }
 
 .game-title-main {
-  font-size: calc(var(--ui) * 3.1); /* 34px */
+  font-family: var(--font-display);
+  /* Bigger than the 3.1 it was set at. Big Shoulders is condensed, so the same
+     word occupies far less width - held at the old size the wordmark simply
+     got smaller rather than getting a voice. */
+  font-size: calc(var(--ui) * 3.9);
   font-weight: 900;
   /* NEGATIVE tracking, and it is the single change that does the most here.
      Letterspacing a 900 weight apart (this was +0.04em) is the most reliable
@@ -207,7 +211,10 @@
 .game-title-sub {
   margin-top: calc(var(--ui) * 0.42);
   font-size: calc(var(--ui) * 0.95); /* 10.5px */
-  font-weight: 600;
+  /* 500, not the 600 this asked for: Poppins ships 400/700/800/900 here, so
+     600 was silently rendering at 700 - the opposite of the demotion this
+     line exists to make. 500 resolves to 400, which is the intent. */
+  font-weight: 400;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: rgba(255, 224, 170, 0.72);

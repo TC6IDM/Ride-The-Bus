@@ -475,7 +475,8 @@
 	border: 1px solid var(--tip-edge);
 	color: var(--ink-warm);
 	font-size: calc(var(--ui) * 1.05);
-	font-weight: 500;
+	/* 400: Poppins ships no 500 here, so it was already drawing as 400. */
+	font-weight: 400;
 	line-height: 1.35;
 	text-align: left;
 	text-transform: none;
@@ -809,7 +810,8 @@
 
 .ss-detail-val {
 	color: var(--ink-warm);
-	font-weight: 600;
+	/* 700: Poppins ships no 600 cut, so this was already drawing as 700. */
+	font-weight: 700;
 }
 
 .ss-detail-mode {

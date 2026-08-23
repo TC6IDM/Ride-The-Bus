@@ -122,6 +122,74 @@
 }
 
 
+/* Big Shoulders, self-hosted, for the two places this game sets DISPLAY type:
+ * its own name, and the rank on a card.
+ *
+ * WHY A SECOND FACE AT ALL
+ *
+ * Poppins was the only typeface here, and it was carrying the wordmark as well
+ * as the body. Hallmark names Poppins on its banned-defaults list, and its
+ * slop-test gate reads "is the DISPLAY font Inter, Roboto, Open Sans, Poppins,
+ * Lato, or a system default?" - display specifically. Stake says the same thing
+ * from the other end, naming "standard fonts" first among the causes of a
+ * one-star rating. A pairing is also just the normal answer: one display face,
+ * one body face.
+ *
+ * WHY THIS ONE
+ *
+ * It is condensed, and that is functional rather than decorative. The corner
+ * index on a card is width-constrained, and 10 is the one rank that is two
+ * glyphs wide - a condensed face is the reason it can sit at the same size as
+ * every other rank instead of being squeezed. The industrial-signage voice also
+ * happens to suit a game called Ride The Bus, which is more than Poppins was
+ * doing.
+ *
+ * WHY THE 24pt CUT
+ *
+ * Big Shoulders ships optical sizes. The ranks render around 17px (~13pt) and
+ * the wordmark around 34px (~26pt), so 24pt sits in the middle of the range
+ * this face actually has to cover. The 60pt and 72pt cuts are drawn for poster
+ * sizes and go spindly at index size; the 18pt cut goes clumsy at title size.
+ *
+ * WHY TWO STATIC WEIGHTS RATHER THAN THE VARIABLE FONT
+ *
+ * Size. Subset to the same latin range as Poppins, the variable font is 56.6KB
+ * and these two together are 26.7KB - and bundleStrategy:"inline" base64s
+ * everything in this folder into index.html, where it costs about 1.37x that
+ * again. The variable font's optical-size axis is not worth 30KB on a page that
+ * uses the face at two sizes.
+ *
+ * THE LATIN RANGE IS DELIBERATE, AND IT LIMITS WHERE THIS CAN BE USED
+ *
+ * Same range as Poppins, so the two faces cover the same characters. But NOT
+ * latin-ext: this face is applied only to the wordmark and the card ranks, both
+ * of which are fixed ASCII in every locale. Do not put it on a TRANSLATED
+ * string without adding a latin-ext cut first - Polish and Turkish would fall
+ * through mid-word, which is worse than not using it at all.
+ *
+ * Copyright 2019 The Big Shoulders Project Authors, designed by Patric King
+ * (XOtype Co.), under the SIL Open Font License 1.1. The licence travels with
+ * the files in fonts/OFL-BigShoulders.txt and must keep doing so.
+ */
+@font-face {
+  font-family: 'Big Shoulders';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../fonts/bigshoulders-latin-700.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Big Shoulders';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('../fonts/bigshoulders-latin-900.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+
 * {
 	margin: 0;
 	padding: 0;

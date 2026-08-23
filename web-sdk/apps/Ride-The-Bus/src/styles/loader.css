@@ -64,7 +64,10 @@
 }
 
 .gl-title-main {
-  font-size: calc(var(--lu) * 3.4);
+  font-family: var(--font-display);
+  /* Matches .game-title-main's step up - the loader hands straight over to the
+     board and the two lockups have to be the same. */
+  font-size: calc(var(--lu) * 4.2);
   font-weight: 900;
   /* Negative, matching .game-title-main. See the note there for why opening a
      900 weight out is the tell this is undoing. */
@@ -79,7 +82,8 @@
 .gl-title-sub {
   margin-top: calc(var(--lu) * 0.42);
   font-size: calc(var(--lu) * 1.05);
-  font-weight: 600;
+  /* See .game-title-sub in base.css - 600 was drawing as 700. */
+  font-weight: 400;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   line-height: 1;
