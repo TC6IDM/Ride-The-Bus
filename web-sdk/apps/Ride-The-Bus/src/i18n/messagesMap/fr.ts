@@ -223,6 +223,7 @@ export default {
 	'Skip the card reveal during autoplay':
 		'Ignorer la révélation des cartes pendant le jeu automatique',
 	'Skip win animations on autoplay': 'Passer les animations de gain en jeu automatique',
+	'These apply to autoplay, which does not run during a replay.': 'Ces options concernent le jeu automatique, inactif pendant une rediffusion.',
 	'Skip big win animations during autoplay':
 		'Passer les animations de gros gains pendant le jeu automatique',
 	'Guess the color of card 1: red or black.': 'Devinez la couleur de la carte 1 : rouge ou noir.',

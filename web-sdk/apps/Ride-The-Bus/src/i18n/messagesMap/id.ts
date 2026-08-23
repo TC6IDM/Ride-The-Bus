@@ -222,6 +222,7 @@ export default {
 	'Skip card reveal on autoplay': 'Lewati pembukaan kartu saat putar otomatis',
 	'Skip the card reveal during autoplay': 'Lewati pembukaan kartu selama putar otomatis',
 	'Skip win animations on autoplay': 'Lewati animasi kemenangan saat putar otomatis',
+	'These apply to autoplay, which does not run during a replay.': 'Ini berlaku untuk putar otomatis, yang tidak berjalan selama tayang ulang.',
 	'Skip big win animations during autoplay':
 		'Lewati animasi kemenangan besar selama putar otomatis',
 	'Guess the color of card 1: red or black.': 'Tebak warna kartu 1: merah atau hitam.',

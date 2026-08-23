@@ -212,6 +212,7 @@ export default {
 	'Skip card reveal on autoplay': '自动游戏时跳过发牌动画',
 	'Skip the card reveal during autoplay': '在自动游戏过程中跳过发牌动画',
 	'Skip win animations on autoplay': '自动游戏时跳过获胜动画',
+	'These apply to autoplay, which does not run during a replay.': '这些设置用于自动游戏，在回放期间不会运行。',
 	'Skip big win animations during autoplay': '自动游戏期间跳过大奖动画',
 	'Guess the color of card 1: red or black.': '猜第 1 张牌的颜色：红色还是黑色。',
 	'Guess whether card 2 is higher or lower than card 1, or equal to it.':

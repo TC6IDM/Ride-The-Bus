@@ -274,4 +274,45 @@ describe('parseModeName', () => {
     // parseModeName loses none of them.
     assert.equal(all.filter((name) => parseModeName(name) !== null).length, 192);
   });
+
+  // The SECOND half of the same bug. Once parseModeName was in place all three
+  // callers restored the four guess squares correctly - and two of them threw
+  // `parsed.family` away, which is the half of the mode that is not a guess.
+  //
+  // That is not cosmetic. betFamily drives the retention rule the board prints,
+  // the volatility bolts, the MODE button, the rules popup and winTiers() - so
+  // a High Stakes replay left on Classic's ladder measures the round against
+  // Classic's 1354.2x ceiling and announces MAX WIN over a 1400x win that is
+  // nowhere near High Stakes' real 1910.2x max.
+  //
+  // Grepping the source because the assignment lives in a .svelte effect that
+  // `node --test` cannot mount. Crude, but the failure it guards is silent, has
+  // now happened twice on the same two call sites, and a replay is exactly the
+  // thing a Stake reviewer opens.
+  test('the replay and resume effects carry the family, not just the guesses', () => {
+    const source = readFileSync(
+      resolve(import.meta.dirname, '../components/Game.svelte'),
+      'utf8',
+    );
+
+    const restores = source.match(/const parsed = parseModeName\([\s\S]*?\n {4}}/g) ?? [];
+    assert.equal(
+      restores.length,
+      2,
+      'expected exactly two parseModeName restore blocks in Game.svelte (replay + resume)',
+    );
+
+    for (const block of restores) {
+      for (const field of ['family', 'color', 'higherLower', 'insideOutside', 'suit']) {
+        assert.ok(
+          block.includes(`parsed.${field}`),
+          `a mode-restore block in Game.svelte drops parsed.${field}`,
+        );
+      }
+      assert.ok(
+        /betFamily = parsed\.family/.test(block),
+        'a mode-restore block parses the family but never applies it to betFamily',
+      );
+    }
+  });
 });

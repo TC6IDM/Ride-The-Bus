@@ -108,9 +108,48 @@ rounding it to 2.0× would wipe out the house edge.
 - Win-tier ladders are **per family** (`winTiers.ts:winTiersFor(family)`) — every
   band, not just Max. Each is solved to hit Classic's rarities
   (~1 in 70 / 305 / 3,093 / 15,561) with Max = that family's own ceiling.
-- Second Chance has `celebrateEveryFullWin: false`, and only Second Chance.
-  Forgiveness makes reaching card 4 the common case, so the full-win celebration
-  floor is off there. It still celebrates on *size*.
+- **The Max band is matched on equality; every band below it on `>=`.** "Max Win"
+  is a claim about hitting a single reachable figure (1354.2 / 585.2 / 1910.2),
+  not about clearing the bottom of an open range — so a payout *above* a family's
+  ceiling falls to Epic rather than claiming the rarest screen in the game. The
+  published `max_win` bound is 1400 against a true Classic ceiling of 1354.2, so
+  the two are not the same number and the ladder must not treat them as one.
+  Understating is the safe direction; `winTiers.test.ts` pins both directions.
+- **Every win tier draws the whole celebration. Escalation is intensity, never
+  presence.** All five tiers are full-bleed and draw every layer — veil, two
+  soft counter-rotating conic sheens, bloom, and the suit burst; the `.tier-*`
+  rules only turn them up (`--wc-veil`, `--wc-sheen-op`, `--wc-sheen-dur`,
+  `--wc-bloom`, `--wc-throw`). Max alone adds a layer: the deck's own crosshatch,
+  sweeping once. **A tier that withholds a layer was tried and rejected** —
+  Big/Huge got a bounded "plate" and rendered as a grey rectangle while the
+  higher tiers looked untouched, so the ladder read as two unfinished screens.
+  If a tier should feel smaller, turn it down; do not take the scene away.
+- **The burst is suit marks, not sparks.** Hearts, diamonds, clubs and spades
+  through `SuitIcon`, tumbling outward — a card game's celebration made of its
+  own deck rather than the generic particle burst every casino template ships.
+  They take `--wc-hot` rather than card red/black: a black club on a dark scrim
+  is invisible. The sheen is **soft** conic sweeps for the same reason the burst
+  changed — hard-edged `repeating-conic-gradient` spokes are sunburst clipart and
+  strobe as they turn.
+- **The colour ramp is a heat climb** (gold → amber → orange → ember) with Max
+  *inverting* it — a cream core on brand crimson, the only tier lighter in the
+  middle than at the edge. Purple was removed: it already means
+  `--vol-overflow-ink` and `--ctl-advanced` two panels away, and colour here is
+  wayfinding.
+- **Which wins open the takeover is unchanged**: `winTierFor`'s `fullGameWin`
+  floor still puts every full game win on the ladder, so a 6.6× opens it at the
+  entry tier. Gating those to a board-level beat instead was tried and reverted —
+  the progression is the one players already learned. The cost is a known
+  cosmetic wart: a sub-10× full win is titled "Big Win" below the Big Win floor.
+  Fixing that needs its own label, which is a 17-locale change.
+- **Anything restoring a mode from a slug must apply `parsed.family`, not just
+  the four guesses.** `parseModeName` returns five fields; the replay and resume
+  effects in `Game.svelte` consumed four and dropped the family, which left a
+  High Stakes round on Classic's ladder — measuring a 1400× win against
+  Classic's 1354.2 ceiling and announcing MAX WIN over a round nowhere near High
+  Stakes' real 1910.2 max. The family also drives the MODE button, the bolts,
+  the rules popup and the printed retention rule. `modes.test.ts` greps both
+  call sites, because the failure is silent and has now happened twice.
 - The volatility rating (`game/volatility.ts`) is a **ranking of published
   figures, not a marketing claim**. `volatility.test.ts` re-derives it from
   `math-sdk/.../library/stats_summary.json` and fails if the bolts disagree.
@@ -161,6 +200,14 @@ rounding it to 2.0× would wipe out the house edge.
   `table.css`, whose colours are sampled measurements with the sampling recorded
   beside them, and closed one-screen palettes (the five win-celebration tiers,
   the eleven replay-info badges).
+  - The exemption covers the palette, **not the derivation**. `--wc-ray` was a
+    hand-copied `rgba()` of `--wc-hot` four lines below it — the same drift that
+    made `--ctl-turbo-rgb` a different amber from `--ctl-turbo`. Each tier is a
+    triplet now with both the fill and the wash derived from it. Colours that are
+    *not* tier colours have left the file: the amount's warm white and the
+    prompt's warm dim are `--ink-cream` and `--ink-warm-dim`, and the running-win
+    readout's three literals are `--ink-felt`, `--ink-spent` and `--loss-soft`
+    (`cards.css` was never one of the two exempt files).
   - Colours that need an alpha are declared as **rgb triplets** with the hex
     derived from them (`--gold`, `--vol-*`, `--ctl-turbo`), so a wash and a fill
     cannot drift apart. `volatilityColorRgbVar` is the sibling of `volatilityColorVar` and a
@@ -282,7 +329,7 @@ between a one-row bar and a two-row one.
 
 ## Current state
 
-451/451 tests, 0 type errors, 0 CSS warnings, lint clean, and the
+455/455 tests, 0 type errors, 0 CSS warnings, lint clean, and the
 client reproduces all 76,800 published books exactly. The published math build
 (192 modes, RTP 96.0000% everywhere, spread 0.000000%, zero volatility
 violations) is generated and committed.
@@ -297,6 +344,15 @@ std 32.938 (limit 0.6–50.0), worst ETL 0.695 (limit 0.8), worst CVaR 568.8
 
 ## Outstanding
 
+- **Win takeover: verify on real hardware, not in a desktop browser.** The
+  overlay runs a full-viewport `backdrop-filter: blur(5px) saturate(0.72)` plus
+  16 `drop-shadow`ed suit marks on transform loops — cheap on desktop, not
+  necessarily on the older Android and iOS devices Stake tests. If it drops
+  frames, drop the blur on coarse pointers (keep the veil) and drop the marks'
+  `filter` before touching anything else; do not go back to blacking out the
+  table. All five tiers also want eyeballing at all seven target sizes — the
+  burst radius is a large fraction of a 400×225 Popout S, which is why
+  `--wc-throw` is pulled back under `max-height: 380px`.
 - **B2 — art pass. Half done; the remaining half is assets, not treatment.**
   Stake names "over-reliance on generic AI-generated assets — standard fonts,
   gradients, emoji icons and border effects" as a top cause of a 1-star rating,

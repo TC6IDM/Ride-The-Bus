@@ -219,6 +219,7 @@ export default {
 	'Skip card reveal on autoplay': 'تخطي كشف البطاقات في اللعب التلقائي',
 	'Skip the card reveal during autoplay': 'تخطي كشف البطاقات أثناء اللعب التلقائي',
 	'Skip win animations on autoplay': 'تخطي مؤثرات الفوز أثناء اللعب التلقائي',
+	'These apply to autoplay, which does not run during a replay.': 'تنطبق هذه على اللعب التلقائي، الذي لا يعمل أثناء إعادة العرض.',
 	'Skip big win animations during autoplay': 'تخطي مؤثرات الفوز الكبير أثناء اللعب التلقائي',
 	'Guess the color of card 1: red or black.': 'خمّن لون البطاقة الأولى: أحمر أم أسود.',
 	'Guess whether card 2 is higher or lower than card 1, or equal to it.':

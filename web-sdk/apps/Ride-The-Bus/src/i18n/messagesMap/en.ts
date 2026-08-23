@@ -278,5 +278,6 @@ export default {
 	'Skip card reveal on autoplay': 'Skip card reveal on autoplay',
 	'Skip the card reveal during autoplay': 'Skip the card reveal during autoplay',
 	'Skip win animations on autoplay': 'Skip win animations on autoplay',
+	'These apply to autoplay, which does not run during a replay.': 'These apply to autoplay, which does not run during a replay.',
 	'Skip big win animations during autoplay': 'Skip big win animations during autoplay',
 };

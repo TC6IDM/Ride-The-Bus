@@ -646,3 +646,14 @@
 .switch:active:not(:disabled) {
   filter: brightness(1.25);
 }
+
+/* Replay: one line explaining why every switch below it is dead, instead of
+   four switches that silently do nothing. See the Advanced popup in
+   Game.svelte. */
+.advanced-note {
+  margin: 0 0 calc(var(--ui) * 1.1);
+  font-size: calc(var(--ui) * 1.15);
+  line-height: 1.45;
+  color: var(--tint-ink);
+  opacity: 0.78;
+}

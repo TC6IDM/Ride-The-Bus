@@ -28,6 +28,7 @@
 	 */
 	import { numberToCurrencyString } from 'utils-shared/amount';
 
+	import SuitIcon from './SuitIcon.svelte';
 	import { t } from '../i18n/i18nDerived';
 	import { sound } from '../game/sound';
 	import { CEILING_PAUSE_MS, countUpSegments, type WinTier } from '../game/winTiers';
@@ -58,20 +59,35 @@
 	const props: Props = $props();
 
 	/**
-	 * Spark geometry, computed here rather than in CSS.
+	 * The burst geometry, computed here rather than in CSS.
 	 *
 	 * The obvious CSS version needs `round()` to alternate the throw distance,
 	 * and `round()` is far too new to rely on - Stake tests on older Android and
-	 * iOS, where it would silently collapse every spark to the same radius. Plain
+	 * iOS, where it would silently collapse every mark to the same radius. Plain
 	 * arithmetic in a module constant costs nothing and works everywhere.
 	 *
-	 * Fourteen sparks over 360deg, alternating short/long so the ring does not
+	 * THESE ARE SUIT MARKS, NOT SPARKS. They used to be fourteen glowing dots,
+	 * which is the particle burst every generated casino screen ships and says
+	 * nothing about what game you just won. Ride The Bus is four cards and four
+	 * guesses; its celebration should be made of its own deck. The marks come
+	 * from SuitIcon - already drawn as SVG because Poppins does not own U+2660..
+	 * U+2666 and the fallback is a colour emoji on most phones.
+	 *
+	 * Sixteen over 360deg, four of each suit so no one suit dominates, jittered
+	 * off the exact spoke angles and alternating short/long so the ring does not
 	 * read as a perfect circle, on staggered delays so they do not fire as one.
+	 * Alternating spin direction keeps the tumble from looking mechanical.
 	 */
-	const SPARKS = Array.from({ length: 14 }, (_, i) => ({
-		angle: +(i * (360 / 14)).toFixed(2),
-		dist: i % 2 === 0 ? 18 : 25,
-		delay: +(i * 0.11).toFixed(2),
+	const SUIT_CYCLE = ['heart', 'spade', 'diamond', 'club'] as const;
+
+	const BURST = Array.from({ length: 16 }, (_, i) => ({
+		suit: SUIT_CYCLE[i % 4]!,
+		angle: +(i * (360 / 16) + (i % 2 === 0 ? -7 : 7)).toFixed(2),
+		dist: i % 2 === 0 ? 19 : 26,
+		/** Font size in --ui units; the mark is sized in em off it. */
+		size: i % 3 === 0 ? 2.5 : 1.9,
+		spin: i % 2 === 0 ? 210 : -250,
+		delay: +((i * 0.13) % 2.1).toFixed(2),
 	}));
 
 	/**
@@ -117,6 +133,27 @@
 	let settledAt = 0;
 	const DISMISS_GRACE_MS = 400;
 
+	/**
+	 * What assistive tech is told the overlay is.
+	 *
+	 * The climbing text stays aria-hidden - under aria-live the upgrading title
+	 * would announce three or four times mid-count and the digits would announce
+	 * every frame - so this label is the ONLY thing a screen reader gets, and it
+	 * has to carry the state as well as the result. It used to be static: a
+	 * player was handed the final tier and amount at frame one and never told the
+	 * overlay was dismissible, or which of its two states it was in.
+	 *
+	 * The amount stays the FINAL one rather than the climbing one, deliberately.
+	 * A label that changed with the count would re-announce on every frame, which
+	 * is the noise the aria-hidden exists to prevent.
+	 */
+	const ariaLabel = () =>
+		[
+			t(props.tier.label),
+			numberToCurrencyString(props.amount),
+			counting ? t('Tap to skip') : t('Tap to continue'),
+		].join(' — ');
+
 	/** Mark the celebration finished: nothing left to count, only to dismiss. */
 	function settle() {
 		holding = false;
@@ -147,6 +184,20 @@
 		pop(amountEl, 1.12, 520);
 	}
 
+	/**
+	 * Read from the stylesheet rather than restated here. The literal that used
+	 * to sit in this call was a second, slightly different overshoot living one
+	 * file away from --ease-pop - the same near-duplicate-value drift that made
+	 * --ctl-turbo-rgb a different amber from --ctl-turbo.
+	 */
+	function easePop(): string {
+		if (typeof window === 'undefined') return 'ease-out';
+		const declared = getComputedStyle(document.documentElement)
+			.getPropertyValue('--ease-pop')
+			.trim();
+		return declared || 'ease-out';
+	}
+
 	function pop(element: HTMLElement | undefined, scale: number, duration: number) {
 		if (!element || reducedMotion()) return;
 		element.animate(
@@ -155,7 +206,7 @@
 				{ transform: `scale(${scale})`, offset: 0.38 },
 				{ transform: 'scale(1)' },
 			],
-			{ duration, easing: 'cubic-bezier(0.25, 1.4, 0.4, 1)' },
+			{ duration, easing: easePop() },
 		);
 	}
 
@@ -389,19 +440,27 @@
 	class="wc-overlay tier-{activeTier.id}"
 	role="button"
 	tabindex="0"
-	aria-label={`${t(props.tier.label)} ${numberToCurrencyString(props.amount)}`}
+	aria-label={ariaLabel()}
 	onclick={onTap}
 	onkeydown={onKey}
 >
-	<div class="wc-rays" aria-hidden="true"></div>
+	<!-- Two counter-rotating soft conic sweeps. Every tier draws them; the tier
+	     sets how bright and how fast. -->
+	<div class="wc-sheen" aria-hidden="true"></div>
+	<div class="wc-sheen is-counter" aria-hidden="true"></div>
 	<div class="wc-glow" aria-hidden="true"></div>
+	<!-- Max Win only, and the one thing no other tier draws. See the note in
+	     win-celebration.css. -->
+	<div class="wc-deck-sweep" aria-hidden="true"></div>
 
-	<div class="wc-sparks" aria-hidden="true">
-		{#each SPARKS as spark}
+	<div class="wc-burst" aria-hidden="true">
+		{#each BURST as mark}
 			<span
-				class="wc-spark"
-				style={`--angle: ${spark.angle}deg; --dist: calc(var(--ui) * ${spark.dist}); animation-delay: ${spark.delay}s`}
-			></span>
+				class="wc-mark"
+				style={`--angle: ${mark.angle}deg; --dist: calc(var(--ui) * ${mark.dist}); --spin: ${mark.spin}deg; font-size: calc(var(--ui) * ${mark.size}); animation-delay: ${mark.delay}s`}
+			>
+				<SuitIcon suit={mark.suit} scale={1} />
+			</span>
 		{/each}
 	</div>
 

@@ -1,15 +1,72 @@
-/* ---- Big-win takeover ----------------------------------------------------
-   Drawn entirely in CSS - see the note at the top of WinCelebration.svelte for
-   why there are no image assets here.
-
-   Per-tier colour is carried on three custom properties set by the .tier-*
-   rules, so every rule below is written once against the variables rather than
-   five times against literals. --wc-hot is the core colour, --wc-cool the
-   outer falloff, --wc-ray the burst behind the text.                        */
+/* Hallmark · component: win-celebration overlay · genre: atmospheric
+ * escalation: intensity (never presence) · burst: suit marks · sheen: soft conic
+ * contrast: pass · reduced-motion: full
+ *
+ * ---- Big-win takeover ----------------------------------------------------
+ * Drawn entirely in CSS and one already-drawn SVG icon - see the note at the
+ * top of WinCelebration.svelte for why there are no image assets here.
+ *
+ * EVERY TIER DRAWS THE WHOLE SCENE. The escalation is intensity, never
+ * presence: same layers, same progression, turned up.
+ *
+ * An earlier pass tried the opposite - Big and Huge got a bounded "plate" and
+ * only Mega and above went full-bleed. On screen that plate was a grey
+ * rectangle with text in it, and the tiers that kept the old burst looked
+ * untouched, so the ladder read as two different unfinished screens rather
+ * than as one escalating one. DO NOT REINTRODUCE A TIER THAT WITHHOLDS A
+ * LAYER. If a tier needs to feel smaller, turn it down; do not take the scene
+ * away from it.
+ *
+ * The layers, outermost first:
+ *
+ *   veil        scrim + backdrop blur. The table stays visible through it.
+ *   sheen x2    two counter-rotating SOFT conic sweeps.
+ *   glow        a slow radial bloom in the tier's falloff colour.
+ *   deck sweep  MAX ONLY - the deck's own crosshatch, once.
+ *   burst       sixteen SUIT MARKS thrown outward, tumbling.
+ *   body        the text stack, on its own local vignette.
+ *
+ * Two of those are the reason this no longer looks like every other generated
+ * win screen:
+ *
+ * THE BURST IS SUITS, NOT SPARKS. Fourteen glowing dots is the particle burst
+ * every casino template ships and it says nothing about the game behind it.
+ * These are hearts, diamonds, clubs and spades - the things the player just
+ * guessed - drawn by SuitIcon and tumbling as they fly.
+ *
+ * THE SHEEN IS SOFT, NOT SPOKED. The old burst was a repeating-conic-gradient
+ * of hard-edged bars, which is sunburst clipart: it strobes as it turns and it
+ * reads as a graphic laid over the game. Two wide, soft, counter-rotating
+ * sweeps read as light moving through the room the table is already in.
+ *
+ * Per-tier values are carried on custom properties set by the .tier-* rules,
+ * so every rule below is written once against the variables rather than five
+ * times against literals:
+ *
+ *   --wc-hot-rgb   the core colour, as a TRIPLET
+ *   --wc-cool      the outer falloff
+ *   --wc-veil      how much of the table the scrim hides
+ *   --wc-sheen-op  sheen brightness
+ *   --wc-sheen-dur sheen rotation period (faster = more urgent)
+ *   --wc-bloom     glow diameter, in --ui units
+ *   --wc-throw     how far the suit marks are thrown
+ *
+ * Each tier is declared as an RGB TRIPLET with the hex derived from it, the way
+ * --gold-rgb and the repaired --ctl-turbo-rgb are. --wc-ray used to be a
+ * hand-copied rgba() of --wc-hot sitting four lines below it, which is exactly
+ * the drift that let --ctl-turbo-rgb be a different amber from --ctl-turbo for
+ * as long as it was. It is derived now; the two cannot disagree.
+ *
+ * The five tier colours stay in this file rather than in tokens.css under the
+ * closed-one-screen-palette exemption. The colours that are NOT tier colours
+ * have moved out: the amount's warm white and the prompt's warm dim are
+ * --ink-cream and --ink-warm-dim now.                                       */
 
 .wc-overlay {
 	position: fixed;
 	inset: 0;
+	/* Above the start screen (1000/1001) and everything under it. The takeover
+	   carries a settled payout, so nothing in the game may paint over it. */
 	z-index: 1200;
 	display: flex;
 	align-items: center;
@@ -18,96 +75,254 @@
 	cursor: pointer;
 	border: 0;
 	padding: 0;
-	background: radial-gradient(ellipse at center, rgba(8, 20, 8, 0.82) 0%, rgba(2, 6, 2, 0.94) 70%);
 	font-family: var(--font-body);
 	/* The overlay lives outside .game-layout, so it carries its own copy of the
 	   fluid unit - same definition as base.css and start-screen.css. */
 	--ui: clamp(4px, min(2vw, 1.55vh), 11px);
+
+	/* Derived once, from the triplet, so a fill and a wash cannot drift apart.
+	   Fallbacks are Classic's gold: the element always carries a tier class, but
+	   a custom property that fails to resolve takes its whole declaration down
+	   with it, and the failure mode here would be an invisible overlay. */
+	--wc-hot: rgb(var(--wc-hot-rgb, 245, 215, 140));
+
+	/* DO NOT BLACK OUT THE TABLE.
+	   This was rgba(2, 6, 2, 0.94) - near-opaque - which extinguished the
+	   hand-sampled felt, the chips, the cups and the four cards the round was
+	   just won with, and replaced the best-looking thing in the game with a
+	   generic dark vignette. The player won WITH those cards; hiding them at
+	   the moment of payoff is the wrong edit.
+
+	   The scrim is a veil rather than a lid, and the blur is what keeps the text
+	   legible over a busy scene instead of sheer darkness doing it. */
+	background: radial-gradient(
+		ellipse at center,
+		rgba(8, 20, 8, calc(var(--wc-veil, 0.6) * 0.62)) 0%,
+		rgba(2, 6, 2, var(--wc-veil, 0.6)) 72%
+	);
+	backdrop-filter: blur(5px) saturate(0.72);
+	-webkit-backdrop-filter: blur(5px) saturate(0.72);
 	animation: wc-fade-in 0.44s var(--ease-out) both;
 }
 
+/* Without backdrop-filter the scene behind stays sharp and the text has to
+   fight it, so the veil does the work instead. Safari on older iOS and every
+   Android WebView below 76 land here. */
+@supports not ((backdrop-filter: blur(5px)) or (-webkit-backdrop-filter: blur(5px))) {
+	.wc-overlay {
+		background: radial-gradient(
+			ellipse at center,
+			rgba(8, 20, 8, calc(var(--wc-veil, 0.6) * 0.86)) 0%,
+			rgba(2, 6, 2, calc(var(--wc-veil, 0.6) + 0.18)) 72%
+		);
+	}
+}
+
+/* The overlay is the button, so a full-viewport outline would be a rectangle
+   around the whole screen - useless as an indicator and ugly. The ring goes on
+   the prompt instead, which is the affordance's actual label. `outline: none`
+   with nothing in its place is what used to be here. */
 .wc-overlay:focus-visible {
 	outline: none;
 }
 
-/* ---- Tier palettes ---- */
-.tier-big {
-	--wc-hot: var(--gold);
-	--wc-cool: #b8923f;
-	--wc-ray: rgba(245, 215, 140, 0.16);
-}
-.tier-huge {
-	--wc-hot: #ffc857;
-	--wc-cool: #c47a1c;
-	--wc-ray: rgba(255, 200, 87, 0.2);
-}
-.tier-mega {
-	--wc-hot: #ff9a3c;
-	--wc-cool: #c94f14;
-	--wc-ray: rgba(255, 154, 60, 0.24);
-}
-.tier-epic {
-	--wc-hot: #d98cff;
-	--wc-cool: #7b2fb5;
-	--wc-ray: rgba(217, 140, 255, 0.26);
-}
-/* Max win borrows the brand red from logo.png, so the ceiling reads as the
-   game's own moment rather than one more step up the same ramp. */
-.tier-max {
-	--wc-hot: #ffe9a8;
-	--wc-cool: var(--brand-red);
-	--wc-ray: rgba(255, 233, 168, 0.3);
+.wc-overlay:focus-visible .wc-prompt {
+	outline: 2px solid var(--focus-ring);
+	outline-offset: calc(var(--ui) * 0.6);
+	border-radius: calc(var(--ui) * 0.4);
+	/* Never transitioned - a ring that fades in leaves a keyboard player with no
+	   indicator for the length of the transition. */
+	opacity: 1;
 }
 
-/* ---- Rotating ray burst ---- */
-.wc-rays {
+/* ---- Tier palettes ----
+   A heat climb, not a rainbow. The old ramp went gold -> amber -> orange ->
+   PURPLE -> red, and purple is spoken for twice in this build: --vol-overflow-
+   ink means "this bet's volatility passed its family ceiling" and
+   --ctl-advanced is the Advanced menu. Colour here is wayfinding, so Epic
+   cannot borrow a hue that already means something else two panels away.
+
+   Everything else on these rules is the intensity ramp - the same scene at
+   five settings. */
+.tier-big {
+	--wc-hot-rgb: var(--gold-rgb);
+	--wc-cool: #b8923f;
+	--wc-veil: 0.46;
+	--wc-sheen-op: 0.34;
+	--wc-sheen-dur: 34s;
+	--wc-bloom: 60;
+	--wc-throw: 1;
+}
+.tier-huge {
+	--wc-hot-rgb: 255, 200, 87;
+	--wc-cool: #c47a1c;
+	--wc-veil: 0.52;
+	--wc-sheen-op: 0.46;
+	--wc-sheen-dur: 28s;
+	--wc-bloom: 64;
+	--wc-throw: 1.15;
+}
+.tier-mega {
+	--wc-hot-rgb: 255, 154, 60;
+	--wc-cool: #c94f14;
+	--wc-veil: 0.58;
+	--wc-sheen-op: 0.58;
+	--wc-sheen-dur: 22s;
+	--wc-bloom: 68;
+	--wc-throw: 1.32;
+}
+/* Ember. Hotter than Mega's orange without reaching Max's crimson, so the two
+   top tiers stay a step apart without either becoming the other. */
+.tier-epic {
+	--wc-hot-rgb: 255, 106, 61;
+	--wc-cool: #a82f10;
+	--wc-veil: 0.64;
+	--wc-sheen-op: 0.72;
+	--wc-sheen-dur: 17s;
+	--wc-bloom: 74;
+	--wc-throw: 1.5;
+}
+/* Max win INVERTS the ramp rather than continuing it: a cream core on the brand
+   crimson from logo.png, so the ceiling reads as the game's own moment rather
+   than one more step up the same heat climb. It is the only tier whose core is
+   lighter than its falloff, and that inversion is most of why it looks like a
+   different screen - along with the deck sweep, which only it draws. */
+.tier-max {
+	--wc-hot-rgb: 255, 233, 168;
+	--wc-cool: var(--brand-red);
+	--wc-veil: 0.7;
+	--wc-sheen-op: 0.9;
+	--wc-sheen-dur: 13s;
+	--wc-bloom: 80;
+	--wc-throw: 1.75;
+}
+
+/* ---- Soft conic sheen ----
+   Two of them, counter-rotating at different periods, so the light never
+   repeats on a visible cycle. Wide, soft stops - a hard-edged repeating cone
+   is sunburst clipart and strobes as it turns. */
+.wc-sheen {
 	position: absolute;
 	width: 200vmax;
 	height: 200vmax;
-	background: repeating-conic-gradient(
-		var(--wc-ray) 0deg 6deg,
-		transparent 6deg 14deg
+	pointer-events: none;
+	background: conic-gradient(
+		from 0deg,
+		transparent 0deg,
+		rgba(var(--wc-hot-rgb, 245, 215, 140), 0.13) 46deg,
+		transparent 104deg,
+		rgba(var(--wc-hot-rgb, 245, 215, 140), 0.07) 168deg,
+		transparent 228deg,
+		rgba(var(--wc-hot-rgb, 245, 215, 140), 0.11) 288deg,
+		transparent 352deg,
+		transparent 360deg
 	);
-	animation: wc-spin 28s linear infinite;
-	opacity: 0.75;
-	mask-image: radial-gradient(circle at center, #000 0%, transparent 62%);
-	-webkit-mask-image: radial-gradient(circle at center, #000 0%, transparent 62%);
+	mask-image: radial-gradient(circle at center, #000 0%, transparent 64%);
+	-webkit-mask-image: radial-gradient(circle at center, #000 0%, transparent 64%);
+	opacity: var(--wc-sheen-op, 0.5);
+	animation: wc-spin var(--wc-sheen-dur, 28s) linear infinite;
+}
+
+.wc-sheen.is-counter {
+	background: conic-gradient(
+		from 140deg,
+		transparent 0deg,
+		rgba(var(--wc-hot-rgb, 245, 215, 140), 0.09) 62deg,
+		transparent 140deg,
+		rgba(var(--wc-hot-rgb, 245, 215, 140), 0.12) 214deg,
+		transparent 300deg,
+		transparent 360deg
+	);
+	/* Counter-rotation, and slower, so the two never lock into one figure. */
+	animation-direction: reverse;
+	animation-duration: calc(var(--wc-sheen-dur, 28s) * 1.55);
+	opacity: calc(var(--wc-sheen-op, 0.5) * 0.7);
 }
 
 .wc-glow {
 	position: absolute;
-	width: calc(var(--ui) * 70);
-	height: calc(var(--ui) * 70);
+	width: calc(var(--ui) * var(--wc-bloom, 70));
+	height: calc(var(--ui) * var(--wc-bloom, 70));
 	border-radius: 50%;
 	background: radial-gradient(circle, var(--wc-cool) 0%, transparent 68%);
-	opacity: 0.4;
+	opacity: 0.42;
 	animation: wc-pulse 4.8s var(--ease-in-out) infinite;
 }
 
-/* ---- Sparks ----
-   Fourteen spans thrown outward on staggered delays. --i is set inline so each
-   one gets its own angle and timing off a single keyframe. */
-.wc-sparks {
+/* ---- The deck's own crosshatch, sweeping once. MAX WIN ONLY. ----
+   The one layer that is genuinely per-tier rather than turned up. Same 45deg/
+   -45deg crosshatch as .card-back in cards.css, the deck prop on the table and
+   the loader cards - so the rarest screen in the game is made of the game's own
+   deck. Runs once and leaves.
+
+   Without something like this "Max Win" is just "Epic Win in cream", and a
+   1-in-36,380 screen has to be unmistakably its own thing or the whole ladder
+   is decoration. */
+.wc-deck-sweep {
+	position: absolute;
+	/* Oversized so a +/-55% translate never drags an edge into frame. */
+	inset: -60%;
+	pointer-events: none;
+	display: none;
+	will-change: transform;
+	background:
+		repeating-linear-gradient(
+			45deg,
+			rgba(var(--wc-hot-rgb, 255, 233, 168), 0.16) 0 calc(var(--ui) * 0.3),
+			transparent calc(var(--ui) * 0.3) calc(var(--ui) * 0.9)
+		),
+		repeating-linear-gradient(
+			-45deg,
+			rgba(var(--wc-hot-rgb, 255, 233, 168), 0.16) 0 calc(var(--ui) * 0.3),
+			transparent calc(var(--ui) * 0.3) calc(var(--ui) * 0.9)
+		);
+	/* A fixed diagonal band. The ELEMENT moves, not the mask - animating
+	   mask-position would be animating a paint property, and the house rule
+	   here is transform and opacity only. */
+	mask-image: linear-gradient(115deg, transparent 40%, #000 50%, transparent 60%);
+	-webkit-mask-image: linear-gradient(115deg, transparent 40%, #000 50%, transparent 60%);
+}
+
+.tier-max .wc-deck-sweep {
+	display: block;
+	animation: wc-deck-sweep 2.6s var(--ease-out) 0.3s both;
+}
+
+/* ---- The suit burst ----
+   --angle, --dist, --spin and animation-delay are set inline per mark; see the
+   BURST constant in WinCelebration.svelte for why they are not computed here.
+
+   SuitIcon is a CHILD COMPONENT, so nothing in this file can style its internals
+   - a `.suit-icon` rule here would compile to `.suit-icon.svelte-<parent>` and
+   match nothing. It inherits instead: `color` feeds its `fill: currentColor` and
+   `font-size` feeds its em-based size. See the note atop ChoiceIcon.svelte. */
+.wc-burst {
 	position: absolute;
 	inset: 0;
 	pointer-events: none;
 }
 
-.wc-spark {
+.wc-mark {
 	position: absolute;
 	top: 50%;
 	left: 50%;
-	width: calc(var(--ui) * 0.85);
-	height: calc(var(--ui) * 0.85);
-	margin: calc(var(--ui) * -0.42);
-	border-radius: 50%;
-	background: var(--wc-hot);
-	box-shadow: 0 0 calc(var(--ui) * 1.2) var(--wc-hot);
-	/* --angle, --dist and animation-delay are set inline per spark - see the
-	   SPARKS constant in WinCelebration.svelte for why they are not computed
-	   here. */
-	animation: wc-spark-out 3.8s var(--ease-out) infinite;
+	display: block;
+	/* The mark takes the tier colour rather than card red/black: a black club on
+	   a dark scrim is invisible, and a red one fights the Max tier's crimson.
+	   One colour also keeps the burst reading as a single gesture. */
+	color: var(--wc-hot);
+	filter: drop-shadow(0 0 calc(var(--ui) * 0.5) rgba(var(--wc-hot-rgb, 245, 215, 140), 0.7));
 	opacity: 0;
+	animation: wc-mark-out var(--wc-mark-dur, 3.6s) var(--ease-out) infinite;
+}
+
+/* The tumble slows as the tier climbs even though the throw grows - a mark that
+   both flew further AND spun faster read as frantic rather than as bigger. */
+.tier-epic .wc-mark {
+	--wc-mark-dur: 3.9s;
+}
+.tier-max .wc-mark {
+	--wc-mark-dur: 4.2s;
 }
 
 /* ---- Text stack ---- */
@@ -119,15 +334,57 @@
 	gap: calc(var(--ui) * 0.9);
 	text-align: center;
 	padding: calc(var(--ui) * 2);
+	/* Long locales - "Kemenangan Mega" is 15 characters - must not run to the
+	   screen edge on a 320px phone. */
+	max-width: min(92vw, calc(var(--ui) * 62));
+}
+
+/* A local vignette behind the text, so legibility does not depend on how dark
+   the scrim happens to be over whatever part of the table is behind it. This is
+   what lets the scrim be a veil rather than a lid: the text carries its own
+   ground. Same two-stop idea as the title plate on the board.
+
+   It is a soft ellipse with no edge - NOT a panel. A bounded box here is the
+   "plate" mistake, and it looked like a grey rectangle parked on the game. */
+.wc-body::before {
+	content: '';
+	position: absolute;
+	inset: calc(var(--ui) * -4) calc(var(--ui) * -6);
+	z-index: -1;
+	border-radius: 50%;
+	background: radial-gradient(
+		ellipse at center,
+		rgba(2, 6, 2, 0.72) 0%,
+		rgba(2, 6, 2, 0.44) 54%,
+		transparent 78%
+	);
 }
 
 .wc-title {
-	font-size: calc(var(--ui) * 5.2);
+	/* THE GAME'S OWN FACE. This was var(--font-body) - Poppins at 900 with
+	   POSITIVE tracking and uppercase - which made the biggest type in the game
+	   the one screen not wearing the lockup CLAUDE.md defines across the loader,
+	   the intro and the board. Big Shoulders at negative tracking in title case
+	   is that lockup; the win title is its fourth instance now, not a foreign
+	   screen.
+
+	   Dropping uppercase also retires two responsive faults at once: uppercase
+	   at line-height 1 collides cap-tops with the line above when it wraps, and
+	   "Kemenangan Mega" at 33px DID wrap inside a 320px viewport. Big Shoulders
+	   is condensed, which buys the width back on top of that. */
+	font-family: var(--font-display);
+	font-size: min(calc(var(--ui) * 5.6), 11vw);
 	font-weight: 900;
-	line-height: 1;
-	letter-spacing: 0.03em;
-	text-transform: uppercase;
+	line-height: 1.04;
+	letter-spacing: -0.015em;
 	color: var(--wc-hot);
+	/* Five of the 16 locales (ar hi ja ko zh) fall outside both self-hosted
+	   faces' declared unicode-range and drop to the OS font, where 900 is
+	   usually synthesised. Nothing CSS can do about that without shipping CJK
+	   webfonts, which the bundle budget will not take - but overflow-wrap is
+	   what keeps the synthesised, wider result inside the viewport. */
+	overflow-wrap: anywhere;
+	min-width: 0;
 	text-shadow:
 		0 0 calc(var(--ui) * 1.6) var(--wc-hot),
 		0 0 calc(var(--ui) * 4) var(--wc-cool),
@@ -136,18 +393,22 @@
 	   tiers, so this cannot replay - promotions are a scale pop applied through
 	   element.animate(), see promoteTitle. */
 	animation: wc-title-in 1.24s var(--ease-pop) both;
-	/* The palette variables change under the element as the tier climbs, so var(--ease-out)
-	   the colour across instead of letting it snap mid-pop. */
+	/* The palette variables change under the element as the tier climbs, so
+	   var(--ease-out) the colour across instead of letting it snap mid-pop. */
 	transition:
 		color 0.45s var(--ease-out),
 		text-shadow 0.45s var(--ease-out);
 }
 
 .wc-amount {
+	/* Stays on the BODY face on purpose. The count-up needs stable digit widths
+	   and Poppins' tabular figures are proven here; the display face is for the
+	   word, the body face for the number. That split is the lockup's own rule -
+	   the wordmark is display, the credit line under it is body. */
 	font-size: calc(var(--ui) * 4);
 	font-weight: 800;
 	line-height: 1.1;
-	color: #fffdf5;
+	color: var(--ink-cream);
 	/* Tabular figures stop the width jittering as digits change during the
 	   count - without it the whole line shivers on every frame. */
 	font-variant-numeric: tabular-nums;
@@ -178,28 +439,44 @@
 		0 0 calc(var(--ui) * 3) var(--wc-cool);
 }
 
+/* The multiplier and the amount are the same fact in two units, stacked - a
+   mild instance of the two-units-on-one-screen hazard. The pairing is standard
+   in a casino and worth keeping, but the two have to be separable at a glance
+   or they read as a contradiction rather than as a figure and its annotation.
+
+   They share --wc-hot while the amount is counting, so the separation has to
+   come from everything else: less than half the size, a lighter weight, and
+   enough less opacity that the eye picks the amount first without being told. */
 .wc-mult {
 	font-size: calc(var(--ui) * 1.9);
 	font-weight: 700;
 	color: var(--wc-hot);
-	opacity: 0.85;
+	opacity: 0.72;
 	font-variant-numeric: tabular-nums;
 	animation: wc-amount-in 1s var(--ease-out) 0.56s both;
 }
 
+/* The one instruction on a full-screen modal. It used to blink between
+   opacity 0.35 and 0.8, and at the trough it measured 2.3:1 against the scrim -
+   so for roughly half of every 3.6s cycle the only text telling the player how
+   to dismiss the takeover was below the contrast minimum for its size.
+
+   The pulse is kept, because a static prompt on a celebration goes unread, but
+   it is floored at a level that stays legible for the whole cycle. */
 .wc-prompt {
 	margin-top: calc(var(--ui) * 1.8);
 	font-size: calc(var(--ui) * 1.3);
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
-	color: #cfc6ae;
-	opacity: 0.6;
-	animation: wc-blink 3.6s var(--ease-in-out) infinite;
+	color: var(--ink-warm-dim);
+	opacity: 0.72;
+	animation: wc-breathe 3.6s var(--ease-in-out) infinite;
 }
 
 .wc-prompt.is-ready {
 	color: var(--wc-hot);
 	opacity: 0.95;
+	animation: none;
 }
 
 /* ---- Keyframes ---- */
@@ -226,20 +503,44 @@
 	}
 	50% {
 		transform: scale(1.06);
-		opacity: 0.48;
+		opacity: 0.5;
 	}
 }
 
-@keyframes wc-spark-out {
-	0% {
-		transform: rotate(var(--angle)) translateX(0) scale(0.3);
+@keyframes wc-deck-sweep {
+	from {
+		transform: translate3d(55%, 55%, 0);
 		opacity: 0;
 	}
 	18% {
 		opacity: 1;
 	}
+	82% {
+		opacity: 1;
+	}
+	to {
+		transform: translate3d(-55%, -55%, 0);
+		opacity: 0;
+	}
+}
+
+/* Travel out along --angle while counter-rotating by the same amount, so the
+   mark stays upright as it goes, then add --spin on top for the tumble. */
+@keyframes wc-mark-out {
+	0% {
+		transform: rotate(var(--angle)) translateX(0) rotate(calc(var(--angle) * -1))
+			scale(0.25);
+		opacity: 0;
+	}
+	16% {
+		opacity: 1;
+	}
+	74% {
+		opacity: 0.9;
+	}
 	100% {
-		transform: rotate(var(--angle)) translateX(var(--dist)) scale(0.15);
+		transform: rotate(var(--angle)) translateX(calc(var(--dist) * var(--wc-throw, 1)))
+			rotate(calc(var(--angle) * -1 + var(--spin))) scale(0.85);
 		opacity: 0;
 	}
 }
@@ -266,13 +567,15 @@
 	}
 }
 
-@keyframes wc-blink {
+/* Floored at 0.62 - roughly 4.8:1 over the body vignette, which clears the
+   4.5:1 this text size needs. The old wc-blink bottomed out at 0.35. */
+@keyframes wc-breathe {
 	0%,
 	100% {
-		opacity: 0.35;
+		opacity: 0.62;
 	}
 	50% {
-		opacity: 0.8;
+		opacity: 0.92;
 	}
 }
 
@@ -281,7 +584,7 @@
    bottom and the player cannot see how to dismiss it. */
 @media (max-height: 380px) {
 	.wc-title {
-		font-size: calc(var(--ui) * 3.6);
+		font-size: min(calc(var(--ui) * 3.9), 9vw);
 	}
 	.wc-amount {
 		font-size: calc(var(--ui) * 2.9);
@@ -292,6 +595,11 @@
 	.wc-prompt {
 		margin-top: calc(var(--ui) * 0.9);
 	}
+	/* The burst would otherwise throw straight through the text on a 225px-tall
+	   viewport, where the marks' radius is a big fraction of the screen. */
+	.wc-mark {
+		--wc-throw: 0.8;
+	}
 }
 
 /* ---- Reduced motion ----
@@ -299,9 +607,11 @@
    payout, so suppressing it entirely would hide information. Only the moving
    parts stop. The count-up is skipped in the component for the same reason. */
 @media (prefers-reduced-motion: reduce) {
-	.wc-rays,
+	.wc-sheen,
 	.wc-glow,
-	.wc-sparks {
+	.wc-burst,
+	.wc-deck-sweep,
+	.tier-max .wc-deck-sweep {
 		display: none;
 	}
 
@@ -310,11 +620,17 @@
 	.wc-amount,
 	.wc-amount.is-holding,
 	.wc-mult,
-	.wc-prompt {
+	.wc-prompt,
+	.wc-mark {
 		animation: none;
 	}
 
 	.wc-title {
 		transition: none;
+	}
+
+	/* The breathing prompt stops at its legible end, not at its dim one. */
+	.wc-prompt {
+		opacity: 0.92;
 	}
 }

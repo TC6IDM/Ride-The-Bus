@@ -173,7 +173,25 @@ export function winTierFor(
   tiers: readonly WinTier[] = WIN_TIERS,
 ): WinTier | null {
   if (!Number.isFinite(multiplier) || multiplier <= 0) return null;
-  for (let i = tiers.length - 1; i >= 0; i--) {
+
+  // The Max band is matched on EQUALITY, not on ">= its floor" like every band
+  // below it. "Max Win" is a claim about hitting the ceiling exactly, and the
+  // ceiling is a single reachable multiplier (1354.2 / 585.2 / 1910.2) rather
+  // than the bottom of an open-ended range - so a payout ABOVE it is not a max
+  // win, it is a number this ladder cannot explain, and announcing the rarest
+  // screen in the game over it would be a lie about what the player just did.
+  //
+  // Nothing in the published books can reach past a family's ceiling (payout.
+  // test.ts replays all 76,800), so on a correct build this is unobservable.
+  // It exists for the builds that are not correct: the published `max_win`
+  // bound is 1400 against a true Classic ceiling of 1354.2, and the last thing
+  // that read this ladder with the wrong family attached turned a 1400x High
+  // Stakes win into a Classic "MAX WIN". Such a payout now falls to Epic, which
+  // understates it - the safe direction to be wrong in.
+  const max = tiers[tiers.length - 1]!;
+  if (Math.abs(multiplier - max.minMultiplier) <= EPSILON) return max;
+
+  for (let i = tiers.length - 2; i >= 0; i--) {
     if (multiplier >= tiers[i]!.minMultiplier - EPSILON) return tiers[i]!;
   }
   return fullGameWin ? tiers[0]! : null;

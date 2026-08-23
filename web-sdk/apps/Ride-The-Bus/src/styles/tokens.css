@@ -240,6 +240,17 @@
   --win-soft: #7ee2a8;
   --loss: #ff3b3b;
   --loss-soft: #ff8f8f;
+  /* The running-win label, which sits on FELT rather than on slate - so it
+     takes a green cast the cool ink ramp above does not have. Named because it
+     was a literal in cards.css, which is not one of the two files the
+     colour rule exempts. */
+  --ink-felt: #cfe8d8;
+  /* The amount on a busted round. Still legible, deliberately not --ink: the
+     figure is a fact about a round that ended, not money still being won. */
+  --ink-spent: #d8dee6;
+  /* Warm near-white, for a figure sitting inside a warm glow. Pure --ink goes
+     blue against gold and reads as a different light source. */
+  --ink-cream: #fffdf5;
   /* A miss a Second Chance round forgave. Deliberately NOT --loss: a red mark
      says the round ended here, and this one carried on. */
   --forgiven: #f5c451;

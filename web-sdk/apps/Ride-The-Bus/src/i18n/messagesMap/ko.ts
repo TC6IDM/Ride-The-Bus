@@ -218,6 +218,7 @@ export default {
 	'Skip card reveal on autoplay': '자동 플레이에서 카드 공개 건너뛰기',
 	'Skip the card reveal during autoplay': '자동 플레이 중 카드 공개를 건너뜁니다',
 	'Skip win animations on autoplay': '자동 플레이 시 당첨 연출 건너뛰기',
+	'These apply to autoplay, which does not run during a replay.': '자동 플레이에 적용되며, 다시 보기 중에는 실행되지 않습니다.',
 	'Skip big win animations during autoplay': '자동 플레이 중 빅 윈 연출 건너뛰기',
 	'Guess the color of card 1: red or black.': '카드 1의 색을 예상하세요: 빨강 또는 검정.',
 	'Guess whether card 2 is higher or lower than card 1, or equal to it.':

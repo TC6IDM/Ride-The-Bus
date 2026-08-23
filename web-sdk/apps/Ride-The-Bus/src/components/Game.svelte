@@ -162,8 +162,15 @@
   // cover the board on every load. Deliberately narrow: a production build, or
   // any real session, keeps the modal, because an auth failure there is
   // something the player genuinely needs to see.
+  //
+  // REPLAY IS EXEMPT. A replay failure in dev is not the ambient "there is no
+  // RGS on localhost" noise this exists to silence - it is the one thing that
+  // has actually gone wrong, and swallowing it leaves the game sitting on
+  // "Loading replay…" forever with no clue why. That is exactly how a bad
+  // rgs_url, an unreachable replay server and a refused certificate all
+  // presented: as a hang.
   $effect(() => {
-    if (IS_PROD || stateUrlDerived.sessionID()) return;
+    if (IS_PROD || stateUrlDerived.sessionID() || stateUrlDerived.replay()) return;
     if (stateModal.modal?.name === 'error') stateModal.modal = null;
   });
 
@@ -1101,10 +1108,12 @@
     // That floor is per family. Second Chance forgives a wrong guess, so most
     // of its rounds reach card 4 and the takeover fired on nearly all of them -
     // see celebrateEveryFullWin in modes.ts. It still celebrates on size.
+    const tiers = winTiers();
+
     const celebrationTier = winTierFor(
       lastWinMultiplier,
       bustedIndex === null && wonAmount > 0 && familyRules().celebrateEveryFullWin,
-      winTiers(),
+      tiers,
     );
 
     if (wonAmount <= 0) {
@@ -1121,7 +1130,7 @@
     // the auto loop awaits runRound, so the run pauses without the loop needing
     // to know the takeover exists.
     if (celebrationTier) {
-      await showWinCelebration(celebrationTier, wonAmount, lastWinMultiplier, winTiers());
+      await showWinCelebration(celebrationTier, wonAmount, lastWinMultiplier, tiers);
     }
   }
 
@@ -1204,8 +1213,18 @@
     // Chance and High Stakes mode as malformed - 128 of the 192 - and silently
     // left the board showing guesses that did not match the round being
     // replayed. See the note atop parseModeName in game/modes.ts.
+    // The FAMILY has to come across too, not just the four guesses. It is the
+    // half of the mode that is not a guess square, and everything downstream
+    // reads it: the MODE button, the volatility bolts, the rules popup, the
+    // retention percentage the board prints - and winTiers(), which is why
+    // getting this wrong was not merely cosmetic. A High Stakes replay left on
+    // the Classic ladder measures a 1400x win against Classic's 1354.2 ceiling
+    // and announces MAX WIN over a round that paid well under High Stakes'
+    // real 1910.2 max. parseModeName has always returned the family; both this
+    // path and the resume path below simply dropped it.
     const parsed = parseModeName(String(bet.mode ?? stateUrlDerived.mode() ?? ''));
     if (parsed) {
+      betFamily = parsed.family;
       colorChoice = parsed.color;
       hlChoice = parsed.higherLower;
       ioChoice = parsed.insideOutside;
@@ -1289,8 +1308,13 @@
     // parseModeName for the same reason as the replay path above: the prefix
     // has to come off before the split, or every resumed sc_/hs_ round comes
     // back with the wrong guesses on the board.
+    // Family too - see the replay path above. This one matters more, not less:
+    // a resumed round is real money mid-flight, and finishing it on the wrong
+    // family shows the wrong retention rule and the wrong win ladder over a
+    // payout the RGS has already decided.
     const parsed = parseModeName(String(bet.mode ?? ''));
     if (parsed) {
+      betFamily = parsed.family;
       colorChoice = parsed.color;
       hlChoice = parsed.higherLower;
       ioChoice = parsed.insideOutside;
@@ -1846,9 +1870,9 @@
       stageMultipliers = [null, null, null, null];
       runningWin = 0;
       bustedIndex = null;
-    forgivenIndex = null;
+      forgivenIndex = null;
       wonAmount = 0;
-      gameState = 'playing';
+        gameState = 'playing';
       playRevealSequence();
       return;
     }
@@ -2209,7 +2233,11 @@
     {/snippet}
 
     {#snippet runningWinBar()}
-      <div class="running-win" class:is-win={gameState === 'won' && wonAmount > 0} class:is-loss={gameState === 'lost'}>
+      <div
+        class="running-win"
+        class:is-win={gameState === 'won' && wonAmount > 0}
+        class:is-loss={gameState === 'lost'}
+      >
         <span class="running-win-label">
           {#if gameState === 'won'}{bustedIndex === null ? t('Full Game Win!') : t('Banked')}{:else if gameState === 'lost'}{t('Busted')}{:else if gameState === 'playing'}{t('Revealing…')}{:else}{t('Winning')}{/if}
         </span>
@@ -2485,7 +2513,12 @@
       </div>
     </div>
 
-    <button class="cb-float cb-advanced" class:active={openPopup === 'advanced'} onclick={() => togglePopup('advanced')} disabled={stateUrlDerived.replay()} aria-label={t('Advanced settings')}>
+    <!-- Reachable during a replay. Every switch inside is autoplay-scoped and
+         so cannot do anything there, but a dead button gives no feedback at
+         all: the popup opens and says why instead. Stake's replay guidance is
+         to hide AUTOPLAY SETTINGS, which the rows below honour by disabling
+         themselves - the button itself is how a reviewer finds that out. -->
+    <button class="cb-float cb-advanced" class:active={openPopup === 'advanced'} onclick={() => togglePopup('advanced')} aria-label={t('Advanced settings')}>
       <svg class="cb-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z" /></svg>
     </button>
   </footer>
@@ -2711,16 +2744,22 @@
     <div class="popup popup-advanced" role="dialog" aria-label={t('Advanced')}>
       <div class="popup-head"><span>{t('Advanced')}</span><button class="popup-close" onclick={closePopup} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
       <div class="advanced-body">
+        <!-- Replay: every row below is autoplay-scoped, and autoplay does not
+             run in a replay. Say so once rather than presenting four switches
+             that silently do nothing. -->
+        {#if stateUrlDerived.replay()}
+          <p class="advanced-note">{t('These apply to autoplay, which does not run during a replay.')}</p>
+        {/if}
         <div class="advanced-row">
           <span class="control-label">{t('Stop on full game win')}</span>
-          <button type="button" class="switch" class:on={stopOnFullWin} role="switch" aria-checked={stopOnFullWin} aria-label={t('Stop autoplay on a full game win')} disabled={autoRunning} onclick={() => (stopOnFullWin = !stopOnFullWin)}><span class="switch-knob"></span></button>
+          <button type="button" class="switch" class:on={stopOnFullWin} role="switch" aria-checked={stopOnFullWin} aria-label={t('Stop autoplay on a full game win')} disabled={autoRunning || stateUrlDerived.replay()} onclick={() => (stopOnFullWin = !stopOnFullWin)}><span class="switch-knob"></span></button>
         </div>
         <!-- Unlike the row above, this one is NOT disabled mid-run: it changes
              only how the next celebration behaves, so flipping it during a run
              is both safe and the moment a player is most likely to want it. -->
         <div class="advanced-row">
           <span class="control-label">{t('Skip win animations on autoplay')}</span>
-          <button type="button" class="switch" class:on={skipWinOnAuto} role="switch" aria-checked={skipWinOnAuto} aria-label={t('Skip big win animations during autoplay')} onclick={() => (skipWinOnAuto = !skipWinOnAuto)}><span class="switch-knob"></span></button>
+          <button type="button" class="switch" class:on={skipWinOnAuto} role="switch" disabled={stateUrlDerived.replay()} aria-checked={skipWinOnAuto} aria-label={t('Skip big win animations during autoplay')} onclick={() => (skipWinOnAuto = !skipWinOnAuto)}><span class="switch-knob"></span></button>
         </div>
         <!-- Hidden rather than disabled where the regulator bars slam-stop: a
              switch that cannot do anything is worse than no switch, and the
@@ -2728,14 +2767,14 @@
         {#if !jurisdiction.slamstopDisabled()}
           <div class="advanced-row">
             <span class="control-label">{t('Skip card reveal on autoplay')}</span>
-            <button type="button" class="switch" class:on={slamOnAuto} role="switch" aria-checked={slamOnAuto} aria-label={t('Skip the card reveal during autoplay')} onclick={() => (slamOnAuto = !slamOnAuto)}><span class="switch-knob"></span></button>
+            <button type="button" class="switch" class:on={slamOnAuto} role="switch" disabled={stateUrlDerived.replay()} aria-checked={slamOnAuto} aria-label={t('Skip the card reveal during autoplay')} onclick={() => (slamOnAuto = !slamOnAuto)}><span class="switch-knob"></span></button>
           </div>
           <!-- Also hidden where the spacebar shortcut itself is barred - a
                switch for a key that does nothing is worse than no switch. -->
           {#if !jurisdiction.spacebarDisabled()}
             <div class="advanced-row">
               <span class="control-label">{t('Skip card reveal on spacebar hold')}</span>
-              <button type="button" class="switch" class:on={slamOnSpaceHold} role="switch" aria-checked={slamOnSpaceHold} aria-label={t('Skip the card reveal while the spacebar is held')} onclick={() => (slamOnSpaceHold = !slamOnSpaceHold)}><span class="switch-knob"></span></button>
+              <button type="button" class="switch" class:on={slamOnSpaceHold} role="switch" disabled={stateUrlDerived.replay()} aria-checked={slamOnSpaceHold} aria-label={t('Skip the card reveal while the spacebar is held')} onclick={() => (slamOnSpaceHold = !slamOnSpaceHold)}><span class="switch-knob"></span></button>
             </div>
           {/if}
         {/if}

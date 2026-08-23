@@ -221,6 +221,7 @@ export default {
 	'Skip card reveal on autoplay': 'Bỏ qua phần lật bài khi tự động chơi',
 	'Skip the card reveal during autoplay': 'Bỏ qua phần lật bài trong khi tự động chơi',
 	'Skip win animations on autoplay': 'Bỏ qua hiệu ứng thắng khi tự động chơi',
+	'These apply to autoplay, which does not run during a replay.': 'Áp dụng cho chế độ tự động, vốn không chạy trong khi xem lại.',
 	'Skip big win animations during autoplay': 'Bỏ qua hiệu ứng thắng lớn trong khi tự động chơi',
 	'Guess the color of card 1: red or black.': 'Đoán màu của lá bài 1: đỏ hay đen.',
 	'Guess whether card 2 is higher or lower than card 1, or equal to it.':

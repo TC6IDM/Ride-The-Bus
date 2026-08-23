@@ -55,11 +55,14 @@ describe('winTierFor', () => {
     assert.equal(idAt(MAX_WIN_MULTIPLIER - 1e-9), 'max');
   });
 
-  test('above the ceiling is still max, not undefined', () => {
-    // The declared wincap is 1400; nothing should ever exceed 1354.2, but a
-    // tier lookup must not fall off the end if the math ever changes.
-    assert.equal(idAt(1400), 'max');
-    assert.equal(idAt(99999), 'max');
+  test('above the ceiling still resolves to a tier, but not to max', () => {
+    // The lookup must not fall off the end if the math ever changes - but it
+    // must not claim a Max Win either. The declared wincap is 1400 against a
+    // true Classic ceiling of 1354.2, so 1400 is a bound that never binds, not
+    // a bigger max win. Understating it as Epic is the safe direction to be
+    // wrong in; "MAX WIN" over a payout the ladder cannot explain is not.
+    assert.equal(idAt(1400), 'epic');
+    assert.equal(idAt(99999), 'epic');
   });
 
   test('rejects non-finite and negative input', () => {
@@ -388,6 +391,48 @@ describe('the Max Win tier follows the family ceiling', () => {
 
   test('the default ladder is unchanged for callers naming no family', () => {
     assert.deepEqual(winTiersFor('base'), WIN_TIERS);
+  });
+
+  // The Max band is matched on EQUALITY. Every band below it is an open-ended
+  // ">= floor", but the ceiling is one reachable figure, so a payout above it
+  // is not a bigger max win - it is a number the ladder cannot explain, and
+  // "MAX WIN" is the one label in the game that must never be a guess.
+  test('a payout ABOVE the ceiling is not called a Max Win', () => {
+    for (const family of MODE_FAMILIES) {
+      const tiers = tiersFor(family);
+      const over = FAMILY_RULES[family].maxWin * 1.05;
+      const tier = winTierFor(over, true, tiers);
+      assert.notEqual(
+        tier?.id,
+        'max',
+        `${family} announced a Max Win over a payout past its own ceiling`,
+      );
+      // It still celebrates - it just understates, which is the safe direction.
+      assert.equal(tier?.id, 'epic');
+    }
+  });
+
+  test('the published max_win bound of 1400 is not a Classic Max Win', () => {
+    // game_config.py declares max_win 1400 against a true Classic ceiling of
+    // 1354.2 - a bound that never binds. If a build ever emits it, the ladder
+    // must not dress it up as the rarest screen in the game.
+    assert.equal(winTierFor(1400, true, tiersFor('base'))?.id, 'epic');
+  });
+
+  test('a true Max Win still lands through display rounding', () => {
+    // wonAmount / initialBet is a division of two already-rounded numbers, so
+    // the rarest outcome in the game arrives as 1354.1999999999998. The
+    // equality match keeps its epsilon.
+    for (const family of MODE_FAMILIES) {
+      const maxWin = FAMILY_RULES[family].maxWin;
+      for (const nudge of [-1e-9, 0, 1e-9]) {
+        assert.equal(
+          winTierFor(maxWin + nudge, true, tiersFor(family))?.id,
+          'max',
+          `${family} lost its Max Win to floating point at ${nudge}`,
+        );
+      }
+    }
   });
 });
 
