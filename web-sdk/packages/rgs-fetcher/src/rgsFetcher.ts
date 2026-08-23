@@ -47,6 +47,43 @@ async function readBody(response: Response): Promise<{ text: string; data: unkno
 	}
 }
 
+/**
+ * LOCAL ADDITION to the Stake SDK - re-apply if this package is updated from
+ * upstream. Same convention as the currency fix in Authenticate.svelte.
+ *
+ * The scheme is hardcoded to https below, which is right for every real RGS and
+ * impossible for a local one: `rgs_url=localhost:3010` is fetched as
+ * `https://localhost:3010`, so a local stand-in has to serve TLS, which means a
+ * self-signed certificate, which means the browser silently refuses the fetch
+ * until someone has visited the origin and clicked through a warning. That is a
+ * trap rather than a workflow - and in dev the failure is invisible, because
+ * Game.svelte clears error modals when there is no session.
+ *
+ * So: use http when BOTH the target and the page itself are loopback.
+ *
+ * Both halves are required, and together they make this unreachable in
+ * production rather than merely unlikely: a live build is served from
+ * stake.com, never from localhost, so `location.host` alone already closes it.
+ * Requiring the RGS host to be loopback too means it can never rewrite the
+ * scheme on a real RGS even when someone runs the dev server.
+ *
+ * Deliberately a RUNTIME check rather than `import.meta.env.DEV`. The compile-
+ * time flag would let the branch be dropped from the production bundle, which
+ * is tidier - but nothing else in these vendored packages relies on Vite's env
+ * replacement, and if it silently failed to apply here the symptom would be the
+ * exact hang this was written to remove. An origin check cannot silently fail.
+ *
+ * See scripts/replay-server.mjs, which is what this exists for.
+ */
+const LOOPBACK = /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
+
+function endpointFor(rgsUrl: string, url: string): string {
+	const pageIsLocal =
+		typeof location !== 'undefined' && LOOPBACK.test(location.host);
+	if (pageIsLocal && LOOPBACK.test(rgsUrl)) return `http://${rgsUrl}${url}`;
+	return `https://${rgsUrl}${url}`;
+}
+
 export const rgsFetcher = {
 	post: async function post<
 		T extends keyof paths,
@@ -59,7 +96,7 @@ export const rgsFetcher = {
 		const response = await fetcher({
 			method: 'POST',
 			variables: options.variables,
-			endpoint: `https://${options.rgsUrl}${options.url}`,
+			endpoint: endpointFor(options.rgsUrl, options.url as string),
 		});
 
 		const { text, data } = await readBody(response);
@@ -72,7 +109,7 @@ export const rgsFetcher = {
 	>(options: { url: T; rgsUrl: string }): Promise<TResponse> {
 		const response = await fetcher({
 			method: 'GET',
-			endpoint: `https://${options.rgsUrl}${options.url}`,
+			endpoint: endpointFor(options.rgsUrl, options.url as string),
 		});
 
 		const { text, data } = await readBody(response);
