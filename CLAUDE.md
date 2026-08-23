@@ -122,15 +122,38 @@ rounding it to 2.0× would wipe out the house edge.
 - **One ruler.** Every meter draws `VOLATILITY_BOLTS` (7) stops. The mode picker
   lights the family's own rating (1/3/5); the bet display adds one per Equal
   pick. A second meter counting to a different maximum would be bug class 1.
-- **The bet panel is coloured by the rating, not by the accent.** The mode name,
-  the `+/−` steppers and the bet button all take the live volatility colour —
-  green / yellow / red, and `--vol-overflow-ink` purple once the guesses pass
-  `FAMILY_BOLT_CEILING`. In practice that is **High Stakes with one or two
-  Equals and nothing else**, because the families sit at 1/3/5 against a ceiling
-  of 5; `volatility.test.ts` asserts `hs` is the only family any guess
-  combination can push over. The properties are published on the `.cb-bet`
-  **panel**, not on the bet display — the steppers are its siblings and could
-  never inherit from it.
+- **The bar is coloured by the rating, not by the accent** — and by *two*
+  ratings, which are different numbers and must not be collapsed:
+  - `--mode-ink` / `--mode-rgb` — the **live** rating (family + one stop per
+    Equal pick), worn by the mode name, the `+/−` steppers and the bet button:
+    green / yellow / red, and `--vol-overflow-ink` purple once the guesses pass
+    `FAMILY_BOLT_CEILING`. In practice that is **High Stakes with one or two
+    Equals and nothing else**, because the families sit at 1/3/5 against a
+    ceiling of 5; `volatility.test.ts` asserts `hs` is the only family any guess
+    combination can push over.
+  - `--vol-color` / `--vol-rgb` — the **family's own** rating, worn by the MODE
+    button and the mode picker. Never purple: the Equal picks that overflow a
+    ceiling are a property of the bet, not of the mode being chosen.
+
+  All four are published on the `<footer class="control-bar">`, not on a panel
+  inside it. They have to reach three groups sitting in different panels — the
+  bet display, its sibling steppers, and the MODE button over in the light pill
+  — so the bar is the nearest element that can carry them.
+- **Every menu wears the colour of the control that opened it.** Turbo's panel
+  is amber, autoplay's green, Advanced's purple, How to Play's the accent blue
+  its icon lights, and the bet and mode panels take the volatility colour their
+  two controls burn. One contract — `--tint` / `--tint-rgb` / `--tint-strong` /
+  `--tint-ink`, defaulted to accent blue on `.popup` in `popup-base.css` and
+  overridden per panel in `popups.css`; nothing inside a panel names a colour.
+  This is the same wayfinding argument as `--ctl-*` below: a menu that
+  highlights in blue whichever button you pressed to reach it throws away the
+  one thing the bar spends five hues saying. `--tint-ink` is **dark**
+  (`--on-vol-ink`) on every panel but the blue ones — white on the amber
+  measures 1.8:1.
+  - Each `--ctl-*` colour and its `-rgb` triplet **must be the same colour**.
+    `--ctl-turbo-rgb` was a different amber from `--ctl-turbo` and went unseen
+    while the triplet only ever painted a blur; it is derived from the triplet
+    now.
 - **Colour lives in `styles/tokens.css`.** Any colour used in more than one
   place is named there and referenced by name; 193 literals across 357
   occurrences is what the absence of that rule produced (four unrelated felt
@@ -139,13 +162,17 @@ rounding it to 2.0× would wipe out the house edge.
   beside them, and closed one-screen palettes (the five win-celebration tiers,
   the eleven replay-info badges).
   - Colours that need an alpha are declared as **rgb triplets** with the hex
-    derived from them (`--gold`, `--vol-*`), so a wash and a fill cannot drift
-    apart. `volatilityColorRgbVar` is the sibling of `volatilityColorVar` and a
+    derived from them (`--gold`, `--vol-*`, `--ctl-turbo`), so a wash and a fill
+    cannot drift apart. `volatilityColorRgbVar` is the sibling of `volatilityColorVar` and a
     test pins the two to the same family name.
 - **The accent rule is narrower than "one accent".** One accent (`--accent`,
   blue) for anything **chosen** — a bet, a mode, a tab. A fixed identity colour
   per control that **opens** something (`--ctl-turbo` amber, `--ctl-autospin`
-  green, `--ctl-advanced` purple). The live difficulty for the bet group. These
+  green, `--ctl-advanced` purple) — and its menu wears that colour too. The live
+  difficulty for the bet group. The MODE button is the exception that proves the
+  rule: it was a fifth identity colour (gold), and it now carries the selected
+  family's **state** instead, with its pill **shape** carrying the identity no
+  other control in the bar has. These
   are **wayfinding, not drift**: a pass collapsed all five into one gold accent
   on general colour-theory grounds and it was rejected — five near-identical
   round icons in a 40 px strip are found by colour, not by re-reading glyphs.
@@ -193,6 +220,13 @@ splitting on `_` — `sc_red_higher_equal_spade` has five parts, not four).
   `.bolt.svelte-<parent>` and matches nothing. Child components style themselves
   and take **custom properties** from the parent, which inherit through the DOM
   normally. See the notes atop `ChoiceIcon.svelte` and `BoltMeter.svelte`.
+- **One wordmark, three screens.** The loader, the intro and the board all draw
+  "Ride The Bus", and a player sees all three inside ten seconds, so they are one
+  lockup: `--font-display` at 4.2 units (3.9 on the board), **negative** tracking,
+  title case, `--gold-bright`, with the credit line under it at a quarter the
+  size in wide-tracked small caps (`--ink-lockup-sub`). The intro was the odd one
+  out — body face, uppercase, positive tracking, a different gold. Change one,
+  change all three.
 - **Sizing is fluid, not stepped.** Everything is a multiple of `--ui` /
   `--ui-bar` in `base.css`. `responsive.css` holds structural changes only.
   Vertical space is budgeted: cards + win readout + guess squares ≈ 30× `--ui`.

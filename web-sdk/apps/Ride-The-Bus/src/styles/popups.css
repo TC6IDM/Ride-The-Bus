@@ -27,6 +27,52 @@
   cursor: pointer;
 }
 
+/* ==== Which colour each panel wears ========================================
+ * The contract, the defaults and the reasoning are in popup-base.css. These
+ * are only the four that differ from the accent-blue default, and each one
+ * names the control in the bar that opens it.
+ *
+ * --tint-strong is --tint here rather than a darker step: the three identity
+ * hues are already light, and a fill is read through the ink on top of it, not
+ * through its own value. Which is also why --tint-ink is the DARK one - white
+ * on amber measures 1.8:1 and white on this purple 2.2:1, so a filled control
+ * in either panel would have failed outright. --on-vol-ink is the token that
+ * already exists for "text on a light fill" and it clears 4.5:1 on all three.
+ *
+ * How to Play is deliberately absent: the info icon lights the accent blue, so
+ * that panel's colour IS the default and an override would only be a second
+ * place for it to drift. Same for the popup shell itself.
+ */
+.popup-turbo {
+  --tint: var(--ctl-turbo);
+  --tint-rgb: var(--ctl-turbo-rgb);
+  --tint-strong: var(--ctl-turbo);
+  --tint-ink: var(--on-vol-ink);
+}
+
+.popup-autospin {
+  --tint: var(--ctl-autospin);
+  --tint-rgb: var(--ctl-autospin-rgb);
+  --tint-strong: var(--ctl-autospin);
+  --tint-ink: var(--on-vol-ink);
+}
+
+.popup-advanced {
+  --tint: var(--ctl-advanced);
+  --tint-rgb: var(--ctl-advanced-rgb);
+  --tint-strong: var(--ctl-advanced);
+  --tint-ink: var(--on-vol-ink);
+}
+
+/* .popup-bet and .popup-mode take the LIVE volatility colour instead, set
+   inline in Game.svelte from the same modeNameColor() / volatilityColorVar()
+   the bet display and the MODE button read - the two controls that open them.
+   They are listed here only so this block is the whole map. */
+.popup-bet,
+.popup-mode {
+  --tint-ink: var(--on-vol-ink);
+}
+
 .bet-grid, .spin-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -47,10 +93,10 @@
 }
 
 @media (hover: hover) {
-  .bet-cell:hover { border-color: var(--accent); color: var(--ink); box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.4); }
+  .bet-cell:hover { border-color: var(--tint); color: var(--ink); box-shadow: 0 0 10px rgba(var(--tint-rgb), 0.4); }
 }
 
-.bet-cell.active { background: var(--accent-strong); border-color: var(--accent-strong); color: var(--ink); }
+.bet-cell.active { background: var(--tint-strong); border-color: var(--tint-strong); color: var(--tint-ink); }
 
 /* Free-entry bet field at the top of the bet menu (type any amount). */
 .bet-entry {
@@ -64,7 +110,7 @@
   background: rgba(5, 12, 18, 0.6);
 }
 
-.bet-entry:focus-within { border-color: var(--accent); box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.35); }
+.bet-entry:focus-within { border-color: var(--tint); box-shadow: 0 0 12px rgba(var(--tint-rgb), 0.35); }
 
 .bet-entry-cur { font-size: calc(var(--ui-bar) * 1.6); font-weight: 800; color: var(--ink); }
 
@@ -89,9 +135,9 @@
 
 .turbo-end { font-size: calc(var(--ui-bar) * 1.02); color: var(--ink-dim); white-space: nowrap; }
 
-.turbo-slider { flex: 1 1 auto; min-width: 0; accent-color: var(--accent); cursor: pointer; }
+.turbo-slider { flex: 1 1 auto; min-width: 0; accent-color: var(--tint); cursor: pointer; }
 
-.turbo-readout { text-align: center; font-weight: 800; color: var(--accent); font-size: calc(var(--ui-bar) * 1.24); font-variant-numeric: tabular-nums; }
+.turbo-readout { text-align: center; font-weight: 800; color: var(--tint); font-size: calc(var(--ui-bar) * 1.24); font-variant-numeric: tabular-nums; }
 
 .autospin-body { display: flex; flex-direction: column; gap: calc(var(--ui-bar) * 0.91); }
 
@@ -121,10 +167,16 @@
   border: none;
   border-radius: calc(var(--ui-bar) * 0.91);
   cursor: pointer;
-  background: linear-gradient(180deg, var(--accent), #1f6fe0);
-  color: var(--ink);
+  /* Filled in its own panel's tint. It was a blue gradient with a hardcoded
+     #1f6fe0 bottom stop and a blue shadow to match, which made the Start
+     button in the green autoplay panel the one blue thing in it. The shading
+     is now the tint at two alphas over the panel, so one declaration serves
+     all five colours and no second hex has to be kept in step with the
+     first. */
+  background: linear-gradient(180deg, rgba(var(--tint-rgb), 1), rgba(var(--tint-rgb), 0.76));
+  color: var(--tint-ink);
   letter-spacing: 0.03em;
-  box-shadow: 0 6px 16px rgba(31, 111, 224, 0.35);
+  box-shadow: 0 6px 16px rgba(var(--tint-rgb), 0.35);
 }
 
 .action-button:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
@@ -237,7 +289,7 @@
   transition: background 0.15s;
 }
 
-.switch.on { background: var(--accent-strong); }
+.switch.on { background: var(--tint-strong); }
 
 .switch:disabled { opacity: 0.55; cursor: not-allowed; }
 
@@ -305,11 +357,15 @@
   height: calc(var(--ui-bar) * 1.64);
 }
 
+/* The arrows light in the panel's own tint rather than in a grey wash. They
+   are the busiest control in the autoplay panel - the one a player holds down
+   to set a spin count - and a neutral highlight there was the largest patch of
+   the panel that did not know what colour it was. */
 @media (hover: hover) {
-  .stepper-btn:hover { background: rgba(var(--ink-rgb), 0.16); }
+  .stepper-btn:hover { background: rgba(var(--tint-rgb), 0.18); color: var(--tint); }
 }
 
-.stepper-btn:active { background: rgba(var(--ink-rgb), 0.22); }
+.stepper-btn:active { background: rgba(var(--tint-rgb), 0.26); color: var(--tint); }
 
 .stepper-btn:first-child { border-bottom: 1px solid rgba(var(--ink-rgb), 0.12); }
 
@@ -355,19 +411,19 @@
    * own wash - at 0.18 red-on-red measures 4.43 and fails. 0.14 holds it at 4.74
    * with the body copy above 10. */
   .mode-option:hover {
-    border-color: var(--vol-color, var(--accent));
-    background: rgba(var(--vol-rgb, var(--accent-rgb)), 0.08);
+    border-color: var(--vol-color, var(--tint));
+    background: rgba(var(--vol-rgb, var(--tint-rgb)), 0.08);
   }
 }
 
 .mode-option.selected {
-  border-color: var(--vol-color, var(--accent));
-  background: rgba(var(--vol-rgb, var(--accent-rgb)), 0.14);
+  border-color: var(--vol-color, var(--tint));
+  background: rgba(var(--vol-rgb, var(--tint-rgb)), 0.14);
   color: var(--ink);
 }
 
 .mode-option.selected .mode-option-name {
-  color: var(--vol-color, var(--accent));
+  color: var(--vol-color, var(--tint));
 }
 
 .mode-option-head {
@@ -433,8 +489,8 @@
 }
 
 .rounds-selector:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.35);
+  border-color: var(--tint);
+  box-shadow: 0 0 12px rgba(var(--tint-rgb), 0.35);
 }
 
 /* The backdrop is a real button - it is how a pointer dismisses a menu - so it
@@ -504,7 +560,7 @@
 .mode-confirm-name {
   font-size: calc(var(--ui-bar) * 1.45);
   font-weight: 800;
-  color: var(--vol-color, var(--accent));
+  color: var(--vol-color, var(--tint));
 }
 
 .mode-confirm-blurb {
@@ -571,8 +627,8 @@
 .mode-confirm-go {
   flex: 1 1 auto;
   width: auto;
-  background: var(--vol-color, var(--accent));
-  color: var(--on-vol-ink);
+  background: var(--vol-color, var(--tint));
+  color: var(--tint-ink);
   box-shadow: none;
 }
 

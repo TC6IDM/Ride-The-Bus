@@ -60,11 +60,14 @@
   color: var(--ink);
 }
 
-/* The two ends carry the actual message, so they get the accent. */
+/* The two ends carry the actual message, so they get the panel's tint - which
+   for How to Play is the accent blue its icon lights, so this looks unchanged
+   and is now saying WHY it is blue rather than restating the hex. See the tint
+   contract in popup-base.css. */
 .rank-chip:first-child,
 .rank-chip:last-child {
-  border-color: var(--accent);
-  background: rgba(var(--accent-rgb), 0.22);
+  border-color: var(--tint);
+  background: rgba(var(--tint-rgb), 0.22);
   color: #cfe4ff;
 }
 
@@ -127,12 +130,12 @@
 }
 
 @media (hover: hover) {
-	.mode-tab:hover { border-color: var(--accent); color: var(--ink); }
+	.mode-tab:hover { border-color: var(--tint); color: var(--ink); }
 }
 
 .mode-tab.selected {
-	border-color: var(--accent-strong);
-	background: rgba(var(--accent-rgb), 0.2);
+	border-color: var(--tint-strong);
+	background: rgba(var(--tint-rgb), 0.2);
 	color: var(--ink);
 }
 
@@ -163,7 +166,7 @@
 }
 
 .mode-panel-max strong {
-	color: var(--accent);
+	color: var(--tint);
 	font-weight: 800;
 	font-variant-numeric: tabular-nums;
 }

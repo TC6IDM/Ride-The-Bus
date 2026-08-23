@@ -35,13 +35,45 @@
  * this; the per-card figures never did.
  */
 .card-mult {
+  /* box-sizing is border-box globally, so the padding below comes out of this
+     height rather than adding to it - the card row does not move. */
   min-height: calc(var(--ui) * 2.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 calc(var(--ui) * 1.5);
   font-size: calc(var(--ui) * 1.55); /* 17px */
   font-weight: 800;
   letter-spacing: 0.01em;
   font-variant-numeric: tabular-nums;
   color: var(--win);
-  text-shadow: 0 calc(var(--ui) * 0.15) calc(var(--ui) * 0.7) rgba(var(--shadow-rgb), 0.9);
+  /* ---- The bed under the figure -----------------------------------------
+     These four numbers float over whatever the table happens to have behind
+     them, and what is behind them changes: felt, the wood rail, a chip stack,
+     and - on short windows, where the title lockup and the responsible-gaming
+     panel sit directly above the card row - the game's own chrome. Green type
+     on green felt with one soft shadow held up against the first of those and
+     against none of the rest.
+
+     Not a badge. The pill this used to be was removed on purpose (see the note
+     above) and putting one back would undo that. This is the SAME device the
+     wordmark uses two elements up in base.css: a radial scrim that fades out
+     before it reaches the padding box, so it darkens the ground under the
+     number without ever drawing an edge. The padding is what buys the room for
+     the fade to finish inside the element - a radial still visible at the
+     padding box gets cut off square, which is the hard edge this is avoiding.
+
+     The shadow goes to two parts for the same reason table.css gives: a tight
+     contact patch that holds the glyph edges against a busy ground, plus the
+     wide soft one that was already here. */
+  background: radial-gradient(
+    ellipse 62% 58% at 50% 50%,
+    rgba(var(--shadow-rgb), 0.62) 0%,
+    transparent 76%
+  );
+  text-shadow:
+    0 1px 2px rgba(var(--shadow-rgb), 0.95),
+    0 calc(var(--ui) * 0.15) calc(var(--ui) * 0.7) rgba(var(--shadow-rgb), 0.9);
   opacity: 0;
   transform: translateY(6px);
   transition: opacity 0.2s var(--ease-out), transform 0.2s var(--ease-out);

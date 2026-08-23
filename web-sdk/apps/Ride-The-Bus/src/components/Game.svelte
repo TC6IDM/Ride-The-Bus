@@ -2285,7 +2285,25 @@
   <!-- Floating control bar: detached pill groups pulled toward the centre,
        with the turbo button and the advanced button floating free at the
        outer edges (slot-style). -->
-  <footer class="control-bar">
+  <!-- The live mode's colours are published on the WHOLE bar, not just on the
+       bet panel that used to carry them. Two groups read them now - the bet
+       display with its steppers, and the MODE button over in the light pill -
+       and those two are in different panels, so the nearest element that can
+       reach both is the bar itself. Inheritance does the rest.
+
+       Two rulers, deliberately, and they are not the same number:
+         --vol-color / --vol-rgb   the FAMILY's own rating. What the MODE
+                                   button and the mode picker wear, because
+                                   they are about the mode being chosen.
+         --mode-ink / --mode-rgb   the LIVE rating, family plus one stop per
+                                   Equal pick, which can overflow to purple.
+                                   What the bet group wears, because that is
+                                   the round about to be bought.
+       See the volatility notes in CLAUDE.md before collapsing them. -->
+  <footer
+    class="control-bar"
+    style={`--vol-color: ${volatilityColorVar(betFamily)}; --vol-rgb: ${volatilityColorRgbVar(betFamily)}; --mode-ink: ${modeNameColor()}; --mode-rgb: ${modeRgb()}`}
+  >
     <!-- Removed, not just disabled, when the regulator bars Turbo: a greyed
          control still advertises a feature the player may not have. -->
     {#if !jurisdiction.turboDisabled()}
@@ -2346,10 +2364,7 @@
          so a custom property set on the display could never reach them. Every
          control in this group now tints with the difficulty of the round it is
          about to buy. -->
-    <div
-      class="cb-panel cb-panel-dark cb-bet"
-      style={`--vol-color: ${volatilityColorVar(betFamily)}; --mode-ink: ${modeNameColor()}; --mode-rgb: ${modeRgb()}`}
-    >
+    <div class="cb-panel cb-panel-dark cb-bet">
       <button class="cb-bet-display" class:active={openPopup === 'bet'} onclick={() => togglePopup('bet')} disabled={stateUrlDerived.replay()} aria-label={t('Choose bet amount')}>
         <span class="cb-cap">{t('Bet')}</span>
         <!-- The figure shown IS what leaves the balance, so it is the round's
@@ -2483,7 +2498,15 @@
        stated, so the cost sits on every row and the trade-off is spelled out
        rather than left to the paytable. -->
   {#if openPopup === 'mode'}
-    <div class="popup popup-mode" role="dialog" aria-label={t('Game Mode')}>
+    <!-- Wears the family's own colour, the same one the MODE button that
+         opened it is wearing. The ROWS inside still set their own per-family
+         colour; this is the shell around them. -->
+    <div
+      class="popup popup-mode"
+      role="dialog"
+      aria-label={t('Game Mode')}
+      style={`--tint: ${volatilityColorVar(betFamily)}; --tint-rgb: ${volatilityColorRgbVar(betFamily)}; --tint-strong: ${volatilityColorVar(betFamily)}`}
+    >
       <div class="popup-head">
         <span>{pendingFamily ? t('Switch mode?') : t('Game Mode')}</span>
         <button class="popup-close" onclick={closePopup} aria-label={t('Close')}><MarkIcon name="cross" /></button>
@@ -2592,7 +2615,14 @@
   {/if}
 
   {#if openPopup === 'bet'}
-    <div class="popup popup-bet" role="dialog" aria-label={t('Bet Menu')}>
+    <!-- The live rating, matching the bet display and its steppers exactly -
+         this panel is what that control opens. -->
+    <div
+      class="popup popup-bet"
+      role="dialog"
+      aria-label={t('Bet Menu')}
+      style={`--tint: ${modeNameColor()}; --tint-rgb: ${modeRgb()}; --tint-strong: ${modeNameColor()}`}
+    >
       <div class="popup-head"><span>{t('Bet Menu')}</span><button class="popup-close" onclick={closePopup} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
       <div class="bet-entry">
         <span class="bet-entry-cur">{currencySymbol()}</span>

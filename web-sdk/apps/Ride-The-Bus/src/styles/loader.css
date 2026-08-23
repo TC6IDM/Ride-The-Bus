@@ -87,7 +87,7 @@
   letter-spacing: 0.22em;
   text-transform: uppercase;
   line-height: 1;
-  color: rgba(255, 224, 170, 0.72);
+  color: var(--ink-lockup-sub);
   text-shadow: 0 calc(var(--lu) * 0.15) calc(var(--lu) * 0.7) rgba(var(--shadow-rgb), 0.85);
 }
 

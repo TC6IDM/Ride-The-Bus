@@ -70,20 +70,57 @@
 	margin-bottom: 0;
 }
 
-/* ---- Title ---- */
+/* ---- Title ----------------------------------------------------------------
+   THE SAME LOCKUP as .gl-title-main / .gl-title-sub in loader.css and
+   .game-title-main / .game-title-sub in base.css. Three screens draw the game's
+   name - the loader, this intro, and the board - and the player sees all three
+   inside the first ten seconds. Two of them already agreed; this one did not.
+
+   What it was: Poppins (the BODY face) at 900, +0.04em, uppercase, --gold. So
+   the wordmark changed typeface, case, tracking AND gold between the loader and
+   the intro that follows it, which reads as two different games handing over.
+
+   What each line of the fix is doing, all of it already argued at the two
+   places it is copied from:
+     - font-family: the display face. This string is a brand name, never
+       translated (see the note atop i18n/messagesMap/en.ts), so it is safe on
+       a latin-only subset - which a translated string would not be.
+     - 3.4 -> 4.2 units: Big Shoulders is condensed, so the same word occupies
+       far less width. Held at the old size the wordmark just gets smaller.
+       4.2 is the loader's own figure, and 1.05/4.2 below keeps the credit line
+       at the same quarter-of-the-title proportion the other two use.
+     - NEGATIVE tracking, not positive: opening a 900 weight out is the most
+       reliable signature of type that was set rather than drawn.
+     - title case, not uppercase - the other two are title case.
+     - --gold-bright, the in-game title's gold, not --gold.                   */
 .ss-title {
-	font-size: calc(var(--ui) * 3.4);
+	font-family: var(--font-display);
+	font-size: calc(var(--ss) * 4.2);
 	font-weight: 900;
-	letter-spacing: 0.04em;
-	color: var(--gold);
-	text-transform: uppercase;
-	line-height: 1.15;
+	letter-spacing: -0.015em;
+	color: var(--gold-bright);
+	line-height: 1;
+	text-shadow: 0 calc(var(--ss) * 0.18) calc(var(--ss) * 0.9) rgba(var(--shadow-rgb), 0.85);
 }
 
+/* The studio line, demoted the same way base.css demotes it: wide tracking on
+   small caps at a light weight, which is what letterspacing is FOR and the
+   opposite of what it was doing on the title above.
+
+   The negative margin is load-bearing. .ss-card is a flex column with a 1.5-ss
+   gap between every child, which is right for the sections of the intro and far
+   too much for the two halves of one lockup - the credit floated away from the
+   name it belongs to. Pulling 1.05 back leaves 0.45, which is the 0.42 the
+   board and the loader set. */
 .ss-subtitle {
-	font-size: calc(var(--ui) * 1.5);
+	margin-top: calc(var(--ss) * -1.05);
+	font-size: calc(var(--ss) * 1.05);
 	font-weight: 400;
-	color: var(--ink-warm-mute);
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+	line-height: 1;
+	color: var(--ink-lockup-sub);
+	text-shadow: 0 calc(var(--ss) * 0.15) calc(var(--ss) * 0.7) rgba(var(--shadow-rgb), 0.85);
 	margin-bottom: 0;
 }
 

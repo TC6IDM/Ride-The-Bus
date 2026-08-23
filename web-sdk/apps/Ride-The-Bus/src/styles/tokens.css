@@ -113,6 +113,16 @@
   --gold: rgb(var(--gold-rgb));
   --gold-bright: #ffe08a;
 
+  /* The studio line under the wordmark - "by Takeover Casino" - on all THREE
+     screens that draw the lockup: the loader, the board and the intro. It is a
+     fourth gold, and it is named here rather than folded into --gold-bright
+     because the two are not the same value (255,224,170 against 255,224,138)
+     and collapsing them would move pixels on a credit line nobody asked to
+     change. What it fixes is the drift: the value was written out twice, and
+     the intro had a fifth colour entirely, so a lockup meant to read as one
+     mark was painted three different ways. */
+  --ink-lockup-sub: rgba(255, 224, 170, 0.72);
+
   /* ==== Ink ==============================================================
      Cool ramp - the control bar, the popups, the board. */
   --ink: #fff;
@@ -174,10 +184,19 @@
   --accent-rgb: 76, 159, 254;
 
   /* Per-control identity. The -rgb pairs exist so a call site can pick its own
-     alpha for a wash or a glow and still name its colour. */
-  --ctl-turbo: #ffce3a;
+     alpha for a wash or a glow and still name its colour.
+
+     EACH PAIR MUST BE THE SAME COLOUR. --ctl-turbo-rgb was 255,193,7 against a
+     --ctl-turbo of #ffce3a (255,206,58) - two different ambers, one drawing the
+     line and the other the glow around it. It went unnoticed while the triplet
+     only ever painted a 12px blur; it stops being invisible now that each
+     popup fills its controls from the same pair (see the tint block at the top
+     of popups.css). This is the identical failure --gold and --vol-* are
+     declared as triplets to prevent, and it is fixed the same way: the hex is
+     derived FROM the triplet, so there is only one place to change. */
+  --ctl-turbo-rgb: 255, 206, 58;
+  --ctl-turbo: rgb(var(--ctl-turbo-rgb));
   --ctl-turbo-ink: #ffd54a;
-  --ctl-turbo-rgb: 255, 193, 7;
   --ctl-autospin: #57d98a;
   --ctl-autospin-ink: #9df0b8;
   --ctl-autospin-rgb: 87, 217, 138;

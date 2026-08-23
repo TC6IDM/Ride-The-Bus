@@ -474,32 +474,128 @@
   white-space: nowrap;
 }
 
-/* The MODE button. Gold rather than the bar's slate, because it is the one
-   control that changes what a round IS rather than how it looks. */
+/* ==== The MODE button =======================================================
+ * The one control in the bar that changes what a round IS rather than how it
+ * looks, and it now says WHICH one: it wears the selected family's own
+ * volatility colour - green on Second Chance, yellow on Classic, red on High
+ * Stakes - the same three the picker's rows, the bolts and the bet display are
+ * already burning. --vol-color / --vol-rgb are the FAMILY's rating, published
+ * on the whole .control-bar (see Game.svelte). Deliberately not the live one:
+ * the Equal picks that can push a rating past a family ceiling are a property
+ * of the bet, not of the mode, so this button is never purple.
+ *
+ * That replaces a gold identity, and the trade is worth naming. Gold said
+ * "this is the mode control" and nothing else; the bar has five controls that
+ * open something and gold was the fifth hue among them. Colour here now
+ * carries STATE instead of identity, and the shape carries the identity - see
+ * the pill below, which no other control in the bar has.
+ *
+ * Three defects this fixes, and they compounded:
+ *
+ * 1. IT WAS NOT ACTUALLY GOLD WHEN IT MATTERED. `.cb-icon:hover` and
+ *    `.cb-icon.active` are (0,2,0) and set border-color, background AND color
+ *    to the accent; the old rules declared only `box-shadow`, so the moment a
+ *    player pointed at the button - or opened its menu - it turned blue like
+ *    the two beside it. Every state below restates border/background/colour so
+ *    the accent can never reach it.
+ *
+ * 2. IT WAS A WORD IN A GLYPH'S BOX. 36x36 is drawn for the 20px marks its
+ *    neighbours carry. "MODE" at 900 measured about 30 of the 34px interior,
+ *    leaving 2px a side - and that is ENGLISH. `Mode` is translated: Russian
+ *    ships "Режим" and Vietnamese "Chế độ", both of which overflow a 36px box
+ *    outright. It is a pill now: `width: auto` with real inline padding, a
+ *    36px floor so the touch target never drops below the phone rule further
+ *    down, and a 7-unit ceiling so no future string can push the bar apart.
+ *
+ * 3. IT READ AS THE THIRD OF THREE ICONS. The pill shape is most of the fix -
+ *    a 50x36 among two 36x36 is a break in the rhythm, and shape is found
+ *    faster than hue at this size.
+ *
+ * FLAT, NOT PLATED. A two-stop radial plus a highlight gradient was tried here
+ * and it was too much furniture for a 36px control: a gradient reads as a
+ * material at popup size and as noise at icon size, and the bar's other eight
+ * controls are all flat washes over one border. What is left is the wash, the
+ * line and the two 1px inset edges - the lit top and shaded bottom the table
+ * lights everything by - which give it thickness without drawing a plate.
+ *
+ * WIDTH BUDGET. The bar is width-solved: --ui-bar is (100vw - 30px)/96 so the
+ * whole row fits Popout S's 400px on ONE line, and anything that widens a
+ * control spends from that. This costs ~1.7 units of ~97, which the row has -
+ * `* { box-sizing: border-box }` means only the three panels' own borders sit
+ * outside their declared widths, about 6px rather than the ~26px the divisor
+ * was solved against. If a later change makes the row wrap at 400px, this is
+ * one of the places to look, and the divisor is the number to move.
+ */
 .cb-mode-btn {
-  background: radial-gradient(circle at 50% 35%, #6a5216, #2a2008 78%);
-  border-color: var(--gold);
-  color: var(--gold);
+  width: auto;
+  min-width: calc(var(--ui-bar) * 3.27);
+  max-width: calc(var(--ui-bar) * 7);
+  padding: 0 calc(var(--ui-bar) * 0.85);
+  background: rgba(var(--vol-rgb, var(--gold-rgb)), 0.14);
+  border-color: var(--vol-color, var(--gold));
+  color: var(--vol-color, var(--gold));
+  /* Lit top edge, shaded bottom edge. table.css explains the light: one source
+     at the upper right, which everything in the scene is modelled by. */
+  box-shadow: inset 0 1px 0 var(--panel-lit), inset 0 -1px 0 var(--panel-shade);
+}
+
+/* .active is the menu-open state and has to stay reachable on touch, so it
+   sits OUTSIDE the hover gate - only the pointer half is gated. Same split the
+   bet display makes above, and for the same reason. */
+.cb-mode-btn.active {
+  border-color: var(--vol-color, var(--gold));
+  color: var(--ink);
+  background: rgba(var(--vol-rgb, var(--gold-rgb)), 0.26);
+  box-shadow:
+    inset 0 1px 0 var(--panel-lit),
+    inset 0 -1px 0 var(--panel-shade),
+    0 0 12px rgba(var(--vol-rgb, var(--gold-rgb)), 0.45);
 }
 
 @media (hover: hover) {
-  .cb-mode-btn:hover:not(:disabled) { box-shadow: 0 0 14px rgba(245, 215, 140, 0.55); }
+  .cb-mode-btn:hover:not(:disabled) {
+    border-color: var(--vol-color, var(--gold));
+    color: var(--ink);
+    background: rgba(var(--vol-rgb, var(--gold-rgb)), 0.26);
+    box-shadow:
+      inset 0 1px 0 var(--panel-lit),
+      inset 0 -1px 0 var(--panel-shade),
+      0 0 14px rgba(var(--vol-rgb, var(--gold-rgb)), 0.5);
+  }
 }
-.cb-mode-btn.active { background: radial-gradient(circle at 50% 35%, #8a6a1c, #3a2c0b 78%); }
+
+/* The pressed state comes from the shared .cb-icon:active at the foot of this
+   file - it replaces the background with a dark wash and pushes the button in
+   1px, the same "in, not brighter" language every control here speaks. Only
+   the inset edges need restating, so they do not vanish under the wash. */
+.cb-mode-btn:active {
+  box-shadow: inset 0 1px 0 var(--panel-lit), inset 0 -1px 0 var(--panel-shade);
+}
+
 .cb-mode-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* "MODE" has to fit a round button roughly 3.3 units across, so it is set
-   small, tight and uppercase rather than scaled down as a whole. */
+/* The label now has a pill to sit in, so it can take the tracking that a 10px
+   uppercase micro-label wants - the same register .cb-cap uses, and the
+   opposite of the negative tracking the WORDMARK takes. Different job,
+   different rule: tracking opens small caps out and closes display weights up.
+   nowrap because a two-line label inside a 36px-tall pill would clip, and
+   `Chế độ` contains a space. */
 .cb-mode-word {
-  font-size: calc(var(--ui-bar) * 0.86);
+  font-size: calc(var(--ui-bar) * 0.95);
   font-weight: 900;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.08em;
+  /* The tracking is added to the RIGHT of the last letter too, which would sit
+     the word a hair left of centre in its own padding. */
+  text-indent: 0.08em;
   text-transform: uppercase;
   line-height: 1;
+  white-space: nowrap;
 }
 
 /* The active mode, under the bet amount, in the line the cost multiplier used
-   to occupy. Same gold as the MODE button so the two read as one thing.
+   to occupy. The MODE button now wears the same rating this line does, so the
+   two read as one thing - it used to say "same gold", back when both were gold
+   and neither said which mode.
 
    Shown on every family now, Classic included. It was hidden there while the
    line was only a name, which was right - but it carries the volatility meter
@@ -509,8 +605,8 @@
 
    The bolts sit to the LEFT of the name and are sized at 1em, so they track this
    line's own font rather than needing a second number kept in step with it. The
-   gold applies to the text only - the meter paints itself from --vol-color, set
-   inline per family. */
+   colour below applies to the text only - the meter paints itself from
+   --vol-color, published on the .control-bar (see Game.svelte). */
 .cb-bet-mode {
   display: flex;
   align-items: center;
@@ -529,9 +625,10 @@
      rulers-on-one-screen mistake, because both halves are counting the same
      thing.
 
-     --mode-ink is set inline on the .cb-bet PANEL (see Game.svelte) so it
-     reaches the steppers as well as this line; the gold fallback is what shows
-     if it ever fails to resolve. */
+     --mode-ink is published on the .control-bar (see Game.svelte) so it reaches
+     the steppers, which are this line's SIBLINGS and could never inherit from
+     it, and the MODE button over in the light pill, which is in a different
+     panel again. The gold fallback is what shows if it fails to resolve. */
   color: var(--mode-ink, var(--gold));
   white-space: nowrap;
   --bolt-size: 1em;

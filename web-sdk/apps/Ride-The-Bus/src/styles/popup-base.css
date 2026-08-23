@@ -17,7 +17,40 @@
  * Sizes are multiples of --ui-bar so the box and its text scale together with
  * the window, instead of the box shrinking around fixed-size text.
  */
+/* ==== The tint contract ====================================================
+ * Every menu wears the colour of the control that OPENED it. Turbo's panel is
+ * amber, autoplay's is green, Advanced's is purple, How to Play's is the
+ * accent blue its icon lights, and the bet and mode panels take the live
+ * volatility colour their two controls on the bar already burn.
+ *
+ * Before this, every panel in the game highlighted in accent blue whichever
+ * button you had pressed to reach it - so the one thing the bar spends five
+ * hues telling you apart was thrown away the moment a panel opened. The hues
+ * are WAYFINDING (see --ctl-* in tokens.css); a menu that drops them makes the
+ * player re-read the header to know where they are.
+ *
+ * Four properties, declared here as the accent-blue default so a panel only
+ * has to name what differs, and so nothing inside a panel ever has to know
+ * which panel it is in:
+ *
+ *   --tint         lines, glows, sliders, small type
+ *   --tint-rgb     the SAME colour as a triplet, for washes and glows
+ *   --tint-strong  the fill under text - blue needs a darker step than its
+ *                  line colour; the other four fill with --tint itself
+ *   --tint-ink     text that sits ON a --tint-strong fill
+ *
+ * The overrides live in popups.css (the four Game.svelte panels) rather than
+ * here, because Svelte scopes a stylesheet to whichever component imports it
+ * and this file is imported by How to Play as well - a `.popup-turbo` rule in
+ * here would be an unused selector in that component and a CSS warning in the
+ * gate. .popup-bet and .popup-mode set theirs INLINE from Game.svelte: their
+ * colour is the live rating, which only the component knows.
+ */
 .popup {
+  --tint: var(--accent);
+  --tint-rgb: var(--accent-rgb);
+  --tint-strong: var(--accent-strong);
+  --tint-ink: var(--ink);
   position: fixed;
   z-index: 50;
   left: 50%;
@@ -102,9 +135,9 @@
 @media (hover: hover) {
   .popup-close:hover {
     color: var(--ink);
-    border-color: var(--accent);
-    background: rgba(var(--accent-rgb), 0.16);
-    box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.5);
+    border-color: var(--tint);
+    background: rgba(var(--tint-rgb), 0.16);
+    box-shadow: 0 0 10px rgba(var(--tint-rgb), 0.5);
   }
 }
 
