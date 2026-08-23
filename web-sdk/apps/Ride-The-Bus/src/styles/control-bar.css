@@ -511,12 +511,16 @@
  *    a 50x36 among two 36x36 is a break in the rhythm, and shape is found
  *    faster than hue at this size.
  *
- * FLAT, NOT PLATED. A two-stop radial plus a highlight gradient was tried here
- * and it was too much furniture for a 36px control: a gradient reads as a
- * material at popup size and as noise at icon size, and the bar's other eight
- * controls are all flat washes over one border. What is left is the wash, the
- * line and the two 1px inset edges - the lit top and shaded bottom the table
- * lights everything by - which give it thickness without drawing a plate.
+ * SHADED, NOT PLATED. What was too much here was a two-stop RADIAL with a
+ * separate highlight gradient laid over it - a hotspot, which is a plate, and
+ * at 36px it read as noise rather than as a material. What is right is a
+ * single shallow fall-off down the button: the same light every inset edge in
+ * this file is drawn by, so the lit top edge now terminates a gradient instead
+ * of sitting on a flat wash. The two stops average 0.16 against the 0.14 the
+ * flat wash was, so the button's overall weight is unchanged and only its
+ * modelling differs - which is the test for whether shading is slight enough.
+ * A hotspot, a second hue or a stop below the bottom edge would all be back to
+ * a plate.
  *
  * WIDTH BUDGET. The bar is width-solved: --ui-bar is (100vw - 30px)/96 so the
  * whole row fits Popout S's 400px on ONE line, and anything that widens a
@@ -531,7 +535,11 @@
   min-width: calc(var(--ui-bar) * 3.27);
   max-width: calc(var(--ui-bar) * 7);
   padding: 0 calc(var(--ui-bar) * 0.85);
-  background: rgba(var(--vol-rgb, var(--gold-rgb)), 0.14);
+  background: linear-gradient(
+    180deg,
+    rgba(var(--vol-rgb, var(--gold-rgb)), 0.22),
+    rgba(var(--vol-rgb, var(--gold-rgb)), 0.1)
+  );
   border-color: var(--vol-color, var(--gold));
   color: var(--vol-color, var(--gold));
   /* Lit top edge, shaded bottom edge. table.css explains the light: one source
@@ -545,7 +553,11 @@
 .cb-mode-btn.active {
   border-color: var(--vol-color, var(--gold));
   color: var(--ink);
-  background: rgba(var(--vol-rgb, var(--gold-rgb)), 0.26);
+  background: linear-gradient(
+    180deg,
+    rgba(var(--vol-rgb, var(--gold-rgb)), 0.34),
+    rgba(var(--vol-rgb, var(--gold-rgb)), 0.2)
+  );
   box-shadow:
     inset 0 1px 0 var(--panel-lit),
     inset 0 -1px 0 var(--panel-shade),
@@ -556,7 +568,11 @@
   .cb-mode-btn:hover:not(:disabled) {
     border-color: var(--vol-color, var(--gold));
     color: var(--ink);
-    background: rgba(var(--vol-rgb, var(--gold-rgb)), 0.26);
+    background: linear-gradient(
+      180deg,
+      rgba(var(--vol-rgb, var(--gold-rgb)), 0.34),
+      rgba(var(--vol-rgb, var(--gold-rgb)), 0.2)
+    );
     box-shadow:
       inset 0 1px 0 var(--panel-lit),
       inset 0 -1px 0 var(--panel-shade),
