@@ -19,12 +19,18 @@
 
 .info-body { font-size: calc(var(--ui-bar) * 1.24); line-height: 1.5; color: var(--ink-body); }
 
-.info-body p { margin: 8px 0; }
+/* Prose rhythm in --ui-bar, like the box around it. These were 8 / 20 / 3
+   fixed pixels, so the panel scaled with the window and its paragraphs did
+   not - the copy bunched up at desktop size and ran loose on a popout. */
+.info-body p { margin: calc(var(--ui-bar) * 0.73) 0; }
 
 .info-body ol,
-.info-body ul { margin: 8px 0; padding-left: 20px; }
+.info-body ul {
+  margin: calc(var(--ui-bar) * 0.73) 0;
+  padding-inline-start: calc(var(--ui-bar) * 1.82);
+}
 
-.info-body li { margin: 3px 0; }
+.info-body li { margin: calc(var(--ui-bar) * 0.27) 0; }
 
 /* Ace-to-King rank strip in How to Play. A list, not prose, because the
    ordering is the point - and it wraps rather than shrinking the chips below
@@ -120,7 +126,9 @@
 	transition: border-color 0.12s, background 0.12s, color 0.12s;
 }
 
-.mode-tab:hover { border-color: var(--accent); color: var(--ink); }
+@media (hover: hover) {
+	.mode-tab:hover { border-color: var(--accent); color: var(--ink); }
+}
 
 .mode-tab.selected {
 	border-color: var(--accent-strong);
@@ -233,4 +241,17 @@
 .mode-tab:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
+}
+
+/* Pressed. The tabs are the most-tapped control in this panel and had hover
+   only - see the note on .cb-icon:active in control-bar.css. */
+.mode-tab:active {
+	background: rgba(var(--shadow-rgb), 0.28);
+	transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.mode-tab:active {
+		transform: none;
+	}
 }

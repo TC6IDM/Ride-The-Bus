@@ -46,7 +46,9 @@
   transition: box-shadow 0.12s, border-color 0.12s, background 0.12s, color 0.12s;
 }
 
-.bet-cell:hover { border-color: var(--accent); color: var(--ink); box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.4); }
+@media (hover: hover) {
+  .bet-cell:hover { border-color: var(--accent); color: var(--ink); box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.4); }
+}
 
 .bet-cell.active { background: var(--accent-strong); border-color: var(--accent-strong); color: var(--ink); }
 
@@ -56,8 +58,8 @@
   align-items: center;
   gap: calc(var(--ui-bar) * 0.36);
   padding: calc(var(--ui-bar) * 0.82) calc(var(--ui-bar) * 1.09);
-  margin-bottom: 10px;
-  border-radius: 10px;
+  margin-bottom: calc(var(--ui-bar) * 0.91);
+  border-radius: calc(var(--ui-bar) * 0.91);
   border: 1px solid rgba(var(--ink-rgb), 0.18);
   background: rgba(5, 12, 18, 0.6);
 }
@@ -79,7 +81,7 @@
   font-weight: 800;
 }
 
-.popup-bet .popup-sub { display: block; margin-bottom: 7px; }
+.popup-bet .popup-sub { display: block; margin-bottom: calc(var(--ui-bar) * 0.64); }
 
 .turbo-body { display: flex; flex-direction: column; gap: calc(var(--ui-bar) * 1.09); padding: calc(var(--ui-bar) * 0.36) calc(var(--ui-bar) * 0.18) calc(var(--ui-bar) * 0.18); }
 
@@ -97,7 +99,7 @@
 
 .autospin-input { align-self: stretch; }
 
-.popup-start { margin-top: 2px; }
+.popup-start { margin-top: calc(var(--ui-bar) * 0.18); }
 
 .advanced-body { display: flex; flex-direction: column; gap: calc(var(--ui-bar) * 1.27); }
 
@@ -117,7 +119,7 @@
   font-size: calc(var(--ui-bar) * 1.53);
   font-weight: 800;
   border: none;
-  border-radius: 10px;
+  border-radius: calc(var(--ui-bar) * 0.91);
   cursor: pointer;
   background: linear-gradient(180deg, var(--accent), #1f6fe0);
   color: var(--ink);
@@ -127,7 +129,9 @@
 
 .action-button:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
-.action-button:not(:disabled):hover { filter: brightness(1.08); }
+@media (hover: hover) {
+  .action-button:not(:disabled):hover { filter: brightness(1.08); }
+}
 
 .action-button:not(:disabled):active { transform: translateY(1px); }
 
@@ -136,7 +140,7 @@
 .rounds-selector {
   display: flex;
   align-items: stretch;
-  border-radius: 10px;
+  border-radius: calc(var(--ui-bar) * 0.91);
   overflow: hidden;
   background: rgba(5, 12, 18, 0.6);
   border: 1px solid rgba(var(--ink-rgb), 0.16);
@@ -301,7 +305,9 @@
   height: calc(var(--ui-bar) * 1.64);
 }
 
-.stepper-btn:hover { background: rgba(var(--ink-rgb), 0.16); }
+@media (hover: hover) {
+  .stepper-btn:hover { background: rgba(var(--ink-rgb), 0.16); }
+}
 
 .stepper-btn:active { background: rgba(var(--ink-rgb), 0.22); }
 
@@ -331,25 +337,27 @@
   transition: border-color 0.12s, background 0.12s;
 }
 
-/* ---- The picker rows wear their own mode's colour ------------------------
- * Yellow for Classic, green for Second Chance, red for High Stakes - the same
- * three the bolts on each row are already burning, and the same three the bet
- * display writes the live mode name in. The accent blue said only "this row is
- * selectable", which every row is.
- *
- * --vol-color and --vol-rgb are set inline per row from the family (see
- * Game.svelte). They are the FAMILY's colour, deliberately not the live one:
- * the picker rates the mode, and the Equal picks that can push the rating past
- * a family ceiling are a property of the bet, not of the mode being chosen. So
- * no row is ever purple.
- *
- * The washes are 0.08 and 0.14. Red is what caps them: .mode-option-name is
- * ~15px bold, which WCAG still counts as small text, and the name sits ON its
- * own wash - at 0.18 red-on-red measures 4.43 and fails. 0.14 holds it at 4.74
- * with the body copy above 10. */
-.mode-option:hover {
-  border-color: var(--vol-color, var(--accent));
-  background: rgba(var(--vol-rgb, var(--accent-rgb)), 0.08);
+@media (hover: hover) {
+  /* ---- The picker rows wear their own mode's colour ------------------------
+   * Yellow for Classic, green for Second Chance, red for High Stakes - the same
+   * three the bolts on each row are already burning, and the same three the bet
+   * display writes the live mode name in. The accent blue said only "this row is
+   * selectable", which every row is.
+   *
+   * --vol-color and --vol-rgb are set inline per row from the family (see
+   * Game.svelte). They are the FAMILY's colour, deliberately not the live one:
+   * the picker rates the mode, and the Equal picks that can push the rating past
+   * a family ceiling are a property of the bet, not of the mode being chosen. So
+   * no row is ever purple.
+   *
+   * The washes are 0.08 and 0.14. Red is what caps them: .mode-option-name is
+   * ~15px bold, which WCAG still counts as small text, and the name sits ON its
+   * own wash - at 0.18 red-on-red measures 4.43 and fails. 0.14 holds it at 4.74
+   * with the body copy above 10. */
+  .mode-option:hover {
+    border-color: var(--vol-color, var(--accent));
+    background: rgba(var(--vol-rgb, var(--accent-rgb)), 0.08);
+  }
 }
 
 .mode-option.selected {
@@ -533,7 +541,7 @@
 .mode-confirm-cancel {
   flex: 0 0 auto;
   padding: calc(var(--ui-bar) * 1.27) calc(var(--ui-bar) * 1.6);
-  border-radius: 10px;
+  border-radius: calc(var(--ui-bar) * 0.91);
   border: 1px solid rgba(var(--ink-rgb), 0.2);
   background: none;
   color: var(--ink-body);
@@ -544,9 +552,11 @@
   transition: background 0.12s, border-color 0.12s;
 }
 
-.mode-confirm-cancel:hover {
-  background: rgba(var(--ink-rgb), 0.1);
-  border-color: rgba(var(--ink-rgb), 0.32);
+@media (hover: hover) {
+  .mode-confirm-cancel:hover {
+    background: rgba(var(--ink-rgb), 0.1);
+    border-color: rgba(var(--ink-rgb), 0.32);
+  }
 }
 
 .mode-confirm-cancel:focus-visible {
@@ -570,4 +580,13 @@
   .mode-confirm-cancel {
     transition: none;
   }
+}
+
+/* The switch, pressed. It is the one control here whose hover said nothing in
+   the first place - the knob position is the state - so this is purely the
+   acknowledgement that the tap landed. The knob itself does not move: that
+   travel means "on", and borrowing it for "pressed" would say the switch had
+   flipped before it had. */
+.switch:active:not(:disabled) {
+  filter: brightness(1.25);
 }

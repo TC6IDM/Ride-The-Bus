@@ -99,11 +99,13 @@
   transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
 
-.popup-close:hover {
-  color: var(--ink);
-  border-color: var(--accent);
-  background: rgba(var(--accent-rgb), 0.16);
-  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.5);
+@media (hover: hover) {
+  .popup-close:hover {
+    color: var(--ink);
+    border-color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.16);
+    box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.5);
+  }
 }
 
 /* Keyboard focus on the close button. Shared by every popup and by How to
@@ -111,4 +113,17 @@
 .popup-close:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
+}
+
+/* Pressed. See the note on .cb-icon:active in control-bar.css - a finger
+   cannot hover, so the close button needs a state a tap can produce. */
+.popup-close:active {
+  background: rgba(var(--shadow-rgb), 0.28);
+  transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popup-close:active {
+    transform: none;
+  }
 }

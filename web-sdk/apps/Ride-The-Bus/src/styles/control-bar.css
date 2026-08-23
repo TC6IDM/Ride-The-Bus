@@ -165,10 +165,20 @@
 
    The fallbacks matter: these controls exist in the markup before a mode has
    been resolved, and --accent is what they were. */
-.cb-bet-display:hover, .cb-bet-display.active {
+/* .active is the menu-open state and has to stay reachable on touch, so it
+   sits OUTSIDE the hover gate - only the pointer half is gated. */
+.cb-bet-display.active {
   border-color: var(--mode-ink, var(--accent));
   background: rgba(var(--mode-rgb, var(--accent-rgb)), 0.12);
   box-shadow: 0 0 12px rgba(var(--mode-rgb, var(--accent-rgb)), 0.35);
+}
+
+@media (hover: hover) {
+  .cb-bet-display:hover {
+    border-color: var(--mode-ink, var(--accent));
+    background: rgba(var(--mode-rgb, var(--accent-rgb)), 0.12);
+    box-shadow: 0 0 12px rgba(var(--mode-rgb, var(--accent-rgb)), 0.35);
+  }
 }
 
 .cb-betstep { display: flex; flex-direction: column; gap: calc(var(--ui-bar) * 0.36) /* 4px */; }
@@ -199,9 +209,11 @@
   height: calc(var(--ui-bar) * 1.8);
 }
 
-.cb-step:hover:not(:disabled) {
-  border-color: var(--mode-ink, var(--accent));
-  box-shadow: 0 0 8px rgba(var(--mode-rgb, var(--accent-rgb)), 0.5);
+@media (hover: hover) {
+  .cb-step:hover:not(:disabled) {
+    border-color: var(--mode-ink, var(--accent));
+    box-shadow: 0 0 8px rgba(var(--mode-rgb, var(--accent-rgb)), 0.5);
+  }
 }
 
 .cb-step:disabled { opacity: 0.45; cursor: not-allowed; }
@@ -268,9 +280,11 @@
   transition: opacity 0.14s var(--ease-out), transform 0.14s var(--ease-out);
 }
 
-.cb-spin-wrap:hover .cb-cooldown-tip {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
+@media (hover: hover) {
+  .cb-spin-wrap:hover .cb-cooldown-tip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 /* Little arrow pointing down at the button. */
@@ -322,7 +336,9 @@
   transition: box-shadow 0.15s, border-color 0.15s, transform 0.1s;
 }
 
-.cb-spin:not(:disabled):hover { box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.75); transform: scale(1.04); }
+@media (hover: hover) {
+  .cb-spin:not(:disabled):hover { box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.75); transform: scale(1.04); }
+}
 
 .cb-spin:not(:disabled):active { transform: scale(0.97); }
 
@@ -334,11 +350,15 @@
    neither starting nor ending anything, just hurrying the current round along. */
 .cb-spin.slammable { border-color: #ffce3a; background: radial-gradient(circle at 50% 35%, #4a3a12, #221a06 75%); }
 
-.cb-spin.slammable:hover { box-shadow: 0 0 20px rgba(255, 206, 58, 0.7); }
+@media (hover: hover) {
+  .cb-spin.slammable:hover { box-shadow: 0 0 20px rgba(255, 206, 58, 0.7); }
+}
 
 .cb-slam-svg { width: calc(var(--ui-bar) * 3.45); height: calc(var(--ui-bar) * 3.45); transform: none; color: var(--gold-bright); }
 
-.cb-spin.stopping:hover { box-shadow: 0 0 20px rgba(255, 80, 80, 0.85); }
+@media (hover: hover) {
+  .cb-spin.stopping:hover { box-shadow: 0 0 20px rgba(255, 80, 80, 0.85); }
+}
 
 .cb-spin { position: relative; /* anchors the autoplay count over the square */ }
 
@@ -410,13 +430,29 @@
  * was undone. These are five near-identical round icons in a 40px strip;
  * colour is how a player finds the one they opened last time without reading
  * every glyph again. */
-.cb-icon:hover, .cb-icon.active { border-color: var(--accent); color: var(--ink); background: rgba(var(--accent-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.45); }
+.cb-icon.active { border-color: var(--accent); color: var(--ink); background: rgba(var(--accent-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.45); }
 
-.cb-turbo:hover, .cb-turbo.active { border-color: var(--ctl-turbo); color: var(--ctl-turbo-ink); background: rgba(var(--ctl-turbo-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--ctl-turbo-rgb), 0.5); }
+@media (hover: hover) {
+  .cb-icon:hover { border-color: var(--accent); color: var(--ink); background: rgba(var(--accent-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.45); }
+}
 
-.cb-autospin:hover:not(:disabled), .cb-autospin.active { border-color: var(--ctl-autospin); color: var(--ctl-autospin-ink); background: rgba(var(--ctl-autospin-rgb), 0.14); box-shadow: 0 0 12px rgba(var(--ctl-autospin-rgb), 0.45); }
+.cb-turbo.active { border-color: var(--ctl-turbo); color: var(--ctl-turbo-ink); background: rgba(var(--ctl-turbo-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--ctl-turbo-rgb), 0.5); }
 
-.cb-advanced:hover, .cb-advanced.active { border-color: var(--ctl-advanced); color: var(--ctl-advanced-ink); background: rgba(var(--ctl-advanced-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--ctl-advanced-rgb), 0.45); }
+@media (hover: hover) {
+  .cb-turbo:hover { border-color: var(--ctl-turbo); color: var(--ctl-turbo-ink); background: rgba(var(--ctl-turbo-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--ctl-turbo-rgb), 0.5); }
+}
+
+.cb-autospin.active { border-color: var(--ctl-autospin); color: var(--ctl-autospin-ink); background: rgba(var(--ctl-autospin-rgb), 0.14); box-shadow: 0 0 12px rgba(var(--ctl-autospin-rgb), 0.45); }
+
+@media (hover: hover) {
+  .cb-autospin:hover:not(:disabled) { border-color: var(--ctl-autospin); color: var(--ctl-autospin-ink); background: rgba(var(--ctl-autospin-rgb), 0.14); box-shadow: 0 0 12px rgba(var(--ctl-autospin-rgb), 0.45); }
+}
+
+.cb-advanced.active { border-color: var(--ctl-advanced); color: var(--ctl-advanced-ink); background: rgba(var(--ctl-advanced-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--ctl-advanced-rgb), 0.45); }
+
+@media (hover: hover) {
+  .cb-advanced:hover { border-color: var(--ctl-advanced); color: var(--ctl-advanced-ink); background: rgba(var(--ctl-advanced-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--ctl-advanced-rgb), 0.45); }
+}
 
 .cb-float:disabled { opacity: 0.4; cursor: not-allowed; }
 
@@ -444,7 +480,9 @@
   color: var(--gold);
 }
 
-.cb-mode-btn:hover:not(:disabled) { box-shadow: 0 0 14px rgba(245, 215, 140, 0.55); }
+@media (hover: hover) {
+  .cb-mode-btn:hover:not(:disabled) { box-shadow: 0 0 14px rgba(245, 215, 140, 0.55); }
+}
 .cb-mode-btn.active { background: radial-gradient(circle at 50% 35%, #8a6a1c, #3a2c0b 78%); }
 .cb-mode-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
@@ -539,5 +577,33 @@
   .cb-cooldown-tip,
   .cb-spin-wrap:hover .cb-cooldown-tip {
     transform: translateX(-50%);
+  }
+}
+
+/* ---- Pressed -------------------------------------------------------------
+ * The touch-reachable half of every hover above. A finger cannot hover, so
+ * without these a tap on the mute, info, mode, autoplay, turbo or advanced
+ * button produced no acknowledgement at all between finger-down and whatever
+ * happened next - and on this bar "whatever happened next" is often a menu
+ * opening somewhere else on the screen.
+ *
+ * A press pushes IN rather than lighting up: it is the same surface the hover
+ * rules brighten, moved the other way, so the two never read as the same
+ * state. The spin button already had its own :active and keeps it.
+ */
+.cb-icon:active,
+.cb-round:active:not(:disabled),
+.cb-float:active:not(:disabled),
+.cb-step:active:not(:disabled) {
+  background: rgba(var(--shadow-rgb), 0.28);
+  transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cb-icon:active,
+  .cb-round:active:not(:disabled),
+  .cb-float:active:not(:disabled),
+  .cb-step:active:not(:disabled) {
+    transform: none;
   }
 }

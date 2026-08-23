@@ -46,7 +46,11 @@ If the client's arithmetic drifts from the Python, the game shows a player one
 number while the RGS credits another. That is the worst bug this project can
 have, and `payout.test.ts` guards it by replaying every published book.
 
-Branch: `second-chance-mode`. Not yet merged.
+Everything below is on **`main`** as of the `ui-art-pass` merge — the three
+bet families, the 192-mode math build and the UI pass all landed together.
+Note that local `main` tracks `origin/monorepo-restructure`, not `origin/main`,
+so a bare `git push` from it goes somewhere unexpected; push `main:main`
+explicitly or re-point the upstream.
 
 ---
 

@@ -103,11 +103,18 @@
    brightness and ring weight - hovering the already-selected half must not
    look like a different state. `.choice-row.locked` sets pointer-events:none,
    so nothing highlights while a round is playing. */
-.half-btn:hover:not(.selected):not([aria-disabled='true']),
-.third-btn:hover:not(.selected):not([aria-disabled='true']),
-.quad-btn:hover:not(.selected):not([aria-disabled='true']) {
-  filter: brightness(1.16);
-  box-shadow: inset 0 0 0 2px rgba(var(--ink-rgb), 0.6), inset 0 0 12px rgba(var(--ink-rgb), 0.22);
+/* Hover is gated. On a touch screen there is no pointer to leave, so a tapped
+   control keeps its :hover styling until something ELSE is tapped - the stuck
+   state the interaction rules warn about, and very visible in a game where a
+   guess square gets tapped every single round. The :active rule below is the
+   touch-reachable half. */
+@media (hover: hover) {
+  .half-btn:hover:not(.selected):not([aria-disabled='true']),
+  .third-btn:hover:not(.selected):not([aria-disabled='true']),
+  .quad-btn:hover:not(.selected):not([aria-disabled='true']) {
+    filter: brightness(1.16);
+    box-shadow: inset 0 0 0 2px rgba(var(--ink-rgb), 0.6), inset 0 0 12px rgba(var(--ink-rgb), 0.22);
+  }
 }
 
 .half-btn.selected,
@@ -117,11 +124,17 @@
   box-shadow: inset 0 0 0 3px var(--ink), inset 0 0 16px rgba(var(--ink-rgb), 0.5);
 }
 
-/* Keep the hover cue while the button is held down, so a click doesn't flash
-   back to the unhovered look mid-press. */
+/* Held down.
+ *
+ * This used to exist only to keep the HOVER cue from flashing away mid-press,
+ * which meant it did nothing at all on a touch screen - where there is no
+ * hover to preserve and this is the only feedback a tap can produce. It is now
+ * the primary press state, and it is brighter than hover on purpose: on touch
+ * it is the first thing the player sees happen. */
 .half-btn:active:not(:disabled):not([aria-disabled='true']),
 .third-btn:active:not(:disabled):not([aria-disabled='true']),
-.quad-btn:active:not(:disabled):not([aria-disabled='true']) {
+.quad-btn:active:not(:disabled):not([aria-disabled='true']),
+.equal-btn:active:not(.selected) {
   filter: brightness(1.34);
 }
 
@@ -160,12 +173,17 @@
   position: absolute;
   left: 16%;
   right: 16%;
-  top: calc(50% - 1.5px);
-  height: 3px;
+  /* Proportional, with a floor. 3px was a hairline across a 92px desktop
+     square and a tenth of a 29px Popout S one, so the strike read as a
+     different mark at each size. The floor keeps it a visible line where the
+     ratio would round it away, and the offset is exactly half the height so it
+     stays centred at every size. */
+  top: calc(50% - max(1px, var(--ui) * 0.135));
+  height: max(2px, calc(var(--ui) * 0.27));
   transform: rotate(-24deg);
   transform-origin: center;
   background: var(--ink);
-  border-radius: 2px;
+  border-radius: max(1px, calc(var(--ui) * 0.18));
   pointer-events: none;
 }
 
@@ -361,15 +379,17 @@
   transform: translate(-50%, -50%);
 }
 
-/* Lighter than .selected, and a smaller lift, for the same reason as the
-   halves above: hover previews the selection without imitating it. */
-.equal-btn:hover:not(.selected) {
-  filter: brightness(1.12);
-  box-shadow:
-    0 4px 10px rgba(var(--shadow-rgb), 0.45),
-    0 0 0 2px rgba(var(--ink-rgb), 0.65),
-    inset 0 0 0 1px rgba(var(--ink-rgb), 0.42);
-  transform: translate(-50%, -50%) scale(1.08);
+@media (hover: hover) {
+  /* Lighter than .selected, and a smaller lift, for the same reason as the
+     halves above: hover previews the selection without imitating it. */
+  .equal-btn:hover:not(.selected) {
+    filter: brightness(1.12);
+    box-shadow:
+      0 4px 10px rgba(var(--shadow-rgb), 0.45),
+      0 0 0 2px rgba(var(--ink-rgb), 0.65),
+      inset 0 0 0 1px rgba(var(--ink-rgb), 0.42);
+    transform: translate(-50%, -50%) scale(1.08);
+  }
 }
 
 /* Brightness plus a white ring, which is the halves' own selected idiom - they

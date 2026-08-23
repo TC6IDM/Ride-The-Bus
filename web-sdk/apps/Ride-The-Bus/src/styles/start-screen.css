@@ -417,7 +417,6 @@
 	}
 }
 
-.ss-help:hover,
 .ss-help:focus-visible {
 	background: var(--gold);
 	border-color: var(--gold);
@@ -489,7 +488,6 @@
 }
 
 /* Adjacent-sibling, because the tip is no longer inside the button. */
-.ss-help:hover + .ss-tip,
 .ss-help:focus-visible + .ss-tip {
 	opacity: 1;
 	visibility: visible;
@@ -728,7 +726,6 @@
 	transition: background 0.2s, color 0.2s;
 }
 
-.ss-continue:hover,
 .ss-continue:focus-visible {
 	background: var(--gold);
 	color: #0d1f0d;
@@ -777,8 +774,24 @@
 	line-height: 1;
 }
 
-.ss-popup-close:hover {
+/* The replay popup's close button. Gated like every other hover, with a press
+   state for touch - this one sits in the replay flow, which Stake reviews on a
+   phone. */
+@media (hover: hover) {
+	.ss-popup-close:hover {
+		color: var(--ink-warm);
+	}
+}
+
+.ss-popup-close:active {
 	color: var(--ink-warm);
+	transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ss-popup-close:active {
+		transform: none;
+	}
 }
 
 .ss-detail-row {
@@ -832,7 +845,6 @@
 	transition: background 0.2s;
 }
 
-.ss-play-btn:hover,
 .ss-play-btn:focus-visible {
 	background: #ffe0a0;
 }
@@ -993,4 +1005,30 @@
 	   Panel 3's tip is the one that was running off the left edge here. */
 	.ss-step:nth-child(3) .ss-tip { --tip-room: 100%; }
 	.ss-step:nth-child(4) .ss-tip { --tip-room: calc(200% + var(--ss) * 1.2); }
+}
+
+/* ---- Hover, gated -------------------------------------------------------
+ * Split out of the :focus-visible rules above so keyboard focus keeps working
+ * where there is no pointer at all. See the note in choices.css. */
+@media (hover: hover) {
+	.ss-help:hover {
+		background: var(--gold);
+		border-color: var(--gold);
+		color: #12220f;
+		outline: none;
+	}
+
+	.ss-help:hover + .ss-tip {
+		opacity: 1;
+		visibility: visible;
+	}
+
+	.ss-continue:hover {
+		background: var(--gold);
+		color: #0d1f0d;
+	}
+
+	.ss-play-btn:hover {
+		background: #ffe0a0;
+	}
 }

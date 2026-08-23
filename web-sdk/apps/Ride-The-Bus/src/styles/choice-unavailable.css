@@ -41,12 +41,17 @@
   position: absolute;
   left: 16%;
   right: 16%;
-  top: calc(50% - 1.5px);
-  height: 3px;
+  /* Proportional, with a floor. 3px was a hairline across a 92px desktop
+     square and a tenth of a 29px Popout S one, so the strike read as a
+     different mark at each size. The floor keeps it a visible line where the
+     ratio would round it away, and the offset is exactly half the height so it
+     stays centred at every size. */
+  top: calc(50% - max(1px, var(--ui) * 0.135));
+  height: max(2px, calc(var(--ui) * 0.27));
   transform: rotate(-24deg);
   transform-origin: center;
   background: var(--ink);
-  border-radius: 2px;
+  border-radius: max(1px, calc(var(--ui) * 0.18));
   pointer-events: none;
 }
 
