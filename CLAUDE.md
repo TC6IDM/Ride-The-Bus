@@ -115,33 +115,130 @@ rounding it to 2.0× would wipe out the house edge.
   published `max_win` bound is 1400 against a true Classic ceiling of 1354.2, so
   the two are not the same number and the ladder must not treat them as one.
   Understating is the safe direction; `winTiers.test.ts` pins both directions.
+- **The win takeover is made of the round, not of gradients.** Its centrepiece
+  is the four cards the player just played, fanned — the same warm paper,
+  crimson crosshatch and chrome edge as every other card in the game, drawn from
+  the shared tokens rather than by importing `cards.css` (a stylesheet imported
+  into a second component gets a second scope class). `revealedCards` is
+  **snapshotted** into `celebration` at `showWinCelebration`, not referenced: the
+  round-start resets would empty the fan under a still-open overlay during an
+  auto run. All four slots come out as faces in practice — the reveal loop deals
+  every card whether the round busted or not — so the face-down branch is a
+  fallback for a null slot, **not a behaviour to promise in copy or tests**.
+  What this replaced was a scrim gradient, a conic gradient, a radial gradient
+  and a text stack, which is item for item the list Stake's rating notes give
+  for a 1-star release. Gradients may light a celebration; they cannot be what
+  it is made of.
+  - **The fan marks what actually happened**, using the board's own two marks
+    rather than new ones — a red `--loss` cross on the card that ended the round,
+    an amber `--forgiven` return arrow on the one a Second Chance let off.
+    `cards.css` is careful that those differ ("a red cross says the round ended
+    here, and this one carried on") and the celebration must not undo it. The
+    busted card is desaturated and dimmed; **the forgiven card is not**, because
+    dimming it would read as a second bust. Showing only the winning cards was
+    the alternative and loses the round: which guess failed, and on what card.
+  - **Exactly three shapes reach the takeover**, at most one mark each: a clean
+    sweep (no marks), a bust (one cross — Classic and High Stakes only, since a
+    card-1 miss keeps nothing and pays zero), and a forgiven-then-finished Second
+    Chance round (one arrow). A fourth exists in the books and **cannot get
+    here**: forgiven *and then* busted takes both haircuts on one round — half
+    the multiplier, then 30% of the remainder — and never clears the entry tier.
+    Measured across every drawable round of `sc_red_equal_equal_heart`, the
+    family's highest-ceiling mode: 382,729 of them, best payout **2.6×** against
+    an 11× floor. The `{:else if}` is therefore defensive, not load-bearing.
+    A Max Win is always a clean sweep for the same arithmetic.
+- **One veil for the whole ladder.** `--wc-veil` is set on `.wc-overlay`, not
+  per tier. It used to climb 0.46 → 0.70, so the room got darker on every
+  promotion — the rarest screen was the murkiest, and the scene visibly
+  re-dimmed four times inside a single count-up. The takeover establishes a
+  place once and stays in it; what escalates is the light, the colour, the hand
+  and the burst.
 - **Every win tier draws the whole celebration. Escalation is intensity, never
-  presence.** All five tiers are full-bleed and draw every layer — veil, two
-  soft counter-rotating conic sheens, bloom, and the suit burst; the `.tier-*`
-  rules only turn them up (`--wc-veil`, `--wc-sheen-op`, `--wc-sheen-dur`,
-  `--wc-bloom`, `--wc-throw`). Max alone adds a layer: the deck's own crosshatch,
-  sweeping once. **A tier that withholds a layer was tried and rejected** —
-  Big/Huge got a bounded "plate" and rendered as a grey rectangle while the
-  higher tiers looked untouched, so the ladder read as two unfinished screens.
-  If a tier should feel smaller, turn it down; do not take the scene away.
-- **The burst is suit marks, not sparks.** Hearts, diamonds, clubs and spades
-  through `SuitIcon`, tumbling outward — a card game's celebration made of its
-  own deck rather than the generic particle burst every casino template ships.
-  They take `--wc-hot` rather than card red/black: a black club on a dark scrim
-  is invisible. The sheen is **soft** conic sweeps for the same reason the burst
-  changed — hard-edged `repeating-conic-gradient` spokes are sunburst clipart and
-  strobe as they turn.
-- **The colour ramp is a heat climb** (gold → amber → orange → ember) with Max
-  *inverting* it — a cream core on brand crimson, the only tier lighter in the
-  middle than at the edge. Purple was removed: it already means
-  `--vol-overflow-ink` and `--ctl-advanced` two panels away, and colour here is
-  wayfinding.
-- **Which wins open the takeover is unchanged**: `winTierFor`'s `fullGameWin`
-  floor still puts every full game win on the ladder, so a 6.6× opens it at the
-  entry tier. Gating those to a board-level beat instead was tried and reverted —
-  the progression is the one players already learned. The cost is a known
-  cosmetic wart: a sub-10× full win is titled "Big Win" below the Big Win floor.
-  Fixing that needs its own label, which is a 17-locale change.
+  presence.** All five tiers are full-bleed and draw every layer — veil, beam,
+  fan and suit burst; the `.tier-*` rules only turn them up (`--wc-beam-op`,
+  `--wc-fan-spread`, `--wc-throw`) and `winCelebration.test.ts`
+  fails if one of them sets anything that is not a custom property. Max alone
+  adds a layer: the deck's own crosshatch, sweeping once. **A tier that
+  withholds a layer was tried and rejected** — Big/Huge got a bounded "plate" and
+  rendered as a grey rectangle while the higher tiers looked untouched, so the
+  ladder read as two unfinished screens. If a tier should feel smaller, turn it
+  down; do not take the scene away.
+  - **`--wc-fan-spread` is the rung, because it is the only one anyone could
+    see.** The ladder used to move sheen opacity and bloom diameter by 30–60% on
+    layers already sitting at 34–72% behind a blur — under the just-noticeable
+    threshold, so the only real difference between Big and Epic was the word and
+    the hue. The hand opening wider reads at a glance and is still intensity: a
+    test pins it monotonic across the five.
+- **The burst is suit marks, not sparks, and it is a moment rather than a
+  loop.** Hearts, diamonds, clubs and spades through `SuitIcon`, thrown once per
+  promotion — `WinCelebration` keys the container on `activeTier.id` to re-fire
+  it. Sixteen marks on *independent infinite* loops with delays to 2.1s never
+  shared a `t=0`, so at any frame they sat at sixteen unrelated radii and read as
+  dust on the lens; several also ended up in the frame corners and over the
+  control bar. Ten larger marks, one origin, one instant, thrown off the fan
+  rather than the viewport centre, fading before they reach an edge. **Keying is
+  right here and wrong for `.wc-title`** — that is the bug `promoteTitle` exists
+  to replace, and both are now pinned by tests.
+- **The light is one beam, not a spinning cone**, aimed from the upper right
+  because that is where `table.css` puts the light for the whole game. Two
+  counter-rotating conic sweeps plus a radial bloom plus an elliptical vignette
+  under the text all centred on one point, and on screen they composed into a
+  soft-edged grey-brown disc that read as a smudge or a half-loaded asset.
+  **Three ambient circles on one centre is not depth.** The text's ground is an
+  **edge-to-edge shadow band** now — full viewport width, so it has no side edge
+  to read as the rejected "plate", and it reaches up over the bottom of the fan
+  so the title is never cream type on white card faces.
+- **The board's numeric readouts are hidden while the takeover counts.**
+  `.running-win`, the four `.card-mult` chips and `.cb-lastwin` all print the
+  *settled* figure, and the overlay is semi-transparent: the segmented count-up
+  ran from $0.00 with "Full Game Win! $1,354.20" legible behind it for the whole
+  climb. `Game.svelte` sets `takeover-open` on `.game-layout`; `cards.css`
+  consumes it. The **card row goes entirely** — the fan is those same four cards
+  brought forward, and dimming it to 0.16 was tried first and left a ghost row
+  reading through the veil, which is worse than either showing it or not. One
+  hand on screen at a time. The choice row only dims: nothing in the overlay
+  duplicates it, but the squares encode the bet and are the loudest thing in the
+  game. The table, rail, chips and cups stay lit: the scene stays, the interface
+  recedes. A fourth readout added later must join that list —
+  `winCelebration.test.ts` names all three individually for that reason.
+- **The win ramp IS the volatility ramp.** Big is `--vol-sc` green, Huge
+  `--vol-base` yellow, Mega `--vol-hs` red, Epic `--vol-overflow` purple — the
+  four stops the bolt meter already spends on the control bar, referenced from
+  the same triplets so the two ladders cannot drift. Max alone stays off the
+  scale and keeps its *inversion*: a cream core on brand crimson, the only tier
+  lighter in the middle than at the edge.
+  - This replaced a bespoke gold→amber→orange→ember heat climb, and it
+    deliberately reverses the old "no purple here" rule. That rule existed
+    because `--vol-overflow` already means *this bet passed its family's
+    volatility ceiling*; the call now is that both readings are the same idea —
+    near the top of a scale — rather than two meanings competing for one hue,
+    and that a player who has already learned green→yellow→red→purple on the bet
+    display should not be made to learn a second ramp for wins.
+  - **The cards carry it too**: a tier-coloured rim and bloom on every card in
+    the fan, plus a specular glint at the beam's own 118°, so the escalation
+    reaches the thing the eye is already on rather than only the word above it.
+  - **The hand hops on every promotion** (`hopFan`), driven through
+    `element.animate()` with `composite: 'add'`. Both halves of that matter: a
+    CSS class would replace the `wc-fan-deal` fill and drop each card back to its
+    undealt transform, and without `add` the keyframes would overwrite
+    `transform` outright and snap every card to the centre of the fan, because
+    the tilt and offset live in that same property.
+- **Which wins open the takeover**: `winTierFor`'s `fullGameWin` floor puts a
+  **clean sweep** on the ladder at the entry tier however little it pays, so a
+  6.6× opens it. Gating those to a board-level beat instead was tried and
+  reverted — the progression is the one players already learned. The cost is a
+  known cosmetic wart: a sub-10× full win is titled "Big Win" below the Big Win
+  floor. Fixing that needs its own label, which is a 17-locale change.
+  - **A clean sweep is `isCleanSweep(bustedIndex, forgivenIndex)`** — four right,
+    nothing forgiven — not "did not bust". That distinction exists only because
+    Second Chance survives a wrong guess, and it replaces a per-family
+    `celebrateEveryFullWin: false` on `sc` that was too blunt. The old flag was
+    half right: forgiveness makes "reached card 4" the ordinary case, and
+    flooring those fired the takeover on most rounds. But suppressing the whole
+    family also swallowed the case the floor exists for — a genuine 4/4 in Second
+    Chance, the same 1-in-70 event that takes the screen over in Classic, which
+    paid in silence below 11×. Classic and High Stakes have no forgiveness, so
+    `forgivenIndex` is structurally always null there and they are untouched.
 - **Anything restoring a mode from a slug must apply `parsed.family`, not just
   the four guesses.** `parseModeName` returns five fields; the replay and resume
   effects in `Game.svelte` consumed four and dropped the family, which left a
@@ -198,8 +295,16 @@ rounding it to 2.0× would wipe out the house edge.
   occurrences is what the absence of that rule produced (four unrelated felt
   greens, three card reds, three golds, two blues). Two deliberate exemptions:
   `table.css`, whose colours are sampled measurements with the sampling recorded
-  beside them, and closed one-screen palettes (the five win-celebration tiers,
-  the eleven replay-info badges).
+  beside them, and closed one-screen palettes (the win-celebration tiers' cool
+  falloffs; their hot colours are `--vol-*` by reference).
+  - **The replay-info badges left that exemption**, and they are the argument
+    for keeping it narrow. Eleven hand-picked darks — `#1a5c1a` for Higher
+    against the board's `#2ecc71`, a brown for Outside against its magenta, an
+    olive for Equal against its gold — meant the one screen whose whole job is to
+    restate the bet restated it in colours the player had never seen. They are
+    `--choice-*` now, with `--on-choice-ink` for the three light fills. A palette
+    may be closed only when it is genuinely local; these were a second spelling
+    of the game's own data.
   - The exemption covers the palette, **not the derivation**. `--wc-ray` was a
     hand-copied `rgba()` of `--wc-hot` four lines below it — the same drift that
     made `--ctl-turbo-rgb` a different amber from `--ctl-turbo`. Each tier is a
@@ -329,7 +434,7 @@ between a one-row bar and a two-row one.
 
 ## Current state
 
-455/455 tests, 0 type errors, 0 CSS warnings, lint clean, and the
+471/471 tests, 0 type errors, 0 CSS warnings, lint clean, and the
 client reproduces all 76,800 published books exactly. The published math build
 (192 modes, RTP 96.0000% everywhere, spread 0.000000%, zero volatility
 violations) is generated and committed.
@@ -342,17 +447,133 @@ The math clears the **2-star** risk limits, not merely the 3-star ones: worst
 std 32.938 (limit 0.6–50.0), worst ETL 0.695 (limit 0.8), worst CVaR 568.8
 (limit 700), worst non-zero hit rate 1 in 2.03 (limit 1 in 20), P(≥5000×) zero.
 
+### Seeing the game, rather than reasoning about it
+
+Two things landed together and are worth knowing about before touching anything
+visual, because between them they turn "this should look right" into "this does".
+
+**A local replay RGS** (`scripts/replay-server.mjs`) serves any of the 192 modes
+out of the real published books.
+
+`npm run dev` / `pnpm run dev` is now the whole thing: it **reclaims ports 3001
+and 3010 first** (so a second run is a restart, not a second pair — vite used to
+slide to 3002 while the browser tab kept showing an hour-old build on 3001,
+which looks exactly like everything working), starts both, and opens the link
+builder. `--no-open` skips the tab; `dev:game` is raw vite if you want only that.
+
+**The dev port travels by environment variable, never on the command line**, and
+that is not a style preference. dev-all used to append `-- --port N
+--strictPort` to the inner script; npm *strips* the `--` separator before
+handing the rest to the script, pnpm passes it through as a literal argument. So
+under pnpm vite received `--host "--" "--port" "3021"`, ignored an argument list
+it could not parse, and came up on its own default 5173 while the builder went
+on linking to 3021 — silently, which is the same failure the port reclamation
+exists to prevent, arriving by a different route. `vite.config.js` reads
+`GAME_PORT` and sets `server.port` + `strictPort` from it. dev-all also spawns
+the inner script with whatever package manager started it, read off
+`npm_config_user_agent`.
+
+Six scenario aliases, not four — and **the server does no scanning of any kind.
+It reads every one of them out of `REPLAY_EVENTS.md`.**
+
+`max`/`big`/`win`/`loss` were read from the 192 lookup CSVs at boot, which cost
+**33 seconds** on the first landing-page load. `bustwin` and `forgiven` describe
+the SHAPE of a round rather than its size — whether it busted, whether it spent
+a Second Chance — which lives in the book events, and those were resolved by
+streaming a 215k-round book file on demand. Both are gone: the generator writes
+all six into `REPLAY_EVENTS.md` and the server parses that. First load is
+**0.11 s**, and the four table-derived figures were checked against the old
+CSV-derived ones mode for mode.
+
+- `bustwin` — busted and still paid enough to take the screen over. A round does
+  not have to be a full game win to celebrate.
+- `forgiven` — Second Chance only: spent its forgiveness, survived, finished big
+  enough to celebrate. The case `isCleanSweep` deliberately does not floor.
+
+**Regenerate after a math build** — `run.py` already calls
+`scripts/replay-events.js` at the end of every one, and that script now scans
+the books for those two columns. It can also be run on its own against an
+existing build: `node scripts/replay-events.js` (a few minutes, almost all of it
+the book scan).
+
+Three states on a round button, and they are different problems:
+
+| Shows | Means |
+|---|---|
+| `129.00x #1393` | resolved |
+| `none` | scanned, and this mode has no such round — **button greyed out** |
+| `rebuild` | the table predates these columns — run the generator |
+| `sc only` | `forgiven` off Second Chance — **button greyed out** |
+
+A greyed-out button is the point. `sc_red_lower_outside_heart` has zero drawable
+bust-win rounds (0 of 1110 eligible), and the page used to let you build that
+link anyway — the game then opened an error modal reading `RGS responded 404`.
+Showing the answer is not the same as refusing the pick, which is the lesson
+Equal-then-Inside already taught this page. Switching mode also repairs a
+now-impossible selection.
+
+**The round-details panel shows the ID the RGS served, not the URL parameter.**
+The server returns `bookId` (a local extension Stake does not send) and
+`replayEventId()` in `Game.svelte` prefers it, falling back to `?event=` — which
+is the production path, since a real replay URL always carries the ID. Without
+that, `event=bustwin` printed "Event #bustwin".
+
+The builder also has a **game-port field**, defaulting to 3001 and remembered in
+`localStorage`, because vite does not always land there.
+
+**Headless browser driving over CDP** — `scripts/shoot.mjs`, `npm run shots`.
+Node 22+ ships a `WebSocket` client and Playwright's chromium is already on disk
+under `%LOCALAPPDATA%\ms-playwright`, so it can launch Chrome, open a replay
+URL, click through the round details, poll for each tier promotion and
+screenshot at any viewport — with **no new dependency in the project**, which
+matters because the bundle is inlined and bundle size is a 3-star criterion.
+
+```
+npm run shots              # five tiers, desktop
+npm run shots -- --sizes   # a max win at each of the seven target sizes
+npm run shots -- --intro   # the intro fan and the replay details panel
+npm run shots -- --reduced # prefers-reduced-motion
+npm run shots -- --mode sc_red_equal_equal_heart --event forgiven
+```
+
+**Shots are a working surface, not an archive.** `scripts/.shots/` is
+git-ignored and every run overwrites what it finds. Re-shoot after a visual
+change rather than reasoning about a stale image, and delete anything that no
+longer shows what it claims to - a screenshot of a screen that has since moved
+on is worse than none, because it looks like evidence. Nothing outside that
+directory should link to a file inside it.
+
+This is how the win takeover was actually looked at, and every defect fixed in
+that pass was invisible in the source and obvious in a screenshot: three ambient
+circles that composed into a lens smudge, sixteen suit marks that never shared a
+start, the settled payout legible behind the blur, a fan that covered its own
+headline on a phone, and an intro fan that split into two half-fans leaning off
+opposite sides when it wrapped 2-per-row. **If a change is visual, drive it and
+look.**
+
 ## Outstanding
 
-- **Win takeover: verify on real hardware, not in a desktop browser.** The
-  overlay runs a full-viewport `backdrop-filter: blur(5px) saturate(0.72)` plus
-  16 `drop-shadow`ed suit marks on transform loops — cheap on desktop, not
-  necessarily on the older Android and iOS devices Stake tests. If it drops
-  frames, drop the blur on coarse pointers (keep the veil) and drop the marks'
-  `filter` before touching anything else; do not go back to blacking out the
-  table. All five tiers also want eyeballing at all seven target sizes — the
-  burst radius is a large fraction of a 400×225 Popout S, which is why
-  `--wc-throw` is pulled back under `max-height: 380px`.
+- **Win takeover: still wants real hardware, but the perf risk is mostly
+  spent.** The blur is `blur(2px) saturate(0.86)` and is dropped entirely under
+  `@media (pointer: coarse)` — that was the pre-emptive fix this list used to
+  defer, and it is free now that the text sits on its own shadow band rather
+  than depending on the blur for legibility. The burst is ten one-shot marks
+  instead of sixteen on infinite loops. What remains for a device: the fan's
+  four `box-shadow`ed cards and the `drop-shadow` on the marks. If it still
+  drops frames, take the marks' `filter` first; do not go back to blacking out
+  the table.
+  - All five tiers **have** now been eyeballed at Desktop, Laptop, Popout L,
+    Popout S, Mobile M and Mobile L, on Classic and High Stakes, including a
+    busted-but-paying round and `prefers-reduced-motion`. Driven headless over
+    CDP against the local replay RGS, not by hand — see the note on browser
+    automation below. Mobile S (320×568) and a real device are still open.
+  - Two responsive traps are recorded in the CSS because both cost a pass:
+    `.wc-fan` is a **child of `.wc-body`**, not a viewport-anchored sibling —
+    anchored to the viewport it sized in `--ui` while the title is capped in
+    `vw`, so on a 375px phone (title 41px, `--ui` 7.5px) the word landed across
+    the middle of the cards. And the deck sweep's mask percentages are measured
+    against an element inset `-60%`, i.e. 220% of the viewport, so every value
+    there lands 2.2× wider on screen than it reads.
 - **B2 — art pass. Half done; the remaining half is assets, not treatment.**
   Stake names "over-reliance on generic AI-generated assets — standard fonts,
   gradients, emoji icons and border effects" as a top cause of a 1-star rating,
@@ -401,13 +622,23 @@ std 32.938 (limit 0.6–50.0), worst ETL 0.695 (limit 0.8), worst CVaR 568.8
     it. Nothing reaches the 44 px *comfortable* target: four cards across cap
     `--ui` at 2.265vw, and 44 px bar icons overflowed a 375 px viewport. Table
     in `RGS_TEST_PLAN.md` §11. "Popout S/L" is still a named responsive check.
-  - Tile assets: **three** files with fixed names — `RideTheBus-BG.png`,
-    `RideTheBus-FG.png`, `TakeoverCasino-Logo.png` — BG+FG ≤ 3 MB combined.
-    Two of three are in: `RideTheBus-BG.jpg` (499 KB) and `RideTheBus-FG.png`
-    (1.5 MB), 2.0 MB combined against the 3 MB cap. **`TakeoverCasino-Logo.png`
-    is missing** and has to come from the studio — it is a real company mark, not
-    something to generate. README's older 4-layer Tile Editor description has
-    been corrected.
+  - Tile assets: **done, and they live in `submission/`, not `static/`.** All
+    three fixed names are present — `RideTheBus-BG.jpg` (1536×1024, 499 KB),
+    `RideTheBus-FG.png` (1254×1254, 1.50 MB) and `TakeoverCasino-Logo.png`
+    (710×710, 726 KB). BG+FG is **1.99 MB against the 3 MB cap**, with a megabyte
+    of headroom; there is no documented cap on the provider logo.
+    - They were in `static/`, which is copied wholesale into the build output,
+      so every deployed build carried 2.7 MB of artwork no player ever fetches.
+      `static/` is 726 KB now — just `logo.png`, the only one the game loads.
+      **Do not move them back**; they go up through the Tile Editor.
+    - `TakeoverCasino-Logo.png` is byte-identical to `logo.png`, which is
+      correct rather than sloppy: the chip on the card backs, the loader and the
+      table's deck prop *is* the Takeover Casino mark. Kept as two files because
+      they have different owners — one is resolved through `${base}/logo.png`,
+      the other's filename is dictated by Stake.
+    - Still open on assets: `logo.png` is 710×710 at 726 KB and is drawn at
+      ~150 px. Sized variants or an SVG would be the single biggest bundle win
+      left. README's older 4-layer Tile Editor description has been corrected.
   - The 52 live-session checks in `RGS_TEST_PLAN.md` remain unrun.
   - **Closed on `ui-art-pass`, listed so they are not re-opened by accident:**
     - *"High cost bet modes require confirmation before activation."* The mode
