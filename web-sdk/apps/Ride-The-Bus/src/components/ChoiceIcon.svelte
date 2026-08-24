@@ -93,6 +93,42 @@
 {/if}
 
 <style>
+	/* ---- The keyline -------------------------------------------------------
+	 * WCAG 1.4.11 wants 3:1 for a graphic that carries meaning, and two of
+	 * these were nowhere near it: a white triangle on --choice-higher measured
+	 * 2.10:1 and white arrows on --choice-inside 2.30:1. The pair that has to
+	 * read as OPPOSITES was legible at wildly different levels.
+	 *
+	 * The fills do not move. They are the colours players recognise the row by,
+	 * and a pass that rederived all four from the scene was rejected on the
+	 * look - tokens.css records that as the owner's call. So the icon gets a
+	 * hard dark outline instead, which lifts it clear of any fill underneath.
+	 *
+	 * FOUR ZERO-BLUR DROP SHADOWS, not a stroke. Half these icons are stroked
+	 * paths with no fill and half are filled shapes with no stroke, so there is
+	 * no single stroke attribute that outlines both; a filter sits outside that
+	 * distinction and outlines whatever was painted. Zero blur is what makes it
+	 * a keyline rather than a glow - a soft shadow cannot be measured to a
+	 * contrast ratio, and measuring it is the whole point.
+	 *
+	 * Scaled off --ui so it stays one device pixel-ish at every size rather
+	 * than becoming a black halo on a phone.
+	 *
+	 * NOT on the equals badge. That glyph is two short bars about 0.585 --ui
+	 * tall in total, so a keyline sized for the arrows is a large fraction of
+	 * the gap between them - it closed up and the pair read as a single thick
+	 * line. It does not need one anyway: it sits on its own gold badge rather
+	 * than directly on a choice fill, so it has never had the contrast problem
+	 * the others do. */
+	svg:not(.eq-icon) {
+		filter:
+			drop-shadow(var(--keyline) 0 calc(var(--ui) * 0.09) 0)
+			drop-shadow(var(--keyline) 0 calc(var(--ui) * -0.09) 0)
+			drop-shadow(var(--keyline) calc(var(--ui) * 0.09) 0 0)
+			drop-shadow(var(--keyline) calc(var(--ui) * -0.09) 0 0);
+		--keyline: var(--choice-icon-keyline);
+	}
+
 	/* Sized to the typed triangle it replaces (~0.72em of the 22.4px choice
 	   font), so the square looks unchanged - only the font dependency goes away. */
 	.hl-icon {

@@ -59,6 +59,7 @@
     parseModeName,
     type ModeFamily,
   } from '../game/modes';
+  import { chipColour, labelEms, splitChipLabel } from '../game/betChips';
   import {
     FAMILY_BOLTS,
     FAMILY_BOLT_CEILING,
@@ -341,6 +342,7 @@
     const lv = stateConfig.betAmountOptions;
     return lv && lv.length ? [...lv].sort((a, b) => a - b) : DEFAULT_BET_LEVELS;
   };
+
   const autoRoundsValid = () =>
     autoInfinite || (Number.isFinite(Number(autoRoundsInput)) && Math.floor(Number(autoRoundsInput)) >= 1);
   // Stop the auto run the moment a round is won outright (all 4 cards correct,
@@ -672,6 +674,21 @@
       // no decimals to offer.
       betDecimals(stateConfig.betLimits, API_AMOUNT_MULTIPLIER, currencyDecimals(stateBet.currency)),
     );
+  }
+
+  /**
+   * Enter in the bet field: snap the amount and close the menu.
+   *
+   * formatBetInput already runs on blur and does the snapping, but a keydown
+   * fires BEFORE the field loses focus - so this calls it directly rather than
+   * relying on the blur that closing the popup happens to cause. Escape is left
+   * to the popup's own handler.
+   */
+  function onBetInputKey(event: KeyboardEvent) {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    formatBetInput();
+    closePopup();
   }
 
   $effect(() => {
@@ -2053,7 +2070,7 @@
     // them and is the more specific match.
     if (el.closest('.equal-btn')) return 'equal';
     if (el.closest('.half-btn, .third-btn, .quad-btn')) return 'choice';
-    if (el.closest('.cb-step, .stepper-btn, .bet-cell, .cb-bet-display')) return 'chip';
+    if (el.closest('.cb-step, .stepper-btn, .bet-chip, .spin-pill, .cb-bet-display')) return 'chip';
     if (el.closest('.cb-spin, .cb-round, .cb-float, .popup-start')) return 'primary';
     if (el.closest('.switch, .cb-icon')) return 'toggle';
     return 'soft';
@@ -2544,7 +2561,27 @@
             <rect x="19.6" y="5" width="2.4" height="14" rx="1.2" />
           </svg>
         {:else}
-          <svg class="cb-spin-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8A5.87 5.87 0 0 1 6 12c0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" /></svg>
+          <!-- A card coming off the deck, not two circular arrows.
+               The arrows are the universal RELOAD mark, and they were the
+               resting glyph on the primary bet button of a game where nothing
+               rotates and nothing reels - four cards are dealt. Its two other
+               states were already right: a fast-forward for skip and a square
+               for stop, so the icon family was three metaphors deep.
+
+               Two rounded rects: the deck square-on, and the card being dealt
+               off it, tilted. Reads at 36px, which is the floor this button
+               hits on a 320px phone. -->
+          <svg class="cb-spin-svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect
+              x="2.6" y="7.4" width="9.2" height="12.6" rx="1.6"
+              fill="currentColor" opacity="0.55"
+            />
+            <rect
+              x="11.4" y="3.2" width="9.2" height="12.6" rx="1.6"
+              fill="currentColor"
+              transform="rotate(19 16 9.5)"
+            />
+          </svg>
         {/if}
       </button>
 
@@ -2725,22 +2762,76 @@
       <div class="popup-head"><span>{t('Bet Menu')}</span><button class="popup-close" onclick={closePopup} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
       <div class="bet-entry">
         <span class="bet-entry-cur">{currencySymbol()}</span>
-        <input class="bet-entry-input" type="text" inputmode="decimal" bind:value={betInput} onblur={formatBetInput} placeholder="0.00" aria-label={t('Custom bet amount')} />
+        <!-- Enter commits. Typing an amount and pressing Enter is what every
+             text field in a form does, and without it the only way out of this
+             field was to tap the panel's close button - which reads as
+             cancelling, not confirming, so a typed amount felt unsafe. -->
+        <input
+          class="bet-entry-input"
+          type="text"
+          inputmode="decimal"
+          bind:value={betInput}
+          onblur={formatBetInput}
+          onkeydown={onBetInputKey}
+          placeholder="0.00"
+          aria-label={t('Custom bet amount')}
+        />
       </div>
       <span class="popup-sub">{t('Quick Bets')}</span>
       <!-- Quick picks show what the round will COST, matching the control bar.
            Showing the base bet here and the cost there would leave a player
            tapping "10.00" and being charged 20.00 with no way to connect the
            two. The base bet is on the second line where the mode multiplies. -->
-      <div class="bet-grid">
-        {#each betLevels() as lv}
-          <button class="bet-cell" class:active={Math.abs(betValue() - lv) < 1e-9} onclick={() => setBetLevel(lv)}>
-            <span class:cb-val-multiplied={familyRules().cost !== 1}>
-              {numberToCurrencyString(roundCost(lv))}
+      <!-- CHIPS, not a grid of cells. The table this popup floats over is laid
+           with five sampled chip denominations, and the bet picker used to be
+           grey rectangles - a card-and-chips game choosing its money out of a
+           generic UI grid. Same colours as the felt (tokens.css), drawn
+           top-down rather than in the table's perspective.
+
+           A wrapping ROW, not a grid: betLevels() is the RGS's list and can be
+           any length, and the old 4-across grid left a ragged 4/4/2 last row.
+           Chips wrap ragged without looking broken. -->
+      <div class="bet-chips">
+        {#each betLevels() as lv, index}
+          {@const label = splitChipLabel(numberToCurrencyString(roundCost(lv)))}
+          <button
+            class="bet-chip chip-{chipColour(index, betLevels().length)}"
+            class:active={Math.abs(betValue() - lv) < 1e-9}
+            aria-pressed={Math.abs(betValue() - lv) < 1e-9}
+            aria-label={numberToCurrencyString(roundCost(lv))}
+            onclick={() => setBetLevel(lv)}
+          >
+            <!-- --ems is how wide this label prints, so the CSS can solve a
+                 font-size that FILLS the face rather than every chip sharing
+                 one constant sized for a worst case that never arrives. See
+                 labelEms() and the note on .bet-chip-value. -->
+            <span class="bet-chip-face" class:has-cur={label.currency.length > 1}>
+              <!-- A SYMBOL rides with the number - "$1,000" is what a chip in
+                   this currency says. A CODE cannot: "NOK 12,500" is ten
+                   characters and there is no legible size for that on a disc,
+                   so it takes its own line above. Either way the figure keeps
+                   its money sign. -->
+              {#if label.currency.length > 1}
+                <span class="bet-chip-cur" style="--cur-ems: {labelEms(label.currency)}">
+                  {label.currency}
+                </span>
+                <span
+                  class="bet-chip-value"
+                  class:cb-val-multiplied={familyRules().cost !== 1}
+                  style="--ems: {labelEms(label.amount)}"
+                >
+                  {label.amount}
+                </span>
+              {:else}
+                <span
+                  class="bet-chip-value"
+                  class:cb-val-multiplied={familyRules().cost !== 1}
+                  style="--ems: {labelEms(label.currency + label.amount)}"
+                >
+                  {label.currency}{label.amount}
+                </span>
+              {/if}
             </span>
-            {#if familyRules().cost !== 1}
-              <span class="bet-cell-base">{numberToCurrencyString(lv)} × {familyRules().cost}</span>
-            {/if}
           </button>
         {/each}
       </div>
@@ -2780,11 +2871,15 @@
         <span class="popup-sub">{t('Number of Spins')}</span>
         <div class="spin-grid">
           {#each AUTOSPIN_PRESETS as p}
-            <button class="bet-cell" class:active={!autoInfinite && Math.floor(Number(autoRoundsInput)) === p} onclick={() => setAutoRounds(p)}>{p}</button>
+            <button class="spin-pill" class:active={!autoInfinite && Math.floor(Number(autoRoundsInput)) === p} onclick={() => setAutoRounds(p)}>{p}</button>
           {/each}
           <!-- Unlimited spans the last row: nine cells in a 4-column grid would
                otherwise leave a ragged single cell. -->
-          <button class="bet-cell bet-cell-wide" class:active={autoInfinite} onclick={toggleAutoInfinite} aria-label={t('Unlimited spins')}>{@render iconInfinity()}</button>
+          <!-- A PEER pill, not a full-width bar. It used to span the whole last
+               row because a ninth cell in a 4-column grid sat alone against
+               three empty columns; the row wraps now, so unlimited is just the
+               longest option in it. -->
+          <button class="spin-pill spin-pill-inf" class:active={autoInfinite} onclick={toggleAutoInfinite} aria-label={t('Unlimited spins')}>{@render iconInfinity()}</button>
         </div>
         <div class="rounds-selector autospin-input">
           <div class="rounds-field">
@@ -2794,9 +2889,12 @@
               <input class="rounds-input" type="text" inputmode="numeric" bind:value={autoRoundsInput} onblur={formatAutoRounds} aria-label={t('Number of spins')} />
             {/if}
           </div>
+          <!-- Plus and minus, matching the bet steppers on the control bar. The
+               chevrons that were here made this the build's SECOND way to nudge
+               a number, three inches from the first. -->
           <div class="rounds-stepper">
-            <button type="button" class="stepper-btn" onclick={() => stepAutoRounds(1)} aria-label={t('More spins')}>{@render iconChevronUp()}</button>
-            <button type="button" class="stepper-btn" onclick={() => stepAutoRounds(-1)} aria-label={t('Fewer spins')}>{@render iconChevronDown()}</button>
+            <button type="button" class="stepper-btn" onclick={() => stepAutoRounds(1)} aria-label={t('More spins')}>{@render iconPlus()}</button>
+            <button type="button" class="stepper-btn" onclick={() => stepAutoRounds(-1)} aria-label={t('Fewer spins')}>{@render iconMinus()}</button>
           </div>
         </div>
         <button class="action-button popup-start" onclick={startAutoFromPopup} disabled={!betIsValid() || !allChoicesMade() || !autoRoundsValid()}>

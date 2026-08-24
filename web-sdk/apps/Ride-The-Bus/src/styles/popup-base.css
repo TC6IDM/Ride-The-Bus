@@ -63,7 +63,19 @@
   padding: calc(var(--ui-bar) * 1.27);
   border-radius: calc(var(--ui-bar) * 1.09);
   border: 1px solid var(--panel-edge);
-  background: var(--panel);
+  /* A lit FACE, not just a lit line. The inset hairlines below give the panel
+     an edge; this gives it a surface for the edge to belong to - the light is
+     at the upper right, the same one the table, the chips and the cups are
+     lit by, so the fall-off runs down and left. Short, because a gradient
+     running the full height would read as a gradient rather than as light. */
+  background:
+    linear-gradient(
+      168deg,
+      rgba(255, 240, 220, 0.055) 0%,
+      rgba(255, 240, 220, 0.018) 26%,
+      transparent 52%
+    ),
+    var(--panel);
   /* FOUR layers, and the first two are the table's own idiom rather than a
      modal drop-shadow.
      

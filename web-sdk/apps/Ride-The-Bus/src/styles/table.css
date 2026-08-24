@@ -463,47 +463,52 @@
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3);
 }
 
-/* Three denominations. Red is the brand red the cards and the logo use, green
-   answers the felt, and black is the house colour - together they are the
-   logo's own palette rather than the photograph's red-and-green pair. The
-   spots are cooled from the render's warm #DBC4B1 toward the cards' #F8F8F8
-   so chips and cards belong to one set. */
+/* THE VALUES LIVE IN tokens.css. They are used twice now - here as perspective
+   props on the felt, and in the bet menu as top-down discs - and a colour used
+   in two places is named centrally, which is that file's whole argument. What
+   stays here is the SAMPLING: which colours these are and why, which is a
+   measurement record about this scene.
+
+   Red is the brand red the cards and the logo use, green answers the felt, and
+   black is the house colour - together the logo's own palette rather than the
+   reference photograph's red-and-green pair. The spots are cooled from the
+   render's warm #DBC4B1 toward the cards' #F8F8F8, so chips and cards read as
+   one set. Blue is the odd high denomination. The white chip inverts the
+   scheme: a pale chip cannot carry pale spots, so its spots are the one cool
+   value in the set. */
 .chip-red {
-  --chip: #931228;
-  --chip-face: #a80828;
-  --chip-dark: #6c0619;
-  --chip-cream: #e0dad0;
+  --chip: var(--chip-red);
+  --chip-face: var(--chip-red-face);
+  --chip-dark: var(--chip-red-dark);
+  --chip-cream: var(--chip-red-cream);
 }
 
 .chip-green {
-  --chip: #235c26;
-  --chip-face: #2a682c;
-  --chip-dark: #113611;
-  --chip-cream: #dcd6cb;
+  --chip: var(--chip-green);
+  --chip-face: var(--chip-green-face);
+  --chip-dark: var(--chip-green-dark);
+  --chip-cream: var(--chip-green-cream);
 }
 
 .chip-black {
-  --chip: #211d1c;
-  --chip-face: #2a2624;
-  --chip-dark: #100e0d;
-  --chip-cream: #e8e4dc;
+  --chip: var(--chip-black);
+  --chip-face: var(--chip-black-face);
+  --chip-dark: var(--chip-black-dark);
+  --chip-cream: var(--chip-black-cream);
 }
 
-/* One blue in the set, as the odd high denomination. */
 .chip-blue {
-  --chip: #17457a;
-  --chip-face: #1c4f8a;
-  --chip-dark: #0d2b4f;
-  --chip-cream: #dedbd4;
+  --chip: var(--chip-blue);
+  --chip-face: var(--chip-blue-face);
+  --chip-dark: var(--chip-blue-dark);
+  --chip-cream: var(--chip-blue-cream);
 }
 
-/* The white one inverts the scheme - a pale chip cannot carry pale spots, so
-   --chip-cream here is the one cool colour in the set, a light blue. */
 .chip-white {
-  --chip: #cfc8bb;
-  --chip-face: #ece8e0;
-  --chip-dark: #cec6b9;
-  --chip-cream: #077dd0;
+  --chip: var(--chip-white);
+  --chip-face: var(--chip-white-face);
+  --chip-dark: var(--chip-white-dark);
+  --chip-cream: var(--chip-white-cream);
 }
 
 /* ---- cup ---------------------------------------------------------------- */

@@ -147,13 +147,19 @@
      Neutral-dark with a faint green cast keeps it kin to the felt without
      becoming a second green, and lets the EDGE do the work of saying what the
      panel is made of - see --panel-lit / --panel-shade below. */
-  --panel: #191c1b;
+  /* Warmed off neutral toward the wood it floats over. #191c1b was a hair
+     green and read as the flat grey every generated casino modal ships;
+     the point of the popup material is that it belongs to THIS table. */
+  --panel: #1c1917;
   /* The scene lights everything from the upper right and lands every shadow to
      the lower left (table.css says so four times over). Panels obey it too: a
      warm lit edge along the top, a dark one along the bottom. A uniform 1px
      hairline all the way round is the tell that a box was drawn rather than
      lit. */
-  --panel-lit: rgba(255, 240, 220, 0.14);
+  /* The lit top edge. Was 0.14, which on a 1px line is below the threshold of
+     being seen at all - popup-base.css built the table's whole lighting model
+     and then drew it too faint to notice, so the panels read as flat. */
+  --panel-lit: rgba(255, 240, 220, 0.3);
   --panel-shade: rgba(0, 0, 0, 0.55);
   /* Hairlines on panels are warm, matching the light rather than the pure
      white the rest of the app uses over felt. */
@@ -298,10 +304,22 @@
        Lower    white triangle on #c0392b   5.44:1   passes
 
      Note that the pair which has to read as OPPOSITES has very unequal
-     legibility either way. The fills do not have to move to fix this: giving
-     the two icons a dark stroke, or an outline, lifts them clear while leaving
-     every button exactly the colour it is now. That is the cheap fix if it is
-     ever wanted. */
+     legibility either way.
+
+     FIXED, by the cheap route this note named. Every choice icon now carries a
+     hard dark keyline (--choice-icon-keyline, applied in ChoiceIcon.svelte) and
+     the fills are exactly the colours they were. 1.4.11 asks that the graphic
+     be distinguishable from its background, and the keyline is what does that
+     now rather than the white:
+
+       Higher   keyline on #2ecc71   8.97:1
+       Inside   keyline on #00bcd4   8.21:1
+       Outside  keyline on #d81ce0   4.63:1
+       Lower    keyline on #c0392b   3.47:1
+
+     All four pass, and the two that were failing are now the two clearest -
+     which also settles the opposites problem, since the pair is no longer
+     legible at wildly different levels. */
   --choice-black: #16181c;
   --choice-red: #c0392b;
   --choice-higher: #2ecc71;
@@ -313,6 +331,57 @@
   --choice-equal-deep: #d29d05;
   --choice-equal-edge: rgba(74, 48, 2, 0.62);
   --suit-red: #e74c3c;
+  /* The keyline under every choice icon - see the note above. Near-black
+     rather than pure, so it belongs to the same ink family as --on-vol-ink
+     and the card face. */
+  --choice-icon-keyline: #14110a;
+
+  /* ==== Chips ============================================================
+     Five denominations, each four values: the cylinder wall, the lit top
+     face, the shaded underside and the spot colour.
+
+     THESE LIVE HERE NOW BECAUSE THEY ARE USED TWICE. table.css draws them as
+     perspective props on the felt; the bet menu draws them top-down as the
+     bet levels. That is exactly the condition this file exists for - "any
+     colour used in more than one place is named here" - and leaving them in
+     table.css would have meant the bet menu carrying a second copy, which is
+     the drift that produced four unrelated felt greens.
+
+     table.css keeps the SAMPLING NOTES beside its own rules: the reasoning
+     about which colours these are is a measurement record and belongs with
+     the scene it was measured from. Only the values moved.
+
+     Red is the brand red the cards and the logo use, green answers the felt,
+     and black is the house colour - together the logo's own palette rather
+     than the reference photograph's red-and-green pair. The spots are cooled
+     from the render's warm #DBC4B1 toward the cards' #F8F8F8 so chips and
+     cards belong to one set. Blue is the odd high denomination. The white one
+     inverts the scheme: a pale chip cannot carry pale spots, so its spot
+     colour is the one cool value in the set. */
+  --chip-red: #931228;
+  --chip-red-face: #a80828;
+  --chip-red-dark: #6c0619;
+  --chip-red-cream: #e0dad0;
+
+  --chip-green: #235c26;
+  --chip-green-face: #2a682c;
+  --chip-green-dark: #113611;
+  --chip-green-cream: #dcd6cb;
+
+  --chip-black: #211d1c;
+  --chip-black-face: #2a2624;
+  --chip-black-dark: #100e0d;
+  --chip-black-cream: #e8e4dc;
+
+  --chip-blue: #17457a;
+  --chip-blue-face: #1c4f8a;
+  --chip-blue-dark: #0d2b4f;
+  --chip-blue-cream: #dedbd4;
+
+  --chip-white: #cfc8bb;
+  --chip-white-face: #ece8e0;
+  --chip-white-dark: #cec6b9;
+  --chip-white-cream: #077dd0;
 
   /* The intro tooltip and the "why is Inside off" box - green on green, so
      they belong to the table rather than to the slate chrome. */
