@@ -11,7 +11,21 @@
 }
 
 /* Each card sits in a slot with its cumulative win multiplier above it. */
+/* Pinned to the CARD's width, not to whatever the multiplier chip above it
+   happens to measure.
+
+   Without this the slot is as wide as its widest child, and the chip is that
+   child once the figure gets long: measured on a High Stakes maximum, the four
+   slots came out 97 / 97 / 99 / 100px, because "1910.20x" is wider than
+   "1.90x". The cards then sat at four slightly different pitches and shifted
+   between stages as each chip appeared - small, but it is the card row moving
+   under the player mid-round, and it grows with the ladder.
+
+   The chip keeps its own padding and simply overhangs into the gap when it
+   needs to; it is centred, so a couple of pixels either side land in the space
+   between cards rather than on top of one. */
 .card-slot {
+  width: var(--card-w);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -38,6 +52,9 @@
   /* box-sizing is border-box globally, so the padding below comes out of this
      height rather than adding to it - the card row does not move. */
   min-height: calc(var(--ui) * 2.18);
+  /* The slot is pinned to the card width above, so a long figure has to be
+     allowed out of it rather than widening it or wrapping onto two lines. */
+  white-space: nowrap;
   display: flex;
   align-items: center;
   justify-content: center;

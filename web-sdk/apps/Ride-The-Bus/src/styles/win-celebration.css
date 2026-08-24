@@ -765,13 +765,29 @@
 	   still wins on face and weight, the amount on presence - which is the right
 	   way round for a screen whose entire job is to hand over a figure. The vw
 	   cap matches the title's so neither can outgrow the other on a wide,
-	   short window. */
-	font-size: min(calc(var(--ui) * 5.2), 11vw);
+	   short window.
+
+	   THE THIRD TERM IS THE ONE THAT MATTERS ON A PHONE. The first two cap the
+	   font size and say nothing about the LINE's width, so a long currency
+	   string overflows however small the cap is. High Stakes' 1910.20x on a
+	   high-denomination currency settles at "NGN 3,820,400,000.00", and at
+	   Mobile M that ran off both edges of the viewport - the one figure this
+	   screen exists to hand over, clipped at both ends.
+
+	   --amount-ems is how wide the SETTLED figure prints, published by
+	   WinCelebration from props.amount (not from the climbing value, or the
+	   headline would re-size on every frame of the count). Dividing the width
+	   available by it gives the size at which the whole string fits. 88vw
+	   rather than 100 leaves the margin the body already wants. */
+	font-size: min(calc(var(--ui) * 5.2), 11vw, calc(88vw / var(--amount-ems, 8)));
 	font-weight: 800;
 	line-height: 1.1;
 	color: var(--ink-cream);
-	/* Tabular figures stop the width jittering as digits change during the
-	   count - without it the whole line shivers on every frame. */
+	/* Declared for intent, and currently inert: Poppins ships no `tnum` feature,
+	   so this is a no-op here and the figures stay proportional. What actually
+	   holds the line steady during the count is the font-size being solved once
+	   from the settled string above, so the box is already as wide as it will
+	   ever need to be. */
 	font-variant-numeric: tabular-nums;
 	text-shadow: 0 0 calc(var(--ui) * 1.4) rgba(var(--ink-rgb), 0.35);
 	/* Runs once, on mount - nothing below may set `animation` on this element or

@@ -226,6 +226,12 @@
    Fitted like the value, but capped lower: the code is subordinate to the
    figure and must not out-shout it on a three-letter currency. */
 .bet-chip-cur {
+  /* Same ink as the figure it belongs to. It had none of its own, so it fell
+     through to whatever the button inherited and came out near-black on the
+     dark chips - the one line on the chip that names the currency, unreadable
+     on four of the five denominations. The white chip inverts both together,
+     below. */
+  color: var(--ink);
   font-size: min(
     calc(var(--chip-d) * 0.17),
     calc(var(--chip-d) * var(--fit) / var(--cur-ems, 2.4))
@@ -233,7 +239,10 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  opacity: 0.72;
+  /* Barely under 1. The hierarchy between the code and the figure is carried by
+     SIZE - the code is a fraction of the height - so the ink does not also have
+     to be knocked back, and at 0.72 it stopped reading as white. */
+  opacity: 0.86;
 }
 
 .bet-chip-value {

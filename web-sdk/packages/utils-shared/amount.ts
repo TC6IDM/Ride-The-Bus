@@ -12,7 +12,12 @@ import { currencyDecimals, displayFractionDigits } from './currency';
 
 export { currencyDecimals, displayFractionDigits };
 
-const NO_LOCALISATION_CURRENCY_MAP: Record<string, string> = {
+/**
+ * EXPORTED - local addition. The bet-entry field needs the same spelling for
+ * these codes as the formatter uses, and it had its own copy that was missing
+ * XEC: the balance beside it read "SC" while the field said "XEC". One map.
+ */
+export const NO_LOCALISATION_CURRENCY_MAP: Record<string, string> = {
 	XGC: 'GC',
 	XSC: 'SC',
 	// LOCAL ADDITION to the Stake SDK - re-apply if this package is updated from

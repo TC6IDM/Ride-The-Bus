@@ -59,7 +59,8 @@
     parseModeName,
     type ModeFamily,
   } from '../game/modes';
-  import { chipColour, labelEms, splitChipLabel } from '../game/betChips';
+  import { chipColour, splitChipLabel } from '../game/betChips';
+  import { labelEms } from '../game/typeFit';
   import {
     FAMILY_BOLTS,
     FAMILY_BOLT_CEILING,
@@ -85,7 +86,11 @@
   // never drift from the one the math is actually built and reweighted to.
   import gameConfig from '../game/config';
   import { t } from '../i18n/i18nDerived';
-  import { currencyDecimals, numberToCurrencyString } from 'utils-shared/amount';
+  import {
+    currencyDecimals,
+    numberToCurrencyString,
+    NO_LOCALISATION_CURRENCY_MAP,
+  } from 'utils-shared/amount';
   import { API_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
 
   // Stake Engine requires every bet to be a single, independent, stateless
@@ -598,6 +603,105 @@
     stateBet.betAmount = raw !== '' && !isNaN(v) && v >= 0 ? v : 0;
   });
 
+  /**
+   * Shrink an element's type until its content fits its own box.
+   *
+   * WHY. The control bar's three readouts - balance, last win, bet - reserve
+   * fixed widths, and control-bar.css records what they were measured from:
+   * "$99,999,999.00", "$5,000,000.00", "$1,000,000.00". Every one of those is a
+   * USD assumption, and the RGS supports currencies whose units are worth a
+   * thousandth as much. Measured in the running game at a 2,000,000 NGN cap,
+   * the settled figure is "NGN 11,461,200,000.00" - which wanted 152px of a
+   * 119px box on Mobile L and simply spilled, and on Laptop and Popout L
+   * shoved the whole bar onto a second row.
+   *
+   * Neither a wider reservation nor a smaller constant can fix that: there is
+   * no fixed width that is right for both "$1.00" and a twelve-figure naira
+   * amount. The type has to give.
+   *
+   * MEASURES THE REAL BOX rather than estimating from the string, unlike the
+   * bet chips and the win amount. Those hold one run of text; a readout can
+   * hold a value AND an inline multiplier chip at a different size, and
+   * summing two estimates at two scales is a ratio nobody will maintain.
+   * scrollWidth against clientWidth is exact and composes for free.
+   *
+   * The caller must keep the box from growing - see the max-width beside each
+   * reservation in control-bar.css. A flex child that can widen will widen,
+   * and then there is no overflow to detect and the bar wraps instead.
+   */
+  /**
+   * The floor is RELATIVE, not an absolute pixel count.
+   *
+   * An absolute floor was tried at 9px and is wrong for this layout: every size
+   * in the bar is a multiple of --ui-bar, and at Popout S the base readout is
+   * 5.9px, so a 9px floor sat ABOVE the unfitted size and nothing could shrink
+   * at all - the one viewport that most needed the fit was the one it refused
+   * to touch. It also missed Mobile S by a tenth of a pixel.
+   *
+   * 0.55 keeps the readout in proportion with the caption above it and the
+   * controls beside it at every viewport, which is the invariant this bar
+   * actually has. On desktop that bottoms out around 9px, and only for a
+   * currency whose settled figure runs to twelve figures.
+   *
+   * Shrinking rather than abbreviating is deliberate: "NGN 11.46B" would fit
+   * easily, and Stake's checklist asks for final win amounts to be clearly
+   * shown. An exact figure in small type is a figure; a rounded one is not.
+   */
+  const FIT_FLOOR_RATIO = 0.55;
+  function fitToBox(el: HTMLElement) {
+    if (typeof document === 'undefined') return;
+    // Reset first: the previous fit must not be the baseline for this one, or
+    // the type ratchets down and never comes back when the value shortens.
+    el.style.fontSize = '';
+    if (el.scrollWidth <= el.clientWidth + 0.5) return;
+    const base = parseFloat(getComputedStyle(el).fontSize) || 0;
+    if (!base) return;
+    const floor = base * FIT_FLOOR_RATIO;
+    // Proportional steps, not fixed half-pixels: 0.5px is a 3% step on desktop
+    // and an 8% step at Popout S, so a fixed step overshoots on exactly the
+    // viewport with the least room to give.
+    const step = Math.max(base * 0.02, 0.1);
+    let size = base;
+    while (size > floor && el.scrollWidth > el.clientWidth + 0.5) {
+      size -= step;
+      el.style.fontSize = `${size}px`;
+    }
+  }
+
+  /**
+   * Svelte action wrapper. `deps` is read so the action re-runs whenever the
+   * value it prints changes; the ResizeObserver covers the box changing under
+   * a fixed value (a breakpoint, a rotation).
+   */
+  function fitValue(node: HTMLElement, _deps: unknown) {
+    const run = () => fitToBox(node);
+    run();
+    // THREE triggers, and the MutationObserver is the one that matters.
+    //
+    // The action's own `update` was the only trigger at first and the fit
+    // simply never re-ran: the readout kept its mount-time size, and a settled
+    // figure long enough to overflow painted straight over the MODE and info
+    // buttons beside it. Rather than depend on when a framework chooses to call
+    // an action back, watch the DOM: any text change under this node re-fits,
+    // whatever caused it.
+    //
+    // Watching characterData and childList only - NOT attributes - so the
+    // style.fontSize this writes cannot re-trigger it into a loop.
+    const mo =
+      typeof MutationObserver !== 'undefined'
+        ? new MutationObserver(run)
+        : null;
+    mo?.observe(node, { characterData: true, childList: true, subtree: true });
+    // The box changing under a fixed value: a breakpoint, a rotation, the bar
+    // re-flowing onto another row.
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(run) : null;
+    ro?.observe(node);
+    return {
+      update() { run(); },
+      destroy() { mo?.disconnect(); ro?.disconnect(); },
+    };
+  }
+
   // Auto-fit the "$amount" font to its box so the whole number is always
   // visible, even a long maximum bet in a narrow sidebar - the currency symbol
   // and the number share one font-size (set on the row) and shrink together,
@@ -632,13 +736,15 @@
   // Hardcoding "$" showed a dollar sign to every non-USD player while the
   // balance beside it read in euro/yen.
   //
-  // The two social-casino currencies are spelled out the same way the SDK's
-  // formatter does (utils-shared/amount.ts NO_LOCALISATION_CURRENCY_MAP), since
-  // Intl has no symbol for them.
-  const SOCIAL_CURRENCY_LABELS: Record<string, string> = { XGC: 'GC', XSC: 'SC' };
+  // The social-casino currencies are spelled out the same way the SDK's
+  // formatter does, since Intl has no symbol for them - and the map is now
+  // IMPORTED from there rather than copied. The copy had two entries where the
+  // formatter has three: a player on XEC saw the balance read "10.00 SC" and
+  // the bet field beside it read "XEC10.00". Two spellings of one currency on
+  // one screen, from two lists that were never going to stay in step.
   const currencySymbol = () => {
     const code = stateBet.currency || 'USD';
-    if (code in SOCIAL_CURRENCY_LABELS) return SOCIAL_CURRENCY_LABELS[code];
+    if (code in NO_LOCALISATION_CURRENCY_MAP) return NO_LOCALISATION_CURRENCY_MAP[code];
     try {
       const parts = new Intl.NumberFormat(undefined, {
         style: 'currency',
@@ -2441,7 +2547,12 @@
         <span class="cb-mode-word">{t('Mode')}</span>
       </button>
 
-      <div class="cb-readouts">
+      <!-- `solo` when the balance is hidden (replay). One child under
+           space-between sits at the START, so the Last Win readout ended up
+           mid-pill with the freed width doing nothing, and the settled figure
+           overflowed leftward across the MODE and info buttons. See
+           .cb-readouts.solo. -->
+      <div class="cb-readouts" class:solo={stateUrlDerived.replay()}>
         <!-- Hidden in replay. A replay is viewable without a session - the URL
              can be shared publicly - so there is no player whose balance this
              would be, and Stake's replay guidance asks for it to go. The Last
@@ -2449,14 +2560,22 @@
         {#if !stateUrlDerived.replay()}
           <div class="cb-balance">
             <span class="cb-cap">{t('Balance')}</span>
-            <span class="cb-val">{numberToCurrencyString(stateBet.balanceAmount)}</span>
+            <!-- use:fitValue - the reservation beside this in control-bar.css
+                 was measured from "$99,999,999.00", and a high-denomination
+                 currency runs far past it. See fitToBox. -->
+            <span class="cb-val" use:fitValue={stateBet.balanceAmount}>
+              {numberToCurrencyString(stateBet.balanceAmount)}
+            </span>
           </div>
         {/if}
         <!-- Always rendered (even before the first spin) so it can't pop into
              existence mid-session and shove the rest of the bar sideways. -->
         <div class="cb-lastwin" class:won={lastWinAmount > 0}>
           <span class="cb-cap">{t('Last Win')}</span>
-          <span class="cb-val">
+          <!-- The multiplier chip is INSIDE the fitted box on purpose: the two
+               shrink together, so the pair either both fit or both scale, and
+               the chip can never be the thing that pushes the cash out. -->
+          <span class="cb-val" use:fitValue={`${lastWinAmount}|${lastWinMultiplier}`}>
             {numberToCurrencyString(lastWinAmount)}
             <span class="cb-lastwin-mult">{lastWinMultiplier.toFixed(2)}×</span>
           </span>
@@ -2477,7 +2596,11 @@
              and the base bet moves to a line underneath: one number to read,
              coloured to say "this is not the plain bet", with the arithmetic
              available for anyone who wants it. -->
-        <span class="cb-val" class:cb-val-multiplied={familyRules().cost !== 1}>
+        <span
+          class="cb-val"
+          class:cb-val-multiplied={familyRules().cost !== 1}
+          use:fitValue={roundCost()}
+        >
           {numberToCurrencyString(roundCost() > 0 ? roundCost() : 0)}
         </span>
         {#if familyRules().cost !== 1}

@@ -332,8 +332,35 @@ const EV   = [['max','Max'],['big','Big'],['win','Win'],['loss','Loss'],
 // so the only thing this list is for is telling apart "no such round in this
 // mode" (grey the button out) from "the table predates these columns".
 const SCAN_EV = ['bustwin', 'forgiven'];
-const CUR  = ['USD','EUR','GBP','JPY','BRL','INR','CAD','AUD','MXN','NOK','ISK',
-              'XGC','XSC','XEC'];
+/* Every currency the RGS can send, in the Stake Engine dashboard's own order,
+   with its dashboard name. This page had fourteen of them, which meant the
+   shapes that actually break a layout - a weak unit with a twelve-figure
+   settled win, a three-letter code where a symbol is expected - could not be
+   reached from here at all.
+
+   Kept in step with web-sdk/apps/Ride-The-Bus/src/game/currencies.ts, which is
+   the copy the game's own tests walk. This file is a standalone dev script with
+   no build step, so it cannot import from the app - hence a second list rather
+   than one. currencies.test.ts pins the app's; this comment is the pointer. */
+const CUR = [
+  ['USD','United States Dollar'],['CAD','Canadian Dollar'],['JPY','Japanese Yen'],
+  ['EUR','Euro'],['RUB','Russian Ruble'],['CNY','Chinese Yuan'],
+  ['PHP','Philippine Peso'],['INR','Indian Rupee'],['IDR','Indonesian Rupiah'],
+  ['KRW','South Korean Won'],['BRL','Brazilian Real'],['MXN','Mexican Peso'],
+  ['DKK','Danish Krone'],['PLN','Polish Zloty'],['VND','Vietnamese Dong'],
+  ['TRY','Turkish Lira'],['CLP','Chilean Peso'],['ARS','Argentine Peso'],
+  ['PEN','Peruvian Sol'],['NGN','Nigerian Naira'],['SAR','Saudi Riyal'],
+  ['ILS','Israeli New Shekel'],['AED','UAE Dirham'],['TWD','Taiwan New Dollar'],
+  ['NOK','Norwegian Krone'],['KWD','Kuwaiti Dinar'],['JOD','Jordanian Dinar'],
+  ['CRC','Costa Rican Colon'],['TND','Tunisian Dinar'],['SGD','Singapore Dollar'],
+  ['MYR','Malaysian Ringgit'],['OMR','Omani Rial'],['QAR','Qatari Riyal'],
+  ['BHD','Bahraini Dinar'],['PKR','Pakistani Rupee'],['EGP','Egyptian Pound'],
+  ['NZD','New Zealand Dollar'],['BOB','Bolivian Boliviano'],['GHS','Ghanaian Cedi'],
+  ['KES','Kenyan Shilling'],['MAD','Moroccan Dirham'],
+  ['BAM','Bosnia and Herzegovina Convertible Mark'],['ISK','Icelandic Krona'],
+  ['TZS','Tanzanian Shilling'],['UGX','Ugandan Shilling'],['XOF','West African CFA Franc'],
+  ['XGC','Gold Coins (social)'],['XSC','Stake Cash (social)'],['XEC','Stake Euro Cash (social)'],
+];
 const LANG = ['en','ar','de','es','fi','fr','hi','id','ja','ko','pl','pt','ru','tr','vi','zh'];
 
 const modeName = () =>
@@ -460,7 +487,7 @@ portInput.addEventListener('input', () => {
 });
 
 const cur = document.getElementById('cur');
-CUR.forEach((c) => cur.add(new Option(c, c)));
+CUR.forEach(([code, name]) => cur.add(new Option(code + ' (' + name + ')', code)));
 cur.value = state.cur;
 cur.onchange = () => { state.cur = cur.value; render(); };
 

@@ -37,6 +37,7 @@
 	 */
 	import { base } from '$app/paths';
 	import { numberToCurrencyString } from 'utils-shared/amount';
+	import { labelEms } from '../game/typeFit';
 
 	import MarkIcon from './MarkIcon.svelte';
 	import SuitIcon from './SuitIcon.svelte';
@@ -234,6 +235,23 @@
 	const shownMultiplier = $derived(perX > 0 ? shown / perX : props.multiplier);
 
 	let titleEl: HTMLElement | undefined = $state(undefined);
+	/**
+	 * How wide the SETTLED figure prints, so the CSS can size the amount to fit
+	 * the screen rather than to a constant.
+	 *
+	 * Measured before this existed: High Stakes' 1910.20x cap on a
+	 * high-denomination currency gives "NGN 3,820,400,000.00", and at Mobile M
+	 * that ran off BOTH edges of the viewport - the one figure the whole screen
+	 * exists to hand over, unreadable.
+	 *
+	 * Taken from props.amount and NOT from `shown`, which is the climbing value.
+	 * Sizing off the live string would re-solve the font on every frame of the
+	 * count-up and visibly pump the headline; sizing off the final one means the
+	 * type is chosen once, for the widest string that will ever appear, and the
+	 * count grows into it.
+	 */
+	const amountEms = $derived(labelEms(numberToCurrencyString(props.amount)));
+
 	let amountEl: HTMLElement | undefined = $state(undefined);
 	let fanEl: HTMLElement | undefined = $state(undefined);
 
@@ -700,6 +718,7 @@
 			class="wc-amount"
 			class:is-counting={counting}
 			class:is-holding={holding}
+			style="--amount-ems: {amountEms}"
 			bind:this={amountEl}
 		>
 			{numberToCurrencyString(shown)}

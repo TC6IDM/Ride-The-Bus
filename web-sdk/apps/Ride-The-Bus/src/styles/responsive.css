@@ -40,8 +40,26 @@
   .game-layout { --ui-bar: clamp(6px, min(2.05vw, 2.4vh), 11px); }
   .cb-panel-light { order: -1; flex: 1 0 100%; }
   .cb-readouts { justify-content: space-between; }
-  .cb-lastwin-mult { display: none; }
-  .cb-lastwin { min-width: calc(var(--ui-bar) * 13.09); }
+  /* The multiplier chip used to be dropped here, because the readout reserved a
+     fixed width and the cash alone filled it. The cash now SHRINKS to fit (see
+     use:fitValue in Game.svelte), so the pair can share the box: the chip is
+     the only thing on the bar that says how BIG the win was rather than how
+     much it paid, and a phone is where that matters most. */
+  /* 16, not 13.09. The readouts share this row with three icon buttons, which
+     left them 101px each on Mobile M - and a weak-unit currency with a
+     tens-of-billions balance needs about twice that before the fit stops
+     driving the type into the floor (5.4px measured at Mobile S).
+
+     16 units for the PAIR exceeds what is left beside the icons, so the row
+     they sit in wraps them onto their own line inside the pill - which is what
+     .cb-panel-light's flex-wrap and the flex-basis below have always been for.
+     They then get the full pill width. Nothing new is introduced; the existing
+     wrap simply starts firing where it is needed. */
+  .cb-lastwin,
+  .cb-balance {
+    min-width: calc(var(--ui-bar) * 16);
+    max-width: calc(var(--ui-bar) * 16);
+  }
 
   /* The readouts drop to a line of their own INSIDE the light pill when the
      icons beside them leave too little room. On a 320px phone the three icon
@@ -53,7 +71,10 @@
      line wherever they actually fit (Mobile L at 425px does) and split only
      where they do not. */
   .cb-panel-light { flex-wrap: wrap; }
-  .cb-readouts { flex: 1 1 calc(var(--ui-bar) * 26); }
+  /* The basis is what the PAIR wants: two 16-unit readouts plus the 2-unit gap
+     between them. Where that fits beside the icons it stays on their line;
+     where it does not, it takes a line of its own. */
+  .cb-readouts { flex: 1 1 calc(var(--ui-bar) * 34); }
 }
 
 /* ---- Touch targets on phones ---------------------------------------------
@@ -247,7 +268,22 @@
   }
   .cb-readouts { flex: 1 1 auto; }
   .cb-lastwin-mult { display: inline; }
-  .cb-lastwin { min-width: calc(var(--ui-bar) * 20); }
+  /* max-width as well as min, or the 620px block's 16-unit CEILING survives
+     into this window and fights the 20-unit floor set here. And .cb-balance has
+     to be named too: the 620px block widens it to 16 units so the two readouts
+     can wrap onto their own line on a phone, which is exactly the treatment
+     this block exists to undo. Left in, it put 12px back into the light pill,
+     Popout S went from 377px of a 390px row to over it, and the Advanced button
+     broke onto a second row - the same failure this file just fixed at Laptop
+     and Popout L, reintroduced from the other direction. */
+  .cb-lastwin {
+    min-width: calc(var(--ui-bar) * 20);
+    max-width: calc(var(--ui-bar) * 20);
+  }
+  .cb-balance {
+    min-width: calc(var(--ui-bar) * 13.09);
+    max-width: calc(var(--ui-bar) * 13.09);
+  }
 
   /* And back to the full title, which the 430px rule above drops for phones in
      landscape. It costs 24px of a 225px window - the same 11% it costs of

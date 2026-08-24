@@ -55,6 +55,20 @@
   flex: 1 1 auto;
 }
 
+/* Replay hides the balance, so this row has ONE child - and one child under
+   space-between sits at the start, which put Last Win in the middle of the pill
+   with the width the balance used to take doing nothing at all. Pushed right,
+   and given that freed width: a replay's whole job is to show what the round
+   paid, and it is the one mode where the figure has room to be shown whole. */
+.cb-readouts.solo {
+  justify-content: flex-end;
+}
+
+.cb-readouts.solo .cb-lastwin {
+  min-width: calc(var(--ui-bar) * 26);
+  max-width: calc(var(--ui-bar) * 26);
+}
+
 /* Free-floating circular buttons at the outer edges (turbo, advanced). */
 .cb-float {
   width: calc(var(--ui-bar) * 4.18) /* 46px */;
@@ -113,14 +127,77 @@
 
 /* tabular-nums + the reserved min-widths below mean a value changing (a win
    landing, the bet stepping) never re-flows the bar. */
-.cb-val { display: block; font-size: calc(var(--ui-bar) * 1.53) /* 16.8px */; font-weight: 800; color: var(--ink); line-height: 1.1; font-variant-numeric: tabular-nums; }
+/* white-space: nowrap is what makes the fit measurable. Left to wrap, a long
+   value breaks onto a second line, scrollWidth equals clientWidth, and
+   fitToBox sees nothing to do while the readout silently doubles in height. */
+.cb-val {
+  display: block;
+  /* THE LINE THAT MAKES THE FIT WORK AT ALL, and it is not obvious.
 
-/* Reserved widths are measured from the widest value each field can ever show
-   at this font (800 16.8px Poppins): balance up to $99,999,999.00 = 140px;
-   last win up to maxBet x the 5000x wincap ($5,000,000.00 = 129px) plus the
-   multiplier chip - 220px measured; bet up to $1,000,000.00 = 129px + 16px padding. That
-   way a win landing or the bet stepping never re-flows the bar. */
-.cb-balance { display: flex; flex-direction: column; line-height: 1.15; min-width: calc(var(--ui-bar) * 13.09) /* 144px */; }
+     .cb-lastwin is a flex column with `align-items: flex-end`, and a flex child
+     under anything other than `stretch` is sized to its own CONTENT - so this
+     block grew as wide as its text, straight past the max-width on the readout
+     around it. Two things followed, both silent:
+
+       - overflow: hidden below clipped nothing, because the box was never
+         smaller than the text; and
+       - fitToBox saw scrollWidth === clientWidth and concluded there was
+         nothing to shrink.
+
+     So the last-win figure never fitted and never clipped: it simply painted
+     across the balance beside it. Measured with a huge balance AND a huge win,
+     the value box came out 233px inside a 187px readout and overlapped the
+     balance by 17-42px at every size. The balance itself was fine throughout -
+     .cb-balance uses the default `stretch`, so its value WAS constrained and
+     the fit shrank it correctly. One readout worked and its neighbour did not,
+     for a reason nothing in either rule mentions.
+
+     100% of the parent, so the box is bounded in both alignment contexts and
+     scrollWidth becomes meaningful again. */
+  max-width: 100%;
+  /* A hard guard, not the mechanism. The fit above should mean this never
+     clips - but if it ever hits its floor, the text has to stop at the edge of
+     its own readout rather than paint across the controls beside it. That is
+     what it did before the fit existed: a settled figure long enough to
+     overflow, right-aligned, ran leftward straight over the MODE and info
+     buttons. Overlapping another control is worse than being cut off. */
+  overflow: hidden;
+  font-size: calc(var(--ui-bar) * 1.53) /* 16.8px */;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1.1;
+  white-space: nowrap;
+  /* Declared for intent. Poppins ships no `tnum`, so it is inert here - what
+     actually stops the bar re-flowing is the reservation above. */
+  font-variant-numeric: tabular-nums;
+}
+
+/* Reserved widths were measured from the widest value each field can ever show
+   at this font (800 16.8px Poppins), IN DOLLARS: balance up to $99,999,999.00 =
+   140px; last win up to maxBet x the 5000x wincap ($5,000,000.00 = 129px) plus
+   the multiplier chip - 220px measured; bet up to $1,000,000.00 = 129px + 16px
+   padding. That way a win landing or the bet stepping never re-flows the bar.
+
+   THE DOLLAR IS THE PART THAT WAS WRONG. The RGS supports currencies whose unit
+   is worth a thousandth of one, and an operator sets the cap in those units: at
+   a 2,000,000 NGN maximum the settled High Stakes figure is
+   "NGN 11,461,200,000.00". Measured, that wanted 152px of a 119px box on Mobile
+   L and spilled straight out of it, and on Laptop and Popout L it widened the
+   readouts until the whole bar broke onto a second row.
+
+   So the widths are now a RESERVATION AND A CEILING - min-width and max-width
+   at the same value - and the type inside gives instead. `use:fitValue` in
+   Game.svelte shrinks .cb-val until its content fits, down to a floor. The
+   max-width is the load-bearing half: without it a flex child simply widens,
+   there is no overflow for the fit to detect, and the bar wraps exactly as
+   before. */
+.cb-balance {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  min-width: calc(var(--ui-bar) * 13.09) /* 144px */;
+  max-width: calc(var(--ui-bar) * 13.09);
+}
 
 /* "Last Win" readout: the most recently settled round's cash + multiplier. */
 .cb-lastwin {
@@ -128,7 +205,21 @@
   flex-direction: column;
   align-items: flex-end;
   line-height: 1.15;
-  min-width: calc(var(--ui-bar) * 20); /* 220px */
+  /* 17, down from 20. The 20 was sized to hold "$5,000,000.00" plus the
+     multiplier chip WITHOUT shrinking, and holding the worst case is no longer
+     this reservation's job - the fit above does that. What it still has to do
+     is be wide enough that an ordinary round does not visibly resize the type
+     between spins, and 17 units clears a seven-figure win plus the chip.
+
+     The three units matter. Measured with the bar on one row: Laptop demanded
+     1004px of a 998px row and Popout L 780px of 780px, so both broke the
+     Advanced button onto a second line - alone, floating over the table - while
+     Desktop and Popout S fitted. CLAUDE.md's rule is that the arrangement is
+     identical from Popout S to Desktop and only the scale changes; two of the
+     four were quietly failing it. Three units off this readout is 31px at
+     Laptop and 24px at Popout L, and both come back onto one row. */
+  min-width: calc(var(--ui-bar) * 17);
+  max-width: calc(var(--ui-bar) * 17);
   text-align: right;
 }
 
@@ -146,7 +237,20 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  /* Capped as well as reserved, exactly like .cb-balance and .cb-lastwin - and
+     it was the one of the three that got missed.
+
+     The reservation was measured from "$1,000,000.00". A weak-unit currency
+     runs past it, and because nothing stopped this panel WIDENING, the bar went
+     over its row budget by 2-14px and broke the Advanced button onto a second
+     line - at every landscape width from 660 to 1100. Two pixels short at 660,
+     fourteen at 1024: consistently just over, which is what an uncapped
+     reservation looks like.
+
+     The .cb-val inside is already fitted (use:fitValue), so capping this makes
+     the figure shrink instead of shoving the bar. */
   min-width: calc(var(--ui-bar) * 13.82); /* 152px */
+  max-width: calc(var(--ui-bar) * 13.82);
   padding: calc(var(--ui-bar) * 0.36) calc(var(--ui-bar) * 0.73);
   border-radius: calc(var(--ui-bar) * 0.82);
   border: 1px solid transparent;
