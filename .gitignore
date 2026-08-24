@@ -1,4 +1,10 @@
 .claude
 
 # Screenshots from scripts/shoot.mjs - a look at the running game, not an artefact.
+# scripts/.shots/ at the repo root is the ONE place they belong. The bare
+# .shots/ below is a catch-all: an ad-hoc capture script run from inside
+# web-sdk/apps/Ride-The-Bus/ once put 18 PNGs in that app's own scripts/
+# directory, where the anchored pattern did not reach them and `git status`
+# offered them up for commit.
 scripts/.shots/
+.shots/

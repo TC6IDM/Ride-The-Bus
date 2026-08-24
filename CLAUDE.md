@@ -634,6 +634,14 @@ longer shows what it claims to - a screenshot of a screen that has since moved
 on is worse than none, because it looks like evidence. Nothing outside that
 directory should link to a file inside it.
 
+**The repo-root `scripts/.shots/` is the only place they go.** `shoot.mjs`
+anchors there correctly; an ad-hoc capture script run from inside
+`web-sdk/apps/Ride-The-Bus/` once wrote 18 PNGs into *that* app's `scripts/`
+directory, where the anchored ignore pattern did not reach them and `git status`
+offered them for commit. `.gitignore` now carries a bare `.shots/` as well, so a
+stray one at any depth is still ignored — but a capture script must resolve the
+directory from the repo root, never from `pwd`.
+
 This is how the win takeover was actually looked at, and every defect fixed in
 that pass was invisible in the source and obvious in a screenshot: three ambient
 circles that composed into a lens smudge, sixteen suit marks that never shared a
