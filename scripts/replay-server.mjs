@@ -263,10 +263,63 @@ function landingPage() {
   button.pick[aria-pressed=true]{background:#2c3a2e;border-color:#7cffb2;color:#fff;
        box-shadow:0 0 0 1px #7cffb2 inset}
   button.pick[disabled]{opacity:.28;cursor:not-allowed}
-  button.pick.red[aria-pressed=true]{background:#5a1620;border-color:#ff6b6b;
-       box-shadow:0 0 0 1px #ff6b6b inset}
-  button.pick.blk[aria-pressed=true]{background:#20232a;border-color:#cfd6e4;
-       box-shadow:0 0 0 1px #cfd6e4 inset}
+  /* ---- The game's own colours, on the page that builds a link into it ------
+     Red and Black were already painted this way and the other three rows were
+     not, so half the picker spoke the game's language and half spoke the
+     page's generic green. Every value below is copied from the app's
+     styles/tokens.css by name, so a change there has one place to be mirrored:
+
+       --choice-higher  #2ecc71   --choice-lower   #c0392b
+       --choice-inside  #00bcd4   --choice-outside #d81ce0
+       --choice-equal   #f1c40f   --suit-red       #e74c3c
+       --card-red       #b3252b
+
+     Same treatment as the replay-info badges inside the game, and for the same
+     reason recorded in CLAUDE.md: the one screen whose whole job is to restate
+     the bet should not restate it in colours the player has never seen.
+
+     Each selected chip is the choice colour as a rim and a wash of it as a
+     fill, so the row reads at a glance without turning into four solid blocks.
+
+     The ink stays LIGHT on all of them, unlike the app. The app flips to a dark
+     --on-choice-ink because its fills are the colour at full strength - a solid
+     yellow square. These are 26% of it over near-black, so every fill here is
+     dark and a dark ink on top was unreadable: the selected "Equal" came out
+     near-black type on a dark olive. Same colour, different ground, opposite
+     answer. */
+  button.pick[aria-pressed=true][data-c]{
+       background:color-mix(in srgb, var(--pick-c) 26%, #14170f);
+       border-color:var(--pick-c);
+       color:#fff;
+       box-shadow:0 0 0 1px var(--pick-c) inset}
+  button.pick[aria-pressed=true][data-c] .mult{color:#ffe08a;opacity:.9}
+
+  /* The three families take their own volatility rating's colour - the same
+     --vol-base / --vol-sc / --vol-hs the MODE button and the mode picker wear
+     in the game, and the same ramp the bolt meters spend. Classic yellow,
+     Second Chance green, High Stakes red. */
+  button.pick.fam-base{--pick-c:#ffc93c}
+  button.pick.fam-sc{--pick-c:#3ddc84}
+  button.pick.fam-hs{--pick-c:#ff5c5c}
+
+  button.pick.red{--pick-c:#b3252b}
+  button.pick.blk{--pick-c:#cfd6e4}
+  button.pick.higher{--pick-c:#2ecc71}
+  button.pick.lower{--pick-c:#c0392b}
+  button.pick.inside{--pick-c:#00bcd4}
+  button.pick.outside{--pick-c:#d81ce0}
+  button.pick.equal{--pick-c:#f1c40f}
+  /* The four suits take the card face's own two inks: hearts and diamonds
+     red, clubs and spades the dark the pips are printed in. */
+  button.pick.suit-red{--pick-c:#e74c3c}
+  button.pick.suit-blk{--pick-c:#cfd6e4}
+
+  /* An unselected chip carries NO colour at all - it is the plain grey border
+     every other button has. A tinted hairline on all twelve was tried and made
+     the row read as twelve half-selected things; the colour has to mean
+     "picked" or it means nothing. Hover still previews it. */
+  button.pick[data-c]:not([aria-pressed=true]):hover:not([disabled]){
+       border-color:var(--pick-c)}
   button.pick .mult{display:block;font:500 11px ui-monospace,monospace;color:#8b9488;margin-top:.12rem}
   button.pick[aria-pressed=true] .mult{color:#ffe08a}
   select,input{background:#1e2220;color:#e8e0d0;border:1px solid #39423a;border-radius:8px;
@@ -319,12 +372,16 @@ const RGS = 'localhost:${PORT}';
 const state = { fam:'hs_', color:'red', hl:'equal', io:'equal', suit:'heart',
                 ev:'max', cur:'USD', lang:'en' };
 
-const FAM  = [['','Classic'],['sc_','Second Chance'],['hs_','High Stakes']];
+const FAM  = [['','Classic','fam-base'],['sc_','Second Chance','fam-sc'],
+              ['hs_','High Stakes','fam-hs']];
+/* Third entry is the colour class - see the button.pick rules in the stylesheet
+   above, which take their values from the game's own tokens.css. */
 const COL  = [['red','Red','red'],['black','Black','blk']];
-const HL   = [['higher','Higher'],['lower','Lower'],['equal','Equal']];
-const IO   = [['inside','Inside'],['outside','Outside'],['equal','Equal']];
-const SUIT = [['heart','♥ Heart'],['diamond','♦ Diamond'],
-              ['club','♣ Club'],['spade','♠ Spade']];
+const HL   = [['higher','Higher','higher'],['lower','Lower','lower'],['equal','Equal','equal']];
+const IO   = [['inside','Inside','inside'],['outside','Outside','outside'],['equal','Equal','equal']];
+const SUIT = [['heart','♥ Heart','suit-red'],['diamond','♦ Diamond','suit-red'],
+              ['club','♣ Club','suit-blk'],['spade','♠ Spade','suit-blk']];
+
 const EV   = [['max','Max'],['big','Big'],['win','Win'],['loss','Loss'],
               ['bustwin','Bust + win'],['forgiven','2nd chance']];
 // The two scenarios that come from REPLAY_EVENTS.md rather than from a lookup
@@ -393,6 +450,7 @@ function fill(id, items, key, multFor) {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'pick' + (cls ? ' ' + cls : '');
+    if (cls) b.setAttribute('data-c', '');
     b.setAttribute('aria-pressed', String(state[key] === val));
     if (id === 'io' && val === 'inside' && insideBlocked()) b.disabled = true;
     if (id === 'ev' && val === 'forgiven' && forgivenBlocked()) b.disabled = true;
