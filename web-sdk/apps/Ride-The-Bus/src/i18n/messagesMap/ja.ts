@@ -219,7 +219,6 @@ export default {
 	'Skip card reveal on autoplay': 'オートプレイでカード演出をスキップ',
 	'Skip the card reveal during autoplay': 'オートプレイ中のカード演出をスキップします',
 	'Skip win animations on autoplay': 'オートプレイ中は勝利演出をスキップ',
-	'These apply to autoplay, which does not run during a replay.': 'これらはオートプレイ用の設定で、リプレイ中は動作しません。',
 	'Skip big win animations during autoplay': 'オートプレイ中は大当たり演出をスキップします',
 	'Guess the color of card 1: red or black.': 'カード1の色を予想します。赤か黒か。',
 	'Guess whether card 2 is higher or lower than card 1, or equal to it.':

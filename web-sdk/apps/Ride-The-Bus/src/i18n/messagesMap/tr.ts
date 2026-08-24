@@ -219,7 +219,6 @@ export default {
 	'Skip card reveal on autoplay': 'Otomatik oyunda kart açılışını atla',
 	'Skip the card reveal during autoplay': 'Otomatik oyun sırasında kart açılışını atla',
 	'Skip win animations on autoplay': 'Otomatik oyunda kazanç animasyonlarını atla',
-	'These apply to autoplay, which does not run during a replay.': 'Bunlar, tekrar sırasında çalışmayan otomatik oyuna uygulanır.',
 	'Skip big win animations during autoplay':
 		'Otomatik oyun sırasında büyük kazanç animasyonlarını atla',
 	'Guess the color of card 1: red or black.': '1. kartın rengini tahmin edin: kırmızı mı siyah mı.',

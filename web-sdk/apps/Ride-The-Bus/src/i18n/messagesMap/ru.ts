@@ -218,7 +218,6 @@ export default {
 	'Skip card reveal on autoplay': 'Пропускать раздачу карт в автоигре',
 	'Skip the card reveal during autoplay': 'Пропускать раздачу карт во время автоигры',
 	'Skip win animations on autoplay': 'Пропускать анимации выигрыша в автоигре',
-	'These apply to autoplay, which does not run during a replay.': 'Относятся к автоигре, которая не работает во время повтора.',
 	'Skip big win animations during autoplay':
 		'Пропускать анимации крупных выигрышей во время автоигры',
 	'Guess the color of card 1: red or black.': 'Угадайте цвет карты 1: красный или чёрный.',

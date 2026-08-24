@@ -43,6 +43,74 @@ if (!existsSync(PUBLISH)) {
 const index = JSON.parse(readFileSync(path.join(PUBLISH, 'index.json'), 'utf8'));
 const MODES = new Map(index.modes.map((m) => [m.name, m]));
 
+/**
+ * bustwin / forgiven, precomputed by scripts/replay-events.js at the end of
+ * every math build. See the note by BOOK_ALIASES below.
+ *
+ * Absent on a checkout predating that generator change, or if the build's
+ * best-effort call to it failed. Then the scan path takes over, so the tool
+ * still works - just slowly, and the first time per mode.
+ */
+/**
+ * bustwin / forgiven, read out of REPLAY_EVENTS.md.
+ *
+ * That file is the build's own record - scripts/replay-events.js writes it from
+ * the published books and run.py calls that at the end of every math build, so
+ * it is regenerated exactly when it would otherwise go stale. Parsing it here
+ * means this server does NO book scanning: it used to stream a 215k-round file
+ * on demand the first time either scenario was asked for, which put minutes of
+ * work behind a dev server start.
+ *
+ * Rows look like:
+ *   | `mode_name` | 0 | 85 (7.20x) | 20751 (1260.00x) | 975 (1354.20x) | 1393 (129.00x) | - (-) |
+ *
+ * A `-` is a real answer meaning "this mode has none", and it has to survive as
+ * null rather than be dropped - the builder greys the button out on it, which
+ * is the difference between telling someone a round does not exist and letting
+ * them build a link that 404s.
+ */
+const SCENARIOS = (() => {
+  // Overridable so the parser can be exercised against a fixture without
+  // touching the generated file, which is never hand-edited.
+  const file = process.env.REPLAY_EVENTS_MD || path.join(ROOT, 'REPLAY_EVENTS.md');
+  const byMode = new Map();
+  if (!existsSync(file)) {
+    console.log('No REPLAY_EVENTS.md - no scenarios to offer.');
+    console.log('Generate it with: node scripts/replay-events.js');
+    return byMode;
+  }
+
+  // "1393 (129.00x)" -> { id, payout }, payout in the CSV's raw units.
+  // "-" and "- (-)" are real answers meaning this mode has no such round.
+  const cell = (text) => {
+    const match = /^(\d+)\s*\(([\d.]+)x\)$/.exec(text.trim());
+    return match ? { id: Number(match[1]), payout: Math.round(Number(match[2]) * 100) } : null;
+  };
+
+  const text = readFileSync(file, 'utf8');
+  for (const line of text.split(/\r?\n/)) {
+    if (!line.startsWith('| `')) continue;
+    const cells = line.split('|').map((c) => c.trim());
+    // ['', '`mode`', loss, normal, big, cap, bustwin?, forgiven?, '']
+    if (cells.length < 7) continue;
+    const mode = cells[1].split('`').join('');
+    const lossId = Number(cells[2]);
+    byMode.set(mode, {
+      loss: Number.isInteger(lossId) ? { id: lossId, payout: 0 } : null,
+      win: cell(cells[3]),
+      big: cell(cells[4]),
+      max: cell(cells[5]),
+      // undefined, not null: the columns are absent on a table generated before
+      // they existed, and "no column" has to be distinguishable from "no such
+      // round" - one is fixed by regenerating, the other never will be.
+      bustwin: cells.length >= 9 ? cell(cells[6]) : undefined,
+      forgiven: cells.length >= 9 ? cell(cells[7]) : undefined,
+    });
+  }
+  console.log(`Scenarios for ${byMode.size} modes, from REPLAY_EVENTS.md`);
+  return byMode;
+})();
+
 const familyOf = (name) =>
   name.startsWith('sc_') ? 'sc' : name.startsWith('hs_') ? 'hs' : 'base';
 
@@ -60,51 +128,31 @@ const familyOf = (name) =>
    happens once, at the point of display or of serving. */
 const ALIASES = ['max', 'big', 'win', 'loss'];
 
+/* ---- Scenarios that need the BOOKS, not just the lookup table ------------
+   The four above are answered from the CSV, which is three columns and instant.
+   These two are about the SHAPE of a round rather than its payout - whether it
+   busted, whether it spent a Second Chance - and that lives in the book events.
+
+     bustwin   Busted, and still paid enough to take the screen over. A round
+               does not have to be a full game win to celebrate: a bust on the
+               last card keeps its retention of a multiplier that may already be
+               large, and Classic reaches 129x that way.
+
+     forgiven  Second Chance only: the round spent its forgiveness, survived,
+               and finished big enough to celebrate. The case the clean-sweep
+               rule deliberately does not floor.
+
+   THIS SERVER DOES NOT SCAN FOR THEM. It reads them out of REPLAY_EVENTS.md,
+   which the math build writes (run.py calls scripts/replay-events.js at the
+   end). An earlier pass resolved them here by streaming the book file on
+   demand; it worked, but it put minutes of work behind a dev server and made a
+   mode with no such round pay for a full 215k-row pass to discover that. The
+   answer belongs in the build that produced the books, not in the tool that
+   reads them. See SCENARIOS at the top of this file. */
+const BOOK_ALIASES = ['bustwin', 'forgiven'];
+
 function scenariosFor(mode) {
-  const txt = readFileSync(path.join(PUBLISH, MODES.get(mode).weights), 'utf8');
-  const drawable = [];
-  const weightByPayout = new Map();
-  for (const line of txt.split('\n')) {
-    const [id, w, p] = line.trim().split(',');
-    if (!id || w === undefined || p === undefined) continue;
-    const weight = BigInt(w);
-    if (weight === 0n) continue;
-    const payout = Number(p);
-    drawable.push({ id: Number(id), payout });
-    weightByPayout.set(payout, (weightByPayout.get(payout) || 0n) + weight);
-  }
-
-  const wins = drawable.filter((r) => r.payout > 0).sort((a, b) => a.payout - b.payout);
-  const loss = drawable.find((r) => r.payout === 0) || null;
-  if (!wins.length) return { max: null, big: null, win: null, loss };
-
-  // The FIRST row paying the cap, not the last. Several simulations reach a
-  // mode's ceiling, and replay-events.js takes the first - so taking a
-  // different one here would make this server disagree with REPLAY_EVENTS.md,
-  // which is the list a reviewer is working from.
-  const capPayout = wins[wins.length - 1].payout;
-  const cap = wins.find((r) => r.payout === capPayout);
-
-  // BIG: the smallest payout worth at least a quarter of this mode's cap, so it
-  // reads as clearly large but is still a different round from the cap.
-  const bigTarget = cap.payout * 0.25;
-  const big = wins.find((r) => r.payout >= bigTarget && r.payout < cap.payout) || cap;
-
-  // WIN: the most likely payout that is an actual PROFIT. The most likely
-  // non-zero payout in every mode is 0.50x - the stage-2 consolation - which is
-  // a loss from the player's side.
-  let best = -1n;
-  let target = null;
-  for (const [p, weight] of weightByPayout) {
-    if (p <= 100) continue;
-    if (weight > best) {
-      best = weight;
-      target = p;
-    }
-  }
-  const win = wins.find((r) => r.payout === (target ?? wins[0].payout)) || wins[0];
-
-  return { max: cap, big, win, loss };
+  return SCENARIOS.get(mode) ?? {};
 }
 
 /**
@@ -122,9 +170,7 @@ function scenariosFor(mode) {
  * that actually reaches the ceiling fires the MAX WIN tier, because winTierFor
  * matches that band on equality.
  */
-let scan = null;
 function scenarios() {
-  if (scan) return scan;
   const byMode = {};
   const familyCeiling = {};
   for (const mode of index.modes) {
@@ -136,8 +182,7 @@ function scenarios() {
       familyCeiling[fam] = { mode: mode.name, cap };
     }
   }
-  scan = { byMode, familyCeiling };
-  return scan;
+  return { byMode, familyCeiling };
 }
 
 function resolveAlias(mode, alias) {
@@ -250,6 +295,12 @@ function landingPage() {
     <input id=amt value="1" size=6 title="bet amount, in display units">
     <select id=lang title="language"></select>
   </div>
+  <span class=lab>Game port</span>
+  <div class=row>
+    <input id=port value="${GAME_PORT}" size=6 inputmode=numeric
+           title="the port the game's dev server is on - vite picks the next free one if 3001 is taken">
+    <span class=note style="margin:0">vite moves to 3002+ when 3001 is busy. Remembered in this browser.</span>
+  </div>
 </div>
 
 <p class=modeline id=modeline></p>
@@ -274,7 +325,13 @@ const HL   = [['higher','Higher'],['lower','Lower'],['equal','Equal']];
 const IO   = [['inside','Inside'],['outside','Outside'],['equal','Equal']];
 const SUIT = [['heart','♥ Heart'],['diamond','♦ Diamond'],
               ['club','♣ Club'],['spade','♠ Spade']];
-const EV   = [['max','Max'],['big','Big'],['win','Win'],['loss','Loss']];
+const EV   = [['max','Max'],['big','Big'],['win','Win'],['loss','Loss'],
+              ['bustwin','Bust + win'],['forgiven','2nd chance']];
+// The two scenarios that come from REPLAY_EVENTS.md rather than from a lookup
+// table. Same shape as the other four here - the server has already read them -
+// so the only thing this list is for is telling apart "no such round in this
+// mode" (grey the button out) from "the table predates these columns".
+const SCAN_EV = ['bustwin', 'forgiven'];
 const CUR  = ['USD','EUR','GBP','JPY','BRL','INR','CAD','AUD','MXN','NOK','ISK',
               'XGC','XSC','XEC'];
 const LANG = ['en','ar','de','es','fi','fr','hi','id','ja','ko','pl','pt','ru','tr','vi','zh'];
@@ -286,6 +343,22 @@ const modeName = () =>
 // cards of the same rank.
 const insideBlocked = () => state.hl === 'equal';
 
+// Only Second Chance can produce a forgiven round - the other two families bust
+// on the first miss. Disabled rather than merely labelled, for the same reason
+// Inside is: a pick that cannot be honoured must not be buildable into a link.
+// Leaving it selectable produced a URL the server answers with a 404, which is
+// a worse way to learn this than a greyed-out button.
+const forgivenBlocked = () => state.fam !== 'sc_';
+
+/* A scanned scenario this mode has no round for.
+   sc_red_lower_outside_heart has no drawable bust-win, for instance: in
+   Second Chance a bust needs TWO misses, and by then the multiplier rarely
+   survives above the celebration floor. The button showed "none" and stayed
+   clickable, so the link still went out and the game opened an error modal
+   reading "RGS responded 404". Showing the answer is not the same as refusing
+   the pick - the same lesson as Equal-then-Inside, learned twice. */
+const scenarioMissing = (v) => SCAN_EV.indexOf(v) >= 0 && !(SC[modeName()] || {})[v];
+
 function fill(id, items, key, multFor) {
   const host = document.getElementById(id);
   host.textContent = '';
@@ -295,6 +368,8 @@ function fill(id, items, key, multFor) {
     b.className = 'pick' + (cls ? ' ' + cls : '');
     b.setAttribute('aria-pressed', String(state[key] === val));
     if (id === 'io' && val === 'inside' && insideBlocked()) b.disabled = true;
+    if (id === 'ev' && val === 'forgiven' && forgivenBlocked()) b.disabled = true;
+    if (id === 'ev' && scenarioMissing(val)) b.disabled = true;
     const mult = multFor ? multFor(val) : null;
     b.textContent = label;
     if (mult) {
@@ -312,6 +387,13 @@ function render() {
   // Repair an impossible pick rather than let it build an unpublished mode -
   // the same guard the game applies when Equal takes Inside away.
   if (insideBlocked() && state.io === 'inside') state.io = 'equal';
+  // Same for a forgiven round on a family that cannot forgive: switching away
+  // from Second Chance must not leave a dead scenario selected.
+  if (forgivenBlocked() && state.ev === 'forgiven') state.ev = 'max';
+  // And for a scenario the newly-picked mode has no round for. This fires on a
+  // GUESS change as well as a family change - "Bust + win" exists in one mode
+  // and not the next, so the pick has to be re-checked every render.
+  if (scenarioMissing(state.ev)) state.ev = 'max';
 
   const mode = modeName();
   const sc = SC[mode];
@@ -322,26 +404,60 @@ function render() {
   fill('io', IO, 'io');
   fill('suit', SUIT, 'suit');
   fill('ev', EV, 'ev', (v) => {
+    if (v === 'forgiven' && forgivenBlocked()) return 'sc only';
     const s = sc && sc[v];
-    if (!s) return '—';
+    if (s === undefined && SCAN_EV.indexOf(v) >= 0) return 'rebuild';
+    if (!s) return 'none';
     return (s.payout / 100).toFixed(2) + 'x  #' + s.id;
   });
 
   document.getElementById('modeline').textContent =
     mode + (sc && sc.max ? '   cap ' + (sc.max.payout / 100).toFixed(2) + 'x' : '');
 
+  // The SIMULATION ID wherever this page knows it, because a real Stake replay
+  // URL always carries one - event is documented as the "unique simulation ID".
+  // The game prints the ID it was SERVED (the response's bookId), falling back
+  // to the parameter, so the two scan aliases can go out as words and the
+  // round-details panel still shows a number.
+  const picked = sc && sc[state.ev];
+  const ev = picked ? String(picked.id) : state.ev;
+
   const q = new URLSearchParams({
     replay: 'true', game: 'ride_the_bus', version: '1',
-    mode: mode, event: state.ev, rgs_url: RGS,
+    mode: mode, event: ev, rgs_url: RGS,
     currency: state.cur,
     amount: String(Math.round(Number(document.getElementById('amt').value || 1) * 1e6)),
     lang: state.lang,
   });
-  const url = 'http://localhost:' + GAME_PORT + '/?' + q;
+  const url = 'http://localhost:' + gamePort() + '/?' + q;
   const a = document.getElementById('out');
   a.href = url;
   a.textContent = url;
 }
+
+/* The game's port is a FIELD, not a constant.
+   vite takes the next free port when 3001 is busy - which happens every time a
+   previous dev server is still up - and until now this page kept building links
+   to 3001 regardless, so the link opened a dead tab or, worse, an older build.
+   Defaults to whatever the server was told (GAME_PORT), and remembers an
+   override per browser so it does not have to be retyped every session. */
+const portInput = document.getElementById('port');
+try {
+  const saved = localStorage.getItem('rtb-game-port');
+  if (saved) portInput.value = saved;
+} catch (e) { /* private window, or site data blocked */ }
+
+function gamePort() {
+  const n = Number(portInput.value);
+  return Number.isInteger(n) && n > 0 && n < 65536 ? n : GAME_PORT;
+}
+
+portInput.addEventListener('input', () => {
+  try {
+    localStorage.setItem('rtb-game-port', portInput.value);
+  } catch (e) { /* nothing to do - the field still works for this session */ }
+  render();
+});
 
 const cur = document.getElementById('cur');
 CUR.forEach((c) => cur.add(new Option(c, c)));
@@ -389,11 +505,27 @@ createServer(async (req, res) => {
         if (id === null) {
           return json(res, 404, { error: `no "${rawEvent}" round in ${mode}` });
         }
+      } else if (BOOK_ALIASES.includes(rawEvent)) {
+        const hit = scenariosFor(mode)[rawEvent];
+        id = hit && hit.id;
+        if (!hit) {
+          return json(res, 404, {
+            error:
+              hit === undefined
+                ? `REPLAY_EVENTS.md has no "${rawEvent}" column for ${mode} - ` +
+                  'regenerate it with: node scripts/replay-events.js'
+                : rawEvent === 'forgiven' && familyOf(mode) !== 'sc'
+                  ? `"forgiven" only exists in Second Chance - try sc_${mode}`
+                  : `no drawable "${rawEvent}" round in ${mode} above the celebration floor`,
+          });
+        }
       } else {
         id = Number(rawEvent);
         if (!Number.isInteger(id)) {
           return json(res, 400, {
-            error: `event must be a simulation ID or one of ${ALIASES.join(', ')}`,
+            error:
+              'event must be a simulation ID or one of ' +
+              [...ALIASES, ...BOOK_ALIASES].join(', '),
           });
         }
       }
@@ -413,15 +545,28 @@ createServer(async (req, res) => {
       const raw = Number(book.payoutMultiplier);
       const payoutMultiplier = raw / 100;
       console.log(
-        `  replay ${mode} #${id}${ALIASES.includes(rawEvent) ? ` (${rawEvent})` : ''}` +
+        `  replay ${mode} #${id}${rawEvent === String(id) ? '' : ` (${rawEvent})`}` +
           ` -> ${payoutMultiplier.toFixed(2)}x`,
       );
 
       // The shape Stake documents, and the shape Authenticate.svelte spreads
       // into stateBet.betToResume: { payoutMultiplier, costMultiplier, state }.
+      //
+      // Plus `bookId`, which Stake does NOT document and does not send. It is
+      // here because of the four aliases above: `event=max` resolves to a real
+      // simulation ID on this side, and without telling the client which one,
+      // the round-details panel can only print what the URL said - so a link
+      // built with an alias made the panel read "Event #max". The panel prefers
+      // this field and falls back to the URL parameter, which is the production
+      // path (a real replay URL always carries the ID).
+      //
+      // Named bookId rather than `event` deliberately: Authenticate.svelte
+      // spreads this object and then overwrites `event` with '0', so a field by
+      // that name would be silently swallowed.
       return json(res, 200, {
         payoutMultiplier,
         costMultiplier: MODES.get(mode).cost,
+        bookId: id,
         state: book.events,
       });
     }
@@ -433,8 +578,8 @@ createServer(async (req, res) => {
   console.log(`Game expected on   http://localhost:${GAME_PORT}   (npm run dev)`);
   console.log("");
   console.log("Open the replay RGS in a browser to build links for any of the 192");
-  console.log("modes. If the game runs on a different port, restart this with:");
-  console.log("");
-  console.log("    GAME_PORT=<port> node scripts/replay-server.mjs");
+  console.log("modes. If the game is on a different port, change it in the Game");
+  console.log("port field on that page - it is remembered per browser. This");
+  console.log("server does not need restarting for that.");
   console.log("");
 });

@@ -404,10 +404,49 @@
     multiplier: number,
     tiers: readonly WinTier[],
   ): Promise<void> {
-    celebration = { tier, amount, multiplier, tiers };
+    // revealedCards is COPIED, not referenced. The takeover draws the round's
+    // own cards, and every reset of revealedCards happens at the START of a
+    // round (see the three assignments of [null, null, null, null]) - so an
+    // auto run that begins the next round while this overlay is still on screen
+    // would empty the fan under it. A copy cannot be reached that way.
+    celebration = {
+      tier,
+      amount,
+      multiplier,
+      tiers,
+      cards: [...revealedCards],
+      bustedIndex,
+      forgivenIndex,
+    };
     return new Promise((resolve) => {
       celebrationResolve = resolve;
     });
+  }
+
+  /**
+   * The simulation ID to print on the round-details panel.
+   *
+   * The RGS's own answer first, the URL parameter second. In production those
+   * are always the same thing - Stake documents `event` as the unique
+   * simulation ID and a real replay URL carries one - so the fallback is the
+   * normal path and this looks like a no-op.
+   *
+   * It is not a no-op locally. scripts/replay-server.mjs accepts four aliases
+   * (max / big / win / loss) that resolve against the mode's lookup table, so
+   * `event=max` is a real request whose ID only the server knows; echoing the
+   * URL made the panel read "Event #max". The server returns the ID it served
+   * as `bookId` and this prefers it.
+   *
+   * Preferring the response is also the more correct rule in general: the panel
+   * should name the round that was actually played, not the string that was
+   * asked for.
+   */
+  function replayEventId(): string {
+    const served = (stateBet.betToResume as { bookId?: unknown } | undefined)?.bookId;
+    if (typeof served === 'number' || (typeof served === 'string' && served !== '')) {
+      return String(served);
+    }
+    return stateUrlDerived.event() || '';
   }
 
   function dismissCelebration() {
@@ -2052,7 +2091,7 @@
     phase={introPhase}
     mode={stateUrlDerived.mode() || ''}
     betAmount={initialBet}
-    eventId={stateUrlDerived.event() || ''}
+    eventId={replayEventId()}
     payoutMultiplier={replayPayoutMultiplier}
     oncontinue={onStartContinue}
     onplay={onReplayPlay}
@@ -2518,7 +2557,13 @@
          all: the popup opens and says why instead. Stake's replay guidance is
          to hide AUTOPLAY SETTINGS, which the rows below honour by disabling
          themselves - the button itself is how a reviewer finds that out. -->
-    <button class="cb-float cb-advanced" class:active={openPopup === 'advanced'} onclick={() => togglePopup('advanced')} aria-label={t('Advanced settings')}>
+    <!-- Disabled in replay. Everything inside is autoplay-scoped and autoplay
+         does not run in a replay, so the menu had nothing that could take
+         effect. Stake's replay guidance is explicit about this class of
+         control: "hide balance display, play buttons, bet amount selector,
+         autoplay settings". The bet display, the steppers and the autoplay
+         button were already disabled here; this was the one that was not. -->
+    <button class="cb-float cb-advanced" class:active={openPopup === 'advanced'} onclick={() => togglePopup('advanced')} disabled={stateUrlDerived.replay()} aria-label={t('Advanced settings')}>
       <svg class="cb-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z" /></svg>
     </button>
   </footer>
@@ -2744,12 +2789,13 @@
     <div class="popup popup-advanced" role="dialog" aria-label={t('Advanced')}>
       <div class="popup-head"><span>{t('Advanced')}</span><button class="popup-close" onclick={closePopup} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
       <div class="advanced-body">
-        <!-- Replay: every row below is autoplay-scoped, and autoplay does not
-             run in a replay. Say so once rather than presenting four switches
-             that silently do nothing. -->
-        {#if stateUrlDerived.replay()}
-          <p class="advanced-note">{t('These apply to autoplay, which does not run during a replay.')}</p>
-        {/if}
+        <!-- No replay branch here any more. Every row below is autoplay-scoped
+             and autoplay does not run in a replay, so this popup had nothing to
+             offer one - it used to open anyway and explain itself with a note
+             above four dead switches. The BUTTON is disabled in replay instead,
+             which is the same information delivered before the click rather
+             than after it. The per-switch `disabled` guards stay: they also
+             cover autoRunning, which is a live state. -->
         <div class="advanced-row">
           <span class="control-label">{t('Stop on full game win')}</span>
           <button type="button" class="switch" class:on={stopOnFullWin} role="switch" aria-checked={stopOnFullWin} aria-label={t('Stop autoplay on a full game win')} disabled={autoRunning || stateUrlDerived.replay()} onclick={() => (stopOnFullWin = !stopOnFullWin)}><span class="switch-knob"></span></button>

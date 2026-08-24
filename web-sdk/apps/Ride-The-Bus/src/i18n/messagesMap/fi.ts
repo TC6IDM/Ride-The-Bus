@@ -219,7 +219,6 @@ export default {
 	'Skip card reveal on autoplay': 'Ohita korttien paljastus automaattipelissä',
 	'Skip the card reveal during autoplay': 'Ohita korttien paljastus automaattipelin aikana',
 	'Skip win animations on autoplay': 'Ohita voittoanimaatiot automaattipelissä',
-	'These apply to autoplay, which does not run during a replay.': 'Nämä koskevat automaattipeliä, joka ei ole käytössä toiston aikana.',
 	'Skip big win animations during autoplay':
 		'Ohita suurten voittojen animaatiot automaattipelin aikana',
 	'Guess the color of card 1: red or black.': 'Arvaa kortin 1 väri: punainen vai musta.',

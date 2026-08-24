@@ -218,7 +218,6 @@ export default {
 	'Skip card reveal on autoplay': 'ऑटोप्ले में कार्ड खुलना छोड़ें',
 	'Skip the card reveal during autoplay': 'ऑटोप्ले के दौरान कार्ड खुलना छोड़ें',
 	'Skip win animations on autoplay': 'ऑटोप्ले पर जीत एनिमेशन छोड़ें',
-	'These apply to autoplay, which does not run during a replay.': 'ये ऑटोप्ले पर लागू होते हैं, जो रीप्ले के दौरान नहीं चलता।',
 	'Skip big win animations during autoplay': 'ऑटोप्ले के दौरान बड़ी जीत के एनिमेशन छोड़ें',
 	'Guess the color of card 1: red or black.': 'कार्ड 1 का रंग बताएं: लाल या काला।',
 	'Guess whether card 2 is higher or lower than card 1, or equal to it.':
