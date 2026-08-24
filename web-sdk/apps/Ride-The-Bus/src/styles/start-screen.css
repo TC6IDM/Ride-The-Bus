@@ -952,17 +952,45 @@
 	line-height: 1.5;
 }
 
-.ss-choice-badge.color-red    { background: #c0392b; color: #fdd; }
-.ss-choice-badge.color-black  { background: #1a1a2e; color: #ccc; border: 1px solid #555; }
-.ss-choice-badge.choice-higher { background: #1a5c1a; color: #bfb; }
-.ss-choice-badge.choice-lower  { background: #8b0000; color: #fcc; }
-.ss-choice-badge.choice-inside { background: #1a3a5c; color: #bbf; }
-.ss-choice-badge.choice-outside{ background: #5c3a1a; color: #fdb; }
-.ss-choice-badge.choice-equal  { background: #5c5c1a; color: #ffb; }
-.ss-choice-badge.suit-heart   { background: #8b0000; color: #fcc; }
-.ss-choice-badge.suit-diamond { background: #8b1a1a; color: #fdd; }
-.ss-choice-badge.suit-club    { background: #1a1a2e; color: #ccc; }
-.ss-choice-badge.suit-spade   { background: #111; color: #ccc; border: 1px solid #555; }
+/* THE SAME COLOURS THE BOARD USES, from the same tokens.
+   These were eleven hand-picked darks - a #1a5c1a for Higher against the
+   board's #2ecc71, a #5c3a1a brown for Outside against its magenta, a #5c5c1a
+   olive for Equal against its gold. So the one screen whose whole job is to
+   restate the bet restated it in colours the player had never seen, and a
+   reviewer opening a replay got a different game's palette. The choice colours
+   are DATA in this build (tokens.css: "the one place in this UI where colour is
+   DATA rather than decoration") - a badge showing Outside has to be the Outside
+   colour or it is just wrong.
+
+   Ink is chosen per fill for contrast, not per taste: the three light fills take
+   --on-choice-ink, the dark ones take --ink. */
+.ss-choice-badge.color-red     { background: var(--choice-red);     color: var(--ink); }
+.ss-choice-badge.color-black   { background: var(--choice-black);   color: var(--ink);
+                                 box-shadow: inset 0 0 0 1px rgba(var(--ink-rgb), 0.28); }
+.ss-choice-badge.choice-higher { background: var(--choice-higher);  color: var(--on-choice-ink); }
+.ss-choice-badge.choice-lower  { background: var(--choice-lower);   color: var(--ink); }
+.ss-choice-badge.choice-inside { background: var(--choice-inside);  color: var(--on-choice-ink); }
+.ss-choice-badge.choice-outside{ background: var(--choice-outside); color: var(--ink); }
+.ss-choice-badge.choice-equal  { background: var(--choice-equal);   color: var(--on-choice-ink); }
+
+/* The suit squares on the board are a dark panel with a COLOURED PIP, not four
+   coloured panels - so the badges are too: one ground, the suit carried by the
+   mark, red for hearts and diamonds and the plain ink for clubs and spades.
+   Painting each suit its own background would invent a colour the game does not
+   have and would make Heart and Diamond two different reds. */
+.ss-choice-badge.suit-heart,
+.ss-choice-badge.suit-diamond,
+.ss-choice-badge.suit-club,
+.ss-choice-badge.suit-spade {
+	background: var(--choice-black);
+	box-shadow: inset 0 0 0 1px rgba(var(--ink-rgb), 0.28);
+	color: var(--ink);
+}
+
+.ss-choice-badge.suit-heart,
+.ss-choice-badge.suit-diamond {
+	color: var(--suit-red);
+}
 
 /* ---- Narrow portrait: two steps per row ----------------------------------
    The 1.15vw term in --ss exists only so four step panels fit across one row.
@@ -984,6 +1012,31 @@
 
 	.ss-steps {
 		flex-wrap: wrap;
+	}
+
+	/* THE FAN HAS TO BE RE-DEALT FOR TWO ROWS.
+	   The tilts above describe one hand of four spread left to right: -1.5, -0.5,
+	   +0.5, +1.5. Wrapped into a 2x2 that splits into a top row leaning left
+	   (-1.5, -0.5) and a bottom row leaning right (+0.5, +1.5) - so each row
+	   looked like it was sliding off its own side of the screen, which is the
+	   "layout bug" reading the note on .ss-step warns the angles must stay under.
+
+	   A row of two fans as a PAIR: outer edges up and out, mirrored about the
+	   gap. The lift then alternates the opposite way between the rows so the two
+	   pairs are not the same pair twice. */
+	.ss-step:nth-child(odd) {
+		--step-tilt: -1.4deg;
+	}
+	.ss-step:nth-child(even) {
+		--step-tilt: 1.4deg;
+	}
+	.ss-step:nth-child(1),
+	.ss-step:nth-child(4) {
+		--step-lift: calc(var(--ss) * 0.35);
+	}
+	.ss-step:nth-child(2),
+	.ss-step:nth-child(3) {
+		--step-lift: calc(var(--ss) * -0.35);
 	}
 
 	/* Two rows of panels at this size leaves the column about 9px inside the

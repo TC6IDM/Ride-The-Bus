@@ -359,6 +359,13 @@
      the red. A hardcoded white would be the bug the accent-ink rule exists to
      stop. */
   --on-vol-ink: #14110a;
+  /* The same job on a CHOICE fill - the replay panel's guess badges, which are
+     the choice colours at label size. Aliased rather than re-spelled: three of
+     the choice fills (--choice-higher green, --choice-inside cyan,
+     --choice-equal yellow) are as light as the volatility fills and want the
+     same dark ink, and a second #14110a in this file is exactly the drift the
+     top of it argues against. */
+  --on-choice-ink: var(--on-vol-ink);
   --vol-overflow-ink-rgb: 176, 106, 232;
   --vol-overflow-ink: rgb(var(--vol-overflow-ink-rgb));
 
