@@ -107,6 +107,40 @@ export function betDecimals(
 }
 
 /**
+ * Bring `value` down to `maxBet`. Never up to `minBet`.
+ *
+ * THE ASYMMETRY IS THE POINT, and it has been settled twice in opposite
+ * directions, so the reasoning is worth keeping.
+ *
+ * Clamping DOWN is safe: a player who typed more than the operator allows is
+ * staked less than they asked, and the corrected figure is on screen before
+ * anything is committed. Without it, typing the maximum produced a bet that
+ * looked accepted and then would not play - and Stake's checklist asks for the
+ * maximum to be selectable.
+ *
+ * Clamping UP is not safe, and this file briefly did it. Pulling 0.50 up to a
+ * 1.00 minimum stakes a player MORE than they asked for, silently, because they
+ * typed a number and a different larger one was played. That a field is
+ * correctable before commitment does not make an increase acceptable; the
+ * player's own figure is the one thing the frontend must not inflate.
+ *
+ * A below-minimum bet therefore stays exactly as typed, and the spin button
+ * explains it: betBlockedReason() in Game.svelte names the floor and the
+ * amount. The bet cannot be played, and the player - not the game - decides
+ * whether to raise it.
+ */
+export function clampToMaximum(
+  value: number,
+  limits: BetLimits | null | undefined,
+  amountMultiplier: number,
+): number {
+  if (!Number.isFinite(value)) return value;
+  if (!limits || !limits.maxBet) return value;
+  const micro = Math.round(value * amountMultiplier);
+  return micro > limits.maxBet ? limits.maxBet / amountMultiplier : value;
+}
+
+/**
  * Whether `value` sits inside [minBet, maxBet]. Divisibility is deliberately
  * NOT part of this: an off-grid figure typed into the input is correctable by
  * snapBetToGrid at play time, so it should not disable the spin button.

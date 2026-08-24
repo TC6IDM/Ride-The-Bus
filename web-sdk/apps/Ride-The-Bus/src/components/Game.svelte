@@ -81,7 +81,13 @@
     forgivenessAvailable,
     quantizeMultiplier,
   } from '../game/payout';
-  import { betDecimals, betWithinRange, snapBetToGrid, snapToStep } from '../game/betLimits';
+  import {
+    betDecimals,
+    betWithinRange,
+    clampToMaximum,
+    snapBetToGrid,
+    snapToStep,
+  } from '../game/betLimits';
   // Sourced from the shared config rather than retyped, so a displayed RTP can
   // never drift from the one the math is actually built and reweighted to.
   import gameConfig from '../game/config';
@@ -580,20 +586,49 @@
   // table. The Max band sits on this family's own ceiling.
   const winTiers = () => winTiersFor(betFamily);
 
-  const betIsValid = () => {
+  /**
+   * Why the current bet cannot be played, or null when it can.
+   *
+   * One function per FAILURE, not one boolean: "Enter a valid bet" was shown
+   * for a bet of zero, a bet the player cannot afford and a bet under the
+   * operator's floor alike, and only the first of those three is something the
+   * player can act on by reading it. The other two tell them nothing about what
+   * is wrong or by how much.
+   *
+   * Ordered cheapest-to-most-specific, and affordability BEFORE the range:
+   * a player who cannot afford the round needs to hear that first, even if the
+   * amount also happens to sit under the minimum.
+   */
+  function betBlockedReason(): string | null {
     const v = betValue();
+    if (!(v > 0)) return t('Enter a valid bet');
     // Affordability is against the COST, not the bet: at 2x a player with $10
     // cannot buy a $6 round, and letting them try just earns an RGS rejection.
-    if (!(v > 0) || roundCost(v) > stateBet.balanceAmount) return false;
+    if (roundCost(v) > stateBet.balanceAmount) return t('Insufficient funds');
+
     // On a real session the RGS enforces minBet/maxBet, so check against those
     // rather than the min/max of betLevels - betLevels is a suggestion list and
     // need not span the full allowed range. Divisibility by stepBet is NOT
     // checked here: normalizeBet snaps the amount onto the grid at play time,
     // so an off-grid figure in the input is correctable, not invalid.
-    // betWithinRange is a no-op when no limits are known, so this needs no
-    // session gate either.
-    return betWithinRange(v, stateConfig.betLimits, API_AMOUNT_MULTIPLIER);
-  };
+    const limits = stateConfig.betLimits;
+    const micro = Math.round(v * API_AMOUNT_MULTIPLIER);
+    if (limits && limits.minBet > 0 && micro < limits.minBet) {
+      return t('Bet is below the minimum of %s').replace(
+        '%s',
+        numberToCurrencyString(limits.minBet / API_AMOUNT_MULTIPLIER),
+      );
+    }
+    if (limits && limits.maxBet > 0 && micro > limits.maxBet) {
+      return t('Bet is above the maximum of %s').replace(
+        '%s',
+        numberToCurrencyString(limits.maxBet / API_AMOUNT_MULTIPLIER),
+      );
+    }
+    return null;
+  }
+
+  const betIsValid = () => betBlockedReason() === null;
 
   // Keep the shared bet state in sync with the live input so "Current Bet" and
   // the play call always reflect what's shown.
@@ -767,14 +802,30 @@
   // the player sees what they will actually be staked while they can still
   // change their mind, instead of watching 1.37 become 1.30 after they commit.
   //
-  // Range is not clamped here, only the grid: pulling 0.50 up to a 1.00 minimum
-  // would stake them more than they asked. Out-of-range amounts stay visible and
-  // betIsValid() refuses them, which the spin tooltip explains.
+  // The MAXIMUM is clamped here; the minimum deliberately is not. See
+  // clampToMaximum in game/betLimits.ts - clamping down stakes a player less
+  // than they asked, clamping up stakes them more, and only one of those is
+  // something a frontend may do on its own. A below-minimum amount stays as
+  // typed and the spin button names the floor.
+  //
+  // Clamp BEFORE snapping, so the grid always has the last word: clamping to a
+  // maxBet that is not itself on the step grid would otherwise leave an
+  // unplayable figure in the field.
   function formatBetInput() {
+    if (betLockedReason()) return;
     const raw = `${betInput ?? ''}`.trim();
     const v = Number(raw);
     if (raw === '' || isNaN(v) || v <= 0) return;
-    const snapped = snapToStep(v, stateConfig.betLimits, API_AMOUNT_MULTIPLIER);
+    const clamped = clampToMaximum(v, stateConfig.betLimits, API_AMOUNT_MULTIPLIER);
+    const stepped = snapToStep(clamped, stateConfig.betLimits, API_AMOUNT_MULTIPLIER);
+    // snapToStep floors onto the grid, so anything under ONE step floors to
+    // zero: with a 1,000 step, typing 500 came back as 0.00 and the spin button
+    // said "Enter a valid bet" - which is true of zero and says nothing about
+    // the 500 the player actually typed. Below-minimum amounts are allowed to
+    // stand precisely so the button can name the floor, and a figure snapped
+    // out of existence cannot be described. Keep what they typed; it is
+    // unplayable either way, and betBlockedReason explains why.
+    const snapped = stepped > 0 ? stepped : v;
     betInput = snapped.toFixed(
       // The currency's own precision is the floor, not 2 - a yen bet field has
       // no decimals to offer.
@@ -796,6 +847,21 @@
     formatBetInput();
     closePopup();
   }
+
+  /**
+   * A panel that can no longer do anything closes itself.
+   *
+   * The buttons that open these are disabled once a round is in flight, but a
+   * panel already OPEN when the round starts would stay up showing controls
+   * that silently refuse - which is worse than a greyed button, because it
+   * looks like it should work. Covers every entry point (the spin button, the
+   * spacebar, an autoplay run) rather than each one remembering to tidy up.
+   */
+  $effect(() => {
+    if (roundInProgress() && (openPopup === 'bet' || openPopup === 'mode')) {
+      openPopup = null;
+    }
+  });
 
   $effect(() => {
     betInput; // re-fit whenever the shown amount changes
@@ -848,8 +914,15 @@
    * same tick, with nothing awaited in between - the window only exists against
    * a real RGS, which is exactly where it matters.
    */
+  /**
+   * A round is on the wire or on screen. Named separately from choicesLocked
+   * because the bet group needs the same window with a DIFFERENT explanation.
+   */
+  const roundInProgress = () =>
+    gameState === 'playing' || isProcessing || resumeInProgress;
+
   const choicesLocked = () =>
-    gameState === 'playing' || autoRunning || isProcessing || resumeInProgress || stateUrlDerived.replay();
+    roundInProgress() || autoRunning || stateUrlDerived.replay();
 
   // --- The one impossible pairing --------------------------------------------
   // Stage 2 "equal" ties card 2 to card 1's rank, which leaves nothing strictly
@@ -1109,6 +1182,7 @@
   // input - typing any amount still works. Falls back to +/-1 when no levels
   // are known (local dev before authenticate).
   function stepBet(direction: 1 | -1) {
+    if (betLockedReason()) return;
     const shown = Number(betInput);
     const current = !isNaN(shown) && shown > 0 ? shown : stateBet.betAmount;
     const levels = stateConfig.betAmountOptions;
@@ -1823,6 +1897,10 @@
     if (!hold && !autoRoundsValid()) return;
     autoStopRequested = false;
     autoRunning = true;
+    // A run can start with the bet menu already open - the spacebar hold does
+    // not go through the popup at all. Leaving it up would show a rack of chips
+    // that silently refuse to be picked, which is worse than closing it.
+    if (openPopup === 'bet') openPopup = null;
     spaceHoldRunning = hold;
     autoRemaining = hold ? 0 : autoInfinite ? Infinity : Math.floor(Number(autoRoundsInput));
 
@@ -2012,7 +2090,8 @@
     }
     if (gameState === 'playing' || isProcessing || resumeInProgress) return t('Round in progress');
     if (!allChoicesMade()) return t('Pick all 4 guesses');
-    if (!betIsValid()) return t('Enter a valid bet');
+    const betReason = betBlockedReason();
+    if (betReason) return betReason;
     if (IS_PROD && resolveRoundSeed().source === 'none') return t('No active game session');
     return null;
   }
@@ -2052,7 +2131,54 @@
     runRound().catch((err) => console.error('[RideTheBus] play failed', err));
   }
   // Bet menu: choose a preset level then close.
+  /**
+   * Why the bet cannot be changed right now, or null when it can.
+   *
+   * Autoplay stakes the SAME amount every round - that is the whole contract
+   * the player agreed to when they confirmed the run - so letting the amount
+   * move underneath it would either restake them without a fresh confirmation
+   * or silently do nothing, and both are worse than refusing.
+   *
+   * Same shape as spinBlockedReason(): a control that is dead has to say why,
+   * or the player is left guessing at a greyed button.
+   */
+  function betLockedReason(): string | null {
+    if (autoRunning) return t('Bet is locked while autoplay runs');
+    if (stateUrlDerived.replay()) return t('Replays cannot be re-bet');
+    // A round already bought cannot be re-priced. The guesses have been locked
+    // for this window since choicesLocked was written, but the bet and the mode
+    // were not - so the amount and the family could both still be changed while
+    // a round was on the wire, which is the same class of mistake for the same
+    // reason: you would be looking at a board that no longer describes the round
+    // being settled.
+    if (roundInProgress()) return t('Round in progress');
+    return null;
+  }
+
+  /**
+   * The tip is shown on hover on a pointer device, and FLASHED on a refused
+   * tap - which is the only route a phone has to it.
+   */
+  let betTipVisible = $state(false);
+  let betTipTimer: ReturnType<typeof setTimeout> | null = null;
+  const BET_TIP_MS = 2400;
+  function flashBetTip() {
+    betTipVisible = true;
+    if (betTipTimer) clearTimeout(betTipTimer);
+    betTipTimer = setTimeout(() => { betTipVisible = false; }, BET_TIP_MS);
+  }
+
+  function onBetDisplayClick() {
+    if (betLockedReason()) { flashBetTip(); return; }
+    togglePopup('bet');
+  }
+
   function setBetLevel(v: number) {
+    // Belt and braces. The chips are unreachable while the bet is locked -
+    // the panel that holds them cannot be opened - but a run can also START
+    // with the menu already open, and this is the one line that has to hold
+    // for the bet actually to be safe.
+    if (betLockedReason()) return;
     betInput = String(v);
     openPopup = null;
   }
@@ -2540,7 +2666,7 @@
         class="cb-icon cb-mode-btn"
         class:active={openPopup === 'mode'}
         onclick={() => togglePopup('mode')}
-        disabled={autoRunning || stateUrlDerived.replay()}
+        disabled={choicesLocked()}
         aria-label={t('Choose game mode')}
         title={t(familyRules().label)}
       >
@@ -2588,8 +2714,23 @@
          so a custom property set on the display could never reach them. Every
          control in this group now tints with the difficulty of the round it is
          about to buy. -->
-    <div class="cb-panel cb-panel-dark cb-bet">
-      <button class="cb-bet-display" class:active={openPopup === 'bet'} onclick={() => togglePopup('bet')} disabled={stateUrlDerived.replay()} aria-label={t('Choose bet amount')}>
+    <!-- The tooltip lives on the PANEL rather than the button, for the same
+         reason .cb-cooldown-tip lives on .cb-spin-wrap: a disabled button
+         receives no pointer events, so a tooltip hosted on it would never be
+         shown by the one state it exists to explain. The panel also spans the
+         steppers, which are disabled by the same condition. -->
+    <div class="cb-panel cb-panel-dark cb-bet" class:bet-locked={betLockedReason() !== null}>
+      <!-- NOT disabled while autoplay runs, and that is deliberate: a greyed
+           control tells a player the game is broken, where a live one that
+           answers back tells them why. Only replay disables it outright, where
+           Stake's own guidance asks for the bet controls to be inert. -->
+      <button
+        class="cb-bet-display"
+        class:active={openPopup === 'bet'}
+        onclick={onBetDisplayClick}
+        disabled={stateUrlDerived.replay()}
+        aria-label={t('Choose bet amount')}
+      >
         <span class="cb-cap">{t('Bet')}</span>
         <!-- The figure shown IS what leaves the balance, so it is the round's
              cost rather than the base bet. On a multiplied mode it turns blue
@@ -2630,9 +2771,17 @@
         </span>
       </button>
       <div class="cb-betstep">
-        <button class="cb-step" onclick={() => stepBet(1)} disabled={autoRunning || stateUrlDerived.replay()} aria-label={t('Increase bet')}>{@render iconPlus()}</button>
-        <button class="cb-step" onclick={() => stepBet(-1)} disabled={autoRunning || stateUrlDerived.replay()} aria-label={t('Decrease bet')}>{@render iconMinus()}</button>
+        <!-- Same condition as the display beside them, so the whole bet group
+             locks and unlocks together. They were on autoRunning || replay
+             only, which left them live while a round was in flight. -->
+        <button class="cb-step" onclick={() => stepBet(1)} disabled={betLockedReason() !== null} aria-label={t('Increase bet')}>{@render iconPlus()}</button>
+        <button class="cb-step" onclick={() => stepBet(-1)} disabled={betLockedReason() !== null} aria-label={t('Decrease bet')}>{@render iconMinus()}</button>
       </div>
+      {#if betLockedReason()}
+        <span class="cb-bet-tip" class:is-shown={betTipVisible} role="tooltip" aria-live="polite">
+          {betLockedReason()}
+        </span>
+      {/if}
     </div>
 
     <div class="cb-panel cb-panel-dark cb-actions">

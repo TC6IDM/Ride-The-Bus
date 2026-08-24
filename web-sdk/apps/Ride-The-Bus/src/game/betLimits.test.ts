@@ -8,6 +8,7 @@ import { test, describe } from 'node:test';
 import {
   betDecimals,
   betWithinRange,
+  clampToMaximum,
   limitsAreUnknown,
   snapBetToGrid,
   snapToStep,
@@ -216,5 +217,79 @@ describe('betWithinRange', () => {
 
   test('unconstrained when the RGS supplied nothing', () => {
     assert.equal(betWithinRange(12345, null, M), true);
+  });
+});
+
+/**
+ * Clamping a typed bet - DOWN only.
+ *
+ * The asymmetry has been settled twice in opposite directions, so both are
+ * pinned here. Clamping down to the maximum is safe and required (Stake's
+ * checklist asks for the maximum to be selectable, and without it typing it
+ * produced a bet that looked accepted and would not play). Clamping UP to the
+ * minimum is not: it stakes a player more than the figure they typed, and no
+ * amount of "they can still change it" makes the frontend inflating their own
+ * number acceptable. A below-minimum bet stays as typed and the spin button
+ * explains it.
+ */
+describe('clampToMaximum', () => {
+  const L = limits(0.1, 100, 0.1);
+
+  test('an amount already inside the range is untouched', () => {
+    for (const v of [0.1, 0.5, 1, 42.7, 99.9, 100]) {
+      assert.equal(clampToMaximum(v, L, M), v, `${v} was moved`);
+    }
+  });
+
+  test('above the maximum comes back as the maximum', () => {
+    for (const v of [100.01, 250, 1e6, Number.MAX_SAFE_INTEGER]) {
+      assert.equal(clampToMaximum(v, L, M), 100, `${v}`);
+    }
+  });
+
+  /** THE one that must not come back. */
+  test('below the minimum is left exactly as typed', () => {
+    for (const v of [0.09, 0.01, 0.05, 1e-9]) {
+      assert.equal(
+        clampToMaximum(v, L, M),
+        v,
+        `${v} was raised to the minimum - that stakes the player more than they asked`,
+      );
+    }
+  });
+
+  test('no limits means nothing to clamp against', () => {
+    for (const l of [null, undefined, { minBet: 0, maxBet: 0, stepBet: 0 }]) {
+      assert.equal(clampToMaximum(12345, l, M), 12345);
+    }
+  });
+
+  /** A floor without a ceiling must not start clamping. */
+  test('a minimum-only configuration changes nothing', () => {
+    const floorOnly: BetLimits = { minBet: 2 * M, maxBet: 0, stepBet: 0 };
+    assert.equal(clampToMaximum(1, floorOnly, M), 1);
+    assert.equal(clampToMaximum(1e9, floorOnly, M), 1e9);
+  });
+
+  test('a maximum-only configuration clamps down', () => {
+    const capOnly: BetLimits = { minBet: 0, maxBet: 10 * M, stepBet: 0 };
+    assert.equal(clampToMaximum(50, capOnly, M), 10);
+    assert.equal(clampToMaximum(0.000001, capOnly, M), 0.000001);
+  });
+
+  /**
+   * A high-denomination currency is where the arithmetic could bite: UGX can
+   * carry a hundred-million cap, which is 1e14 micro-units - inside a double,
+   * but worth pinning.
+   */
+  test('a high-denomination cap survives the micro-unit arithmetic', () => {
+    const ugx = limits(1000, 100_000_000, 1000);
+    assert.equal(clampToMaximum(999_999_999, ugx, M), 100_000_000);
+    assert.equal(clampToMaximum(1, ugx, M), 1);
+    assert.ok(betWithinRange(clampToMaximum(999_999_999, ugx, M), ugx, M));
+  });
+
+  test('a NaN bet is handed back rather than turned into a limit', () => {
+    assert.ok(Number.isNaN(clampToMaximum(NaN, L, M)));
   });
 });

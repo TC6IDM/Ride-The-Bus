@@ -185,6 +185,11 @@ export default {
 	// value passed, silently renders them as an empty string.
 	'Spins must be %s seconds apart': 'Spins must be %s seconds apart',
 	'Round in progress': 'Round in progress',
+	'Insufficient funds': 'Insufficient funds',
+	'Bet is below the minimum of %s': 'Bet is below the minimum of %s',
+	'Bet is above the maximum of %s': 'Bet is above the maximum of %s',
+	'Bet is locked while autoplay runs': 'Bet is locked while autoplay runs',
+	'Replays cannot be re-bet': 'Replays cannot be re-bet',
 	'Replay is view-only': 'Replay is view-only',
 	'No active game session': 'No active game session',
 	// Failure dialog. Codes are from docs/rgs_docs/RGS.md "Response Codes".

@@ -231,7 +231,9 @@
 
 .cb-lastwin-mult { font-size: calc(var(--ui-bar) * 1.05) /* 11.5px */; font-weight: 800; color: var(--gold-bright); margin-left: calc(var(--ui-bar) * 0.27); }
 
-.cb-bet { gap: calc(var(--ui-bar) * 0.73); }
+/* position: relative so .cb-bet-tip below has a positioning context - .cb-panel
+   sets none, and the tip is absolutely placed against this panel. */
+.cb-bet { gap: calc(var(--ui-bar) * 0.73); position: relative; }
 
 .cb-bet-display {
   display: flex;
@@ -390,6 +392,68 @@
     transform: translateX(-50%) translateY(0);
   }
 }
+
+/* ---- "you cannot change the bet right now" -------------------------------
+   Autoplay stakes the same amount every round, so while a run is going the
+   whole bet group is dead: the display cannot open its menu and the steppers
+   cannot step.
+
+   The tip is hosted on the PANEL, not on either control, because a disabled
+   button receives no pointer events at all - a tooltip on it would be shown by
+   every state except the one it exists to explain.
+
+   Same material as .cb-cooldown-tip deliberately: one shape for "this control
+   is dead, and here is why". */
+.cb-bet-tip {
+  position: absolute;
+  bottom: calc(100% + var(--ui-bar) * 0.8);
+  left: 50%;
+  transform: translateX(-50%) translateY(calc(var(--ui-bar) * 0.36));
+  z-index: 60;
+  padding: calc(var(--ui-bar) * 0.6) calc(var(--ui-bar) * 1);
+  border-radius: calc(var(--ui-bar) * 0.64);
+  border: 1px solid rgba(var(--ink-rgb), 0.14);
+  background: rgba(8, 14, 22, 0.96);
+  box-shadow: 0 6px 18px rgba(var(--shadow-rgb), 0.55);
+  color: var(--ink-strong);
+  font-size: calc(var(--ui-bar) * 1.05);
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.14s var(--ease-out), transform 0.14s var(--ease-out);
+}
+
+@media (hover: hover) {
+  .cb-bet.bet-locked:hover .cb-bet-tip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Flashed by a refused tap. A phone has no hover, so this is the only way the
+   explanation reaches the player who actually tried to change the bet. */
+.cb-bet-tip.is-shown {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.cb-bet-tip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: calc(var(--ui-bar) * 0.45) solid transparent;
+  border-top-color: rgba(8, 14, 22, 0.96);
+}
+
+/* The locked display is NOT dimmed. Greying the game's biggest control reads
+   as "this is broken"; leaving it lit and having it answer back when tapped
+   reads as "not right now, and here is why". The +/- steppers beside it stay
+   disabled and keep their own :disabled opacity - they have no text to answer
+   with. */
 
 /* Little arrow pointing down at the button. */
 .cb-cooldown-tip::after {

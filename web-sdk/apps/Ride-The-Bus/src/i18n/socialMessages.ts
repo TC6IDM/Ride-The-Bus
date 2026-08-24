@@ -21,6 +21,17 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 	Stop: 'Stop',
 	'Pick all 4 guesses': 'Pick all 4 guesses',
 	'Enter a valid bet': 'Enter a valid play amount',
+	// "bet" is restricted, and so is "funds" - the table's replacement for "fund"
+	// is "balance". Both are rephrased rather than dropped: these are the strings
+	// that tell a player WHY the play button will not fire.
+	'Insufficient funds': 'Insufficient balance',
+	'Bet is below the minimum of %s': 'Play amount is below the minimum of %s',
+	'Bet is above the maximum of %s': 'Play amount is above the maximum of %s',
+	// "bet" is restricted, and so is "rebet" (the table's replacement for it is
+	// "respin", which would be nonsense on a card game). Both are rephrased
+	// around "play amount" instead, the same substitution used above.
+	'Bet is locked while autoplay runs': 'Play amount is locked while auto play runs',
+	'Replays cannot be re-bet': 'Replays cannot be played again',
 	Start: 'Start',
 
 	// Bet menu
