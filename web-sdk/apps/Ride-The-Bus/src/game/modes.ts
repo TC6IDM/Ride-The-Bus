@@ -104,13 +104,22 @@ export type FamilyRules = {
    * bottom tier, so the game's defining moment is never met with silence - the
    * smallest possible full win is 6.6x, under the 10x entry threshold.
    *
-   * False for Second Chance, and only there. Forgiveness means a round survives
-   * its first wrong guess, so "all four cards" stops being the rare event the
-   * floor was written for and becomes the ordinary one - the takeover fired on
-   * most rounds, which is not a celebration but an interruption. Second Chance
-   * still celebrates on SIZE, at the same thresholds as everything else; it
-   * just no longer treats finishing the round as remarkable in itself, because
-   * in that mode it is not.
+   * TRUE EVERYWHERE, INCLUDING SECOND CHANCE - but the caller only passes it for
+   * a CLEAN SWEEP. See cleanSweep() below.
+   *
+   * It was false for Second Chance, and that was too blunt. The reasoning was
+   * sound as far as it went: forgiveness means a round survives its first wrong
+   * guess, so "reached card 4" stops being the rare event the floor was written
+   * for and the takeover fired on most rounds, which is an interruption rather
+   * than a celebration. But suppressing it for the whole family also swallowed
+   * the case the floor exists for - four correct guesses, no forgiveness spent,
+   * the same 1-in-70 event that takes the screen over in Classic - and a player
+   * who nailed all four in Second Chance got nothing for it.
+   *
+   * The distinction the old flag could not draw is between "finished the round"
+   * and "did not get it wrong". Forgiveness is what makes those two different,
+   * and it is tracked per round, not per family - so the rule belongs at the
+   * call site.
    */
   celebrateEveryFullWin: boolean;
 };
@@ -139,7 +148,7 @@ export const FAMILY_RULES: Record<ModeFamily, FamilyRules> = {
     forgiveFrom: 1,
     label: 'Second Chance',
     maxWin: 585.2,
-    celebrateEveryFullWin: false,
+    celebrateEveryFullWin: true,
   },
   hs: {
     prefix: 'hs_',
@@ -174,6 +183,28 @@ export const FAMILY_BLURB: Record<ModeFamily, string> & {
 const PREFIXED_FAMILIES = MODE_FAMILIES.slice()
   .sort((a, b) => FAMILY_RULES[b].prefix.length - FAMILY_RULES[a].prefix.length)
   .filter((family) => FAMILY_RULES[family].prefix.length > 0);
+
+/**
+ * Did the round go four-for-four with nothing forgiven?
+ *
+ * This is what "a full game win" has to mean once one family can survive a
+ * wrong guess. A Second Chance round that used its forgiveness reached card 4
+ * without having guessed all four correctly, and it is the guessing - not the
+ * arriving - that the takeover's bottom-tier floor exists to acknowledge.
+ *
+ * Classic and High Stakes have no forgiveness, so forgivenIndex is always null
+ * there and this is exactly "did not bust" - their behaviour is unchanged.
+ *
+ * Kept here rather than inline in Game.svelte so winTiers.test.ts can assert on
+ * the same rule the board applies. The bug this shape prevents is the family
+ * flag drifting from the condition the caller actually evaluates.
+ */
+export function isCleanSweep(
+  bustedIndex: number | null,
+  forgivenIndex: number | null,
+): boolean {
+  return bustedIndex === null && forgivenIndex === null;
+}
 
 /** The family a published mode name belongs to. */
 export function familyOf(mode: string): ModeFamily {

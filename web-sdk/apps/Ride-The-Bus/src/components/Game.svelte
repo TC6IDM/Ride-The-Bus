@@ -53,6 +53,7 @@
     FAMILY_BLURB,
     FAMILY_RULES,
     MODE_FAMILIES,
+    isCleanSweep,
     isCombinationPlayable,
     modeName,
     parseModeName,
@@ -1146,12 +1147,15 @@
     //
     // That floor is per family. Second Chance forgives a wrong guess, so most
     // of its rounds reach card 4 and the takeover fired on nearly all of them -
-    // see celebrateEveryFullWin in modes.ts. It still celebrates on size.
+    // see celebrateEveryFullWin and isCleanSweep in modes.ts. A round that
+    // spent its Second Chance still celebrates on SIZE, just not on the floor.
     const tiers = winTiers();
 
     const celebrationTier = winTierFor(
       lastWinMultiplier,
-      bustedIndex === null && wonAmount > 0 && familyRules().celebrateEveryFullWin,
+      isCleanSweep(bustedIndex, forgivenIndex) &&
+        wonAmount > 0 &&
+        familyRules().celebrateEveryFullWin,
       tiers,
     );
 

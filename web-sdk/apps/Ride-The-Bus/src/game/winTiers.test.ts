@@ -22,7 +22,7 @@ import {
   winTierFor,
   type WinTierId,
 } from './winTiers.ts';
-import { FAMILY_RULES, MODE_FAMILIES, type ModeFamily } from './modes.ts';
+import { FAMILY_RULES, MODE_FAMILIES, isCleanSweep, type ModeFamily } from './modes.ts';
 
 const idAt = (multiplier: number): WinTierId | null => winTierFor(multiplier)?.id ?? null;
 
@@ -436,29 +436,51 @@ describe('the Max Win tier follows the family ceiling', () => {
   });
 });
 
-describe('the full-game-win floor is per family', () => {
+describe('the full-game-win floor is about a clean sweep, not about the family', () => {
   const SMALL_FULL_WIN = MIN_FULL_GAME_WIN_MULTIPLIER; // 6.6x, under the 10x entry tier
 
-  test('Classic and High Stakes celebrate any completed round', () => {
-    for (const family of ['base', 'hs'] as const) {
-      assert.equal(FAMILY_RULES[family].celebrateEveryFullWin, true);
-      const tier = winTierFor(
-        SMALL_FULL_WIN,
-        FAMILY_RULES[family].celebrateEveryFullWin,
-        winTiersFor(family),
+  /** What Game.svelte passes as winTierFor's `fullGameWin`. */
+  const floors = (family: ModeFamily, busted: number | null, forgiven: number | null) =>
+    isCleanSweep(busted, forgiven) && FAMILY_RULES[family].celebrateEveryFullWin;
+
+  test('every family celebrates a clean sweep, however small it pays', () => {
+    for (const family of MODE_FAMILIES) {
+      const tier = winTierFor(SMALL_FULL_WIN, floors(family, null, null), winTiersFor(family));
+      assert.equal(
+        tier?.id,
+        'big',
+        `${family} should celebrate four correct guesses even at ${SMALL_FULL_WIN}x`,
       );
-      assert.equal(tier?.id, 'big', `${family} should celebrate a small full win`);
     }
   });
 
-  test('Second Chance does not, because forgiveness makes it the common case', () => {
-    assert.equal(FAMILY_RULES.sc.celebrateEveryFullWin, false);
-    const tier = winTierFor(
-      SMALL_FULL_WIN,
-      FAMILY_RULES.sc.celebrateEveryFullWin,
-      winTiersFor('sc'),
-    );
-    assert.equal(tier, null, 'a 6.6x Second Chance round should not take the screen over');
+  /**
+   * The half of the old per-family flag that was right, kept: a Second Chance
+   * round that SPENT its forgiveness reached card 4 without guessing all four,
+   * and flooring those would fire the takeover on most rounds.
+   */
+  test('a spent Second Chance does not floor - it reached the end, it did not sweep', () => {
+    const tier = winTierFor(SMALL_FULL_WIN, floors('sc', null, 2), winTiersFor('sc'));
+    assert.equal(tier, null, 'a forgiven 6.6x Second Chance round should not take the screen over');
+  });
+
+  /**
+   * Classic and High Stakes have no forgiveness, so forgivenIndex is structurally
+   * always null there. Pinned because the shared rule now reads it for all three
+   * and a future family with forgiveness would land here first.
+   */
+  test('forgiveness is unreachable outside Second Chance', () => {
+    for (const family of ['base', 'hs'] as const) {
+      assert.equal(FAMILY_RULES[family].forgive, null, `${family} should not forgive`);
+    }
+    assert.equal(FAMILY_RULES.sc.forgive, 0.5);
+  });
+
+  test('a bust never floors, in any family', () => {
+    for (const family of MODE_FAMILIES) {
+      const tier = winTierFor(SMALL_FULL_WIN, floors(family, 3, null), winTiersFor(family));
+      assert.equal(tier, null, `${family} floored a busted round`);
+    }
   });
 
   test('Second Chance still celebrates on size, on its own ladder', () => {
