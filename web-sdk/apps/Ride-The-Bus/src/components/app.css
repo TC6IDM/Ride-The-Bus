@@ -221,3 +221,32 @@ body {
 html body {
 	font-family: var(--font-body);
 }
+
+/* Form controls do NOT inherit font-family. The UA stylesheet sets its own
+ * `font: 400 13.333px Arial` on button, input, select and textarea, and that
+ * beats inheritance because inheritance is not a cascade participant - so the
+ * rule above reaches every element in the game EXCEPT the ones the player
+ * clicks.
+ *
+ * The damage was everywhere and invisible in the source. Measured in the
+ * running game: the control bar's bet display and mode name (.cb-val,
+ * .cb-cap, .cb-mode-word, .cb-bet-mode - on screen at all times), all three
+ * mode-picker rows, How to Play's tabs, the autoplay pills, the panel action
+ * button and every bet chip's value were drawing in Arial while the panel
+ * around them drew in Poppins. This game self-hosts a typeface and then set
+ * its most-read numbers in the system sans.
+ *
+ * start-screen.css:408 already worked this out for one button and said so
+ * ("a real <button>, so padding and font-family need resetting"); it was never
+ * generalised. It is generalised here so a new control cannot be born wrong.
+ *
+ * FAMILY ONLY. The UA shorthand also sets size and weight, and every control
+ * in this game declares its own - inheriting those instead would resize
+ * controls that are currently correct, for no gain.
+ */
+button,
+input,
+select,
+textarea {
+	font-family: inherit;
+}

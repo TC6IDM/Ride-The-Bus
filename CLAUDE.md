@@ -329,6 +329,24 @@ rounding it to 2.0× would wipe out the house edge.
   on general colour-theory grounds and it was rejected — five near-identical
   round icons in a 40 px strip are found by colour, not by re-reading glyphs.
   Do not collapse them again.
+- **A `<button>` does not inherit `font-family`.** The UA stylesheet sets its
+  own `font: 400 13.333px Arial` on `button`, `input`, `select` and `textarea`,
+  and that beats inheritance — so `html body { font-family }` in `app.css`
+  reached every element in the game *except the ones the player clicks*. This
+  game self-hosts Poppins and then printed its most-read numbers in the system
+  sans, for the whole life of the code. Measured in the running page before the
+  fix: the control bar's bet display and mode name (`.cb-val`, `.cb-cap`,
+  `.cb-mode-word`, `.cb-bet-mode` — on screen at all times), all three
+  mode-picker rows, How to Play's tabs, the autoplay pills, the panel action
+  button and every bet chip's value. `start-screen.css:408` had already worked
+  this out for one button and said so; it was never generalised. It is a global
+  reset in `app.css` now, **family only** — the UA shorthand also sets size and
+  weight, and every control here declares its own.
+  - Invisible in the source and invisible in a stylesheet: it only shows in the
+    *computed* style of a running page, which is how it survived a full art
+    pass. `betChips.test.ts` pins the reset, and the way to check it is to walk
+    the live DOM for anything not drawing in Poppins — not to read CSS.
+  - Stake names "standard fonts" as a top cause of a 1-star rating.
 - **Glyphs are drawn when, and only when, the font does not own them.** Poppins
   is self-hosted latin-only, and `✕` U+2715, `✓` U+2713, `→` U+2192 and the four
   suits fall outside every declared `unicode-range` — they dropped to the system
