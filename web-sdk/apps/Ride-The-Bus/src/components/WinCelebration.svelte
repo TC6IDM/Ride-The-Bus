@@ -20,15 +20,27 @@
 	 * real total, and only then does the next tap dismiss. So an impatient player
 	 * still sees every tier they earned go past.
 	 *
+	 * THE SCENE IS THE ROUND, not ambience over it. The centrepiece is the four
+	 * cards the player just played, fanned - drawn from the same warm paper and
+	 * crimson crosshatch as every other card in the game. The screen used
+	 * to be a scrim gradient, a conic gradient, a radial gradient and a text
+	 * stack, which is item for item the list Stake's rating notes give for a
+	 * 1-star release ("standard fonts, gradients, emoji icons and border
+	 * effects"). Gradients cannot be what a celebration is MADE of; they can
+	 * only light it.
+	 *
 	 * Drawn entirely in CSS. Everything here is gradients, transforms and
 	 * pseudo-elements: no images, no canvas, no particle library. Stake's XSS
 	 * policy forbids reaching offsite, the whole bundle is base64-inlined into
 	 * index.html, and "optimised bundle size" is an explicit 3-star criterion -
 	 * so a sprite sheet for one screen would be a bad trade.
 	 */
+	import { base } from '$app/paths';
 	import { numberToCurrencyString } from 'utils-shared/amount';
 
+	import MarkIcon from './MarkIcon.svelte';
 	import SuitIcon from './SuitIcon.svelte';
+	import type { Card } from '../game/roundContract';
 	import { t } from '../i18n/i18nDerived';
 	import { sound } from '../game/sound';
 	import { CEILING_PAUSE_MS, countUpSegments, type WinTier } from '../game/winTiers';
@@ -46,6 +58,20 @@
 		 * earned tier stops climbing.
 		 */
 		tiers: readonly WinTier[];
+		/**
+		 * The four card slots of the round being celebrated, in deal order, with
+		 * null for any the player never reached.
+		 *
+		 * A SNAPSHOT taken at the call site, not the live board array - see
+		 * showWinCelebration in Game.svelte.
+		 */
+		cards: readonly (Card | null)[];
+		/**
+		 * The card that ended the round, and the one a Second Chance let off.
+		 * null for neither. Snapshotted with the cards, for the same reason.
+		 */
+		bustedIndex: number | null;
+		forgivenIndex: number | null;
 		/**
 		 * Autoplay: show the finished figure, hold briefly, then leave on its own.
 		 * Counting up through a 100-round run would make autoplay unusable, and a
@@ -80,15 +106,105 @@
 	 */
 	const SUIT_CYCLE = ['heart', 'spade', 'diamond', 'club'] as const;
 
-	const BURST = Array.from({ length: 16 }, (_, i) => ({
+	const BURST_COUNT = 10;
+
+	const BURST = Array.from({ length: BURST_COUNT }, (_, i) => ({
 		suit: SUIT_CYCLE[i % 4]!,
-		angle: +(i * (360 / 16) + (i % 2 === 0 ? -7 : 7)).toFixed(2),
-		dist: i % 2 === 0 ? 19 : 26,
+		angle: +(i * (360 / BURST_COUNT) + (i % 2 === 0 ? -9 : 9)).toFixed(2),
+		/* Pulled in hard from 19/26. The marks are 2x the size they were, and a
+		 * big mark thrown the old distance ends up out in a frame corner or over
+		 * the control bar, where a suit reads as a speck of dirt rather than as
+		 * part of the gesture. They should burst off the FAN, not off the
+		 * viewport. */
+		dist: i % 2 === 0 ? 11 : 15,
 		/** Font size in --ui units; the mark is sized in em off it. */
-		size: i % 3 === 0 ? 2.5 : 1.9,
+		size: i % 3 === 0 ? 4.6 : 3.6,
 		spin: i % 2 === 0 ? 210 : -250,
-		delay: +((i * 0.13) % 2.1).toFixed(2),
+		/**
+		 * Small, and small ON PURPOSE. This used to run to 2.1s against a 3.6s
+		 * infinite loop, which meant the marks never shared a t=0: at any given
+		 * frame they sat at ten unrelated radii, so the ring drifted rather than
+		 * burst, and it read as dust on the lens. A burst is a MOMENT - one
+		 * origin, one instant, a little jitter so the edge is not machined.
+		 */
+		delay: +((i % 5) * 0.045).toFixed(3),
 	}));
+
+	/**
+	 * The fan of the round's own cards - the thing this screen is made of.
+	 *
+	 * The player just named four cards; the celebration should be built out of
+	 * them rather than out of gradients.
+	 *
+	 * IN PRACTICE ALL FOUR ARE FACES. The reveal loop deals every card in the
+	 * book whether the round busted or not - a bust marks the card, it does not
+	 * stop the deal - so any round that reached a celebration has four of them.
+	 * The face-down branch is a fallback for a null slot, not a described
+	 * behaviour: do not write copy or tests that promise a back.
+	 *
+	 * THE FAN MARKS WHAT ACTUALLY HAPPENED. A round can reach this screen without
+	 * being a clean sweep - a bust on the last card keeps its retention and
+	 * Classic reaches 129x that way, and a Second Chance round can spend its
+	 * forgiveness and still finish big. Four cards that all look equally good
+	 * would be telling the player they got four right when they did not.
+	 *
+	 * The marks are the BOARD'S OWN, not new ones: a red cross for the card that
+	 * ended the round, an amber return arrow for the one a Second Chance let off.
+	 * cards.css explains why those two must differ - "a red cross says the round
+	 * ended here, and this one carried on" - and the celebration would undo that
+	 * distinction by inventing its own pair.
+	 *
+	 * Showing only the successful cards was the alternative and is worse: it
+	 * throws away which guess failed and what the card was, and it makes the fan
+	 * a different width depending on the round.
+	 *
+	 * EXACTLY THREE SHAPES REACH THIS SCREEN, and at most one mark:
+	 *
+	 *   no marks   a clean sweep, in any family
+	 *   one cross  a bust - Classic and High Stakes, where the first miss ends
+	 *              the round. A miss on card 1 keeps nothing (retention[0] is 0)
+	 *              and so pays zero, which never celebrates.
+	 *   one arrow  Second Chance, forgiven and then finished
+	 *
+	 * A fourth shape exists in the books and CANNOT get here: a Second Chance
+	 * round that spends its forgiveness AND then busts. Both haircuts land on one
+	 * round - forgiveness takes half the running multiplier, the bust keeps 30%
+	 * of what is left - and it never clears the entry tier. Measured over every
+	 * drawable round of sc_red_equal_equal_heart, the family's highest-ceiling
+	 * mode: 382,729 of them, best payout 2.6x, against an 11x floor.
+	 *
+	 * So the two marks are mutually exclusive in practice, and the {:else if}
+	 * below is defensive rather than load-bearing. Left as an else-if anyway: if
+	 * a future retention or forgiveness change makes the shape reachable, one
+	 * mark is a reasonable thing to show, and two overlapping ones on one card
+	 * would not be.
+	 *
+	 * A Max Win is always a clean sweep, for the same arithmetic: a forgiven
+	 * round has already given up half its multiplier and cannot reach a ceiling.
+	 *
+	 * Geometry is computed here for the same reason BURST is: the CSS version
+	 * needs the index centred about the middle of the row, and doing that in a
+	 * stylesheet means either sibling-index() (far too new for the Android and
+	 * iOS versions Stake tests) or four hand-written nth-child rules that stop
+	 * working the day the game deals a fifth card.
+	 *
+	 * Offsets are in FAN UNITS, multiplied by --wc-fan-spread on the tier. That
+	 * is the ladder a player can actually see: every tier draws all four cards,
+	 * the higher ones open the hand wider. Intensity, never presence.
+	 */
+	const FAN = Array.from({ length: 4 }, (_, i) => {
+		// -1.5, -0.5, 0.5, 1.5 - centred, so the fan has no middle card to sit
+		// dead-straight and look like the odd one out.
+		const offset = i - 1.5;
+		return {
+			index: i,
+			tilt: +(offset * 6.2).toFixed(2),
+			shift: +(offset * 4.4).toFixed(2),
+			/** The outer cards ride lower, the way a real fan hangs. */
+			drop: +(Math.abs(offset) * 1.05).toFixed(2),
+			delay: +(0.16 + i * 0.075).toFixed(3),
+		};
+	});
 
 	/**
 	 * The legs of the climb. Built once - the props for a given celebration never
@@ -119,6 +235,7 @@
 
 	let titleEl: HTMLElement | undefined = $state(undefined);
 	let amountEl: HTMLElement | undefined = $state(undefined);
+	let fanEl: HTMLElement | undefined = $state(undefined);
 
 	/**
 	 * When the celebration reached its final state, and how long a dismiss tap is
@@ -182,6 +299,45 @@
 	/** The same treatment for the amount as it settles on a band ceiling. */
 	function popAmount() {
 		pop(amountEl, 1.12, 520);
+	}
+
+	/**
+	 * The hand hops on every promotion.
+	 *
+	 * Driven through element.animate() for the same reason promoteTitle is, and
+	 * it is the same trap: the cards are already carrying wc-fan-deal with
+	 * `both`, so setting `animation` on them from a class would REPLACE that fill
+	 * and drop each card back to its undealt transform the moment the hop ended.
+	 * A Web Animations call composites over the CSS animation instead of
+	 * replacing it.
+	 *
+	 * composite: 'add' is what makes that work. Without it the keyframes would
+	 * overwrite `transform` outright and every card would snap to the centre of
+	 * the fan for the length of the hop - the tilt and offset live in the same
+	 * property. Adding leaves the fan's own geometry alone and layers a
+	 * translation on top of it.
+	 *
+	 * Staggered left to right, and by a hair - the hand should read as one
+	 * object catching a bump, not as four cards taking turns.
+	 */
+	function hopFan() {
+		if (!fanEl || reducedMotion()) return;
+		const cards = fanEl.querySelectorAll<HTMLElement>('.wc-fan-card');
+		cards.forEach((card, i) => {
+			card.animate(
+				[
+					{ transform: 'translateY(0)' },
+					{ transform: `translateY(calc(var(--ui) * -1.6))`, offset: 0.34 },
+					{ transform: 'translateY(0)' },
+				],
+				{
+					duration: 620,
+					delay: i * 55,
+					easing: easePop(),
+					composite: 'add',
+				},
+			);
+		});
 	}
 
 	/**
@@ -255,6 +411,7 @@
 		runSegment(index);
 		// After runSegment, so the new word is what pops.
 		promoteTitle();
+		hopFan();
 	}
 
 	/**
@@ -441,30 +598,96 @@
 	role="button"
 	tabindex="0"
 	aria-label={ariaLabel()}
+	style={`--logo-url: url(${base}/logo.png)`}
 	onclick={onTap}
 	onkeydown={onKey}
 >
-	<!-- Two counter-rotating soft conic sweeps. Every tier draws them; the tier
-	     sets how bright and how fast. -->
-	<div class="wc-sheen" aria-hidden="true"></div>
-	<div class="wc-sheen is-counter" aria-hidden="true"></div>
-	<div class="wc-glow" aria-hidden="true"></div>
+	<!-- One wide soft beam from the upper right - the same light the table is lit
+	     by. Every tier draws it; the tier sets how bright. -->
+	<div class="wc-beam" aria-hidden="true"></div>
 	<!-- Max Win only, and the one thing no other tier draws. See the note in
 	     win-celebration.css. -->
 	<div class="wc-deck-sweep" aria-hidden="true"></div>
 
-	<div class="wc-burst" aria-hidden="true">
-		{#each BURST as mark}
-			<span
-				class="wc-mark"
-				style={`--angle: ${mark.angle}deg; --dist: calc(var(--ui) * ${mark.dist}); --spin: ${mark.spin}deg; font-size: calc(var(--ui) * ${mark.size}); animation-delay: ${mark.delay}s`}
-			>
-				<SuitIcon suit={mark.suit} scale={1} />
-			</span>
-		{/each}
-	</div>
+	<!-- KEYED, and unlike the title that is the whole point.
+	     A burst is an event: it should fire when the tier is promoted and be
+	     over. The marks used to loop forever on independent delays, which meant
+	     they never shared a start and the ring only ever drifted. Keying tears
+	     the container down and rebuilds it on each promotion, which restarts the
+	     one-shot animation - the exact behaviour that was WRONG for .wc-title
+	     (see promoteTitle) and is right here. -->
+	{#key activeTier.id}
+		<div class="wc-burst" aria-hidden="true">
+			{#each BURST as mark}
+				<span
+					class="wc-mark"
+					style={`--angle: ${mark.angle}deg; --dist: calc(var(--ui) * ${mark.dist}); --spin: ${mark.spin}deg; font-size: calc(var(--ui) * ${mark.size}); animation-delay: ${mark.delay}s`}
+				>
+					<SuitIcon suit={mark.suit} scale={1} />
+				</span>
+			{/each}
+		</div>
+	{/key}
 
 	<div class="wc-body" aria-hidden="true">
+		<!-- The round's own hand, dealt above the figure.
+
+		     A CHILD of .wc-body, not a sibling of it, and that is load-bearing. As
+		     a sibling it was positioned in --ui units against the viewport centre
+		     while the title above it is capped in vw - so on a 375px phone, where
+		     the vw cap binds and the title is 41px against a --ui of 7.5px, the
+		     two sized off different rulers and the word landed across the middle
+		     of the cards. Anchored to the text block it clears the title at every
+		     size, whatever the type is doing.
+
+		     NOT keyed: the fan is the scene, not a beat. Rebuilding it on every
+		     promotion would re-deal the hand four times during one count-up. It
+		     widens instead, off --wc-fan-spread. -->
+		<div class="wc-fan" bind:this={fanEl} aria-hidden="true">
+			{#each FAN as slot}
+				{@const card = props.cards[slot.index] ?? null}
+				<div
+					class="wc-fan-card"
+					class:is-face={card !== null}
+					class:is-busted={slot.index === props.bustedIndex}
+					class:is-forgiven={slot.index === props.forgivenIndex}
+					style={`--tilt: ${slot.tilt}deg; --shift: ${slot.shift}; --drop: ${slot.drop}; animation-delay: ${slot.delay}s`}
+				>
+					{#if card}
+						<span
+							class="wc-fan-face"
+							class:is-red={card.suit === '♥' || card.suit === '♦'}
+						>
+							<span class="wc-fan-index">
+								<span class="wc-fan-rank">{card.rank}</span>
+								<SuitIcon suit={card.suit} scale={0.72} />
+							</span>
+							<span class="wc-fan-pip"><SuitIcon suit={card.suit} scale={1} /></span>
+						</span>
+					{/if}
+					<!-- The board's own marks, not new ones. See the note at the top. -->
+					{#if slot.index === props.bustedIndex}
+						<span class="wc-fan-mark is-bust"><MarkIcon name="cross" /></span>
+					{:else if slot.index === props.forgivenIndex}
+						<span class="wc-fan-mark is-forgiven">
+							<svg
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2.5"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								aria-hidden="true"
+							>
+								<path d="M20 12a8 8 0 1 1-2.34-5.66" />
+								<path d="M20 3v5h-5" />
+							</svg>
+						</span>
+					{/if}
+				</div>
+			{/each}
+		</div>
+
 		<!-- NOT keyed on the tier. Keying it destroys and recreates the element,
 		     which replays the entrance animation, so the title vanished and rose
 		     back up on every promotion. It stays put now; the word swaps in place,

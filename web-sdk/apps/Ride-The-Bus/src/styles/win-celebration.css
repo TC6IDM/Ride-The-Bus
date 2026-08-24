@@ -1,6 +1,9 @@
 /* Hallmark · component: win-celebration overlay · genre: atmospheric
- * escalation: intensity (never presence) · burst: suit marks · sheen: soft conic
- * contrast: pass · reduced-motion: full
+ * pre-emit critique: P5 H4 E4 S5 R4 V4
+ * scene: the round's own four cards, fanned · light: one beam, upper right
+ * escalation: intensity (never presence), carried by fan spread
+ * burst: suit marks, one shot per promotion · contrast: pass
+ * reduced-motion: full
  *
  * ---- Big-win takeover ----------------------------------------------------
  * Drawn entirely in CSS and one already-drawn SVG icon - see the note at the
@@ -19,37 +22,52 @@
  *
  * The layers, outermost first:
  *
- *   veil        scrim + backdrop blur. The table stays visible through it.
- *   sheen x2    two counter-rotating SOFT conic sweeps.
- *   glow        a slow radial bloom in the tier's falloff colour.
+ *   veil        scrim + a light backdrop blur. The table stays visible.
+ *   beam        ONE wide soft shaft from the upper right.
  *   deck sweep  MAX ONLY - the deck's own crosshatch, once.
- *   burst       sixteen SUIT MARKS thrown outward, tumbling.
- *   body        the text stack, on its own local vignette.
+ *   fan         THE ROUND'S OWN FOUR CARDS, dealt out behind the figure.
+ *   burst       ten SUIT MARKS thrown outward on promotion, once each time.
+ *   body        the text stack, on an edge-to-edge shadow band.
  *
- * Two of those are the reason this no longer looks like every other generated
- * win screen:
+ * THE FAN IS THE SCREEN. Everything else lights it. The player has just named
+ * four cards and the celebration is built out of those cards, so nothing else
+ * in the catalogue can show this screen - no other game has this hand.
  *
- * THE BURST IS SUITS, NOT SPARKS. Fourteen glowing dots is the particle burst
- * every casino template ships and it says nothing about the game behind it.
- * These are hearts, diamonds, clubs and spades - the things the player just
- * guessed - drawn by SuitIcon and tumbling as they fly.
+ * All four come out as FACES in practice: the reveal loop deals every card in
+ * the book whether the round busted or not. The crimson-crosshatch back below
+ * is the fallback for a null slot, not a state the game reaches. See the note
+ * in WinCelebration.svelte.
  *
- * THE SHEEN IS SOFT, NOT SPOKED. The old burst was a repeating-conic-gradient
- * of hard-edged bars, which is sunburst clipart: it strobes as it turns and it
- * reads as a graphic laid over the game. Two wide, soft, counter-rotating
- * sweeps read as light moving through the room the table is already in.
+ * What it replaced was three concentric circles - a radial .wc-glow, an
+ * elliptical vignette under the text, and two conic sweeps - all centred on the
+ * same point. On screen they composed into one soft-edged grey-brown disc that
+ * read as a smudge on the lens or a half-loaded asset, most obviously at Big
+ * and Huge where the veil is lightest. THREE AMBIENT CIRCLES ON ONE CENTRE IS
+ * NOT DEPTH. Do not put them back.
+ *
+ * THE BURST IS SUITS, NOT SPARKS, and it is now a MOMENT rather than a loop.
+ * Glowing dots are the particle burst every casino template ships; these are
+ * the four suits, drawn by SuitIcon. They used to run on independent infinite
+ * loops with delays up to 2.1s, so they never shared a t=0 and nothing ever
+ * burst - at any frame they sat at ten unrelated radii, which is dust, not a
+ * gesture. One origin, one instant, fired on each promotion (WinCelebration
+ * keys the container), fading before they reach the frame edge so none of them
+ * lands in a corner or over the control bar.
+ *
+ * THE LIGHT IS ONE BEAM, NOT A SPINNING CONE. table.css lights the whole game
+ * from the upper right; the takeover borrows the same light instead of rotating
+ * its own. A rotating gradient reads as a graphic laid over the game however
+ * soft its stops are - the give-away is that it never stops.
  *
  * Per-tier values are carried on custom properties set by the .tier-* rules,
  * so every rule below is written once against the variables rather than five
  * times against literals:
  *
- *   --wc-hot-rgb   the core colour, as a TRIPLET
- *   --wc-cool      the outer falloff
- *   --wc-veil      how much of the table the scrim hides
- *   --wc-sheen-op  sheen brightness
- *   --wc-sheen-dur sheen rotation period (faster = more urgent)
- *   --wc-bloom     glow diameter, in --ui units
- *   --wc-throw     how far the suit marks are thrown
+ *   --wc-hot-rgb    the core colour, as a TRIPLET
+ *   --wc-cool       the outer falloff
+ *   --wc-beam-op    beam brightness
+ *   --wc-fan-spread how wide the hand opens - THE VISIBLE LADDER
+ *   --wc-throw      how far the suit marks are thrown
  *
  * Each tier is declared as an RGB TRIPLET with the hex derived from it, the way
  * --gold-rgb and the repaired --ctl-turbo-rgb are. --wc-ray used to be a
@@ -80,6 +98,17 @@
 	   fluid unit - same definition as base.css and start-screen.css. */
 	--ui: clamp(4px, min(2vw, 1.55vh), 11px);
 
+	/* ONE VEIL FOR THE WHOLE LADDER, not a per-tier knob.
+	   It used to climb 0.46 -> 0.70 with the tier, which meant the room got
+	   darker every time the player was promoted - so the rarest screen in the
+	   game was also the murkiest, and, worse, the scene visibly re-dimmed four
+	   times during a single count-up. The takeover establishes a place once,
+	   when it opens, and then stays in it; what escalates is the light, the
+	   colour, the hand and the burst. Set here rather than on .tier-big so
+	   nothing suggests it is a tier's to change.
+	   Kept at Big Win's original value. */
+	--wc-veil: 0.6;
+
 	/* Derived once, from the triplet, so a fill and a wash cannot drift apart.
 	   Fallbacks are Classic's gold: the element always carries a tier class, but
 	   a custom property that fails to resolve takes its whole declaration down
@@ -100,9 +129,31 @@
 		rgba(8, 20, 8, calc(var(--wc-veil, 0.6) * 0.62)) 0%,
 		rgba(2, 6, 2, var(--wc-veil, 0.6)) 72%
 	);
-	backdrop-filter: blur(5px) saturate(0.72);
-	-webkit-backdrop-filter: blur(5px) saturate(0.72);
+	/* Was blur(5px) saturate(0.72), which turned the hand-sampled table into
+	   brown mush - the same loss the scrim above refuses, taken by another route.
+	   The text no longer depends on it: .wc-body sits on its own shadow band now,
+	   so the blur only has to stop the table competing with the fan, and 2px
+	   does that while leaving the felt, the chips and the cups readable. */
+	backdrop-filter: blur(2px) saturate(0.86);
+	-webkit-backdrop-filter: blur(2px) saturate(0.86);
 	animation: wc-fade-in 0.44s var(--ease-out) both;
+}
+
+/* A full-viewport backdrop-filter on transform loops is the one thing here that
+   could drop frames on the older Android and iOS devices Stake tests, and it is
+   now the layer we can most afford to lose: the band under the text and the
+   veil carry legibility between them. Coarse pointer is the proxy for those
+   devices, and the veil steps up slightly to cover the difference. */
+@media (pointer: coarse) {
+	.wc-overlay {
+		backdrop-filter: none;
+		-webkit-backdrop-filter: none;
+		background: radial-gradient(
+			ellipse at center,
+			rgba(8, 20, 8, calc(var(--wc-veil, 0.6) * 0.78)) 0%,
+			rgba(2, 6, 2, calc(var(--wc-veil, 0.6) + 0.1)) 72%
+		);
+	}
 }
 
 /* Without backdrop-filter the scene behind stays sharp and the text has to
@@ -136,117 +187,100 @@
 }
 
 /* ---- Tier palettes ----
-   A heat climb, not a rainbow. The old ramp went gold -> amber -> orange ->
-   PURPLE -> red, and purple is spoken for twice in this build: --vol-overflow-
-   ink means "this bet's volatility passed its family ceiling" and
-   --ctl-advanced is the Advanced menu. Colour here is wayfinding, so Epic
-   cannot borrow a hue that already means something else two panels away.
+   THE SAME SCALE THE BOLTS USE. Big is --vol-sc green, Huge is --vol-base
+   yellow, Mega is --vol-hs red and Epic is --vol-overflow purple - the four
+   stops the volatility meter already spends on the control bar, in the same
+   order. Max keeps its inversion (below) and is the only tier off the scale.
 
-   Everything else on these rules is the intensity ramp - the same scene at
-   five settings. */
+   This replaces a bespoke gold-amber-orange-ember heat climb. The argument for
+   reusing the meter's ramp is that the game already teaches it: a player has
+   seen green-yellow-red-purple mean "further up the scale" on the bet display
+   before they ever reach a takeover, so the win ladder gets to borrow a reading
+   they already have rather than asking them to learn a second one.
+
+   It does put purple in two places - --vol-overflow means "this bet passed its
+   family's volatility ceiling", and now also "Epic Win". Worth knowing, and the
+   reason this file used to refuse purple. The call here is that both readings
+   are the same idea (near the top of a scale) rather than two unrelated
+   meanings competing for one hue, which is what the old objection was about.
+
+   Hot colours are taken from the --vol-* triplets BY REFERENCE so the two
+   ladders cannot drift; the cool falloffs are this screen's own, under the
+   closed-one-screen-palette exemption, each one its tier's hue taken down. */
 .tier-big {
-	--wc-hot-rgb: var(--gold-rgb);
-	--wc-cool: #b8923f;
-	--wc-veil: 0.46;
-	--wc-sheen-op: 0.34;
-	--wc-sheen-dur: 34s;
-	--wc-bloom: 60;
+	--wc-hot-rgb: var(--vol-sc-rgb);
+	--wc-cool: #17663a;
+	--wc-beam-op: 0.3;
+	--wc-fan-spread: 0.82;
 	--wc-throw: 1;
 }
 .tier-huge {
-	--wc-hot-rgb: 255, 200, 87;
-	--wc-cool: #c47a1c;
-	--wc-veil: 0.52;
-	--wc-sheen-op: 0.46;
-	--wc-sheen-dur: 28s;
-	--wc-bloom: 64;
+	--wc-hot-rgb: var(--vol-base-rgb);
+	--wc-cool: #a1730c;
+	--wc-beam-op: 0.42;
+	--wc-fan-spread: 0.98;
 	--wc-throw: 1.15;
 }
 .tier-mega {
-	--wc-hot-rgb: 255, 154, 60;
-	--wc-cool: #c94f14;
-	--wc-veil: 0.58;
-	--wc-sheen-op: 0.58;
-	--wc-sheen-dur: 22s;
-	--wc-bloom: 68;
+	--wc-hot-rgb: var(--vol-hs-rgb);
+	--wc-cool: #8f1f1f;
+	--wc-fan-spread: 1.14;
+	--wc-beam-op: 0.54;
 	--wc-throw: 1.32;
 }
-/* Ember. Hotter than Mega's orange without reaching Max's crimson, so the two
-   top tiers stay a step apart without either becoming the other. */
+/* The overflow purple, and the last stop before Max steps off the scale. */
 .tier-epic {
-	--wc-hot-rgb: 255, 106, 61;
-	--wc-cool: #a82f10;
-	--wc-veil: 0.64;
-	--wc-sheen-op: 0.72;
-	--wc-sheen-dur: 17s;
-	--wc-bloom: 74;
+	--wc-hot-rgb: var(--vol-overflow-ink-rgb);
+	--wc-cool: #4c1d78;
+	--wc-beam-op: 0.68;
+	--wc-fan-spread: 1.3;
 	--wc-throw: 1.5;
 }
-/* Max win INVERTS the ramp rather than continuing it: a cream core on the brand
-   crimson from logo.png, so the ceiling reads as the game's own moment rather
-   than one more step up the same heat climb. It is the only tier whose core is
-   lighter than its falloff, and that inversion is most of why it looks like a
-   different screen - along with the deck sweep, which only it draws. */
+/* Max win INVERTS rather than continuing: a cream core on the brand crimson from
+   logo.png, so the ceiling reads as the game's own moment rather than one more
+   step up a scale. It is the only tier whose core is lighter than its falloff,
+   and the only one that is not a volatility stop - along with the deck sweep,
+   which only it draws, that inversion is most of why it looks like a different
+   screen. Deliberately unchanged by the move to the bolt ramp. */
 .tier-max {
 	--wc-hot-rgb: 255, 233, 168;
 	--wc-cool: var(--brand-red);
-	--wc-veil: 0.7;
-	--wc-sheen-op: 0.9;
-	--wc-sheen-dur: 13s;
-	--wc-bloom: 80;
+	--wc-beam-op: 0.85;
+	--wc-fan-spread: 1.48;
 	--wc-throw: 1.75;
 }
 
-/* ---- Soft conic sheen ----
-   Two of them, counter-rotating at different periods, so the light never
-   repeats on a visible cycle. Wide, soft stops - a hard-edged repeating cone
-   is sunburst clipart and strobes as it turns. */
-.wc-sheen {
+/* ---- The light ----
+   ONE wide soft shaft from the upper right, which is where table.css puts the
+   light for the whole game ("one light from the upper right, a lit top edge, a
+   shaded bottom edge"). The takeover borrowing the same light is what stops it
+   reading as a screen laid over the game rather than a moment inside it.
+
+   It does not rotate. Two counter-rotating conic gradients used to live here,
+   and however soft the stops were the give-away was that they never stopped -
+   a light source that orbits the room is a graphic. Breathing on OPACITY reads
+   as the light swelling; breathing on rotation reads as an animated GIF. */
+.wc-beam {
 	position: absolute;
-	width: 200vmax;
-	height: 200vmax;
+	/* Oversized and rotated about its own centre, so no edge can enter frame. */
+	inset: -50%;
 	pointer-events: none;
-	background: conic-gradient(
-		from 0deg,
-		transparent 0deg,
-		rgba(var(--wc-hot-rgb, 245, 215, 140), 0.13) 46deg,
-		transparent 104deg,
-		rgba(var(--wc-hot-rgb, 245, 215, 140), 0.07) 168deg,
-		transparent 228deg,
-		rgba(var(--wc-hot-rgb, 245, 215, 140), 0.11) 288deg,
-		transparent 352deg,
-		transparent 360deg
+	background: linear-gradient(
+		118deg,
+		transparent 0%,
+		transparent 26%,
+		rgba(var(--wc-hot-rgb, 245, 215, 140), 0.1) 40%,
+		rgba(var(--wc-hot-rgb, 245, 215, 140), 0.16) 50%,
+		rgba(var(--wc-hot-rgb, 245, 215, 140), 0.08) 60%,
+		transparent 76%,
+		transparent 100%
 	);
-	mask-image: radial-gradient(circle at center, #000 0%, transparent 64%);
-	-webkit-mask-image: radial-gradient(circle at center, #000 0%, transparent 64%);
-	opacity: var(--wc-sheen-op, 0.5);
-	animation: wc-spin var(--wc-sheen-dur, 28s) linear infinite;
-}
-
-.wc-sheen.is-counter {
-	background: conic-gradient(
-		from 140deg,
-		transparent 0deg,
-		rgba(var(--wc-hot-rgb, 245, 215, 140), 0.09) 62deg,
-		transparent 140deg,
-		rgba(var(--wc-hot-rgb, 245, 215, 140), 0.12) 214deg,
-		transparent 300deg,
-		transparent 360deg
-	);
-	/* Counter-rotation, and slower, so the two never lock into one figure. */
-	animation-direction: reverse;
-	animation-duration: calc(var(--wc-sheen-dur, 28s) * 1.55);
-	opacity: calc(var(--wc-sheen-op, 0.5) * 0.7);
-}
-
-.wc-glow {
-	position: absolute;
-	width: calc(var(--ui) * var(--wc-bloom, 70));
-	height: calc(var(--ui) * var(--wc-bloom, 70));
-	border-radius: 50%;
-	background: radial-gradient(circle, var(--wc-cool) 0%, transparent 68%);
-	opacity: 0.42;
-	animation: wc-pulse 4.8s var(--ease-in-out) infinite;
+	/* Falls off toward the frame edges so the shaft has ends rather than running
+	   corner to corner like a wipe. */
+	mask-image: radial-gradient(ellipse at 68% 26%, #000 0%, transparent 72%);
+	-webkit-mask-image: radial-gradient(ellipse at 68% 26%, #000 0%, transparent 72%);
+	opacity: var(--wc-beam-op, 0.5);
+	animation: wc-beam-breathe 7.2s var(--ease-in-out) infinite;
 }
 
 /* ---- The deck's own crosshatch, sweeping once. MAX WIN ONLY. ----
@@ -268,24 +302,315 @@
 	background:
 		repeating-linear-gradient(
 			45deg,
-			rgba(var(--wc-hot-rgb, 255, 233, 168), 0.16) 0 calc(var(--ui) * 0.3),
+			rgba(var(--wc-hot-rgb, 255, 233, 168), 0.1) 0 calc(var(--ui) * 0.3),
 			transparent calc(var(--ui) * 0.3) calc(var(--ui) * 0.9)
 		),
 		repeating-linear-gradient(
 			-45deg,
-			rgba(var(--wc-hot-rgb, 255, 233, 168), 0.16) 0 calc(var(--ui) * 0.3),
+			rgba(var(--wc-hot-rgb, 255, 233, 168), 0.1) 0 calc(var(--ui) * 0.3),
 			transparent calc(var(--ui) * 0.3) calc(var(--ui) * 0.9)
 		);
 	/* A fixed diagonal band. The ELEMENT moves, not the mask - animating
 	   mask-position would be animating a paint property, and the house rule
 	   here is transform and opacity only. */
-	mask-image: linear-gradient(115deg, transparent 40%, #000 50%, transparent 60%);
-	-webkit-mask-image: linear-gradient(115deg, transparent 40%, #000 50%, transparent 60%);
+	/* A band with SOFT SHOULDERS, measured against an element that is 220% of
+	   the viewport (inset: -60%), so every percentage here lands 2.2x wider on
+	   screen than it reads - which is why each attempt at this has come out
+	   broader than intended. 40-60 is ~44% of the viewport.
+
+	   Two failures bracket it: 40/50/60 was a
+	   crisp-edged diagonal that read as a half-loaded texture on a phone
+	   capture, and 8/92 - the first attempt at fixing it - was so wide the
+	   crosshatch covered the whole frame at once and read as a screen door.
+	   The band has to stay a band; only its edges needed to stop being edges. */
+	mask-image: linear-gradient(
+		115deg,
+		transparent 40%,
+		rgba(0, 0, 0, 0.5) 46%,
+		#000 50%,
+		rgba(0, 0, 0, 0.5) 54%,
+		transparent 60%
+	);
+	-webkit-mask-image: linear-gradient(
+		115deg,
+		transparent 40%,
+		rgba(0, 0, 0, 0.5) 46%,
+		#000 50%,
+		rgba(0, 0, 0, 0.5) 54%,
+		transparent 60%
+	);
 }
 
 .tier-max .wc-deck-sweep {
 	display: block;
 	animation: wc-deck-sweep 2.6s var(--ease-out) 0.3s both;
+}
+
+/* ---- THE FAN: the round's own four cards --------------------------------
+   The centrepiece, and the reason this screen belongs to this game. Every slot
+   is drawn - face where the round reached it, the deck's own back where it did
+   not - so the fan is a record of the hand rather than a motif.
+
+   Sized and coloured from the SAME TOKENS cards.css uses, not by importing it.
+   A stylesheet imported into a second component is scoped to that component, so
+   `.card-back` here would compile to `.card-back.svelte-<this>` and match
+   nothing on the board anyway; and pulling 390 lines in to reach forty of them
+   would drag the whole board's card machinery (flip transforms, perspective,
+   the multiplier chips) into an overlay that wants none of it. The tokens are
+   the shared thing, which is what tokens.css is for.
+
+   Geometry per card - --tilt, --shift, --drop - is set inline from the FAN
+   constant in WinCelebration.svelte; see the note there for why it is not
+   nth-child rules. */
+/* Positioned against .wc-body - its parent - so it clears the title whatever the
+   type is doing. See the note at the fan's markup for why a viewport-anchored
+   sibling could not.
+
+   `bottom: 100%` puts it entirely above the text block; the negative margin
+   pulls it back down so the cards TUCK BEHIND the title by a fixed fraction of
+   their own height. That overlap is the composition: cards standing clear above
+   a word is a stack of two things, cards the word sits in front of is one
+   picture.
+
+   z-index -2 against .wc-body::before's -1 is what puts the shadow band BETWEEN
+   the cards and the text. Without it the title is cream type on white card
+   faces, which is the single worst contrast pairing this screen can produce. */
+.wc-fan {
+	position: absolute;
+	bottom: 100%;
+	left: 50%;
+	width: 0;
+	height: 0;
+	margin-bottom: calc(var(--ui) * -3.6);
+	pointer-events: none;
+	z-index: -2;
+}
+
+/* The card itself is the FACE-DOWN state; .wc-fan-face paints over it. That way
+   round a null slot needs no rule of its own - it just does not get a face. */
+.wc-fan-card {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: calc(var(--ui) * 7.4);
+	height: calc(var(--ui) * 10.4);
+	/* Hangs UP from the fan's origin (bottom-left of the card at the anchor),
+	   because .wc-fan is a zero-size point sitting on the text block's top edge. */
+	margin: calc(var(--ui) * -10.4) 0 0 calc(var(--ui) * -3.7);
+	box-sizing: border-box;
+	border-radius: calc(var(--ui) * 0.7);
+	overflow: hidden;
+
+	/* The deck's crimson crosshatch, the same 45deg/-45deg pair the card backs,
+	   the table's deck prop and the loader cards all use, so the fan is
+	   unmistakably out of THIS deck, with the Takeover Casino chip over it the
+	   way cards.css marks a back.
+	   The chip is a background LAYER rather than a pseudo-element because both
+	   pseudos are spoken for here - ::before is the keyline, ::after is the
+	   glint - and a card has only two. .wc-fan-face paints over all of it, so a
+	   face never shows the chip behind its own rank and pip. */
+	background:
+		var(--logo-url) center / 54% no-repeat,
+		repeating-linear-gradient(
+			45deg,
+			rgba(var(--ink-rgb), 0.12) 0 calc(var(--ui) * 0.2),
+			transparent calc(var(--ui) * 0.2) calc(var(--ui) * 0.58)
+		),
+		repeating-linear-gradient(
+			-45deg,
+			rgba(var(--ink-rgb), 0.12) 0 calc(var(--ui) * 0.2),
+			transparent calc(var(--ui) * 0.2) calc(var(--ui) * 0.58)
+		),
+		linear-gradient(160deg, var(--brand-red-lit) 0%, var(--brand-red) 55%, var(--brand-red-deep) 100%);
+	/* Chrome-over-paper edge as an inset shadow, not a border, for the reason
+	   cards.css gives: the geometry stays put. Plus the table's two-part drop -
+	   a tight contact patch and a wide soft one - so the card reads as an object
+	   lying on the scene rather than a sticker pasted onto it. */
+	box-shadow:
+		inset 0 0 0 calc(var(--ui) * 0.26) var(--brand-paper),
+		inset 0 0 0 calc(var(--ui) * 0.38) var(--brand-chrome),
+		/* THE TIER'S OWN LIGHT, on the edge of the card. A tight rim in the tier
+		   colour plus a wider bloom of the same - so the hand is lit green at Big
+		   and purple at Epic and the escalation reaches the thing the eye is
+		   already on, rather than only the word above it. Transitioned with the
+		   palette, so a promotion washes the new colour across the hand instead
+		   of switching it. */
+		0 0 0 calc(var(--ui) * 0.12) rgba(var(--wc-hot-rgb, 245, 215, 140), 0.85),
+		0 0 calc(var(--ui) * 1.6) rgba(var(--wc-hot-rgb, 245, 215, 140), 0.55),
+		0 calc(var(--ui) * 0.15) calc(var(--ui) * 0.3) rgba(var(--shadow-rgb), 0.5),
+		0 calc(var(--ui) * 0.9) calc(var(--ui) * 2.2) rgba(var(--shadow-rgb), 0.45);
+	transition: box-shadow 0.45s var(--ease-out);
+
+	/* --wc-fan-spread is the tier. --tilt and --shift are the card's place in
+	   the hand; multiplying both means a higher tier opens the SAME fan wider
+	   rather than dealing a different one. */
+	--fan-tilt: calc(var(--tilt, 0deg) * var(--wc-fan-spread, 1));
+	--fan-x: calc(var(--ui) * var(--shift, 0) * var(--wc-fan-spread, 1));
+	--fan-y: calc(var(--ui) * var(--drop, 0) * var(--wc-fan-spread, 1));
+	transform: translate(var(--fan-x), var(--fan-y)) rotate(var(--fan-tilt));
+	transform-origin: 50% 130%;
+	animation: wc-fan-deal 0.72s var(--ease-pop) both;
+}
+
+/* The glint. A narrow diagonal highlight in the tier colour, laid over whatever
+   the card is showing, at the same 118deg the beam comes in at - so the hand
+   looks lit BY the beam rather than merely tinted near it. Screen blend keeps it
+   a highlight on the paper instead of a grey film over it. */
+.wc-fan-card::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	pointer-events: none;
+	border-radius: inherit;
+	background: linear-gradient(
+		118deg,
+		transparent 34%,
+		rgba(var(--wc-hot-rgb, 245, 215, 140), 0.5) 47%,
+		rgba(255, 255, 255, 0.55) 50%,
+		rgba(var(--wc-hot-rgb, 245, 215, 140), 0.5) 53%,
+		transparent 66%
+	);
+	mix-blend-mode: screen;
+	opacity: 0.55;
+	transition: opacity 0.45s var(--ease-out);
+}
+
+/* Keyline inset from the chrome edge, on both faces - it is how a card is
+   framed, and dropping it on the face was what made the first pass's faces look
+   like blank tiles next to the backs. */
+.wc-fan-card::before {
+	content: '';
+	position: absolute;
+	inset: calc(var(--ui) * 0.72);
+	border: 1px solid rgba(var(--ink-rgb), 0.3);
+	border-radius: calc(var(--ui) * 0.4);
+	pointer-events: none;
+	z-index: 1;
+}
+
+/* ---- The face ----
+   Warm paper, a corner index and one big centre pip. Deliberately NOT the
+   board's full card face: at fan scale on a 400x225 popout the board's layout
+   would render as three specks, so this is the same face reduced to the two
+   marks that survive - which is also how a real card reads when it is fanned
+   and half-covered. */
+.wc-fan-face {
+	position: absolute;
+	inset: 0;
+	display: block;
+	border-radius: inherit;
+	/* Flat --card-paper, lit by the same upper-right shading the board's front
+	   carries, so the fan and the board agree on what a card is made of. The
+	   shading is an overlay in --shadow-rgb rather than two more paper tokens:
+	   a "lit paper" and a "shade paper" beside --card-paper would be three
+	   spellings of one colour, which is the drift that made --ctl-turbo-rgb a
+	   different amber from --ctl-turbo. */
+	background:
+		linear-gradient(
+			158deg,
+			rgba(var(--ink-rgb), 0.16) 0%,
+			transparent 38%,
+			rgba(var(--shadow-rgb), 0.1) 100%
+		),
+		var(--card-paper);
+	box-shadow: inset 0 0 0 calc(var(--ui) * 0.14) var(--card-edge);
+	color: var(--card-ink);
+}
+
+.wc-fan-face.is-red {
+	color: var(--card-red);
+}
+
+.wc-fan-index {
+	position: absolute;
+	top: calc(var(--ui) * 1.15);
+	left: calc(var(--ui) * 1.15);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	line-height: 1;
+	font-family: var(--font-body);
+	font-size: calc(var(--ui) * 1.85);
+	font-weight: 800;
+}
+
+/* The ranks are ASCII and deliberately NOT drawn - see CLAUDE.md. There is no
+   font fallback to repair here, and hand-cutting thirteen glyph outlines would
+   trade a real typeface for a worse one. */
+.wc-fan-rank {
+	font-variant-numeric: lining-nums;
+}
+
+/* ---- What actually happened to this card --------------------------------
+   The board's marks, at fan scale. Same two, same colours, same reason they
+   differ: a red cross says the round ended here, an amber return arrow says a
+   Second Chance let this one off and play carried on. Inventing a different
+   pair for the celebration would undo a distinction the board is careful about.
+
+   Sits above the glint (z-index 2) so the mark is never washed by the tier's
+   own light - it is the one thing on the card that must not be decorative. */
+.wc-fan-mark {
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(var(--shadow-rgb), 0.42);
+	border-radius: inherit;
+	/* MarkIcon is a child component and sizes itself off this - a `.mark-icon`
+	   rule here would compile to a selector that matches nothing. See the note
+	   atop MarkIcon.svelte. */
+	--mark-size: calc(var(--ui) * 3.4);
+	--mark-shadow: drop-shadow(0 0 calc(var(--ui) * 0.7) rgba(var(--shadow-rgb), 0.9));
+}
+
+.wc-fan-mark.is-bust {
+	color: var(--loss);
+}
+
+/* Needs a heavier scrim than the cross does, and the reason is worth keeping:
+   the busted card is dimmed by a filter, so its red mark stands out against a
+   card that has already receded. The forgiven card is deliberately NOT dimmed -
+   the round carried on past it - so amber on warm white paper has nothing
+   helping it, and the mark's own ground has to do all the work. */
+.wc-fan-mark.is-forgiven {
+	color: var(--forgiven);
+	background: rgba(var(--shadow-rgb), 0.56);
+}
+
+.wc-fan-mark.is-forgiven svg {
+	width: calc(var(--ui) * 4.1);
+	height: calc(var(--ui) * 4.1);
+	filter: drop-shadow(0 0 calc(var(--ui) * 0.6) rgba(var(--shadow-rgb), 0.9));
+}
+
+/* The busted card steps back out of the hand: desaturated, dimmed, and sitting
+   a little lower and straighter than its neighbours, the way a card that is out
+   of play gets pushed forward on a table.
+
+   Turned DOWN rather than removed. Showing only the cards that won was the
+   other option and it loses the round: which guess failed, and on what card.
+   The fan is a record, and a record that omits the loss is not one. */
+.wc-fan-card.is-busted {
+	filter: saturate(0.35) brightness(0.72);
+}
+
+/* The forgiven card is NOT dimmed. It did not end anything - the round went on
+   past it, and the amber arrow already says what happened. Dimming it too would
+   read as a second bust. */
+.wc-fan-card.is-forgiven {
+	filter: none;
+}
+
+.wc-fan-pip {
+	position: absolute;
+	top: 56%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	font-size: calc(var(--ui) * 4.1);
+	line-height: 0;
 }
 
 /* ---- The suit burst ----
@@ -300,6 +625,12 @@
 	position: absolute;
 	inset: 0;
 	pointer-events: none;
+	/* Thrown off the CARDS, not off the dead centre of the viewport - originating
+	   them at the centre put half the ring behind the figure and the rest in the
+	   corners. Roughly the fan's height above centre; it does not have to be
+	   exact, because a burst that lined up perfectly with anything would look
+	   placed rather than thrown. */
+	transform: translateY(calc(var(--ui) * -9));
 }
 
 .wc-mark {
@@ -313,21 +644,32 @@
 	color: var(--wc-hot);
 	filter: drop-shadow(0 0 calc(var(--ui) * 0.5) rgba(var(--wc-hot-rgb, 245, 215, 140), 0.7));
 	opacity: 0;
-	animation: wc-mark-out var(--wc-mark-dur, 3.6s) var(--ease-out) infinite;
+	/* ONCE, not infinite - `both` so the mark holds at the keyframe's cleared-out
+	   end state rather than snapping back to the origin. WinCelebration keys the
+	   container on the tier id, which rebuilds these elements on every promotion
+	   and so re-fires the shot. That is deliberately the opposite of what
+	   .wc-title needs (see promoteTitle): the title must NOT replay, the burst
+	   must. */
+	animation: wc-mark-out var(--wc-mark-dur, 1.5s) var(--ease-out) both;
 }
 
 /* The tumble slows as the tier climbs even though the throw grows - a mark that
    both flew further AND spun faster read as frantic rather than as bigger. */
 .tier-epic .wc-mark {
-	--wc-mark-dur: 3.9s;
+	--wc-mark-dur: 1.65s;
 }
 .tier-max .wc-mark {
-	--wc-mark-dur: 4.2s;
+	--wc-mark-dur: 1.8s;
 }
 
 /* ---- Text stack ---- */
 .wc-body {
 	position: relative;
+	/* Above .wc-fan. This also makes .wc-body a stacking context, which is what
+	   keeps the ::before band at z-index -1 INSIDE it - the band darkens the
+	   bottom of the fan and sits under the text, rather than dropping behind the
+	   cards entirely. */
+	z-index: 1;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -339,24 +681,36 @@
 	max-width: min(92vw, calc(var(--ui) * 62));
 }
 
-/* A local vignette behind the text, so legibility does not depend on how dark
-   the scrim happens to be over whatever part of the table is behind it. This is
-   what lets the scrim be a veil rather than a lid: the text carries its own
-   ground. Same two-stop idea as the title plate on the board.
+/* The ground under the text, so legibility never depends on how dark the scrim
+   happens to be over whatever part of the table - or now, of the fan - is
+   behind it. This is what lets the scrim be a veil rather than a lid, and what
+   lets the backdrop blur drop to 2px and disappear entirely on coarse pointers.
 
-   It is a soft ellipse with no edge - NOT a panel. A bounded box here is the
-   "plate" mistake, and it looked like a grey rectangle parked on the game. */
+   AN EDGE-TO-EDGE BAND, not the ellipse it replaces. Still not a panel: it runs
+   the full width of the viewport, so it has no left or right edge to read as a
+   boundary, and it fades out top and bottom. That is the difference between a
+   shaft of shadow across the scene and the bounded "plate" that was tried and
+   rejected for looking like a grey rectangle parked on the game.
+
+   The ellipse failed for the opposite reason - it DID have an edge, a soft
+   circular one, and stacked on the radial glow and two conic sweeps it composed
+   into a smudge. A band is directional; a circle in the middle of the screen is
+   just a circle in the middle of the screen. */
 .wc-body::before {
 	content: '';
 	position: absolute;
-	inset: calc(var(--ui) * -4) calc(var(--ui) * -6);
+	/* Reaches UP over the bottom of the fan - that is the whole reason the band
+	   exists here rather than under the text alone. Horizontal blown out past the
+	   viewport so it has no side edges. */
+	inset: calc(var(--ui) * -6.5) -50vw calc(var(--ui) * -3.4);
 	z-index: -1;
-	border-radius: 50%;
-	background: radial-gradient(
-		ellipse at center,
-		rgba(2, 6, 2, 0.72) 0%,
-		rgba(2, 6, 2, 0.44) 54%,
-		transparent 78%
+	background: linear-gradient(
+		to bottom,
+		transparent 0%,
+		rgba(2, 6, 2, 0.44) 16%,
+		rgba(2, 6, 2, 0.66) 38%,
+		rgba(2, 6, 2, 0.62) 76%,
+		transparent 100%
 	);
 }
 
@@ -404,8 +758,15 @@
 	/* Stays on the BODY face on purpose. The count-up needs stable digit widths
 	   and Poppins' tabular figures are proven here; the display face is for the
 	   word, the body face for the number. That split is the lockup's own rule -
-	   the wordmark is display, the credit line under it is body. */
-	font-size: calc(var(--ui) * 4);
+	   the wordmark is display, the credit line under it is body.
+
+	   Was --ui * 4, a full third smaller than the title above it: the word
+	   describing the win outranked the win. They are co-leads now - the title
+	   still wins on face and weight, the amount on presence - which is the right
+	   way round for a screen whose entire job is to hand over a figure. The vw
+	   cap matches the title's so neither can outgrow the other on a wide,
+	   short window. */
+	font-size: min(calc(var(--ui) * 5.2), 11vw);
 	font-weight: 800;
 	line-height: 1.1;
 	color: var(--ink-cream);
@@ -526,22 +887,52 @@
 
 /* Travel out along --angle while counter-rotating by the same amount, so the
    mark stays upright as it goes, then add --spin on top for the tumble. */
+/* One throw. Fast out of the origin, then decelerating and fading well before
+   the mark could reach a frame edge - the old version held 0.9 opacity to 74%
+   of a 3.6s loop, which is why marks were still fully lit out in the corners
+   and over the control bar, where a suit reads as a speck of dirt. */
 @keyframes wc-mark-out {
 	0% {
 		transform: rotate(var(--angle)) translateX(0) rotate(calc(var(--angle) * -1))
-			scale(0.25);
+			scale(0.2);
 		opacity: 0;
 	}
-	16% {
+	12% {
 		opacity: 1;
 	}
-	74% {
-		opacity: 0.9;
+	55% {
+		opacity: 0.85;
 	}
 	100% {
 		transform: rotate(var(--angle)) translateX(calc(var(--dist) * var(--wc-throw, 1)))
-			rotate(calc(var(--angle) * -1 + var(--spin))) scale(0.85);
+			rotate(calc(var(--angle) * -1 + var(--spin))) scale(0.7);
 		opacity: 0;
+	}
+}
+
+/* The beam swells rather than turns. See .wc-beam. */
+@keyframes wc-beam-breathe {
+	0%,
+	100% {
+		opacity: calc(var(--wc-beam-op, 0.5) * 0.78);
+	}
+	50% {
+		opacity: var(--wc-beam-op, 0.5);
+	}
+}
+
+/* Each card deals up into the fan on its own short delay, so the hand arrives
+   as four cards rather than as one block. Rotation is the card's final tilt
+   from the start - a card that ALSO rotates into place spins, and a dealt card
+   does not spin. */
+@keyframes wc-fan-deal {
+	from {
+		transform: translate(0, calc(var(--ui) * 3.2)) rotate(var(--fan-tilt)) scale(0.82);
+		opacity: 0;
+	}
+	to {
+		transform: translate(var(--fan-x), var(--fan-y)) rotate(var(--fan-tilt));
+		opacity: 1;
 	}
 }
 
@@ -587,7 +978,7 @@
 		font-size: min(calc(var(--ui) * 3.9), 9vw);
 	}
 	.wc-amount {
-		font-size: calc(var(--ui) * 2.9);
+		font-size: min(calc(var(--ui) * 3.7), 9vw);
 	}
 	.wc-mult {
 		font-size: calc(var(--ui) * 1.5);
@@ -600,6 +991,32 @@
 	.wc-mark {
 		--wc-throw: 0.8;
 	}
+	/* Popout S is 400x225 and --ui bottoms out at 4px there, so the layout stops
+	   scaling and starts overflowing - the floor is where every Popout S defect
+	   in this build has come from. The fan shrinks, rides higher and holds its
+	   cards closer together, because at 225px tall a Max Win's 2x spread would
+	   put the outer two off the top corners. */
+	.wc-fan {
+		margin-bottom: calc(var(--ui) * -3);
+		scale: 0.74;
+	}
+	.wc-fan-card {
+		--fan-tilt: calc(var(--tilt, 0deg) * min(var(--wc-fan-spread, 1), 1.35));
+		--fan-x: calc(var(--ui) * var(--shift, 0) * min(var(--wc-fan-spread, 1), 1.35));
+	}
+}
+
+/* Portrait phones have height to spare and width to lose. The fan drops back
+   toward the text so the stack sits as one block instead of stranding the cards
+   halfway up an 812px screen. */
+@media (max-width: 480px) and (orientation: portrait) {
+	/* --ui bottoms out around 7.5px on a 375px phone while the title is capped by
+	   its 11vw arm at ~41px, so the cards come out small beside type they have to
+	   share a composition with. Scaling the fan rather than resizing the card
+	   keeps one set of numbers for the geometry. */
+	.wc-fan {
+		scale: 1.22;
+	}
 }
 
 /* ---- Reduced motion ----
@@ -607,8 +1024,11 @@
    payout, so suppressing it entirely would hide information. Only the moving
    parts stop. The count-up is skipped in the component for the same reason. */
 @media (prefers-reduced-motion: reduce) {
-	.wc-sheen,
-	.wc-glow,
+	/* The burst and the sweep are pure motion - a thrown mark that cannot be
+	   thrown is nothing - so they go. The BEAM and the FAN stay: they are the
+	   scene, and a celebration stripped back to text on a scrim would be exactly
+	   the "grey rectangle" this file opens by warning against. They just stop
+	   moving: the beam holds its lit opacity, the fan is dealt already. */
 	.wc-burst,
 	.wc-deck-sweep,
 	.tier-max .wc-deck-sweep {
@@ -616,6 +1036,8 @@
 	}
 
 	.wc-overlay,
+	.wc-beam,
+	.wc-fan-card,
 	.wc-title,
 	.wc-amount,
 	.wc-amount.is-holding,
@@ -623,6 +1045,16 @@
 	.wc-prompt,
 	.wc-mark {
 		animation: none;
+	}
+
+	/* animation: none drops the `both` fill that was holding the dealt state, so
+	   the fan has to be told where it landed. */
+	.wc-fan-card {
+		opacity: 1;
+	}
+
+	.wc-beam {
+		opacity: var(--wc-beam-op, 0.5);
 	}
 
 	.wc-title {

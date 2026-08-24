@@ -385,6 +385,12 @@
     amount: number;
     multiplier: number;
     tiers: readonly WinTier[];
+    // The round the takeover is celebrating, SNAPSHOT rather than the live
+    // revealedCards array - see showWinCelebration.
+    cards: readonly (Card | null)[];
+    /** Which card ended the round, and which one a Second Chance let off. */
+    bustedIndex: number | null;
+    forgivenIndex: number | null;
   } | null>(null);
   let celebrationResolve: (() => void) | null = null;
 
@@ -2111,6 +2117,9 @@
       amount={celebration.amount}
       multiplier={celebration.multiplier}
       tiers={celebration.tiers}
+      cards={celebration.cards}
+      bustedIndex={celebration.bustedIndex}
+      forgivenIndex={celebration.forgivenIndex}
       autoSkipMs={celebrationAutoSkipMs()}
       ondismiss={dismissCelebration}
     />
@@ -2120,8 +2129,16 @@
 <!-- The backdrop is drawn in CSS, always. There used to be a second path here
      that painted a 1.9 MB bitmap instead, selected by a BACKDROP constant in
      game/backdrop.ts; both the switch and the image are gone. -->
+<!-- takeover-open hides the two NUMERIC READOUTS while the win takeover counts
+     up - nothing else. See the rule in cards.css: the whole point of the
+     segmented climb is that the total is not known yet, and the running-win bar
+     and the four stage chips were printing it behind a 5px blur the entire
+     time. The table, the cards, the chips and the cups all stay: blacking out
+     the scene at the moment of payoff is the mistake win-celebration.css opens
+     by warning against. -->
 <div
   class="game-layout"
+  class:takeover-open={celebration !== null}
   style={`--flip-dur: ${flipDurSec()}s; --logo-url: url(${base}/logo.png)`}
 >
   <!-- Custom glyphs, drawn rather than typed. The Unicode arrows and infinity

@@ -84,6 +84,66 @@
   transform: translateY(0);
 }
 
+/* ---- Hidden while the win takeover counts -------------------------------
+   These are the only two things on the board that print a FIGURE, and both
+   print the finished one: .running-win reads "Full Game Win! $1,354.20" and the
+   four .card-mult chips print the whole stage ladder up to it. The takeover's
+   segmented count-up is the game's one suspense mechanic, and until now its
+   answer sat behind a 5px blur for the entire climb - legible, in green, four
+   lines under the counter that was still reading $0.11.
+
+   Only the numbers go. The cards, the table, the chips and the cups stay lit:
+   the player won WITH those, and hiding them at the moment of payoff is the
+   mistake win-celebration.css opens by warning against. The class is set on
+   .game-layout by Game.svelte for exactly as long as `celebration` is non-null,
+   so both come back on dismissal with no separate teardown.
+
+   Transitioned rather than snapped so the readouts leave with the veil arriving
+   rather than blinking out a frame before it. visibility rides along on the
+   same timing so a screen reader is not offered a figure the screen is hiding -
+   the takeover carries its own aria-label with the settled result. */
+.takeover-open .card-mult,
+.takeover-open .running-win,
+.takeover-open .cb-lastwin {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.3s var(--ease-out),
+    visibility 0s linear 0.3s;
+}
+
+/* The board's CARD ROW goes completely while the takeover is up.
+   The takeover's fan is those same four cards brought forward, so any of the
+   board copy left showing puts one hand on screen twice - two rows of the same
+   cards, at two sizes, a few hundred pixels apart. Dimming it was tried first
+   and was not enough: at 0.16 the outlines still read through the veil as a
+   second, ghostly row, which is worse than either showing it or not. One hand
+   at a time.
+
+   It is a genuine hand-off rather than a hide: the row leaves as the overlay
+   arrives, and the overlay is drawing those exact cards. */
+.takeover-open .card-row {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.28s var(--ease-out),
+    visibility 0s linear 0.28s;
+}
+
+/* The choice row only steps BACK. It is not duplicated by anything in the
+   overlay, so hiding it would just make the table look unfinished - but the
+   squares encode the bet (red is red, cyan is cyan, none of it art-directed),
+   which makes them the loudest thing in the game and the wrong thing to be
+   competing with a payout.
+
+   The table, the rail, the chips and the cups all stay lit. That is the line
+   this stops at: the SCENE stays, the INTERFACE recedes. Blacking out the
+   former is the mistake win-celebration.css opens by warning against. */
+.takeover-open .choice-row {
+  opacity: 0.16;
+  transition: opacity 0.36s var(--ease-out);
+}
+
 /* Running cash won so far, shown under the cards during the reveal. */
 .running-win {
   display: flex;
