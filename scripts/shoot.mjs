@@ -16,7 +16,7 @@
  * suit marks that never shared a start and read as dust, and the settled payout
  * printed legibly behind a blur while the count-up was still climbing. Every one
  * of those was invisible in the source and obvious in a screenshot. RGS_TEST_PLAN
- * also carries 52 checks that begin "look at".
+ * also carries 94 checks that begin "look at".
  *
  * WHY NO PLAYWRIGHT. Node 22+ ships a WebSocket client and Playwright's chromium
  * is already on disk from some other install, so the DevTools Protocol is

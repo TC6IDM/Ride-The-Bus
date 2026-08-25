@@ -1,5 +1,3 @@
-.claude
-
 # Screenshots from scripts/shoot.mjs - a look at the running game, not an artefact.
 # scripts/.shots/ at the repo root is the ONE place they belong. The bare
 # .shots/ below is a catch-all: an ad-hoc capture script run from inside
