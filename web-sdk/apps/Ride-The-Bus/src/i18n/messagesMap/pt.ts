@@ -236,4 +236,13 @@ export default {
 		'Adivinhe o naipe da carta 4: copas, ouros, paus ou espadas.',
 	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
 		'Você escolheu Igual, então as cartas 1 e 2 têm o mesmo valor. Nada pode cair entre elas, portanto Dentro não pode ganhar.',
+	'Your four guesses top out at %s your bet.':
+		'Os seus quatro palpites atingem no máximo %s da sua aposta.',
+	'Play Again': 'Reproduzir novamente',
+	'The round ends and pays nothing.':
+		'A ronda termina e não paga nada.',
+	'The round ends, keeping %s% of what you had built.':
+		'A ronda termina e mantém %s% do que tinha acumulado.',
+	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
+		'A partir da carta 2 é perdoado — mantém %s% do acumulado e a ronda continua.',
 };

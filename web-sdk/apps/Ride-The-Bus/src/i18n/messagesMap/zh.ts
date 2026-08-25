@@ -227,4 +227,13 @@ export default {
 		'猜第 4 张牌的花色：红桃、方块、梅花或黑桃。',
 	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
 		'你选择了相同，因此第 1、2 张牌点数一样。它们之间没有任何牌，所以之内无法获胜。',
+	'Your four guesses top out at %s your bet.':
+		'你选择的四个猜测最高可达投注额的 %s。',
+	'Play Again': '再看一次',
+	'The round ends and pays nothing.':
+		'本轮结束，不予派彩。',
+	'The round ends, keeping %s% of what you had built.':
+		'本轮结束，保留已累积金额的 %s%。',
+	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
+		'从第 2 张牌起可获宽恕，保留已累积金额的 %s%，本轮继续。',
 };

@@ -839,6 +839,17 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* What the guesses already on the board would top out at on the mode being
+   switched to. Under .mode-confirm-max and quieter than it, for the reason
+   .mode-panel-picked gives: the family ceiling is the headline and this is the
+   qualifier, and giving them equal weight would read as two competing claims. */
+.mode-confirm-picked {
+  margin: 0;
+  font-size: calc(var(--ui-bar) * 0.98);
+  color: var(--ink-dim);
+  font-variant-numeric: tabular-nums;
+}
+
 .mode-confirm-cost {
   margin: 0;
   font-size: calc(var(--ui-bar) * 0.98);

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
-  import { base } from '$app/paths';
+  import { logoAsset } from '../game/logoAsset.svelte';
   import { gameReady, loaderGone } from '../game/ready.svelte';
   // The loader renders before /wallet/authenticate returns, but t() needs no
   // session - it reads ?lang= off the URL and the catalogues are static
@@ -40,7 +40,7 @@
   // back when it could be a 1.9 MB bitmap; it is drawn in CSS and downloads
   // nothing.
   function preloadArt(): Promise<unknown> {
-    return Promise.all([decode(`${base}/logo.png`)]);
+    return Promise.all([decode(logoAsset.url)]);
   }
 
   // <Game /> is a sibling tree, so poll the flag it sets on mount. Polled
@@ -112,7 +112,7 @@
        by class ambiguous. -->
   <div
     class="game-loader"
-    style={`--logo-url: url(${base}/logo.png)`}
+    style={`--logo-url: url(${logoAsset.url})`}
     transition:fade={{ duration: 320 }}
     role="status"
     aria-label={t('Loading Ride The Bus…')}

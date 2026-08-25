@@ -152,10 +152,25 @@ if __name__ == "__main__":
     #
     # Best-effort. The math build is the product; a missing Node or a failure in
     # the generator must not fail a run that has already produced valid files.
+    #
+    # mode-ceilings.js is here for the same reason and reads the same build. It
+    # writes the per-mode win ceilings the client SHOWS A PLAYER - the most the
+    # four guesses they picked can actually pay - and those are sampled maxima
+    # from this simulation set, so a rebuild moves them. A stale ceilings table
+    # would leave the game quoting a figure the RGS can no longer reach, which
+    # is the exact mistake the table was added to fix.
     repo_root = os.path.abspath(os.path.join(sdk_root, os.pardir))
-    generator = os.path.join(repo_root, "scripts", "replay-events.js")
-    if os.path.isfile(generator):
-        print("\nRegenerating REPLAY_EVENTS.md...")
+    generated = [
+        ("scripts/replay-events.js", "REPLAY_EVENTS.md"),
+        ("scripts/mode-ceilings.js", "src/game/modeCeilings.ts"),
+    ]
+    for script, product in generated:
+        generator = os.path.join(repo_root, *script.split("/"))
+        if not os.path.isfile(generator):
+            print(f"\n! generator not found at {generator}")
+            print(f"! {product} will be stale - regenerate it before submitting")
+            continue
+        print(f"\nRegenerating {product}...")
         try:
             subprocess.run(
                 ["node", generator],
@@ -164,8 +179,5 @@ if __name__ == "__main__":
                 shell=(os.name == "nt"),
             )
         except (OSError, subprocess.CalledProcessError) as exc:
-            print(f"  ! could not regenerate REPLAY_EVENTS.md: {exc}")
-            print("  ! run `node scripts/replay-events.js` by hand before submitting")
-    else:
-        print(f"\n! replay-events generator not found at {generator}")
-        print("! REPLAY_EVENTS.md will be stale - regenerate it before submitting")
+            print(f"  ! could not regenerate {product}: {exc}")
+            print(f"  ! run `node {script}` by hand before submitting")

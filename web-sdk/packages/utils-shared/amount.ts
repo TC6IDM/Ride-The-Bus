@@ -66,7 +66,7 @@ export const numberToCurrencyString = (value: number) => {
 	// maximumFractionDigits to 2 for every currency, which rendered a ten-yen
 	// balance as "10.00" - yen has no subunit, so the correct display is "10".
 	const places = currencyDecimals(stateBet.currency);
-	return stateI18n.i18n.number(value, {
+	const format = {
 		style: 'currency',
 		currency: stateBet.currency,
 		// Both are set explicitly, and neither is left to Intl. The minimum has
@@ -77,7 +77,27 @@ export const numberToCurrencyString = (value: number) => {
 		minimumFractionDigits: places,
 		maximumFractionDigits: displayFractionDigits(value, places),
 		// numberingSystem: 'latn',
-	});
+	} as const;
+
+	// LOCAL ADDITION to the Stake SDK - re-apply if this package is updated from
+	// upstream. Lingui formats through Intl.NumberFormat using whatever locale
+	// was activated, and Intl THROWS on a structurally invalid language tag
+	// rather than degrading - so a single bad ?lang= took out every amount on
+	// screen at once: the balance, the last win, the bet display, the running
+	// win, the takeover's amount and every bet chip.
+	//
+	// stateUrl.svelte.ts now resolves ?lang= against the shipped locales, so
+	// nothing invalid should reach here any more. This is the belt to that
+	// braces: a formatter that throws must never be able to empty the board,
+	// and currencySymbol() in Game.svelte already guards the same call the same
+	// way for the same reason. Falling back to the runtime default locale keeps
+	// the FIGURE right, which is the part that matters; only the grouping and
+	// symbol placement would differ.
+	try {
+		return stateI18n.i18n.number(value, format);
+	} catch {
+		return new Intl.NumberFormat(undefined, format).format(numberToFloat(value));
+	}
 };
 
 export const bookEventAmountToCurrencyString = (bookEventAmount: number) => {

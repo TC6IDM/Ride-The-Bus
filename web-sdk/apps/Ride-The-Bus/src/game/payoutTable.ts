@@ -167,8 +167,28 @@ export const PAYOUT_ROWS: readonly PayoutRow[] = payoutRowsFor(FAMILY_RULES.base
 export type BustRow = {
 	/** English text, which is also the i18n key. */
 	label: 'Card 1' | 'Card 2, 3 or 4' | 'Your first wrong guess' | 'Your second wrong guess';
-	/** Already-substituted sentence; the caller renders it as-is. */
-	detail: string;
+	/**
+	 * The i18n KEY for the sentence, not the sentence.
+	 *
+	 * These used to be already-substituted English, rendered straight into the
+	 * popup as `{row.detail}` - so the whole "If you guess wrong" section was the
+	 * one block of player-visible copy that never went through `t()`. Two things
+	 * followed, and neither was visible to any existing test: the rules read in
+	 * English in all sixteen other locales, and in social mode "the round ends
+	 * and PAYS nothing" survived, which is a term Stake prohibits outright.
+	 * `locales.test.ts` could not see it because it walks the catalogues, and
+	 * these strings were never in one.
+	 *
+	 * A key plus a number rather than a formatted string, because the retention
+	 * genuinely varies by family - the `%s` is substituted at the call site the
+	 * same way every other parameterised string in this game is.
+	 */
+	key:
+		| 'The round ends and pays nothing.'
+		| 'The round ends, keeping %s% of what you had built.'
+		| 'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.';
+	/** Percentage to substitute for `%s`, or null when the sentence takes none. */
+	percent: number | null;
 };
 
 /**
@@ -186,7 +206,11 @@ export function bustRowsFor(rules: FamilyRules = FAMILY_RULES.base): BustRow[] {
 	const laterPercent = Math.round(rules.retention[1]! * 100);
 
 	// Card 1 is never forgiven in any family, so it always reads the same.
-	const first: BustRow = { label: 'Card 1', detail: 'The round ends and pays nothing.' };
+	const first: BustRow = {
+		label: 'Card 1',
+		key: 'The round ends and pays nothing.',
+		percent: null,
+	};
 
 	if (rules.forgive !== null) {
 		const kept = Math.round(rules.forgive * 100);
@@ -194,11 +218,13 @@ export function bustRowsFor(rules: FamilyRules = FAMILY_RULES.base): BustRow[] {
 			first,
 			{
 				label: 'Your first wrong guess',
-				detail: `From card 2 on, it is forgiven — you keep ${kept}% of what you had built and the round carries on.`,
+				key: 'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.',
+				percent: kept,
 			},
 			{
 				label: 'Your second wrong guess',
-				detail: `The round ends, keeping ${laterPercent}% of what you had built.`,
+				key: 'The round ends, keeping %s% of what you had built.',
+				percent: laterPercent,
 			},
 		];
 	}
@@ -207,7 +233,8 @@ export function bustRowsFor(rules: FamilyRules = FAMILY_RULES.base): BustRow[] {
 		first,
 		{
 			label: 'Card 2, 3 or 4',
-			detail: `The round ends, keeping ${laterPercent}% of what you had built.`,
+			key: 'The round ends, keeping %s% of what you had built.',
+			percent: laterPercent,
 		},
 	];
 }

@@ -35,6 +35,8 @@ No recapture from a live session is needed.
 | Normal win | The most likely payout that is an actual **profit** (above 1.00x). The most likely non-zero payout in every mode is 0.50x, the stage-2 consolation, which is a loss from the player's side. |
 | Big win | The smallest payout worth at least **a quarter of that mode's cap**, so it is clearly large but still a different round from the cap. |
 | Win cap | The highest payout the mode can produce. |
+| Bust + win | The first drawable round that **busted and still paid enough to fire a celebration** - the family's Big Win floor. A round does not have to be a full game win to take the screen over: a bust on the last card keeps its retention of a multiplier that may already be large. Shown as `-` where the mode has none. |
+| 2nd chance | **Second Chance only.** The first drawable round that spent its forgiveness, survived, and still finished above the celebration floor. `-` in the other two families, and `-` in a Second Chance mode that has none. |
 
 ## The table
 
@@ -43,216 +45,216 @@ is meant to demonstrate.
 
 ### Classic — `base`
 
-Cost **1x** the bet. **64** modes, **256** event IDs. Highest cap **1354.20x**, lowest **68.20x**.
+Cost **1x** the bet. **64** modes, **256** required event IDs. Highest cap **1354.20x**, lowest **68.20x**.
 
-| Bet mode | Loss | Normal win | Big win | Win cap |
-|---|---|---|---|---|
-| `red_higher_inside_heart` | 0 | 59 (1.20x) | 8428 (72.90x) | 45449 (290.90x) |
-| `red_higher_inside_diamond` | 0 | 59 (1.20x) | 5060 (67.30x) | 36592 (268.80x) |
-| `red_higher_inside_club` | 0 | 59 (1.20x) | 3298 (67.30x) | 34303 (268.80x) |
-| `red_higher_inside_spade` | 0 | 59 (1.20x) | 52381 (67.30x) | 60169 (268.80x) |
-| `red_higher_outside_heart` | 0 | 82 (1.10x) | 2423 (17.20x) | 2484 (68.20x) |
-| `red_higher_outside_diamond` | 0 | 7 (1.10x) | 1662 (18.60x) | 42163 (74.40x) |
-| `red_higher_outside_club` | 0 | 7 (1.10x) | 903 (17.20x) | 67533 (68.20x) |
-| `red_higher_outside_spade` | 0 | 7 (1.10x) | 2899 (17.20x) | 40267 (68.20x) |
-| `red_higher_equal_heart` | 0 | 72 (1.20x) | 4096 (96.80x) | 127222 (381.90x) |
-| `red_higher_equal_diamond` | 0 | 72 (1.20x) | 7237 (96.80x) | 20719 (381.90x) |
-| `red_higher_equal_club` | 0 | 72 (1.20x) | 10933 (90.10x) | 14491 (352.90x) |
-| `red_higher_equal_spade` | 0 | 72 (1.20x) | 168 (96.80x) | 38589 (381.90x) |
-| `red_lower_inside_heart` | 0 | 10 (1.20x) | 11795 (79.90x) | 90758 (317.40x) |
-| `red_lower_inside_diamond` | 0 | 10 (1.20x) | 8518 (72.90x) | 22769 (290.90x) |
-| `red_lower_inside_club` | 0 | 10 (1.20x) | 35403 (62.60x) | 22005 (250.10x) |
-| `red_lower_inside_spade` | 0 | 10 (1.20x) | 52523 (67.30x) | 14001 (268.80x) |
-| `red_lower_outside_heart` | 0 | 36 (1.10x) | 7830 (18.60x) | 45389 (74.40x) |
-| `red_lower_outside_diamond` | 0 | 136 (1.10x) | 14016 (18.60x) | 61998 (74.40x) |
-| `red_lower_outside_club` | 0 | 36 (1.10x) | 119 (17.20x) | 16964 (68.20x) |
-| `red_lower_outside_spade` | 0 | 36 (1.10x) | 68 (17.20x) | 11086 (68.20x) |
-| `red_lower_equal_heart` | 0 | 89 (1.20x) | 5515 (96.80x) | 11299 (381.90x) |
-| `red_lower_equal_diamond` | 0 | 89 (1.20x) | 2386 (96.80x) | 51317 (381.90x) |
-| `red_lower_equal_club` | 0 | 89 (1.20x) | 618 (90.10x) | 624 (352.90x) |
-| `red_lower_equal_spade` | 0 | 89 (1.20x) | 3879 (96.80x) | 20230 (381.90x) |
-| `red_equal_outside_heart` | 0 | 85 (7.40x) | 172 (72.90x) | 167 (84.80x) |
-| `red_equal_outside_diamond` | 0 | 85 (7.40x) | 116 (72.90x) | 232 (84.80x) |
-| `red_equal_outside_club` | 0 | 116 (7.40x) | 85 (72.90x) | 931 (84.80x) |
-| `red_equal_outside_spade` | 0 | 85 (7.40x) | 197 (72.90x) | 1212 (84.80x) |
-| `red_equal_equal_heart` | 0 | 85 (7.20x) | 20751 (1260.00x) | 975 (1354.20x) |
-| `red_equal_equal_diamond` | 0 | 85 (7.20x) | 14533 (1260.00x) | 7434 (1354.20x) |
-| `red_equal_equal_club` | 0 | 85 (7.20x) | 58123 (1260.00x) | 3698 (1354.20x) |
-| `red_equal_equal_spade` | 0 | 85 (7.20x) | 22780 (1260.00x) | 1393 (1354.20x) |
-| `black_higher_inside_heart` | 1 | 103 (1.20x) | 25261 (72.90x) | 50092 (290.90x) |
-| `black_higher_inside_diamond` | 1 | 50 (1.20x) | 96201 (67.30x) | 36314 (268.80x) |
-| `black_higher_inside_club` | 1 | 50 (1.20x) | 20807 (73.80x) | 72069 (290.90x) |
-| `black_higher_inside_spade` | 1 | 50 (1.20x) | 60672 (79.50x) | 78299 (317.40x) |
-| `black_higher_outside_heart` | 1 | 12 (1.10x) | 778 (17.20x) | 25153 (68.20x) |
-| `black_higher_outside_diamond` | 1 | 12 (1.10x) | 1308 (17.20x) | 60810 (68.20x) |
-| `black_higher_outside_club` | 1 | 12 (1.10x) | 4858 (18.60x) | 54046 (74.40x) |
-| `black_higher_outside_spade` | 1 | 40 (1.10x) | 271 (18.60x) | 282 (74.40x) |
-| `black_higher_equal_heart` | 1 | 103 (1.20x) | 74 (96.80x) | 72890 (381.90x) |
-| `black_higher_equal_diamond` | 1 | 103 (1.20x) | 7566 (90.10x) | 29007 (352.90x) |
-| `black_higher_equal_club` | 1 | 103 (1.20x) | 2460 (96.80x) | 40495 (381.90x) |
-| `black_higher_equal_spade` | 1 | 103 (1.20x) | 21157 (96.80x) | 12221 (381.90x) |
-| `black_lower_inside_heart` | 1 | 8 (1.20x) | 88696 (67.30x) | 35290 (268.80x) |
-| `black_lower_inside_diamond` | 1 | 8 (1.20x) | 21723 (67.30x) | 3911 (268.80x) |
-| `black_lower_inside_club` | 1 | 8 (1.20x) | 22953 (67.30x) | 58998 (268.80x) |
-| `black_lower_inside_spade` | 1 | 8 (1.20x) | 3527 (79.90x) | 6363 (317.40x) |
-| `black_lower_outside_heart` | 1 | 127 (1.10x) | 2835 (17.20x) | 29717 (68.20x) |
-| `black_lower_outside_diamond` | 1 | 134 (1.10x) | 2185 (17.20x) | 454 (68.20x) |
-| `black_lower_outside_club` | 1 | 127 (1.10x) | 3769 (18.60x) | 8950 (74.40x) |
-| `black_lower_outside_spade` | 1 | 127 (1.10x) | 1850 (18.60x) | 2036 (74.40x) |
-| `black_lower_equal_heart` | 1 | 8 (1.20x) | 13848 (96.80x) | 48026 (381.90x) |
-| `black_lower_equal_diamond` | 1 | 8 (1.20x) | 823 (96.80x) | 128284 (381.90x) |
-| `black_lower_equal_club` | 1 | 8 (1.20x) | 15801 (96.80x) | 34453 (381.90x) |
-| `black_lower_equal_spade` | 1 | 8 (1.20x) | 3726 (96.80x) | 133994 (381.90x) |
-| `black_equal_outside_heart` | 1 | 13 (7.40x) | 468 (72.90x) | 772 (84.80x) |
-| `black_equal_outside_diamond` | 1 | 14 (7.40x) | 13 (72.90x) | 1814 (84.80x) |
-| `black_equal_outside_club` | 1 | 13 (7.40x) | 767 (72.90x) | 1211 (84.80x) |
-| `black_equal_outside_spade` | 1 | 13 (7.40x) | 86 (72.90x) | 1080 (84.80x) |
-| `black_equal_equal_heart` | 1 | 13 (7.20x) | 18206 (1260.00x) | 1641 (1354.20x) |
-| `black_equal_equal_diamond` | 1 | 13 (7.20x) | 5480 (1260.00x) | 6934 (1354.20x) |
-| `black_equal_equal_club` | 1 | 13 (7.20x) | 26214 (1260.00x) | 2616 (1354.20x) |
-| `black_equal_equal_spade` | 1 | 13 (7.20x) | 2454 (1260.00x) | 283 (1354.20x) |
+| Bet mode | Loss | Normal win | Big win | Win cap | Bust + win | 2nd chance |
+|---|---|---|---|---|---|---|
+| `red_higher_inside_heart` | 0 | 59 (1.20x) | 8428 (72.90x) | 45449 (290.90x) | 1801 (13.60x) | - (-) |
+| `red_higher_inside_diamond` | 0 | 59 (1.20x) | 5060 (67.30x) | 36592 (268.80x) | 1801 (13.60x) | - (-) |
+| `red_higher_inside_club` | 0 | 59 (1.20x) | 3298 (67.30x) | 34303 (268.80x) | 2269 (25.60x) | - (-) |
+| `red_higher_inside_spade` | 0 | 59 (1.20x) | 52381 (67.30x) | 60169 (268.80x) | 1801 (13.60x) | - (-) |
+| `red_higher_outside_heart` | 0 | 82 (1.10x) | 2423 (17.20x) | 2484 (68.20x) | - (-) | - (-) |
+| `red_higher_outside_diamond` | 0 | 7 (1.10x) | 1662 (18.60x) | 42163 (74.40x) | - (-) | - (-) |
+| `red_higher_outside_club` | 0 | 7 (1.10x) | 903 (17.20x) | 67533 (68.20x) | - (-) | - (-) |
+| `red_higher_outside_spade` | 0 | 7 (1.10x) | 2899 (17.20x) | 40267 (68.20x) | - (-) | - (-) |
+| `red_higher_equal_heart` | 0 | 72 (1.20x) | 4096 (96.80x) | 127222 (381.90x) | 31 (33.60x) | - (-) |
+| `red_higher_equal_diamond` | 0 | 72 (1.20x) | 7237 (96.80x) | 20719 (381.90x) | 31 (33.60x) | - (-) |
+| `red_higher_equal_club` | 0 | 72 (1.20x) | 10933 (90.10x) | 14491 (352.90x) | 31 (33.60x) | - (-) |
+| `red_higher_equal_spade` | 0 | 72 (1.20x) | 168 (96.80x) | 38589 (381.90x) | 1483 (33.60x) | - (-) |
+| `red_lower_inside_heart` | 0 | 10 (1.20x) | 11795 (79.90x) | 90758 (317.40x) | 552 (17.60x) | - (-) |
+| `red_lower_inside_diamond` | 0 | 10 (1.20x) | 8518 (72.90x) | 22769 (290.90x) | 1542 (13.60x) | - (-) |
+| `red_lower_inside_club` | 0 | 10 (1.20x) | 35403 (62.60x) | 22005 (250.10x) | 552 (17.60x) | - (-) |
+| `red_lower_inside_spade` | 0 | 10 (1.20x) | 52523 (67.30x) | 14001 (268.80x) | 552 (17.60x) | - (-) |
+| `red_lower_outside_heart` | 0 | 36 (1.10x) | 7830 (18.60x) | 45389 (74.40x) | - (-) | - (-) |
+| `red_lower_outside_diamond` | 0 | 136 (1.10x) | 14016 (18.60x) | 61998 (74.40x) | - (-) | - (-) |
+| `red_lower_outside_club` | 0 | 36 (1.10x) | 119 (17.20x) | 16964 (68.20x) | - (-) | - (-) |
+| `red_lower_outside_spade` | 0 | 36 (1.10x) | 68 (17.20x) | 11086 (68.20x) | - (-) | - (-) |
+| `red_lower_equal_heart` | 0 | 89 (1.20x) | 5515 (96.80x) | 11299 (381.90x) | 487 (33.60x) | - (-) |
+| `red_lower_equal_diamond` | 0 | 89 (1.20x) | 2386 (96.80x) | 51317 (381.90x) | 487 (33.60x) | - (-) |
+| `red_lower_equal_club` | 0 | 89 (1.20x) | 618 (90.10x) | 624 (352.90x) | 487 (33.60x) | - (-) |
+| `red_lower_equal_spade` | 0 | 89 (1.20x) | 3879 (96.80x) | 20230 (381.90x) | 624 (33.60x) | - (-) |
+| `red_equal_outside_heart` | 0 | 85 (7.40x) | 172 (72.90x) | 167 (84.80x) | - (-) | - (-) |
+| `red_equal_outside_diamond` | 0 | 85 (7.40x) | 116 (72.90x) | 232 (84.80x) | - (-) | - (-) |
+| `red_equal_outside_club` | 0 | 116 (7.40x) | 85 (72.90x) | 931 (84.80x) | - (-) | - (-) |
+| `red_equal_outside_spade` | 0 | 85 (7.40x) | 197 (72.90x) | 1212 (84.80x) | - (-) | - (-) |
+| `red_equal_equal_heart` | 0 | 85 (7.20x) | 20751 (1260.00x) | 975 (1354.20x) | 1393 (129.00x) | - (-) |
+| `red_equal_equal_diamond` | 0 | 85 (7.20x) | 14533 (1260.00x) | 7434 (1354.20x) | 975 (129.00x) | - (-) |
+| `red_equal_equal_club` | 0 | 85 (7.20x) | 58123 (1260.00x) | 3698 (1354.20x) | 975 (129.00x) | - (-) |
+| `red_equal_equal_spade` | 0 | 85 (7.20x) | 22780 (1260.00x) | 1393 (1354.20x) | 975 (129.00x) | - (-) |
+| `black_higher_inside_heart` | 1 | 103 (1.20x) | 25261 (72.90x) | 50092 (290.90x) | 628 (13.60x) | - (-) |
+| `black_higher_inside_diamond` | 1 | 50 (1.20x) | 96201 (67.30x) | 36314 (268.80x) | 628 (13.60x) | - (-) |
+| `black_higher_inside_club` | 1 | 50 (1.20x) | 20807 (73.80x) | 72069 (290.90x) | 628 (13.60x) | - (-) |
+| `black_higher_inside_spade` | 1 | 50 (1.20x) | 60672 (79.50x) | 78299 (317.40x) | 1430 (25.60x) | - (-) |
+| `black_higher_outside_heart` | 1 | 12 (1.10x) | 778 (17.20x) | 25153 (68.20x) | - (-) | - (-) |
+| `black_higher_outside_diamond` | 1 | 12 (1.10x) | 1308 (17.20x) | 60810 (68.20x) | - (-) | - (-) |
+| `black_higher_outside_club` | 1 | 12 (1.10x) | 4858 (18.60x) | 54046 (74.40x) | - (-) | - (-) |
+| `black_higher_outside_spade` | 1 | 40 (1.10x) | 271 (18.60x) | 282 (74.40x) | - (-) | - (-) |
+| `black_higher_equal_heart` | 1 | 103 (1.20x) | 74 (96.80x) | 72890 (381.90x) | 796 (33.60x) | - (-) |
+| `black_higher_equal_diamond` | 1 | 103 (1.20x) | 7566 (90.10x) | 29007 (352.90x) | 1753 (17.30x) | - (-) |
+| `black_higher_equal_club` | 1 | 103 (1.20x) | 2460 (96.80x) | 40495 (381.90x) | 796 (33.60x) | - (-) |
+| `black_higher_equal_spade` | 1 | 103 (1.20x) | 21157 (96.80x) | 12221 (381.90x) | 796 (33.60x) | - (-) |
+| `black_lower_inside_heart` | 1 | 8 (1.20x) | 88696 (67.30x) | 35290 (268.80x) | 95 (17.60x) | - (-) |
+| `black_lower_inside_diamond` | 1 | 8 (1.20x) | 21723 (67.30x) | 3911 (268.80x) | 95 (17.60x) | - (-) |
+| `black_lower_inside_club` | 1 | 8 (1.20x) | 22953 (67.30x) | 58998 (268.80x) | 3911 (25.60x) | - (-) |
+| `black_lower_inside_spade` | 1 | 8 (1.20x) | 3527 (79.90x) | 6363 (317.40x) | 95 (17.60x) | - (-) |
+| `black_lower_outside_heart` | 1 | 127 (1.10x) | 2835 (17.20x) | 29717 (68.20x) | - (-) | - (-) |
+| `black_lower_outside_diamond` | 1 | 134 (1.10x) | 2185 (17.20x) | 454 (68.20x) | - (-) | - (-) |
+| `black_lower_outside_club` | 1 | 127 (1.10x) | 3769 (18.60x) | 8950 (74.40x) | - (-) | - (-) |
+| `black_lower_outside_spade` | 1 | 127 (1.10x) | 1850 (18.60x) | 2036 (74.40x) | - (-) | - (-) |
+| `black_lower_equal_heart` | 1 | 8 (1.20x) | 13848 (96.80x) | 48026 (381.90x) | 204 (17.30x) | - (-) |
+| `black_lower_equal_diamond` | 1 | 8 (1.20x) | 823 (96.80x) | 128284 (381.90x) | 28 (33.60x) | - (-) |
+| `black_lower_equal_club` | 1 | 8 (1.20x) | 15801 (96.80x) | 34453 (381.90x) | 28 (33.60x) | - (-) |
+| `black_lower_equal_spade` | 1 | 8 (1.20x) | 3726 (96.80x) | 133994 (381.90x) | 28 (33.60x) | - (-) |
+| `black_equal_outside_heart` | 1 | 13 (7.40x) | 468 (72.90x) | 772 (84.80x) | - (-) | - (-) |
+| `black_equal_outside_diamond` | 1 | 14 (7.40x) | 13 (72.90x) | 1814 (84.80x) | - (-) | - (-) |
+| `black_equal_outside_club` | 1 | 13 (7.40x) | 767 (72.90x) | 1211 (84.80x) | - (-) | - (-) |
+| `black_equal_outside_spade` | 1 | 13 (7.40x) | 86 (72.90x) | 1080 (84.80x) | - (-) | - (-) |
+| `black_equal_equal_heart` | 1 | 13 (7.20x) | 18206 (1260.00x) | 1641 (1354.20x) | 283 (129.00x) | - (-) |
+| `black_equal_equal_diamond` | 1 | 13 (7.20x) | 5480 (1260.00x) | 6934 (1354.20x) | 283 (129.00x) | - (-) |
+| `black_equal_equal_club` | 1 | 13 (7.20x) | 26214 (1260.00x) | 2616 (1354.20x) | 283 (129.00x) | - (-) |
+| `black_equal_equal_spade` | 1 | 13 (7.20x) | 2454 (1260.00x) | 283 (1354.20x) | 1641 (129.00x) | - (-) |
 
 ### Second Chance — `sc`
 
-Cost **1x** the bet. **64** modes, **256** event IDs. Highest cap **585.20x**, lowest **39.50x**.
+Cost **1x** the bet. **64** modes, **256** required event IDs. Highest cap **585.20x**, lowest **39.50x**.
 
-| Bet mode | Loss | Normal win | Big win | Win cap |
-|---|---|---|---|---|
-| `sc_red_higher_inside_heart` | 0 | 220 (1.30x) | 90758 (33.40x) | 45449 (133.60x) |
-| `sc_red_higher_inside_diamond` | 0 | 358 (1.30x) | 19868 (32.20x) | 36592 (124.50x) |
-| `sc_red_higher_inside_club` | 0 | 220 (1.30x) | 38327 (32.20x) | 34303 (124.50x) |
-| `sc_red_higher_inside_spade` | 0 | 220 (1.30x) | 6581 (32.20x) | 60169 (124.50x) |
-| `sc_red_higher_outside_heart` | 0 | 1 (1.20x) | 2555 (9.90x) | 2484 (39.50x) |
-| `sc_red_higher_outside_diamond` | 0 | 126 (1.20x) | 1920 (10.70x) | 42163 (42.70x) |
-| `sc_red_higher_outside_club` | 0 | 1 (1.20x) | 150 (9.90x) | 67533 (39.50x) |
-| `sc_red_higher_outside_spade` | 0 | 1 (1.20x) | 183 (9.90x) | 40267 (39.50x) |
-| `sc_red_higher_equal_heart` | 0 | 10 (1.80x) | 2716 (44.50x) | 127222 (172.20x) |
-| `sc_red_higher_equal_diamond` | 0 | 27 (1.80x) | 5329 (44.50x) | 20719 (172.20x) |
-| `sc_red_higher_equal_club` | 0 | 10 (1.80x) | 15293 (41.40x) | 14491 (160.50x) |
-| `sc_red_higher_equal_spade` | 0 | 10 (1.80x) | 88904 (44.50x) | 38589 (172.20x) |
-| `sc_red_lower_inside_heart` | 0 | 48 (1.30x) | 10094 (36.50x) | 90758 (144.50x) |
-| `sc_red_lower_inside_diamond` | 0 | 48 (1.30x) | 69884 (33.40x) | 22769 (133.60x) |
-| `sc_red_lower_inside_club` | 0 | 87 (1.30x) | 3201 (30.20x) | 22005 (116.80x) |
-| `sc_red_lower_inside_spade` | 0 | 48 (1.30x) | 40987 (32.20x) | 14001 (124.50x) |
-| `sc_red_lower_outside_heart` | 0 | 154 (1.20x) | 579 (10.70x) | 45389 (42.70x) |
-| `sc_red_lower_outside_diamond` | 0 | 241 (1.20x) | 5901 (10.70x) | 61998 (42.70x) |
-| `sc_red_lower_outside_club` | 0 | 154 (1.20x) | 697 (9.90x) | 16964 (39.50x) |
-| `sc_red_lower_outside_spade` | 0 | 154 (1.20x) | 15 (9.90x) | 11086 (39.50x) |
-| `sc_red_lower_equal_heart` | 0 | 17 (1.80x) | 6603 (44.50x) | 11299 (172.20x) |
-| `sc_red_lower_equal_diamond` | 0 | 31 (1.80x) | 10 (44.50x) | 51317 (172.20x) |
-| `sc_red_lower_equal_club` | 0 | 17 (1.80x) | 13210 (41.40x) | 624 (160.50x) |
-| `sc_red_lower_equal_spade` | 0 | 17 (1.80x) | 9017 (44.50x) | 20230 (172.20x) |
-| `sc_red_equal_outside_heart` | 0 | 85 (9.00x) | 378 (13.60x) | 167 (49.40x) |
-| `sc_red_equal_outside_diamond` | 0 | 85 (9.00x) | 3746 (13.60x) | 232 (49.40x) |
-| `sc_red_equal_outside_club` | 0 | 116 (9.00x) | 1861 (13.60x) | 931 (49.40x) |
-| `sc_red_equal_outside_spade` | 0 | 85 (9.00x) | 7259 (13.60x) | 1212 (49.40x) |
-| `sc_red_equal_equal_heart` | 0 | 10 (1.80x) | 20751 (549.10x) | 975 (585.20x) |
-| `sc_red_equal_equal_diamond` | 0 | 27 (1.80x) | 14533 (549.10x) | 7434 (585.20x) |
-| `sc_red_equal_equal_club` | 0 | 10 (1.80x) | 58123 (549.10x) | 3698 (585.20x) |
-| `sc_red_equal_equal_spade` | 0 | 10 (1.80x) | 22780 (549.10x) | 1393 (585.20x) |
-| `sc_black_higher_inside_heart` | 1 | 201 (1.30x) | 61528 (34.20x) | 50092 (133.60x) |
-| `sc_black_higher_inside_diamond` | 1 | 84 (1.30x) | 2876 (32.20x) | 36314 (124.50x) |
-| `sc_black_higher_inside_club` | 1 | 84 (1.30x) | 20780 (33.40x) | 72069 (133.60x) |
-| `sc_black_higher_inside_spade` | 1 | 84 (1.30x) | 38465 (36.50x) | 78299 (144.50x) |
-| `sc_black_higher_outside_heart` | 1 | 148 (1.20x) | 7661 (9.90x) | 25153 (39.50x) |
-| `sc_black_higher_outside_diamond` | 1 | 66 (1.20x) | 879 (9.90x) | 60810 (39.50x) |
-| `sc_black_higher_outside_club` | 1 | 66 (1.20x) | 4495 (10.70x) | 54046 (42.70x) |
-| `sc_black_higher_outside_spade` | 1 | 66 (1.20x) | 2469 (10.70x) | 282 (42.70x) |
-| `sc_black_higher_equal_heart` | 1 | 57 (1.80x) | 8933 (44.50x) | 72890 (172.20x) |
-| `sc_black_higher_equal_diamond` | 1 | 28 (1.80x) | 3696 (41.40x) | 29007 (160.50x) |
-| `sc_black_higher_equal_club` | 1 | 28 (1.80x) | 12408 (44.50x) | 40495 (172.20x) |
-| `sc_black_higher_equal_spade` | 1 | 28 (1.80x) | 6928 (44.50x) | 12221 (172.20x) |
-| `sc_black_lower_inside_heart` | 1 | 24 (1.30x) | 29375 (32.20x) | 35290 (124.50x) |
-| `sc_black_lower_inside_diamond` | 1 | 24 (1.30x) | 10566 (32.20x) | 3911 (124.50x) |
-| `sc_black_lower_inside_club` | 1 | 99 (1.30x) | 2954 (32.20x) | 58998 (124.50x) |
-| `sc_black_lower_inside_spade` | 1 | 24 (1.30x) | 38480 (36.50x) | 6363 (144.50x) |
-| `sc_black_lower_outside_heart` | 1 | 0 (1.20x) | 4207 (9.90x) | 29717 (39.50x) |
-| `sc_black_lower_outside_diamond` | 1 | 25 (1.20x) | 935 (9.90x) | 454 (39.50x) |
-| `sc_black_lower_outside_club` | 1 | 0 (1.20x) | 599 (10.70x) | 8950 (42.70x) |
-| `sc_black_lower_outside_spade` | 1 | 0 (1.20x) | 837 (10.70x) | 2036 (42.70x) |
-| `sc_black_lower_equal_heart` | 1 | 5 (1.80x) | 38754 (44.50x) | 48026 (172.20x) |
-| `sc_black_lower_equal_diamond` | 1 | 5 (1.80x) | 81274 (44.50x) | 128284 (172.20x) |
-| `sc_black_lower_equal_club` | 1 | 5 (1.80x) | 1284 (44.50x) | 34453 (172.20x) |
-| `sc_black_lower_equal_spade` | 1 | 21 (1.80x) | 2424 (44.50x) | 133994 (172.20x) |
-| `sc_black_equal_outside_heart` | 1 | 13 (9.00x) | 2310 (13.60x) | 772 (49.40x) |
-| `sc_black_equal_outside_diamond` | 1 | 14 (9.00x) | 6720 (13.60x) | 1814 (49.40x) |
-| `sc_black_equal_outside_club` | 1 | 13 (9.00x) | 776 (13.60x) | 1211 (49.40x) |
-| `sc_black_equal_outside_spade` | 1 | 13 (9.00x) | 2937 (13.60x) | 1080 (49.40x) |
-| `sc_black_equal_equal_heart` | 1 | 5 (1.80x) | 18206 (549.10x) | 1641 (585.20x) |
-| `sc_black_equal_equal_diamond` | 1 | 5 (1.80x) | 5480 (549.10x) | 6934 (585.20x) |
-| `sc_black_equal_equal_club` | 1 | 5 (1.80x) | 26214 (549.10x) | 2616 (585.20x) |
-| `sc_black_equal_equal_spade` | 1 | 21 (1.80x) | 2454 (549.10x) | 283 (585.20x) |
+| Bet mode | Loss | Normal win | Big win | Win cap | Bust + win | 2nd chance |
+|---|---|---|---|---|---|---|
+| `sc_red_higher_inside_heart` | 0 | 220 (1.30x) | 90758 (33.40x) | 45449 (133.60x) | - (-) | 744 (13.60x) |
+| `sc_red_higher_inside_diamond` | 0 | 358 (1.30x) | 19868 (32.20x) | 36592 (124.50x) | - (-) | 220 (14.60x) |
+| `sc_red_higher_inside_club` | 0 | 220 (1.30x) | 38327 (32.20x) | 34303 (124.50x) | - (-) | 481 (14.60x) |
+| `sc_red_higher_inside_spade` | 0 | 220 (1.30x) | 6581 (32.20x) | 60169 (124.50x) | - (-) | 31 (21.40x) |
+| `sc_red_higher_outside_heart` | 0 | 1 (1.20x) | 2555 (9.90x) | 2484 (39.50x) | - (-) | 378 (13.60x) |
+| `sc_red_higher_outside_diamond` | 0 | 126 (1.20x) | 1920 (10.70x) | 42163 (42.70x) | - (-) | 1483 (21.40x) |
+| `sc_red_higher_outside_club` | 0 | 1 (1.20x) | 150 (9.90x) | 67533 (39.50x) | - (-) | 2832 (13.60x) |
+| `sc_red_higher_outside_spade` | 0 | 1 (1.20x) | 183 (9.90x) | 40267 (39.50x) | - (-) | 31 (21.40x) |
+| `sc_red_higher_equal_heart` | 0 | 10 (1.80x) | 2716 (44.50x) | 127222 (172.20x) | - (-) | 31 (31.70x) |
+| `sc_red_higher_equal_diamond` | 0 | 27 (1.80x) | 5329 (44.50x) | 20719 (172.20x) | - (-) | 10 (20.70x) |
+| `sc_red_higher_equal_club` | 0 | 10 (1.80x) | 15293 (41.40x) | 14491 (160.50x) | - (-) | 27 (19.10x) |
+| `sc_red_higher_equal_spade` | 0 | 10 (1.80x) | 88904 (44.50x) | 38589 (172.20x) | - (-) | 128 (19.10x) |
+| `sc_red_lower_inside_heart` | 0 | 48 (1.30x) | 10094 (36.50x) | 90758 (144.50x) | - (-) | 552 (17.50x) |
+| `sc_red_lower_inside_diamond` | 0 | 48 (1.30x) | 69884 (33.40x) | 22769 (133.60x) | - (-) | 87 (14.60x) |
+| `sc_red_lower_inside_club` | 0 | 87 (1.30x) | 3201 (30.20x) | 22005 (116.80x) | - (-) | 48 (13.60x) |
+| `sc_red_lower_inside_spade` | 0 | 48 (1.30x) | 40987 (32.20x) | 14001 (124.50x) | - (-) | 487 (21.40x) |
+| `sc_red_lower_outside_heart` | 0 | 154 (1.20x) | 579 (10.70x) | 45389 (42.70x) | - (-) | 3312 (14.60x) |
+| `sc_red_lower_outside_diamond` | 0 | 241 (1.20x) | 5901 (10.70x) | 61998 (42.70x) | - (-) | 1498 (28.30x) |
+| `sc_red_lower_outside_club` | 0 | 154 (1.20x) | 697 (9.90x) | 16964 (39.50x) | - (-) | 195 (28.30x) |
+| `sc_red_lower_outside_spade` | 0 | 154 (1.20x) | 15 (9.90x) | 11086 (39.50x) | - (-) | 487 (21.40x) |
+| `sc_red_lower_equal_heart` | 0 | 17 (1.80x) | 6603 (44.50x) | 11299 (172.20x) | - (-) | 59 (19.10x) |
+| `sc_red_lower_equal_diamond` | 0 | 31 (1.80x) | 10 (44.50x) | 51317 (172.20x) | - (-) | 17 (20.70x) |
+| `sc_red_lower_equal_club` | 0 | 17 (1.80x) | 13210 (41.40x) | 624 (160.50x) | - (-) | 487 (31.70x) |
+| `sc_red_lower_equal_spade` | 0 | 17 (1.80x) | 9017 (44.50x) | 20230 (172.20x) | - (-) | 31 (19.10x) |
+| `sc_red_equal_outside_heart` | 0 | 85 (9.00x) | 378 (13.60x) | 167 (49.40x) | - (-) | 378 (13.60x) |
+| `sc_red_equal_outside_diamond` | 0 | 85 (9.00x) | 3746 (13.60x) | 232 (49.40x) | - (-) | 1498 (28.30x) |
+| `sc_red_equal_outside_club` | 0 | 116 (9.00x) | 1861 (13.60x) | 931 (49.40x) | - (-) | 195 (28.30x) |
+| `sc_red_equal_outside_spade` | 0 | 85 (9.00x) | 7259 (13.60x) | 1212 (49.40x) | - (-) | 728 (15.80x) |
+| `sc_red_equal_equal_heart` | 0 | 10 (1.80x) | 20751 (549.10x) | 975 (585.20x) | - (-) | 59 (19.10x) |
+| `sc_red_equal_equal_diamond` | 0 | 27 (1.80x) | 14533 (549.10x) | 7434 (585.20x) | - (-) | 10 (20.70x) |
+| `sc_red_equal_equal_club` | 0 | 10 (1.80x) | 58123 (549.10x) | 3698 (585.20x) | - (-) | 27 (19.10x) |
+| `sc_red_equal_equal_spade` | 0 | 10 (1.80x) | 22780 (549.10x) | 1393 (585.20x) | - (-) | 31 (19.10x) |
+| `sc_black_higher_inside_heart` | 1 | 201 (1.30x) | 61528 (34.20x) | 50092 (133.60x) | - (-) | 189 (11.50x) |
+| `sc_black_higher_inside_diamond` | 1 | 84 (1.30x) | 2876 (32.20x) | 36314 (124.50x) | - (-) | 75 (21.40x) |
+| `sc_black_higher_inside_club` | 1 | 84 (1.30x) | 20780 (33.40x) | 72069 (133.60x) | - (-) | 95 (28.30x) |
+| `sc_black_higher_inside_spade` | 1 | 84 (1.30x) | 38465 (36.50x) | 78299 (144.50x) | - (-) | 282 (25.30x) |
+| `sc_black_higher_outside_heart` | 1 | 148 (1.20x) | 7661 (9.90x) | 25153 (39.50x) | - (-) | 1376 (14.60x) |
+| `sc_black_higher_outside_diamond` | 1 | 66 (1.20x) | 879 (9.90x) | 60810 (39.50x) | - (-) | 796 (19.90x) |
+| `sc_black_higher_outside_club` | 1 | 66 (1.20x) | 4495 (10.70x) | 54046 (42.70x) | - (-) | 1753 (12.40x) |
+| `sc_black_higher_outside_spade` | 1 | 66 (1.20x) | 2469 (10.70x) | 282 (42.70x) | - (-) | 456 (26.30x) |
+| `sc_black_higher_equal_heart` | 1 | 57 (1.80x) | 8933 (44.50x) | 72890 (172.20x) | - (-) | 28 (19.10x) |
+| `sc_black_higher_equal_diamond` | 1 | 28 (1.80x) | 3696 (41.40x) | 29007 (160.50x) | - (-) | 57 (17.80x) |
+| `sc_black_higher_equal_club` | 1 | 28 (1.80x) | 12408 (44.50x) | 40495 (172.20x) | - (-) | 151 (19.10x) |
+| `sc_black_higher_equal_spade` | 1 | 28 (1.80x) | 6928 (44.50x) | 12221 (172.20x) | - (-) | 282 (25.30x) |
+| `sc_black_lower_inside_heart` | 1 | 24 (1.30x) | 29375 (32.20x) | 35290 (124.50x) | - (-) | 28 (21.40x) |
+| `sc_black_lower_inside_diamond` | 1 | 24 (1.30x) | 10566 (32.20x) | 3911 (124.50x) | - (-) | 95 (17.50x) |
+| `sc_black_lower_inside_club` | 1 | 99 (1.30x) | 2954 (32.20x) | 58998 (124.50x) | - (-) | 24 (14.60x) |
+| `sc_black_lower_inside_spade` | 1 | 24 (1.30x) | 38480 (36.50x) | 6363 (144.50x) | - (-) | 95 (17.50x) |
+| `sc_black_lower_outside_heart` | 1 | 0 (1.20x) | 4207 (9.90x) | 29717 (39.50x) | - (-) | 28 (21.40x) |
+| `sc_black_lower_outside_diamond` | 1 | 25 (1.20x) | 935 (9.90x) | 454 (39.50x) | - (-) | 3017 (14.60x) |
+| `sc_black_lower_outside_club` | 1 | 0 (1.20x) | 599 (10.70x) | 8950 (42.70x) | - (-) | 96 (14.60x) |
+| `sc_black_lower_outside_spade` | 1 | 0 (1.20x) | 837 (10.70x) | 2036 (42.70x) | - (-) | 2135 (19.90x) |
+| `sc_black_lower_equal_heart` | 1 | 5 (1.80x) | 38754 (44.50x) | 48026 (172.20x) | - (-) | 74 (19.10x) |
+| `sc_black_lower_equal_diamond` | 1 | 5 (1.80x) | 81274 (44.50x) | 128284 (172.20x) | - (-) | 21 (19.10x) |
+| `sc_black_lower_equal_club` | 1 | 5 (1.80x) | 1284 (44.50x) | 34453 (172.20x) | - (-) | 28 (31.70x) |
+| `sc_black_lower_equal_spade` | 1 | 21 (1.80x) | 2424 (44.50x) | 133994 (172.20x) | - (-) | 5 (19.10x) |
+| `sc_black_equal_outside_heart` | 1 | 13 (9.00x) | 2310 (13.60x) | 772 (49.40x) | - (-) | 1376 (14.60x) |
+| `sc_black_equal_outside_diamond` | 1 | 14 (9.00x) | 6720 (13.60x) | 1814 (49.40x) | - (-) | 3017 (14.60x) |
+| `sc_black_equal_outside_club` | 1 | 13 (9.00x) | 776 (13.60x) | 1211 (49.40x) | - (-) | 96 (14.60x) |
+| `sc_black_equal_outside_spade` | 1 | 13 (9.00x) | 2937 (13.60x) | 1080 (49.40x) | - (-) | 283 (28.10x) |
+| `sc_black_equal_equal_heart` | 1 | 5 (1.80x) | 18206 (549.10x) | 1641 (585.20x) | - (-) | 14 (28.10x) |
+| `sc_black_equal_equal_diamond` | 1 | 5 (1.80x) | 5480 (549.10x) | 6934 (585.20x) | - (-) | 13 (26.10x) |
+| `sc_black_equal_equal_club` | 1 | 5 (1.80x) | 26214 (549.10x) | 2616 (585.20x) | - (-) | 151 (19.10x) |
+| `sc_black_equal_equal_spade` | 1 | 21 (1.80x) | 2454 (549.10x) | 283 (585.20x) | - (-) | 5 (19.10x) |
 
 ### High Stakes — `hs`
 
-Cost **1x** the bet. **64** modes, **256** event IDs. Highest cap **1910.20x**, lowest **85.80x**.
+Cost **1x** the bet. **64** modes, **256** required event IDs. Highest cap **1910.20x**, lowest **85.80x**.
 
-| Bet mode | Loss | Normal win | Big win | Win cap |
-|---|---|---|---|---|
-| `hs_red_higher_inside_heart` | 0 | 9 (1.40x) | 28969 (103.10x) | 45449 (402.20x) |
-| `hs_red_higher_inside_diamond` | 0 | 9 (1.40x) | 40338 (93.20x) | 36592 (370.50x) |
-| `hs_red_higher_inside_club` | 0 | 9 (1.40x) | 16200 (93.20x) | 34303 (370.50x) |
-| `hs_red_higher_inside_spade` | 0 | 9 (1.40x) | 95907 (95.60x) | 60169 (370.50x) |
-| `hs_red_higher_outside_heart` | 0 | 245 (1.40x) | 129 (21.80x) | 2484 (85.80x) |
-| `hs_red_higher_outside_diamond` | 0 | 69 (1.40x) | 5115 (23.50x) | 42163 (93.90x) |
-| `hs_red_higher_outside_club` | 0 | 69 (1.40x) | 6528 (21.80x) | 67533 (85.80x) |
-| `hs_red_higher_outside_spade` | 0 | 69 (1.40x) | 18334 (21.80x) | 40267 (85.80x) |
-| `hs_red_higher_equal_heart` | 0 | 9 (1.40x) | 23887 (140.50x) | 127222 (531.30x) |
-| `hs_red_higher_equal_diamond` | 0 | 9 (1.40x) | 7579 (140.50x) | 20719 (531.30x) |
-| `hs_red_higher_equal_club` | 0 | 9 (1.40x) | 5765 (129.40x) | 14491 (489.40x) |
-| `hs_red_higher_equal_spade` | 0 | 9 (1.40x) | 98028 (140.50x) | 38589 (531.30x) |
-| `hs_red_lower_inside_heart` | 0 | 135 (1.40x) | 72623 (111.90x) | 90758 (440.30x) |
-| `hs_red_lower_inside_diamond` | 0 | 188 (1.40x) | 39846 (101.20x) | 22769 (402.20x) |
-| `hs_red_lower_inside_club` | 0 | 135 (1.40x) | 18111 (86.40x) | 22005 (343.60x) |
-| `hs_red_lower_inside_spade` | 0 | 135 (1.40x) | 68526 (93.20x) | 14001 (370.50x) |
-| `hs_red_lower_outside_heart` | 0 | 223 (1.40x) | 16053 (23.50x) | 45389 (93.90x) |
-| `hs_red_lower_outside_diamond` | 0 | 89 (1.40x) | 10256 (23.50x) | 61998 (93.90x) |
-| `hs_red_lower_outside_club` | 0 | 89 (1.40x) | 13998 (21.80x) | 16964 (85.80x) |
-| `hs_red_lower_outside_spade` | 0 | 89 (1.40x) | 12844 (21.80x) | 11086 (85.80x) |
-| `hs_red_lower_equal_heart` | 0 | 188 (1.40x) | 1190 (140.50x) | 11299 (531.30x) |
-| `hs_red_lower_equal_diamond` | 0 | 188 (1.40x) | 8332 (140.50x) | 51317 (531.30x) |
-| `hs_red_lower_equal_club` | 0 | 188 (1.40x) | 721 (129.40x) | 624 (489.40x) |
-| `hs_red_lower_equal_spade` | 0 | 188 (1.40x) | 17187 (140.50x) | 20230 (531.30x) |
-| `hs_red_equal_outside_heart` | 0 | 85 (5.60x) | 172 (90.60x) | 167 (106.10x) |
-| `hs_red_equal_outside_diamond` | 0 | 85 (5.60x) | 116 (90.60x) | 232 (106.10x) |
-| `hs_red_equal_outside_club` | 0 | 116 (5.60x) | 85 (90.60x) | 931 (106.10x) |
-| `hs_red_equal_outside_spade` | 0 | 85 (5.60x) | 197 (90.60x) | 1212 (106.10x) |
-| `hs_red_equal_equal_heart` | 0 | 85 (5.40x) | 20751 (1771.80x) | 975 (1910.20x) |
-| `hs_red_equal_equal_diamond` | 0 | 85 (5.40x) | 14533 (1771.80x) | 7434 (1910.20x) |
-| `hs_red_equal_equal_club` | 0 | 85 (5.40x) | 58123 (1771.80x) | 3698 (1910.20x) |
-| `hs_red_equal_equal_spade` | 0 | 85 (5.40x) | 22780 (1771.80x) | 1393 (1910.20x) |
-| `hs_black_higher_inside_heart` | 1 | 203 (1.40x) | 96931 (101.20x) | 50092 (402.20x) |
-| `hs_black_higher_inside_diamond` | 1 | 203 (1.40x) | 60528 (93.20x) | 36314 (370.50x) |
-| `hs_black_higher_inside_club` | 1 | 203 (1.40x) | 92550 (101.20x) | 72069 (402.20x) |
-| `hs_black_higher_inside_spade` | 1 | 203 (1.40x) | 5178 (111.90x) | 78299 (440.30x) |
-| `hs_black_higher_outside_heart` | 1 | 24 (1.40x) | 31492 (21.80x) | 25153 (85.80x) |
-| `hs_black_higher_outside_diamond` | 1 | 24 (1.40x) | 7973 (21.80x) | 60810 (85.80x) |
-| `hs_black_higher_outside_club` | 1 | 24 (1.40x) | 8176 (23.50x) | 54046 (93.90x) |
-| `hs_black_higher_outside_spade` | 1 | 24 (1.40x) | 51871 (23.50x) | 282 (93.90x) |
-| `hs_black_higher_equal_heart` | 1 | 24 (1.40x) | 40371 (140.50x) | 72890 (531.30x) |
-| `hs_black_higher_equal_diamond` | 1 | 24 (1.40x) | 21 (129.40x) | 29007 (489.40x) |
-| `hs_black_higher_equal_club` | 1 | 24 (1.40x) | 6796 (140.50x) | 40495 (531.30x) |
-| `hs_black_higher_equal_spade` | 1 | 24 (1.40x) | 37428 (140.50x) | 12221 (531.30x) |
-| `hs_black_lower_inside_heart` | 1 | 130 (1.40x) | 26740 (93.20x) | 35290 (370.50x) |
-| `hs_black_lower_inside_diamond` | 1 | 130 (1.40x) | 25556 (93.20x) | 3911 (370.50x) |
-| `hs_black_lower_inside_club` | 1 | 130 (1.40x) | 32482 (93.20x) | 58998 (370.50x) |
-| `hs_black_lower_inside_spade` | 1 | 130 (1.40x) | 49087 (119.00x) | 6363 (440.30x) |
-| `hs_black_lower_outside_heart` | 1 | 35 (1.40x) | 7640 (21.80x) | 29717 (85.80x) |
-| `hs_black_lower_outside_diamond` | 1 | 95 (1.40x) | 32495 (21.80x) | 454 (85.80x) |
-| `hs_black_lower_outside_club` | 1 | 35 (1.40x) | 34408 (23.50x) | 8950 (93.90x) |
-| `hs_black_lower_outside_spade` | 1 | 35 (1.40x) | 5559 (23.50x) | 2036 (93.90x) |
-| `hs_black_lower_equal_heart` | 1 | 95 (1.40x) | 28739 (140.50x) | 48026 (531.30x) |
-| `hs_black_lower_equal_diamond` | 1 | 95 (1.40x) | 28004 (140.50x) | 128284 (531.30x) |
-| `hs_black_lower_equal_club` | 1 | 95 (1.40x) | 1679 (140.50x) | 34453 (531.30x) |
-| `hs_black_lower_equal_spade` | 1 | 95 (1.40x) | 11934 (140.50x) | 133994 (531.30x) |
-| `hs_black_equal_outside_heart` | 1 | 13 (5.60x) | 468 (90.60x) | 772 (106.10x) |
-| `hs_black_equal_outside_diamond` | 1 | 14 (5.60x) | 13 (90.60x) | 1814 (106.10x) |
-| `hs_black_equal_outside_club` | 1 | 13 (5.60x) | 767 (90.60x) | 1211 (106.10x) |
-| `hs_black_equal_outside_spade` | 1 | 13 (5.60x) | 86 (90.60x) | 1080 (106.10x) |
-| `hs_black_equal_equal_heart` | 1 | 13 (5.40x) | 18206 (1771.80x) | 1641 (1910.20x) |
-| `hs_black_equal_equal_diamond` | 1 | 13 (5.40x) | 5480 (1771.80x) | 6934 (1910.20x) |
-| `hs_black_equal_equal_club` | 1 | 13 (5.40x) | 26214 (1771.80x) | 2616 (1910.20x) |
-| `hs_black_equal_equal_spade` | 1 | 13 (5.40x) | 2454 (1771.80x) | 283 (1910.20x) |
+| Bet mode | Loss | Normal win | Big win | Win cap | Bust + win | 2nd chance |
+|---|---|---|---|---|---|---|
+| `hs_red_higher_inside_heart` | 0 | 9 (1.40x) | 28969 (103.10x) | 45449 (402.20x) | 5025 (14.50x) | - (-) |
+| `hs_red_higher_inside_diamond` | 0 | 9 (1.40x) | 40338 (93.20x) | 36592 (370.50x) | 2269 (21.40x) | - (-) |
+| `hs_red_higher_inside_club` | 0 | 9 (1.40x) | 16200 (93.20x) | 34303 (370.50x) | 2269 (21.40x) | - (-) |
+| `hs_red_higher_inside_spade` | 0 | 9 (1.40x) | 95907 (95.60x) | 60169 (370.50x) | 2269 (21.40x) | - (-) |
+| `hs_red_higher_outside_heart` | 0 | 245 (1.40x) | 129 (21.80x) | 2484 (85.80x) | - (-) | - (-) |
+| `hs_red_higher_outside_diamond` | 0 | 69 (1.40x) | 5115 (23.50x) | 42163 (93.90x) | - (-) | - (-) |
+| `hs_red_higher_outside_club` | 0 | 69 (1.40x) | 6528 (21.80x) | 67533 (85.80x) | - (-) | - (-) |
+| `hs_red_higher_outside_spade` | 0 | 69 (1.40x) | 18334 (21.80x) | 40267 (85.80x) | - (-) | - (-) |
+| `hs_red_higher_equal_heart` | 0 | 9 (1.40x) | 23887 (140.50x) | 127222 (531.30x) | 31 (28.30x) | - (-) |
+| `hs_red_higher_equal_diamond` | 0 | 9 (1.40x) | 7579 (140.50x) | 20719 (531.30x) | 31 (28.30x) | - (-) |
+| `hs_red_higher_equal_club` | 0 | 9 (1.40x) | 5765 (129.40x) | 14491 (489.40x) | 31 (28.30x) | - (-) |
+| `hs_red_higher_equal_spade` | 0 | 9 (1.40x) | 98028 (140.50x) | 38589 (531.30x) | 1483 (28.30x) | - (-) |
+| `hs_red_lower_inside_heart` | 0 | 135 (1.40x) | 72623 (111.90x) | 90758 (440.30x) | 552 (14.50x) | - (-) |
+| `hs_red_lower_inside_diamond` | 0 | 188 (1.40x) | 39846 (101.20x) | 22769 (402.20x) | 11442 (14.50x) | - (-) |
+| `hs_red_lower_inside_club` | 0 | 135 (1.40x) | 18111 (86.40x) | 22005 (343.60x) | 552 (14.50x) | - (-) |
+| `hs_red_lower_inside_spade` | 0 | 135 (1.40x) | 68526 (93.20x) | 14001 (370.50x) | 552 (14.50x) | - (-) |
+| `hs_red_lower_outside_heart` | 0 | 223 (1.40x) | 16053 (23.50x) | 45389 (93.90x) | - (-) | - (-) |
+| `hs_red_lower_outside_diamond` | 0 | 89 (1.40x) | 10256 (23.50x) | 61998 (93.90x) | - (-) | - (-) |
+| `hs_red_lower_outside_club` | 0 | 89 (1.40x) | 13998 (21.80x) | 16964 (85.80x) | - (-) | - (-) |
+| `hs_red_lower_outside_spade` | 0 | 89 (1.40x) | 12844 (21.80x) | 11086 (85.80x) | - (-) | - (-) |
+| `hs_red_lower_equal_heart` | 0 | 188 (1.40x) | 1190 (140.50x) | 11299 (531.30x) | 487 (28.30x) | - (-) |
+| `hs_red_lower_equal_diamond` | 0 | 188 (1.40x) | 8332 (140.50x) | 51317 (531.30x) | 487 (28.30x) | - (-) |
+| `hs_red_lower_equal_club` | 0 | 188 (1.40x) | 721 (129.40x) | 624 (489.40x) | 487 (28.30x) | - (-) |
+| `hs_red_lower_equal_spade` | 0 | 188 (1.40x) | 17187 (140.50x) | 20230 (531.30x) | 624 (28.30x) | - (-) |
+| `hs_red_equal_outside_heart` | 0 | 85 (5.60x) | 172 (90.60x) | 167 (106.10x) | - (-) | - (-) |
+| `hs_red_equal_outside_diamond` | 0 | 85 (5.60x) | 116 (90.60x) | 232 (106.10x) | - (-) | - (-) |
+| `hs_red_equal_outside_club` | 0 | 116 (5.60x) | 85 (90.60x) | 931 (106.10x) | - (-) | - (-) |
+| `hs_red_equal_outside_spade` | 0 | 85 (5.60x) | 197 (90.60x) | 1212 (106.10x) | - (-) | - (-) |
+| `hs_red_equal_equal_heart` | 0 | 85 (5.40x) | 20751 (1771.80x) | 975 (1910.20x) | 1393 (110.50x) | - (-) |
+| `hs_red_equal_equal_diamond` | 0 | 85 (5.40x) | 14533 (1771.80x) | 7434 (1910.20x) | 975 (110.50x) | - (-) |
+| `hs_red_equal_equal_club` | 0 | 85 (5.40x) | 58123 (1771.80x) | 3698 (1910.20x) | 975 (110.50x) | - (-) |
+| `hs_red_equal_equal_spade` | 0 | 85 (5.40x) | 22780 (1771.80x) | 1393 (1910.20x) | 975 (110.50x) | - (-) |
+| `hs_black_higher_inside_heart` | 1 | 203 (1.40x) | 96931 (101.20x) | 50092 (402.20x) | 1430 (21.40x) | - (-) |
+| `hs_black_higher_inside_diamond` | 1 | 203 (1.40x) | 60528 (93.20x) | 36314 (370.50x) | 8462 (21.40x) | - (-) |
+| `hs_black_higher_inside_club` | 1 | 203 (1.40x) | 92550 (101.20x) | 72069 (402.20x) | 1430 (21.40x) | - (-) |
+| `hs_black_higher_inside_spade` | 1 | 203 (1.40x) | 5178 (111.90x) | 78299 (440.30x) | 1430 (21.40x) | - (-) |
+| `hs_black_higher_outside_heart` | 1 | 24 (1.40x) | 31492 (21.80x) | 25153 (85.80x) | - (-) | - (-) |
+| `hs_black_higher_outside_diamond` | 1 | 24 (1.40x) | 7973 (21.80x) | 60810 (85.80x) | - (-) | - (-) |
+| `hs_black_higher_outside_club` | 1 | 24 (1.40x) | 8176 (23.50x) | 54046 (93.90x) | - (-) | - (-) |
+| `hs_black_higher_outside_spade` | 1 | 24 (1.40x) | 51871 (23.50x) | 282 (93.90x) | - (-) | - (-) |
+| `hs_black_higher_equal_heart` | 1 | 24 (1.40x) | 40371 (140.50x) | 72890 (531.30x) | 796 (28.30x) | - (-) |
+| `hs_black_higher_equal_diamond` | 1 | 24 (1.40x) | 21 (129.40x) | 29007 (489.40x) | 1753 (14.40x) | - (-) |
+| `hs_black_higher_equal_club` | 1 | 24 (1.40x) | 6796 (140.50x) | 40495 (531.30x) | 796 (28.30x) | - (-) |
+| `hs_black_higher_equal_spade` | 1 | 24 (1.40x) | 37428 (140.50x) | 12221 (531.30x) | 796 (28.30x) | - (-) |
+| `hs_black_lower_inside_heart` | 1 | 130 (1.40x) | 26740 (93.20x) | 35290 (370.50x) | 95 (14.50x) | - (-) |
+| `hs_black_lower_inside_diamond` | 1 | 130 (1.40x) | 25556 (93.20x) | 3911 (370.50x) | 95 (14.50x) | - (-) |
+| `hs_black_lower_inside_club` | 1 | 130 (1.40x) | 32482 (93.20x) | 58998 (370.50x) | 3911 (21.40x) | - (-) |
+| `hs_black_lower_inside_spade` | 1 | 130 (1.40x) | 49087 (119.00x) | 6363 (440.30x) | 95 (14.50x) | - (-) |
+| `hs_black_lower_outside_heart` | 1 | 35 (1.40x) | 7640 (21.80x) | 29717 (85.80x) | - (-) | - (-) |
+| `hs_black_lower_outside_diamond` | 1 | 95 (1.40x) | 32495 (21.80x) | 454 (85.80x) | - (-) | - (-) |
+| `hs_black_lower_outside_club` | 1 | 35 (1.40x) | 34408 (23.50x) | 8950 (93.90x) | - (-) | - (-) |
+| `hs_black_lower_outside_spade` | 1 | 35 (1.40x) | 5559 (23.50x) | 2036 (93.90x) | - (-) | - (-) |
+| `hs_black_lower_equal_heart` | 1 | 95 (1.40x) | 28739 (140.50x) | 48026 (531.30x) | 204 (14.40x) | - (-) |
+| `hs_black_lower_equal_diamond` | 1 | 95 (1.40x) | 28004 (140.50x) | 128284 (531.30x) | 28 (28.30x) | - (-) |
+| `hs_black_lower_equal_club` | 1 | 95 (1.40x) | 1679 (140.50x) | 34453 (531.30x) | 28 (28.30x) | - (-) |
+| `hs_black_lower_equal_spade` | 1 | 95 (1.40x) | 11934 (140.50x) | 133994 (531.30x) | 28 (28.30x) | - (-) |
+| `hs_black_equal_outside_heart` | 1 | 13 (5.60x) | 468 (90.60x) | 772 (106.10x) | - (-) | - (-) |
+| `hs_black_equal_outside_diamond` | 1 | 14 (5.60x) | 13 (90.60x) | 1814 (106.10x) | - (-) | - (-) |
+| `hs_black_equal_outside_club` | 1 | 13 (5.60x) | 767 (90.60x) | 1211 (106.10x) | - (-) | - (-) |
+| `hs_black_equal_outside_spade` | 1 | 13 (5.60x) | 86 (90.60x) | 1080 (106.10x) | - (-) | - (-) |
+| `hs_black_equal_equal_heart` | 1 | 13 (5.40x) | 18206 (1771.80x) | 1641 (1910.20x) | 283 (110.50x) | - (-) |
+| `hs_black_equal_equal_diamond` | 1 | 13 (5.40x) | 5480 (1771.80x) | 6934 (1910.20x) | 283 (110.50x) | - (-) |
+| `hs_black_equal_equal_club` | 1 | 13 (5.40x) | 26214 (1771.80x) | 2616 (1910.20x) | 283 (110.50x) | - (-) |
+| `hs_black_equal_equal_spade` | 1 | 13 (5.40x) | 2454 (1771.80x) | 283 (1910.20x) | 1641 (110.50x) | - (-) |
 
 
 ## Notes

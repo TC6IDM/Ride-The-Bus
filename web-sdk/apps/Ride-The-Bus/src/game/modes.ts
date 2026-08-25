@@ -26,6 +26,8 @@
  * bet is simply rejected.
  */
 
+import { MODE_CEILINGS } from './modeCeilings.ts';
+
 export const COLOR_CHOICES = ['red', 'black'] as const;
 export const HIGHER_LOWER_CHOICES = ['higher', 'lower', 'equal'] as const;
 export const INSIDE_OUTSIDE_CHOICES = ['inside', 'outside', 'equal'] as const;
@@ -266,6 +268,35 @@ export function parseModeName(mode: string): ParsedMode | null {
     insideOutside: insideOutside as InsideOutsideChoice,
     suit: suit as SuitChoice,
   };
+}
+
+/**
+ * The most a given bet mode can actually pay, as a multiple of the bet.
+ *
+ * DIFFERENT FROM `FAMILY_RULES[f].maxWin`, AND BOTH ARE WANTED. That one is the
+ * most the FAMILY can reach - the right headline for a player choosing between
+ * Classic, Second Chance and High Stakes, because some combination in it does
+ * reach that figure. This one is the most THIS BET can reach, and for most bets
+ * it is far lower: only 8 of the 64 combinations in each family touch their
+ * family's ceiling, and the median Classic mode stops at 268.8x against a
+ * stated 1354.2x.
+ *
+ * Stake asks for the maximum win to be stated per bet mode and to be
+ * realistically obtainable, and every published combination is its own bet
+ * mode - so quoting only the family figure told 56 of 64 modes they could reach
+ * something they cannot.
+ *
+ * Read from a generated table rather than enumerated here. The theoretical
+ * ceiling of a combination IS derivable from payout.ts, and it is the wrong
+ * number: the RGS can only pay what its lookup table holds, and the published
+ * tables are sampled, so an enumeration would overstate about half the modes.
+ * See modeCeilings.ts for the measurement that settles it.
+ *
+ * Returns null for a string that is not a published mode, so a caller can fall
+ * back to the family figure rather than printing a broken one.
+ */
+export function ceilingFor(mode: string): number | null {
+  return MODE_CEILINGS[mode] ?? null;
 }
 
 /**

@@ -171,6 +171,19 @@
 	font-variant-numeric: tabular-nums;
 }
 
+/* The ceiling of the four guesses actually on the board, under the family's own
+   figure. Deliberately quieter than .mode-panel-max and NOT in --tint: the two
+   are different claims and the headline is the one a player is choosing
+   between, so this reads as the qualifier it is rather than competing with it.
+   Two figures at the same weight in the same colour would be the "two units on
+   one screen" bug this project keeps hitting. */
+.mode-panel-picked {
+	margin: calc(var(--ui-bar) * 0.2) 0 0;
+	font-size: calc(var(--ui-bar) * 1.02);
+	color: var(--ink-dim);
+	font-variant-numeric: tabular-nums;
+}
+
 /* Sub-heading inside the mode panel. Quieter than .info-h, which marks the
    screen's top-level sections - these sit one level down, inside one of them. */
 .info-sub {

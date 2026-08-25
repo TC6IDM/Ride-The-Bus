@@ -284,4 +284,13 @@ export default {
 	'Skip the card reveal during autoplay': 'Skip the card reveal during autoplay',
 	'Skip win animations on autoplay': 'Skip win animations on autoplay',
 	'Skip big win animations during autoplay': 'Skip big win animations during autoplay',
+	'Your four guesses top out at %s your bet.':
+		'Your four guesses top out at %s your bet.',
+	'Play Again': 'Play Again',
+	'The round ends and pays nothing.':
+		'The round ends and pays nothing.',
+	'The round ends, keeping %s% of what you had built.':
+		'The round ends, keeping %s% of what you had built.',
+	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
+		'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.',
 };

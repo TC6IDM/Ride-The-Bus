@@ -235,4 +235,13 @@ export default {
 		'4. kartın türünü tahmin edin: kupa, karo, sinek veya maça.',
 	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
 		'Eşit seçtiniz, yani 1. ve 2. kartlar aynı değerde. Aralarına hiçbir şey giremez, bu yüzden İçeride kazanamaz.',
+	'Your four guesses top out at %s your bet.':
+		'Dört tahmininiz en fazla bahsinizin %s katına ulaşır.',
+	'Play Again': 'Tekrar oynat',
+	'The round ends and pays nothing.':
+		'Tur sona erer ve hiçbir ödeme yapılmaz.',
+	'The round ends, keeping %s% of what you had built.':
+		'Tur sona erer ve biriktirdiğinizin %s% kadarını korursunuz.',
+	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
+		'2. karttan itibaren bu hata affedilir — biriktirdiğinizin %s% kadarını korur ve tur devam eder.',
 };

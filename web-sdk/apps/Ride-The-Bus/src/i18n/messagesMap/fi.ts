@@ -235,4 +235,13 @@ export default {
 		'Arvaa kortin 4 maa: hertta, ruutu, risti vai pata.',
 	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
 		'Valitsit Yhtä suuri, joten korteilla 1 ja 2 on sama arvo. Niiden väliin ei mahdu mitään, joten Sisällä ei voi voittaa.',
+	'Your four guesses top out at %s your bet.':
+		'Neljä arvaustasi yltävät enintään %s panoksestasi.',
+	'Play Again': 'Toista uudelleen',
+	'The round ends and pays nothing.':
+		'Kierros päättyy eikä maksa mitään.',
+	'The round ends, keeping %s% of what you had built.':
+		'Kierros päättyy ja säilytät %s% kertyneestä.',
+	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
+		'Kortista 2 alkaen se annetaan anteeksi — säilytät %s% kertyneestä ja kierros jatkuu.',
 };

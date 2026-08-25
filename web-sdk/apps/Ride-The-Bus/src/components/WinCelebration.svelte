@@ -35,7 +35,7 @@
 	 * index.html, and "optimised bundle size" is an explicit 3-star criterion -
 	 * so a sprite sheet for one screen would be a bad trade.
 	 */
-	import { base } from '$app/paths';
+	import { logoAsset } from '../game/logoAsset.svelte';
 	import { numberToCurrencyString } from 'utils-shared/amount';
 	import { labelEms } from '../game/typeFit';
 
@@ -616,7 +616,7 @@
 	role="button"
 	tabindex="0"
 	aria-label={ariaLabel()}
-	style={`--logo-url: url(${base}/logo.png)`}
+	style={`--logo-url: url(${logoAsset.url})`}
 	onclick={onTap}
 	onkeydown={onKey}
 >

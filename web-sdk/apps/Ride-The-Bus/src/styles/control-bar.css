@@ -456,6 +456,28 @@
    with. */
 
 /* Little arrow pointing down at the button. */
+/* "Play Again" under the spin button in a finished replay.
+   Out of flow for the same reason the tooltip is: the control bar's height is
+   solved from a real width budget and a caption in flow would push it into a
+   second row at the narrow sizes. Sits BELOW the button rather than above,
+   where the tooltip lives, so the two can never overlap - a replay can be both
+   finished and hovered. */
+.cb-spin-caption {
+  position: absolute;
+  top: calc(100% + var(--ui-bar) * 0.3);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 55;
+  color: var(--gold-bright);
+  font-size: calc(var(--ui-bar) * 0.95);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow: 0 1px 3px rgba(var(--shadow-rgb), 0.8);
+}
+
 .cb-cooldown-tip::after {
   content: '';
   position: absolute;

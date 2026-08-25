@@ -160,6 +160,15 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 	// "auto play" everywhere else in social mode, so these follow suit.
 	'Skip win animations on autoplay': 'Skip win animations on auto play',
 	'Skip big win animations during autoplay': 'Skip big win animations during auto play',
+
+	// Per-mode ceiling, shown beside the family figure. "bet" is restricted.
+	'Your four guesses top out at %s your bet.':
+		'Your four guesses top out at %s your play amount.',
+
+	// "pays" is on Stake's prohibited list. This sentence used to be rendered
+	// raw rather than through t(), so the social map could not reach it at all.
+	'The round ends and pays nothing.':
+		'The round ends and wins nothing.',
 };
 
 export default socialMessages;

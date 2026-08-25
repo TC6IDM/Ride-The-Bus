@@ -2,7 +2,11 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<link rel="icon" href="%sveltekit.assets%/logo.png" />
+		<!-- 64x64, not the full logo. This used to point at logo.png, which is
+		     710x710 and 743 kB - a three-quarter-megabyte download on every cold
+		     load, for a 16px tab icon, fetched before anything the player can
+		     see. Same artwork, 10 kB. -->
+		<link rel="icon" type="image/png" href="%sveltekit.assets%/favicon.png" />
 		<title>Ride The Bus — Takeover Casino</title>
 		<!-- No external stylesheet here. This used to load use.typekit.net, which
 		     serves proxima-nova and brandon-grotesque - the SDK sample's fonts,

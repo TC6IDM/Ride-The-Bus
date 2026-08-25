@@ -239,6 +239,54 @@ rounding it to 2.0× would wipe out the house edge.
     Chance, the same 1-in-70 event that takes the screen over in Classic, which
     paid in silence below 11×. Classic and High Stakes have no forgiveness, so
     `forgivenIndex` is structurally always null there and they are untouched.
+- **`FAMILY_RULES[f].maxWin` and `MODE_CEILINGS[mode]` are different numbers
+  and both are needed.** The family figure is the most that FAMILY can reach and
+  is the right headline for a mode a player is choosing between — some
+  combination in it really does pay that. But every four-guess combination is
+  its own published bet mode, and only **8 of each family's 64** reach the family
+  figure: Classic runs 68.2× to 1354.2× with a median of 268.8×, so the headline
+  alone overstated the typical bet about fivefold. Stake asks for the maximum win
+  to be stated per bet mode and to be realistically obtainable, so How to Play
+  and the mode-switch confirmation state both, the second suppressed when the two
+  are equal.
+  - **The ceilings come from the build, never from enumeration.** The
+    theoretical maximum of a combination IS derivable from `payout.ts`, and it is
+    the wrong number: the RGS can only pay what its lookup table holds, and the
+    published tables are *sampled*. That is measurable rather than assumed —
+    heart and diamond are both red, so for a fixed colour + higher/lower +
+    inside/outside they must share a theoretical ceiling, and **24 of the 48
+    groups disagree** (`base/red/higher/inside` is
+    `{heart: 290.9, diamond: 268.8, club: 268.8, spade: 268.8}`). An enumeration
+    would therefore print a figure ABOVE what the mode can pay on about half of
+    them, which is the exact overstatement being fixed.
+  - `scripts/mode-ceilings.js` writes `game/modeCeilings.ts` from
+    `stats_summary.json`; `run.py` calls it beside `replay-events.js` at the end
+    of every build. The generated `.ts` is **committed**, because the library is
+    not. `modeCeilings.test.ts` pins it against the build when one is present.
+  - **The win-tier ladder is deliberately NOT wired to it.** Max Win stays pinned
+    to `FAMILY_RULES[f].maxWin`, so it fires only on a round that reaches the
+    family's stated figure. A mode reaching its own lower ceiling is not a max
+    win — the claim is about one reachable number per family, and softening it
+    would make the rarest screen in the game routine.
+- **A `?lang=` value is resolved against the shipped locales BEFORE it is
+  activated.** An unknown-but-well-formed tag is harmless — `t()` falls back to
+  English and then to the key, which IS the English text. A **malformed** one is
+  not: `LoadI18n` activates whatever it is handed, Lingui passes that to
+  `Intl.NumberFormat` on every `i18n.number()`, and Intl throws a RangeError
+  rather than degrading. `numberToCurrencyString` draws the balance, the last
+  win, the bet display, the running win, the takeover amount and every bet chip,
+  so `?lang=en_US` emptied the whole board. `?lang=xx` is fine; `?lang=en_US`,
+  `?lang=zz!!` and `?lang=en;a` all throw. Stake's PreChecks name it directly.
+  - `utils-shared/language.ts` holds the resolver, beside `currency.ts` and for
+    the same reason: a node test can reach it without dragging state-shared and
+    SvelteKit's `$app/*` virtuals in behind it. `stateUrl.svelte.ts` imports it
+    by **relative path**, because utils-shared already depends on state-shared
+    and importing back by package name would put a cycle in the manifests.
+  - It also aliases **`po` → `pl`**. `po` is Stake's own code for Polish in its
+    supported-languages list; every catalogue in this repo is named `pl`, so
+    without the alias a Polish session silently got English number formatting.
+  - `numberToCurrencyString` keeps a `try`/`catch` around the format call
+    regardless. A formatter that throws must never be able to empty the board.
 - **Anything restoring a mode from a slug must apply `parsed.family`, not just
   the four guesses.** `parseModeName` returns five fields; the replay and resume
   effects in `Game.svelte` consumed four and dropped the family, which left a
@@ -561,6 +609,21 @@ rounding it to 2.0× would wipe out the house edge.
     pass. `betChips.test.ts` pins the reset, and the way to check it is to walk
     the live DOM for anything not drawing in Poppins — not to read CSS.
   - Stake names "standard fonts" as a top cause of a 1-star rating.
+- **The logo is WebP, with the PNG as a real fallback, and the choice is made
+  in JS rather than in CSS.** `logo.webp` is 81 KB against the PNG's 743 KB and
+  is indistinguishable at the 310 CSS px the loader draws it at — the largest
+  size anywhere in the game. The obvious CSS spelling does not work here twice
+  over: the six call sites pass the URL through a custom property, and a `var()`
+  resolving to something unusable is invalid *at computed-value time*, which
+  resets the property to `none` instead of falling back to the declaration above
+  it — the logo would simply vanish. Wrapping it in `@supports` fixes that and
+  tests the wrong thing: **Safari 14–16 read WebP and do not support
+  `image-set()` with `type()`**, so three major versions would be handed the
+  743 KB file for nothing. `game/logoAsset.svelte.ts` probes a 34-byte WebP data
+  URI instead, defaults to the WebP so the saving is real, and only ever moves
+  downwards. **Not** a `canvas.toDataURL('image/webp')` probe, which is the usual
+  one-liner and is wrong for exactly the browsers it exists to protect: Safari
+  could decode WebP from 14 but could not encode it until 17.
 - **Glyphs are drawn when, and only when, the font does not own them.** Poppins
   is self-hosted latin-only, and `✕` U+2715, `✓` U+2713, `→` U+2192 and the four
   suits fall outside every declared `unicode-range` — they dropped to the system
@@ -666,10 +729,19 @@ between a one-row bar and a two-row one.
 
 ## Current state
 
-496/496 tests, 0 type errors, 0 CSS warnings, lint clean, and the
+556/556 tests, 0 type errors, 0 CSS warnings, lint clean, and the
 client reproduces all 76,800 published books exactly. The published math build
 (192 modes, RTP 96.0000% everywhere, spread 0.000000%, zero volatility
-violations) is generated and committed.
+violations) is generated.
+
+**It is NOT committed**, and the note here used to say it was. `math-sdk/.gitignore`
+line 9 is `**/library/**`, so `git ls-files` on the library returns nothing: the
+1.6 GB of books, lookup tables and `stats_summary.json` exist only on the machine
+that built them. Two things follow. A fresh clone cannot reproduce the books
+without a 40-minute rebuild, and every test that reads the math tree
+(`payout.test.ts`, `volatility.test.ts`, `modeCeilings.test.ts`) silently skips
+there rather than failing — which is deliberate, but only safe while it is
+written down.
 
 `npm run lint` works again — `eslint.config.js` (flat) was added because ESLint 9
 ignores the `.eslintrc.cjs` every app in the vendored SDK still ships. The old
@@ -837,16 +909,19 @@ look.**
   the back's own edge and a real corner index. The audit that drove it found
   5 critical / 10 major / 5 minor.
 
-  **Still open:** `static/` holds `logo.png` (726 KB, drawn at ~150 px — it wants
-  sized variants or an SVG) plus the two tile files. Whether the game needs any
+  **Assets, done:** `static/` holds `logo.webp` (81 KB) with `logo.png`
+  (743 KB) kept only as the fallback, plus `favicon.png` at 10 KB. A cold load
+  now fetches **90 KB of images against 743 KB before** — the favicon used to be
+  the full 710×710 logo, three quarters of a megabyte for a 16 px tab icon,
+  fetched before anything a player can see. Whether the game needs any
   *bitmap* art at all is still a judgement call: the table scene is hand-sampled
   CSS and is the best work in the repo, so the honest risk is not "no assets" but
   "does a reviewer read CSS art as art". Note the tension before adding any:
   `config-svelte` sets `bundleStrategy: "inline"`, so anything Vite processes is
   base64'd into `index.html`, and bundle size is itself a 3-star criterion —
   ship art from `static/` via `${base}/…` like `logo.png` does, not through Vite.
-- **REP-02.** A replay on the Stake site showed bet amount 1000 where the game
-  rendered 1 — an exact 1000× gap pointing at a units convention. Stake documents
+- **REP-02 — deliberately deferred, not forgotten.** A replay on the Stake site
+  showed bet amount 1000 where the game rendered 1 — an exact 1000× gap pointing at a units convention. Stake documents
   `?amount=` as "bet amount in units" and the RGS speaks micro-units, which is
   what `Authenticate.svelte:121-122` assumes. Capturing the answer is now one
   console line: paste a Stake replay query string onto `localhost:3001` (replay
@@ -862,8 +937,14 @@ look.**
 - Open naming question: "High Stakes" implies a cost premium it no longer
   charges.
 - **Approval-checklist gaps still open** (all from the verbatim criteria below):
-  - Replay re-watch works, but through the spin button. The checklist asks for a
-    **"Play Again"** button — a relabel in replay mode, not new behaviour.
+  - ~~Replay "Play Again" button~~ — **closed.** The spin button already
+    re-ran the round; it now says so. `replayFinished()` drives both the
+    accessible name and a visible gold caption under the button. A caption
+    rather than a label inside the disc: the button is 44 px and the words do
+    not fit, and the deal glyph is still the right picture — it deals the same
+    four cards again. Positioned out of flow like the tooltip, so it cannot add
+    a row to a bar whose height budget is the tightest thing in the layout.
+    Verified at Desktop, Popout S and Mobile M.
   - Touch targets **re-measured at every target viewport and clear the 24 px
     WCAG AA floor everywhere** — guess segments 29/35/39 px at 320/375/425,
     equal-badge tap area `min(32px, 45% of the square)`, bar icons 36 px. The
@@ -886,10 +967,17 @@ look.**
       table's deck prop *is* the Takeover Casino mark. Kept as two files because
       they have different owners — one is resolved through `${base}/logo.png`,
       the other's filename is dictated by Stake.
-    - Still open on assets: `logo.png` is 710×710 at 726 KB and is drawn at
-      ~150 px. Sized variants or an SVG would be the single biggest bundle win
-      left. README's older 4-layer Tile Editor description has been corrected.
-  - The 52 live-session checks in `RGS_TEST_PLAN.md` remain unrun.
+    - `logo.png` is now the WebP's fallback rather than the file the game
+      loads, so it stays at 710×710 and byte-identical to the tile asset.
+      README's older 4-layer Tile Editor description has been corrected.
+  - **The live-session checks in `RGS_TEST_PLAN.md` remain unrun — now 94, not
+    52.** The plan was strong on this project's own regression history and thin
+    on the criteria Stake publishes; 33 were added covering the spacebar binding,
+    the mute control, autoplay confirmation, an invalid `rgs_url`, a malformed
+    `?lang=`, min/max bet selectability, the paytable and UI guide, double-tap
+    zoom, the frame never scrolling, Play Again, replay in Popout S, and two new
+    sections — **13 · Stake.US and social mode** and **14 · Performance** — that
+    had no coverage at all.
   - **Closed on `ui-art-pass`, listed so they are not re-opened by accident:**
     - *"High cost bet modes require confirmation before activation."* The mode
       picker now proposes rather than applies: picking a different family shows

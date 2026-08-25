@@ -1,4 +1,8 @@
 import { locales } from 'config-lingui';
+// Relative, not `from 'utils-shared/language'`: utils-shared already depends on
+// state-shared, so importing it back by package name would put a cycle in the
+// manifests. language.ts imports nothing, so the module graph stays acyclic.
+import { resolveLanguage } from '../../utils-shared/language';
 import { page } from '$app/state';
 
 export type Language = (typeof locales)[number];
@@ -37,10 +41,30 @@ const getUrlSearchParam = (...keys: Key[]) => {
 };
 
 // params for play
+/**
+ * LOCAL ADDITION to the Stake SDK - re-apply if this package is updated from
+ * upstream. This used to cast the raw parameter straight to `Language`, with a
+ * single special case for 'br'. Anything else went through untouched - and an
+ * unrecognised-but-well-formed tag is harmless, while a MALFORMED one is not:
+ * LoadI18n activates it, and Lingui then hands it to Intl.NumberFormat on every
+ * i18n.number() call, which throws a RangeError rather than degrading.
+ *
+ *     ?lang=xx     -> fine, Intl accepts any well-formed tag
+ *     ?lang=en_US  -> RangeError: Incorrect locale information provided
+ *     ?lang=zz!!   -> RangeError
+ *
+ * numberToCurrencyString is what draws the balance, the last win, the bet
+ * display and every bet chip, so one underscore in the URL emptied the board.
+ * Stake's PreChecks name it: "Invalid language parameters do not break game
+ * display."
+ *
+ * Resolved against the locales actually shipped, so only a code with a
+ * catalogue behind it can ever be activated. The 'br' case moved into
+ * LANGUAGE_ALIASES alongside 'po' - Stake's own code for Polish, where every
+ * catalogue in this repo is named 'pl'. See utils-shared/language.ts.
+ */
 const lang = () =>
-getUrlSearchParam('lang', 'language') === 'br'
-	? 'pt'
-	: (getUrlSearchParam('lang', 'language') as Language) || 'en';
+	resolveLanguage(getUrlSearchParam('lang', 'language'), locales) as Language;
 const sessionID = () => getUrlSearchParam('sessionID', 'sessionId') || '';
 const rgsUrl = () => getUrlSearchParam('rgs_url', 'rgsUrl') || '';
 const social = () => getUrlSearchParam('social') === 'true';

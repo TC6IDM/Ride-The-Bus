@@ -236,4 +236,13 @@ export default {
 		'Đoán chất của lá bài 4: cơ, rô, tép hay bích.',
 	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
 		'Bạn đã chọn Bằng, nên lá 1 và lá 2 cùng giá trị. Không có gì nằm giữa chúng, vì vậy Trong không thể thắng.',
+	'Your four guesses top out at %s your bet.':
+		'Bốn dự đoán của bạn tối đa đạt %s tiền cược.',
+	'Play Again': 'Phát lại',
+	'The round ends and pays nothing.':
+		'Vòng chơi kết thúc và không trả gì.',
+	'The round ends, keeping %s% of what you had built.':
+		'Vòng chơi kết thúc, giữ lại %s% số đã tích lũy.',
+	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
+		'Từ lá 2 trở đi, sai lầm này được bỏ qua — bạn giữ %s% số đã tích lũy và vòng chơi tiếp tục.',
 };

@@ -236,4 +236,13 @@ export default {
 		'Zgadnij kolor karty 4: kier, karo, trefl czy pik.',
 	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
 		'Wybrałeś Równe, więc karty 1 i 2 mają tę samą wartość. Nic nie zmieści się między nimi, więc Wewnątrz nie może wygrać.',
+	'Your four guesses top out at %s your bet.':
+		'Twoje cztery typy sięgają maksymalnie %s twojej stawki.',
+	'Play Again': 'Odtwórz ponownie',
+	'The round ends and pays nothing.':
+		'Runda kończy się i nic nie wypłaca.',
+	'The round ends, keeping %s% of what you had built.':
+		'Runda kończy się, a Ty zachowujesz %s% zgromadzonej kwoty.',
+	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
+		'Od karty 2 błąd jest wybaczany — zachowujesz %s% zgromadzonej kwoty, a runda trwa dalej.',
 };

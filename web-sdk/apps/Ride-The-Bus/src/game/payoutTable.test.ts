@@ -22,6 +22,18 @@ import {
 } from './localRound.ts';
 import { createDeck, rankValue, ranks } from './roundContract.ts';
 import { FAMILY_RULES, MODE_FAMILIES } from './modes.ts';
+// The bust rules are i18n KEYS now, not sentences, so the assertions below
+// render them the way HowToPlayPopup does. That makes this test strictly
+// stronger than it was: it checks the English catalogue copy as well as the
+// maths, and it fails if a key is ever added here without one.
+import en from '../i18n/messagesMap/en.ts';
+import type { BustRow } from './payoutTable.ts';
+
+const render = (row: BustRow) => {
+	const text = (en as Record<string, string>)[row.key];
+	assert.ok(text, `no English copy for the bust key "${row.key}"`);
+	return row.percent === null ? text : text.replace('%s', String(row.percent));
+};
 import { MAX_WIN_MULTIPLIER } from './winTiers.ts';
 
 const row = (stage: number, label: string) => {
@@ -149,7 +161,7 @@ describe('paytable is complete and self-consistent', () => {
 			assert.ok(rows.length >= 2, `${family} should state at least two outcomes`);
 			assert.equal(rows[0]!.label, 'Card 1', `${family} must start with card 1`);
 			for (const row of rows) {
-				assert.ok(row.detail.trim().length > 0, `${family}: empty detail`);
+				assert.ok(render(row).trim().length > 0, `${family}: empty detail`);
 			}
 		}
 	});
@@ -163,22 +175,52 @@ describe('paytable is complete and self-consistent', () => {
 		for (const family of MODE_FAMILIES) {
 			const rows = bustRowsFor(FAMILY_RULES[family]);
 			for (const row of rows) {
+				const detail = render(row);
 				assert.ok(
-					!/\d× your bet/.test(row.detail),
-					`${family}: "${row.detail}" mixes a bet multiple into the rules list`,
+					!/\d× your bet/.test(detail),
+					`${family}: "${detail}" mixes a bet multiple into the rules list`,
 				);
 			}
 		}
 	});
 
 	test('each family quotes its own retention', () => {
-		assert.match(bustRowsFor(FAMILY_RULES.base)[1]!.detail, /30%/);
-		assert.match(bustRowsFor(FAMILY_RULES.hs)[1]!.detail, /20%/);
+		assert.match(render(bustRowsFor(FAMILY_RULES.base)[1]!), /30%/);
+		assert.match(render(bustRowsFor(FAMILY_RULES.hs)[1]!), /20%/);
 	});
 
 	test('the forgiving family describes forgiveness, not a card-2 payout', () => {
 		const rows = bustRowsFor(FAMILY_RULES.sc);
 		assert.equal(rows[1]!.label, 'Your first wrong guess');
-		assert.match(rows[1]!.detail, /forgiven/);
+		assert.match(render(rows[1]!), /forgiven/);
+	});
+
+	test('every bust sentence is a real catalogue key, in every locale', async () => {
+		// THE BUG THIS EXISTS FOR. These sentences used to be built as already
+		// substituted English and rendered raw as `{row.detail}`, so they were the
+		// one block of player-visible copy that never went through t(). Two things
+		// followed and no test could see either: the "If you guess wrong" section
+		// read in English in all sixteen other locales, and in social mode "the
+		// round ends and PAYS nothing" survived - a term Stake prohibits outright.
+		// locales.test.ts walks the catalogues, and these strings were not in one.
+		const { readdirSync } = await import('node:fs');
+		const pathMod = await import('node:path');
+		const { fileURLToPath } = await import('node:url');
+		const here = pathMod.dirname(fileURLToPath(import.meta.url));
+		const dir = pathMod.join(here, '../i18n/messagesMap');
+		const locales = readdirSync(dir)
+			.filter((f) => f.endsWith('.ts') && f !== 'index.ts' && !f.endsWith('.test.ts'))
+			.map((f) => f.replace(/\.ts$/, ''));
+		assert.equal(locales.length, 16, 'expected sixteen catalogues');
+
+		const keys = new Set(
+			MODE_FAMILIES.flatMap((f) => bustRowsFor(FAMILY_RULES[f]).map((r) => r.key)),
+		);
+		for (const locale of locales) {
+			const mod = (await import(`../i18n/messagesMap/${locale}.ts`)).default as Record<string, string>;
+			for (const key of keys) {
+				assert.ok(mod[key], `${locale} has no entry for the bust sentence "${key}"`);
+			}
+		}
 	});
 });

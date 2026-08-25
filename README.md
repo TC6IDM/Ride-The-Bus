@@ -234,6 +234,38 @@ fallback.
 
 ## Submitting for approval
 
+### Read this first: three modes, 192 bet modes
+
+A reviewer opening the dashboard sees **192 bet modes** and should know why
+before counting them.
+
+A player sees **three**: Classic, Second Chance and High Stakes. But all four
+guesses are committed before the round is bought, so the guesses are part of the
+wager rather than decisions taken during it - which is what keeps every round a
+single, independent, stateless bet with no continuation and no cash-out. Each
+distinct set of guesses is therefore its own bet mode:
+
+> 3 families x 2 colours x (3 x 3 - 1) higher/lower x inside/outside pairs x 4 suits = **192**
+
+The `- 1` is Equal-then-Inside, which is impossible rather than merely unlikely:
+nothing falls strictly between two cards of the same rank, so that mode would
+lose 100% of the time, have zero variance, and be rejected by the RGS on upload.
+The client bars the same combination in the UI.
+
+Consequences worth knowing:
+
+- **All 192 cost 1.0x.** No mode is a purchase or a premium.
+- **All 192 return 96.00%**, with a spread of 0.000000%.
+- **Each has its own maximum win**, from 39.5x to 1910.2x. The three headline
+  ceilings (1354.2x / 585.2x / 1910.2x) are the most each *family* can reach,
+  and exactly 8 of each family's 64 combinations reach them. How to Play states
+  the family ceiling **and** what the four guesses currently picked top out at,
+  because Stake asks for the maximum win per bet mode and every combination is
+  one.
+- **[REPLAY_EVENTS.md](REPLAY_EVENTS.md) is the index.** It carries a loss, a
+  normal win, a big win and a win-cap simulation ID for all 192, plus two
+  round-shape scenarios, so any mode can be replayed without hunting for an ID.
+
 ### What has been checked, and what has not
 
 Verified against Stake's math, RGS and frontend approval criteria:
@@ -243,7 +275,8 @@ Verified against Stake's math, RGS and frontend approval criteria:
 | RTP 90-96.70%, all modes within 0.5% | 96.00% on every one of the 192 modes, spread 0.000000% |
 | Simulations per bet mode | 100k minimum, asserted in `run.py` |
 | Non-zero win hit rate, target better than 1 in 20 | 1 in 1.45 to 1 in 2.03 across all modes |
-| Max win obtainable, target better than 1 in 10,000,000 | 1354.2x / 585.2x / 1910.2x per family, each at about 1 in 3,830 |
+| Max win obtainable, target better than 1 in 10,000,000 | 1354.2x / 585.2x / 1910.2x per family, worst case 1 in 193,283 |
+| Max win stated per BET MODE | each of the 192 has its own ceiling; How to Play names the one for the guesses on the board |
 | No jackpot, gamble or cash-out | none - the single-bet design rules them out |
 | Static files only, no external requests | the only network call is the RGS itself |
 | Bet levels, `stepBet`, min/max from `authenticate` | honoured; nothing hardcoded |
@@ -262,7 +295,7 @@ guesses that stayed editable across the two round trips of placing a bet, and a
 replay that started animating behind the loading screen. Play real rounds
 through a Developer-page session before submitting, replay included.
 
-[RGS_TEST_PLAN.md](RGS_TEST_PLAN.md) is that pass, written out: 52 checks
+[RGS_TEST_PLAN.md](RGS_TEST_PLAN.md) is that pass, written out: 94 checks
 covering settlement, autoplay endurance, the jurisdiction flags, currency
 display, replay and the compliance surface, each with the reason it exists. It
 is weighted towards the paths the local fallback never executes, because that is

@@ -38,7 +38,21 @@
 	// stage's multiplier is solved against, so High Stakes genuinely pays
 	// different figures, and showing Classic's to a player on another mode would
 	// be the same mistake as pricing a stage one way and paying it another.
-	type Props = { onclose: () => void; family?: ModeFamily };
+	type Props = {
+		onclose: () => void;
+		family?: ModeFamily;
+		/**
+		 * The most the four guesses currently on the board would pay on a given
+		 * family, or null when they are not all picked yet.
+		 *
+		 * Passed in as a FUNCTION OF THE FAMILY rather than as a number, because
+		 * the tabs below let a player read another mode's rules without leaving
+		 * this panel - and the answer genuinely moves with the tab. High Stakes
+		 * keeps less on a miss, so the same four guesses reach a different ceiling
+		 * there than on Classic.
+		 */
+		ceilingFor?: (family: ModeFamily) => number | null;
+	};
 
 	const props: Props = $props();
 	// Which mode's rules are on screen. Starts at the live one and is only
@@ -48,6 +62,10 @@
 	const viewingRules = $derived(FAMILY_RULES[viewing]);
 	const rows = $derived(payoutRowsFor(viewingRules));
 	const bustRules = $derived(bustRowsFor(viewingRules));
+	// Null when the caller did not supply one (the popup is also reachable from
+	// the start screen, where no guesses exist yet) or when the guesses are
+	// incomplete. Either way the family figure stands alone.
+	const pickedCeiling = $derived(props.ceilingFor?.(viewing) ?? null);
 </script>
 
   <div class="popup popup-info" role="dialog" aria-label={t('How to play')}>
@@ -126,6 +144,23 @@
         <p class="mode-panel-max">
           {t('Max win')} <strong>{viewingRules.maxWin}×</strong> {t('Bet')}
         </p>
+        <!-- The figure above is the most this MODE can reach, which is the right
+             headline for a mode a player is choosing between: some combination
+             in it really does pay that. It is not what the bet in front of them
+             pays. Every four-guess combination is its own published bet mode -
+             192 of them - and only 8 of each family's 64 reach the family
+             ceiling; the median Classic mode stops at 268.8x against a stated
+             1354.2x. Stake asks for the maximum win to be stated per bet mode
+             and to be realistically obtainable, so both numbers belong here,
+             clearly labelled as different things.
+
+             Suppressed when the two are equal, so the eight combinations that
+             DO reach the ceiling are not told the same number twice. -->
+        {#if pickedCeiling !== null && pickedCeiling !== viewingRules.maxWin}
+          <p class="mode-panel-picked">
+            {t('Your four guesses top out at %s your bet.').replace('%s', `${pickedCeiling}×`)}
+          </p>
+        {/if}
 
         <!-- Approval requires payout amounts stated for every pick. There is no
              fixed paytable to print - each stage pays its true odds against the
@@ -171,7 +206,10 @@
         <h5 class="info-sub">{t('If you guess wrong')}</h5>
         <ul>
           {#each bustRules as row}
-            <li><strong>{t(row.label)}</strong> — {row.detail}</li>
+            <!-- Through t(), like every other string here. It was rendered raw for
+                 a long time, which left this section English in all sixteen other
+                 locales and let "pays nothing" through in social mode. -->
+            <li><strong>{t(row.label)}</strong> — {row.percent === null ? t(row.key) : t(row.key).replace('%s', String(row.percent))}</li>
           {/each}
         </ul>
 

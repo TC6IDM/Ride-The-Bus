@@ -239,4 +239,13 @@ export default {
 		'Errate die Farbe von Karte 4: Herz, Karo, Kreuz oder Pik.',
 	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
 		'Du hast Gleich getippt, also haben Karte 1 und 2 denselben Wert. Dazwischen liegt nichts, daher kann Innen nicht gewinnen.',
+	'Your four guesses top out at %s your bet.':
+		'Deine vier Tipps erreichen höchstens %s deines Einsatzes.',
+	'Play Again': 'Erneut abspielen',
+	'The round ends and pays nothing.':
+		'Die Runde endet und zahlt nichts aus.',
+	'The round ends, keeping %s% of what you had built.':
+		'Die Runde endet, und %s% des Aufgebauten bleiben erhalten.',
+	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
+		'Ab Karte 2 wird er verziehen — %s% des Aufgebauten bleiben erhalten und die Runde geht weiter.',
 };

@@ -1,6 +1,6 @@
 # RGS verification test plan
 
-52 checks to run against the **uploaded** build on a Developer-page session,
+94 checks to run against the **uploaded** build on a Developer-page session,
 not against localhost.
 
 That distinction is the whole reason this document exists. Locally the game
@@ -45,6 +45,44 @@ Filter the console to `[RideTheBus]`. The game logs its own warnings under that
 prefix - rate-limit backoff, missing balances, failed settles - and several
 tests below are pass/fail purely on whether one of those lines appears.
 
+## Already verified locally (still to confirm on the uploaded build)
+
+Some checks here are pure frontend and need no funded account, so they have been
+driven headless against the local dev game and **pass**. They are recorded rather
+than ticked, because this document's whole premise is that localhost is not the
+uploaded build - the game deals from `roundContract` without a session, so
+nothing below exercises the RGS. Treat these as "expected to pass, and known to
+pass in a browser", not as done.
+
+| Check | Local evidence |
+| --- | --- |
+| `CMP-01` RTP stated | 96.00% present in How to Play |
+| `CMP-03` Disclaimer | all required points present |
+| `CMP-06` Paytable | 8 payout rows rendered |
+| `CMP-07` Mode description and cost | 3 tabs, cost and ceiling on each |
+| `CMP-08` UI guide | Controls section names every bar button |
+| `CMP-09` Sound can be disabled | mute toggles and survives a reload |
+| `CMP-10` Spacebar bound to the bet button | plays with nothing focused; refuses on a focused INPUT and on a focused BUTTON |
+| `CMP-11` Frame never scrolls | all seven target sizes, idle / bet menu open / How to Play open |
+| `CMP-12` Double-tap zoom off, pinch intact | `touch-action: manipulation`, no `user-scalable=no` |
+| `BET-12` Mode change confirmed | picking a family shows the confirmation; Cancel leaves the live mode alone |
+| `BET-13` Autoplay confirmed | the panel opens with a Start button and begins no round on its own |
+| `LNG-05` Malformed `?lang=` | `en_US`, `zz!!`, `en;a`, empty, `po`, `xx`, `ar`, `de` all render every money readout, no RangeError |
+| `SOC-01` No restricted term on screen | 761 visible strings swept across board, rules (3 tabs), bet menu, autoplay, mode picker and confirmation |
+| `SOC-02` High Risk naming | mode tabs read Classic / Second Chance / High Risk |
+| `SOC-03` English only in social mode | `de`, `ar`, `ja` all render English, `dir=ltr` |
+| `SOC-04` SC / GC / XEC suffix | "1.00 SC" / "1.00 GC", no `$` prefix |
+| `REP-06` Play Again | present and enabled at Desktop, Popout S and Mobile M |
+| `REP-07` Replay in Popout S | board undistorted, bar on one row, no frame scroll |
+| `WIN-11` Per-mode ceiling stated | 68.2x and 85.8x shown beside the family figure; suppressed when equal |
+
+**Mobile S (320 x 568) win takeover: checked.** The Max Win tier renders at
+320 x 568 with the title, amount, multiplier and prompt all legible and no
+horizontal overflow. The title overlaps the bottom of the card fan more than it
+does at 375, which is the shadow band doing its documented job - it reaches up
+over the bottom of the fan so the title is never cream type on white card faces -
+and the ranks and pips still read above it. A real device is still open.
+
 ---
 
 ## 01 · Session and launch
@@ -78,6 +116,21 @@ inherits the mistake, usually silently.
   **Expect:** correct balance on return. Either the interrupted round replays
   onto the board or it settles silently, but the balance must be right either
   way and no error modal appears.
+
+- [ ] **SES-05 · An invalid `rgs_url` fails cleanly** — *Blocker*
+  Launch with `rgs_url` pointed at a host that does not answer, and again at one
+  that answers with garbage.
+  **Expect:** the error modal, promptly, with readable text and a reload action.
+  Never an indefinite loader, a blank board, or a raw stack. This is a verbatim
+  Stake PreCheck ("Game authentication fails correctly with an invalid
+  `rgs_url`"), and the loader's own 8000 ms ceiling is what stops the first
+  case stranding a player on a spinner.
+
+- [ ] **SES-06 · The build carries no Stake Engine Loader** — *Blocker*
+  Search the deployed bundle for the SDK's loader markup and watch the load
+  sequence.
+  **Expect:** only this game's own CSS loader appears. A verbatim PreCheck
+  ("Game should not contain the Stake Engine Loader").
 
 ---
 
@@ -142,6 +195,32 @@ so this section is genuinely untested until upload.
   **Expect:** "That bet was rejected. Please adjust the amount and try again."
   Dismissing leaves the game playable and the stake not deducted.
 
+- [ ] **BET-11 · An active round restores its bet amount** — *Blocker*
+  Spin, kill the tab mid-round, relaunch, and read the bet display before doing
+  anything else.
+  **Expect:** the amount the interrupted round was actually staked at, taken
+  from `round.amount` in the authenticate response - not the default level, and
+  not the last amount this browser happened to have. Verbatim RGS requirement
+  ("Active rounds restore the bet amount from the authenticate response"), and
+  distinct from `SES-04`, which is about the round rather than the stake.
+
+- [ ] **BET-12 · Changing mode asks first** — *Blocker*
+  Open MODE and pick a family other than the live one.
+  **Expect:** a confirmation restating that mode's blurb, ceiling, cost and
+  volatility - the bet mode does not change until Switch is pressed, and every
+  close path (Cancel, the X, clicking away, pressing Escape) discards the pick
+  and leaves the live mode alone. Verbatim ("High cost bet modes require
+  confirmation before activation").
+
+- [ ] **BET-13 · Autoplay cannot start from one click** — *Blocker*
+  Press the autoplay button, then Start.
+  **Expect:** two deliberate actions - the panel opens, a round count is chosen,
+  and only Start begins the run. Verbatim ("Auto-bet requires a confirmation
+  step before starting"; "games may not automatically place consecutive bets
+  with one click"). **Also check the spacebar-hold path**, which does not go
+  through the panel: holding Space runs rounds only while the key is physically
+  held and stops the moment it is released or focus is lost.
+
 ---
 
 ## 03 · Round settlement
@@ -183,6 +262,14 @@ one.
   and reload.
   **Expect:** the game recovers. If a round was left open the next spin settles
   it first and proceeds - no permanent `ERR_VAL` lock needing a manual refresh.
+
+- [ ] **RND-06 · The win amount climbs to its final figure** — *Major*
+  Watch a four-card round settle at normal turbo.
+  **Expect:** the running win and the four multiplier chips build stage by stage
+  and land on exactly the settled payout - never jumping straight to the total,
+  and never showing a figure the round did not pay. Verbatim ("If an outcome
+  contains multiple winning actions, the payout must incrementally update to the
+  final multiplier"). In this game the stages ARE those actions.
 
 ---
 
@@ -320,6 +407,16 @@ currencies. Only these five are shown with no decimal places.
   **Expect:** correct thousands separators, and nothing overflowing or
   truncating on the control bar or the win takeover.
 
+- [ ] **CUR-05 · The lowest and highest bet levels are both selectable** — *Blocker*
+  On a currency with many levels (NOK ships around forty), open the bet menu and
+  reach both ends.
+  **Expect:** every chip is inside the panel, the panel scrolls internally if it
+  must, the main frame never scrolls horizontally, and both extremes can be
+  selected and played. Verbatim RGS requirement ("Min and max levels must be
+  selectable"; "Main game frame should not be scrollable"). Verified at 40
+  levels on Desktop, Popout L and Popout S in a browser - this is the same check
+  against real RGS levels.
+
 ---
 
 ## 07 · Win presentation
@@ -411,6 +508,32 @@ on nearly every round. It still celebrates on size.
   **Expect:** it skips, then dismisses, exactly as tapping does - and Space does
   not scroll the page behind it.
 
+- [ ] **WIN-11 · The rules state this bet's own ceiling** — *Blocker*
+  Open How to Play on a low-ceiling combination (`red_higher_outside_heart`,
+  68.2x) and on one that reaches its family's figure (`red_equal_equal_heart`,
+  1354.2x).
+  **Expect:** the family ceiling as the headline in both, plus a second line
+  naming what the four guesses on the board top out at - and that second line
+  absent on the combination where the two are the same number. The figure must
+  match that mode's Win cap column in `REPLAY_EVENTS.md`. Stake requires the
+  maximum win to be stated per bet mode and to be obtainable, and every
+  combination here is its own published bet mode: only 8 of each family's 64
+  reach the family figure.
+
+- [ ] **WIN-12 · Max Win is announced only on the family ceiling** — *Major*
+  Play the cap round of a combination that falls short (`red_higher_outside_heart`,
+  68.2x) and the cap round of one that does not (`red_equal_equal_heart`).
+  **Expect:** only the second announces MAX WIN. A mode reaching its own ceiling
+  is not a max win - the claim is about a single reachable figure per family
+  (1354.2 / 585.2 / 1910.2), and softening it to "the best this bet can do"
+  would make the rarest screen in the game routine.
+
+- [ ] **WIN-13 · Turbo and skip keep the figures legible** — *Minor*
+  Play at Instant turbo, and again using the skip button mid-reveal.
+  **Expect:** the settled amount, the per-card multipliers and any takeover text
+  are all readable at the end. Verbatim ("Any 'fastplay' option must keep win
+  amounts, winning combinations and pop-up information legible").
+
 ---
 
 ## 08 · Replay
@@ -452,6 +575,10 @@ being logged, so this must not become a production-visible flag.
   multipliers and the same final payout.
 
 - [ ] **REP-02 · Replay bet amount matches the original round** — *Blocker*
+  **KNOWN OPEN, DELIBERATELY DEFERRED for this submission.** A Stake replay
+  showed bet amount 1000 where the game rendered 1 - an exact 1000x gap
+  pointing at a units convention. Recorded here as a decision rather than an
+  untested box; capture is one console line (see the note in CLAUDE.md).
   Compare the stake shown in replay against the stake actually placed.
   **Expect:** identical. If they differ by exactly 1000x or 100x, record both
   figures and the raw `amount` from the response.
@@ -474,6 +601,27 @@ being logged, so this must not become a production-visible flag.
   Open a replay with an explicit `?currency=`, including a zero-decimal one.
   **Expect:** amounts formatted for that currency, with the right number of
   decimal places.
+
+- [ ] **REP-06 · A finished replay offers Play Again** — *Blocker*
+  Let a replay run to the end.
+  **Expect:** the primary button reads **Play Again**, is enabled, and re-runs
+  the same round from the start; the win amount and outcome stay on screen.
+  Verbatim ("After: show a 'Play Again' button and keep the win amount and
+  outcome visible"). Checked in a browser at Desktop, Popout S and Mobile M -
+  this is the same check on the uploaded build.
+
+- [ ] **REP-07 · Replay works in Popout S** — *Blocker*
+  Open a replay URL at 400 x 225.
+  **Expect:** the board is undistorted, the control bar stays on one row, the
+  frame does not scroll, and Play Again is reachable. Verbatim, and listed
+  separately from the other responsive checks ("Supports Replays in Popout S
+  view").
+
+- [ ] **REP-08 · Replay honours `lang`** — *Major*
+  Load the same replay with `&lang=de`, `&lang=ar`, `&lang=ja`.
+  **Expect:** the replay UI translates and the round is unchanged. Verbatim
+  ("Supports all optional parameters like currency, language, amount");
+  `REP-04` covers currency and `REP-02` the amount, so this closes the set.
 
 ---
 
@@ -502,6 +650,21 @@ English is required for approval; the rest are shipped.
   every popup title.
   **Expect:** no clipping, no ellipsis on a control label, no wrapping that
   breaks the bar.
+
+- [ ] **LNG-05 · A malformed `lang` does not break the display** — *Blocker*
+  Load with `?lang=en_US`, `?lang=zz!!`, `?lang=en;a`, `?lang=` and with no
+  `lang` at all. Then `?lang=po`, which is Stake's own code for Polish where
+  every catalogue here is named `pl`.
+  **Expect:** the game renders in English (Polish for `po`), every money figure
+  on the control bar and in the bet menu is present and correctly formatted, and
+  the console is clean. Verbatim PreCheck ("Invalid language parameters do not
+  break game display").
+  **Why it is a Blocker:** Lingui hands the activated locale to
+  `Intl.NumberFormat`, which throws a RangeError on a malformed tag rather than
+  degrading - and `numberToCurrencyString` draws the balance, the last win, the
+  bet display, the running win, the takeover amount and every chip. One
+  underscore emptied the board. `?lang=` is now resolved against the shipped
+  locales before activation; this confirms it on the uploaded build.
 
 ---
 
@@ -533,6 +696,78 @@ live in the How to Play panel behind the `i` button.
   Check `providerName` in `game/config.ts` against the operator's registered
   name.
   **Expect:** the real provider, not SDK template boilerplate.
+
+- [ ] **CMP-06 · The paytable and win combinations are shown** — *Blocker*
+  **Expect:** How to Play lists every pick at every stage with the range it pays,
+  and states that the figures are exact rather than rounded. Verbatim ("Payout
+  information per symbol must be clearly communicated"; "Win combinations are
+  displayed in the game rules"). This game has no symbols and no fixed paytable
+  - each stage pays its true odds against the remaining deck - so the range per
+  pick is the honest form of that requirement, and it is derived from the same
+  function the game pays out with.
+
+- [ ] **CMP-07 · Every mode states its description and its cost** — *Blocker*
+  **Expect:** all three families are reachable from the tabs in How to Play,
+  each with its blurb, its ceiling, its retention rule and "Every mode costs 1x
+  your bet". Verbatim ("Game modes include description and cost information").
+
+- [ ] **CMP-08 · The UI guide is present** — *Blocker*
+  **Expect:** the Controls and Speed sections in How to Play name every button
+  on the bar and say what it does. Verbatim ("A User Interface guide briefly
+  describing what the UI buttons do"; "User interaction guide is included in the
+  game information").
+
+- [ ] **CMP-09 · Sound can be turned off** — *Blocker*
+  Press the speaker button, play a round, reload, play another.
+  **Expect:** muting silences everything, the button shows its state, and the
+  preference survives a reload. Verbatim ("Game provides an option to disable
+  sounds").
+
+- [ ] **CMP-10 · The spacebar is bound to the bet button** — *Blocker*
+  With all four guesses picked, tap Space. Then hold it. Then tap it with the
+  bet field focused, with a popup open, and while the win takeover is up.
+  **Expect:** a tap plays one round; a hold keeps playing until released; and it
+  does nothing at all in the other three cases - typing a bet must never place
+  one. Verbatim ("Space bar should be bound to the bet button").
+
+- [ ] **CMP-11 · The main frame never scrolls** — *Blocker*
+  At all seven target sizes, with the bet menu open, with How to Play open, and
+  with a long currency (TZS / UGX / XOF) and a large balance.
+  **Expect:** no horizontal or vertical scrollbar on the game frame. A popup may
+  scroll inside itself; the frame may not. Verbatim ("Main game frame should not
+  be scrollable").
+
+- [ ] **CMP-12 · Double-tap zoom is off, pinch zoom is not** — *Major*
+  On a real phone, double-tap the board, then pinch it.
+  **Expect:** double-tap does nothing; pinch still magnifies. Verbatim for the
+  first half. The second half is deliberate and easy to undo by accident: the
+  older `maximum-scale=1.0, user-scalable=no` pair met the checklist by
+  disabling pinch too, which fails WCAG 1.4.4. If the viewport meta looks
+  under-specified, that is why - do not add them back.
+
+- [ ] **CMP-13 · Five wins per mode agree with the rules** — *Major*
+  Play or replay five winning rounds in each of the three families, checking
+  each payout against the stage figures in that family's payout table.
+  **Expect:** every figure reconciles. Verbatim ("Check 5 wins for each game
+  mode against the Game Rules"). Scoped to the three families a player sees
+  rather than to the 192 published bet modes; `REPLAY_EVENTS.md` carries a
+  win-cap, big-win, normal-win and loss ID for every one of the 192 if a
+  reviewer wants to go wider.
+
+- [ ] **CMP-14 · Title, assets and imagery clear the compliance checks** — *Major*
+  **Expect:** the title is unique, uses no restricted term, and is distinct from
+  existing titles and series; nothing in the art is offensive or inappropriate;
+  no Stake branding or themes appear anywhere. Verbatim, all four. **"Ride The
+  Bus" is a widely known bar card game and the name may be in use elsewhere** -
+  search the Stake catalogue before submitting, because a rename after approval
+  is far more expensive than one before it.
+
+- [ ] **CMP-15 · Tile assets meet the artwork guidelines** — *Major*
+  Check the three files in `submission/` against the Tile Editor's requirements.
+  **Expect:** background and foreground under 3 MB combined (they are 1.99 MB),
+  the foreground transparent, no text or multipliers baked into either, no dark
+  edges on the background, and the provider logo legible at small sizes. These
+  are uploaded through the dashboard, not shipped in the build.
 
 ---
 
@@ -627,6 +862,9 @@ deliberate look rather than trusting the fix.
 | 18 strings untranslated in all 15 languages | `LNG-01` |
 | Emoji suits rendered differently per platform | `DEV-04` |
 | Start screen overflowed and scrolled | `DEV-03` |
+| A malformed `?lang=` emptied every money readout | `LNG-05` |
+| Rules stated a ceiling 56 of each family's 64 modes cannot reach | `WIN-11` |
+| A finished replay offered no Play Again button | `REP-06` |
 
 - [ ] **REG-01 · Console is clean across a full session** — *Major*
   From cold launch through 100 rounds, autoplay, a win takeover, every popup and
@@ -635,6 +873,81 @@ deliberate look rather than trusting the fix.
   ones a test here deliberately provoked.
 
 ---
+
+## 13 · Stake.US and social mode
+
+`?social=true` puts the game in social-casino mode, where a table of gambling
+terms is prohibited outright. `socialMessages.ts` carries the replacements and a
+unit test scans the catalogue for banned words - but a catalogue that is clean
+and a screen that is clean are different claims, and only the second one ships.
+Run every check here with `&social=true` on the URL.
+
+- [ ] **SOC-01 · No restricted term reaches the screen** — *Blocker*
+  Walk the whole UI: control bar, bet menu, mode picker, How to Play, autoplay,
+  the win takeover, every error modal.
+  **Expect:** none of "bet", "stake", "cash", "money", "pay/paid/pays", "wager",
+  "buy", "gamble", "deposit", "withdraw", "credit" or "currency" appears.
+  Watch particularly for strings assembled at runtime, which the catalogue scan
+  cannot see.
+
+- [ ] **SOC-02 · Mode naming follows the social guidelines** — *Blocker*
+  **Expect:** High Stakes reads **High Risk** everywhere it appears - the picker,
+  the confirmation, the MODE button, How to Play and the replay details.
+
+- [ ] **SOC-03 · English only in social mode** — *Blocker*
+  Load `?social=true&lang=de`, and again with `ar`.
+  **Expect:** English throughout, and left-to-right layout even for Arabic.
+  Verbatim ("English is the only supported language in Social Mode").
+
+- [ ] **SOC-04 · SC / GC / XEC display correctly** — *Blocker*
+  Cross-references `CUR-03`. **Expect:** the suffix form ("10.00 SC"), never a
+  leading `$`. Verbatim ("Game supports SC and GC currencies & values do not
+  display a `$` prefix").
+
+- [ ] **SOC-05 · The replay window carries no restricted words** — *Blocker*
+  Open a replay with `&social=true` and read the round-details panel and the
+  control bar.
+  **Expect:** clean. Verbatim, and listed separately from `SOC-01` because the
+  replay UI is a different set of strings that is easy to miss.
+
+---
+
+## 14 · Performance
+
+Stake's release gates name bundle size, load time and frame rate directly, and
+"optimised bundle size" is an explicit 3-star criterion. None of it is
+measurable from the source.
+
+- [ ] **PRF-01 · Bundle size and time to first interaction** — *Major*
+  Load the uploaded build cold on a throttled connection (Fast 3G) with the
+  Network tab open.
+  **Expect:** a sensible total transfer and a board a player can act on quickly.
+  `config-svelte` sets `bundleStrategy: "inline"`, so everything Vite processes
+  is base64'd into `index.html` - currently about 1.29 MB, plus `logo.png` at
+  743 KB. That logo is 710 x 710 and drawn at roughly 150 px, and is the single
+  largest saving available.
+
+- [ ] **PRF-02 · Memory does not grow over a long run** — *Major*
+  Heap snapshot before and after `END-01`'s 500 rounds.
+  **Expect:** no unbounded growth. Each round builds and discards card, chip and
+  celebration nodes, and an autoplay run is the only place that repeats enough
+  to show a leak.
+
+- [ ] **PRF-03 · The win takeover holds its frame rate on a phone** — *Major*
+  Record a performance trace through a Max Win on a mid-range Android.
+  **Expect:** no sustained dropped frames. The known costs are the fan's four
+  `box-shadow`ed cards and the `drop-shadow` on the suit marks; the blur is
+  already dropped under `@media (pointer: coarse)`. If it does drop frames, take
+  the marks' `filter` first - do not go back to blacking out the table.
+
+- [ ] **PRF-04 · The network tab is clean and says nothing it should not** — *Blocker*
+  Play a full session on the **uploaded** build with the Network tab open.
+  **Expect:** no 4xx or 5xx that a test here did not provoke, no requests to any
+  origin but the RGS and the Stake CDN, and no game internals logged. The
+  `/wallet/play` request and response logs are behind `import.meta.env.DEV` and
+  must not appear - confirm that on the deployed build, not locally, because
+  that is the whole point of the gate. Verbatim ("Network tab must show no
+  errors and no game information being logged").
 
 ## Recording results
 

@@ -234,4 +234,13 @@ export default {
 		'カード4のスートを予想します。ハート、ダイヤ、クラブ、スペード。',
 	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
 		'イコールを選んだため、カード1と2は同じ数字です。その間には何も入らないので、インサイドは当たりません。',
+	'Your four guesses top out at %s your bet.':
+		'選んだ4つの予想の上限は賭け金の%sです。',
+	'Play Again': 'もう一度再生',
+	'The round ends and pays nothing.':
+		'ラウンドは終了し、配当はありません。',
+	'The round ends, keeping %s% of what you had built.':
+		'ラウンドが終了し、積み上げた分の%s%が残ります。',
+	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
+		'カード2以降は免除され、積み上げた分の%s%を残してラウンドが続きます。',
 };

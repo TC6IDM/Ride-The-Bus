@@ -239,4 +239,13 @@ export default {
 		'Devinez l’enseigne de la carte 4 : cœur, carreau, trèfle ou pique.',
 	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
 		'Vous avez choisi Égal, donc les cartes 1 et 2 ont la même valeur. Rien ne peut tomber entre elles, Intérieur ne peut donc pas gagner.',
+	'Your four guesses top out at %s your bet.':
+		'Vos quatre pronostics atteignent au maximum %s de votre mise.',
+	'Play Again': 'Rejouer',
+	'The round ends and pays nothing.':
+		'La manche se termine et ne rapporte rien.',
+	'The round ends, keeping %s% of what you had built.':
+		'La manche se termine et vous gardez %s% de vos gains accumulés.',
+	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
+		'À partir de la carte 2, il est pardonné : vous gardez %s% de vos gains et la manche continue.',
 };

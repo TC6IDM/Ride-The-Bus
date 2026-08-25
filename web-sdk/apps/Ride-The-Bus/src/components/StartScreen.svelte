@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { base } from '$app/paths';
+	import { logoAsset } from '../game/logoAsset.svelte';
 	import { numberToCurrencyString } from 'utils-shared/amount';
 	import { t } from '../i18n/i18nDerived';
 	import gameConfig from '../game/config';
@@ -194,7 +194,7 @@
 	<span class="ss-tip" aria-hidden="true">{t(text)}</span>
 {/snippet}
 
-<div class="ss-overlay" style={`--logo-url: url(${base}/logo.png)`}>
+<div class="ss-overlay" style={`--logo-url: url(${logoAsset.url})`}>
 	<!-- The same table the game is played on, so the first thing a player sees
 	     is the place rather than a green gradient standing in for one. Its props
 	     are off: the intro card is wider than the table at every landscape size,
@@ -377,7 +377,7 @@
 
 	{:else if props.phase === 'replay-info'}
 		<!-- ---- Replay info popup (over the start screen) ---- -->
-		<div class="ss-overlay" style={`--logo-url: url(${base}/logo.png)`}>
+		<div class="ss-overlay" style={`--logo-url: url(${logoAsset.url})`}>
 			<!-- Card underneath so the start screen is visible behind -->
 			<div class="ss-card" aria-hidden="true" style="opacity: 0.55; pointer-events: none">
 				<div class="ss-logo"></div>

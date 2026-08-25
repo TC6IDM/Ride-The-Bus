@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { base } from '$app/paths';
+  import { logoAsset } from '../game/logoAsset.svelte';
   import './app.css';
   // TYPE ONLY, deliberately - this line erases at build time.
   //
@@ -53,6 +53,7 @@
     FAMILY_BLURB,
     FAMILY_RULES,
     MODE_FAMILIES,
+    ceilingFor,
     isCleanSweep,
     isCombinationPlayable,
     modeName,
@@ -981,6 +982,27 @@
   });
 
   const allChoicesMade = () => Boolean(colorChoice && hlChoice && ioChoice && suitChoice);
+
+  /**
+   * The most the four guesses currently picked can actually pay, on `family`.
+   *
+   * NOT FAMILY_RULES[family].maxWin, and the difference is the point. That is
+   * the most the family can reach and belongs on a mode a player is choosing
+   * between; this is the most THIS BET can reach, and for 56 of each family's
+   * 64 combinations it is a great deal lower - the median Classic mode stops at
+   * 268.8x against a stated 1354.2x. Stake asks for the maximum win to be
+   * stated per bet mode and to be obtainable, and every combination here IS a
+   * published bet mode.
+   *
+   * Null until all four guesses are in, and null for equal+inside, which the
+   * math never published - so the caller shows the family figure alone rather
+   * than an invented one.
+   */
+  function selectedCeiling(family: ModeFamily): number | null {
+    if (!colorChoice || !hlChoice || !ioChoice || !suitChoice) return null;
+    if (!isCombinationPlayable(hlChoice, ioChoice)) return null;
+    return ceilingFor(modeName(colorChoice, hlChoice, ioChoice, suitChoice, family));
+  }
 
   /**
    * When the guess squares stop accepting input.
@@ -2184,6 +2206,19 @@
     return null;
   }
 
+  /**
+   * Replay mode, with the round already played through once.
+   *
+   * Stake's Bet Replay section asks for a "Play Again" button once a replay
+   * finishes, and that is what the spin button becomes here - it already
+   * re-runs the round (see onSpin), so this is the label catching up with the
+   * behaviour rather than new behaviour. Kept as a predicate because three
+   * things read it: the accessible name, the visible caption, and nothing else
+   * may drift from either.
+   */
+  const replayFinished = () =>
+    stateUrlDerived.replay() && (gameState === 'won' || gameState === 'lost');
+
   function onSpin() {
     // No playPress() here - the delegated click listener below already sounds
     // every button. The spacebar path, which isn't a click, sounds its own.
@@ -2476,7 +2511,7 @@
 <div
   class="game-layout"
   class:takeover-open={celebration !== null}
-  style={`--flip-dur: ${flipDurSec()}s; --logo-url: url(${base}/logo.png)`}
+  style={`--flip-dur: ${flipDurSec()}s; --logo-url: url(${logoAsset.url})`}
 >
   <!-- Custom glyphs, drawn rather than typed. The Unicode arrows and infinity
        sign vary a lot between platform fonts (weight, size, whether the glyph
@@ -2891,7 +2926,13 @@
         class:slammable={canSlam()}
         onclick={onSpin}
         disabled={spinDisabled()}
-        aria-label={autoRunning ? t('Stop autoplay') : canSlam() ? t('Skip the reveal') : t('Spin')}
+        aria-label={autoRunning
+          ? t('Stop autoplay')
+          : canSlam()
+            ? t('Skip the reveal')
+            : replayFinished()
+              ? t('Play Again')
+              : t('Spin')}
       >
         {#if autoRunning}
           <span class="cb-spin-square" aria-hidden="true"></span>
@@ -2963,6 +3004,16 @@
           />
         </svg>
       {/if}
+      <!-- "Play Again", which Stake's replay section asks for by name once a
+           replay has finished. A CAPTION rather than a label inside the button:
+           the button is a 44px disc and the words do not fit in it, and the
+           deal glyph is still the right picture - it deals the same four cards
+           again. Positioned like the tooltip above, on the wrapper and out of
+           flow, so it cannot add a row to a bar whose height budget is already
+           the tightest thing in the layout. -->
+      {#if replayFinished()}
+        <span class="cb-spin-caption">{t('Play Again')}</span>
+      {/if}
       <!-- Any reason the button is dead, not just the cooldown. -->
       {#if spinBlockedReason()}
         <span class="cb-cooldown-tip" role="tooltip">{spinBlockedReason()}</span>
@@ -3015,6 +3066,7 @@
              the list rows read, so the two can never describe a mode
              differently. -->
         {@const target = FAMILY_RULES[pendingFamily]}
+        {@const picked = selectedCeiling(pendingFamily)}
         <div
           class="mode-confirm"
           style={`--vol-color: ${volatilityColorVar(pendingFamily)}; --vol-rgb: ${volatilityColorRgbVar(pendingFamily)}`}
@@ -3035,6 +3087,16 @@
           </span>
           <p class="mode-confirm-blurb">{t(FAMILY_BLURB[pendingFamily])}</p>
           <p class="mode-confirm-max">{t('Max win')} {target.maxWin}× {t('Bet')}</p>
+          <!-- The family's ceiling is the headline above; this is what the four
+               guesses already on the board would top out at if the switch goes
+               through. Only 8 of a family's 64 combinations reach the headline,
+               so without this line the confirmation overstates most switches by
+               about five times. -->
+          {#if picked !== null && picked !== target.maxWin}
+            <p class="mode-confirm-picked">
+              {t('Your four guesses top out at %s your bet.').replace('%s', `${picked}×`)}
+            </p>
+          {/if}
           <p class="mode-confirm-cost">{t('Every mode costs 1× your bet.')}</p>
           <div class="mode-confirm-actions">
             <button type="button" class="mode-confirm-cancel" onclick={() => (pendingFamily = null)}>
@@ -3308,7 +3370,11 @@
   {/if}
 
   {#if openPopup === 'info'}
-    <HowToPlayPopup family={betFamily} onclose={closePopup} />
+    <HowToPlayPopup
+      family={betFamily}
+      ceilingFor={selectedCeiling}
+      onclose={closePopup}
+    />
   {/if}
 </div>
 

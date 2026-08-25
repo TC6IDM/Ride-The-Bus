@@ -233,4 +233,13 @@ export default {
 		'कार्ड 4 का सूट बताएं: पान, ईंट, चिड़ी या हुकुम।',
 	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
 		'आपने बराबर चुना, इसलिए कार्ड 1 और 2 की रैंक समान है। उनके बीच कुछ नहीं आ सकता, इसलिए अंदर जीत नहीं सकता।',
+	'Your four guesses top out at %s your bet.':
+		'आपके चारों अनुमान अधिकतम आपकी दांव राशि का %s तक पहुँचते हैं।',
+	'Play Again': 'फिर से चलाएँ',
+	'The round ends and pays nothing.':
+		'राउंड समाप्त हो जाता है और कुछ नहीं देता।',
+	'The round ends, keeping %s% of what you had built.':
+		'राउंड समाप्त होता है और आपने जो बनाया था उसका %s% बचा रहता है।',
+	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
+		'कार्ड 2 से आगे इसे माफ़ किया जाता है — आपने जो बनाया था उसका %s% बचता है और राउंड जारी रहता है।',
 };
