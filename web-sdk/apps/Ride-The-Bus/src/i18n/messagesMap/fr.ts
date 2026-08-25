@@ -37,7 +37,7 @@ export default {
 	'% faster': ' % plus rapide',
 
 	Autoplay: 'Jeu automatique',
-	'Number of Spins': 'Nombre de tours',
+	'Number of Plays': 'Nombre de tours',
 
 	Advanced: 'Avancé',
 	'Game Mode': 'Mode de jeu',
@@ -178,10 +178,10 @@ export default {
 	RTP: 'RTP',
 	Session: 'Session',
 	Fast: 'Rapide',
-	'Number of spins': 'Nombre de tours',
-	'Unlimited spins': 'Tours illimités',
-	'More spins': 'Plus de tours',
-	'Fewer spins': 'Moins de tours',
+	'Number of plays': 'Nombre de tours',
+	'Unlimited plays': 'Tours illimités',
+	'More plays': 'Plus de tours',
+	'Fewer plays': 'Moins de tours',
 	'Stop autoplay on a full game win': 'Arrêter le jeu automatique sur une partie complète',
 	'Close menu': 'Fermer le menu',
 	Close: 'Fermer',

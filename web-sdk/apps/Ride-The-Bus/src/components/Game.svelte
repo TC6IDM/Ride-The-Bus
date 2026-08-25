@@ -438,9 +438,37 @@
   // Fallback bet levels for the bet menu when no RGS session has supplied any
   // (local dev). On a real session stateConfig.betAmountOptions drives it.
   const DEFAULT_BET_LEVELS = [1, 5, 25, 50, 75, 100, 200, 500, 800, 1000];
+  /**
+   * The levels a player can actually stake: the RGS's list, sorted, with
+   * anything outside [minBet, maxBet] removed.
+   *
+   * THE LIST AND THE LIMITS ARE TWO SEPARATE FIELDS of the authenticate
+   * response and nothing makes them agree. betLevels is the operator's rack;
+   * minBet/maxBet are enforced per bet. A chip outside the range is a control
+   * that looks live, takes a tap, sets the bet, and then cannot be played -
+   * the spin button refuses it and betBlockedReason() has to explain a bet the
+   * game itself just offered. Stake's Bet Levels rule is that the frontend
+   * respects what authenticate sends, and a level the same response forbids is
+   * not something to put on screen.
+   *
+   * It also closes the gap between local dev and a real session, which is where
+   * this was noticed: the dev betLimits stand-in caps at 200.00 while
+   * DEFAULT_BET_LEVELS runs to 1000, so the last three chips were unplayable on
+   * every local run. Filtering here fixes both at once rather than editing one
+   * literal to match the other.
+   *
+   * Never returns empty. If every level is out of range the configuration is
+   * broken in a way this cannot repair, and an empty bet menu is worse than a
+   * full one - the entry field and the clamp still keep the played amount
+   * legal.
+   */
   const betLevels = () => {
     const lv = stateConfig.betAmountOptions;
-    return lv && lv.length ? [...lv].sort((a, b) => a - b) : DEFAULT_BET_LEVELS;
+    const all = lv && lv.length ? [...lv].sort((a, b) => a - b) : DEFAULT_BET_LEVELS;
+    const playable = all.filter((v) =>
+      betWithinRange(v, stateConfig.betLimits, API_AMOUNT_MULTIPLIER),
+    );
+    return playable.length ? playable : all;
   };
 
   const autoRoundsValid = () =>
@@ -967,9 +995,14 @@
 
   // Once (when the RGS's levels arrive) nudge an out-of-range starting bet to
   // the nearest valid level, so the player opens on a playable amount.
+  //
+  // betLevels() so "valid" means the same thing here as it does on the chips:
+  // the raw list can carry levels the same authenticate response puts out of
+  // range, and seeding the opening bet from one of those opens the game on an
+  // amount the spin button will not take.
   $effect(() => {
     if (betDefaulted || !stateUrlDerived.sessionID()) return;
-    const levels = stateConfig.betAmountOptions;
+    const levels = betLevels();
     if (levels && levels.length) {
       const v = Number(betInput);
       const lo = Math.min(...levels);
@@ -1287,17 +1320,21 @@
   }
 
   // Stake-style +/- stepper: step to the next / previous suggested bet level
-  // (stateConfig.betAmountOptions) relative to whatever is currently shown, so
-  // the increment scales sensibly across the range. It just rewrites the live
-  // input - typing any amount still works. Falls back to +/-1 when no levels
-  // are known (local dev before authenticate).
+  // relative to whatever is currently shown, so the increment scales sensibly
+  // across the range. It just rewrites the live input - typing any amount still
+  // works. Falls back to +/-1 when no levels are known (local dev before
+  // authenticate).
+  //
+  // betLevels(), not stateConfig.betAmountOptions: the stepper walks the same
+  // rack the chips draw, so it cannot step onto a level the operator's own
+  // maxBet forbids and leave the spin button refusing a figure the + button
+  // just produced.
   function stepBet(direction: 1 | -1) {
     if (betLockedReason()) return;
     const shown = Number(betInput);
     const current = !isNaN(shown) && shown > 0 ? shown : stateBet.betAmount;
-    const levels = stateConfig.betAmountOptions;
-    if (levels && levels.length) {
-      const sorted = [...levels].sort((a, b) => a - b);
+    const sorted = betLevels();
+    if (sorted.length) {
       const next =
         direction > 0
           ? sorted.find((l) => l > current + 1e-9)
@@ -3290,7 +3327,7 @@
     <div class="popup popup-autospin" role="dialog" aria-label={t('Autoplay')}>
       <div class="popup-head"><span>{t('Autoplay')}</span><button class="popup-close" onclick={closePopup} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
       <div class="autospin-body">
-        <span class="popup-sub">{t('Number of Spins')}</span>
+        <span class="popup-sub">{t('Number of Plays')}</span>
         <div class="spin-grid">
           {#each AUTOSPIN_PRESETS as p}
             <button class="spin-pill" class:active={!autoInfinite && Math.floor(Number(autoRoundsInput)) === p} onclick={() => setAutoRounds(p)}>{p}</button>
@@ -3301,22 +3338,22 @@
                row because a ninth cell in a 4-column grid sat alone against
                three empty columns; the row wraps now, so unlimited is just the
                longest option in it. -->
-          <button class="spin-pill spin-pill-inf" class:active={autoInfinite} onclick={toggleAutoInfinite} aria-label={t('Unlimited spins')}>{@render iconInfinity()}</button>
+          <button class="spin-pill spin-pill-inf" class:active={autoInfinite} onclick={toggleAutoInfinite} aria-label={t('Unlimited plays')}>{@render iconInfinity()}</button>
         </div>
         <div class="rounds-selector autospin-input">
           <div class="rounds-field">
             {#if autoInfinite}
               <span class="rounds-infinite">{@render iconInfinity()}</span>
             {:else}
-              <input class="rounds-input" type="text" inputmode="numeric" bind:value={autoRoundsInput} onblur={formatAutoRounds} aria-label={t('Number of spins')} />
+              <input class="rounds-input" type="text" inputmode="numeric" bind:value={autoRoundsInput} onblur={formatAutoRounds} aria-label={t('Number of plays')} />
             {/if}
           </div>
           <!-- Plus and minus, matching the bet steppers on the control bar. The
                chevrons that were here made this the build's SECOND way to nudge
                a number, three inches from the first. -->
           <div class="rounds-stepper">
-            <button type="button" class="stepper-btn" onclick={() => stepAutoRounds(1)} aria-label={t('More spins')}>{@render iconPlus()}</button>
-            <button type="button" class="stepper-btn" onclick={() => stepAutoRounds(-1)} aria-label={t('Fewer spins')}>{@render iconMinus()}</button>
+            <button type="button" class="stepper-btn" onclick={() => stepAutoRounds(1)} aria-label={t('More plays')}>{@render iconPlus()}</button>
+            <button type="button" class="stepper-btn" onclick={() => stepAutoRounds(-1)} aria-label={t('Fewer plays')}>{@render iconMinus()}</button>
           </div>
         </div>
         <button class="action-button popup-start" onclick={startAutoFromPopup} disabled={!betIsValid() || !allChoicesMade() || !autoRoundsValid()}>

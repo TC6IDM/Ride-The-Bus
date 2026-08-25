@@ -37,7 +37,7 @@ export default {
 	'% faster': ' % nhanh hơn',
 
 	Autoplay: 'Tự động chơi',
-	'Number of Spins': 'Số vòng',
+	'Number of Plays': 'Số vòng',
 
 	Advanced: 'Nâng cao',
 	'Game Mode': 'Chế độ chơi',
@@ -177,10 +177,10 @@ export default {
 	RTP: 'RTP',
 	Session: 'Phiên',
 	Fast: 'Nhanh',
-	'Number of spins': 'Số vòng',
-	'Unlimited spins': 'Không giới hạn vòng',
-	'More spins': 'Tăng số vòng',
-	'Fewer spins': 'Giảm số vòng',
+	'Number of plays': 'Số vòng',
+	'Unlimited plays': 'Không giới hạn vòng',
+	'More plays': 'Tăng số vòng',
+	'Fewer plays': 'Giảm số vòng',
 	'Stop autoplay on a full game win': 'Dừng tự động chơi khi thắng toàn ván',
 	'Close menu': 'Đóng menu',
 	Close: 'Đóng',

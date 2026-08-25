@@ -38,7 +38,7 @@ export default {
 	'% faster': '٪ أسرع',
 
 	Autoplay: 'اللعب التلقائي',
-	'Number of Spins': 'عدد الجولات',
+	'Number of Plays': 'عدد الجولات',
 
 	Advanced: 'متقدم',
 	'Game Mode': 'وضع اللعبة',
@@ -176,10 +176,10 @@ export default {
 	RTP: 'نسبة العائد',
 	Session: 'الجلسة',
 	Fast: 'سريع',
-	'Number of spins': 'عدد الجولات',
-	'Unlimited spins': 'جولات بلا حد',
-	'More spins': 'جولات أكثر',
-	'Fewer spins': 'جولات أقل',
+	'Number of plays': 'عدد الجولات',
+	'Unlimited plays': 'جولات بلا حد',
+	'More plays': 'جولات أكثر',
+	'Fewer plays': 'جولات أقل',
 	'Stop autoplay on a full game win': 'إيقاف اللعب التلقائي عند الفوز الكامل',
 	'Close menu': 'إغلاق القائمة',
 	Close: 'إغلاق',

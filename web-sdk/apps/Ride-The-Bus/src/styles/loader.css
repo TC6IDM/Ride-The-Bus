@@ -99,6 +99,17 @@
   gap: calc(var(--lu) * 1.36);
 }
 
+/* The dealer is on the other side in Arabic.
+   .gl-cards is flex, so dir="rtl" already lays the four out right to left and
+   the nth-child stagger deals them in that order - but loader-deal's own
+   offset and angle are physical, so the hand still flew in from the left and
+   crossed the row it was being dealt into. --gl-hand negates both.
+   Same shape as --wc-hand on the win takeover's fan, and the same reason the
+   progress bar needs :global() below: [dir] is set on <html>. */
+:global([dir='rtl']) .gl-cards {
+  --gl-hand: -1;
+}
+
 /* Same face-down back as the dealt cards (cards.css .card-back), so the loader
    is showing the very deck the game is about to deal from. */
 .gl-card {
@@ -122,6 +133,11 @@
     inset 0 0 0 calc(var(--lu) * 0.3) var(--brand-paper),
     inset 0 0 0 calc(var(--lu) * 0.42) var(--brand-chrome),
     0 calc(var(--lu) * 0.55) calc(var(--lu) * 1) rgba(var(--shadow-rgb), 0.45);
+  /* Where the hand comes in from. Read by loader-deal, which cannot compute it
+     itself: a keyframe is shared by all four cards and --gl-hand is inherited
+     per element, so the direction has to arrive as a custom property. */
+  --gl-deal-x: calc(var(--lu) * -5 * var(--gl-hand, 1));
+  --gl-deal-tilt: calc(-16deg * var(--gl-hand, 1));
   /* Deal in once, then breathe on a loop while we wait. `backwards` holds the
      first keyframe during the stagger delay so cards don't flash in first. */
   animation:
@@ -158,8 +174,9 @@
 @keyframes loader-deal {
   from {
     opacity: 0;
-    /* dealt from the left, off the top of the table */
-    transform: translate(calc(var(--lu) * -5), calc(var(--lu) * -3.4)) rotate(-16deg) scale(0.9);
+    /* dealt from the leading edge, off the top of the table */
+    transform: translate(var(--gl-deal-x), calc(var(--lu) * -3.4)) rotate(var(--gl-deal-tilt))
+      scale(0.9);
   }
   to {
     opacity: 1;

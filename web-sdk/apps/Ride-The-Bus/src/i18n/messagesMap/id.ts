@@ -37,7 +37,7 @@ export default {
 	'% faster': ' % lebih cepat',
 
 	Autoplay: 'Main otomatis',
-	'Number of Spins': 'Jumlah ronde',
+	'Number of Plays': 'Jumlah ronde',
 
 	Advanced: 'Lanjutan',
 	'Game Mode': 'Mode Permainan',
@@ -178,10 +178,10 @@ export default {
 	RTP: 'RTP',
 	Session: 'Sesi',
 	Fast: 'Cepat',
-	'Number of spins': 'Jumlah ronde',
-	'Unlimited spins': 'Ronde tanpa batas',
-	'More spins': 'Tambah ronde',
-	'Fewer spins': 'Kurangi ronde',
+	'Number of plays': 'Jumlah ronde',
+	'Unlimited plays': 'Ronde tanpa batas',
+	'More plays': 'Tambah ronde',
+	'Fewer plays': 'Kurangi ronde',
 	'Stop autoplay on a full game win': 'Hentikan main otomatis saat menang penuh',
 	'Close menu': 'Tutup menu',
 	Close: 'Tutup',

@@ -386,6 +386,20 @@
 	z-index: -2;
 }
 
+/* THE HAND IS HELD THE OTHER WAY IN ARABIC.
+   The takeover's fan is the four cards the player just played, brought forward
+   - so it has to agree with the row they were dealt in. .card-row is flex and
+   mirrors with dir="rtl", putting card 1 on the right; the fan is absolutely
+   positioned off computed offsets and did not, so card 1 sat on the left and
+   the two hands read in opposite orders on the same round.
+   One factor rather than a second set of offsets: the geometry is still the
+   FAN constant in WinCelebration.svelte, and the deal order, the drop and the
+   118deg glint are untouched - the light comes from the upper right of the
+   table in every language, the same way table.css lights the scene. */
+:global([dir='rtl']) .wc-fan {
+	--wc-hand: -1;
+}
+
 /* The card itself is the FACE-DOWN state; .wc-fan-face paints over it. That way
    round a null slot needs no rule of its own - it just does not get a face. */
 .wc-fan-card {
@@ -443,9 +457,15 @@
 
 	/* --wc-fan-spread is the tier. --tilt and --shift are the card's place in
 	   the hand; multiplying both means a higher tier opens the SAME fan wider
-	   rather than dealing a different one. */
-	--fan-tilt: calc(var(--tilt, 0deg) * var(--wc-fan-spread, 1));
-	--fan-x: calc(var(--ui) * var(--shift, 0) * var(--wc-fan-spread, 1));
+	   rather than dealing a different one.
+
+	   --wc-hand is which way round the hand is held, and it is -1 in Arabic (set
+	   on .wc-fan below). The board deals card 1 at the reading edge, so a fan
+	   left in its English order put card 1 on the opposite side from the card
+	   the player watched turn over first. Only tilt and shift take it: --drop is
+	   |offset| and is already symmetric about the middle of the hand. */
+	--fan-tilt: calc(var(--tilt, 0deg) * var(--wc-fan-spread, 1) * var(--wc-hand, 1));
+	--fan-x: calc(var(--ui) * var(--shift, 0) * var(--wc-fan-spread, 1) * var(--wc-hand, 1));
 	--fan-y: calc(var(--ui) * var(--drop, 0) * var(--wc-fan-spread, 1));
 	transform: translate(var(--fan-x), var(--fan-y)) rotate(var(--fan-tilt));
 	transform-origin: 50% 130%;
@@ -522,10 +542,19 @@
 	color: var(--card-red);
 }
 
+/* The corner index sits at the LEADING corner, which is the whole reason a real
+   deck puts it in a corner at all: cards.css says the board's index "means the
+   card is still readable when it is overlapped from the right". A fan mirrored
+   for Arabic is overlapped from the left instead, and a physical `left` put the
+   rank and pip of every card but the top one underneath its neighbour - the one
+   part of the hand a player reads.
+   inset-inline-start, so it follows the overlap. The board's own index already
+   does this without a rule: .card-face .index.top is align-self: flex-start on
+   a flex column, and flex-start there resolves against the inline axis. */
 .wc-fan-index {
 	position: absolute;
 	top: calc(var(--ui) * 1.15);
-	left: calc(var(--ui) * 1.15);
+	inset-inline-start: calc(var(--ui) * 1.15);
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -1017,8 +1046,10 @@
 		scale: 0.74;
 	}
 	.wc-fan-card {
-		--fan-tilt: calc(var(--tilt, 0deg) * min(var(--wc-fan-spread, 1), 1.35));
-		--fan-x: calc(var(--ui) * var(--shift, 0) * min(var(--wc-fan-spread, 1), 1.35));
+		--fan-tilt: calc(var(--tilt, 0deg) * min(var(--wc-fan-spread, 1), 1.35) * var(--wc-hand, 1));
+		--fan-x: calc(
+			var(--ui) * var(--shift, 0) * min(var(--wc-fan-spread, 1), 1.35) * var(--wc-hand, 1)
+		);
 	}
 }
 

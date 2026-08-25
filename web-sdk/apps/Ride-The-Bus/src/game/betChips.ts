@@ -45,6 +45,18 @@ export function chipColour(index: number, count: number): ChipColour {
 }
 
 /**
+ * Drop the invisible bidi controls: the marks (LRM/RLM/ALM) and the
+ * embedding/override/isolate formatting characters.
+ *
+ * Only for text this module MEASURES and SPLITS. Nothing else strips them -
+ * numberToCurrencyString still returns Intl's string verbatim for the bet
+ * display, the entry field and every aria-label, because there the mark is
+ * doing its job.
+ */
+const stripBidiMarks = (s: string) =>
+  s.replace(/[\u200E\u200F\u061C\u202A-\u202E\u2066-\u2069]/g, '');
+
+/**
  * A formatted currency string split into what a CHIP can show.
  *
  * A real chip is denominated in a number; the currency belongs to the table.
@@ -68,13 +80,23 @@ export function chipColour(index: number, count: number): ChipColour {
  * duplicated.
  */
 export function splitChipLabel(formatted: string): { currency: string; amount: string } {
+  // Bidi control characters first. Intl prefixes every amount in an Arabic
+  // locale with U+200F RIGHT-TO-LEFT MARK - "\u200F12,500.00 US$" - and some
+  // currency symbols carry one of their own (KWD is "\u062F.\u0643.\u200F").
+  // They are invisible, they are not whitespace so trim() leaves them, and they
+  // still count: the euro's currency part came out as RLM + "\u20AC", length 2,
+  // so a single-character symbol that should ride inline with the figure took
+  // the two-line "code above number" layout instead. They also inflate
+  // labelEms(), which sizes the type to the disc.
+  const clean = stripBidiMarks(formatted);
+
   // The numeric run: a digit, then anything a locale uses inside a number -
   // ASCII, thin and no-break spaces as group separators, comma, full stop.
-  const match = /[0-9][0-9\u00A0\u202F\u2009 .,]*/.exec(formatted);
-  if (!match) return { currency: '', amount: formatted.trim() };
+  const match = /[0-9][0-9\u00A0\u202F\u2009 .,]*/.exec(clean);
+  if (!match) return { currency: '', amount: clean.trim() };
 
   const amount = match[0].trim();
-  const currency = (formatted.slice(0, match.index) + formatted.slice(match.index + match[0].length))
+  const currency = (clean.slice(0, match.index) + clean.slice(match.index + match[0].length))
     .replace(/\s+/g, ' ')
     .trim();
 

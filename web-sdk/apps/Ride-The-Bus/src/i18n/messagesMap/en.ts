@@ -54,7 +54,7 @@ export default {
 
 	// Autoplay popup
 	Autoplay: 'Autoplay',
-	'Number of Spins': 'Number of Spins',
+	'Number of Plays': 'Number of Plays',
 
 	// Bet mode picker. The three ways to buy the same four guesses; only what a
 	// miss keeps differs. Blurbs quote the measured ceilings so the copy cannot
@@ -215,10 +215,10 @@ export default {
 	RTP: 'RTP',
 	Session: 'Session',
 	Fast: 'Fast',
-	'Number of spins': 'Number of spins',
-	'Unlimited spins': 'Unlimited spins',
-	'More spins': 'More spins',
-	'Fewer spins': 'Fewer spins',
+	'Number of plays': 'Number of plays',
+	'Unlimited plays': 'Unlimited plays',
+	'More plays': 'More plays',
+	'Fewer plays': 'Fewer plays',
 	'Stop autoplay on a full game win': 'Stop autoplay on a full game win',
 	'Close menu': 'Close menu',
 	Close: 'Close',

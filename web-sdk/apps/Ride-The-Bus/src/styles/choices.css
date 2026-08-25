@@ -223,21 +223,47 @@
  * the squares are ~29px across and render as circles, and a segment given a
  * fixed 18px there produced a squarish ring sitting inside a round hole -
  * visibly worse than the clipping it was meant to fix. */
-.color-square .half-btn.black-half { border-radius: var(--choice-radius) 0 0 var(--choice-radius); }
-.color-square .half-btn.red-half { border-radius: 0 var(--choice-radius) var(--choice-radius) 0; }
+/* LOGICAL corners, not the four-value shorthand, and that is not tidiness.
+ *
+ * A segment's position comes from grid order, which follows the writing
+ * direction: in Arabic (dir="rtl") the first column is on the RIGHT. The
+ * shorthand is physical, so it stayed put while the segments swapped sides, and
+ * every square rounded its INNER corners and squared off its outer ones - each
+ * half rendered as a lozenge with a notch down the middle of the square, and
+ * the selected ring on a suit quadrant drew a rounded corner into the middle of
+ * the tile. Four of the five squares were visibly deformed.
+ *
+ * border-start-start-radius and its three siblings resolve against the writing
+ * direction, so each segment keeps the corners it actually occupies in both. */
+.color-square .half-btn.black-half {
+  border-start-start-radius: var(--choice-radius);
+  border-end-start-radius: var(--choice-radius);
+}
+.color-square .half-btn.red-half {
+  border-start-end-radius: var(--choice-radius);
+  border-end-end-radius: var(--choice-radius);
+}
 
+/* The thirds split top from bottom, so their corners are the same pair in
+   either direction and the physical spelling is already correct. */
 .hl-square .third-btn.higher-third { border-radius: var(--choice-radius) var(--choice-radius) 0 0; }
 .hl-square .third-btn.lower-third { border-radius: 0 0 var(--choice-radius) var(--choice-radius); }
 
-.io-square .half-btn.inside-half { border-radius: var(--choice-radius) 0 0 var(--choice-radius); }
-.io-square .half-btn.outside-half { border-radius: 0 var(--choice-radius) var(--choice-radius) 0; }
+.io-square .half-btn.inside-half {
+  border-start-start-radius: var(--choice-radius);
+  border-end-start-radius: var(--choice-radius);
+}
+.io-square .half-btn.outside-half {
+  border-start-end-radius: var(--choice-radius);
+  border-end-end-radius: var(--choice-radius);
+}
 
 /* The suit quadrants have no per-position classes, so they are addressed by
-   grid order: heart, spade, club, diamond - row-major, top-left first. */
-.suit-square .quad-btn:nth-child(1) { border-radius: var(--choice-radius) 0 0 0; }
-.suit-square .quad-btn:nth-child(2) { border-radius: 0 var(--choice-radius) 0 0; }
-.suit-square .quad-btn:nth-child(3) { border-radius: 0 0 0 var(--choice-radius); }
-.suit-square .quad-btn:nth-child(4) { border-radius: 0 0 var(--choice-radius) 0; }
+   grid order: heart, spade, club, diamond - row-major, first cell first. */
+.suit-square .quad-btn:nth-child(1) { border-start-start-radius: var(--choice-radius); }
+.suit-square .quad-btn:nth-child(2) { border-start-end-radius: var(--choice-radius); }
+.suit-square .quad-btn:nth-child(3) { border-end-start-radius: var(--choice-radius); }
+.suit-square .quad-btn:nth-child(4) { border-end-end-radius: var(--choice-radius); }
 
 /* All choice squares use CSS Grid (not flexbox) so adjacent cells share
    exact pixel boundaries - flex:1 splits can leave a subpixel seam where
@@ -297,6 +323,20 @@
 
 .io-square .outside-half {
   --io-icon-shift: calc(var(--ui) * 0.25);
+}
+
+/* "Its own outer edge" is a physical direction and the halves swap sides in
+   Arabic, so the nudge has to swap with them. Left as it was, both icons were
+   pushed INTO the seam and sat under the equal badge - the exact collision the
+   rule above exists to prevent, arriving from the other side.
+   translateX has no logical form, which is why this is an explicit flip rather
+   than a logical property; loader.css:204 does the same for transform-origin. */
+:global([dir='rtl']) .io-square .inside-half {
+  --io-icon-shift: calc(var(--ui) * 0.25);
+}
+
+:global([dir='rtl']) .io-square .outside-half {
+  --io-icon-shift: calc(var(--ui) * -0.25);
 }
 
 /* ---- The shared "equal" pick -----------------------------------------------

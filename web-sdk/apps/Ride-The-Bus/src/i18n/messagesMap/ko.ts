@@ -37,7 +37,7 @@ export default {
 	'% faster': '％ 빠름',
 
 	Autoplay: '자동 플레이',
-	'Number of Spins': '라운드 수',
+	'Number of Plays': '라운드 수',
 
 	Advanced: '고급',
 	'Game Mode': '게임 모드',
@@ -174,10 +174,10 @@ export default {
 	RTP: 'RTP',
 	Session: '세션',
 	Fast: '빠름',
-	'Number of spins': '라운드 수',
-	'Unlimited spins': '무제한 라운드',
-	'More spins': '라운드 늘리기',
-	'Fewer spins': '라운드 줄이기',
+	'Number of plays': '라운드 수',
+	'Unlimited plays': '무제한 라운드',
+	'More plays': '라운드 늘리기',
+	'Fewer plays': '라운드 줄이기',
 	'Stop autoplay on a full game win': '풀 게임 성공 시 자동 플레이 중지',
 	'Close menu': '메뉴 닫기',
 	Close: '닫기',

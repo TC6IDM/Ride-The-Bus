@@ -92,11 +92,14 @@
 	font-size: calc(var(--ui-bar) * 1.14);
 }
 
-/* A numeric header sits over a right-aligned column, so it right-aligns too.
-   Left-aligned headings above right-aligned figures was the misalignment: the
-   word and its numbers were at opposite ends of the same column. */
+/* A numeric header sits over an end-aligned column, so it end-aligns too.
+   Start-aligned headings above end-aligned figures was the misalignment: the
+   word and its numbers were at opposite ends of the same column.
+   Logical, like the two rules below: physical `left`/`right` held the headings
+   against one edge of the table while the Arabic cell text sat against the
+   other, so every column's heading and its own values were misaligned. */
 .pay-table th.num {
-	text-align: right;
+	text-align: end;
 }
 
 /* ---- Mode tabs ----------------------------------------------------------
@@ -202,7 +205,7 @@
 	letter-spacing: 0.07em;
 	text-transform: uppercase;
 	color: var(--ink-dim);
-	text-align: left;
+	text-align: start;
 	font-weight: 700;
 }
 
@@ -224,10 +227,11 @@
 	font-variant-numeric: tabular-nums;
 }
 
-/* Right-aligned and tabular so the ranges stack into a readable column rather
-   than a ragged edge. */
+/* End-aligned and tabular so the ranges stack into a readable column rather
+   than a ragged edge. The figures themselves are laid out left to right in
+   every language - see the block at the foot of components/app.css. */
 .pay-amount {
-	text-align: right;
+	text-align: end;
 	font-weight: 700;
 	color: var(--ink);
 	font-variant-numeric: tabular-nums;

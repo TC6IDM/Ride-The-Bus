@@ -66,6 +66,7 @@
 
 <svg
 	class="mark-icon"
+	class:is-directional={props.name === 'arrow'}
 	viewBox={props.name === 'arrow' ? '0 0 24 12' : '0 0 24 24'}
 	fill="none"
 	stroke="currentColor"
@@ -117,5 +118,18 @@
 		   parent element instead would shadow that element's background box as
 		   well as the glyph. */
 		filter: var(--mark-shadow, none);
+	}
+
+	/* The arrow is the only mark that MEANS a direction: it joins one card to
+	   the next in the worked examples, and those rows are laid out by flex, so
+	   in Arabic they run the other way. Left pointing right it aimed from the
+	   second card back at the first, and the sequence read backwards.
+
+	   A cross and a tick are verdicts on the card beside them and mirror to
+	   nothing, which is why this is opt-in rather than applied to .mark-icon.
+	   :global() because [dir] is set on <html>, outside this component - see
+	   loader.css:204, which flips transform-origin the same way. */
+	:global([dir='rtl']) .is-directional {
+		transform: scaleX(-1);
 	}
 </style>

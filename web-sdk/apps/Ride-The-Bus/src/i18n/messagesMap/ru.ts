@@ -37,7 +37,7 @@ export default {
 	'% faster': ' % быстрее',
 
 	Autoplay: 'Автоигра',
-	'Number of Spins': 'Количество раундов',
+	'Number of Plays': 'Количество раундов',
 
 	Advanced: 'Дополнительно',
 	'Game Mode': 'Режим игры',
@@ -174,10 +174,10 @@ export default {
 	RTP: 'RTP',
 	Session: 'Сессия',
 	Fast: 'Быстро',
-	'Number of spins': 'Количество раундов',
-	'Unlimited spins': 'Без ограничения раундов',
-	'More spins': 'Больше раундов',
-	'Fewer spins': 'Меньше раундов',
+	'Number of plays': 'Количество раундов',
+	'Unlimited plays': 'Без ограничения раундов',
+	'More plays': 'Больше раундов',
+	'Fewer plays': 'Меньше раундов',
 	'Stop autoplay on a full game win': 'Останавливать автоигру при полной победе',
 	'Close menu': 'Закрыть меню',
 	Close: 'Закрыть',

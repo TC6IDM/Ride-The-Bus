@@ -640,7 +640,7 @@
   border: 1px solid rgba(var(--ink-rgb), 0.12);
   background: rgba(var(--ink-rgb), 0.05);
   color: var(--ink-body);
-  text-align: left;
+  text-align: start;
   cursor: pointer;
   text-transform: none;
   transition: border-color 0.12s, background 0.12s;

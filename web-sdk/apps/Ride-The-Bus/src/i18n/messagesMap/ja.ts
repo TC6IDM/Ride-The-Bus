@@ -37,7 +37,7 @@ export default {
 	'% faster': '％高速',
 
 	Autoplay: 'オートプレイ',
-	'Number of Spins': 'ラウンド数',
+	'Number of Plays': 'ラウンド数',
 
 	Advanced: '詳細設定',
 	'Game Mode': 'ゲームモード',
@@ -175,10 +175,10 @@ export default {
 	RTP: 'RTP',
 	Session: 'セッション',
 	Fast: '高速',
-	'Number of spins': 'ラウンド数',
-	'Unlimited spins': '無制限',
-	'More spins': 'ラウンドを増やす',
-	'Fewer spins': 'ラウンドを減らす',
+	'Number of plays': 'ラウンド数',
+	'Unlimited plays': '無制限',
+	'More plays': 'ラウンドを増やす',
+	'Fewer plays': 'ラウンドを減らす',
 	'Stop autoplay on a full game win': 'フルゲーム達成でオートプレイを停止',
 	'Close menu': 'メニューを閉じる',
 	Close: '閉じる',

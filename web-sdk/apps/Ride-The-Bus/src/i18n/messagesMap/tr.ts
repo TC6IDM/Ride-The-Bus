@@ -37,7 +37,7 @@ export default {
 	'% faster': ' % daha hızlı',
 
 	Autoplay: 'Otomatik oyun',
-	'Number of Spins': 'Tur sayısı',
+	'Number of Plays': 'Tur sayısı',
 
 	Advanced: 'Gelişmiş',
 	'Game Mode': 'Oyun Modu',
@@ -175,10 +175,10 @@ export default {
 	RTP: 'RTP',
 	Session: 'Oturum',
 	Fast: 'Hızlı',
-	'Number of spins': 'Tur sayısı',
-	'Unlimited spins': 'Sınırsız tur',
-	'More spins': 'Daha fazla tur',
-	'Fewer spins': 'Daha az tur',
+	'Number of plays': 'Tur sayısı',
+	'Unlimited plays': 'Sınırsız tur',
+	'More plays': 'Daha fazla tur',
+	'Fewer plays': 'Daha az tur',
 	'Stop autoplay on a full game win': 'Tam oyun kazancında otomatik oyunu durdur',
 	'Close menu': 'Menüyü kapat',
 	Close: 'Kapat',

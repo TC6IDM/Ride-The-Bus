@@ -250,3 +250,59 @@ select,
 textarea {
 	font-family: inherit;
 }
+
+/* ---- Money and multipliers are read left to right, in every language ------
+ *
+ * Arabic is the one right-to-left locale the RGS can request (i18n/direction.ts
+ * sets dir="rtl" on <html>), and the mirrored board is correct: the four cards,
+ * the four guess squares and the control-bar panels all belong in reading
+ * order. A readout that PRINTS A FIGURE is the exception, and leaving it to the
+ * bidi algorithm produced two separate defects on screen.
+ *
+ * The first is the currency symbol coming apart. Intl renders USD in an Arabic
+ * locale as "12,500.00 US$" behind a right-to-left mark - the symbol is a
+ * SUFFIX there, and "$" is a European Terminator with no adjacent European
+ * number, so it resolves to the paragraph direction and is laid out at the far
+ * left of the line. The balance read "$US 1,000,000.00", with the two halves of
+ * one symbol at opposite ends of the number.
+ *
+ * The second is worse, because it mixes two different values. .cb-lastwin
+ * prints an amount and a multiplier chip inside one box, and the trailing
+ * neutral of each - the "$" and the multiplication sign - migrated to the same
+ * edge: the readout rendered "xUS$ 0.00 0.00", where nothing tells you which
+ * 0.00 is the money and which is the multiple.
+ *
+ * `direction: ltr` sets the run's own base direction and `unicode-bidi: isolate`
+ * stops it interacting with the Arabic around it, so a figure is laid out here
+ * exactly as it is in English: "12,500.00 US$", "0.00 US$ 0.00x", "1.04x -
+ * 9.19x". The BOX still sits where the mirrored layout puts it - only the
+ * characters inside it stop reordering.
+ *
+ * DELIBERATELY NOT APPLIED TO PROSE. A figure inside a sentence - How to Play's
+ * "Lower pays about 4.75x", the mode panel's "Max win 1354.2x Bet" - is already
+ * correct: the number reads left to right on its own and the multiplication
+ * sign after it lands to its left, which is where the next thing you read goes
+ * in Arabic. Isolating those would push the figure to the wrong side of the
+ * words around it. Only values that stand alone in their own box are listed
+ * here.
+ *
+ * Unconditional rather than under [dir='rtl'], because it is a no-op in a
+ * left-to-right locale - which means the two directions cannot drift apart, and
+ * what is on screen in English is what is being pinned. rtl.test.ts fails if a
+ * class named below stops existing in the markup.
+ */
+.cb-val,
+.cb-bet-base,
+.cb-spin-count,
+.card-mult,
+.running-win-amount,
+.bet-entry,
+.bet-chip-face,
+.pay-amount,
+.ss-stat-val,
+.ss-detail-val,
+.wc-amount,
+.wc-mult {
+	direction: ltr;
+	unicode-bidi: isolate;
+}

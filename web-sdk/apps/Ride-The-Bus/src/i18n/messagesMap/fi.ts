@@ -37,7 +37,7 @@ export default {
 	'% faster': ' % nopeampi',
 
 	Autoplay: 'Automaattipeli',
-	'Number of Spins': 'Kierrosten määrä',
+	'Number of Plays': 'Kierrosten määrä',
 
 	Advanced: 'Lisäasetukset',
 	'Game Mode': 'Pelitila',
@@ -175,10 +175,10 @@ export default {
 	RTP: 'RTP',
 	Session: 'Istunto',
 	Fast: 'Nopea',
-	'Number of spins': 'Kierrosten määrä',
-	'Unlimited spins': 'Rajattomasti kierroksia',
-	'More spins': 'Lisää kierroksia',
-	'Fewer spins': 'Vähemmän kierroksia',
+	'Number of plays': 'Kierrosten määrä',
+	'Unlimited plays': 'Rajattomasti kierroksia',
+	'More plays': 'Lisää kierroksia',
+	'Fewer plays': 'Vähemmän kierroksia',
 	'Stop autoplay on a full game win': 'Pysäytä automaattipeli täydellä voitolla',
 	'Close menu': 'Sulje valikko',
 	Close: 'Sulje',

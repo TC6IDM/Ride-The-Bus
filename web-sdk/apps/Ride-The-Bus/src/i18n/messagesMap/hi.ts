@@ -37,7 +37,7 @@ export default {
 	'% faster': '% तेज़',
 
 	Autoplay: 'ऑटोप्ले',
-	'Number of Spins': 'राउंड की संख्या',
+	'Number of Plays': 'राउंड की संख्या',
 
 	Advanced: 'उन्नत',
 	'Game Mode': 'गेम मोड',
@@ -174,10 +174,10 @@ export default {
 	RTP: 'RTP',
 	Session: 'सत्र',
 	Fast: 'तेज़',
-	'Number of spins': 'राउंड की संख्या',
-	'Unlimited spins': 'असीमित राउंड',
-	'More spins': 'अधिक राउंड',
-	'Fewer spins': 'कम राउंड',
+	'Number of plays': 'राउंड की संख्या',
+	'Unlimited plays': 'असीमित राउंड',
+	'More plays': 'अधिक राउंड',
+	'Fewer plays': 'कम राउंड',
 	'Stop autoplay on a full game win': 'पूरी जीत पर ऑटोप्ले रोकें',
 	'Close menu': 'मेन्यू बंद करें',
 	Close: 'बंद करें',

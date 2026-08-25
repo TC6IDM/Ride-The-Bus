@@ -37,7 +37,7 @@ export default {
 	'% faster': ' % más rápido',
 
 	Autoplay: 'Juego automático',
-	'Number of Spins': 'Número de rondas',
+	'Number of Plays': 'Número de rondas',
 
 	Advanced: 'Avanzado',
 	'Game Mode': 'Modo de juego',
@@ -176,10 +176,10 @@ export default {
 	RTP: 'RTP',
 	Session: 'Sesión',
 	Fast: 'Rápido',
-	'Number of spins': 'Número de rondas',
-	'Unlimited spins': 'Rondas ilimitadas',
-	'More spins': 'Más rondas',
-	'Fewer spins': 'Menos rondas',
+	'Number of plays': 'Número de rondas',
+	'Unlimited plays': 'Rondas ilimitadas',
+	'More plays': 'Más rondas',
+	'Fewer plays': 'Menos rondas',
 	'Stop autoplay on a full game win': 'Parar el juego automático al ganar el juego completo',
 	'Close menu': 'Cerrar menú',
 	Close: 'Cerrar',

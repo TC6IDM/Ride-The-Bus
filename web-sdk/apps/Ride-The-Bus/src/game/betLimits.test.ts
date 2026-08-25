@@ -4,6 +4,8 @@
  */
 import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 import {
   betDecimals,
@@ -291,5 +293,59 @@ describe('clampToMaximum', () => {
 
   test('a NaN bet is handed back rather than turned into a limit', () => {
     assert.ok(Number.isNaN(clampToMaximum(NaN, L, M)));
+  });
+});
+
+/**
+ * The rack and the range are two different fields of the authenticate
+ * response, and nothing in the RGS makes them agree.
+ *
+ * betLevels is the operator's list of suggested amounts; minBet/maxBet are
+ * enforced per bet. A level outside the range renders as a live chip that sets
+ * an unplayable bet, and the spin button then has to explain a figure the game
+ * offered a moment earlier. Local dev had exactly that shape - a 200.00 cap
+ * against a fallback rack running to 1000 - so three of the ten chips were
+ * dead on every local run and nothing said so.
+ */
+describe('the bet menu only offers levels the operator will accept', () => {
+  const GAME = readFileSync(resolve(import.meta.dirname, '../components/Game.svelte'), 'utf8');
+
+  test('betLevels filters the rack against the limits', () => {
+    const at = GAME.indexOf('const betLevels = () =>');
+    assert.ok(at > 0, 'betLevels() is gone');
+    const body = GAME.slice(at, at + 1200);
+    assert.ok(
+      body.includes('betWithinRange(v, stateConfig.betLimits, API_AMOUNT_MULTIPLIER)'),
+      'betLevels() no longer filters against the bet limits',
+    );
+    assert.ok(
+      body.includes('playable.length ? playable : all'),
+      'betLevels() can now return an empty rack',
+    );
+  });
+
+  test('the stepper and the opening bet read the same rack', () => {
+    // Both used stateConfig.betAmountOptions directly. The + button could step
+    // onto a level past maxBet, and the opening-bet effect could seed one.
+    for (const marker of ['const sorted = betLevels();', 'const levels = betLevels();']) {
+      assert.ok(GAME.includes(marker), `Game.svelte no longer has: ${marker}`);
+    }
+  });
+
+  test('what that filter does to the dev rack', () => {
+    // The dev stand-in: a 0.10 floor and a 200.00 cap (micro-units in
+    // Game.svelte), against the ten-level fallback.
+    const dev = limits(0.1, 200, 0.1);
+    const rack = [1, 5, 25, 50, 75, 100, 200, 500, 800, 1000];
+    const playable = rack.filter((v) => betWithinRange(v, dev, M));
+    assert.deepEqual(playable, [1, 5, 25, 50, 75, 100, 200]);
+    // The maximum stays selectable, which is what Stake's checklist asks for.
+    assert.equal(Math.max(...playable) * M, dev.maxBet);
+  });
+
+  test('an unconstrained session keeps every level', () => {
+    const rack = [1, 5, 25, 50, 75, 100, 200, 500, 800, 1000];
+    const none: BetLimits = { minBet: 0, maxBet: 0, stepBet: 0 };
+    assert.deepEqual(rack.filter((v) => betWithinRange(v, none, M)), rack);
   });
 });

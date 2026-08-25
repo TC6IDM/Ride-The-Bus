@@ -37,7 +37,7 @@ export default {
 	'% faster': '％ 更快',
 
 	Autoplay: '自动游戏',
-	'Number of Spins': '局数',
+	'Number of Plays': '局数',
 
 	Advanced: '高级',
 	'Game Mode': '游戏模式',
@@ -171,10 +171,10 @@ export default {
 	RTP: 'RTP',
 	Session: '会话',
 	Fast: '快速',
-	'Number of spins': '局数',
-	'Unlimited spins': '不限局数',
-	'More spins': '增加局数',
-	'Fewer spins': '减少局数',
+	'Number of plays': '局数',
+	'Unlimited plays': '不限局数',
+	'More plays': '增加局数',
+	'Fewer plays': '减少局数',
 	'Stop autoplay on a full game win': '全中时停止自动游戏',
 	'Close menu': '关闭菜单',
 	Close: '关闭',

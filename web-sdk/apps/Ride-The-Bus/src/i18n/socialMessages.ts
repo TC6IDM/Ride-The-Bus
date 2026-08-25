@@ -40,7 +40,6 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 
 	// Autoplay popup
 	Autoplay: 'Auto Play',
-	'Number of Spins': 'Number of Plays',
 	'Autoplay settings': 'Auto Play settings',
 	'Stop autoplay': 'Stop auto play',
 
@@ -53,9 +52,6 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 	'Custom bet amount': 'Custom play amount',
 	'Increase bet': 'Increase play',
 	'Decrease bet': 'Decrease play',
-	'More spins': 'More plays',
-	'Fewer spins': 'Fewer plays',
-	'Unlimited spins': 'Unlimited plays',
 	'Spins must be %s seconds apart': 'Plays must be %s seconds apart',
 
 	// Running win bar
