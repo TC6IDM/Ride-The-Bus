@@ -36,6 +36,15 @@ export default {
 	'Off — full animation': 'Выкл. — полная анимация',
 	'% faster': ' % быстрее',
 
+	'Sound settings': 'Настройки звука',
+	Sound: 'Звук',
+	Music: 'Музыка',
+	'Game Sounds': 'Звуки игры',
+	'Mute music': 'Выключить музыку',
+	'Unmute music': 'Включить музыку',
+	'Mute game sounds': 'Выключить звуки игры',
+	'Unmute game sounds': 'Включить звуки игры',
+
 	Autoplay: 'Автоигра',
 	'Number of Plays': 'Количество раундов',
 

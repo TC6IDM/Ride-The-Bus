@@ -61,7 +61,7 @@ pass in a browser", not as done.
 | `CMP-06` Paytable | 8 payout rows rendered |
 | `CMP-07` Mode description and cost | 3 tabs, cost and ceiling on each |
 | `CMP-08` UI guide | Controls section names every bar button |
-| `CMP-09` Sound can be disabled | mute toggles and survives a reload |
+| `CMP-09` Sound can be disabled | both buses mute independently and survive a reload |
 | `CMP-10` Spacebar bound to the bet button | plays with nothing focused; refuses on a focused INPUT and on a focused BUTTON |
 | `CMP-11` Frame never scrolls | all seven target sizes, idle / bet menu open / How to Play open |
 | `CMP-12` Double-tap zoom off, pinch intact | `touch-action: manipulation`, no `user-scalable=no` |
@@ -718,10 +718,31 @@ live in the How to Play panel behind the `i` button.
   game information").
 
 - [ ] **CMP-09 · Sound can be turned off** — *Blocker*
-  Press the speaker button, play a round, reload, play another.
-  **Expect:** muting silences everything, the button shows its state, and the
-  preference survives a reload. Verbatim ("Game provides an option to disable
-  sounds").
+  The speaker button on the bar **opens the sound panel rather than muting**.
+  That is the price of separate music and cue levels, and it makes muting two
+  actions instead of one — so this check is about the panel, not about a toggle.
+
+  Open it, and for **each** of the two rows (Music, Game Sounds): press its
+  speaker, play a round, drag its slider to zero, play another, reload.
+  **Expect:**
+  - the speaker silences that bus alone and leaves the other one playing;
+  - the speaker does **not** move the slider, and un-muting returns to the level
+    that was set rather than to the default;
+  - dragging to zero also mutes, so the speaker glyph never shows sound on over
+    a silent bus;
+  - un-muting a slider parked at zero lifts it back to the last audible level
+    rather than doing nothing visible;
+  - the bar's own icon shows the crossed speaker only when **both** buses are
+    silent;
+  - all four settings survive a reload.
+
+  Verbatim ("Game provides an option to disable sounds"; "An option to disable
+  sounds"). The blocker is satisfied by the panel's two speakers: there is no
+  requirement that muting be a single tap.
+
+  Most of the above is pinned by `src/game/sound.test.ts` against a fake
+  AudioContext, so this pass is confirming it on real hardware with real ears —
+  in particular that muted really is silent, which no unit test can hear.
 
 - [ ] **CMP-10 · The spacebar is bound to the bet button** — *Blocker*
   With all four guesses picked, tap Space. Then hold it. Then tap it with the

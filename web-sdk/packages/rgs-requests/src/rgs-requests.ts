@@ -20,6 +20,36 @@ export const requestAuthenticate = async (options: {
 	return data;
 };
 
+/**
+ * LOCAL ADDITION to the Stake SDK - re-apply if this package is updated from
+ * upstream. Same convention as the two additions in rgs-fetcher/rgsFetcher.ts.
+ *
+ * RGS.md documents /wallet/balance as "useful for periodic balance updates" and
+ * the SDK ships no helper for it. Ride The Bus needs one: play and end-round
+ * refresh the balance after every round, which covers every way the GAME can
+ * change it and none of the ways the PLAYER can - a deposit made on Stake with
+ * the game open left a stale figure on the control bar until the next round
+ * settled.
+ *
+ * Added here rather than fetched from the app directly so it goes through the
+ * same rgsFetcher as its four siblings, and inherits the local fixes on it: the
+ * 429 handling, and the scheme handling that makes a localhost RGS reachable.
+ */
+export const requestBalance = async (options: {
+	sessionID: string;
+	rgsUrl: string;
+}) => {
+	const data = await rgsFetcher.post({
+		rgsUrl: options.rgsUrl,
+		url: '/wallet/balance',
+		variables: {
+			sessionID: options.sessionID,
+		},
+	});
+
+	return data;
+};
+
 export const requestEndRound = async (options: {
 	sessionID: string;
 	rgsUrl: string;

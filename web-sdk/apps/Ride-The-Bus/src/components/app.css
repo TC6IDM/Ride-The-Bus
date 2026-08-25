@@ -306,3 +306,58 @@ textarea {
 	direction: ltr;
 	unicode-bidi: isolate;
 }
+
+/* ---- Scrollbars ---------------------------------------------------------
+ * Global, because the default one is a browser-chrome artefact and it appeared
+ * in the middle of a hand-built scene the moment any panel got long enough to
+ * scroll - How to Play is the obvious one, but the bet menu at 40 levels, the
+ * error modal and the intro all reach it too. A white-and-grey Windows
+ * scrollbar down the edge of the lit panel is the same class of defect as the
+ * emoji suits were: a platform default sitting inside artwork.
+ *
+ * Declared once here rather than per stylesheet so a panel added later cannot
+ * miss it, and kept deliberately quiet - a scrollbar is a position indicator,
+ * not a control anyone is meant to look at. The thumb takes --tint-rgb where a
+ * panel has set one (see popup-base.css), so a menu's scrollbar wears the same
+ * colour as the control that opened it, and falls back to the game's gold
+ * everywhere else.
+ *
+ * Both spellings are needed and neither is enough alone: scrollbar-color is
+ * what Firefox reads, ::-webkit-scrollbar is what Chrome and Safari read.
+ */
+* {
+	scrollbar-width: thin;
+	scrollbar-color: rgba(var(--scroll-thumb-rgb, var(--gold-rgb)), 0.42) transparent;
+}
+
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+::-webkit-scrollbar-track {
+	/* No track fill. The panel's own surface IS the track - a filled channel
+	   reads as a slot cut into the material, which is exactly the border-effect
+	   look the art pass spent its time removing. */
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background: rgba(var(--scroll-thumb-rgb, var(--gold-rgb)), 0.36);
+	border-radius: 99px;
+	/* Inset by a transparent border so the thumb floats clear of the panel edge
+	   instead of sitting hard against it. */
+	border: 2px solid transparent;
+	background-clip: padding-box;
+}
+
+@media (hover: hover) {
+	::-webkit-scrollbar-thumb:hover {
+		background: rgba(var(--scroll-thumb-rgb, var(--gold-rgb)), 0.62);
+		background-clip: padding-box;
+	}
+}
+
+::-webkit-scrollbar-corner {
+	background: transparent;
+}

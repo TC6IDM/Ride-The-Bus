@@ -36,6 +36,15 @@ export default {
 	'Off — full animation': 'Mati — animasi penuh',
 	'% faster': ' % lebih cepat',
 
+	'Sound settings': 'Pengaturan Suara',
+	Sound: 'Suara',
+	Music: 'Musik',
+	'Game Sounds': 'Suara Permainan',
+	'Mute music': 'Bisukan musik',
+	'Unmute music': 'Aktifkan musik',
+	'Mute game sounds': 'Bisukan suara permainan',
+	'Unmute game sounds': 'Aktifkan suara permainan',
+
 	Autoplay: 'Main otomatis',
 	'Number of Plays': 'Jumlah ronde',
 

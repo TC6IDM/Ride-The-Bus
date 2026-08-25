@@ -37,6 +37,15 @@ export default {
 	'Off — full animation': 'إيقاف — رسوم متحركة كاملة',
 	'% faster': '٪ أسرع',
 
+	'Sound settings': 'إعدادات الصوت',
+	Sound: 'الصوت',
+	Music: 'الموسيقى',
+	'Game Sounds': 'أصوات اللعبة',
+	'Mute music': 'كتم الموسيقى',
+	'Unmute music': 'إلغاء كتم الموسيقى',
+	'Mute game sounds': 'كتم أصوات اللعبة',
+	'Unmute game sounds': 'إلغاء كتم أصوات اللعبة',
+
 	Autoplay: 'اللعب التلقائي',
 	'Number of Plays': 'عدد الجولات',
 

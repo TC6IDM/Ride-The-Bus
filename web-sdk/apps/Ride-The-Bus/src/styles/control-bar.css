@@ -624,6 +624,29 @@
  * every glyph again. */
 .cb-icon.active { border-color: var(--accent); color: var(--ink); background: rgba(var(--accent-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.45); }
 
+/* The sound button opens a panel, so it wears that panel's identity rather than
+   the accent blue every other .cb-icon lights with. (0,3,0) against the (0,2,0)
+   rule above, which is the specificity note further down this file made
+   concrete: .cb-icon.active sets border-color, background AND color, so a
+   single-class override would lose two of the three and leave a half-blue
+   button. Its neighbour .cb-info keeps the blue - two controls in one pill
+   opening two differently-coloured panels is the whole point. */
+.cb-icon.cb-sound.active {
+  border-color: var(--ctl-sound);
+  color: var(--ctl-sound-ink);
+  background: rgba(var(--ctl-sound-rgb), 0.16);
+  box-shadow: 0 0 12px rgba(var(--ctl-sound-rgb), 0.4);
+}
+
+@media (hover: hover) {
+  .cb-icon.cb-sound:hover {
+    border-color: var(--ctl-sound);
+    color: var(--ctl-sound-ink);
+    background: rgba(var(--ctl-sound-rgb), 0.16);
+    box-shadow: 0 0 12px rgba(var(--ctl-sound-rgb), 0.4);
+  }
+}
+
 @media (hover: hover) {
   .cb-icon:hover { border-color: var(--accent); color: var(--ink); background: rgba(var(--accent-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.45); }
 }

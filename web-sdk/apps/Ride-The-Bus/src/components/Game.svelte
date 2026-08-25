@@ -41,14 +41,21 @@
   //                  that starts mid-reveal instead of replaying the round,
   //                  which is arguably worse to watch anyway.
   //
-  //   /wallet/balance - "useful for periodic balance updates" (RGS.md). The
-  //                  balance here is refreshed from every play and end-round
-  //                  response, which covers every way this game can change it.
-  //                  The SDK ships no helper for it at all, which is a fair
-  //                  signal it is not expected of a game like this.
-  import { requestBet, requestEndRound } from 'rgs-requests';
+  //   /wallet/balance - "useful for periodic balance updates" (RGS.md). NOW
+  //                  USED, by refreshBalance() below. It was skipped on the
+  //                  grounds that play and end-round already refresh the balance
+  //                  and between them "cover every way this game can change
+  //                  it" - which is true and is the wrong test. The player can
+  //                  change it too: a deposit made on Stake with the game open
+  //                  left a stale figure on the bar until the next round
+  //                  settled, and a player who has just topped up and still
+  //                  cannot afford a bet has no way to tell that the game simply
+  //                  has not looked. The SDK ships no helper, so this one is
+  //                  posted through rgsFetcher directly.
+  import { requestBalance, requestBet, requestEndRound } from 'rgs-requests';
   import { pacedPlay, pacedRequest } from '../game/rgsPacing';
-  import { sound, type PressKind } from '../game/sound';
+  import { sound, type AudioBusName, type PressKind } from '../game/sound';
+  import { music } from '../game/music';
   import {
     FAMILY_BLURB,
     FAMILY_RULES,
@@ -393,7 +400,7 @@
   });
 
   // Bottom control-bar UI: which popup (if any) is open, plus mute state.
-  let openPopup = $state<null | 'bet' | 'mode' | 'turbo' | 'autospin' | 'advanced' | 'info'>(null);
+  let openPopup = $state<null | 'bet' | 'mode' | 'turbo' | 'autospin' | 'advanced' | 'info' | 'sound'>(null);
   /**
    * A mode the player has picked but not yet confirmed.
    *
@@ -408,12 +415,68 @@
    */
   let pendingFamily = $state<ModeFamily | null>(null);
   // Seeded from the persisted preference so mute survives a reload.
-  let muted = $state(sound.isMuted());
-  function toggleMuted() {
-    muted = sound.toggleMuted();
-    // Unmuting should be audible; also doubles as the user gesture that lets the
-    // browser start the audio context.
-    if (!muted) sound.playPress('toggle');
+  // Mirrors of the mixer, because audioGraph.ts is a plain module rather than a
+  // rune - the panel writes through the setters below and reads back, so a
+  // slider that also clears a mute (and a mute that also lifts a slider) stays
+  // in step with the controls drawn from it.
+  let musicVolume = $state(sound.busVolume('music'));
+  let sfxVolume = $state(sound.busVolume('sfx'));
+  let musicMuted = $state(sound.isBusMuted('music'));
+  let sfxMuted = $state(sound.isBusMuted('sfx'));
+
+  /**
+   * The bar icon's state: crossed only when there is nothing left to hear.
+   * Derived from the mirrors rather than read from sound.isMuted() so that it
+   * tracks the panel - a plain call would not re-run when a slider moved.
+   */
+  const muted = $derived((musicMuted || musicVolume <= 0) && (sfxMuted || sfxVolume <= 0));
+
+  function syncSound() {
+    musicVolume = sound.busVolume('music');
+    sfxVolume = sound.busVolume('sfx');
+    musicMuted = sound.isBusMuted('music');
+    sfxMuted = sound.isBusMuted('sfx');
+  }
+
+  function setBusVolume(bus: AudioBusName, value: number) {
+    sound.setBusVolume(bus, value);
+    syncSound();
+  }
+
+  function toggleBus(bus: AudioBusName) {
+    sound.toggleBusMuted(bus);
+    syncSound();
+    // Turning a bus back on should be audible on that bus. Music has nothing to
+    // preview yet, so only the cue bus answers.
+    if (bus === 'sfx' && !sound.isBusSilent('sfx')) sound.playPress('toggle');
+  }
+
+  // A range input fires `input` for pointer movement inside the current step
+  // too, so without this the same tick retriggers while the thumb is merely
+  // nudged - the guard onTurboInput already carries, for the same reason.
+  let lastSfxTick = -1;
+  function onSfxInput(event: Event) {
+    const value = Number((event.currentTarget as HTMLInputElement).value);
+    if (!Number.isFinite(value)) return;
+    setBusVolume('sfx', value);
+    if (value === lastSfxTick) return;
+    lastSfxTick = value;
+    // Each slider previews its own bus - see onMusicInput.
+    sound.playSliderTick(value / 100);
+  }
+
+  let lastMusicTick = -1;
+  function onMusicInput(event: Event) {
+    const value = Number((event.currentTarget as HTMLInputElement).value);
+    if (!Number.isFinite(value)) return;
+    setBusVolume('music', value);
+    if (value === lastMusicTick) return;
+    lastMusicTick = value;
+    // On the MUSIC bus, not the cue bus. A slider has to preview the thing it
+    // sets: ticking this one with a card sound would be demonstrating the wrong
+    // level entirely, and it is the reason this slider was silent until there
+    // was any music for it to speak for.
+    sound.playMusicTick(value / 100);
   }
   let autoRoundsInput = $state('10');
   let autoInfinite = $state(false);
@@ -1201,6 +1264,34 @@
   // inventing a second notion of "fast".
   const paceMs = (normal: number, fast: number) =>
     slamRequested ? fast : Math.round(normal + (fast - normal) * turboSpeed);
+  /**
+   * True when the cards do not land in sequence at all - the gap between them is
+   * zero and the whole reveal resolves inside one frame. A slam, or turbo at
+   * maximum, which the comment above notes collapse to the same value.
+   *
+   * Used to SPACE the per-card cues, not to suppress them. They were suppressed
+   * at first, on the reasoning that ~24 voices on one millisecond would be ducked
+   * by the limiter into a single mush. That was a theory about the mix that was
+   * never checked by ear, and on the actual hardware it was plainly wrong in the
+   * other direction: an instant round played the deal and then almost nothing,
+   * so the faster you played the less game you got. A round that resolved
+   * quickly still happened, and the player is still owed the sound of it.
+   */
+  const revealIsInstant = () => paceMs(650, 0) <= 0;
+
+  /**
+   * How far apart to place the per-card cues when the reveal itself has no gaps.
+   *
+   * 60ms is playDeal's own riffle spacing, so an instant round comes out at the
+   * cadence of a hand being dealt rather than as four separate events crushed
+   * together. Everything still sounds; it is spread across ~180ms instead of
+   * landing on one millisecond, which is the part the limiter actually objected
+   * to. Scheduled through each cue's `lead`, so it is Web Audio doing the
+   * spacing at sample accuracy rather than a chain of timers.
+   */
+  const INSTANT_CUE_STAGGER = 0.06;
+  const cueLead = (index: number) => (revealIsInstant() ? index * INSTANT_CUE_STAGGER : 0);
+
   // Card flip duration (seconds) for the --flip-dur CSS var; shrinks to 0 as
   // turbo approaches instant, and snaps to 0 on a slam.
   const flipDurSec = () => (slamRequested ? '0.000' : (0.5 * (1 - turboSpeed)).toFixed(3));
@@ -1365,17 +1456,31 @@
     const skipForHold = slamOnSpaceHold && spaceHoldRunning;
     const skipForAuto = autoRunning && slamOnAuto;
     slamRequested = (skipForAuto || skipForHold) && !jurisdiction.slamstopDisabled();
+    // The hand goes down. Fills the ~650ms between the press and the first card,
+    // which used to be silent - the press resolved into nothing and the round
+    // began with a card already landing.
+    //
+    // Under an instant reveal the per-card cues below fall in behind it at the
+    // same riffle spacing, so the whole round reads as one dealt hand.
+    sound.playDeal();
+
     let running = 1;
     let busted = false;
     let forgivenessSpent = false;
     for (let i = 0; i < revealEvents.length; i++) {
+      // The bed rises before the card lands, not after: the tension belongs to
+      // the wait. Setting a variable rather than firing a voice is what makes
+      // this safe under slam, where all four stages happen in one frame - the
+      // scheduler reads the last value and plays one bed, not four at once.
+      music.setTension(i);
       await revealWait(650, 0);
       revealedCards[i] = revealEvents[i].card;
-      sound.playCardFlip();
+      // Spaced, not skipped, when the reveal is instant - see cueLead.
+      sound.playCardFlip(cueLead(i));
       const event = revealEvents[i];
       if (!busted && event.correct) {
         running *= event.payout;
-        sound.playStageWin(i);
+        sound.playStageWin(i, cueLead(i));
       } else if (!busted) {
         // A forgiven miss keeps its fraction and the round plays on - no bust
         // marker, no decay term (that stands in for stages a bust skips, and
@@ -1384,12 +1489,17 @@
           running *= familyRules().forgive!;
           forgivenessSpent = true;
           forgivenIndex = i;
-          sound.playBust();
+          // NOT playBust(). The board draws an amber return arrow here and a red
+          // cross on a real bust, and cards.css is explicit that the two must
+          // differ - "a red cross says the round ended here, and this one carried
+          // on". Sounding them identically threw that away, and with it the only
+          // thing Second Chance does that the other two families do not.
+          sound.playForgiven(cueLead(i));
         } else {
           bustedIndex = i;
           running *= familyRules().retention[i]! * DECAY ** (3 - i);
           busted = true;
-          sound.playBust();
+          sound.playBust(cueLead(i));
         }
       }
       stageMultipliers[i] = quantizeMultiplier(running * familyRules().cost);
@@ -1400,6 +1510,10 @@
       }
     }
 
+    // The round is decided; the room goes back to being a room. The held voices
+    // already scheduled tail out on their own, so this is a fade rather than a
+    // cut and it lands under the settle cue.
+    music.setTension(null);
     await revealWait(300, 120);
     // Prefer the server's authoritative payout on engine rounds; fall back to
     // the local formula (identical maths) when there's no RGS session.
@@ -2044,6 +2158,7 @@
     if (!hold && !autoRoundsValid()) return;
     autoStopRequested = false;
     autoRunning = true;
+    sound.playAutoStart();
     // A run can start with the bet menu already open - the spacebar hold does
     // not go through the popup at all. Leaving it up would show a rack of chips
     // that silently refuse to be picked, which is worse than closing it.
@@ -2129,6 +2244,11 @@
   }
 
   function stopAuto() {
+    // Sounded here rather than where autoRunning flips false in the loop's
+    // `finally`: that runs after the current round has played out, seconds
+    // later, and the player needs to hear that the press registered NOW. The
+    // run really is ending; only the last round is still in flight.
+    if (autoRunning && !autoStopRequested) sound.playAutoStop();
     // Can't cancel a bet already on the server, so just ask the loop to stop
     // before the next round; the current round plays out.
     autoStopRequested = true;
@@ -2329,7 +2449,10 @@
   }
 
   function onBetDisplayClick() {
-    if (betLockedReason()) { flashBetTip(); return; }
+    // The tip is the answer; the cue is only what says a press was HEARD and
+    // refused. On a phone the flash is the only route to the tip at all, so
+    // without this a locked bet answers a tap with nothing for ~0 frames.
+    if (betLockedReason()) { sound.playBlocked(); flashBetTip(); return; }
     togglePopup('bet');
   }
 
@@ -2476,6 +2599,79 @@
     const target = el as HTMLElement;
     sound.playPress(pressKindFor(target), Math.max(0, choiceStageFor(target)));
   }
+
+  // The room follows the screen. An effect rather than a line at each of the
+  // five introPhase assignments, because it cannot then be forgotten at a sixth.
+  //
+  // 'lobby' is honest but rarely heard: nothing has been clicked while the
+  // loader and intro are up, so there is no running AudioContext for the
+  // scheduler to join (see contextTime). It plays when a player opens the sound
+  // panel before continuing, and on the replay flow's second tap. The first
+  // press of a normal session lands on 'playing' anyway.
+  $effect(() => {
+    music.setScene(introPhase === 'playing' ? 'table' : 'lobby');
+  });
+
+  $effect(() => {
+    return () => music.stop();
+  });
+
+  /**
+   * Pull the wallet balance from the RGS.
+   *
+   * Only ever RAISES confidence in the displayed figure - it overwrites with the
+   * server's own number, and decides nothing. Skipped while a round is in
+   * flight: play and end-round are authoritative there and a poll landing
+   * between them would put a pre-settlement figure back on the bar.
+   */
+  async function refreshBalance() {
+    if (!stateUrlDerived.sessionID() || !stateUrlDerived.rgsUrl()) return;
+    if (stateUrlDerived.replay() || roundInProgress() || engineRoundOpen) return;
+    try {
+      const data = await pacedRequest('balance', () =>
+        requestBalance({
+          rgsUrl: stateUrlDerived.rgsUrl(),
+          sessionID: stateUrlDerived.sessionID(),
+        }),
+      );
+      const amount = (data as any)?.balance?.amount;
+      // Same guard as end-round, and for the same reason: null divided by the
+      // multiplier is 0, which would zero the bar rather than leave it stale.
+      if (typeof amount === 'number' && Number.isFinite(amount)) {
+        stateBet.balanceAmount = amount / API_AMOUNT_MULTIPLIER;
+      }
+    } catch {
+      // A balance poll is a convenience. An RGS that does not answer it, or a
+      // network blip, must never surface an error over a game that is otherwise
+      // working - the next play or end-round response corrects the figure.
+    }
+  }
+
+  /**
+   * Poll while idle, and immediately whenever the tab comes back.
+   *
+   * The visibility half is the one that matters. Topping up means leaving this
+   * tab for the cashier and coming back, so returning focus is both the moment
+   * the balance is most likely to be wrong and the moment the player is most
+   * likely to be looking at it. The interval is the fallback for a deposit made
+   * on a phone or a second device with the game still on screen.
+   */
+  const BALANCE_POLL_MS = 15_000;
+
+  $effect(() => {
+    if (!stateUrlDerived.sessionID() || stateUrlDerived.replay()) return;
+    const timer = setInterval(refreshBalance, BALANCE_POLL_MS);
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void refreshBalance();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onVisible);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onVisible);
+    };
+  });
 
   $effect(() => {
     document.addEventListener('click', onDocumentClick, true);
@@ -2810,7 +3006,18 @@
     {/if}
 
     <div class="cb-panel cb-panel-light">
-      <button class="cb-icon" onclick={toggleMuted} aria-pressed={muted} aria-label={muted ? t('Unmute') : t('Mute')}>
+      <!-- Opens the mixer rather than toggling. Muting is two actions now
+           instead of one, which is the price of having separate music and cue
+           levels at all; the panel's two speaker buttons are what satisfy
+           "an option to disable sounds". -->
+      <button
+        class="cb-icon cb-sound"
+        class:active={openPopup === 'sound'}
+        onclick={() => togglePopup('sound')}
+        aria-haspopup="dialog"
+        aria-expanded={openPopup === 'sound'}
+        aria-label={t('Sound settings')}
+      >
         <SoundIcon {muted} />
       </button>
       <button class="cb-icon cb-info" class:active={openPopup === 'info'} onclick={() => togglePopup('info')} aria-label={t('How to play')}>
@@ -3323,6 +3530,79 @@
     </div>
   {/if}
 
+  <!-- Sound. Two buses on one panel, each with a speaker beside its slider:
+       the speaker toggles mute and leaves the level alone, and dragging to zero
+       mutes as well, so the glyph can never claim sound is on over a silent bus.
+       No jurisdiction gate - "an option to disable sounds" is a blocker
+       everywhere, so this panel is the one that must always be reachable. -->
+  {#if openPopup === 'sound'}
+    <div class="popup popup-sound" role="dialog" aria-label={t('Sound settings')}>
+      <div class="popup-head"><span>{t('Sound')}</span><button class="popup-close" onclick={closePopup} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
+      <div class="sound-body">
+        <div class="sound-row" class:is-off={musicMuted || musicVolume <= 0}>
+          <button
+            type="button"
+            class="sound-mute"
+            class:off={musicMuted || musicVolume <= 0}
+            onclick={() => toggleBus('music')}
+            aria-pressed={musicMuted || musicVolume <= 0}
+            aria-label={musicMuted || musicVolume <= 0 ? t('Unmute music') : t('Mute music')}
+          >
+            <SoundIcon muted={musicMuted || musicVolume <= 0} />
+          </button>
+          <div class="sound-track">
+            <span class="sound-label">{t('Music')}</span>
+            <input
+              class="sound-slider"
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              value={musicVolume}
+              oninput={onMusicInput}
+              disabled={musicMuted || musicVolume <= 0}
+              aria-label={t('Music')}
+            />
+          </div>
+          <!-- The STORED level, not the effective one. Printing 0 while the
+               thumb sits at 75 put two different numbers for one bus on the
+               same row - the readout said silent and the slider said
+               three-quarters. The slash and the greyed bar carry "off"; this
+               carries "the level you will come back to". -->
+          <span class="sound-readout">{musicVolume}</span>
+        </div>
+
+        <div class="sound-row" class:is-off={sfxMuted || sfxVolume <= 0}>
+          <button
+            type="button"
+            class="sound-mute"
+            class:off={sfxMuted || sfxVolume <= 0}
+            onclick={() => toggleBus('sfx')}
+            aria-pressed={sfxMuted || sfxVolume <= 0}
+            aria-label={sfxMuted || sfxVolume <= 0 ? t('Unmute game sounds') : t('Mute game sounds')}
+          >
+            <SoundIcon muted={sfxMuted || sfxVolume <= 0} />
+          </button>
+          <div class="sound-track">
+            <span class="sound-label">{t('Game Sounds')}</span>
+            <input
+              class="sound-slider"
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              value={sfxVolume}
+              oninput={onSfxInput}
+              disabled={sfxMuted || sfxVolume <= 0}
+              aria-label={t('Game Sounds')}
+            />
+          </div>
+          <span class="sound-readout">{sfxVolume}</span>
+        </div>
+      </div>
+    </div>
+  {/if}
+
   {#if openPopup === 'autospin' && !jurisdiction.autoplayDisabled()}
     <div class="popup popup-autospin" role="dialog" aria-label={t('Autoplay')}>
       <div class="popup-head"><span>{t('Autoplay')}</span><button class="popup-close" onclick={closePopup} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
@@ -3374,9 +3654,16 @@
              which is the same information delivered before the click rather
              than after it. The per-switch `disabled` guards stay: they also
              cover autoRunning, which is a live state. -->
+        <!-- Live during a run, like the row below it. The loop reads this at the
+             END of each round (see the `break` in startAuto), so flipping it
+             mid-run takes effect from the next one - which is exactly when a
+             player wants it: they are watching a run they no longer want to
+             leave unattended. Only the UI was refusing; the behaviour always
+             supported it. Replay still disables it, because autoplay does not
+             run in a replay at all. -->
         <div class="advanced-row">
           <span class="control-label">{t('Stop on full game win')}</span>
-          <button type="button" class="switch" class:on={stopOnFullWin} role="switch" aria-checked={stopOnFullWin} aria-label={t('Stop autoplay on a full game win')} disabled={autoRunning || stateUrlDerived.replay()} onclick={() => (stopOnFullWin = !stopOnFullWin)}><span class="switch-knob"></span></button>
+          <button type="button" class="switch" class:on={stopOnFullWin} role="switch" aria-checked={stopOnFullWin} aria-label={t('Stop autoplay on a full game win')} disabled={stateUrlDerived.replay()} onclick={() => (stopOnFullWin = !stopOnFullWin)}><span class="switch-knob"></span></button>
         </div>
         <!-- Unlike the row above, this one is NOT disabled mid-run: it changes
              only how the next celebration behaves, so flipping it during a run

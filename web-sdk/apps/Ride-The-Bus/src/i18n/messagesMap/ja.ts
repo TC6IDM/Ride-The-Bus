@@ -36,6 +36,15 @@ export default {
 	'Off — full animation': 'オフ — 通常アニメーション',
 	'% faster': '％高速',
 
+	'Sound settings': 'サウンド設定',
+	Sound: 'サウンド',
+	Music: '音楽',
+	'Game Sounds': 'ゲーム音',
+	'Mute music': '音楽をミュート',
+	'Unmute music': '音楽をオンにする',
+	'Mute game sounds': 'ゲーム音をミュート',
+	'Unmute game sounds': 'ゲーム音をオンにする',
+
 	Autoplay: 'オートプレイ',
 	'Number of Plays': 'ラウンド数',
 

@@ -36,6 +36,15 @@ export default {
 	'Off — full animation': '끄기 — 전체 애니메이션',
 	'% faster': '％ 빠름',
 
+	'Sound settings': '사운드 설정',
+	Sound: '사운드',
+	Music: '음악',
+	'Game Sounds': '게임 사운드',
+	'Mute music': '음악 음소거',
+	'Unmute music': '음악 음소거 해제',
+	'Mute game sounds': '게임 사운드 음소거',
+	'Unmute game sounds': '게임 사운드 음소거 해제',
+
 	Autoplay: '자동 플레이',
 	'Number of Plays': '라운드 수',
 

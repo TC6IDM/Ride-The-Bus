@@ -36,6 +36,15 @@ export default {
 	'Off — full animation': 'बंद — पूर्ण एनिमेशन',
 	'% faster': '% तेज़',
 
+	'Sound settings': 'ध्वनि सेटिंग्स',
+	Sound: 'ध्वनि',
+	Music: 'संगीत',
+	'Game Sounds': 'गेम ध्वनियाँ',
+	'Mute music': 'संगीत म्यूट करें',
+	'Unmute music': 'संगीत चालू करें',
+	'Mute game sounds': 'गेम ध्वनियाँ म्यूट करें',
+	'Unmute game sounds': 'गेम ध्वनियाँ चालू करें',
+
 	Autoplay: 'ऑटोप्ले',
 	'Number of Plays': 'राउंड की संख्या',
 

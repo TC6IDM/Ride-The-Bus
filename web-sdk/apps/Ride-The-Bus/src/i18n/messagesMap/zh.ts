@@ -36,6 +36,15 @@ export default {
 	'Off — full animation': '关闭 — 完整动画',
 	'% faster': '％ 更快',
 
+	'Sound settings': '声音设置',
+	Sound: '声音',
+	Music: '音乐',
+	'Game Sounds': '游戏音效',
+	'Mute music': '静音音乐',
+	'Unmute music': '开启音乐',
+	'Mute game sounds': '静音游戏音效',
+	'Unmute game sounds': '开启游戏音效',
+
 	Autoplay: '自动游戏',
 	'Number of Plays': '局数',
 

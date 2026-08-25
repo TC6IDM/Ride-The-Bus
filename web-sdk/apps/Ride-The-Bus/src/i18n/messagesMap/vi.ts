@@ -36,6 +36,15 @@ export default {
 	'Off — full animation': 'Tắt — hoạt ảnh đầy đủ',
 	'% faster': ' % nhanh hơn',
 
+	'Sound settings': 'Cài đặt âm thanh',
+	Sound: 'Âm thanh',
+	Music: 'Nhạc',
+	'Game Sounds': 'Âm thanh trò chơi',
+	'Mute music': 'Tắt nhạc',
+	'Unmute music': 'Bật nhạc',
+	'Mute game sounds': 'Tắt âm thanh trò chơi',
+	'Unmute game sounds': 'Bật âm thanh trò chơi',
+
 	Autoplay: 'Tự động chơi',
 	'Number of Plays': 'Số vòng',
 

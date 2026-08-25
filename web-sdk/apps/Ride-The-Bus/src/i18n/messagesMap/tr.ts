@@ -36,6 +36,15 @@ export default {
 	'Off — full animation': 'Kapalı — tam animasyon',
 	'% faster': ' % daha hızlı',
 
+	'Sound settings': 'Ses ayarları',
+	Sound: 'Ses',
+	Music: 'Müzik',
+	'Game Sounds': 'Oyun sesleri',
+	'Mute music': 'Müziği kapat',
+	'Unmute music': 'Müziği aç',
+	'Mute game sounds': 'Oyun seslerini kapat',
+	'Unmute game sounds': 'Oyun seslerini aç',
+
 	Autoplay: 'Otomatik oyun',
 	'Number of Plays': 'Tur sayısı',
 

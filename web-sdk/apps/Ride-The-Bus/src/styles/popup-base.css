@@ -59,6 +59,10 @@
   width: min(calc(var(--ui-bar) * 32.73), calc(100vw - calc(var(--ui-bar) * 2.55)));
   max-height: calc(100vh - calc(var(--ui-bar) * 3.64));
   overflow-y: auto;
+  /* Every menu wears the colour of the control that opened it, and its
+     scrollbar is part of the menu. app.css draws the bar; this is the one line
+     that tells it which colour to be. */
+  --scroll-thumb-rgb: var(--tint-rgb);
   box-sizing: border-box;
   padding: calc(var(--ui-bar) * 1.27);
   border-radius: calc(var(--ui-bar) * 1.09);

@@ -1,329 +1,43 @@
 /**
- * Ride The Bus sound.
+ * Ride The Bus cues - what each moment in a round actually sounds like.
  *
- * Everything here is synthesised with the Web Audio API - there are no audio
- * assets and nothing is downloaded. That is a deliberate fit for this build:
- * config-svelte sets bundleStrategy:"inline", so any asset Vite processes is
- * base64-inlined into index.html rather than fetched, which makes shipped audio
- * disproportionately expensive. If produced audio is commissioned later it
- * belongs in static/ and loads via `${base}/...` like logo.png does; only the
- * bodies of the play* functions below would change, because Game.svelte touches
- * nothing but this module's public API.
+ * The output chain, the room, the variation machinery and mute all live in
+ * audioGraph.ts, which music.ts shares. This file is only the cue book: which
+ * voices fire, at what pitches, in what order. Game.svelte and
+ * WinCelebration.svelte touch nothing but the `sound` object at the bottom.
  *
- * WHAT MAKES IT SOUND LIKE A GAME RATHER THAN A TEST TONE
+ * TWO THINGS THAT ARE EASY TO LOSE IN A LATER PASS
  *
- * 1. A real output chain. Every voice runs into a shared bus with a limiter on
- *    the end, so overlapping cues - four card flips landing over a win fanfare -
- *    duck each other instead of clipping into distortion.
+ * 1. Nothing is ever played twice. Every cue jitters itself per trigger and
+ *    every noise burst is a freshly generated buffer, so no two card flips are
+ *    the same sample. Any cue added here should reach for `rand` and `shuffler`
+ *    the way the ones below do; a cue that fires identically four times in a
+ *    round is the machine-gun effect this was all built to avoid.
  *
- * 2. A room. A short generated impulse response on a reverb send puts the cues
- *    in a space. Dry oscillators are what made the previous version sound like
- *    a calculator; the wet path is quiet (this is a card table, not a cathedral)
- *    but removing it is instantly audible.
- *
- * 3. Nothing is ever played twice. Every cue is jittered per trigger - pitch by
- *    a few cents, timing by a few milliseconds, filters by a few hundred hertz -
- *    and every noise burst is a freshly generated buffer, so no two card flips
- *    are the same sample. This is the fix for the machine-gun effect you get
- *    when one identical cue fires four times in a round.
- *
- * 4. Buttons do not all sound alike. There are 34 buttons in Game.svelte and
- *    they used to share a single click. playPress now takes the KIND of control
+ * 2. Buttons do not all sound alike. There are ~34 buttons in Game.svelte and
+ *    they used to share a single click. playPress takes the KIND of control
  *    that was pressed, so committing to a guess, nudging the bet and dismissing
  *    a popup are audibly different actions.
- *
- * Browsers block audio until the user interacts with the page, so the context is
- * built lazily on the first cue and resumed on demand.
  */
 
-const MUTE_STORAGE_KEY = 'ride-the-bus:muted';
+import {
+	busVolume,
+	isBusMuted,
+	isBusSilent,
+	isMuted,
+	noise,
+	rand,
+	setBusMuted,
+	setBusVolume,
+	setMuted,
+	shuffler,
+	thud,
+	toggleBusMuted,
+	toggleMuted,
+	tone,
+} from './audioGraph.ts';
 
-let ctx: AudioContext | null = null;
-/** Everything lands here; the limiter sits between this and the speakers. */
-let bus: GainNode | null = null;
-/** Reverb send. Voices tap this in parallel with their dry path. */
-let send: GainNode | null = null;
-
-function readStoredMute(): boolean {
-	if (typeof localStorage === 'undefined') return false;
-	try {
-		return localStorage.getItem(MUTE_STORAGE_KEY) === 'true';
-	} catch {
-		return false;
-	}
-}
-
-let muted = readStoredMute();
-
-/**
- * A short plate-ish impulse response, generated rather than loaded.
- *
- * Two channels of noise decaying exponentially, with the very start left almost
- * silent so the reverb reads as a room around the cue rather than a doubling of
- * it. Kept to a third of a second: a card table is a small space, and anything
- * longer smears consecutive cues into each other.
- */
-function buildImpulse(audio: AudioContext): AudioBuffer {
-	const seconds = 0.32;
-	const frames = Math.floor(audio.sampleRate * seconds);
-	const impulse = audio.createBuffer(2, frames, audio.sampleRate);
-
-	for (let channel = 0; channel < 2; channel++) {
-		const data = impulse.getChannelData(channel);
-		for (let i = 0; i < frames; i++) {
-			const progress = i / frames;
-			// Exponential tail, plus a slow fade-in over the first 8% so the
-			// wet signal never arrives before the dry one.
-			const decay = Math.pow(1 - progress, 2.6);
-			const onset = Math.min(1, progress / 0.08);
-			data[i] = (Math.random() * 2 - 1) * decay * onset;
-		}
-	}
-	return impulse;
-}
-
-/** Lazily build the audio graph. Returns null when audio isn't available. */
-function ensureContext(): AudioContext | null {
-	if (typeof window === 'undefined') return null;
-	if (!ctx) {
-		const Ctor = window.AudioContext ?? (window as any).webkitAudioContext;
-		if (!Ctor) return null;
-		ctx = new Ctor();
-
-		// The limiter. A compressor with a high ratio and a fast attack, sitting
-		// on the very end - its job is only to stop stacked cues clipping, not
-		// to be heard. Without it a full-win fanfare over a card flip is audibly
-		// crunchy on the peaks.
-		const limiter = ctx.createDynamicsCompressor();
-		limiter.threshold.value = -10;
-		limiter.knee.value = 6;
-		limiter.ratio.value = 12;
-		limiter.attack.value = 0.003;
-		limiter.release.value = 0.18;
-		limiter.connect(ctx.destination);
-
-		bus = ctx.createGain();
-		bus.gain.value = 0.42; // headroom - these are UI cues, not music
-		bus.connect(limiter);
-
-		const reverb = ctx.createConvolver();
-		reverb.buffer = buildImpulse(ctx);
-
-		// Roll the top off the wet path. Bright reverb on a click sounds like a
-		// tiled bathroom; darker tails read as a room with furniture in it.
-		const damp = ctx.createBiquadFilter();
-		damp.type = 'lowpass';
-		damp.frequency.value = 3200;
-
-		const wet = ctx.createGain();
-		wet.gain.value = 0.5;
-
-		send = ctx.createGain();
-		send.gain.value = 1;
-		send.connect(reverb);
-		reverb.connect(damp);
-		damp.connect(wet);
-		wet.connect(bus);
-	}
-	// Autoplay policy: the context starts suspended until a user gesture.
-	if (ctx.state === 'suspended') void ctx.resume();
-	return ctx;
-}
-
-/* ---- variation ----------------------------------------------------------- */
-
-/** Uniform random in [min, max). */
-function rand(min: number, max: number): number {
-	return min + Math.random() * (max - min);
-}
-
-/**
- * Detune by up to `cents` in either direction, as a frequency multiplier.
- * Musical rather than linear: a few cents is a shade out of tune at any pitch,
- * whereas a few hertz is inaudible up high and a semitone down low.
- */
-function drift(cents: number): number {
-	return Math.pow(2, rand(-cents, cents) / 1200);
-}
-
-/**
- * Pick from a list without ever choosing the same entry twice running.
- * Pure Math.random repeats about as often as it alternates, and a repeat is
- * exactly what this whole exercise is trying to avoid, so the last index is
- * held and excluded.
- */
-function shuffler<T>(items: readonly T[]) {
-	let last = -1;
-	return (): T => {
-		if (items.length === 1) return items[0]!;
-		let index = Math.floor(Math.random() * items.length);
-		if (index === last) index = (index + 1) % items.length;
-		last = index;
-		return items[index]!;
-	};
-}
-
-/* ---- voices -------------------------------------------------------------- */
-
-type ToneOptions = {
-	/** Start frequency in Hz. */
-	from: number;
-	/** End frequency in Hz; omit for a steady tone. */
-	to?: number;
-	/** Seconds. */
-	duration: number;
-	type?: OscillatorType;
-	/** Peak gain 0..1, before the bus gain. */
-	gain?: number;
-	/** Seconds to wait before starting - used to build small arpeggios. */
-	delay?: number;
-	/** Attack in seconds. Longer softens a cue from a click into a swell. */
-	attack?: number;
-	/** How much of this voice goes to the reverb, 0..1. */
-	space?: number;
-	/** Maximum random detune, in cents. */
-	jitter?: number;
-};
-
-function tone({
-	from,
-	to,
-	duration,
-	type = 'triangle',
-	gain = 0.6,
-	delay = 0,
-	attack,
-	space = 0.25,
-	jitter = 12,
-}: ToneOptions) {
-	const audio = ensureContext();
-	if (!audio || !bus || !send || muted) return;
-
-	const wobble = drift(jitter);
-	const start = audio.currentTime + delay;
-	const osc = audio.createOscillator();
-	const env = audio.createGain();
-
-	osc.type = type;
-	osc.frequency.setValueAtTime(from * wobble, start);
-	if (to !== undefined) {
-		osc.frequency.exponentialRampToValueAtTime(Math.max(1, to * wobble), start + duration);
-	}
-
-	// Quick attack, smooth decay - avoids the click a raw start/stop makes.
-	const rise = attack ?? Math.min(0.02, duration / 4);
-	env.gain.setValueAtTime(0.0001, start);
-	env.gain.exponentialRampToValueAtTime(gain, start + rise);
-	env.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-
-	osc.connect(env);
-	env.connect(bus);
-	if (space > 0) {
-		const tap = audio.createGain();
-		tap.gain.value = space;
-		env.connect(tap);
-		tap.connect(send);
-	}
-
-	osc.start(start);
-	osc.stop(start + duration + 0.02);
-}
-
-type NoiseOptions = {
-	duration?: number;
-	gain?: number;
-	/** Bandpass centre at the start, in Hz. */
-	from?: number;
-	/** Bandpass centre at the end - sweeping is what makes a noise burst a THING
-	 *  rather than a hiss. Omit to hold still. */
-	to?: number;
-	q?: number;
-	delay?: number;
-	space?: number;
-	/** Shapes the amplitude decay. >1 snaps shut, <1 lingers. */
-	curve?: number;
-};
-
-/**
- * Filtered noise burst - the papery part of a card, the transient on a chip.
- *
- * The buffer is regenerated on every call rather than cached. That costs a few
- * hundred microseconds and means two consecutive flips are genuinely different
- * noise, which is most of why the four reveals in a round no longer sound like
- * the same sample fired four times.
- */
-function noise({
-	duration = 0.09,
-	gain = 0.35,
-	from = 1800,
-	to,
-	q = 0.8,
-	delay = 0,
-	space = 0.3,
-	curve = 1,
-}: NoiseOptions = {}) {
-	const audio = ensureContext();
-	if (!audio || !bus || !send || muted) return;
-
-	const start = audio.currentTime + delay;
-	const frames = Math.max(1, Math.floor(audio.sampleRate * duration));
-	const buffer = audio.createBuffer(1, frames, audio.sampleRate);
-	const data = buffer.getChannelData(0);
-	for (let i = 0; i < frames; i++) {
-		data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / frames, curve);
-	}
-
-	const src = audio.createBufferSource();
-	src.buffer = buffer;
-
-	const band = audio.createBiquadFilter();
-	band.type = 'bandpass';
-	band.frequency.setValueAtTime(from, start);
-	if (to !== undefined) {
-		band.frequency.exponentialRampToValueAtTime(Math.max(20, to), start + duration);
-	}
-	band.Q.value = q;
-
-	const env = audio.createGain();
-	env.gain.value = gain;
-
-	src.connect(band);
-	band.connect(env);
-	env.connect(bus);
-	if (space > 0) {
-		const tap = audio.createGain();
-		tap.gain.value = space;
-		env.connect(tap);
-		tap.connect(send);
-	}
-
-	src.start(start);
-}
-
-/**
- * The low body under a hit - a fast downward sine sweep.
- * Sub content is what separates a card LANDING from a card being described.
- */
-function thud({
-	from = 180,
-	to = 60,
-	duration = 0.13,
-	gain = 0.3,
-	delay = 0,
-	attack,
-}: {
-	from?: number;
-	to?: number;
-	duration?: number;
-	gain?: number;
-	delay?: number;
-	/** Override the default attack. Worth doing on short bodies: tone() would
-	 *  otherwise take duration/4, so a 70ms body swells for 17ms and becomes the
-	 *  latest-arriving thing in a cue that is supposed to feel struck. */
-	attack?: number;
-} = {}) {
-	tone({ from, to, duration, type: 'sine', gain, delay, attack, space: 0.1, jitter: 30 });
-}
+export type { AudioBusName } from './audioGraph.ts';
 
 /* ---- cues ---------------------------------------------------------------- */
 
@@ -431,21 +145,18 @@ const chipNotes = shuffler([2100, 2400, 2750, 3050] as const);
 const toggleNotes = shuffler([520, 580] as const);
 
 export const sound = {
-	isMuted: () => muted,
-
-	setMuted(next: boolean) {
-		muted = next;
-		try {
-			localStorage?.setItem(MUTE_STORAGE_KEY, String(next));
-		} catch {
-			/* storage unavailable (private mode) - mute still applies this session */
-		}
-	},
-
-	toggleMuted() {
-		sound.setMuted(!muted);
-		return muted;
-	},
+	// The mixer lives in audioGraph.ts, because it gates the voices rather than
+	// the cues and music has to obey the same switch. Re-exposed here so that
+	// Game.svelte keeps one import for everything it can hear.
+	isMuted,
+	setMuted,
+	toggleMuted,
+	busVolume,
+	setBusVolume,
+	isBusMuted,
+	isBusSilent,
+	setBusMuted,
+	toggleBusMuted,
 
 	/**
 	 * Any button / toggle press. `kind` decides what it sounds like; the default
@@ -604,6 +315,37 @@ export const sound = {
 	},
 
 	/**
+	 * The music slider's own tick, on the MUSIC bus.
+	 *
+	 * A volume slider has to preview the bus it sets. This one was silent while
+	 * there was no music, and ticking it on the cue bus instead would have been
+	 * worse than silence - it would have demonstrated a level the slider does
+	 * not control.
+	 *
+	 * Softer and rounder than playSliderTick: sines rather than a triangle, a
+	 * longer tail, more room. That is not decoration - it is what makes the tick
+	 * sound like the bed it belongs to, so dragging the slider is a fair sample
+	 * of what turning the music up will actually do. It also has to survive being
+	 * heard on a bus the player may be setting to 5%, which is why it sits well
+	 * above the pad in level.
+	 */
+	playMusicTick(position: number) {
+		const clamped = Math.min(Math.max(position, 0), 1);
+
+		// Same scale walk as the cue slider, so the two controls feel like one
+		// family, but a fifth lower - the music bed lives below the cues and its
+		// slider should not be the brightest thing in the panel.
+		const semitones = clamped * 24;
+		const octave = Math.floor(semitones / 12);
+		const within = semitones - octave * 12;
+		const degree = SCALE.reduce((best, d) => (Math.abs(d - within) < Math.abs(best - within) ? d : best)); // prettier-ignore
+		const freq = 293.66 * Math.pow(2, (octave * 12 + degree) / 12);
+
+		tone({ from: freq, duration: 0.16, type: 'sine', gain: 0.2, attack: 0.006, space: 0.7, jitter: 0, bus: 'music' }); // prettier-ignore
+		tone({ from: freq * 2, duration: 0.1, type: 'sine', gain: 0.07, delay: 0.012, attack: 0.004, space: 0.6, jitter: 0, bus: 'music' }); // prettier-ignore
+	},
+
+	/**
 	 * A card turning face up.
 	 *
 	 * Three layers: the riffle (noise swept downward through a bandpass, which
@@ -612,7 +354,7 @@ export const sound = {
 	 * parameter is randomised within a range, so the four reveals in a round are
 	 * four different flips rather than one flip four times.
 	 */
-	playCardFlip() {
+	playCardFlip(lead = 0) {
 		// Held at roughly 55% of the level the other layers were originally
 		// written at. The flip is the most FREQUENT cue in the game - four of
 		// them in a clean round, against one of anything else - and at equal
@@ -629,6 +371,7 @@ export const sound = {
 			q: rand(0.6, 1.1),
 			curve: 1.4,
 			space: 0.35,
+			delay: lead,
 		});
 		tone({
 			from: rand(300, 360),
@@ -638,8 +381,9 @@ export const sound = {
 			gain: 0.094,
 			space: 0.3,
 			jitter: 40,
+			delay: lead,
 		});
-		thud({ from: rand(150, 200), to: 65, duration: 0.11, gain: 0.105, delay: rand(0.01, 0.025) });
+		thud({ from: rand(150, 200), to: 65, duration: 0.11, gain: 0.105, delay: lead + rand(0.01, 0.025) });
 	},
 
 	/**
@@ -647,12 +391,12 @@ export const sound = {
 	 * root rises a whole tone per stage and the voicing opens from a bare fifth
 	 * to a fifth plus octave, which brightens without just getting louder.
 	 */
-	playStageWin(stageIndex: number) {
+	playStageWin(stageIndex: number, lead = 0) {
 		const root = 523.25 * Math.pow(2, (stageIndex * 2) / 12);
-		tone({ from: root, duration: 0.16, type: 'triangle', gain: 0.3, space: 0.45, attack: 0.008 });
-		tone({ from: root * 1.5, duration: 0.19, type: 'sine', gain: 0.2, delay: 0.035, space: 0.5 });
+		tone({ from: root, duration: 0.16, type: 'triangle', gain: 0.3, space: 0.45, attack: 0.008, delay: lead }); // prettier-ignore
+		tone({ from: root * 1.5, duration: 0.19, type: 'sine', gain: 0.2, delay: lead + 0.035, space: 0.5 });
 		if (stageIndex >= 2) {
-			tone({ from: root * 2, duration: 0.22, type: 'sine', gain: 0.13, delay: 0.07, space: 0.55 });
+			tone({ from: root * 2, duration: 0.22, type: 'sine', gain: 0.13, delay: lead + 0.07, space: 0.55 });
 		}
 	},
 
@@ -681,7 +425,7 @@ export const sound = {
 	 * against slid is what stops them reading as one long descent, and it does
 	 * not require them to be different instruments.
 	 */
-	playBust() {
+	playBust(lead = 0) {
 		// Deliberately the SAME root the stage win is built on, so the two are
 		// heard as a matched pair: the win climbs away from C, the bust falls
 		// away from it.
@@ -696,14 +440,112 @@ export const sound = {
 		// and the low octave lands on top of the third. Written at stage-win
 		// levels the stack measured 0.185, which made losing a stage the second
 		// loudest thing in the game, above a stage win and above a payout.
-		tone({ from: root * fall[0]!, duration: 0.17, type: 'triangle', gain: 0.165, space: 0.45, attack: 0.008 });
-		tone({ from: root * fall[1]!, duration: 0.2, type: 'sine', gain: 0.14, delay: 0.085, space: 0.5 });
-		tone({ from: root * fall[2]!, duration: 0.28, type: 'triangle', gain: 0.125, delay: 0.17, space: 0.55 });
+		tone({ from: root * fall[0]!, duration: 0.17, type: 'triangle', gain: 0.165, space: 0.45, attack: 0.008, delay: lead }); // prettier-ignore
+		tone({ from: root * fall[1]!, duration: 0.2, type: 'sine', gain: 0.14, delay: lead + 0.085, space: 0.5 });
+		tone({ from: root * fall[2]!, duration: 0.28, type: 'triangle', gain: 0.125, delay: lead + 0.17, space: 0.55 });
 
 		// Weight underneath the last note - the floor giving way. Tonal, an
 		// octave below where the figure lands, rather than a thump: it should
 		// settle the phrase, not punctuate it.
-		tone({ from: root * fall[2]! * 0.5, duration: 0.34, type: 'sine', gain: 0.082, delay: 0.17, space: 0.4 });
+		tone({ from: root * fall[2]! * 0.5, duration: 0.34, type: 'sine', gain: 0.082, delay: lead + 0.17, space: 0.4 });
+	},
+
+	/**
+	 * A wrong guess that Second Chance forgave - the round carries on.
+	 *
+	 * This used to be playBust() verbatim, which quietly threw away the whole
+	 * point of the family. cards.css is careful that the two marks differ ("a red
+	 * cross says the round ended here, and this one carried on") and the audio
+	 * was saying they were the same event.
+	 *
+	 * Built as the bust's deliberate opposite, on the same root and the same
+	 * instrument so the pair is heard as related rather than as two unconnected
+	 * sounds: F4, Ab4, C5 - the identical F minor triad playBust falls through,
+	 * taken UPWARD and landing back on the root it started from. Still minor,
+	 * because a guess was still missed; resolving, because the round did not end.
+	 *
+	 * Quieter than the bust and with no weight underneath it. The low octave in
+	 * playBust is the floor giving way, and there is no floor giving way here.
+	 */
+	playForgiven(lead = 0) {
+		const root = 523.25;
+		const rise = [Math.pow(2, -7 / 12), Math.pow(2, -4 / 12), 1];
+
+		tone({ from: root * rise[0]!, duration: 0.16, type: 'triangle', gain: 0.13, space: 0.45, attack: 0.008, delay: lead }); // prettier-ignore
+		tone({ from: root * rise[1]!, duration: 0.18, type: 'sine', gain: 0.115, delay: lead + 0.075, space: 0.5 });
+		tone({ from: root * rise[2]!, duration: 0.26, type: 'triangle', gain: 0.115, delay: lead + 0.15, space: 0.55 });
+
+		// A soft breath of air on the landing rather than a body. The round is
+		// being let off, which is a lifting sensation, not an impact.
+		noise({ duration: 0.09, gain: 0.05, from: 1800, to: 3600, q: 1.2, delay: lead + 0.15, space: 0.6, curve: 0.7 }); // prettier-ignore
+	},
+
+	/**
+	 * The hand being dealt, at the top of a round.
+	 *
+	 * The round used to begin in silence: the first thing a player heard was the
+	 * first card landing, about 650ms after they pressed. This fills that gap
+	 * with the thing that is actually happening - four cards coming off the deck
+	 * - and gives the press somewhere to resolve to.
+	 *
+	 * Four riffles rather than one sound: it is a DEAL, and the count is the one
+	 * detail that makes it read as this game's deal rather than a generic shuffle.
+	 * Quieter and duller than playCardFlip, because these cards are going down
+	 * face-down and that one is a card being turned over.
+	 */
+	playDeal() {
+		for (let i = 0; i < 4; i++) {
+			noise({
+				duration: rand(0.045, 0.07),
+				gain: rand(0.055, 0.08),
+				from: rand(1400, 2100),
+				to: rand(500, 800),
+				q: rand(0.7, 1.2),
+				delay: i * rand(0.052, 0.075),
+				curve: 1.8,
+				space: 0.4,
+			});
+		}
+		// One low settle under the last of them - the deck being squared up.
+		thud({ from: rand(120, 150), to: 58, duration: 0.13, gain: 0.07, delay: 0.21 });
+	},
+
+	/**
+	 * A press the game refused - an unaffordable bet, one outside the operator's
+	 * range, a control locked while a round is on the wire.
+	 *
+	 * ONE cue for every refusal, not one per reason. betBlockedReason() already
+	 * distinguishes three cases in words, and the words are the part a player can
+	 * act on; three different noises would be a second, vaguer ruler running
+	 * alongside the first and saying less.
+	 *
+	 * Deliberately not a buzz or an error tone. It is the game declining to do
+	 * something, not the game breaking: a short muted double-tap, the sound of a
+	 * control that will not move.
+	 */
+	playBlocked() {
+		tone({ from: 196, duration: 0.05, type: 'sine', gain: 0.11, attack: 0.002, space: 0.15 });
+		tone({ from: 185, duration: 0.07, type: 'sine', gain: 0.095, delay: 0.075, attack: 0.002, space: 0.15 }); // prettier-ignore
+		noise({ duration: 0.022, gain: 0.045, from: 900, q: 2.4, space: 0.1, curve: 3 });
+	},
+
+	/**
+	 * An autoplay run starting and stopping.
+	 *
+	 * A run beginning is a state change the player should be able to hear without
+	 * watching the button - they have just handed the game the next N rounds, and
+	 * the confirmation of that should not be purely visual. The pair is one
+	 * gesture in two directions: a rising fifth to hand over, a falling one to
+	 * take it back.
+	 */
+	playAutoStart() {
+		tone({ from: 392, duration: 0.1, type: 'triangle', gain: 0.13, attack: 0.004, space: 0.3 });
+		tone({ from: 587.33, duration: 0.16, type: 'sine', gain: 0.11, delay: 0.08, space: 0.4 });
+	},
+
+	playAutoStop() {
+		tone({ from: 587.33, duration: 0.1, type: 'triangle', gain: 0.115, attack: 0.004, space: 0.3 });
+		tone({ from: 392, duration: 0.18, type: 'sine', gain: 0.1, delay: 0.08, space: 0.4 });
 	},
 
 	/** Round settled with a payout (partial or full). */

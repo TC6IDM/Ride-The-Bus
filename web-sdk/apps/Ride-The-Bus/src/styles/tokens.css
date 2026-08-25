@@ -210,6 +210,21 @@
   --ctl-advanced-ink: #d0bcff;
   --ctl-advanced-rgb: 169, 140, 255;
 
+  /* Sound is the fifth identity, and the only achromatic one. It is white
+     because the other four have spent the useful hues: amber, green, purple and
+     the accent blue are all taken, and a fifth colour close to any of them would
+     weaken the wayfinding rather than extend it - the whole point of these is
+     that a 40px strip of near-identical round icons is found by colour.
+
+     Not #fff. This is --ink-cream, the warm white the takeover already prints
+     its amount in, so the panel reads as belonging to the same lit table as
+     everything else rather than as an untinted default someone forgot to
+     colour. Declared as a triplet with the hex derived from it, like its four
+     siblings above and for the same reason. */
+  --ctl-sound-rgb: 255, 253, 245;
+  --ctl-sound: rgb(var(--ctl-sound-rgb));
+  --ctl-sound-ink: var(--ink);
+
   /* ==== Translucency =====================================================
      Three colours the app paints at many different alphas: white hairlines and
      washes, black shadows and scrims, and the accent glow. They are triplets

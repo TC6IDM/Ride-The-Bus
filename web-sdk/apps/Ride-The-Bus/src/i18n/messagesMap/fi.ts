@@ -36,6 +36,15 @@ export default {
 	'Off — full animation': 'Pois — täysi animaatio',
 	'% faster': ' % nopeampi',
 
+	'Sound settings': 'Ääniasetukset',
+	Sound: 'Ääni',
+	Music: 'Musiikki',
+	'Game Sounds': 'Peliäänet',
+	'Mute music': 'Mykistä musiikki',
+	'Unmute music': 'Palauta musiikki',
+	'Mute game sounds': 'Mykistä peliäänet',
+	'Unmute game sounds': 'Palauta peliäänet',
+
 	Autoplay: 'Automaattipeli',
 	'Number of Plays': 'Kierrosten määrä',
 

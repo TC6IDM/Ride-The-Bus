@@ -52,6 +52,17 @@ export default {
 	'Off — full animation': 'Off — full animation',
 	'% faster': '% faster',
 
+	// Sound popup. Two buses, because a player who wants the music off usually
+	// still wants to hear the cards.
+	'Sound settings': 'Sound settings',
+	Sound: 'Sound',
+	Music: 'Music',
+	'Game Sounds': 'Game Sounds',
+	'Mute music': 'Mute music',
+	'Unmute music': 'Unmute music',
+	'Mute game sounds': 'Mute game sounds',
+	'Unmute game sounds': 'Unmute game sounds',
+
 	// Autoplay popup
 	Autoplay: 'Autoplay',
 	'Number of Plays': 'Number of Plays',
