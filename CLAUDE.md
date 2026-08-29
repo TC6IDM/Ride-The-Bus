@@ -493,24 +493,48 @@ rounding it to 2.0× would wipe out the house edge.
     never `attributes`, or the `style.fontSize` the fit writes re-triggers it.
     `.cb-val` also carries `overflow: hidden` as a hard guard: if the floor is
     ever hit, clipping inside its own readout beats painting over a control.
-  - **On a phone the two readouts take their own line inside the light pill.**
-    They used to share a row with the three icon buttons, which left them ~101px
-    each on Mobile M - and with a weak-unit currency and a tens-of-billions
-    balance the fit drove the type to 5.4px at Mobile S. Widening the pair to 16
-    units makes them exceed what is left beside the icons, so `.cb-panel-light`'s
-    existing `flex-wrap` moves them down; nothing new was introduced. Cost is one
-    line of bar (21-27% of the viewport), and the play area still keeps 84-140px
-    of clear gap above it at all three phone sizes.
-    - **Popout S opts out of that too**, and must name `.cb-balance` as well as
-      `.cb-lastwin` when it does - and set `max-width`, not just `min-width`.
-      Left in, the 620px block's 16-unit ceiling put 12px back into the pill,
-      Popout S went from 377px of a 390px row to over it, and the Advanced
-      button broke onto a second row: the same failure this pass fixed at Laptop
-      and Popout L, reintroduced from the other direction.
+  - **On a phone the light pill is ONE line**: sound, info, MODE, Balance, Last
+    Win. The pill takes a bar row of its own (that wrap is by design and is the
+    only one on a phone); its own contents do not wrap, and
+    `.cb-panel-light` is pinned `flex-wrap: nowrap` to say so.
+    - This reverses an earlier pass that gave the two readouts a **second line
+      inside the pill**. That pass reserved them 16 units each, which is more
+      than three icon buttons leave, and let the existing `flex-wrap` drop them
+      down - buying the widest possible box for the worst currency and paying a
+      whole extra line of bar for it on every phone, in every currency, on
+      every round. A balance sitting under the buttons rather than beside them
+      reads as a layout that wrapped, not one that was drawn. **The owner's
+      call is the single row**; small type in the worst case is the accepted
+      cost, and shrinking a long figure is already what this bar does
+      everywhere else.
+    - **A share of the row, not a reservation.** `flex: 1 1 0` + `min-width: 0`
+      on `.cb-readouts` and on both readouts splits whatever the icons leave.
+      That matters because neither neighbour is a fixed width: the MODE button
+      is a translated word, and `.cb-icon` carries a flat **36px** floor under
+      `pointer: coarse` that does not scale with `--ui-bar`. The box is still
+      **bounded**, which is the property `use:fitValue` depends on - a
+      zero-basis flex item cannot grow past its share, so `scrollWidth` against
+      `clientWidth` stays meaningful. `max-width: none` alone would not be, and
+      `currencies.test.ts` fails if the cap is lifted without the flex bound.
+    - Measured at all seven sizes with the worst case in the supported set
+      (`TZS 2,578,770,000,000.00`) and with the widest `Mode` translations (ru,
+      vi): one pill row on all three phones, **nothing clipped anywhere**, no
+      horizontal scroll, and the four landscape sizes untouched at one bar row.
+      The balance bottoms at 6.02px on Mobile S against a 5.52px floor.
+    - **Popout S still opts out**, and must name `.cb-balance` and
+      `.cb-lastwin` - and now `.cb-readouts.solo .cb-lastwin` as well - setting
+      `max-width` as well as `min-width` each time. Left unrestated, the 620px
+      block's reset reaches into a window that has the room for the measured
+      widths and does not need the phone treatment.
   - **Replay hides the balance, and that is a different layout.** `.cb-readouts`
     is `space-between`, and one child under that sits at the START - so Last Win
     ended up mid-pill with the balance's width doing nothing. `.solo` pushes it
     right and hands it the freed width (26 units against 17).
+    - That 26-unit floor is **cleared on phones**, at `.cb-readouts.solo`'s own
+      specificity or it does not land. Once three 36px icons are paid for, 26
+      units is wider than a phone row has left: at Mobile S it pushed the pill
+      4.7px past the bar's padding on each side - the "hangs off both edges"
+      failure - through the one selector specific enough to outrank the reset.
   - The floor is **relative** (0.55 of the breakpoint's own size), never an
     absolute pixel count. An absolute 9px was tried and sat *above* the unfitted
     5.9px size at Popout S, so the viewport that most needed the fit was the one

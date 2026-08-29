@@ -166,6 +166,7 @@ describe('the widest figure each currency can settle on', () => {
 describe('the control bar can still fit a long figure', () => {
   const read = (rel: string) => readFileSync(resolve(import.meta.dirname, rel), 'utf8');
   const BAR = read('../styles/control-bar.css');
+  const RESPONSIVE = read('../styles/responsive.css');
   const GAME = read('../components/Game.svelte');
 
   const rule = (css: string, selector: string) => {
@@ -234,5 +235,62 @@ describe('the control bar can still fit a long figure', () => {
   test('all three readouts are fitted', () => {
     const uses = GAME.match(/use:fitValue=\{/g) ?? [];
     assert.equal(uses.length, 3, `expected balance, last win and bet to be fitted, found ${uses.length}`);
+  });
+
+  /**
+   * The phone bar is ONE line inside the light pill: sound, info, MODE,
+   * Balance, Last Win.
+   *
+   * The readouts used to be reserved at a fixed 16 units each, which is wider
+   * than what three icon buttons leave, so .cb-panel-light's flex-wrap dropped
+   * them onto a second line inside the pill - a whole extra line of bar on
+   * every phone, in every currency, to buy headroom for the worst one. The
+   * call is the single row, with the figure shrinking instead.
+   *
+   * Greps rather than renders, like the rest of this block: the failure is a
+   * layout that still LOOKS fine in dollars and only wraps on a currency
+   * nobody develops in.
+   */
+  test('the phone pill keeps its readouts on the icons row', () => {
+    const phone = RESPONSIVE.slice(
+      RESPONSIVE.indexOf('@media (max-width: 620px)'),
+      RESPONSIVE.indexOf('/* ---- Touch targets on phones'),
+    );
+    assert.ok(phone.length > 0, 'the 620px phone block has moved or gone');
+    assert.ok(
+      /\.cb-panel-light\s*\{[^}]*flex-wrap:\s*nowrap/.test(phone),
+      '.cb-panel-light may wrap again on a phone - the balance drops onto its own ' +
+        'line under the buttons instead of sitting beside them',
+    );
+  });
+
+  /**
+   * The companion to "both readouts are capped": on a phone the cap is lifted,
+   * because 13.09 and 17 units are both wider than the row can give. What
+   * replaces it has to bound the box just as hard, or use:fitValue goes quiet
+   * again - scrollWidth === clientWidth on a box that simply widened, which is
+   * the exact silent failure the cap exists to prevent.
+   *
+   * A zero-basis flex item cannot grow past its share of the row, so it is a
+   * bound. `max-width: none` on its own is not.
+   */
+  test('lifting the readout cap on a phone replaces it with a flex bound', () => {
+    const phone = RESPONSIVE.slice(
+      RESPONSIVE.indexOf('@media (max-width: 620px)'),
+      RESPONSIVE.indexOf('/* ---- Touch targets on phones'),
+    );
+    const readouts = phone.slice(phone.indexOf('.cb-lastwin,'));
+    if (!/max-width:\s*none/.test(readouts)) return; // cap still in force; nothing to bound
+    assert.ok(
+      /flex:\s*1\s+1\s+0/.test(readouts),
+      'the readouts have max-width:none with no zero-basis flex to bound them - ' +
+        'they will widen, the fit will see nothing to shrink, and the pill will ' +
+        'run off both edges of the screen',
+    );
+    assert.ok(
+      /min-width:\s*0/.test(readouts),
+      'without min-width:0 a flex item cannot shrink below its content, so the ' +
+        'zero basis above buys nothing',
+    );
   });
 });

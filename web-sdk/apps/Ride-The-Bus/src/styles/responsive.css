@@ -24,10 +24,13 @@
    1. Phones (narrow, portrait)
    ========================================================================== */
 
-/* Narrow viewports: give the readouts their own top row, otherwise the
-   advanced button wraps on its own and looks stranded. The Last Win multiplier
-   chip is dropped here (the cash amount still shows) so the reserved readout
-   width fits - see .cb-lastwin in control-bar.css.
+/* Narrow viewports: give the LIGHT PILL a bar row of its own, above the bet
+   and action panel, otherwise the advanced button wraps on its own and looks
+   stranded.
+
+   That is a row of the CONTROL BAR, and it is the only wrap on a phone. The
+   pill's own contents - sound, info, MODE, Balance, Last Win - stay on one
+   line inside it; see .cb-panel-light below, which pins that shut.
 
    Width-scoped rather than portrait-scoped because a narrow LANDSCAPE window
    (a phone on its side, ~568x320) needs the same two rows for the same reason.
@@ -35,8 +38,8 @@
    is the one narrow window where lowering --ui-bar buys a one-row bar that is
    still in proportion. */
 @media (max-width: 620px) {
-  /* Two rows means each row only has to fit ~47x the unit instead of ~94x, so
-     the bar can scale up relative to the viewport again. */
+  /* Two BAR rows mean each one only has to fit ~47x the unit instead of ~94x,
+     so the bar can scale up relative to the viewport again. */
   .game-layout { --ui-bar: clamp(6px, min(2.05vw, 2.4vh), 11px); }
   .cb-panel-light { order: -1; flex: 1 0 100%; }
   .cb-readouts { justify-content: space-between; }
@@ -45,36 +48,59 @@
      use:fitValue in Game.svelte), so the pair can share the box: the chip is
      the only thing on the bar that says how BIG the win was rather than how
      much it paid, and a phone is where that matters most. */
-  /* 16, not 13.09. The readouts share this row with three icon buttons, which
-     left them 101px each on Mobile M - and a weak-unit currency with a
-     tens-of-billions balance needs about twice that before the fit stops
-     driving the type into the floor (5.4px measured at Mobile S).
+  /* THE READOUTS STAY ON THE ICONS' ROW. One line inside the light pill:
+     sound, info, MODE, Balance, Last Win.
 
-     16 units for the PAIR exceeds what is left beside the icons, so the row
-     they sit in wraps them onto their own line inside the pill - which is what
-     .cb-panel-light's flex-wrap and the flex-basis below have always been for.
-     They then get the full pill width. Nothing new is introduced; the existing
-     wrap simply starts firing where it is needed. */
+     They used to be reserved at a fixed 16 units each, which is more than what
+     is left beside three icon buttons, so .cb-panel-light's flex-wrap dropped
+     them onto a second line inside the pill. That bought the widest possible
+     box for a worst-case currency and paid for it with a whole extra line of
+     bar on every phone, on every round, in every currency - and a balance
+     sitting under the buttons instead of beside them reads as a wrapped
+     layout rather than a designed one. The owner's call is the single row;
+     small type in the worst case is the accepted cost, and shrinking is
+     already what this bar does about a long figure everywhere else.
+
+     A SHARE OF THE ROW, not a reservation. `flex: 1 1 0` with `min-width: 0`
+     splits whatever the icons leave, so the pair is bounded by the row rather
+     than by a number measured off one currency - which matters because the
+     MODE button's width is a translated word and the icons carry a flat 36px
+     floor on a coarse pointer that does not scale with --ui-bar. The box is
+     still bounded, which is the property use:fitValue depends on: a flex item
+     with a zero basis cannot grow past its share, so scrollWidth against
+     clientWidth stays meaningful and the figure shrinks instead of shoving
+     the pill off both edges of the screen.
+
+     max-width: none and min-width: 0 are both load-bearing: they clear the
+     13.09/17-unit reservations in control-bar.css, and .cb-readouts.solo's
+     26-unit one, all of which are wider than a phone row can give. Popout S
+     re-states its own min AND max at the bottom of this file, so it keeps its
+     measured widths and is untouched by this. */
+  .cb-panel-light { flex-wrap: nowrap; }
+  .cb-readouts {
+    flex: 1 1 0;
+    /* 2 units of dead air between two readouts that are already pinned to
+       opposite ends of their box is width the figures need more than the
+       separation is worth at this size. Matched to the pill's own gap. */
+    gap: calc(var(--ui-bar) * 0.91);
+  }
   .cb-lastwin,
   .cb-balance {
-    min-width: calc(var(--ui-bar) * 16);
-    max-width: calc(var(--ui-bar) * 16);
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: none;
   }
-
-  /* The readouts drop to a line of their own INSIDE the light pill when the
-     icons beside them leave too little room. On a 320px phone the three icon
-     buttons plus the two reserved readout widths measure 351px against 303px
-     of usable bar, and the overspill is not clipped by anything - the pill and
-     its leftmost icon simply hang off both edges of the screen.
-
-     A flex-basis rather than a hard `flex-basis: 100%`, so the two share a
-     line wherever they actually fit (Mobile L at 425px does) and split only
-     where they do not. */
-  .cb-panel-light { flex-wrap: wrap; }
-  /* The basis is what the PAIR wants: two 16-unit readouts plus the 2-unit gap
-     between them. Where that fits beside the icons it stays on their line;
-     where it does not, it takes a line of its own. */
-  .cb-readouts { flex: 1 1 calc(var(--ui-bar) * 34); }
+  /* Replay hides the balance, and .cb-readouts.solo hands the freed width to
+     Last Win as a 26-unit floor. That floor is wider than a phone row has left
+     once three 36px icons have been paid for: at Mobile S it pushed the pill
+     4.7px past the bar's padding on each side, which is the "hangs off both
+     edges" failure this block exists to avoid, arriving through the one
+     selector specific enough to outrank the reset above it.
+     Named at .cb-readouts.solo's own specificity, or it does not land. */
+  .cb-readouts.solo .cb-lastwin {
+    min-width: 0;
+    max-width: none;
+  }
 }
 
 /* ---- Touch targets on phones ---------------------------------------------
@@ -283,6 +309,14 @@
   .cb-balance {
     min-width: calc(var(--ui-bar) * 13.09);
     max-width: calc(var(--ui-bar) * 13.09);
+  }
+  /* And the replay width too, for the same reason the two above are restated:
+     the 620px block clears it so a phone row can fit, and Popout S is the one
+     narrow window with the room to keep it. Measured at 100px of a 400px
+     window, so the pill stays well inside the bar. */
+  .cb-readouts.solo .cb-lastwin {
+    min-width: calc(var(--ui-bar) * 26);
+    max-width: calc(var(--ui-bar) * 26);
   }
 
   /* And back to the full title, which the 430px rule above drops for phones in
