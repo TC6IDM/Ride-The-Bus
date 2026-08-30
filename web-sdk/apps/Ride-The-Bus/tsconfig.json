@@ -6,6 +6,26 @@
 		// default, so without this the two tools disagree and every test file
 		// reports errors that are not real. Type-checking only - Vite never
 		// bundles the test files.
-		"allowImportingTsExtensions": true
+		"allowImportingTsExtensions": true,
+
+		// Do not typecheck other people's .d.ts files. This took the vendored-SDK
+		// error count from 258 to 7, and the 7 that remain are REAL errors in the
+		// fork's own .ts source (components-pixi, rgs-fetcher) rather than noise -
+		// so the count the typecheck script prints is finally a signal you would
+		// notice moving, which is the job its own header claims for it.
+		//
+		// The 251 that went were almost all one cause: pnpm has FOUR @types/node
+		// in the store (24.0.10, 24.0.13, 26.1.2, 26.2.0), and when more than one
+		// lands in the program their global declarations collide - every
+		// "Duplicate identifier 'assert'" and "'strict'" was that. Deduping them
+		// is the other possible fix and is the WRONG one here: typecheck.mjs's
+		// header records that touching this app's dependencies already re-resolved
+		// @types/node across the whole workspace once and destabilised the fork.
+		// A compiler flag changes no dependency.
+		//
+		// It does not weaken this game's gate. skipLibCheck skips declaration
+		// files only; src/**/*.ts is still fully checked - verified by planting a
+		// deliberate type error, which still exits 1.
+		"skipLibCheck": true
 	}
 }

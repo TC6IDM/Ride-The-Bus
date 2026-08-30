@@ -1,6 +1,6 @@
 ---
 name: stake-approval
-description: Stake Engine submission, approval and compliance reference for Ride The Bus. Covers the submission checklist and PreChecks, RGS/wallet requirements, frontend and responsive requirements, quality star tiers and risk limits (ETL/CVaR/std), math verification limits, bet replay spec, game tile assets, the general disclaimer, and the restricted-terms table for Stake.US social mode. Use when working on submission readiness, RGS_TEST_PLAN checks, compliance wording, promo blurb, math risk limits, replay URLs, or any question about what Stake actually requires.
+description: Stake Engine submission and compliance reference for Ride The Bus: the approval checklist and PreChecks, RGS/wallet and frontend requirements, star tiers and risk limits (ETL/CVaR/std), math verification limits, bet replay spec, tile assets, the general disclaimer, and Stake.US restricted terms. Use for submission readiness, RGS_TEST_PLAN checks, compliance wording, promo blurb or replay URLs.
 ---
 
 # Stake Engine approval & compliance

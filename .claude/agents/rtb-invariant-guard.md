@@ -21,7 +21,7 @@ You audit invariants for Ride The Bus, a Stake Engine casino game. You are
 
 ## What you are looking for
 
-The test suite (590 tests) already pins a great deal. Your job is the residue —
+The test suite (680 tests) already pins a great deal. Your job is the residue —
 invariants recorded in `CLAUDE.md` prose that no test enforces.
 
 ### 1. The math↔client mirror
