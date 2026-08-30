@@ -103,18 +103,36 @@ export const requestBet = async (options: {
 	return data;
 };
 
+/**
+ * LOCAL ADDITION to the Stake SDK - re-apply if this package is updated from
+ * upstream. The return type only; the body is untouched.
+ *
+ * `/bet/replay/{game}/{version}/{mode}/{event}` is not in schema.ts - the
+ * `@ts-ignore` below is upstream's own, and its TODO says so - so this returned
+ * the untyped result of an untyped call. Authenticate.svelte then spread it
+ * into `stateBet.betToResume`, which svelte-check reported as "Spread types may
+ * only be created from object types" because there was nothing saying it was an
+ * object at all.
+ *
+ * Typed as a record rather than a made-up interface on purpose. The honest
+ * statement is "an object whose shape this schema does not describe"; inventing
+ * field names that were never checked against a real RGS response would read as
+ * more certainty than exists, and this is the replay path, where getting the
+ * shape wrong shows a player the wrong round. Callers already narrow with
+ * `if (data)` and the assignment keeps its own `@ts-ignore`.
+ */
 export const requestReplay = async (options: {
 	game: string;
 	version: string;
 	mode: string;
 	event: string;
 	rgsUrl: string;
-}) => {
+}): Promise<Record<string, unknown> | null> => {
 	const data = await rgsFetcher.get({
 		rgsUrl: options.rgsUrl,
 		// @ts-ignore TODO: update the schema.ts
 		url: `/bet/replay/${options.game}/${options.version}/${options.mode}/${options.event}`,
 	});
 
-	return data;
+	return (data ?? null) as Record<string, unknown> | null;
 }

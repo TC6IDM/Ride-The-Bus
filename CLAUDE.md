@@ -20,8 +20,9 @@ These override default behaviour. Follow them every time.
    npm run check         # tsc; 0 vendored errors. The 2 it still prints are
                          # named type imports from .svelte, which tsc cannot
                          # resolve and svelte-check reports none of.
-   npm run check:svelte  # must be 0 errors AND 0 CSS warnings in OUR source;
-                         # 17 remain in the vendored SDK
+   npm run check:svelte  # must be 0 errors AND 0 CSS warnings. 0 in the
+                         # vendored SDK too now; the "No Lingui config found"
+                         # line it sometimes prints is a pnpm dlx artefact.
    ```
    ```
    npm run lint          # now a gate; must be clean

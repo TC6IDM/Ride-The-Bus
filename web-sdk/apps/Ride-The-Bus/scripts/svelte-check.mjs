@@ -69,12 +69,39 @@ const LINE = /^\d+ (ERROR|WARNING) "(.*?)" (\d+):(\d+) "([\s\S]*?)"\s*$/;
 
 const ours = { errors: [], warnings: [] };
 let outsideErrors = 0;
+let toolingArtefacts = 0;
+
+/**
+ * Not a type error, and not deterministic either.
+ *
+ * Seven vendored components use the Lingui macro, and svelte-check reported
+ * "No Lingui config found" for them on SOME runs and not others - measured at
+ * 7 / 7 / 0 / 0 / 0 / 7 / 7 across consecutive runs with no edits between. A
+ * gate whose count flaps is worse than one that is merely high, because the
+ * number stops meaning anything.
+ *
+ * The config is not actually missing: apps/Ride-The-Bus/lingui.config.ts
+ * exists and re-exports the workspace `config-lingui`. The cause is how this
+ * script invokes the checker - `pnpm dlx` with three pinned packages, in a
+ * temporary environment isolated from the workspace's own node_modules, where
+ * a workspace import in a .ts config resolves or does not depending on what
+ * pnpm has cached. That is a property of the harness, not of the code.
+ *
+ * Counted separately rather than dropped, so it stays visible; matched on the
+ * exact message so a real error in those same files still counts.
+ */
+const LINGUI_CONFIG_ARTEFACT = /No Lingui config found/;
 
 for (const line of output.split(/\r?\n/)) {
   const match = LINE.exec(line);
   if (!match) continue;
   const [, kind, rawPath, lineNo, col, message] = match;
   const file = rawPath.replace(/\\\\/g, '/').replace(/\\/g, '/');
+
+  if (LINGUI_CONFIG_ARTEFACT.test(message)) {
+    toolingArtefacts++;
+    continue;
+  }
 
   // Paths are relative to the app; anything starting with .. is outside it.
   if (file.startsWith('..')) {
@@ -92,6 +119,13 @@ for (const line of output.split(/\r?\n/)) {
 if (outsideErrors) {
   console.log(
     `${outsideErrors} pre-existing error(s) outside this app (vendored SDK) - not this game's to fix.`,
+  );
+}
+
+if (toolingArtefacts) {
+  console.log(
+    `${toolingArtefacts} "No Lingui config found" report(s) ignored - a pnpm dlx ` +
+      'resolution artefact of this script, not a code error. See the note above.',
   );
 }
 
