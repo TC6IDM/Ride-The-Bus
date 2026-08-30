@@ -32,6 +32,18 @@ These override default behaviour. Follow them every time.
    flat config, so lint runs and must pass. The dead `.eslintrc.cjs` beside it
    is ignored by ESLint 9 and kept only so the app still matches its siblings.
 
+   ```
+   npm run audio         # capture the REAL audio graph and draw it
+   ```
+   `npm run audio` exists because I cannot hear. It taps the running game's
+   output, writes a WAV, and renders a spectrogram and a waveform I can look at,
+   plus metrics (RMS, crest, level movement, centroid, flatness, band split).
+   **Use it for any change to `audioGraph.ts` / `music.ts` / `sound.ts`** — the
+   same rule as "if a change is visual, drive it and look", and for the same
+   reason: `sound.test.ts` pins what gets SCHEDULED and says in its own header
+   that it cannot tell you whether the result sounds good. Details and the
+   pre-redesign baseline are in `.claude/skills/rtb-audio-lab/`.
+
 ---
 
 ## Where things are
