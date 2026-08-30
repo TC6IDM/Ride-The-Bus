@@ -94,14 +94,46 @@ if (result.error) {
 const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
 const lines = output.split(/\r?\n/).filter(Boolean);
 
+/**
+ * Errors tsc CANNOT get right here, as opposed to errors that are real.
+ *
+ * A Svelte 5 component may `export type Props` from its module block, and
+ * components-pixi/index.ts imports exactly that from Button.svelte and
+ * Amount.svelte to re-export as ButtonProps / AmountProps - which four
+ * components in components-ui-pixi then use. The code is correct. But tsc does
+ * not read .svelte files (see the header): it falls back to Svelte's ambient
+ * `declare module '*.svelte'`, which declares a DEFAULT export and nothing
+ * else, so any named type import from a component is reported as missing.
+ *
+ * svelte-check does read them, resolves these correctly, and reports nothing
+ * for that file - which is what makes this a tool boundary rather than a
+ * defect. Counting it would put the package total back to being a number
+ * nobody looks at, which is the failure `skipLibCheck` was just added to fix.
+ *
+ * Narrow on purpose: this matches TS2614 against the '*.svelte' module only.
+ * A genuine missing export from a .ts file is a different code and still
+ * counts, and it is reported separately below rather than silently dropped.
+ */
+const TSC_CANNOT_SEE_SVELTE = /error TS2614: Module '"\*\.svelte"'/;
+
 // App errors are relative (src/...); package errors escape upward (../../...).
 const appErrors = lines.filter((l) => /^src[\\/]/.test(l));
-const packageErrors = lines.filter((l) => /^\.\.[\\/]/.test(l));
+const allPackageErrors = lines.filter((l) => /^\.\.[\\/]/.test(l));
+const packageErrors = allPackageErrors.filter((l) => !TSC_CANNOT_SEE_SVELTE.test(l));
+const svelteTypeImports = allPackageErrors.filter((l) => TSC_CANNOT_SEE_SVELTE.test(l));
 
 if (packageErrors.length) {
   console.log(`${packageErrors.length} pre-existing error(s) in web-sdk/packages (vendored SDK, not this game):`);
   for (const line of packageErrors.slice(0, 5)) console.log('  ' + line);
   if (packageErrors.length > 5) console.log(`  ...and ${packageErrors.length - 5} more`);
+  console.log('');
+}
+
+if (svelteTypeImports.length) {
+  console.log(
+    `${svelteTypeImports.length} named type import(s) from .svelte that tsc cannot resolve ` +
+      '- not errors; svelte-check reads those files and reports none.',
+  );
   console.log('');
 }
 

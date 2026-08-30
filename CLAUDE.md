@@ -17,8 +17,11 @@ These override default behaviour. Follow them every time.
 3. **Cheap verification, run freely**, from `web-sdk/apps/Ride-The-Bus/`:
    ```
    npm run test          # node --test
-   npm run check         # tsc; 7 vendored-SDK errors remain, none ours
-   npm run check:svelte  # must be 0 errors AND 0 CSS warnings
+   npm run check         # tsc; 0 vendored errors. The 2 it still prints are
+                         # named type imports from .svelte, which tsc cannot
+                         # resolve and svelte-check reports none of.
+   npm run check:svelte  # must be 0 errors AND 0 CSS warnings in OUR source;
+                         # 17 remain in the vendored SDK
    ```
    ```
    npm run lint          # now a gate; must be clean
