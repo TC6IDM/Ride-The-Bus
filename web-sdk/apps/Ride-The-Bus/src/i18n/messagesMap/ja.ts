@@ -23,6 +23,7 @@ export default {
 	Stop: '停止',
 	left: '残り',
 	'Pick all 4 guesses': '4つすべて選択してください',
+	'Enter a number of plays': 'プレイ回数を入力してください',
 	'Enter a valid bet': '有効なベット額を入力してください',
 	'Set rounds': 'ラウンド数を設定',
 	Start: '開始',
@@ -193,8 +194,8 @@ export default {
 	Close: '閉じる',
 	'Game information': 'ゲーム情報',
 	Disclaimer: '免責事項',
-	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
-		'不具合が発生した場合、すべての勝利とプレイは無効となります。安定したインターネット接続が必要です。接続が切断された場合は、ゲームを再読み込みして未完了のラウンドを終了してください。期待還元率は多数のプレイを通じて算出されます。ゲーム画面は実在の機器を表すものではなく、説明目的のみです。勝利金はウェブブラウザ内の事象ではなく、Remote Game Server から受信した金額に基づいて精算されます。TM および (c) 2026 Stake Engine.',
+	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and © 2026 Stake Engine.':
+		'不具合が発生した場合、すべての勝利とプレイは無効となります。安定したインターネット接続が必要です。接続が切断された場合は、ゲームを再読み込みして未完了のラウンドを終了してください。期待還元率は多数のプレイを通じて算出されます。ゲーム画面は実在の機器を表すものではなく、説明目的のみです。勝利金はウェブブラウザ内の事象ではなく、Remote Game Server から受信した金額に基づいて精算されます。TM および © 2026 Stake Engine.',
 	'Loading replay…': 'リプレイを読み込み中…',
 	'Loading Ride The Bus…': 'Ride The Bus を読み込み中…',
 	'Max Win': '最大配当',

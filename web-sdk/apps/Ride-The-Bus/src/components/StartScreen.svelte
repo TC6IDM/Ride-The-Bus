@@ -53,6 +53,34 @@
 		locked[step] = locked[step] === value ? null : value;
 	}
 
+	/**
+	 * Which help tip is open, identified by its own text.
+	 *
+	 * The tips used to open on :hover and :focus-visible alone. Hover is gated
+	 * behind `@media (hover: hover)` so it never fires on a phone, and a touch
+	 * tap does not produce :focus-visible - that state is reserved for
+	 * keyboard-like input. So on every phone the four badges were visible,
+	 * focusable, labelled, and did nothing at all when tapped. The sentence
+	 * still reached a screen reader through aria-label, which is why this was
+	 * invisible to an audit that only read the markup.
+	 *
+	 * Keyed on the text rather than an index because `help` is a snippet
+	 * rendered four times and a snippet cannot hold state of its own.
+	 */
+	let openTip = $state<string | null>(null);
+
+	/**
+	 * Close the open tip on the next click anywhere else. The badge itself stops
+	 * propagation, so its own click cannot reach this and close what it just
+	 * opened.
+	 */
+	$effect(() => {
+		if (openTip === null) return;
+		const close = () => (openTip = null);
+		window.addEventListener('click', close);
+		return () => window.removeEventListener('click', close);
+	});
+
 	/*
 	 * NOTE: the board disables Inside once Equal is picked at stage 2, because
 	 * that combination is unwinnable and the math publishes no such bet mode.
@@ -190,7 +218,18 @@
      aria-hidden because the same sentence is already the button's aria-label;
      without it a screen reader reads the explanation twice. -->
 {#snippet help(text: Parameters<typeof t>[0])}
-	<button type="button" class="ss-help" aria-label={t(text)}>?</button>
+	<button
+		type="button"
+		class="ss-help"
+		class:open={openTip === text}
+		aria-label={t(text)}
+		aria-expanded={openTip === text}
+		onclick={(event) => {
+			// Stop the window listener above from closing what this opens.
+			event.stopPropagation();
+			openTip = openTip === text ? null : text;
+		}}
+	>?</button>
 	<span class="ss-tip" aria-hidden="true">{t(text)}</span>
 {/snippet}
 

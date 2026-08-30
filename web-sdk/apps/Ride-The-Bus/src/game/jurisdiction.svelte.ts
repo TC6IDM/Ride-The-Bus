@@ -60,4 +60,17 @@ export const jurisdiction = {
   /** True when any of the three readouts above is switched on. */
   showAnyReadout: () =>
     jurisdiction.showNetPosition() || jurisdiction.showRTP() || jurisdiction.showSessionTimer(),
+
+  /**
+   * Social casino (Stake.US), as declared in the jurisdiction block.
+   *
+   * The DOCUMENTED signal is the `?social=true` query parameter - the approval
+   * guidelines say "the RGS sets social=true/false to indicate a social
+   * casino", and that is what i18nDerived reads first. This flag is the same
+   * fact arriving by the other route, and it is read as well rather than
+   * instead: the two disagreeing would mean showing US players the restricted
+   * gambling terms the social catalogue exists to remove, which is the one
+   * failure here worth being redundant about. Either signal is enough.
+   */
+  socialCasino: () => readFlag(source(), 'socialCasino', false),
 };

@@ -216,6 +216,12 @@
      weaken the wayfinding rather than extend it - the whole point of these is
      that a 40px strip of near-identical round icons is found by colour.
 
+     The obvious objection is that cyan and magenta are still going. They are
+     not: they are --choice-inside and --choice-outside, two of the four guess
+     fills, and putting a BET colour on a settings menu is a worse confusion
+     than an uncoloured one. This has been re-raised and re-settled once; the
+     answer is still cream.
+
      Not #fff. This is --ink-cream, the warm white the takeover already prints
      its amount in, so the panel reads as belonging to the same lit table as
      everything else rather than as an untinted default someone forgot to

@@ -129,6 +129,34 @@
     visibility 0s linear 0.3s;
 }
 
+/* REPLAY ONLY: the readouts box collapses rather than sitting there empty.
+   In a real session the balance stays lit through the takeover - only Last Win
+   goes, because only Last Win prints the settled figure the count-up is still
+   climbing to. A replay has no balance to show either (.solo, see
+   control-bar.css), so during a replay takeover the box has nothing left in it
+   at all, and on a phone - where the light pill takes a bar row of its own -
+   that reads as a large empty panel under the win screen.
+
+   Scoped to .solo so it can only fire in the case that is actually empty; the
+   live-session pill still carries its balance and keeps its width. */
+.takeover-open .cb-readouts.solo {
+  display: none;
+}
+
+/* Hiding the box is not enough on a phone. responsive.css gives the light pill
+   `flex: 1 0 100%` there - a bar row of its own, which is the right call when
+   it holds a balance - so with the readouts gone the row stayed full width with
+   three icons at one end and a hand-width of empty panel after them.
+
+   `:has()` keeps this to the replay case rather than shrinking the pill in a
+   live session, where the balance is still in it and a mid-takeover reflow of
+   the bar would be worse than the gap. Two classes beat responsive.css's one,
+   so it lands without !important; a browser without :has() simply keeps
+   today's behaviour, which is the safe direction. */
+.takeover-open .cb-panel-light:has(.cb-readouts.solo) {
+  flex: 0 1 auto;
+}
+
 /* The board's CARD ROW goes completely while the takeover is up.
    The takeover's fan is those same four cards brought forward, so any of the
    board copy left showing puts one hand on screen twice - two rows of the same

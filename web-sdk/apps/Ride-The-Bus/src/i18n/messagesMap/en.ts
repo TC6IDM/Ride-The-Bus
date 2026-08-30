@@ -37,6 +37,7 @@ export default {
 	Stop: 'Stop',
 	left: 'left',
 	'Pick all 4 guesses': 'Pick all 4 guesses',
+	'Enter a number of plays': 'Enter a number of plays',
 	'Enter a valid bet': 'Enter a valid bet',
 	'Set rounds': 'Set rounds',
 	Start: 'Start',
@@ -235,8 +236,8 @@ export default {
 	Close: 'Close',
 	'Game information': 'Game information',
 	Disclaimer: 'Disclaimer',
-	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
-		'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.',
+	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and © 2026 Stake Engine.':
+		'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and © 2026 Stake Engine.',
 
 	// Start screen / replay additions
 	'Loading replay…': 'Loading replay…',

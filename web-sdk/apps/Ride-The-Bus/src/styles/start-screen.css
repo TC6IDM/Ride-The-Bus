@@ -476,7 +476,8 @@
 	}
 }
 
-.ss-help:focus-visible {
+.ss-help:focus-visible,
+.ss-help.open {
 	background: var(--gold);
 	border-color: var(--gold);
 	color: #12220f;
@@ -560,7 +561,12 @@
 }
 
 /* Adjacent-sibling, because the tip is no longer inside the button. */
-.ss-help:focus-visible + .ss-tip {
+.ss-help:focus-visible + .ss-tip,
+/* Tapped open. This is the ONLY route a touch device has to these four
+   sentences: the hover rule below is behind `@media (hover: hover)` and a tap
+   does not raise :focus-visible, so without this the badges were visible,
+   focusable, labelled and completely inert on every phone. */
+.ss-help.open + .ss-tip {
 	opacity: 1;
 	visibility: visible;
 }

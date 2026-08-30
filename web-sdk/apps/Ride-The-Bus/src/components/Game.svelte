@@ -3636,8 +3636,15 @@
             <button type="button" class="stepper-btn" onclick={() => stepAutoRounds(-1)} aria-label={t('Fewer plays')}>{@render iconMinus()}</button>
           </div>
         </div>
+        <!-- One reason per failure, the same rule the spin button follows.
+             This printed a flat "Enter a valid bet" for an unaffordable bet, a
+             bet under the operator's floor and a bet over its ceiling alike -
+             the exact boolean betBlockedReason() was written to replace, left
+             behind in the one place that did not get the pass. And
+             autoRoundsValid() was in `disabled` with no branch here at all, so
+             an empty rounds field gave a dead button and no explanation. -->
         <button class="action-button popup-start" onclick={startAutoFromPopup} disabled={!betIsValid() || !allChoicesMade() || !autoRoundsValid()}>
-          {#if !allChoicesMade()}{t('Pick all 4 guesses')}{:else if !betIsValid()}{t('Enter a valid bet')}{:else}{t('Start')}{/if}
+          {#if !allChoicesMade()}{t('Pick all 4 guesses')}{:else if betBlockedReason()}{betBlockedReason()}{:else if !autoRoundsValid()}{t('Enter a number of plays')}{:else}{t('Start')}{/if}
         </button>
       </div>
     </div>

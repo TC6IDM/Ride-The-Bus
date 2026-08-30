@@ -23,6 +23,7 @@ export default {
 	Stop: '停止',
 	left: '剩余',
 	'Pick all 4 guesses': '请选择全部 4 项预测',
+	'Enter a number of plays': '请输入游戏局数',
 	'Enter a valid bet': '请输入有效的投注额',
 	'Set rounds': '设置局数',
 	Start: '开始',
@@ -189,8 +190,8 @@ export default {
 	Close: '关闭',
 	'Game information': '游戏信息',
 	Disclaimer: '免责声明',
-	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
-		'故障将使所有奖金和游戏无效。需要稳定的网络连接。如果断开连接，请重新加载游戏以完成未结束的回合。预期回报是基于大量游戏计算得出的。游戏画面不代表任何实体设备，仅供示意。奖金依据从 Remote Game Server 收到的金额结算，而非依据网页浏览器中的事件。TM 和 (c) 2026 Stake Engine.',
+	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and © 2026 Stake Engine.':
+		'故障将使所有奖金和游戏无效。需要稳定的网络连接。如果断开连接，请重新加载游戏以完成未结束的回合。预期回报是基于大量游戏计算得出的。游戏画面不代表任何实体设备，仅供示意。奖金依据从 Remote Game Server 收到的金额结算，而非依据网页浏览器中的事件。TM 和 © 2026 Stake Engine.',
 	'Loading replay…': '正在加载回放…',
 	'Loading Ride The Bus…': '正在加载 Ride The Bus…',
 	'Max Win': '最高奖金',

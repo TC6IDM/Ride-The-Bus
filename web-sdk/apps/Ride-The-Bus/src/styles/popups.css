@@ -418,7 +418,24 @@
 
 .sound-label { font-size: calc(var(--ui-bar) * 0.93); letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-dim); font-weight: 700; }
 
-.sound-slider { width: 100%; min-width: 0; accent-color: var(--tint); cursor: pointer; }
+/* The track paints thin; the TARGET must not be. A range input has no height of
+   its own beyond the UA's ~16px, which sits under the 24px floor the guess
+   segments, the bar icons and the speaker beside it are all measured against -
+   this panel postdates the pass that set that floor, so it was never checked.
+   Height rather than a taller track: the native track centres itself in the
+   box, so the thumb keeps its size and gains the room around it. */
+.sound-slider {
+  width: 100%;
+  min-width: 0;
+  accent-color: var(--tint);
+  cursor: pointer;
+  height: 24px;
+}
+
+@media (pointer: coarse) {
+  /* Same argument as .cb-icon's 36px floor: a thumb is not a cursor. */
+  .sound-slider { height: 32px; }
+}
 
 /* Fixed width so the two rows' sliders start and end at the same place; the
    number is tabular for the same reason the bar readouts are. */

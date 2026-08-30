@@ -202,7 +202,7 @@ cd web-sdk\apps\Ride-The-Bus
 pnpm test
 ```
 
-130 tests (`node --test "src/**/*.test.ts"`). One of them, `parity with the
+680 tests (`node --test "src/**/*.test.ts"`). One of them, `parity with the
 published books`, reads the math build out of
 `math-sdk\games\ride_the_bus\library\publish_files\` and replays real books
 through the client's payout arithmetic. It skips itself if that directory is

@@ -10,6 +10,7 @@
 
 	import messagesMap from '../i18n/messagesMap';
 	import { applyDirection } from '../i18n/direction';
+	import { isSocialMode } from '../i18n/i18nDerived';
 
 	type Props = { children: Snippet };
 
@@ -22,7 +23,7 @@
 	// position:fixed and so live outside any game container.
 	// Social mode (Stake.US) restricts the game to English only.
 	$effect(() => {
-		const lang = stateUrlDerived.social() ? 'en' : stateUrlDerived.lang();
+		const lang = isSocialMode() ? 'en' : stateUrlDerived.lang();
 		applyDirection(lang);
 	});
 </script>

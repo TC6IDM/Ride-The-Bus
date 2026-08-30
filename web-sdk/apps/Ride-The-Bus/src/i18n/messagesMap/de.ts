@@ -23,6 +23,7 @@ export default {
 	Stop: 'Stopp',
 	left: 'übrig',
 	'Pick all 4 guesses': 'Wähle alle 4 Tipps',
+	'Enter a number of plays': 'Gib eine Anzahl Spiele ein',
 	'Enter a valid bet': 'Gib einen gültigen Einsatz ein',
 	'Set rounds': 'Runden festlegen',
 	Start: 'Start',
@@ -195,8 +196,8 @@ export default {
 	Close: 'Schließen',
 	'Game information': 'Spielinformationen',
 	Disclaimer: 'Haftungsausschluss',
-	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
-		'Eine Fehlfunktion macht alle Gewinne und Spiele ungültig. Eine stabile Internetverbindung ist erforderlich. Lade das Spiel bei einer Verbindungsunterbrechung neu, um nicht abgeschlossene Runden zu beenden. Die erwartete Auszahlung wird über viele Spiele berechnet. Die Spieldarstellung bildet kein physisches Gerät ab und dient nur der Veranschaulichung. Gewinne werden nach dem vom Remote Game Server erhaltenen Betrag abgerechnet und nicht nach Ereignissen im Webbrowser. TM und (c) 2026 Stake Engine.',
+	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and © 2026 Stake Engine.':
+		'Eine Fehlfunktion macht alle Gewinne und Spiele ungültig. Eine stabile Internetverbindung ist erforderlich. Lade das Spiel bei einer Verbindungsunterbrechung neu, um nicht abgeschlossene Runden zu beenden. Die erwartete Auszahlung wird über viele Spiele berechnet. Die Spieldarstellung bildet kein physisches Gerät ab und dient nur der Veranschaulichung. Gewinne werden nach dem vom Remote Game Server erhaltenen Betrag abgerechnet und nicht nach Ereignissen im Webbrowser. TM und © 2026 Stake Engine.',
 	'Loading replay…': 'Wiederholung wird geladen…',
 	'Loading Ride The Bus…': 'Ride The Bus wird geladen…',
 	'Max Win': 'Max. Gewinn',

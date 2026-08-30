@@ -23,6 +23,7 @@ export default {
 	Stop: 'Arrêter',
 	left: 'restants',
 	'Pick all 4 guesses': 'Choisissez les 4 pronostics',
+	'Enter a number of plays': 'Saisissez un nombre de parties',
 	'Enter a valid bet': 'Saisissez une mise valide',
 	'Set rounds': 'Définir les tours',
 	Start: 'Démarrer',
@@ -196,8 +197,8 @@ export default {
 	Close: 'Fermer',
 	'Game information': 'Informations sur le jeu',
 	Disclaimer: 'Avertissement',
-	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
-		"Tout dysfonctionnement annule les gains et les parties. Une connexion internet stable est requise. En cas de déconnexion, rechargez le jeu pour terminer les manches inachevées. Le retour attendu est calculé sur un grand nombre de parties. L'affichage du jeu ne représente aucun appareil physique et n'est fourni qu'à titre indicatif. Les gains sont réglés selon le montant reçu du Remote Game Server et non selon les événements survenus dans le navigateur web. TM et (c) 2026 Stake Engine.",
+	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and © 2026 Stake Engine.':
+		"Tout dysfonctionnement annule les gains et les parties. Une connexion internet stable est requise. En cas de déconnexion, rechargez le jeu pour terminer les manches inachevées. Le retour attendu est calculé sur un grand nombre de parties. L'affichage du jeu ne représente aucun appareil physique et n'est fourni qu'à titre indicatif. Les gains sont réglés selon le montant reçu du Remote Game Server et non selon les événements survenus dans le navigateur web. TM et © 2026 Stake Engine.",
 	'Loading replay…': 'Chargement de la relecture…',
 	'Loading Ride The Bus…': 'Chargement de Ride The Bus…',
 	'Max Win': 'Gain max.',

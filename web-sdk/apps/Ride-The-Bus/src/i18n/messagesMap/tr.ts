@@ -23,6 +23,7 @@ export default {
 	Stop: 'Durdur',
 	left: 'kaldı',
 	'Pick all 4 guesses': '4 tahminin tümünü seçin',
+	'Enter a number of plays': 'Oyun sayısını girin',
 	'Enter a valid bet': 'Geçerli bir bahis girin',
 	'Set rounds': 'Tur sayısını ayarla',
 	Start: 'Başlat',
@@ -193,8 +194,8 @@ export default {
 	Close: 'Kapat',
 	'Game information': 'Oyun bilgileri',
 	Disclaimer: 'Yasal uyari',
-	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and (c) 2026 Stake Engine.':
-		'Arızalar tüm kazançları ve oyunları geçersiz kılar. İstikrarlı bir internet bağlantısı gereklidir. Bağlantı kesilirse tamamlanmamış turları bitirmek için oyunu yeniden yükleyin. Beklenen getiri birçok oyun üzerinden hesaplanır. Oyun görüntüsü herhangi bir fiziksel cihazı temsil etmez ve yalnızca açıklama amaçlıdır. Kazançlar, web tarayıcısındaki olaylara göre değil, Remote Game Server üzerinden alınan tutara göre ödenir. TM ve (c) 2026 Stake Engine.',
+	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and © 2026 Stake Engine.':
+		'Arızalar tüm kazançları ve oyunları geçersiz kılar. İstikrarlı bir internet bağlantısı gereklidir. Bağlantı kesilirse tamamlanmamış turları bitirmek için oyunu yeniden yükleyin. Beklenen getiri birçok oyun üzerinden hesaplanır. Oyun görüntüsü herhangi bir fiziksel cihazı temsil etmez ve yalnızca açıklama amaçlıdır. Kazançlar, web tarayıcısındaki olaylara göre değil, Remote Game Server üzerinden alınan tutara göre ödenir. TM ve © 2026 Stake Engine.',
 	'Loading replay…': 'Tekrar yükleniyor…',
 	'Loading Ride The Bus…': 'Ride The Bus yükleniyor…',
 	'Max Win': 'Maks. Kazanç',

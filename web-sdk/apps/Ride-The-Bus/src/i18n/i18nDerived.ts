@@ -3,6 +3,8 @@ import { stateUrlDerived } from 'state-shared';
 import { i18nDerived as i18nDerivedUiPixi } from 'components-ui-pixi';
 import { i18nDerived as i18nDerivedUiHtml } from 'components-ui-html';
 
+import { jurisdiction } from '../game/jurisdiction.svelte';
+
 import messagesMap from './messagesMap';
 import type en from './messagesMap/en';
 import socialMessages from './socialMessages';
@@ -12,6 +14,19 @@ export type MessageKey = keyof typeof en;
 
 /** Fallback language, and the one the keys themselves are written in. */
 const DEFAULT_LANG = 'en';
+
+/**
+ * Social casino (Stake.US), from EITHER signal.
+ *
+ * `?social=true` is the documented one and stays first. The RGS also reports
+ * the same fact in the jurisdiction block it returns from
+ * /wallet/authenticate, and that is read too - a session that carried the flag
+ * but not the parameter would otherwise print the restricted gambling terms
+ * this whole catalogue exists to replace. Redundant on purpose; the failure is
+ * one-directional and expensive.
+ */
+export const isSocialMode = (): boolean =>
+	stateUrlDerived.social() || jurisdiction.socialCasino();
 
 /**
  * Translate one of this game's strings.
@@ -45,7 +60,7 @@ const DEFAULT_LANG = 'en';
  * mode.
  */
 export const t = (key: MessageKey): string => {
-	if (stateUrlDerived.social()) {
+	if (isSocialMode()) {
 		// Social mode (Stake.US) — English only, with restricted terms replaced.
 		return (socialMessages as Record<string, string>)[key] ?? key;
 	}

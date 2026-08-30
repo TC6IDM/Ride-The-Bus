@@ -656,6 +656,62 @@ rounding it to 2.0× would wipe out the house edge.
   and deliberately NOT drawn**: there is no fallback to fix, and hand-cutting
   thirteen glyph outlines would trade a real typeface for a worse one.
 
+- **The audio is synthesised, and there are no audio assets.** `audioGraph.ts`
+  owns one `AudioContext`, one bus chain with a limiter on the end, and a
+  generated impulse response for the room; `sound.ts` is the cue book;
+  `music.ts` is the bed. **One context, deliberately** — music and cues share
+  the bus, because a second context is a second limiter that cannot see the
+  first, so a fanfare and a bed would each stay clean on their own meter and
+  clip against each other on the speakers. Browsers also cap contexts per page.
+  Nothing is downloaded: `bundleStrategy: "inline"` would base64 any Vite-processed
+  asset straight into `index.html`, which makes shipped audio disproportionately
+  expensive. If produced audio is ever commissioned it goes in `static/` behind
+  `${base}/…`, and only the bodies of `sound.ts`'s `play*` functions change —
+  `Game.svelte` touches nothing but that module's public API.
+  - **Muting returns before anything is scheduled**, rather than turning a gain
+    to zero, so a muted game builds no nodes at all. `sound.test.ts` pins that,
+    because it is a CPU claim as much as an audio one.
+  - **Two buses with `volume` and `muted` kept separate**, never collapsed into
+    "volume 0 means muted". That is what lets the speaker button and the slider
+    agree: the button toggles `muted` and leaves `volume` where it was, and
+    `setBusMuted` restores `lastAudible` when un-muting a bus parked at zero —
+    without which a slider dragged to 0 becomes a dead end with no way back up.
+  - **The bed has no foreground, and that took three attempts to accept.** A
+    sparkle and then a plucked arpeggio were both built and both removed:
+    anything with an attack and a pitch stops being background the moment the
+    player notices it once. Movement comes from re-voiced pad chords and from
+    room noise (chips settling, cards on felt) — never from another melodic
+    layer. Every cue is jittered per trigger, and every noise burst is a fresh
+    buffer, so four card flips in a round are not one sample four times.
+- **The jurisdiction block is the operator's, and every read must survive it
+  being absent.** `Authenticate.svelte` assigns
+  `stateConfig.jurisdiction = authenticateData?.config?.jurisdiction`
+  *unconditionally*, so a response without the block replaces the defaults
+  object with `undefined` and a bare property access throws. Every read goes
+  through `readFlag` in `jurisdictionRules.ts` (pure, unit-tested), and **the
+  fallback is always the permissive value** — a missing block never disables the
+  game, and never enables a restriction the regulator did not ask for.
+  `jurisdiction.svelte.ts` only wires that to `stateConfig`.
+  - Consumed: `disabledTurbo`, `disabledSuperTurbo` (caps the slider at
+    `TURBO_CAP_WITHOUT_SUPER` and relabels its end "Fast" rather than
+    "Instant"), `disabledAutoplay`, `disabledSpacebar`, `disabledSlamstop`,
+    `minimumRoundDuration` (gates the NEXT play rather than slowing the current
+    animation), the three responsible-gambling readouts, and `socialCasino`.
+    `disabledFullscreen` and `disabledBuyFeature` are declared and unconsumed
+    because this game has neither control — that is correct, not a gap.
+  - **Social mode is read from BOTH signals.** `?social=true` is the documented
+    one, and the jurisdiction block's `socialCasino` is the same fact by the
+    other route. `isSocialMode()` in `i18nDerived.ts` ORs them, and
+    `+layout.svelte` uses the same predicate to force English. The redundancy is
+    deliberate and one-directional: the cost of missing it is showing US players
+    the restricted gambling terms `socialMessages.ts` exists to remove.
+  - `devOverrides.ts` drives all of it from the address bar
+    (`?dev_disabledTurbo=1`, `?dev_displayRTP=1`, `?dev_minimumRoundDuration=2500`,
+    `?dev_minBet=1&dev_maxBet=100`), because localhost has no
+    `/wallet/authenticate` and none of this behaviour can otherwise be seen. It
+    is behind an `import.meta.env.DEV` literal, so Vite drops the module from a
+    production build.
+
 ---
 
 ## Two bug classes that keep recurring
@@ -753,7 +809,7 @@ between a one-row bar and a two-row one.
 
 ## Current state
 
-590/590 tests, 0 type errors, 0 CSS warnings, lint clean, and the
+680/680 tests, 0 type errors, 0 CSS warnings, lint clean, and the
 client reproduces all 76,800 published books exactly. The published math build
 (192 modes, RTP 96.0000% everywhere, spread 0.000000%, zero volatility
 violations) is generated.
@@ -969,14 +1025,32 @@ look.**
     four cards again. Positioned out of flow like the tooltip, so it cannot add
     a row to a bar whose height budget is the tightest thing in the layout.
     Verified at Desktop, Popout S and Mobile M.
-  - Touch targets **re-measured at every target viewport and clear the 24 px
-    WCAG AA floor everywhere** — guess segments 29/35/39 px at 320/375/425,
-    equal-badge tap area `min(32px, 45% of the square)`, bar icons 36 px. The
-    badge's ceiling is tied to the square rather than flat at 32 px because a
-    flat 32 px reaches past a segment's own centre on a 320 px screen and steals
-    it. Nothing reaches the 44 px *comfortable* target: four cards across cap
-    `--ui` at 2.265vw, and 44 px bar icons overflowed a 375 px viewport. Table
-    in `RGS_TEST_PLAN.md` §11. "Popout S/L" is still a named responsive check.
+  - Touch targets: guess segments **paint** 29/35/39 px at 320/375/425,
+    equal-badge tap area `min(32px, 45% of the square)`, bar icons 36 px,
+    sound sliders 32 px on coarse pointers. The badge's ceiling is tied to the
+    square rather than flat at 32 px because a flat 32 px reaches past a
+    segment's own centre on a 320 px screen and steals it. Nothing reaches the
+    44 px *comfortable* target: four cards across cap `--ui` at 2.265vw, and
+    44 px bar icons overflowed a 375 px viewport. Table in
+    `RGS_TEST_PLAN.md` §11. "Popout S/L" is still a named responsive check.
+    - **This used to claim the 24 px floor was cleared "everywhere", and that
+      is not true on Mobile S.** The claim measured the segments' PAINT. The
+      badge is centred on the seam and its `::before` overlays them, so what a
+      thumb can actually reach — probed with `elementFromPoint`, which is the
+      only way to see a pseudo-element hit area — is **21 px** on
+      `.third-btn.higher-third` and **22 px** on the two `.io-square` halves at
+      320×568. Mobile M and Mobile L are genuinely clear (badge hit 32/33 px,
+      segments unobstructed).
+    - **It cannot be tuned out, and the arithmetic is why.** At 320 the square
+      is 58.9 px; two 24 px halves plus a 24 px badge needs 72 px, i.e. `--ui`
+      8.61 against the 7.04 available. Shrinking the badge instead makes it
+      worse — for the halves to keep 24 px the badge would have to drop to
+      10.9 px, below even its current 13.7 px paint, which is the unhittable
+      state the `::before` exists to fix. And `--ui` is bound at 320 by
+      **2.2vw** (the four-card row), not by height — `1.55vh` would allow 8.80.
+      So the only real fixes are a narrower card row or moving the badge off
+      the seam, and both are the owner's call, not a tuning pass.
+    - Do not "fix" this by restating the paint figure. That is what hid it.
   - Tile assets: **done, and they live in `submission/`, not `static/`.** All
     three fixed names are present — `RideTheBus-BG.jpg` (1536×1024, 499 KB),
     `RideTheBus-FG.png` (1254×1254, 1.50 MB) and `TakeoverCasino-Logo.png`
@@ -1021,8 +1095,12 @@ look.**
       `control-bar.css`, `popups.css`), not just the loader, intro and
       celebration. The card flip still *happens* — it is how the game says a card
       was revealed — it just stops being a rotation.
-- Promo blurb for submission — **mandatory**, not optional: "approval requests
-  must be accompanied by a short blurb describing your game theme and mechanics".
+- ~~Promo blurb for submission~~ — **written**, at three lengths, in
+  `PROMO_BLURB.md`. The **standard** one is the default to submit. Its Second
+  Chance sentence used to say the family "forgives your first wrong call
+  outright", which is wrong twice over — forgiveness keeps **half** the running
+  multiplier, and only from **card 2**. Stake reads the blurb against the game,
+  so every claim in that file has to be checkable against `FAMILY_RULES`.
 - **Not yet submitted to Stake** — math, bet modes and mechanics are all still
   changeable until the user says otherwise.
 

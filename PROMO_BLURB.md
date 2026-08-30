@@ -32,8 +32,9 @@ price for all three modes.
 > deck, so calling Lower on a 3 pays about 4.75× while Higher pays 1.19×, and
 > the odds shift under you as the run builds. Three modes change only what a
 > miss leaves behind: Classic keeps 30%, High Stakes keeps 20% and pays further,
-> and Second Chance forgives your first wrong call outright and lets the run
-> continue. All three cost the same and return the same 96.00%.
+> and Second Chance keeps half of what you had built on your first wrong call
+> from card two on and plays through it. All three cost the same and return the
+> same 96.00%.
 >
 > Four correct calls is the whole game. The longest of them pays 1910.2×.
 
@@ -59,10 +60,10 @@ price for all three modes.
 > Three ways to back the same four calls, at the same price. **Classic** keeps
 > 30% of what you had built when a call misses. **High Stakes** keeps only 20%,
 > and pays every correct call more for the shortfall — the steepest climb, and
-> the 1910.2× ceiling. **Second Chance** forgives your first wrong call from
-> card two onward and lets the run continue, trading the ceiling for the odds of
-> finishing. Every mode returns the same 96.00%; what changes is the shape of
-> the ride.
+> the 1910.2× ceiling. **Second Chance** keeps half of what you had built on
+> your first wrong call from card two onward and plays on through it, trading
+> the ceiling for the odds of finishing. Every mode returns the same 96.00%;
+> what changes is the shape of the ride.
 >
 > Get all four and you have ridden the bus.
 
