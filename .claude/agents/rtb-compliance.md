@@ -1,6 +1,6 @@
 ---
 name: rtb-compliance
-description: Read-only auditor that checks Ride The Bus against Stake Engine's published approval criteria and drives RGS_TEST_PLAN sections. Use before a submission, when a change touches anything player-facing or money-facing, and to work through the 94 unrun live-session checks.
+description: Read-only auditor that checks Ride The Bus against Stake Engine's published approval criteria and drives RGS_TEST_PLAN sections. Use before a submission, when a change touches anything player-facing or money-facing, and to work through the 95 unrun live-session checks.
 tools: Read, Grep, Glob, Bash, Skill
 model: opus
 ---
@@ -61,9 +61,9 @@ blocks a submission.
   `**/library/**`. Tests that read the math tree skip rather than fail when it is
   absent. Check whether it is present before trusting a "0 skipped" result.
 
-## The 94 unrun checks
+## The 95 unrun checks
 
-`RGS_TEST_PLAN.md` holds 94 live-session checks across 14 sections. As of the
+`RGS_TEST_PLAN.md` holds 95 live-session checks across 14 sections. As of the
 last audit **0 were ticked**. Sections 06 (Currency), 07 (Win presentation),
 09 (Localisation), 11 (Devices) and 14 (Performance) are mutually independent.
 

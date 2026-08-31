@@ -133,7 +133,10 @@ class FakeAudioContext {
 
 	createBiquadFilter() {
 		created.filters++;
-		return { type: 'lowpass', frequency: param(350), Q: param(1), connect() {} };
+		// gain is a real AudioParam on a BiquadFilterNode - the shelf and
+		// peaking types use it, and the music bus's air shelf does. Absent
+		// here, building the graph threw "Cannot set properties of undefined".
+		return { type: 'lowpass', frequency: param(350), Q: param(1), gain: param(0), connect() {} };
 	}
 
 	createDynamicsCompressor() {

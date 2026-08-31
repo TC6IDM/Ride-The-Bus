@@ -317,17 +317,18 @@ export const sound = {
 	/**
 	 * The music slider's own tick, on the MUSIC bus.
 	 *
-	 * A volume slider has to preview the bus it sets. This one was silent while
-	 * there was no music, and ticking it on the cue bus instead would have been
-	 * worse than silence - it would have demonstrated a level the slider does
-	 * not control.
+	 * A volume slider has to preview the bus it sets. Ticking it on the cue bus
+	 * instead would be worse than silence - it would demonstrate a level the
+	 * slider does not control. That matters more now, not less: the music bus
+	 * carries a produced track that may not be loaded yet, or at all, so this
+	 * tick is often the only thing the music slider can make a sound with.
 	 *
 	 * Softer and rounder than playSliderTick: sines rather than a triangle, a
-	 * longer tail, more room. That is not decoration - it is what makes the tick
-	 * sound like the bed it belongs to, so dragging the slider is a fair sample
-	 * of what turning the music up will actually do. It also has to survive being
-	 * heard on a bus the player may be setting to 5%, which is why it sits well
-	 * above the pad in level.
+	 * longer tail, more room. That is not decoration - it is what keeps the tick
+	 * feeling like it belongs to the music bus rather than to the cues, so
+	 * dragging the slider is a fair sample of what turning the music up will do.
+	 * It also has to survive being heard on a bus the player may be setting to
+	 * 5%, which is why it is not quiet.
 	 */
 	playMusicTick(position: number) {
 		const clamped = Math.min(Math.max(position, 0), 1);

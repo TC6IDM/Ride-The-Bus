@@ -1,6 +1,6 @@
 # RGS verification test plan
 
-94 checks to run against the **uploaded** build on a Developer-page session,
+95 checks to run against the **uploaded** build on a Developer-page session,
 not against localhost.
 
 That distinction is the whole reason this document exists. Locally the game
@@ -789,6 +789,46 @@ live in the How to Play panel behind the `i` button.
   the foreground transparent, no text or multipliers baked into either, no dark
   edges on the background, and the provider logo legible at small sizes. These
   are uploaded through the dashboard, not shipped in the build.
+
+- [ ] **CMP-16 · The music bed is licensed, single, and behaves** — *Blocker*
+  Nothing in this item can be checked by the test suite, and the first line of it
+  is the one that stops a submission.
+
+  **Licence.** The track in `static/music/` must have been **generated on a paid
+  Suno subscription**, with its `ASSET_LICENCES.md` row carrying the generation
+  URL, the date, the verbatim prompt and the tier active on that date.
+  Free-tier Output is licensed for personal, non-commercial use only.
+  Re-downloading a free-tier track after subscribing does **not** fix it — the
+  licence attaches when the Output is *generated*. As of 2026-08-31 all four
+  tracks in the tree are free-tier placeholders, so this is **currently failing
+  by design**.
+
+  **One file.** `static/` is copied wholesale into the build, so every candidate
+  left in `static/music/` ships. **Expect:** exactly one audio file there, named
+  by `ACTIVE_TRACK_ID` in `musicTracks.ts`. `musicTracks.test.ts` prints the
+  directory total and holds a ceiling, but it cannot know which one you meant.
+
+  **The seam.** Leave the game idle on the board for **longer than one full loop
+  period** — `loopEnd − loopStart − crossfade`, five minutes or so on the current
+  candidates — and listen through the wrap. **Expect:** no dropout, no level dip,
+  no audible restart, and no fade to silence followed by a cold entry. If it
+  wraps badly the fix is `loopEnd` in the manifest, pulled back to a bar line.
+  `npm run audio -- --params "dev_loop=40,70,4"` reproduces the same seam every
+  26 seconds if you need to hear it repeatedly.
+
+  **The ladder.** Play a round through to a big win. **Expect:** the bed is
+  loudest on the idle board, pulls back as the cards turn, and ducks hard and
+  fast under the fanfare — never the other way round. It shares one limiter with
+  every cue, so a bed sitting on top of a win ducks the *win*.
+
+  **Bandwidth.** With music muted before the first tap, open the network tab and
+  reload. **Expect:** the track is **not** requested at all. Muting is a
+  bandwidth claim here, not only a CPU one.
+
+  **The two screens before the board.** **Expect:** on Stake's own embed, the bed
+  is already playing under the loading and start screens. If it only arrives at
+  the board, the iframe is not granting autoplay — which is legitimate, not a
+  bug, but it is worth knowing which of the two a real session does.
 
 ---
 

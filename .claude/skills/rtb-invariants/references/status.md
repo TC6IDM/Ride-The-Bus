@@ -156,6 +156,47 @@ look.**
 
 ## Outstanding
 
+- **The music bed: built and playing, but every track in the tree is
+  unshippable.** The audio path is finished — `musicTracks.ts` holds the
+  candidates, `music.ts` runs the five-scene level ladder, `audioGraph.ts`
+  cross-fades the loop, `primeAudio` opens the graph early enough that the
+  loading and start screens have music. Measured through `npm run audio` at every
+  scene, nothing clipping. **The one thing missing is a licence.**
+
+  All four tracks in `static/music/` were generated on Suno's **free tier**,
+  which licenses Output for personal, non-commercial use only. **They are
+  gitignored and so are not tracked** — a clone has no music and runs on its
+  cues, which the loader handles by design. They are placeholders that made the
+  audio work buildable and hearable; none of them can ship. Three things have to happen before submission, in one pass:
+
+  1. **Regenerate the chosen track on a paid subscription.** Re-downloading a
+     free-tier track after subscribing does not fix it — the licence attaches
+     when the Output is *generated*, not when it is fetched. Record the
+     generation URL, the date, the verbatim prompt and the active tier in
+     `ASSET_LICENCES.md`, which has the full Suno checklist.
+  2. **Delete every other track.** `static/` is copied wholesale into the build,
+     so all four ship as they stand — about 24 MB of payload to deliver one.
+     `musicTracks.test.ts` prints the directory total and holds a ceiling, but it
+     cannot know which file was meant.
+  3. **Re-encode it.** Every candidate carries an embedded Suno cover-art JPEG
+     (~330 kB, never displayed) at 165–190 kbps stereo. Stripping the art and
+     re-encoding to 112 kbps took the largest from 6.5 MB to 4.3 MB with no
+     audible cost on a background bed:
+     `ffmpeg -i in.mp3 -vn -map_metadata -1 -b:a 112k out.mp3`
+
+  Then re-measure: `SCENE_MIX` was tuned against one track, and `MusicTrack.trim`
+  is what keeps the others level with it, so a new file needs a new trim.
+  `RGS_TEST_PLAN.md` CMP-16 is the live-session pass for all of this, and it is
+  currently failing by design.
+
+  Two things about the bed that no test can reach and that want ears on real
+  speakers: **the loop seam** — the wrap is only heard once per loop period,
+  four to five minutes on these candidates, so `?dev_loop=` exists to make it
+  happen every 26 seconds — and **whether the track survives laptop speakers**.
+  The candidates put 0.1% of their energy above 2 kHz, which is the dark
+  late-night brief working as intended and is also close to the edge of a track
+  a laptop cannot carry.
+
 - **Win takeover: still wants real hardware, but the perf risk is mostly
   spent.** The blur is `blur(2px) saturate(0.86)` and is dropped entirely under
   `@media (pointer: coarse)` — that was the pre-emptive fix this list used to
@@ -269,7 +310,7 @@ look.**
     - `logo.png` is now the WebP's fallback rather than the file the game
       loads, so it stays at 710×710 and byte-identical to the tile asset.
       README's older 4-layer Tile Editor description has been corrected.
-  - **The live-session checks in `RGS_TEST_PLAN.md` remain unrun — now 94, not
+  - **The live-session checks in `RGS_TEST_PLAN.md` remain unrun — now 95, not
     52.** The plan was strong on this project's own regression history and thin
     on the criteria Stake publishes; 33 were added covering the spacebar binding,
     the mute control, autoplay confirmation, an invalid `rgs_url`, a malformed

@@ -41,6 +41,27 @@ const val = (n, d) => { const i = argv.indexOf(`--${n}`); return i >= 0 && argv[
 const SCENE = val('scene', 'table');
 const SECONDS = Number(val('seconds', 18));
 const NAME = val('out', `bed-${SCENE}`);
+// --play captures a REAL round on top of the bed: card flips, the stage cues
+// and the win fanfare, all through the shared limiter. That is the only way to
+// see whether the cues duck the room into nothing.
+const PLAY = argv.includes('--play');
+const MODE = val('mode', 'red_equal_equal_heart');
+const EVENT = val('event', '975');
+const REPLAY_PORT = Number(process.env.REPLAY_PORT || 3010);
+// Extra query parameters, appended to whichever URL is built below. The bed's
+// dev overrides are the reason: ?dev_music= auditions a candidate and ?dev_loop=
+// shortens its region, and a five-minute loop cannot otherwise be made to wrap
+// inside a capture at all.
+//
+//   npm run audio -- --params "dev_loop=40,70,4" --seconds 40
+//   npm run audio -- --params "dev_music=background-two" --play
+const PARAMS = val("params", "");
+// Simulate an embedder that grants autoplay - Stake serves the game in an
+// iframe and may set allow="autoplay". With it, primeAudio opens the graph on
+// mount and the bed plays UNDER the loading screen with nothing ever pressed;
+// without it, the first gesture is what starts the music. Both are real, and
+// only this flag can reach the first.
+const AUTOPLAY = argv.includes("--autoplay");
 const SR = 48000;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -269,7 +290,14 @@ async function main() {
   const userDir = mkdtempSync(path.join(tmpdir(), 'rtb-audio-'));
   const proc = spawn(CHROME, ['--headless=new', `--remote-debugging-port=${port}`,
     `--user-data-dir=${userDir}`, '--no-first-run', '--disable-gpu', '--hide-scrollbars',
-    '--autoplay-policy=no-user-gesture-required', 'about:blank'], { stdio: 'ignore' });
+    ...(AUTOPLAY ? ['--autoplay-policy=no-user-gesture-required'] : []),
+    // NO --autoplay-policy override BY DEFAULT. The context is meant to start suspended;
+    // audioGraph's `ctx.resume().then(announce)` is what wakes music.ts's
+    // scheduler, and forcing 'running' skips that branch entirely - which is
+    // what made an early run of this tool report the lobby bed as dead. --autoplay
+    // opts into the other case on purpose, and is the only way to capture the
+    // loading screen, which has nothing to press.
+    'about:blank'], { stdio: 'ignore' });
   for (let i = 0; i < 150; i++) { await sleep(120); try { await (await fetch(`http://127.0.0.1:${port}/json/version`)).json(); break; } catch {} }
   const targets = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();
   const ws = new WebSocket(targets.find((t) => t.type === 'page').webSocketDebuggerUrl);
@@ -286,9 +314,34 @@ async function main() {
   };
   await send('Page.enable'); await send('Runtime.enable');
   await send('Page.addScriptToEvaluateOnNewDocument', { source: TAP });
-  await send('Page.navigate', { url: `http://localhost:${GAME_PORT}/` });
-  await sleep(10000);
-  for (let i = 0; i < 80; i++) { if (await ev(`return !!document.querySelector('.ss-continue');`)) break; await sleep(200); }
+  const url = PLAY
+    ? `http://localhost:${GAME_PORT}/?replay=true&game=ride_the_bus&version=1` +
+      `&mode=${MODE}&event=${EVENT}&rgs_url=localhost%3A${REPLAY_PORT}` +
+      `&currency=USD&amount=1000000&lang=en`
+    : `http://localhost:${GAME_PORT}/`;
+  const full = PARAMS ? url + (url.includes('?') ? '&' : '?') + PARAMS : url;
+  if (PARAMS) console.log('params:', PARAMS);
+  await send('Page.navigate', { url: full });
+  // 'loading' is the one scene that must NOT be waited for or clicked into: it
+  // is the loader, it lasts 1.4-8s, and the whole question about it is whether
+  // the bed plays with nothing pressed. Waiting for .ss-continue would miss it
+  // and a gesture would answer a different question - so pair it with --autoplay.
+  if (SCENE === 'loading') {
+    // Poll for the graph rather than sleeping a guess: on a cold dev server the
+    // page can take seconds to boot, and the loader itself only lives 1.4-8s, so
+    // a fixed wait either misses the graph or misses the loader. Report which of
+    // the two was true when the capture began - a bed under a loader that has
+    // already gone would be a different measurement entirely.
+    for (let i = 0; i < 100; i++) {
+      if (await ev(`return !!window.__rtb.ready;`)) break;
+      await sleep(100);
+    }
+    const up = await ev(`return !!document.querySelector('.game-loader');`);
+    console.log(`loader on screen at capture: ${up}`);
+  } else {
+    await sleep(10000);
+    for (let i = 0; i < 80; i++) { if (await ev(`return !!document.querySelector('.ss-continue');`)) break; await sleep(200); }
+  }
   // The scene is reached by PLAYING to it rather than by poking music.setScene,
   // so what is captured is the bed the game actually puts there. 'lobby' is the
   // start screen; 'table' is the board.
@@ -301,13 +354,42 @@ async function main() {
   // there is nothing to press that keeps you on the screen, so a CDP mouse
   // click is dispatched at a corner instead: it is a trusted gesture, it
   // unlocks audio, and it leaves the start screen up.
-  if (SCENE === 'lobby') {
-    await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: 4, y: 4, button: 'left', clickCount: 1 });
-    await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: 4, y: 4, button: 'left', clickCount: 1 });
+  if (SCENE === 'loading') {
+    // Nothing to press, deliberately.
+  } else if (SCENE === 'lobby') {
+    // A real control on the start screen, because the CUE BOOK is what opens
+    // the context - music deliberately never does (see contextTime). A help
+    // badge or a demo pick is exactly the first press a player makes here.
+    // A TRUSTED gesture, dispatched through CDP at the control's real
+    // coordinates. el.click() from script is not one: the context still gets
+    // built (the cue book calls ensureContext regardless) but ctx.resume() is
+    // refused and its promise never settles, so the context sits suspended and
+    // the music scheduler - which requires state 'running' - never starts.
+    const box = await ev(`
+      const el = document.querySelector('.ss-help') || document.querySelector('.half-btn');
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2), cls: el.className };`);
+    if (box) {
+      await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: box.x, y: box.y, button: 'left', clickCount: 1 });
+      await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: box.x, y: box.y, button: 'left', clickCount: 1 });
+    }
+    console.log('lobby gesture:', box ? `${box.cls} @ ${box.x},${box.y}` : 'NONE FOUND');
   } else {
-    await ev(`const b=document.querySelector('.ss-continue'); if(b) b.click(); return true;`);
+    // Trusted, for the same reason as the lobby branch above: el.click() from
+    // script does not unlock an AudioContext, so a synthetic press here left
+    // the context suspended and captured zero frames.
+    const box = await ev(`
+      const el = document.querySelector('.ss-continue');
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };`);
+    if (box) {
+      await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: box.x, y: box.y, button: 'left', clickCount: 1 });
+      await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: box.x, y: box.y, button: 'left', clickCount: 1 });
+    }
   }
-  await sleep(3000);
+  await sleep(SCENE === 'loading' ? 300 : 3000);
 
   const st = await ev(`return { ready: window.__rtb.ready, err: window.__rtb.err||null, state: window.__rtbCtx?window.__rtbCtx.state:null, sr: window.__rtbCtx?window.__rtbCtx.sampleRate:null };`);
   console.log('tap:', JSON.stringify(st));
@@ -323,9 +405,33 @@ async function main() {
     proc.kill();
     return;
   }
-  if (st.state !== 'running') await ev(`await window.__rtbCtx.resume(); return true;`);
+  // Never await resume() unguarded: without a trusted gesture it is refused and
+  // the promise simply never settles, which hangs the whole run.
+  if (st.state !== 'running') {
+    const resumed = await ev(`
+      const r = await Promise.race([
+        window.__rtbCtx.resume().then(() => 'resumed').catch((e) => 'refused: ' + e),
+        new Promise((res) => setTimeout(() => res('timed out'), 3000)),
+      ]);
+      return r + ' (state ' + window.__rtbCtx.state + ')';`);
+    console.log('resume:', resumed);
+  }
 
   await ev(`window.__rtb.chunks.length = 0; window.__rtb.frames = 0; window.__rtb.recording = true; return true;`);
+
+  // Deal, once recording is live, so the round lands inside the capture.
+  if (PLAY) {
+    const box = await ev(`
+      const el = document.querySelector('.ss-play-btn') || document.querySelector('.cb-spin');
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2), cls: el.className };`);
+    if (box) {
+      await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: box.x, y: box.y, button: 'left', clickCount: 1 });
+      await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: box.x, y: box.y, button: 'left', clickCount: 1 });
+    }
+    console.log('dealt:', box ? box.cls : 'NO PLAY BUTTON FOUND');
+  }
   console.log(`recording ${SECONDS}s...`);
   await sleep(SECONDS * 1000);
   const frames = await ev(`window.__rtb.recording = false; return window.__rtb.frames;`);

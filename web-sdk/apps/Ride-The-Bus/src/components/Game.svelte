@@ -55,7 +55,9 @@
   import { requestBalance, requestBet, requestEndRound } from 'rgs-requests';
   import { pacedPlay, pacedRequest } from '../game/rgsPacing';
   import { sound, type AudioBusName, type PressKind } from '../game/sound';
-  import { music } from '../game/music';
+  import { music, type MusicScene } from '../game/music';
+  import { primeAudio } from '../game/audioGraph';
+  import { MUSIC_BED } from '../game/bedAsset';
   import {
     FAMILY_BLURB,
     FAMILY_RULES,
@@ -1468,11 +1470,6 @@
     let busted = false;
     let forgivenessSpent = false;
     for (let i = 0; i < revealEvents.length; i++) {
-      // The bed rises before the card lands, not after: the tension belongs to
-      // the wait. Setting a variable rather than firing a voice is what makes
-      // this safe under slam, where all four stages happen in one frame - the
-      // scheduler reads the last value and plays one bed, not four at once.
-      music.setTension(i);
       await revealWait(650, 0);
       revealedCards[i] = revealEvents[i].card;
       // Spaced, not skipped, when the reveal is instant - see cueLead.
@@ -1510,10 +1507,6 @@
       }
     }
 
-    // The round is decided; the room goes back to being a room. The held voices
-    // already scheduled tail out on their own, so this is a fade rather than a
-    // cut and it lands under the settle cue.
-    music.setTension(null);
     await revealWait(300, 120);
     // Prefer the server's authoritative payout on engine rounds; fall back to
     // the local formula (identical maths) when there's no RGS session.
@@ -2600,16 +2593,50 @@
     sound.playPress(pressKindFor(target), Math.max(0, choiceStageFor(target)));
   }
 
-  // The room follows the screen. An effect rather than a line at each of the
-  // five introPhase assignments, because it cannot then be forgotten at a sixth.
-  //
-  // 'lobby' is honest but rarely heard: nothing has been clicked while the
-  // loader and intro are up, so there is no running AudioContext for the
-  // scheduler to join (see contextTime). It plays when a player opens the sound
-  // panel before continuing, and on the replay flow's second tap. The first
-  // press of a normal session lands on 'playing' anyway.
+  // The produced track, handed over rather than imported by music.ts - it needs
+  // `${base}`, and a module reaching $app/* cannot be unit tested. Before this,
+  // or if the file is missing, the room is fully synthesised.
+  music.setBed(MUSIC_BED);
+
+  // Open the audio graph as early as the browser allows, so the bed is playing
+  // UNDER the loading and start screens rather than arriving with the tap that
+  // leaves them. Where autoplay is blocked this builds nothing and waits for the
+  // first gesture anywhere on the page - see primeAudio, which carries the whole
+  // argument. The cue book still opens a context on its own presses; this only
+  // makes the two screens with nothing to press stop being silent.
+  $effect(() => primeAudio());
+
+  /**
+   * Where the bed thinks the player is.
+   *
+   * ONE derivation rather than a line at each of the five introPhase
+   * assignments and both ends of the round, because it cannot then be forgotten
+   * at a sixth. Everything it reads is $state, so the effect below re-runs on
+   * its own; music.setScene ignores a repeat.
+   *
+   * THE ORDER IS THE RANKING, and only one pair of it is subtle: a celebration
+   * is checked BEFORE the round, because the round flow awaits the takeover's
+   * dismissal and so is still "in progress" underneath it. Tested the other way
+   * round, a big win would score itself at the round level and never duck for
+   * its own fanfare.
+   *
+   * 'loading' and 'lobby' DO sound now, which they did not before primeAudio
+   * above: nothing is pressed while the loader and the intro are up, so there
+   * was no running AudioContext for the scheduler to join and both screens set
+   * a scene that could never be heard. Where the embedder blocks autoplay they
+   * are still silent until the first gesture, which is a browser rule rather
+   * than something to chase.
+   */
+  const musicScene = (): MusicScene => {
+    if (introPhase === 'loading') return 'loading';
+    if (introPhase !== 'playing') return 'lobby';
+    if (celebration) return 'celebration';
+    if (roundInProgress()) return 'round';
+    return 'idle';
+  };
+
   $effect(() => {
-    music.setScene(introPhase === 'playing' ? 'table' : 'lobby');
+    music.setScene(musicScene());
   });
 
   $effect(() => {

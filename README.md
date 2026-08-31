@@ -295,7 +295,7 @@ guesses that stayed editable across the two round trips of placing a bet, and a
 replay that started animating behind the loading screen. Play real rounds
 through a Developer-page session before submitting, replay included.
 
-[RGS_TEST_PLAN.md](RGS_TEST_PLAN.md) is that pass, written out: 94 checks
+[RGS_TEST_PLAN.md](RGS_TEST_PLAN.md) is that pass, written out: 95 checks
 covering settlement, autoplay endurance, the jurisdiction flags, currency
 display, replay and the compliance surface, each with the reason it exists. It
 is weighted towards the paths the local fallback never executes, because that is

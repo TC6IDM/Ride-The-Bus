@@ -41,8 +41,8 @@ These override default behaviour. Follow them every time.
    **Use it for any change to `audioGraph.ts` / `music.ts` / `sound.ts`** — the
    same rule as "if a change is visual, drive it and look", and for the same
    reason: `sound.test.ts` pins what gets SCHEDULED and says in its own header
-   that it cannot tell you whether the result sounds good. Details and the
-   pre-redesign baseline are in `.claude/skills/rtb-audio-lab/`.
+   that it cannot tell you whether the result sounds good. Details are in
+   `.claude/skills/rtb-audio-lab/`.
 
 ---
 
@@ -250,10 +250,51 @@ reading before proposing it again.
 
 ### Audio and jurisdiction — `references/audio-and-jurisdiction.md`
 
-- **The audio is synthesised, and there are no audio assets.** One
+- **Every cue is synthesised; the music bed is one produced file.** One
   `AudioContext`, one bus chain with a limiter, one generated room. Muting
   returns before anything is scheduled. `volume` and `muted` stay separate
-  fields. **The bed has no foreground** — that took three attempts to accept.
+  fields.
+- **The bed is fetched from `static/`, never imported, and its URL is injected.**
+  `bundleStrategy: "inline"` would base64 an imported asset into `index.html`;
+  `${base}` needs `$app/paths`, which no node test can import. So `bedAsset.ts`
+  owns the URL and `Game.svelte` hands it to `music.setBed`. The loader
+  downloads nothing for a muted player and falls back to no music on any
+  failure.
+- **The candidates are a manifest.** `musicTracks.ts` maps ids onto the files in
+  `static/music/`; `ACTIVE_TRACK_ID` is the one line that switches tracks and
+  `?dev_music=<id>` auditions one without a restart. `trim` level-matches them so
+  switching does not change how loud the game is. **Every file in `static/music/`
+  ships** — `static/` is copied wholesale — and every one needs a row in
+  `ASSET_LICENCES.md`; `musicTracks.test.ts` enforces both.
+  **The four candidates there are free-tier Suno output, gitignored and so not
+  tracked.** A clone has no music and runs on its cues, which the loader handles
+  by design; the paid-tier replacement is the one file that ever gets committed.
+- **The loop is overlapping passes, not `src.loop = true`.** A produced track
+  ends on a fade to silence, so a hard wrap plays that decay into a cold entry
+  forever. Each pass is its own source started `span − crossfade` after the last;
+  the seams are **equal-power** curves (two uncorrelated bars sum as powers, so a
+  linear pair dips 3 dB) while the arrival fade stays linear. `loopStart`/
+  `loopEnd` trim the outro off. `?dev_loop=<start>,<end>,<crossfade>` shortens the
+  region, because a 5-minute loop cannot otherwise be made to wrap inside a
+  capture.
+- **The bed plays on the loading and start screens**, which needs `primeAudio`:
+  the cue book was the only thing that ever opened an `AudioContext`, and those
+  two screens have nothing to press, so they set a scene that could never sound.
+  It opens the graph immediately where autoplay is permitted (an
+  `allow="autoplay"` iframe, a trusted returning player) and otherwise on the
+  first gesture anywhere — capture phase, so the music starts on the same tap
+  rather than one interaction later. Permission is **asked**, not assumed:
+  `getAutoplayPolicy`, then `userActivation`, then a throwaway context that is closed
+  either way — measured through CDP with `Log.enable` to confirm a constructed and
+  closed context logs nothing. A cold load in a strict embed is still silent
+  until the first touch; that is a browser rule.
+- **The scene ladder is a DIP, not a climb.** Five scenes, one file, so level is
+  the only thing a scene can change: loudest at `idle`, ducked for `round` (the
+  busiest the cue book gets), ducked hardest and fastest for `celebration` —
+  the bed and the fanfares share one limiter, so a bed sitting on top of a win
+  would duck the win. The fade time belongs to the **destination**, which makes
+  ducks fast and recoveries slow for free. A celebration outranks a round in the
+  derivation, because the round is still in flight underneath the takeover.
 - **The jurisdiction block is the operator's, and every read must survive it
   being absent.** Every read goes through `readFlag`, and **the fallback is
   always the permissive value**. Social mode is read from BOTH `?social=true`
@@ -354,7 +395,7 @@ between a one-row bar and a two-row one.
 
 ## Current state and outstanding work
 
-680/680 tests, 0 type errors, 0 CSS warnings, lint clean, and the client
+703/703 tests, 0 type errors, 0 CSS warnings, lint clean, and the client
 reproduces all 76,800 published books exactly. The published math build
 (192 modes, RTP 96.0000% everywhere, spread 0.000000%, zero volatility
 violations) is generated but **NOT committed** — `math-sdk/.gitignore` line 9 is
@@ -376,7 +417,7 @@ Read it when planning work. It also carries the local dev tooling: the replay
 RGS, `npm run dev`, the six scenario aliases, and the headless CDP driver
 (`npm run shots`) that every visual judgement in this repo has been made with.
 
-The single biggest open item: **`RGS_TEST_PLAN.md` holds 94 live-session checks
+The single biggest open item: **`RGS_TEST_PLAN.md` holds 95 live-session checks
 and none has been run.** They need a real Stake session and cannot be done
 locally.
 

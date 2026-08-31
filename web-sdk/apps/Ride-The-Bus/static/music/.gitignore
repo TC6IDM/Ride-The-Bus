@@ -1,0 +1,29 @@
+# Audio never enters git from here.
+#
+# Not a size rule. The repository is PUBLIC, and every candidate auditioned so
+# far is free-tier Suno output, which is licensed for personal and
+# non-commercial use only - pushing one would be distributing it. Git history
+# also does not forget: removing a file later takes a history rewrite, not a
+# delete commit, and any fork or clone keeps its copy regardless.
+#
+# So tracks live here locally, are fetched at runtime from static/, and are
+# never committed. `npm run dev` and `npm run audio` both work on the local
+# copies; a fresh clone simply has no music, which the loader handles by design
+# (see music.ts - a missing bed degrades to the synthesised cue book).
+#
+# WHEN THE PAID-TIER TRACK ARRIVES it still has to ship inside the build, so at
+# that point ONE file gets committed deliberately:
+#
+#     git add -f "static/music/<the chosen track>.mp3"
+#
+# and its ASSET_LICENCES.md row - generation URL, date, verbatim prompt, tier -
+# must land in the SAME commit. Nothing else in this directory goes with it.
+#
+# musicTracks.test.ts enforces the other direction: every audio file present
+# here must appear in ASSET_LICENCES.md, tracked or not. It skips entirely when
+# the directory holds no audio, which is the normal state of a fresh clone.
+*.mp3
+*.wav
+*.m4a
+*.ogg
+*.webm

@@ -41,7 +41,7 @@ Stake-specific claim in this repo traces to `references/approval-guidelines.md`.
 
 ## Live state
 
-`RGS_TEST_PLAN.md` holds 94 live-session checks across 14 sections. As of the last
+`RGS_TEST_PLAN.md` holds 95 live-session checks across 14 sections. As of the last
 audit, **0 are ticked** — the whole plan is unrun. Sections 06 (Currency),
 07 (Win presentation), 09 (Localisation), 11 (Devices) and 14 (Performance) are
 mutually independent and can be worked in parallel against the local replay RGS.
