@@ -25,10 +25,11 @@
  * EVERY FILE IN static/music/ SHIPS TO PLAYERS.
  *
  * static/ is copied wholesale into the build; nothing prunes it by what is
- * referenced. Four candidates at ~6 MB each is ~25 MB of payload for one 6 MB
- * track, so before a production build every track but the active one must be
- * deleted from static/music/. musicTracks.test.ts prints the current total so
- * this cannot be forgotten quietly.
+ * referenced. TEN candidates is 44 MB of payload for one 6.4 MB track, so
+ * before a production build every track but the active one must be deleted from
+ * static/music/ AND its row dropped from ASSET_LICENCES.md, AND the ceiling in
+ * musicTracks.test.ts put back. That test prints the current total on every run
+ * so this cannot be forgotten quietly.
  */
 
 /** One auditionable bed. Every field but the first three is a measurement. */
@@ -62,77 +63,171 @@ export type MusicTrack = {
 };
 
 /**
- * The four Suno candidates, measured rather than guessed.
+ * The ten paid-tier candidates, measured rather than guessed.
  *
- * loopStart/loopEnd come from a per-second RMS envelope of each file: the region
- * is where the track sits within 6 dB of its loudest second. That is what cuts
- * the outro - all four fade to digital silence over their last 12-17 seconds,
- * and a loop that includes that plays a fade-out into a cold entry forever.
+ * TEN, not one, because the choice is deferred: all ten were generated on the
+ * same paid subscription on the same day, all ten are licensed, and which one
+ * ships is a decision for submission rather than for now. Every one is
+ * auditionable with ?dev_music=<id> against a real round.
+ *
+ * THIS IS 44 MB OF PAYLOAD TO DELIVER 6.4 MB, and all of it ships as it stands.
+ * musicTracks.test.ts holds a ceiling that was raised deliberately to allow this
+ * audition state and must come back down to one track before a production build.
+ *
+ * loopStart/loopEnd come from a per-second RMS envelope of each file - the
+ * region where the track sits within 6 dB of its loudest second - cross-checked
+ * at 0.25s resolution, which is the pass that catches a quiet intro the coarser
+ * one reads as usable. Where the two disagree the fine pass wins at the HEAD (a
+ * quiet intro is replayed on every wrap) and the coarse pass wins at the TAIL
+ * (the crossfade covers a slightly softer ending).
+ *
+ * NONE OF THE TEN FADES OUT - all run at full level to their last quarter
+ * second. That is what "fade out" in the exclude-styles field bought, and it is
+ * the one way they differ structurally from the free-tier set they replaced,
+ * every one of which decayed to silence over its last 12-17 seconds.
  *
  * These are STARTING POINTS from a level measurement, not from listening. If a
  * seam sounds wrong, the fix is loopEnd, and it wants an ear rather than a
  * number: pull it back to a bar line.
  *
- * ALL FOUR ARE FREE-TIER SUNO OUTPUT AND NONE OF THEM CAN SHIP. See
- * ASSET_LICENCES.md - they are placeholders so the audio path can be built and
- * heard, and the chosen one must be regenerated on a paid subscription before
- * submission.
+ * ALL TEN ARE PAID-TIER SUNO OUTPUT, generated 2026-09-02, licensed to ship. See
+ * ASSET_LICENCES.md for a row per file. The WAV masters they were encoded from
+ * live in the repo-root audio-masters/, outside the app so they are never served.
+ *
+ * The letter in each filename is the prompt that produced it - the plan's A-E -
+ * and "(1)" is Suno's second take of the same prompt. That is the provenance
+ * link back to ASSET_LICENCES.md, so the names are kept exactly as they arrived.
  */
 export const MUSIC_TRACKS: readonly MusicTrack[] = [
 	{
-		id: 'late-night-lounge',
-		file: 'Late Night Lounge.mp3',
-		label: 'Late Night Lounge (5:23)',
+		id: 'jazz-lounge-a1',
+		file: 'A.mp3',
+		label: 'A - late-night jazz lounge, take 1 (2:42)',
 		crossfade: 6,
-		// 323.1s file. Full level from 0s; the outro decays from 305s to silence.
+		// 162.2s. Centroid 2186 Hz, 0.89% above 2 kHz.
 		loopStart: 0,
-		loopEnd: 305,
-		// body RMS -18.5 dBFS
-		trim: 1.12,
+		loopEnd: 160,
+		trim: 0.88,
 	},
 	{
-		id: 'late-night-lounge-alt',
-		file: 'Late Night Lounge (1).mp3',
-		label: 'Late Night Lounge, second take (3:28)',
+		id: 'jazz-lounge-a2',
+		file: 'A (1).mp3',
+		label: 'A - late-night jazz lounge, take 2 (3:24)',
 		crossfade: 6,
-		// 208.5s file. Outro decays from 202s.
+		// 203.7s. Centroid 1821 Hz, 0.52% above 2 kHz.
 		loopStart: 0,
-		loopEnd: 202,
-		// body RMS -16.9 dBFS
+		loopEnd: 198,
+		trim: 0.84,
+	},
+	{
+		id: 'dusty-vamp-b1',
+		file: 'B.mp3',
+		label: 'B - warm dusty lounge vamp, take 1 (2:33)',
+		crossfade: 6,
+		// 153.1s. The darkest of the B/C/E group: 1320 Hz, 0.22% above 2 kHz.
+		loopStart: 0,
+		loopEnd: 148,
+		trim: 0.92,
+	},
+	{
+		id: 'dusty-vamp-b2',
+		file: 'B (1).mp3',
+		label: 'B - warm dusty lounge vamp, take 2 (7:59)',
+		crossfade: 6,
+		// 479.4s, level end to end. Centroid 1707 Hz, but 20.3% of its energy
+		// in 200Hz-2kHz - the band a laptop speaker actually reproduces.
+		loopStart: 0,
+		loopEnd: 479,
 		trim: 0.93,
 	},
 	{
-		id: 'background-two',
-		file: 'Ride The Bus Background 2.mp3',
-		label: 'Ride The Bus Background 2 (5:12)',
+		id: 'noir-triphop-c1',
+		file: 'C.mp3',
+		label: 'C - downtempo noir trip-hop, take 1 (7:59)',
 		crossfade: 6,
-		// 312.1s file. A 1s ramp in; the outro decays from 295s.
-		loopStart: 1,
-		loopEnd: 295,
-		// body RMS -17.1 dBFS
-		trim: 0.95,
+		// 479.4s. The most UNIFORM of the ten - within 3 dB of its loudest
+		// quarter-second from 0.00s to 479.00s, which is what a 6s crossfade at
+		// an arbitrary seam wants. Scooped mid though: 12.8%.
+		loopStart: 0,
+		loopEnd: 479,
+		trim: 0.82,
 	},
 	{
-		id: 'background-two-alt',
-		file: 'Ride The Bus Background 2 (1).mp3',
-		label: 'Ride The Bus Background 2, second take (4:40)',
+		id: 'noir-triphop-c2',
+		file: 'C (1).mp3',
+		label: 'C - downtempo noir trip-hop, take 2 (7:59)',
 		crossfade: 6,
-		// 280.4s file. A 1s ramp in; the outro decays from 264s.
-		loopStart: 1,
-		loopEnd: 264,
-		// body RMS -16.1 dBFS
-		trim: 0.85,
+		// 479.4s with a QUIET FIRST 22s - 7 to 16 dB down, which the per-second
+		// 6 dB pass reads as usable and the 0.25s pass does not. Looping from 0
+		// would replay that dip on every wrap, so the region starts after it.
+		// Best of the ten on the laptop test: 22.1% above 200 Hz.
+		loopStart: 23,
+		loopEnd: 431,
+		trim: 0.94,
+	},
+	{
+		id: 'tension-d1',
+		file: 'D.mp3',
+		label: 'D - minimal cinematic tension, take 1 (2:27)',
+		crossfade: 6,
+		// 146.8s. DARKEST of the ten - centroid 790 Hz, 0.27% above 2 kHz, which
+		// is the failure mode status.md warns about. Quiet first 7.5s, skipped.
+		loopStart: 8,
+		loopEnd: 143,
+		trim: 0.71,
+	},
+	{
+		id: 'tension-d2',
+		file: 'D (1).mp3',
+		label: 'D - minimal cinematic tension, take 2 (3:04)',
+		crossfade: 6,
+		// 183.7s. Second darkest: 772 Hz, 0.26% above 2 kHz.
+		loopStart: 0,
+		loopEnd: 176,
+		trim: 0.82,
+	},
+	{
+		id: 'soul-groove-e1',
+		file: 'E.mp3',
+		label: 'E - dusty late-night soul groove, take 1 (7:59)',
+		crossfade: 6,
+		// 479.4s, easing slightly over its last 10s. Centroid 1976 Hz.
+		loopStart: 0,
+		loopEnd: 479,
+		trim: 0.84,
+	},
+	{
+		id: 'soul-groove-e2',
+		file: 'E (1).mp3',
+		label: 'E - dusty late-night soul groove, take 2 (7:59)',
+		crossfade: 6,
+		// 479.4s, but only the first 410s hold level - the last 69s sit more than
+		// 6 dB down, so the region stops there. Brightest of the ten at 3016 Hz.
+		loopStart: 0,
+		loopEnd: 410,
+		trim: 0.76,
 	},
 ];
 
 /**
  * The track the game plays. EDIT THIS LINE to change it.
  *
- * A placeholder pick, not a decision: it is the one whose brief matches the
- * board - a dark late-night card room rather than a casino floor. Audition the
- * others with ?dev_music= before settling.
+ * A MEASUREMENT-LED pick, not a settled one, and explicitly a PLACEHOLDER until
+ * submission: of the ten it is the strongest
+ * where brightness is the constraint that binds. status.md records the free-tier
+ * candidates at 0.1% of energy above 2 kHz and calls that "close to the edge of
+ * a track a laptop cannot carry"; this one is at 2.69%, with 22.1% of its energy
+ * above 200 Hz where a laptop speaker starts working at all.
+ *
+ * The trade it makes is span - 408s against 479s for the three that loop end to
+ * end - because its first 22 seconds are too quiet to loop through. That is a
+ * seam every 6:42 rather than every 7:53, which is still longer than anything
+ * the free-tier set managed.
+ *
+ * Audition the others with ?dev_music= before settling. The ear decides this,
+ * not the table above.
  */
-export const ACTIVE_TRACK_ID = 'background-two-alt';
+export const ACTIVE_TRACK_ID = 'noir-triphop-c2';
 
 /** Where the tracks are served from, under SvelteKit's base path. */
 export const MUSIC_DIR = 'music';

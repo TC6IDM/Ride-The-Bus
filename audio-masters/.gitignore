@@ -1,0 +1,28 @@
+# WAV masters. Never committed, never shipped.
+#
+# These are the Suno downloads exactly as they arrived, and ASSET_LICENCES.md
+# explains why that matters: under the Terms effective 2026-09-03 the commercial
+# right attaches to a permitted DOWNLOAD taken on a paid plan, so these files are
+# the licensed artefacts. A later re-download on a lapsed account would carry the
+# free-tier licence instead. BACK THEM UP OFF THIS MACHINE - nothing else holds a
+# copy, by design.
+#
+# They sit at the repository root, beside licence-evidence/, rather than inside
+# the app. Two reasons: they are evidence rather than app source, and anything
+# under the app risks being swept into a build or an upload of the app folder.
+# The shipped 112 kbps MP3s in web-sdk/apps/Ride-The-Bus/static/music/ are what
+# players get; these never leave this directory.
+#
+# WHY NOT COMMIT THEM, given they are now licensed:
+#
+#   1. This repository is PUBLIC, and Suno "makes no representation or warranty
+#      that any copyright will vest in any Output". If no copyright vests there
+#      is nothing to enforce, so publishing a lossless master hands over a fully
+#      usable asset that cannot be protected. The shipped MP3 is public anyway -
+#      it is served to every player. The master does not have to be.
+#   2. Five of these are 87.8 MiB. GitHub warns over 50 MiB and REJECTS over
+#      100 MiB, so this is one longer track away from a blocked push.
+#   3. 595 MB of incompressible audio in history is permanent. Removing it later
+#      takes a history rewrite, not a delete commit, and every fork keeps a copy.
+*
+!.gitignore

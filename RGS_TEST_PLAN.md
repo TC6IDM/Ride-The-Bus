@@ -799,9 +799,13 @@ live in the How to Play panel behind the `i` button.
   URL, the date, the verbatim prompt and the tier active on that date.
   Free-tier Output is licensed for personal, non-commercial use only.
   Re-downloading a free-tier track after subscribing does **not** fix it — the
-  licence attaches when the Output is *generated*. As of 2026-08-31 all four
-  tracks in the tree are free-tier placeholders, so this is **currently failing
-  by design**.
+  licence attaches when the Output is *generated*. **As of 2026-09-02 this is
+  satisfied**: the free-tier placeholders were deleted and ten fresh tracks
+  generated on a paid Pro subscription (v5.5), with a row per file in
+  `ASSET_LICENCES.md`. Still open there, and required before sign-off: the ten
+  **generation URLs**, the **invoice**, and a saved copy of the **Terms as they
+  read on 2026-09-02** (a new Terms took effect the following day, so that text
+  cannot be retrieved from the site later).
 
   **One file.** `static/` is copied wholesale into the build, so every candidate
   left in `static/music/` ships. **Expect:** exactly one audio file there, named

@@ -266,9 +266,15 @@ reading before proposing it again.
   switching does not change how loud the game is. **Every file in `static/music/`
   ships** — `static/` is copied wholesale — and every one needs a row in
   `ASSET_LICENCES.md`; `musicTracks.test.ts` enforces both.
-  **The four candidates there are free-tier Suno output, gitignored and so not
-  tracked.** A clone has no music and runs on its cues, which the loader handles
-  by design; the paid-tier replacement is the one file that ever gets committed.
+  **The ten candidates there are PAID-TIER Suno output, generated 2026-09-02 on
+  v5.5 and cleared to ship** — so MP3s are tracked normally now and
+  `git add -f` is no longer needed. Only `*.wav` stays ignored, because masters
+  belong in the repo-root `audio-masters/`, outside the app. A clone still runs on its cues
+  alone if the audio is absent, which the loader handles by design. **All ten
+  are kept on purpose** so the pick can be made by ear at submission — 44 MB of
+  payload to deliver 6.4 MB, which needed `musicTracks.test.ts`'s directory
+  ceiling raised from 32 MB to 56 MB. **Nine of the ten must be deleted, and
+  that ceiling put back, before a production build.**
 - **The loop is overlapping passes, not `src.loop = true`.** A produced track
   ends on a fade to silence, so a hard wrap plays that decay into a cold entry
   forever. Each pass is its own source started `span − crossfade` after the last;

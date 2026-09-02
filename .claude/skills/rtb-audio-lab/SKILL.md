@@ -21,7 +21,7 @@ From `web-sdk/apps/Ride-The-Bus/`, with the dev server up:
 npm run audio                                    # 18s of the board
 npm run audio -- --scene lobby --seconds 12      # the start screen instead
 npm run audio -- --seconds 30 --out bed-long
-npm run audio -- --params "dev_music=background-two"   # a different candidate
+npm run audio -- --params "dev_music=noir-triphop-c1"   # a different candidate
 npm run audio -- --params "dev_loop=40,70,4" --seconds 40 # make the seam happen
 npm run audio -- --scene loading --autoplay --seconds 8   # the loader, untouched
 ```
@@ -100,7 +100,7 @@ and an idle capture comes back as literal silence (`peakDb: null`).
 the only way to reach the bed's dev overrides:
 
 ```
-npm run audio -- --params "dev_music=background-two" --play
+npm run audio -- --params "dev_music=noir-triphop-c1" --play
 npm run audio -- --params "dev_loop=40,70,4" --seconds 40    # a seam every 26s
 npm run audio -- --params "dev_loop=40,70,0" --seconds 40    # the hard wrap
 ```

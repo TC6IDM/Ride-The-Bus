@@ -1,28 +1,22 @@
-# Audio never enters git from here.
+# The licensing reason this file used to exist is GONE.
 #
-# Not a size rule. The repository is PUBLIC, and every candidate auditioned so
-# far is free-tier Suno output, which is licensed for personal and
-# non-commercial use only - pushing one would be distributing it. Git history
-# also does not forget: removing a file later takes a history rewrite, not a
-# delete commit, and any fork or clone keeps its copy regardless.
+# It previously ignored audio outright because every candidate was free-tier
+# Suno output, licensed for personal and non-commercial use only, and this
+# repository is PUBLIC - pushing one would have been distributing it. The tracks
+# here now are paid-tier Output generated 2026-09-02 and cleared to ship
+# (ASSET_LICENCES.md), so MP3s are tracked normally and `git add -f` is no longer
+# needed for the bed.
 #
-# So tracks live here locally, are fetched at runtime from static/, and are
-# never committed. `npm run dev` and `npm run audio` both work on the local
-# copies; a fresh clone simply has no music, which the loader handles by design
-# (see music.ts - a missing bed degrades to the synthesised cue book).
+# WAV IS STILL IGNORED, for a different reason: masters belong in
+# the repo-root audio-masters/, outside the app entirely. Anything in static/ is copied wholesale
+# into the build, so a 90 MB WAV here would be handed to every player. If a WAV
+# appears in this directory it is in the wrong place, not merely uncommitted.
 #
-# WHEN THE PAID-TIER TRACK ARRIVES it still has to ship inside the build, so at
-# that point ONE file gets committed deliberately:
-#
-#     git add -f "static/music/<the chosen track>.mp3"
-#
-# and its ASSET_LICENCES.md row - generation URL, date, verbatim prompt, tier -
-# must land in the SAME commit. Nothing else in this directory goes with it.
-#
-# musicTracks.test.ts enforces the other direction: every audio file present
-# here must appear in ASSET_LICENCES.md, tracked or not. It skips entirely when
-# the directory holds no audio, which is the normal state of a fresh clone.
-*.mp3
+# BEFORE COMMITTING: only ONE track ships. Four are here while they are being
+# auditioned, which is 26 MB to deliver 6.4 MB. Delete the three the
+# ACTIVE_TRACK_ID does not name - and their ASSET_LICENCES.md rows - before
+# staging, because git history does not forget: removing a file later takes a
+# history rewrite, not a delete commit, and any fork or clone keeps its copy.
 *.wav
 *.m4a
 *.ogg

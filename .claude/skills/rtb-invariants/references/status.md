@@ -156,33 +156,39 @@ look.**
 
 ## Outstanding
 
-- **The music bed: built and playing, but every track in the tree is
-  unshippable.** The audio path is finished — `musicTracks.ts` holds the
+- **The music bed: built, playing, and now licensed.** The audio path is finished — `musicTracks.ts` holds the
   candidates, `music.ts` runs the five-scene level ladder, `audioGraph.ts`
   cross-fades the loop, `primeAudio` opens the graph early enough that the
   loading and start screens have music. Measured through `npm run audio` at every
-  scene, nothing clipping. **The one thing missing is a licence.**
+  scene, nothing clipping.
 
-  All four tracks in `static/music/` were generated on Suno's **free tier**,
-  which licenses Output for personal, non-commercial use only. **They are
-  gitignored and so are not tracked** — a clone has no music and runs on its
-  cues, which the loader handles by design. They are placeholders that made the
-  audio work buildable and hearable; none of them can ship. Three things have to happen before submission, in one pass:
+  **The licence is settled.** The four free-tier placeholders were deleted and
+  replaced on **2026-09-02** by ten fresh generations (v5.5) on a paid **Suno Pro**
+  subscription — fresh generations, not re-downloads, because the licence
+  attaches when the Output is *generated*. `ASSET_LICENCES.md` carries a row per
+  file with the verbatim Styles and Exclude Styles fields, the settings
+  (instrumental, 50% weirdness, 50% style influence) and the SHA-256. **Four
+  items in that file are still open**: the ten generation URLs, the
+  subscription invoice, and a saved copy of Suno's Terms as they read on
+  2026-09-02 — time-critical, because a new Terms took effect 2026-09-03.
 
-  1. **Regenerate the chosen track on a paid subscription.** Re-downloading a
-     free-tier track after subscribing does not fix it — the licence attaches
-     when the Output is *generated*, not when it is fetched. Record the
-     generation URL, the date, the verbatim prompt and the active tier in
-     `ASSET_LICENCES.md`, which has the full Suno checklist.
-  2. **Delete every other track.** `static/` is copied wholesale into the build,
-     so all four ship as they stand — about 24 MB of payload to deliver one.
-     `musicTracks.test.ts` prints the directory total and holds a ceiling, but it
-     cannot know which file was meant.
-  3. **Re-encode it.** Every candidate carries an embedded Suno cover-art JPEG
-     (~330 kB, never displayed) at 165–190 kbps stereo. Stripping the art and
-     re-encoding to 112 kbps took the largest from 6.5 MB to 4.3 MB with no
-     audible cost on a background bed:
-     `ffmpeg -i in.mp3 -vn -map_metadata -1 -b:a 112k out.mp3`
+  The WAV masters live in the repo-root `audio-masters/`, outside the app so they are never
+  served, and the shipped MP3s were encoded from them at 112 kbps in a single
+  lossy generation:
+  `ffmpeg -i in.wav -vn -b:a 112k out.mp3`
+
+  Measured against the free-tier set, the new bed is **brighter on exactly the
+  axis that was flagged**: idle-board centroid 1716 Hz against 1268, and 1.6% of
+  energy above 2 kHz against 0.1%. Peak and RMS are within a hair of the old
+  reference points and nothing clips. Two things remain:
+
+  1. **Pick by ear.** All ten takes are kept and auditionable with
+     `?dev_music=<id>`; `ACTIVE_TRACK_ID` is a measurement-led placeholder, not
+     a decision. This is deliberately deferred to submission.
+  2. **Then delete every track but the chosen one**, and put the
+     `musicTracks.test.ts` directory ceiling back to 9 MB from the 56 MB it was
+     raised to. `static/` is copied wholesale, so all ten ship as they stand —
+     44 MB of payload to deliver 6.4 MB.
 
   Then re-measure: `SCENE_MIX` was tuned against one track, and `MusicTrack.trim`
   is what keeps the others level with it, so a new file needs a new trim.

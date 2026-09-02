@@ -217,14 +217,22 @@ describe('the payload', () => {
 		if (files === null) return t.skip('no audio in static/music in this checkout');
 
 		// EVERY FILE HERE SHIPS. static/ is copied wholesale into the build and
-		// nothing prunes it by what is referenced, so four candidates at ~6 MB is
-		// ~24 MB of payload to deliver one track. That is accepted while they are
-		// being auditioned and is NOT acceptable at submission - ASSET_LICENCES.md
-		// carries the prune step. This ceiling only catches the directory growing
-		// further while nobody is looking.
+		// nothing prunes it by what is referenced, so the ten candidates now here
+		// are ~44 MB of payload to deliver one 6.4 MB track.
+		//
+		// THIS CEILING WAS RAISED FROM 32 MB ON PURPOSE, 2026-09-02, to hold all
+		// ten paid-tier takes while the choice is deferred to submission. It is
+		// sized to the audition state, not to the shipping one: 56 MB is ~12 MB of
+		// head room over the ten, enough to catch the directory growing while
+		// nobody is looking and nowhere near loose enough to let a build ship.
+		//
+		// PUT IT BACK when the track is chosen. Deleting the nine losers takes the
+		// directory to ~6 MB, at which point this should read 9 * MB - the same
+		// figure as the active-track gate above, because by then they are the same
+		// file. ASSET_LICENCES.md carries the prune step.
 		const total = files.reduce((sum, f) => sum + bytes(f), 0);
 		assert.ok(
-			total < 32 * MB,
+			total < 56 * MB,
 			`static/music is ${(total / MB).toFixed(1)} MB across ${files.length} files, and all of it ships. ` +
 				'Delete every track but the active one, or raise this ceiling deliberately.',
 		);
