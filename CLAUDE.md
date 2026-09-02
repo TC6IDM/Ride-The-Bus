@@ -421,6 +421,78 @@ The single biggest open item: **`RGS_TEST_PLAN.md` holds 95 live-session checks
 and none has been run.** They need a real Stake session and cannot be done
 locally.
 
+## The knowledge graph maps the maths, not the components
+
+`.claude/skills/graphify/` builds a queryable graph of the repo into the
+gitignored `graphify-out/` (`graph.html`, `GRAPH_REPORT.md`, and a ~6k-note
+`obsidian/` vault). Rebuild with:
+
+```
+npm run graph         # scripts/graph-build.mjs — the whole rebuild
+```
+
+Then ask it things:
+
+```
+python -m graphify affected "FAMILY_RULES"      # what breaks if I change this
+python -m graphify explain "stageRetention()"   # what is this, what touches it
+python -m graphify path "Game.svelte" "payout.ts"
+```
+
+**Never `graphify extract .` at the monorepo root**, which is why the build is a
+script. Rooting at `.` gives 5,603 nodes of which only ~11% are this game — the
+rest is the vendored SDK and the other sample games — so `god-nodes` returns
+`eslint`, `node_modules` and `BetMode`, and the >5,000-node ceiling silently
+degrades `graph.html` to an aggregated blob. Scoped it is 929 nodes whose hubs
+are `FAMILY_RULES`, `partialMultiplier()`, `familyOf()` and `stageRetention()`.
+
+**Components are graphed through a line-preserving shadow tree.** Graphify maps
+`.svelte` onto the JS/TS grammar, and markup is not valid JS, so the parser
+emits one top-level ERROR node and every symbol is lost — 64% of this app's
+Svelte is `<script>`, and `Game.svelte` alone is 2,724 lines of it. The script
+rewrites each component to a `.svelte.ts` holding only its script blocks, with
+markup and style lines **blanked rather than deleted** so every line keeps its
+original number; `bolts` reports `BoltMeter.svelte:L45` and that is genuinely
+L45 of the component. Do not "simplify" that into stripping the lines, and do
+not blanket-replace the `.svelte.ts` suffix afterwards — `stateGame.svelte.ts`
+and `jurisdiction.svelte.ts` are real rune modules and renaming them points
+every symbol they own at a phantom file. Both mistakes were made and fixed once.
+
+The remaining 36% — markup and `<style>` — is out of reach. That is what
+`npm run shots` and `npm run check:svelte` are for; a graph is the wrong
+instrument for asking how something looks. The merge also co-locates Python and
+TypeScript without drawing **any edge between them** — `MODE_FAMILIES` and
+`FAMILY_RULES` are name-mirrors, not imports. The graph is a map, not a drift
+check; `payout.test.ts` is still the only thing guarding that.
+
+**A component's degree UNDER-REPORTS, and does so silently.** `explain
+BoltMeter.svelte` returns `Degree: 1` — one import from `Game.svelte`. The real
+figure is five: `--vol-sc`, `--vol-base`, `--vol-hs` and `--mode-ink` couple it
+to `Game.svelte`, `base.css`, `control-bar.css`, `tokens.css` and
+`win-celebration.css`. Custom properties ARE the parent→child contract here (see
+the notes atop `ChoiceIcon.svelte` and `BoltMeter.svelte`) and no stylesheet is
+in the graph, so the answer is not "unknown" but a confident number that is 5×
+too low. Never read a low degree on a component as "safe to change" — grep the
+custom properties. The graph does not know they exist.
+
+**`--code-only` is deliberate, not a shortcut.** Without it the 122 docs — this
+file, the `rtb-invariants` references, `stake-approval` — get a semantic pass
+through a third-party LLM, shipping unreleased game math and compliance text off
+the machine.
+
+**It reads `.svelte` at the import level ONLY.** Graphify maps `.svelte` to the
+JS/TS grammar, so the markup makes the parser emit one top-level ERROR node and a
+regex pass recovers the imports. You get which component imports which, never a
+function, prop or symbol inside one — `BoltMeter.svelte` and `ChoiceIcon.svelte`
+extract zero symbols. The 352 "syntax errors" a build prints are expected output,
+and installing `tree-sitter-svelte` does **not** help because graphify never looks
+for it. So trust the graph for the Python↔TypeScript mirror — the worst bug class
+in this repo — and use `npm run shots` and `check:svelte` for anything inside a
+component. `styles/tokens.css` is absent too, skipped as "potentially sensitive"
+on its filename alone.
+
+---
+
 ## Stake's own requirements live in a skill, not here
 
 The Stake Engine **development contract** and the **verbatim approval guidelines**

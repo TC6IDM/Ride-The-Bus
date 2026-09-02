@@ -19,6 +19,8 @@
 		"replay": "node ../../../scripts/replay-server.mjs",
 		"shots": "node ../../../scripts/shoot.mjs",
 		"audio": "node ../../../scripts/audio-lab.mjs",
+		"graph": "node ../../../scripts/graph-build.mjs",
+		"graph:watch": "node ../../../scripts/graph-build.mjs --watch",
 		"dev:replay": "node ../../../scripts/dev-all.mjs"
 	},
 	"type": "module",
