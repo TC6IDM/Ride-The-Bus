@@ -151,6 +151,30 @@ const ALIASES = ['max', 'big', 'win', 'loss'];
    reads them. See SCENARIOS at the top of this file. */
 const BOOK_ALIASES = ['bustwin', 'forgiven'];
 
+/**
+ * The music candidates, read out of the app rather than duplicated here.
+ *
+ * This is a standalone dev script with no build step, so it cannot import from
+ * the app - the same constraint that gives CUR its own copy of the currency
+ * list. A regex over the manifest is the cheap half-measure: it means a fifth
+ * candidate shows up on this page without anyone remembering to add it, and if
+ * musicTracks.ts is ever reshaped the worst case is an empty picker and a link
+ * with no dev_music on it, which is just the default track.
+ */
+function musicTracks() {
+  const file = path.join(
+    ROOT,
+    "web-sdk/apps/Ride-The-Bus/src/game/musicTracks.ts",
+  );
+  if (!existsSync(file)) return [];
+  const src = readFileSync(file, "utf8");
+  const out = [];
+  const re = /id:\s*'([a-z0-9-]+)',[\s\S]{0,400}?label:\s*'([^']+)'/g;
+  let m;
+  while ((m = re.exec(src)) !== null) out.push([m[1], m[2]]);
+  return out;
+}
+
 function scenariosFor(mode) {
   return SCENARIOS.get(mode) ?? {};
 }
@@ -331,9 +355,13 @@ function landingPage() {
   .note{font-size:13px;color:#8b9488} .note b{color:#c8d0c4}
   ul.note{margin:.2rem 0 0 1.1rem}
   .modeline{font:12.5px ui-monospace,monospace;color:#7cffb2;margin:.2rem 0 .1rem}
+  hr.sep{border:0;border-top:1px solid #2a312a;margin:2.6rem 0 1.7rem}
+  h2{font-size:1.15rem;margin:0 0 .2rem}
 </style>
 <h1>Ride The Bus &mdash; local replay</h1>
-<p>Build a replay link the way the game builds a bet: pick a mode, then four guesses.</p>
+<p>Build a replay link the way the game builds a bet: pick a mode, then four guesses.
+   For the ordinary game with no round to replay, skip to
+   <a href="#plain" style="color:#7cffb2">Regular game</a> at the bottom.</p>
 
 <div class=grid>
   <span class=lab>Mode</span><div class=row id=fam></div>
@@ -363,6 +391,43 @@ function landingPage() {
    Each mode is one guess combination and most stop well short. Only these three
    reach their family ceiling, so only these fire the <b>MAX WIN</b> tier:</p>
 <ul class=note>${ceilings}</ul>
+
+<hr class=sep>
+
+<h2 id=plain>Regular game &mdash; no replay</h2>
+<p>The ordinary game, with <b>no RGS behind it at all</b>. Nothing below touches this
+   server: with no <code>sessionID</code> the client deals its own cards from
+   <code>game/localRound.ts</code> and prices its own stages, and the bet is set on the
+   bar rather than in the link. That is a DEV-only path &mdash; Game.svelte imports it
+   from inside an <code>import.meta.env.DEV</code> branch, so it is dropped from a
+   production build.</p>
+
+<div class=grid>
+  <span class=lab>Currency</span>
+  <div class=row>
+    <select id=pcur title="currency code"></select>
+    <select id=plang title="language"></select>
+  </div>
+  <span class=lab>Social mode</span><div class=row id=psocial></div>
+  <span class=lab>Music</span><div class=row id=pmusic></div>
+</div>
+
+<a class=out id=pout target=_blank></a>
+
+<p class=note style="margin-top:1.2rem"><b>Social mode</b> is Stake.US: it forces English
+   whatever the language picker says, and swaps the restricted gambling terms out. The
+   three <code>X</code> currencies (Gold Coins, Stake Cash, Stake Euro Cash) are the ones
+   that go with it.</p>
+<p class=note><b>Music</b> picks a candidate from <code>game/musicTracks.ts</code> without
+   editing <code>ACTIVE_TRACK_ID</code>. Add <code>&amp;dev_loop=40,70,4</code> by hand to
+   shorten the loop region so the seam comes round every 26s instead of every five
+   minutes.</p>
+<p class=note>Any other <code>dev_*</code> override can be appended by hand &mdash;
+   <code>dev_minBet</code>, <code>dev_maxBet</code>, <code>dev_stepBet</code>,
+   <code>dev_disabledTurbo</code>, <code>dev_disabledAutoplay</code>,
+   <code>dev_minimumRoundDuration</code>, <code>dev_displayRTP</code>. Without bet limits
+   every helper in <code>betLimits.ts</code> correctly reads
+   <code>{0,0,0}</code> as unconstrained.</p>
 
 <script>
 const SC = ${JSON.stringify(byMode)};
@@ -542,6 +607,9 @@ portInput.addEventListener('input', () => {
     localStorage.setItem('rtb-game-port', portInput.value);
   } catch (e) { /* nothing to do - the field still works for this session */ }
   render();
+  // Both links carry the port. Missing this left the plain-game link pointing at
+  // whatever vite had last time while the replay link followed the field.
+  renderPlain();
 });
 
 const cur = document.getElementById('cur');
@@ -555,7 +623,66 @@ lang.value = state.lang;
 lang.onchange = () => { state.lang = lang.value; render(); };
 
 document.getElementById('amt').addEventListener('input', render);
+
+/* ---- the plain-game link -------------------------------------------------
+   Deliberately its own state rather than sharing the replay builder's. The two
+   are used for different things - a replay in JPY while checking a layout, and
+   a plain game in Arabic to look at the RTL board - and making one picker drive
+   both meant every switch between the two workflows retyped the other's
+   settings. Two selects is the cheaper duplication. The CUR and LANG lists ARE
+   shared; only the DOM is not. */
+const plain = { cur:'USD', lang:'en', social:'off', music:'' };
+
+const SOCIAL = [['off','Off'],['on','On']];
+/* Read out of musicTracks.ts at server start rather than hardcoded here, so a
+   fifth candidate appears without this file being touched. Empty value means
+   "whatever ACTIVE_TRACK_ID says", which is what a link with no dev_music does. */
+const MUSIC = [['','Default']].concat(${JSON.stringify(musicTracks())});
+
+function fillPlain(id, items, key) {
+  const host = document.getElementById(id);
+  host.textContent = '';
+  for (const [val, label] of items) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pick';
+    b.setAttribute('aria-pressed', String(plain[key] === val));
+    b.textContent = label;
+    b.onclick = () => { plain[key] = val; renderPlain(); };
+    host.appendChild(b);
+  }
+}
+
+function renderPlain() {
+  fillPlain('psocial', SOCIAL, 'social');
+  fillPlain('pmusic', MUSIC, 'music');
+
+  // No replay, no game/version/mode/event, and NO rgs_url: handing the client a
+  // URL it cannot authenticate against is what produces the error modal this
+  // path exists to avoid. Game.svelte suppresses that modal in DEV only when
+  // there is neither a sessionID nor a replay, which is exactly this shape.
+  const q = new URLSearchParams({ currency: plain.cur, lang: plain.lang });
+  if (plain.social === 'on') q.set('social', 'true');
+  if (plain.music) q.set('dev_music', plain.music);
+
+  const url = 'http://localhost:' + gamePort() + '/?' + q;
+  const a = document.getElementById('pout');
+  a.href = url;
+  a.textContent = url;
+}
+
+const pcur = document.getElementById('pcur');
+CUR.forEach(([code, name]) => pcur.add(new Option(code + ' (' + name + ')', code)));
+pcur.value = plain.cur;
+pcur.onchange = () => { plain.cur = pcur.value; renderPlain(); };
+
+const plang = document.getElementById('plang');
+LANG.forEach((l) => plang.add(new Option(l, l)));
+plang.value = plain.lang;
+plang.onchange = () => { plain.lang = plang.value; renderPlain(); };
+
 render();
+renderPlain();
 </script>`;
 }
 
