@@ -1,4 +1,23 @@
-# WAV masters. Never committed, never shipped.
+# WAV masters, and the nine benched MP3s. Never committed, never shipped.
+#
+# TWO KINDS OF FILE LIVE HERE, and the pattern below covers both because the
+# reason is the same one twice over.
+#
+#   *.wav  - the ten Suno downloads, exactly as they arrived.
+#   *.mp3  - the nine 112 kbps encodes that are NOT the shipping bed. All ten
+#            were encoded; A.mp3 alone stayed in the app, and the other nine were
+#            moved here rather than deleted so a re-audition is a file copy back
+#            into static/music/ instead of a re-encode from a master. Their
+#            measured loop regions are kept in
+#            .claude/skills/rtb-invariants/references/audio-and-jurisdiction.md
+#            and their provenance rows in ASSET_LICENCES.md, so nothing about
+#            them is lost by their not being in the manifest.
+#
+# The nine MP3s were committed once, in the "ten licensed paid-tier tracks"
+# commit, and moving them here does not remove them from history. That is
+# accepted rather than fixed: a rewrite would be worse than 44 MB in the history
+# of a repository that already carries a game. What it DOES fix is the build -
+# static/ is copied wholesale, so those nine were payload for every player.
 #
 # These are the Suno downloads exactly as they arrived, and ASSET_LICENCES.md
 # explains why that matters: under the Terms effective 2026-09-03 the commercial
@@ -10,8 +29,9 @@
 # They sit at the repository root, beside licence-evidence/, rather than inside
 # the app. Two reasons: they are evidence rather than app source, and anything
 # under the app risks being swept into a build or an upload of the app folder.
-# The shipped 112 kbps MP3s in web-sdk/apps/Ride-The-Bus/static/music/ are what
-# players get; these never leave this directory.
+# The shipped 112 kbps MP3 in web-sdk/apps/Ride-The-Bus/static/music/ is what
+# players get; nothing here ever leaves this directory except back into an
+# audition, and then only temporarily.
 #
 # WHY NOT COMMIT THEM, given they are now licensed:
 #

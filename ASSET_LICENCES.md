@@ -29,27 +29,33 @@ for.
 
 ---
 
-## Music beds — PAID-TIER SUNO, LICENSED TO SHIP
+## Music bed — PAID-TIER SUNO, LICENSED TO SHIP
 
-Ten candidate tracks sit in `static/music/`, where the game fetches them from at
-runtime. All ten were **generated and downloaded on 2026-09-02 on an active paid
-Suno Pro subscription**, using model **v5.5**.
+**One track ships: `static/music/A.mp3`**, which is what `ACTIVE_TRACK_ID` in
+`musicTracks.ts` names and the only audio file in that directory. It was
+**generated and downloaded on 2026-09-02 on an active paid Suno Pro
+subscription**, using model **v5.5**, and everything below about tier, terms and
+downloads applies to it.
 
-They replace four free-tier placeholders (generated 2026-08-31) which were
+It has nine siblings. Ten takes were generated in the same session under the same
+subscription, and all ten were carried in `static/music/` for a time while the
+choice was deferred. **That audition state is over**: the nine that were not
+chosen are **benched in the repo-root `audio-masters/`** as MP3s beside their WAV
+masters, and they are gitignored there. They are equally licensed and equally
+usable — benched is not rejected — but they are out of the build, which is the
+only thing that matters for payload. The directory ceiling in
+`musicTracks.test.ts` is back to **9 MB** from the 56 MB it was raised to, and
+`static/music/` is 2.2 MB.
+
+The ten replaced four free-tier placeholders (generated 2026-08-31) which were
 licensed for personal, non-commercial use only and could not ship. Those four
 were deleted from disk and their rows removed from this file. Re-downloading them
 would not have helped — the replacements are fresh generations, not re-downloads.
 
-**Only ONE of the ten ships, and the choice is deliberately deferred.** All ten
-are kept so the pick can be made by ear at submission rather than now. `static/`
-is copied wholesale into the build and nothing prunes it by what is referenced,
-so all ten are payload as they stand — **44 MB to deliver 6.4 MB**.
-
-Before a production build: delete every track but the one `ACTIVE_TRACK_ID`
-names, drop its siblings' rows below, and put the directory ceiling in
-`musicTracks.test.ts` back to 9 MB. That ceiling was raised from 32 MB to 56 MB
-on 2026-09-02 specifically to hold this audition state, and the test prints the
-current total on every run so it cannot be forgotten quietly.
+**To bring a benched take back for an audition**, copy its MP3 from
+`audio-masters/` into `static/music/`, and move it back out before staging. It
+carries the same licence, so the objection is payload rather than rights, and
+`static/` is copied wholesale into the build.
 
 ---
 
@@ -199,9 +205,9 @@ The `created=` timestamp in that tag is also the generation time in the table
 below, and it falls in the same minute as the download (Vaughan is UTC−4 in
 September) — generation and download were one action.
 
-### Shipped candidates — `static/music/`
+### The shipping bed — `static/music/`
 
-Encoded from the WAV masters at 112 kbps, **preserving Suno's metadata tag**:
+Encoded from the WAV master at 112 kbps, **preserving Suno's metadata tag**:
 
 ```
 ffmpeg -i in.wav -vn -b:a 112k out.mp3
@@ -210,20 +216,38 @@ ffmpeg -i in.wav -vn -b:a 112k out.mp3
 The WAV was downloaded in preference to Suno's MP3 so the shipped file is a
 single generation of lossy encoding rather than a transcode — this bed has little
 energy above 2 kHz to spare, and that is the band cascaded encoding damages first.
-All ten are licensed **Paid tier (Pro, v5.5), generated 2026-09-02, cleared to ship**.
+Licensed **Paid tier (Pro, v5.5), generated 2026-09-02, cleared to ship**.
 
 | File | Prompt | Length | Generated (UTC) | Generation URL | SHA-256 (first 16) |
 |---|---|---|---|---|---|
 | `static/music/A.mp3` | A, take 1 | 2:42 | 19:39:08Z | [`0be98ea4`](https://suno.com/song/0be98ea4-d8fb-49f6-a90b-2f3a6dc41389) | `7e011b43e2a25862` |
-| `static/music/A (1).mp3` | A, take 2 | 3:24 | 19:40:41Z | [`24d50891`](https://suno.com/song/24d50891-fc85-4623-a12b-297a9d7195aa) | `6b5b38fa30155f5b` |
-| `static/music/B.mp3` | B, take 1 | 2:33 | 19:42:44Z | [`1513712f`](https://suno.com/song/1513712f-5e2a-4a33-b94d-7943178ffb8f) | `8b546cabe06b50bd` |
-| `static/music/B (1).mp3` | B, take 2 | 7:59 | 19:44:19Z | [`1e9f2031`](https://suno.com/song/1e9f2031-c603-435c-91a7-dc6ab5b98659) | `156ff9aee251d547` |
-| `static/music/C.mp3` | C, take 1 | 7:59 | 19:50:55Z | [`6272ad86`](https://suno.com/song/6272ad86-152d-4c77-87ee-958a1c2610ac) | `8a92618c0078e9c4` |
-| `static/music/C (1).mp3` | C, take 2 | 7:59 | 19:53:08Z | [`1e14ea63`](https://suno.com/song/1e14ea63-cf50-42e8-a030-6773ef4e9acc) | `c651d33f71e9180b` |
-| `static/music/D.mp3` | D, take 1 | 2:27 | 19:56:09Z | [`a27de14b`](https://suno.com/song/a27de14b-8752-4f33-ae2d-733b6e872596) | `d7e0428fb5b7c9e7` |
-| `static/music/D (1).mp3` | D, take 2 | 3:04 | 19:57:12Z | [`f301ccd6`](https://suno.com/song/f301ccd6-eea3-4ebd-bc54-1b0a11a2f3d1) | `f114f67dff097c67` |
-| `static/music/E.mp3` | E, take 1 | 7:59 | 19:58:14Z | [`39ad3dbd`](https://suno.com/song/39ad3dbd-9e99-4faa-b23f-87bd116bef97) | `60de636b24541e12` |
-| `static/music/E (1).mp3` | E, take 2 | 7:59 | 20:00:21Z | [`8ad6bd6b`](https://suno.com/song/8ad6bd6b-2b24-417e-9c68-611c3f6c86c1) | `1b90b90e76725598` |
+
+### Benched MP3s — `audio-masters/`, not shipped, not committed
+
+The other nine encodes, from the same session and the same subscription, made the
+same way. **Their rows are kept rather than deleted.** Deleting them would mean
+re-establishing provenance for any take later brought back, and provenance is the
+one thing about these files that cannot be re-derived from the files themselves
+once the subscription lapses.
+
+They are licensed identically to the row above. The reason they are not in
+`static/music/` is payload, not rights. The hashes are of the files as they were
+encoded; moving them did not touch their bytes, so they still verify. Their
+measured loop regions and level trims live in
+`.claude/skills/rtb-invariants/references/audio-and-jurisdiction.md`, so bringing
+one back costs a file copy rather than a measurement pass.
+
+| File | Prompt | Length | Generated (UTC) | Generation URL | SHA-256 (first 16) |
+|---|---|---|---|---|---|
+| `audio-masters/A (1).mp3` | A, take 2 | 3:24 | 19:40:41Z | [`24d50891`](https://suno.com/song/24d50891-fc85-4623-a12b-297a9d7195aa) | `6b5b38fa30155f5b` |
+| `audio-masters/B.mp3` | B, take 1 | 2:33 | 19:42:44Z | [`1513712f`](https://suno.com/song/1513712f-5e2a-4a33-b94d-7943178ffb8f) | `8b546cabe06b50bd` |
+| `audio-masters/B (1).mp3` | B, take 2 | 7:59 | 19:44:19Z | [`1e9f2031`](https://suno.com/song/1e9f2031-c603-435c-91a7-dc6ab5b98659) | `156ff9aee251d547` |
+| `audio-masters/C.mp3` | C, take 1 | 7:59 | 19:50:55Z | [`6272ad86`](https://suno.com/song/6272ad86-152d-4c77-87ee-958a1c2610ac) | `8a92618c0078e9c4` |
+| `audio-masters/C (1).mp3` | C, take 2 | 7:59 | 19:53:08Z | [`1e14ea63`](https://suno.com/song/1e14ea63-cf50-42e8-a030-6773ef4e9acc) | `c651d33f71e9180b` |
+| `audio-masters/D.mp3` | D, take 1 | 2:27 | 19:56:09Z | [`a27de14b`](https://suno.com/song/a27de14b-8752-4f33-ae2d-733b6e872596) | `d7e0428fb5b7c9e7` |
+| `audio-masters/D (1).mp3` | D, take 2 | 3:04 | 19:57:12Z | [`f301ccd6`](https://suno.com/song/f301ccd6-eea3-4ebd-bc54-1b0a11a2f3d1) | `f114f67dff097c67` |
+| `audio-masters/E.mp3` | E, take 1 | 7:59 | 19:58:14Z | [`39ad3dbd`](https://suno.com/song/39ad3dbd-9e99-4faa-b23f-87bd116bef97) | `60de636b24541e12` |
+| `audio-masters/E (1).mp3` | E, take 2 | 7:59 | 20:00:21Z | [`8ad6bd6b`](https://suno.com/song/8ad6bd6b-2b24-417e-9c68-611c3f6c86c1) | `1b90b90e76725598` |
 
 ### WAV masters — `audio-masters/`, never shipped, never committed
 
@@ -232,7 +256,8 @@ Downloads, unmodified. Kept because re-cutting `loopEnd` to a bar line or
 re-encoding at another bitrate should start from these rather than from a
 second-generation MP3, and because a later re-download would not carry this
 licence. They sit outside `static/` so the build never sees them, and
-`audio-masters/.gitignore` keeps them out of git.
+`audio-masters/.gitignore` keeps them — and the nine benched MP3s beside
+them — out of git.
 
 | File | Prompt | Downloaded (2026-09-02, local UTC−4) | SHA-256 (first 16) |
 |---|---|---|---|
@@ -289,8 +314,13 @@ is the only proof the subscription was paid before the tracks were generated.
    Downloads the commercial licence attaches to, and they are gitignored, so no
    clone, fork or remote holds a copy. A later re-download on a lapsed account
    would carry the free-tier licence instead.
-4. **Prune to one track** — delete the nine unused MP3s and their rows, and put
-   the `musicTracks.test.ts` directory ceiling back to 9 MB.
+4. ~~**Prune to one track.**~~ **Done 2026-09-06.** The nine unused MP3s were
+   moved to `audio-masters/` rather than deleted, their rows moved to the benched
+   table above rather than dropped, and the `musicTracks.test.ts` directory
+   ceiling put back to 9 MB. `static/music/` is one 2.2 MB file. Note that the
+   nine were committed once before this and remain in git history; that is
+   accepted, because what mattered was the build payload and a history rewrite
+   would cost more than it saves.
 
 ### If the track comes from Suno
 

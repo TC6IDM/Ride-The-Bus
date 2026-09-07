@@ -26,6 +26,7 @@ import { fileURLToPath } from 'node:url';
 import {
 	ACTIVE_TRACK_ID,
 	MUSIC_TRACKS,
+	type MusicTrack,
 	activeTrack,
 	resolveLoopOverride,
 	resolveTrack,
@@ -112,16 +113,34 @@ describe('the manifest is internally consistent', () => {
 		// The tracks keep the names they arrived with - spaces and brackets - so
 		// that ASSET_LICENCES.md stays keyed by the real filename. That makes
 		// encoding the manifest's job, not the caller's.
-		const spaced = MUSIC_TRACKS.find((t) => t.file.includes(' '));
-		assert.ok(spaced, 'no track has a space in its name, so this no longer proves anything');
-		assert.ok(!trackPath(spaced).includes(' '), 'a filename with a space reached the URL raw');
+		//
+		// THE SPACED NAME IS SYNTHETIC HERE, and has to be. The shipping track is
+		// "A.mp3" and needs no encoding, so reading the case out of MUSIC_TRACKS
+		// would have this test quietly prove nothing - which is what it did while
+		// nine benched takes were still in the list. Every one of those carries a
+		// space or brackets, so the encoding is live again the moment one comes
+		// back, and the fixture is one of their real filenames.
+		const benched: MusicTrack = { ...MUSIC_TRACKS[0]!, file: 'C (1).mp3' };
+		assert.equal(trackPath(benched), 'music/C%20(1).mp3');
+		for (const t of MUSIC_TRACKS) {
+			assert.ok(!trackPath(t).includes(' '), `${t.id}: a space reached the URL raw`);
+		}
 	});
 });
 
 describe('choosing a track', () => {
 	test('?dev_music= picks one out of the manifest', () => {
+		// Naming a track in the manifest resolves to that track. With the nine
+		// benched takes out of the list that is only ever the active one, so the
+		// interesting half of this test is CONDITIONAL rather than deleted: paste
+		// an entry back to audition it and the real discrimination comes back with
+		// it. Deleting it instead would mean the audition path ships untested for
+		// exactly as long as nobody is auditioning, which is when a break in it
+		// would go unnoticed.
+		assert.equal(resolveTrack(`?dev_music=${ACTIVE_TRACK_ID}`).id, ACTIVE_TRACK_ID);
+
 		const other = MUSIC_TRACKS.find((t) => t.id !== ACTIVE_TRACK_ID);
-		assert.ok(other, 'only one track in the manifest, so auditioning proves nothing');
+		if (!other) return; // one-track manifest: the shipping state, not a fault.
 		assert.equal(resolveTrack(`?dev_music=${other.id}`).id, other.id);
 	});
 
@@ -217,24 +236,26 @@ describe('the payload', () => {
 		if (files === null) return t.skip('no audio in static/music in this checkout');
 
 		// EVERY FILE HERE SHIPS. static/ is copied wholesale into the build and
-		// nothing prunes it by what is referenced, so the ten candidates now here
-		// are ~44 MB of payload to deliver one 6.4 MB track.
+		// nothing prunes it by what is referenced, so a candidate left here after
+		// an audition is payload for every player who never hears it.
 		//
-		// THIS CEILING WAS RAISED FROM 32 MB ON PURPOSE, 2026-09-02, to hold all
-		// ten paid-tier takes while the choice is deferred to submission. It is
-		// sized to the audition state, not to the shipping one: 56 MB is ~12 MB of
-		// head room over the ten, enough to catch the directory growing while
-		// nobody is looking and nowhere near loose enough to let a build ship.
+		// THE CEILING IS BACK DOWN. It was raised to 56 MB on 2026-09-02 to hold
+		// all ten paid-tier takes while the choice was deferred; the choice is made
+		// and the nine benched takes now live in the repo-root audio-masters/, so
+		// this reads 9 * MB again - deliberately the SAME figure as the
+		// active-track gate above, because with one track they are the same file
+		// and two different numbers would only invite one of them to drift.
 		//
-		// PUT IT BACK when the track is chosen. Deleting the nine losers takes the
-		// directory to ~6 MB, at which point this should read 9 * MB - the same
-		// figure as the active-track gate above, because by then they are the same
-		// file. ASSET_LICENCES.md carries the prune step.
+		// The directory is ~2.2 MB against that, which is head room for auditioning
+		// a second take without tripping the gate and not nearly enough to let a
+		// re-audition of all ten ship by accident. Raise it again only alongside a
+		// note saying when it comes back down; that is what happened last time and
+		// it is why this came back down at all.
 		const total = files.reduce((sum, f) => sum + bytes(f), 0);
 		assert.ok(
-			total < 56 * MB,
+			total < 9 * MB,
 			`static/music is ${(total / MB).toFixed(1)} MB across ${files.length} files, and all of it ships. ` +
-				'Delete every track but the active one, or raise this ceiling deliberately.',
+				'Move every track but the active one back to audio-masters/, or raise this ceiling deliberately.',
 		);
 	});
 });

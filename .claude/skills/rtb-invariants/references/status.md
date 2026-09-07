@@ -177,18 +177,41 @@ look.**
   lossy generation:
   `ffmpeg -i in.wav -vn -b:a 112k out.mp3`
 
-  Measured against the free-tier set, the new bed is **brighter on exactly the
-  axis that was flagged**: idle-board centroid 1716 Hz against 1268, and 1.6% of
-  energy above 2 kHz against 0.1%. Peak and RMS are within a hair of the old
-  reference points and nothing clips. Two things remain:
+  **The board mix, re-measured 2026-09-06 with the chosen track** (`npm run
+  audio`, 18s on the board, so bed plus cue book through the real limiter):
+  centroid **1638–1673 Hz**, **0.4%** of energy above 2 kHz, peak −17.0 dBFS,
+  RMS −33.6, crest 16.6 dB, 14 dB of level movement, nothing clipped.
 
-  1. **Pick by ear.** All ten takes are kept and auditionable with
-     `?dev_music=<id>`; `ACTIVE_TRACK_ID` is a measurement-led placeholder, not
-     a decision. This is deliberately deferred to submission.
-  2. **Then delete every track but the chosen one**, and put the
-     `musicTracks.test.ts` directory ceiling back to 9 MB from the 56 MB it was
-     raised to. `static/` is copied wholesale, so all ten ship as they stand —
-     44 MB of payload to deliver 6.4 MB.
+  **Read that against both predecessors, because it lands between them.** The
+  free-tier set measured 1268 Hz and 0.1% above 2 kHz — the dark-bed risk this
+  list flagged. The measurement-led placeholder `noir-triphop-c2` measured
+  1716 Hz and 1.6%. The by-ear pick is **four times the free-tier set's high-end
+  energy and a quarter of the placeholder's**, so it clears the flagged edge
+  without being the brightest option that was on the table.
+
+  That is not a contradiction of the file-level numbers, and it is worth writing
+  down because it looks like one: `A.mp3` is second brightest of the ten **by
+  centroid** (2186 Hz) while sitting at 0.89% above 2 kHz, where `noir-triphop-c2`
+  is 2.69%. The two rankings genuinely disagree — a centroid can be pulled up by
+  strong upper-mid content that never reaches 2 kHz. **The board measurement is
+  the one that decides**, because it is the mix a player hears.
+
+  Two things remain:
+
+  1. **Picked by ear, 2026-09-06: `jazz-lounge-a1` (`A.mp3`).** It replaces
+     `noir-triphop-c2`, which was a measurement-led placeholder and always
+     labelled one. Still "for now" — nothing is submitted.
+  2. **Done in the same pass.** The nine losing takes were **moved to the
+     repo-root `audio-masters/`** as MP3s beside their WAV masters, rather than
+     deleted: they are equally licensed, and keeping them makes a re-audition a
+     file copy. `static/music/` is one 2.2 MB file, and the
+     `musicTracks.test.ts` directory ceiling is back to 9 MB from 56 MB. Their
+     measured loop regions and trims are in `audio-and-jurisdiction.md` so
+     bringing one back costs no measurement pass, and their provenance rows moved
+     to a "Benched" table in `ASSET_LICENCES.md` rather than being dropped.
+     Caveat worth knowing: the nine were committed once before this, so they are
+     still in git history. That is accepted — the payload problem was the build,
+     not the clone, and a history rewrite would cost more than it saves.
 
   Then re-measure: `SCENE_MIX` was tuned against one track, and `MusicTrack.trim`
   is what keeps the others level with it, so a new file needs a new trim.
@@ -196,12 +219,32 @@ look.**
   currently failing by design.
 
   Two things about the bed that no test can reach and that want ears on real
-  speakers: **the loop seam** — the wrap is only heard once per loop period,
-  four to five minutes on these candidates, so `?dev_loop=` exists to make it
-  happen every 26 seconds — and **whether the track survives laptop speakers**.
-  The candidates put 0.1% of their energy above 2 kHz, which is the dark
-  late-night brief working as intended and is also close to the edge of a track
-  a laptop cannot carry.
+  speakers.
+
+  **The loop seam, and it matters more than it used to.** The chosen track has
+  the shortest region of the ten: 160s with a 6s crossfade wraps every **154s**,
+  against 6:42 for the placeholder it replaced and 7:53 for the three takes that
+  loop end to end. So the seam is heard roughly every two and a half minutes by
+  anyone sitting on the board — often enough that a bad one would be the most
+  noticeable property of the bed, where before it was a once-per-session event.
+  `?dev_loop=40,70,4` still exists to make it happen every 26 seconds rather than
+  waiting; the difference is that this one is now worth hearing at full length
+  too, because a player will.
+
+  **Whether the track survives laptop speakers, which is the open one.** This was
+  the flagged risk when the free-tier set put 0.1% of its energy above 2 kHz —
+  the dark late-night brief working as intended, and close to the edge of a track
+  a laptop cannot carry. The chosen take measures **0.4% on the board**: four
+  times that, and comfortably off the floor, but a quarter of what
+  `noir-triphop-c2` put there and therefore **less margin than the placeholder
+  had**. A by-ear pick beats a measurement on a full-range monitor and says
+  nothing about a laptop, so this needs the check on real hardware rather than
+  another capture.
+  If it turns out thin, the shortlist is in the benched table in
+  `audio-and-jurisdiction.md` — `soul-groove-e2` is brightest of the ten at
+  3016 Hz, and `noir-triphop-c2` puts 22.1% of its energy above 200 Hz, which is
+  where a laptop speaker starts working at all — and every file is one copy away
+  in `audio-masters/`.
 
 - **Win takeover: still wants real hardware, but the perf risk is mostly
   spent.** The blur is `blur(2px) saturate(0.86)` and is dropped entirely under

@@ -54,7 +54,7 @@ const REPLAY_PORT = Number(process.env.REPLAY_PORT || 3010);
 // inside a capture at all.
 //
 //   npm run audio -- --params "dev_loop=40,70,4" --seconds 40
-//   npm run audio -- --params "dev_music=noir-triphop-c1" --play
+//   npm run audio -- --params "dev_music=<id>" --play
 const PARAMS = val("params", "");
 // Simulate an embedder that grants autoplay - Stake serves the game in an
 // iframe and may set allow="autoplay". With it, primeAudio opens the graph on

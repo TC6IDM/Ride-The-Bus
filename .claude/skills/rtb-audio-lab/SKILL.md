@@ -21,7 +21,7 @@ From `web-sdk/apps/Ride-The-Bus/`, with the dev server up:
 npm run audio                                    # 18s of the board
 npm run audio -- --scene lobby --seconds 12      # the start screen instead
 npm run audio -- --seconds 30 --out bed-long
-npm run audio -- --params "dev_music=noir-triphop-c1"   # a different candidate
+npm run audio -- --params "dev_music=<id>"       # a benched take, once copied in
 npm run audio -- --params "dev_loop=40,70,4" --seconds 40 # make the seam happen
 npm run audio -- --scene loading --autoplay --seconds 8   # the loader, untouched
 ```
@@ -87,12 +87,20 @@ played round is mostly showing you: presses, card flips, stage wins, bust,
 forgiveness and the win fanfares.
 
 **The music bed** (`music.ts`) is one produced file fetched from `static/music/`.
-Four candidates sit in `static/music/` and `musicTracks.ts` decides which plays —
-see `ACTIVE_TRACK_ID`. They are gitignored, so a clone without them captures the
-cue book alone. All four are free-tier Suno placeholders that cannot ship
-(`ASSET_LICENCES.md`), but they are real material and captures made against them
-have a bed in them. A build without the file is still a supported state: the loader fails soft
-and an idle capture comes back as literal silence (`peakDb: null`).
+Exactly one file sits there — `A.mp3`, which `ACTIVE_TRACK_ID` in
+`musicTracks.ts` names — and it is paid-tier Suno output cleared to ship
+(`ASSET_LICENCES.md`), so it is committed and a fresh clone captures it. The nine
+other takes from the same session are benched in the repo-root `audio-masters/`
+and are gitignored; copy one into `static/music/`, add its manifest entry from
+the table in `rtb-invariants/references/audio-and-jurisdiction.md`, and
+`?dev_music=<id>` will audition it. **Move it back out afterwards** — `static/`
+is copied wholesale into the build. A build without any bed is still a supported
+state: the loader fails soft and an idle capture comes back as literal silence
+(`peakDb: null`).
+
+**The current board reference**, for comparing a capture against: centroid
+1638–1673 Hz, 0.4% of energy above 2 kHz, peak −17.0 dBFS, RMS −33.6, crest
+16.6 dB, 14 dB of movement, nothing clipped.
 
 ### Driving the bed from the address bar
 
@@ -100,14 +108,14 @@ and an idle capture comes back as literal silence (`peakDb: null`).
 the only way to reach the bed's dev overrides:
 
 ```
-npm run audio -- --params "dev_music=noir-triphop-c1" --play
+npm run audio -- --params "dev_music=<id>" --play             # a benched take
 npm run audio -- --params "dev_loop=40,70,4" --seconds 40    # a seam every 26s
 npm run audio -- --params "dev_loop=40,70,0" --seconds 40    # the hard wrap
 ```
 
 `?dev_loop=<start>,<end>,<crossfade>` is what makes the seam observable at all.
-The shipping regions are 3.5–5.5 minutes, so without it a capture would have to
-run that long to catch one wrap. Shorten the region and the same seam, on the
+The shipping region wraps every 154s and the benched takes run 3.5–5.5 minutes,
+so without it a capture would have to run that long to catch one wrap. Shorten the region and the same seam, on the
 same file, through the same graph, happens every 26 seconds.
 
 ### Capturing the screens that have nothing to press

@@ -28,34 +28,42 @@ rewritten as the audio changed.
     `Game.svelte` calls `music.setBed`, and `music.ts` stays testable. Left
     unset, the game is silent behind its cues — which is also exactly what a
     build shipped without the asset does.
-  - **The candidates are a MANIFEST, not a constant.** `musicTracks.ts` maps ids
-    onto the files in `static/music/`; `ACTIVE_TRACK_ID` is the one line that
-    changes which plays, and `?dev_music=<id>` auditions one without a restart.
-    The tracks keep the filenames they arrived with — spaces and brackets and
-    all — because `ASSET_LICENCES.md` is keyed by filename, so `trackPath()`
-    encodes rather than the caller.
+  - **The manifest is a MANIFEST, not a constant — and it is down to one row.**
+    `musicTracks.ts` maps ids onto the files in `static/music/`; `ACTIVE_TRACK_ID`
+    is the one line that changes which plays, and `?dev_music=<id>` auditions one
+    without a restart. The tracks keep the filenames they arrived with — spaces
+    and brackets and all — because `ASSET_LICENCES.md` is keyed by filename, so
+    `trackPath()` encodes rather than the caller. The shape survives a
+    single-track manifest on purpose: it is what makes bringing a benched take
+    back a file copy plus one entry.
     - **`trim` is a level match, not a volume control.** Every scene level is
       calibrated against ONE track. Without a per-track correction, switching
       candidates changes how loud the game is, and the next thing anyone does is
       re-tune the scene levels — which breaks the track before it.
     - **EVERY FILE IN `static/music/` SHIPS.** `static/` is copied wholesale into
-      the build and nothing prunes it by what is referenced, so four candidates
-      is four candidates of payload to deliver one. `musicTracks.test.ts` holds
-      the ceiling; `ASSET_LICENCES.md` holds the prune step.
+      the build and nothing prunes it by what is referenced, so a candidate left
+      behind after an audition is payload for every player who never hears it.
+      That is why the nine benched takes had to leave the DIRECTORY and not
+      merely the manifest. `musicTracks.test.ts` holds the ceiling — 9 MB again,
+      down from the 56 MB the ten-track audition needed; `ASSET_LICENCES.md`
+      holds the provenance.
     - **Provenance is a test, not a convention.** Every audio file present in
-      `static/music/` must have a row in `ASSET_LICENCES.md`. The `.gitignore`
-      there ignores audio by default and un-ignores the four placeholders by
-      name, so a fifth candidate stays invisible to git until someone writes its
-      row.
+      `static/music/` must have a row in `ASSET_LICENCES.md`, and
+      `musicTracks.test.ts` fails if one does not. Since the tracks became
+      paid-tier they are committed normally, so that test — not the `.gitignore`
+      — is what stops an unattributed file shipping.
   - **The loader fails soft, and downloads nothing for a player who cannot hear
     it.** The silence gate comes before the fetch — "muted costs nothing" is a
     bandwidth claim as much as a CPU one. A 404 or a bad decode falls back to no
     music silently, because console errors are a Stake build failure, and
     `failed` is terminal so a missing file cannot become unbounded retries.
   - **THE LOOP IS OVERLAPPING PASSES, NOT `src.loop = true`.** A wrapping source
-    is seamless only for a file authored to be, and a produced track is not one:
-    all four candidates measure 12–17 seconds of outro decaying to digital
-    silence, so a hard wrap plays that decay into a cold entry forever. Each pass
+    is seamless only for a file authored to be, and a produced track is not one.
+    The four free-tier placeholders this replaced each measured 12–17 seconds of
+    outro decaying to digital silence, so a hard wrap played that decay into a
+    cold entry forever. The paid-tier set does not fade — "fade out" is in the
+    exclude-styles field — which removes the worst case and not the problem: a
+    hard wrap still cuts from an arbitrary bar to bar one. Each pass
     is a source of its own started `span − crossfade` after the last, so the tail
     of one plays over the head of the next and neither end is heard alone.
     - **The seams are EQUAL-POWER, where the arrival fade is linear.** They are
@@ -137,6 +145,69 @@ rewritten as the audio changed.
   - **Every cue is jittered per trigger, and every noise burst is a fresh
     buffer**, so four card flips in a round are not one sample four times. This
     is the cue book's, not the bed's — it is why the reveals do not machine-gun.
+---
+
+## The nine benched takes, and their measurements
+
+Kept here because the numbers cost a measurement pass and the files do not.
+
+Ten paid-tier takes were generated on 2026-09-02 and all ten sat in
+`static/music/` while the choice was deferred. It is no longer deferred:
+**`jazz-lounge-a1` (`A.mp3`) ships**, and the other nine were moved to the
+repo-root `audio-masters/` as MP3s beside their WAV masters — out of the build,
+not out of the project. `ASSET_LICENCES.md` carries a provenance row for each;
+this table carries what `musicTracks.ts` would need to play one again.
+
+**To re-audition one:** copy its MP3 from `audio-masters/` into `static/music/`,
+paste its row back into `MUSIC_TRACKS` as an entry, restore its
+`ASSET_LICENCES.md` row under "Shipping", and load `?dev_music=<id>`. Move the
+file back out before staging — `static/` is copied wholesale into the build, and
+`musicTracks.test.ts`'s 9 MB directory ceiling is the backstop, not the rule.
+
+| id | file | length | loopStart | loopEnd | crossfade | trim | why it might win |
+|---|---|---|---|---|---|---|---|
+| `jazz-lounge-a1` | `A.mp3` | 162.2s | 0 | 160 | 6 | 0.88 | **SHIPPING**, chosen by ear. Centroid 2186 Hz — second brightest of the ten — but only 0.89% above 2 kHz. See the note under the table: the two brightness rankings disagree. |
+| `jazz-lounge-a2` | `A (1).mp3` | 203.7s | 0 | 198 | 6 | 0.84 | Centroid 1821 Hz, 0.52% above 2 kHz. The same prompt as the shipping track, 41s longer. |
+| `dusty-vamp-b1` | `B.mp3` | 153.1s | 0 | 148 | 6 | 0.92 | Darkest of the B/C/E group: 1320 Hz, 0.22% above 2 kHz. |
+| `dusty-vamp-b2` | `B (1).mp3` | 479.4s | 0 | 479 | 6 | 0.93 | Level end to end. Centroid 1707 Hz, but 20.3% of its energy in 200 Hz–2 kHz — the band a laptop speaker actually reproduces. |
+| `noir-triphop-c1` | `C.mp3` | 479.4s | 0 | 479 | 6 | 0.82 | The most UNIFORM of the ten — within 3 dB of its loudest quarter-second from 0.00s to 479.00s, which is what a 6s crossfade at an arbitrary seam wants. Scooped mid though: 12.8%. |
+| `noir-triphop-c2` | `C (1).mp3` | 479.4s | 23 | 431 | 6 | 0.94 | The previous measurement-led pick, and best of the ten on the laptop test at 22.1% above 200 Hz. Its first 22s are 7–16 dB down, which is why the region starts at 23. |
+| `tension-d1` | `D.mp3` | 146.8s | 8 | 143 | 6 | 0.71 | DARKEST of the ten — 790 Hz, 0.27% above 2 kHz, which is the failure mode `status.md` warns about. Quiet first 7.5s, skipped. |
+| `tension-d2` | `D (1).mp3` | 183.7s | 0 | 176 | 6 | 0.82 | Second darkest: 772 Hz, 0.26% above 2 kHz. |
+| `soul-groove-e1` | `E.mp3` | 479.4s | 0 | 479 | 6 | 0.84 | Level, easing slightly over its last 10s. Centroid 1976 Hz. |
+| `soul-groove-e2` | `E (1).mp3` | 479.4s | 0 | 410 | 6 | 0.76 | Brightest of the ten at 3016 Hz, but only its first 410s hold level — the last 69s sit more than 6 dB down. |
+
+`loopStart`/`loopEnd` come from a per-second RMS envelope — the region within
+6 dB of the loudest second — cross-checked at 0.25s. Where the two passes
+disagree the fine one wins at the HEAD (a quiet intro is replayed on every wrap)
+and the coarse one at the TAIL (the crossfade covers a slightly softer ending).
+`trim` is each file's body RMS against a −17.5 dBFS reference, measured over the
+loop region rather than the whole file, so a switch does not change how loud the
+game is.
+
+**THE TWO BRIGHTNESS RANKINGS DISAGREE, and the column that matters is the
+second one.** `jazz-lounge-a1` is second of the ten by centroid and eighth by
+energy above 2 kHz; `noir-triphop-c2` is the reverse. A centroid rides up on
+strong upper-mid content that never reaches 2 kHz, and it was the >2 kHz figure
+that `status.md` flagged as the laptop-speaker risk. Measured on the board
+(`npm run audio`, 18s, bed plus cue book through the real limiter) the shipping
+bed reads **1638–1673 Hz and 0.4% above 2 kHz**, against 1716 Hz / 1.6% for
+`noir-triphop-c2` and 1268 Hz / 0.1% for the free-tier set both replaced. Clear
+of the floor, with less margin than the placeholder had.
+
+**These are measurements, not judgements.** They rank the takes on brightness,
+uniformity and span, and could not rank them on whether they suit the game —
+which is why the shipping track was chosen by ear and why the losing nine were
+benched rather than deleted.
+
+**The shipping track has the shortest span of the ten.** A 160s region with a 6s
+crossfade wraps every 154s, against 6:42 for `noir-triphop-c2` and 7:53 for the
+three that loop end to end. The seam is therefore heard far more often than it
+was under any earlier candidate, which makes it the thing to listen for on this
+bed — `?dev_loop=` is how, without waiting two and a half minutes per pass.
+
+---
+
 - **The jurisdiction block is the operator's, and every read must survive it
   being absent.** `Authenticate.svelte` assigns
   `stateConfig.jurisdiction = authenticateData?.config?.jurisdiction`

@@ -802,23 +802,39 @@ live in the How to Play panel behind the `i` button.
   licence attaches when the Output is *generated*. **As of 2026-09-02 this is
   satisfied**: the free-tier placeholders were deleted and ten fresh tracks
   generated on a paid Pro subscription (v5.5), with a row per file in
-  `ASSET_LICENCES.md`. Still open there, and required before sign-off: the ten
-  **generation URLs**, the **invoice**, and a saved copy of the **Terms as they
-  read on 2026-09-02** (a new Terms took effect the following day, so that text
+  `ASSET_LICENCES.md`. One of the ten ships and the other nine are benched in
+  `audio-masters/`, still licensed and still documented. Still open there, and
+  required before sign-off: the ten **generation URLs**, the **invoice**, and a
+  saved copy of the **Terms as they read on 2026-09-02** (a new Terms took effect the following day, so that text
   cannot be retrieved from the site later).
 
   **One file.** `static/` is copied wholesale into the build, so every candidate
   left in `static/music/` ships. **Expect:** exactly one audio file there, named
   by `ACTIVE_TRACK_ID` in `musicTracks.ts`. `musicTracks.test.ts` prints the
-  directory total and holds a ceiling, but it cannot know which one you meant.
+  directory total and holds a 9 MB ceiling, but it cannot know which one you
+  meant. **Satisfied as of 2026-09-06**: `A.mp3` alone, 2.2 MB, with the nine
+  benched takes moved to the repo-root `audio-masters/`. Re-check it anyway if
+  anyone has auditioned a take since — the way this fails is a copied-in
+  candidate that was never copied back out.
 
-  **The seam.** Leave the game idle on the board for **longer than one full loop
-  period** — `loopEnd − loopStart − crossfade`, five minutes or so on the current
-  candidates — and listen through the wrap. **Expect:** no dropout, no level dip,
-  no audible restart, and no fade to silence followed by a cold entry. If it
-  wraps badly the fix is `loopEnd` in the manifest, pulled back to a bar line.
+  **The seam, and it now happens often.** Leave the game idle on the board for
+  **longer than one full loop period** — `loopEnd − loopStart − crossfade`, which
+  on the shipping track is **154 seconds**, not the five minutes the earlier
+  candidates ran — and listen through the wrap. Sit through at least two. A
+  player on a long session hears this every two and a half minutes, so it carries
+  more weight than it did. **Expect:** no dropout, no level dip, no audible
+  restart, and no fade to silence followed by a cold entry. If it wraps badly the
+  fix is `loopEnd` in the manifest, pulled back to a bar line.
   `npm run audio -- --params "dev_loop=40,70,4"` reproduces the same seam every
   26 seconds if you need to hear it repeatedly.
+
+  **Laptop speakers — the one measurement could not settle.** The bed measures
+  0.4% of its energy above 2 kHz on the board: four times the free-tier set this
+  replaced, a quarter of the `noir-triphop-c2` placeholder. **Expect:** the bed
+  is still present, not just felt as low rumble, on a laptop's built-in speakers
+  and on phone speakers. If it disappears, the nine benched takes in
+  `audio-masters/` are the shortlist and
+  `rtb-invariants/references/audio-and-jurisdiction.md` ranks them.
 
   **The ladder.** Play a round through to a big win. **Expect:** the bed is
   loudest on the idle board, pulls back as the cards turn, and ducks hard and

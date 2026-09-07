@@ -260,29 +260,33 @@ reading before proposing it again.
   owns the URL and `Game.svelte` hands it to `music.setBed`. The loader
   downloads nothing for a muted player and falls back to no music on any
   failure.
-- **The candidates are a manifest.** `musicTracks.ts` maps ids onto the files in
-  `static/music/`; `ACTIVE_TRACK_ID` is the one line that switches tracks and
-  `?dev_music=<id>` auditions one without a restart. `trim` level-matches them so
-  switching does not change how loud the game is. **Every file in `static/music/`
-  ships** — `static/` is copied wholesale — and every one needs a row in
-  `ASSET_LICENCES.md`; `musicTracks.test.ts` enforces both.
-  **The ten candidates there are PAID-TIER Suno output, generated 2026-09-02 on
-  v5.5 and cleared to ship** — so MP3s are tracked normally now and
-  `git add -f` is no longer needed. Only `*.wav` stays ignored, because masters
-  belong in the repo-root `audio-masters/`, outside the app. A clone still runs on its cues
-  alone if the audio is absent, which the loader handles by design. **All ten
-  are kept on purpose** so the pick can be made by ear at submission — 44 MB of
-  payload to deliver 6.4 MB, which needed `musicTracks.test.ts`'s directory
-  ceiling raised from 32 MB to 56 MB. **Nine of the ten must be deleted, and
-  that ceiling put back, before a production build.**
+- **The manifest is a manifest, and it holds ONE row.** `musicTracks.ts` maps ids
+  onto the files in `static/music/`; `ACTIVE_TRACK_ID` is the one line that
+  switches tracks and `?dev_music=<id>` auditions one without a restart. `trim`
+  level-matches them so switching does not change how loud the game is. **Every
+  file in `static/music/` ships** — `static/` is copied wholesale — and every one
+  needs a row in `ASSET_LICENCES.md`; `musicTracks.test.ts` enforces both.
+  **The track there is PAID-TIER Suno output, generated 2026-09-02 on v5.5 and
+  cleared to ship** — so MP3s are tracked normally now and `git add -f` is no
+  longer needed. Only `*.wav` stays ignored, because masters belong in the
+  repo-root `audio-masters/`, outside the app. A clone still runs on its cues
+  alone if the audio is absent, which the loader handles by design.
+  **The ten-candidate audition state is over.** `jazz-lounge-a1` (`A.mp3`) was
+  chosen by ear on 2026-09-06; the other nine are **benched in `audio-masters/`**
+  as MP3s beside their WAV masters — equally licensed, out of the build — and the
+  directory ceiling in `musicTracks.test.ts` is back to **9 MB** from 56 MB.
+  Their measured loop regions live in the `rtb-invariants` audio reference and
+  their provenance rows in a "Benched" table in `ASSET_LICENCES.md`, so
+  re-auditioning one is a file copy plus one manifest entry. **Copy it back OUT
+  of `static/music/` before staging.**
 - **The loop is overlapping passes, not `src.loop = true`.** A produced track
   ends on a fade to silence, so a hard wrap plays that decay into a cold entry
   forever. Each pass is its own source started `span − crossfade` after the last;
   the seams are **equal-power** curves (two uncorrelated bars sum as powers, so a
   linear pair dips 3 dB) while the arrival fade stays linear. `loopStart`/
   `loopEnd` trim the outro off. `?dev_loop=<start>,<end>,<crossfade>` shortens the
-  region, because a 5-minute loop cannot otherwise be made to wrap inside a
-  capture.
+  region, because the shipping loop wraps every 154s and a capture that long is
+  not a practical way to look at a seam.
 - **The bed plays on the loading and start screens**, which needs `primeAudio`:
   the cue book was the only thing that ever opened an `AudioContext`, and those
   two screens have nothing to press, so they set a scene that could never sound.

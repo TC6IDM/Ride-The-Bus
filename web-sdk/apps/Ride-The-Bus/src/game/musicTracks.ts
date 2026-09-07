@@ -1,21 +1,37 @@
 /**
- * The candidate music beds, and which one the game plays.
+ * The music bed the game plays.
+ *
+ * ONE ROW, and that is the shipping state rather than a simplification. Ten
+ * paid-tier takes were generated on 2026-09-02 and all ten sat here while the
+ * choice was deferred; the choice has now been made by ear and the other nine
+ * are BENCHED, not deleted - both their MP3s and their WAV masters live in the
+ * repo-root audio-masters/, outside the app so nothing serves them.
  *
  * WHY A MANIFEST RATHER THAN ONE CONSTANT
  *
  * The bed is the one asset that cannot be judged by reading it. Auditioning
  * means playing a track under a real round, and a track that reads well on the
  * board can be wrong under the win fanfare, so switching has to be cheap enough
- * to do repeatedly. Renaming files on disk is not cheap - it breaks
- * ASSET_LICENCES.md, which is keyed by filename - so the tracks keep the names
- * they arrived with and this file maps ids onto them.
+ * to do repeatedly. That is still true of the ONE track here - it is not
+ * settled, only chosen - and the shape survives so bringing a benched take back
+ * is a file copy plus one entry rather than a rewrite. Renaming files on disk is
+ * not cheap - it breaks ASSET_LICENCES.md, which is keyed by filename - so the
+ * tracks keep the names they arrived with and this file maps ids onto them.
+ *
+ * TO BRING A BENCHED TAKE BACK: copy its MP3 from audio-masters/ into
+ * static/music/, paste its entry back here from the measured table in
+ * .claude/skills/rtb-invariants/references/audio-and-jurisdiction.md, and put
+ * its ASSET_LICENCES.md row back under "Shipping". The nine were measured the
+ * same way this one was, and those numbers were kept precisely so that a
+ * re-audition costs no measurement pass.
  *
  * TO CHANGE WHICH TRACK PLAYS
  *
  *   - permanently: edit ACTIVE_TRACK_ID below, one line, nothing else.
  *   - for one page load: ?dev_music=<id>, DEV builds only. This is the one you
  *     want while auditioning - it needs no rebuild and no restart, and it can be
- *     changed between rounds.
+ *     changed between rounds. With one entry it can only ever resolve to that
+ *     entry; it earns its keep again the moment a second one is pasted back.
  *
  * NO $app/* IMPORT LIVES HERE, on purpose. This module is imported by a node
  * test, and a module reaching a SvelteKit virtual cannot be - betLimits.test.ts
@@ -25,11 +41,11 @@
  * EVERY FILE IN static/music/ SHIPS TO PLAYERS.
  *
  * static/ is copied wholesale into the build; nothing prunes it by what is
- * referenced. TEN candidates is 44 MB of payload for one 6.4 MB track, so
- * before a production build every track but the active one must be deleted from
- * static/music/ AND its row dropped from ASSET_LICENCES.md, AND the ceiling in
- * musicTracks.test.ts put back. That test prints the current total on every run
- * so this cannot be forgotten quietly.
+ * referenced, which is why the nine had to leave the directory rather than just
+ * this list. The directory is back to 2.2 MB against a 9 MB ceiling in
+ * musicTracks.test.ts, and that test prints the current total on every run, so a
+ * candidate dropped back in for an audition and forgotten is caught before it
+ * ships. Anything added here needs its ASSET_LICENCES.md row in the same commit.
  */
 
 /** One auditionable bed. Every field but the first three is a measurement. */
@@ -63,40 +79,33 @@ export type MusicTrack = {
 };
 
 /**
- * The ten paid-tier candidates, measured rather than guessed.
+ * The shipping bed. One row, measured rather than guessed.
  *
- * TEN, not one, because the choice is deferred: all ten were generated on the
- * same paid subscription on the same day, all ten are licensed, and which one
- * ships is a decision for submission rather than for now. Every one is
- * auditionable with ?dev_music=<id> against a real round.
- *
- * THIS IS 44 MB OF PAYLOAD TO DELIVER 6.4 MB, and all of it ships as it stands.
- * musicTracks.test.ts holds a ceiling that was raised deliberately to allow this
- * audition state and must come back down to one track before a production build.
- *
- * loopStart/loopEnd come from a per-second RMS envelope of each file - the
- * region where the track sits within 6 dB of its loudest second - cross-checked
- * at 0.25s resolution, which is the pass that catches a quiet intro the coarser
- * one reads as usable. Where the two disagree the fine pass wins at the HEAD (a
+ * loopStart/loopEnd come from a per-second RMS envelope of the file - the region
+ * where the track sits within 6 dB of its loudest second - cross-checked at
+ * 0.25s resolution, which is the pass that catches a quiet intro the coarser one
+ * reads as usable. Where the two disagree the fine pass wins at the HEAD (a
  * quiet intro is replayed on every wrap) and the coarse pass wins at the TAIL
  * (the crossfade covers a slightly softer ending).
  *
- * NONE OF THE TEN FADES OUT - all run at full level to their last quarter
- * second. That is what "fade out" in the exclude-styles field bought, and it is
- * the one way they differ structurally from the free-tier set they replaced,
- * every one of which decayed to silence over its last 12-17 seconds.
+ * IT DOES NOT FADE OUT - it runs at full level to its last quarter second, as
+ * all ten takes did. That is what "fade out" in the exclude-styles field bought,
+ * and it is the one way this set differs structurally from the free-tier one it
+ * replaced, every member of which decayed to silence over its last 12-17s.
  *
- * These are STARTING POINTS from a level measurement, not from listening. If a
+ * These are STARTING POINTS from a level measurement, not from listening. If the
  * seam sounds wrong, the fix is loopEnd, and it wants an ear rather than a
  * number: pull it back to a bar line.
  *
- * ALL TEN ARE PAID-TIER SUNO OUTPUT, generated 2026-09-02, licensed to ship. See
- * ASSET_LICENCES.md for a row per file. The WAV masters they were encoded from
- * live in the repo-root audio-masters/, outside the app so they are never served.
+ * PAID-TIER SUNO OUTPUT, generated 2026-09-02, licensed to ship. See
+ * ASSET_LICENCES.md for the row. The WAV master it was encoded from lives in the
+ * repo-root audio-masters/, outside the app so it is never served, alongside the
+ * nine benched takes' MP3s and masters.
  *
- * The letter in each filename is the prompt that produced it - the plan's A-E -
- * and "(1)" is Suno's second take of the same prompt. That is the provenance
- * link back to ASSET_LICENCES.md, so the names are kept exactly as they arrived.
+ * The letter in the filename is the prompt that produced it - the plan's A-E -
+ * and "(1)" would be Suno's second take of the same prompt. That is the
+ * provenance link back to ASSET_LICENCES.md, so the name is kept exactly as it
+ * arrived.
  */
 export const MUSIC_TRACKS: readonly MusicTrack[] = [
 	{
@@ -104,130 +113,46 @@ export const MUSIC_TRACKS: readonly MusicTrack[] = [
 		file: 'A.mp3',
 		label: 'A - late-night jazz lounge, take 1 (2:42)',
 		crossfade: 6,
-		// 162.2s. Centroid 2186 Hz, 0.89% above 2 kHz.
+		// 162.2s. Centroid 2186 Hz - second brightest of the ten - but only 0.89%
+		// of its energy above 2 kHz, where noir-triphop-c2 is at 2.69%. THE TWO
+		// RANKINGS DISAGREE, and it is the second that was flagged as a risk: a
+		// centroid rides up on upper-mid content that never reaches 2 kHz.
+		// Measured on the board (npm run audio, 18s, bed plus cues through the
+		// real limiter) this reads 1638-1673 Hz and 0.4% above 2 kHz, against
+		// 1716 Hz / 1.6% for the placeholder and 1268 Hz / 0.1% for the free-tier
+		// set it replaced. Clear of the dark-bed floor, with less margin than the
+		// placeholder had. status.md carries the laptop-speaker check.
 		loopStart: 0,
 		loopEnd: 160,
 		trim: 0.88,
-	},
-	{
-		id: 'jazz-lounge-a2',
-		file: 'A (1).mp3',
-		label: 'A - late-night jazz lounge, take 2 (3:24)',
-		crossfade: 6,
-		// 203.7s. Centroid 1821 Hz, 0.52% above 2 kHz.
-		loopStart: 0,
-		loopEnd: 198,
-		trim: 0.84,
-	},
-	{
-		id: 'dusty-vamp-b1',
-		file: 'B.mp3',
-		label: 'B - warm dusty lounge vamp, take 1 (2:33)',
-		crossfade: 6,
-		// 153.1s. The darkest of the B/C/E group: 1320 Hz, 0.22% above 2 kHz.
-		loopStart: 0,
-		loopEnd: 148,
-		trim: 0.92,
-	},
-	{
-		id: 'dusty-vamp-b2',
-		file: 'B (1).mp3',
-		label: 'B - warm dusty lounge vamp, take 2 (7:59)',
-		crossfade: 6,
-		// 479.4s, level end to end. Centroid 1707 Hz, but 20.3% of its energy
-		// in 200Hz-2kHz - the band a laptop speaker actually reproduces.
-		loopStart: 0,
-		loopEnd: 479,
-		trim: 0.93,
-	},
-	{
-		id: 'noir-triphop-c1',
-		file: 'C.mp3',
-		label: 'C - downtempo noir trip-hop, take 1 (7:59)',
-		crossfade: 6,
-		// 479.4s. The most UNIFORM of the ten - within 3 dB of its loudest
-		// quarter-second from 0.00s to 479.00s, which is what a 6s crossfade at
-		// an arbitrary seam wants. Scooped mid though: 12.8%.
-		loopStart: 0,
-		loopEnd: 479,
-		trim: 0.82,
-	},
-	{
-		id: 'noir-triphop-c2',
-		file: 'C (1).mp3',
-		label: 'C - downtempo noir trip-hop, take 2 (7:59)',
-		crossfade: 6,
-		// 479.4s with a QUIET FIRST 22s - 7 to 16 dB down, which the per-second
-		// 6 dB pass reads as usable and the 0.25s pass does not. Looping from 0
-		// would replay that dip on every wrap, so the region starts after it.
-		// Best of the ten on the laptop test: 22.1% above 200 Hz.
-		loopStart: 23,
-		loopEnd: 431,
-		trim: 0.94,
-	},
-	{
-		id: 'tension-d1',
-		file: 'D.mp3',
-		label: 'D - minimal cinematic tension, take 1 (2:27)',
-		crossfade: 6,
-		// 146.8s. DARKEST of the ten - centroid 790 Hz, 0.27% above 2 kHz, which
-		// is the failure mode status.md warns about. Quiet first 7.5s, skipped.
-		loopStart: 8,
-		loopEnd: 143,
-		trim: 0.71,
-	},
-	{
-		id: 'tension-d2',
-		file: 'D (1).mp3',
-		label: 'D - minimal cinematic tension, take 2 (3:04)',
-		crossfade: 6,
-		// 183.7s. Second darkest: 772 Hz, 0.26% above 2 kHz.
-		loopStart: 0,
-		loopEnd: 176,
-		trim: 0.82,
-	},
-	{
-		id: 'soul-groove-e1',
-		file: 'E.mp3',
-		label: 'E - dusty late-night soul groove, take 1 (7:59)',
-		crossfade: 6,
-		// 479.4s, easing slightly over its last 10s. Centroid 1976 Hz.
-		loopStart: 0,
-		loopEnd: 479,
-		trim: 0.84,
-	},
-	{
-		id: 'soul-groove-e2',
-		file: 'E (1).mp3',
-		label: 'E - dusty late-night soul groove, take 2 (7:59)',
-		crossfade: 6,
-		// 479.4s, but only the first 410s hold level - the last 69s sit more than
-		// 6 dB down, so the region stops there. Brightest of the ten at 3016 Hz.
-		loopStart: 0,
-		loopEnd: 410,
-		trim: 0.76,
 	},
 ];
 
 /**
  * The track the game plays. EDIT THIS LINE to change it.
  *
- * A MEASUREMENT-LED pick, not a settled one, and explicitly a PLACEHOLDER until
- * submission: of the ten it is the strongest
- * where brightness is the constraint that binds. status.md records the free-tier
- * candidates at 0.1% of energy above 2 kHz and calls that "close to the edge of
- * a track a laptop cannot carry"; this one is at 2.69%, with 22.1% of its energy
- * above 200 Hz where a laptop speaker starts working at all.
+ * CHOSEN BY EAR out of the ten, which is the only instrument that could choose:
+ * the measurements ranked them and could not rank them by whether they suit the
+ * game. The previous value here was noir-triphop-c2, a measurement-led
+ * placeholder picked for brightness, and it is superseded rather than
+ * vindicated - this track is DARKER than it on the axis that placeholder was
+ * picked for. The board measures 0.4% of energy above 2 kHz against the
+ * placeholder's 1.6%, still four times the free-tier set's 0.1%. That is the
+ * trade an ear made over a number, recorded so it is not rediscovered as a
+ * defect; see the entry above and status.md's laptop-speaker item.
  *
- * The trade it makes is span - 408s against 479s for the three that loop end to
- * end - because its first 22 seconds are too quiet to loop through. That is a
- * seam every 6:42 rather than every 7:53, which is still longer than anything
- * the free-tier set managed.
+ * IT IS STILL "FOR NOW". Nothing here is submitted, and the nine benched takes
+ * are one file copy from being auditionable again - see the header.
  *
- * Audition the others with ?dev_music= before settling. The ear decides this,
- * not the table above.
+ * THE TRADE IS SPAN, and it is the largest of any of the ten. A 160s region with
+ * a 6s crossfade wraps every 154s, so a player sitting on the board hears the
+ * seam roughly every two and a half minutes, against 6:42 for the placeholder it
+ * replaces and 7:53 for the three takes that loop end to end. That makes the
+ * seam the thing to listen to on this track: it is heard often enough that a bad
+ * one would be the most noticeable property of the bed. ?dev_loop= is how it
+ * gets checked without waiting - see resolveLoopOverride below.
  */
-export const ACTIVE_TRACK_ID = 'noir-triphop-c2';
+export const ACTIVE_TRACK_ID = 'jazz-lounge-a1';
 
 /** Where the tracks are served from, under SvelteKit's base path. */
 export const MUSIC_DIR = 'music';
