@@ -29,7 +29,7 @@ plenty of zero-weight to tune with. w0 comes out relative to K: a mode whose
 raw RTP is ABOVE target gets w0 > K (up-weight losses to pull RTP down, e.g.
 the "equal" jackpot modes), and a mode BELOW target gets w0 < K (down-weight
 losses to lift RTP up, e.g. the structurally-low "inside" modes). w0 stays
-positive for every mode because TARGET_RTP (~0.94) is well under each mode's
+positive for every mode because TARGET_RTP (0.96) is well under each mode's
 win-conditional mean (~2x), so no mode ever needs losses removed entirely -
 we never have to fabricate wins.
 

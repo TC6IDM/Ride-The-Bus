@@ -3,6 +3,14 @@
 A four-guess card game built for Stake Engine: a Python math package that
 generates the published books, and a Svelte 5 client that replays them.
 
+**New to the codebase? Read [WALKTHROUGH.md](WALKTHROUGH.md).** It is a guided
+read of the whole system - the martingale the payouts are solved from, what the
+math build produces, the four RGS endpoints, and the client's three-file round
+- written to be followed with the files open. This file is the RULES; the
+walkthrough is the EXPLANATION. [REFACTOR_LOG.md](REFACTOR_LOG.md) records the
+2026-09 readability passes and, more usefully, the four classes of thing that
+broke in them that no compiler catches.
+
 ---
 
 ## Standing rules
@@ -38,7 +46,7 @@ These override default behaviour. Follow them every time.
    `npm run audio` exists because I cannot hear. It taps the running game's
    output, writes a WAV, and renders a spectrogram and a waveform I can look at,
    plus metrics (RMS, crest, level movement, centroid, flatness, band split).
-   **Use it for any change to `audioGraph.ts` / `music.ts` / `sound.ts`** — the
+   **Use it for any change to the `audio*.ts` modules / `music.ts` / `sound.ts`** — the
    same rule as "if a change is visual, drive it and look", and for the same
    reason: `sound.test.ts` pins what gets SCHEDULED and says in its own header
    that it cannot tell you whether the result sounds good. Details are in
@@ -163,9 +171,20 @@ reading before proposing it again.
   / `--vol-overflow`, referenced from the same triplets as the bolt meter. Max
   alone is off the scale and keeps its cream-on-crimson inversion. The hand hops
   through `element.animate()` with `composite: 'add'`; both halves matter.
-- **Which wins open the takeover**: a **clean sweep** —
-  `isCleanSweep(bustedIndex, forgivenIndex)`, not "did not bust" — is floored
-  onto the ladder however little it pays.
+- **"A full game win" is `isCleanSweep(bustedIndex, forgivenIndex)`, never
+  "did not bust", and FOUR decisions ask it.** A clean sweep is floored onto the
+  takeover ladder however little it pays; the same question also gates the
+  autoplay **Stop on full game win**, the `playFullWin()` sting and the
+  running-win bar's **"Full Game Win!"** label. Only the takeover was converted
+  when `isCleanSweep` landed, so a forgiven Second Chance round — three of four
+  right, no bust marker — stopped autoplay runs and called itself a full game
+  win for months. `modes.test.ts` greps all four sites and fails if
+  `bustedIndex === null` reappears anywhere in the game's own sources. The four
+  now live in three files — the running-win label in `GameBoard.svelte`, the
+  takeover floor and the win sting in `roundSettle.svelte.ts`, the autoplay stop
+  in `autoplayLoop.svelte.ts` — which is why the grep reads a MANIFEST rather
+  than a path. All three names have already changed once under a split, and the
+  manifest is what kept the grep finding them. See `game/sources.testlib.ts`.
 
 ### Bet modes, ceilings and volatility — `references/modes-and-volatility.md`
 
@@ -335,11 +354,281 @@ splitting on `_` — `sc_red_higher_equal_spade` has five parts, not four).
 
 ---
 
+## Where the client's logic lives
+
+`Game.svelte` was 3,789 lines — 2,738 of `<script>` — and held the popups, the
+round lifecycle, autoplay, the takeover handoff, bet formatting, audio wiring
+and dev-only URL seeding in one file. After four passes it is **709 lines**
+(563 script, 136 markup): the layout root, the intro phases, the popup
+switchboard, the audio wiring, the balance poll, and the effects that can only
+live in a component.
+
+### The directory layout
+
+`src/game/` was 80 files and 14,687 lines in one flat directory. It is now nine
+folders and three files:
+
+```
+src/game/
+  audio/  round/  bet/  math/  celebration/
+  ui/  dev/  jurisdiction/  platform/
+  tests/              rtl.test.ts, sources.test.ts
+  sources.testlib.ts
+```
+
+**Every `*.test.ts` lives in a `tests/` folder beside the code it covers** —
+`game/audio/tests/`, `game/math/tests/`, `i18n/messagesMap/tests/`, and so on.
+`npm run test` is `node --test "src/**/*.test.ts"`, a recursive glob, so the
+depth does not matter to the runner. `sources.testlib.ts` is NOT a test and
+stays at `game/` root: it is the manifest the grep tests read.
+
+**A test that moves takes its path strings with it, and they are the half no
+compiler checks.** Moving these 22 files broke ten anchors — `read()` bases,
+`import.meta.dirname` constants, a `readdirSync` of the catalogue directory,
+and both template-literal paths again. Two are worth naming:
+
+- **`rtl.test.ts`'s `SRC` anchor.** It was `resolve(import.meta.dirname, '..')`,
+  which meant `src/` at the old depth and `src/game/` at the new one. Prefixing
+  every path with `../` would also have "worked" and left a constant named `SRC`
+  pointing at `src/game`. It is `'../..'` now, and the paths are bare.
+- **`sound.test.ts`'s `reload()` cache-bust**, which had to become
+  `` `../audioMixer.ts?${tag}` ``. Re-proved the way it was proved originally:
+  `DEFAULT_VOLUME` sabotaged to 0, four tests fail, restore. A cache-bust that
+  names the wrong module does not error - it passes while testing nothing.
+
+`platform/` holds the twelve files that match the Stake template's own `game/`
+shape — `config`, `constants`, `context`, `eventEmitter`, the four `state*`, the
+three `types*`, `ready`. **Every sibling sample game (`cluster`, `lines`,
+`number-picker`, `price`, `scatter`, `ways`) keeps those at `game/` root and we
+no longer do**, so a future template update will not line up by path. That was a
+deliberate trade for a readable root; the twelve are still together and still
+named exactly as the template names them.
+
+The three files left at the root are there because they are *about* the others:
+the manifest, its check, and the one grep test that predates the manifest.
+
+`styles/` and `components/` are grouped the same way — `popups/ board/ intro/
+scene/` and `popups/ board/ intro/ icons/`, with `tokens.css`, `base.css`,
+`responsive.css` and `Game.svelte` staying at their roots.
+
+**Three things broke that no import rewrite could see, and all three were
+found by running something rather than by reading:**
+
+- **`scripts/mode-ceilings.js` WRITES `modeCeilings.ts`.** Moving the file
+  without repointing the generator would have left the next math build
+  regenerating it at the old path, with the moved copy silently going stale.
+  It is money-adjacent data. Same class as `replay-server.mjs`, which READS
+  `musicTracks.ts` and `currencies.ts` and answers `[]` when the path is wrong —
+  an empty music picker and no error.
+- **Paths built as template literals.** `sound.test.ts` read ten stylesheets as
+  `` `../styles/${name}.css` `` from a list of bare names, and `payoutTable.test.ts`
+  imported catalogues as `` `../i18n/messagesMap/${locale}.ts` ``. No literal-matching
+  pass resolves either. Both now carry their folder.
+- **Comments naming a file by path.** 24 of them pointed at paths that no longer
+  existed. A comment that names the wrong file is worse than no comment: it
+  sends the next reader somewhere real-looking and empty.
+
+**Rune modules use one `$state` object, not exported `let`s.** An exported `let`
+cannot be reassigned across a module boundary, so each of these exports a single
+object — `round.bustedIndex`, `bet.family`, `auto.running`. That is the shape
+`ready.svelte.ts` and `jurisdiction.svelte.ts` already used.
+
+The dependencies are a **DAG, deliberately**:
+
+```
+betState ─┐
+revealPacing ─┤
+autoplaySettings ─┼─→ roundPlace ─→ roundReveal ─→ roundSettle
+roundState ─┤          └─→ autoplayLoop
+celebrationState ─┘
+```
+
+**A round reads as three files, in that order.** The seams are exact: nothing
+crosses from the reveal into the settle (it reads `round.*` off state, never the
+loop's locals), and cutting anywhere else would have made a cycle —
+`startGameEngineFlow` needs `animateRoundFromEvents`, and the gate wraps
+`playRound`.
+
+| File | Owns |
+|---|---|
+| `game/round/roundState.svelte.ts` | the round's facts — what was dealt, what it paid, the session tallies, `roundInProgress()`, `resetForNewRound()` |
+| `game/bet/betState.svelte.ts` | what is being BET: the amount, the family, the four guesses, and every helper that reads or writes them |
+| `game/round/revealPacing.svelte.ts` | the turbo scale, the slam flag, and the reveal's own interruptible pause |
+| `game/round/autoplaySettings.svelte.ts` | what a run is configured to do — settings only |
+| `game/celebration/celebrationState.svelte.ts` | the takeover on screen, and the promise the round awaits |
+| `game/audio/soundSettings.svelte.ts` | the mixer mirror the sound panel writes through |
+| `game/round/roundPlace.svelte.ts` | buy a round: the defensive end-round, the mode slug, `/wallet/play`, the single-flight gate and the regulator's floor |
+| `game/round/roundReveal.svelte.ts` | turn the book into four cards on screen, with their cues |
+| `game/round/roundSettle.svelte.ts` | the payout, `end-round`, the credit, Last Win, the tier decision |
+| `game/round/roundRestore.svelte.ts` | put a round that already exists back on the board — replay, and resume |
+| `game/round/autoplayLoop.svelte.ts` | the loop that repeats it |
+| `game/dev/devSession.ts` | DEV: the URL standing in for `/wallet/authenticate` |
+| `game/ui/fitValue.ts`, `ui/pressCues.ts`, `bet/betFieldFont.ts`, `bet/currencySymbol.ts` | four leaves that close over nothing |
+
+### The board and the bar are components too
+
+`components/ControlBar.svelte` (the `<footer>`, the spin button and the spacebar
+that presses it), `components/GameBoard.svelte` (four cards, the running-win
+bar, the guess squares) and `components/SessionReadouts.svelte` (the
+jurisdiction-gated RG panel). `Game.svelte` keeps the layout root, the
+`<main class="play-area">` wrapper, the popup switchboard and the intro phases.
+
+This was ruled out once and became possible only after the state moved into
+modules: the bar needed **13 component-local names and 11 moved with it**, so
+what looked like a forty-prop interface is `openPopup` (bindable), `betRowEl`
+and `introPhase`. `GameBoard` takes **none**. The eight icon snippets split
+5 board / 3 bar with **zero overlap**, so nothing had to be duplicated.
+
+`choicesLocked()` went to `roundState` — both the bar and the board ask it.
+
+**`.cb-cap` and `.cb-val` are in `styles/readout.css`, not the bar's sheet.**
+`base.css` had `.rg-item .cb-val`: the RG panel renders the same caption/figure
+pair, so moving `control-bar.css` wholesale would have left it unstyled — and
+`currencies.test.ts` would have kept passing, because it asserts on the *rule*,
+not on who renders it. One definition, two importers; a copy was rejected
+because these carry the money-fitting contract `use:fitValue` depends on.
+Verified by reading computed styles off both panels in a browser: identical.
+
+`responsive.css` (326) split **16 bar / 8 board / 3 root, zero unassignable**,
+and `base.css`'s `.rg-*` rules went to `styles/session-readouts.css`.
+
+### The second pass: the four files that were biggest after Game.svelte
+
+`Game.svelte` stopped being the ceiling, so the next four went the same way.
+
+**`audioGraph.ts` (1,197) → five modules**, on the DAG its own sections already
+implied. `ensureContext` reaches IN to set `buses.<name>.gain` and `applyGain`
+reads it back, so context → mixer and nothing returns:
+
+```
+audioVariation (pure, imports nothing)
+audioMixer ──→ audioContext ──→ audioVoices ──→ audioLoop
+```
+
+| File | Owns |
+|---|---|
+| `game/audio/audioMixer.ts` | what the player has set: two buses, levels, mutes, `localStorage` |
+| `game/audio/audioContext.ts` | the one graph — `ctx`/`master`/the two sends, `ensureContext`, autoplay permission, `primeAudio`, `decode`. **The whole-graph argument lives at the top of this file.** |
+| `game/audio/audioVariation.ts` | `rand` / `drift` / `shuffler` — the randomness every cue borrows |
+| `game/audio/audioVoices.ts` | `tone` / `noise` / `thud`, and `openVoice`, the gate they pass through |
+| `game/audio/audioLoop.ts` | the bed's overlapping passes and their equal-power seams |
+
+**There is no barrel, deliberately** — a module that re-exported all five would
+hide which one owns what. And the reason matters beyond taste:
+`sound.test.ts`'s `reload(tag)` cache-busts a module to re-run `loadBus()` over
+empty storage, five times, because *"every player installing the game got
+silence"* once. **A query string only busts the module it names**, so pointed at
+a barrel Node would serve the cached mixer, `loadBus()` would never re-run, and
+all five would pass while testing nothing. `reload` names `audioMixer.ts`
+directly. Verified by sabotaging `DEFAULT_VOLUME` to 0 and watching four tests
+fail.
+
+**`StartScreen.svelte` (484) → three files.** It was two unrelated screens
+sharing a file, and they shared *nothing* but the phase that chose between them
+— not a snippet, not a helper, not a prop. `IntroPanels.svelte`,
+`ReplayDetails.svelte`, and `game/introDemo.ts` for the worked examples'
+lookup tables. `start-screen.css` (1,178) split with them into
+`start-screen-shell.css` / `intro-panels.css` / `replay-details.css`; the
+`@keyframes` were placed by which sheet references them, two of the three into
+more than one.
+
+That split also surfaced masked dead CSS, the same way the popup split did:
+`.ss-popup-close` and `.ss-detail-mode` are rendered by nothing at `HEAD`, and
+`choices.css`'s board-only wrappers (`.choice-row`, `.choice-column`,
+`.choice-label`, `.choice-tip`) are now `choices-board.css` — the reason
+`choice-unavailable.css` already gives, one step further along. **`.choice-square`
+stays in `choices.css`: the intro renders it.**
+
+**A round is three files: `roundPlace` → `roundReveal` → `roundSettle`.**
+`roundFlow.svelte.ts` no longer exists; it was 524 lines carrying all three.
+`settleRound()` came out first — `playRevealSequence` was 200 lines
+with an exact seam: the reveal animates, then the round settles. Nothing crosses
+it — the settle half reads `round.bustedIndex` / `round.forgivenIndex` off state,
+never the loop's `running` / `busted` / `forgivenessSpent` — so `settleRound()`
+takes no arguments. `engineRound` and `isEngineRound` moved to `roundState`,
+where they break the cycle and where `isEngineRound()` belongs anyway: it is a
+function of `round.source`.
+
+**`WinCelebration.svelte` (603 script → 413).** `game/celebrationScene.ts` (the
+`BURST` and `FAN` geometry, pure) and `game/celebrationGestures.ts` (`pop`,
+`easePop`, `hopFan`, `reducedMotion`). The geometry being a plain module means
+`winCelebration.test.ts` now **imports and asserts on it** — the fan's symmetry,
+its centre falling between cards, the outer pair riding lower, the burst's suit
+spread — instead of grepping the component for `length: 4 }`.
+
+**The count-up state machine deliberately stayed in the component.**
+`<WinCelebration>` is `{#key}`'d so it remounts per celebration; its state
+cannot be a module-level `$state` singleton the way `roundState` and `betState`
+are, and behind a factory it needs about six callbacks injected, which reads
+worse than the 200 lines do. Its pure half is already `countUpSegments` in
+`winTiers.ts`.
+
+**`sound.ts` (751) is deliberately NOT split.** It is a flat catalogue of 18
+independent cues in one object. Splitting a catalogue means looking in more
+places to find one cue, and every change costs an `npm run audio` pass. Size
+there is not complexity.
+
+**Autoplay is split in two on purpose.** `startAuto` calls the round flow, and
+the round flow reads `auto.running` / `stops.slamOnAuto` back out. In one module
+that is a cycle; with the settings on their own it is a DAG.
+
+**`$effect` only runs inside a component, so the effects stay in `Game.svelte`** —
+including the replay effect and the resume effect, which are also the two places
+that must apply `parsed.family` when restoring a mode from a slug. Keeping them
+side by side is what lets `modes.test.ts` check there are exactly two.
+
+**`bet` means betState's bet. The RGS resume payload is `resume`.** All three
+restore blocks used to call it `bet`; once the bet state became an object of
+that name, `bet.family = parsed.family` assigned to the *payload* and the family
+was silently never restored — the third near-miss on the invariant that has
+shipped broken twice. `modes.test.ts` now fails on any local `bet` declaration.
+
+### Each popup is its own component, with its own stylesheet
+
+`components/popups/` — `ModePopup`, `BetPopup`, `TurboPopup`, `SoundPopup`,
+`AutospinPopup`, `AdvancedPopup`. The `{#if openPopup === 'x'}` switchboard
+stays in `Game.svelte`; which panel is open is the component's own state.
+
+`popups.css` (1,032 lines) became **`styles/popup-<panel>.css`**, plus
+`popup-backdrop.css` for the one dimmer the parent renders. That split is
+**required, not tidiness**: svelte-check reports an unused selector as a
+WARNING, and `check:svelte` must come back at zero — so a rule in a sheet whose
+importing component does not render it is a build failure. There is no shared
+sheet for the same reason; `.action-button` and `.popup-sub` are *copied* into
+the panels that use them.
+
+- **A rule's home is decided by the markup, not by eye.** A grouped selector
+  spanning panels is split per selector rather than duplicated whole.
+- **`iconInfinity` / `iconPlus` / `iconMinus` are duplicated into
+  `AutospinPopup`**, six lines of SVG each. That is what lets the sizing travel
+  with the markup — the bar's copies sized by `control-bar.css`, the panel's by
+  `popup-autospin.css` — and it retires the import-order hazard the old
+  `popups.css` complained about, because the two are now different scopes.
+- **`.cb-val-multiplied` is copied into `popup-bet.css`.** It lives in
+  `control-bar.css`, which `BetPopup` does not import, so the chip lost it
+  silently. Both copies must keep saying the same thing.
+
+### The grep tests read a manifest, not a path
+
+Eight test files assert on the game's source as TEXT, because what each guards
+fails *silently* — a forgiven card that sounds like a bust, a mode restored
+without its family, a class renamed out from under `pressKindFor`. They now read
+**`game/sources.testlib.ts`**, which lists every file the component was split
+into and concatenates them, so counting assertions still count and negative ones
+still mean "nowhere".
+
+**When a split moves code out of a listed file, add the new file to that
+manifest in the same commit.** There is no glob and no `existsSync` filter: a
+listed path must exist, which `sources.test.ts` checks, because a filter would
+turn a typo into a grep test that quietly stopped looking at anything.
+
+---
+
 ## Client conventions worth knowing
 
 - **Svelte scoping bites child components.** A stylesheet is scoped to the
   component that imports it, and a child's elements never carry the parent's
-  scope class — so a `.bolt` rule in `popups.css` compiles to
+  scope class — so a `.bolt` rule in the parent's stylesheet compiles to
   `.bolt.svelte-<parent>` and matches nothing. Child components style themselves
   and take **custom properties** from the parent, which inherit through the DOM
   normally. See the notes atop `ChoiceIcon.svelte` and `BoltMeter.svelte`.
@@ -405,7 +694,7 @@ between a one-row bar and a two-row one.
 
 ## Current state and outstanding work
 
-703/703 tests, 0 type errors, 0 CSS warnings, lint clean, and the client
+719/719 tests, 0 type errors, 0 CSS warnings, lint clean, and the client
 reproduces all 76,800 published books exactly. The published math build
 (192 modes, RTP 96.0000% everywhere, spread 0.000000%, zero volatility
 violations) is generated but **NOT committed** — `math-sdk/.gitignore` line 9 is
@@ -458,8 +747,9 @@ are `FAMILY_RULES`, `partialMultiplier()`, `familyOf()` and `stageRetention()`.
 
 **Components are graphed through a line-preserving shadow tree.** Graphify maps
 `.svelte` onto the JS/TS grammar, and markup is not valid JS, so the parser
-emits one top-level ERROR node and every symbol is lost — 64% of this app's
-Svelte is `<script>`, and `Game.svelte` alone is 2,724 lines of it. The script
+emits one top-level ERROR node and every symbol is lost — most of this app's
+Svelte is `<script>`, and `Game.svelte` still carries ~1,140 lines of it (it was
+2,724 before the split described above). The script
 rewrites each component to a `.svelte.ts` holding only its script blocks, with
 markup and style lines **blanked rather than deleted** so every line keeps its
 original number; `bolts` reports `BoltMeter.svelte:L45` and that is genuinely

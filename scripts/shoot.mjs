@@ -7,6 +7,7 @@
  *   npm run shots -- --mode hs_red_equal_equal_heart --event 975
  *   npm run shots -- --reduced    -- with prefers-reduced-motion: reduce
  *   npm run shots -- --intro      -- the intro and replay-details screens
+ *   npm run shots -- --board      -- the idle board and control bar, every size
  *
  * Shots land in scripts/.shots/ (git-ignored).
  *
@@ -82,8 +83,13 @@ const opts = {
   event: value('event', String(MAX_WIN_EVENT)),
   reduced: flag('reduced'),
   intro: flag('intro'),
-  tiers: flag('tiers') || (!flag('sizes') && !flag('reduced') && !flag('intro')),
-  sizes: flag('sizes') || (!flag('tiers') && !flag('reduced') && !flag('intro')),
+  board: flag('board'),
+  tiers:
+    flag('tiers') ||
+    (!flag('sizes') && !flag('reduced') && !flag('intro') && !flag('board')),
+  sizes:
+    flag('sizes') ||
+    (!flag('tiers') && !flag('reduced') && !flag('intro') && !flag('board')),
   headed: flag('headed'),
 };
 
@@ -337,6 +343,82 @@ async function shootIntro(page, tag) {
   console.log(`  ${tag}: ${rows.join('  |  ')}`);
 }
 
+/* ---- The board, read out of the live DOM ---------------------------------
+   The takeover HIDES the bar's three readouts by design, so --sizes can never
+   see them: a settled max win is the one screen where .cb-val being unstyled
+   would look correct. This probe exists for the opposite reason - it measures
+   the bar and board at rest, which is where the ControlBar / GameBoard /
+   SessionReadouts split could go wrong without any test noticing.
+
+   It reports COMPUTED styles, not classes. .cb-cap and .cb-val live in
+   readout.css because two different components render them, and the failure
+   mode that sheet was created to prevent is a rule that still exists and
+   simply stops reaching one of them - which is invisible in the source and in
+   every assertion currencies.test.ts makes. */
+const BOARD_STATE = [
+  "const one = (s) => document.querySelector(s);",
+  "const all = (s) => [...document.querySelectorAll(s)];",
+  "const bar = one('footer'); if (!bar) return null;",
+  // A readout is only 'styled' if the money-fitting contract actually reached
+  // it. nowrap + a real max-width is that contract; see readout.css.
+  "const fit = (el) => { if (!el) return 'ABSENT';",
+  "  const c = getComputedStyle(el);",
+  "  const mw = c.maxWidth;",
+  "  return c.whiteSpace + '/' + (mw === 'none' ? 'NO-MAX-WIDTH' : 'max') +",
+  "    '/' + (el.getBoundingClientRect().height > 0 ? 'vis' : 'HIDDEN'); };",
+  "return {",
+  "  barRows: Math.round(bar.getBoundingClientRect().height),",
+  "  barBottom: Math.round(window.innerHeight - bar.getBoundingClientRect().bottom),",
+  "  caps: all('.cb-cap').length, vals: all('.cb-val').length,",
+  "  val: fit(one('.cb-val')),",
+  "  rgVal: fit(one('.rg-item .cb-val')),",
+  "  rgPanel: one('.rg-panel') ? 'present' : 'absent',",
+  "  squares: all('.choice-square').length,",
+  "  cards: all('.card-slot').length,",
+  "  spin: (() => { const b = one('.cb-spin'); return b ? (b.textContent.trim().replace(/\s+/g,' ') || '(icon only)') + (b.disabled ? ' [disabled]' : '') : 'ABSENT'; })(),",
+  "  overflowX: document.documentElement.scrollWidth > window.innerWidth + 1",
+  "    ? 'OVERFLOWS by ' + (document.documentElement.scrollWidth - window.innerWidth) + 'px'",
+  "    : 'ok',",
+  "};",
+].join('');
+
+/** The plain game - no replay, so the board sits idle with the bar live. */
+const plainUrl = (extra = '') =>
+  `http://localhost:${GAME_PORT}/?currency=USD&lang=en${extra}`;
+
+/**
+ * The board and the bar at rest, which no other mode captures.
+ *
+ * `rg` turns on the three responsible-gambling readouts, because the RG panel
+ * is the second importer of readout.css and the only way to see whether that
+ * sheet reached it is to render it.
+ */
+async function shootBoard(page, tag, rg) {
+  await page.goto(plainUrl(rg ? '&dev_displayNetPosition=1&dev_displayRTP=1&dev_displaySessionTimer=1' : ''));
+  if (!(await page.waitFor('.ss-continue'))) {
+    console.log(`  ${tag}: no intro`);
+    return;
+  }
+  await page.click('.ss-continue');
+  await sleep(1400);
+  if (!(await page.waitFor('footer'))) {
+    console.log(`  ${tag}: never reached the board`);
+    return;
+  }
+  await sleep(500);
+  await page.shot(`board-${tag}`);
+  const b = await page.evaluate(BOARD_STATE);
+  if (!b) {
+    console.log(`  ${tag}: no bar`);
+    return;
+  }
+  console.log(
+    `  ${tag}: bar ${b.barRows}px  cards ${b.cards}  squares ${b.squares}  ` +
+      `caps ${b.caps} vals ${b.vals}  cb-val ${b.val}  ` +
+      `rg ${b.rgPanel} ${b.rgVal}  spin "${b.spin}"  ${b.overflowX}`,
+  );
+}
+
 /* ---- Run ----------------------------------------------------------------- */
 const reachable = await fetch(`http://localhost:${GAME_PORT}/`)
   .then(() => true)
@@ -374,7 +456,16 @@ Intro + details  ${opts.mode} #${opts.event}`);
     }
   }
 
-  if (opts.reduced && !opts.tiers && !opts.sizes && !opts.intro) {
+  if (opts.board) {
+    console.log(`
+Board + bar  plain game, idle`);
+    for (const [tag, w, h, mobile] of SIZES) {
+      await page.viewport(w, h, mobile);
+      await shootBoard(page, tag, tag === 'desktop');
+    }
+  }
+
+  if (opts.reduced && !opts.tiers && !opts.sizes && !opts.intro && !opts.board) {
     console.log(`\nReduced motion  ${opts.mode} #${opts.event}`);
     await page.viewport(1200, 675, false);
     await shootTiers(page, 'tier-reduced');

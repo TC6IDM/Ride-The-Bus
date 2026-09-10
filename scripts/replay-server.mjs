@@ -164,7 +164,7 @@ const BOOK_ALIASES = ['bustwin', 'forgiven'];
 function musicTracks() {
   const file = path.join(
     ROOT,
-    "web-sdk/apps/Ride-The-Bus/src/game/musicTracks.ts",
+    "web-sdk/apps/Ride-The-Bus/src/game/audio/musicTracks.ts",
   );
   if (!existsSync(file)) return [];
   const src = readFileSync(file, "utf8");
@@ -460,7 +460,7 @@ const SCAN_EV = ['bustwin', 'forgiven'];
    settled win, a three-letter code where a symbol is expected - could not be
    reached from here at all.
 
-   Kept in step with web-sdk/apps/Ride-The-Bus/src/game/currencies.ts, which is
+   Kept in step with web-sdk/apps/Ride-The-Bus/src/game/bet/currencies.ts, which is
    the copy the game's own tests walk. This file is a standalone dev script with
    no build step, so it cannot import from the app - hence a second list rather
    than one. currencies.test.ts pins the app's; this comment is the pointer. */

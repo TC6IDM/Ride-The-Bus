@@ -139,3 +139,28 @@ rather than on every turn. Nothing here is reworded.
     Chance, the same 1-in-70 event that takes the screen over in Classic, which
     paid in silence below 11×. Classic and High Stakes have no forgiveness, so
     `forgivenIndex` is structurally always null there and they are untouched.
+  - **FOUR decisions ask it, not one, and three of them were missed for a
+    while.** "A full game win" is one rule, and `Game.svelte` puts the question
+    in four places: the takeover floor above, the **autoplay "Stop on full game
+    win"** condition, the **`playFullWin()` sting**, and the **running-win bar's
+    own "Full Game Win!" label**. (Since the 2026-09 split those four live in
+    three files — `GameBoard.svelte`, `roundSettle.svelte.ts` and
+    `autoplayLoop.svelte.ts` — which is why the grep reads the manifest in
+    `game/sources.testlib.ts` rather than a path.) Only the first was converted when
+    `isCleanSweep` was introduced; the other three kept spelling it
+    `bustedIndex === null` by hand. So a Second Chance round that spent its
+    forgiveness — three of four guesses right — ended an autoplay run set to
+    stop on a full game win, sounded the full-win sting, and printed "Full Game
+    Win!" on the board, while the takeover beside it correctly declined to floor
+    it. **Reported by the user, 2026-09-06.**
+    `modes.test.ts` now greps for all four call sites and fails if
+    `bustedIndex === null` reappears anywhere in the game's own sources; that
+    spelling can never mean
+    "won the full game", so its absence is the invariant rather than a proxy for
+    one. Driven and confirmed on the real board: a forgiven `sc` round settles to
+    **"Banked"** and a genuine `sc` 4/4 to **"Full Game Win!"**.
+  - **The non-clean-sweep label is "Banked", and that is the existing string.**
+    A forgiven round did bank a reduced amount and carry on, so it reads
+    correctly, and reusing it kept this a logic fix rather than a 17-locale one.
+    If a forgiven round ever deserves wording of its own, that is a new key in
+    all 17 locales — the same cost noted above for the sub-10× full win.

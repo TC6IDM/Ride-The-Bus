@@ -30,12 +30,14 @@ class GameConfig(Config):
         # simulating that mode.
         #
         # Per family because the families reach different ceilings. Classic tops
-        # out at 1354.2x and Second Chance at 1170.4x, but High Stakes reaches
-        # 3820.5x - a miss there keeps less, so every correct guess is priced
+        # out at 1354.2x and Second Chance at 585.2x, but High Stakes reaches
+        # 1910.2x - a miss there keeps less, so every correct guess is priced
         # higher. A single 1400 cap silently CLIPPED High Stakes' biggest wins,
         # which the frontend's book-parity test caught as "client 3820.5 vs book
         # 1400": the client computed the real figure while the book carried the
-        # clipped one.
+        # clipped one. (3820.5 is that same ceiling back when High Stakes cost
+        # 2x, which doubled every payout; see MODE_FAMILIES on why the cost had
+        # to come down to 1.0x. The figures here are the CURRENT, 1.0x ones.)
         #
         # Each family's cap sits just ABOVE what it can reach, so it never
         # binds. That matters twice over: payouts go through

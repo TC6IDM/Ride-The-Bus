@@ -273,7 +273,7 @@ export default {
 	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
 		'The sliders button lets you toggle stop-on-full-win for autoplay runs.',
 
-	// Big-win takeover. Tier names are ordered by rarity - see game/winTiers.ts.
+	// Big-win takeover. Tier names are ordered by rarity - see game/math/winTiers.ts.
 	// "Max Win" is deliberately reused from the start screen's stat row: it is
 	// the same figure, and calling the ceiling two different things would be
 	// confusing in any language.

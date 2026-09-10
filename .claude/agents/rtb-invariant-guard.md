@@ -31,7 +31,7 @@ Python, because the game then shows a player one number while the RGS credits
 another. Check:
 
 - `math-sdk/games/ride_the_bus/game_calculations.py:MODE_FAMILIES`
-  ↔ `web-sdk/apps/Ride-The-Bus/src/game/modes.ts:FAMILY_RULES`
+  ↔ `web-sdk/apps/Ride-The-Bus/src/game/math/modes.ts:FAMILY_RULES`
 - `FAMILY_RULES[f].maxWin` is **data** pinned by `payout.test.ts` — if a change
   edits it by hand without a math build behind it, that is a finding.
 - `FAMILY_RULES[f].maxWin` and `MODE_CEILINGS[mode]` are **different numbers**

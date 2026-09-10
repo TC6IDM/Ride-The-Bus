@@ -162,7 +162,7 @@ if __name__ == "__main__":
     repo_root = os.path.abspath(os.path.join(sdk_root, os.pardir))
     generated = [
         ("scripts/replay-events.js", "REPLAY_EVENTS.md"),
-        ("scripts/mode-ceilings.js", "src/game/modeCeilings.ts"),
+        ("scripts/mode-ceilings.js", "src/game/math/modeCeilings.ts"),
     ]
     for script, product in generated:
         generator = os.path.join(repo_root, *script.split("/"))

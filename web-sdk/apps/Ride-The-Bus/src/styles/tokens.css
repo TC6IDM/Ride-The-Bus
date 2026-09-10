@@ -30,7 +30,7 @@
  *
  * WHAT IS DELIBERATELY NOT HERE
  *
- *   - styles/table.css. Every colour in it is a SAMPLED MEASUREMENT off the
+ *   - styles/scene/table.css. Every colour in it is a SAMPLED MEASUREMENT off the
  *     reference render, with the sampling recorded beside it (the felt is
  *     #0D381E, not "green"; the wood is #653008, not "brown"). Renaming those
  *     would throw away the provenance and buy nothing - nothing else in the app

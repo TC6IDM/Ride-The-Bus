@@ -157,7 +157,7 @@ look.**
 ## Outstanding
 
 - **The music bed: built, playing, and now licensed.** The audio path is finished — `musicTracks.ts` holds the
-  candidates, `music.ts` runs the five-scene level ladder, `audioGraph.ts`
+  candidates, `music.ts` runs the five-scene level ladder, `audioContext.ts`
   cross-fades the loop, `primeAudio` opens the graph early enough that the
   loading and start screens have music. Measured through `npm run audio` at every
   scene, nothing clipping.

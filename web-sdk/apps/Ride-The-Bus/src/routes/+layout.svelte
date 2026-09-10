@@ -3,8 +3,8 @@
 	import { GlobalStyle } from 'components-ui-html';
 	import { Authenticate, LoadI18n } from 'components-shared';
 	import Game from '../components/Game.svelte';
-	import GameLoader from '../components/GameLoader.svelte';
-	import { setContext } from '../game/context';
+	import GameLoader from '../components/intro/GameLoader.svelte';
+	import { setContext } from '../game/platform/context';
 
 	import { stateUrlDerived } from 'state-shared';
 

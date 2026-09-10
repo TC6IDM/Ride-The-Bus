@@ -303,7 +303,7 @@ is meant to demonstrate.
 /**
  * Entry tier per family, in raw units (100 = 1.00x).
  *
- * Mirrors FAMILY_BANDS[family][0] in web-sdk/apps/Ride-The-Bus/src/game/
+ * Mirrors FAMILY_BANDS[family][0] in web-sdk/apps/Ride-The-Bus/src/game/math/
  * winTiers.ts - the Big Win floor. A local copy for the same reason
  * FAMILY_LABELS above is one: this script runs from the repo root with no path
  * into the Svelte app.

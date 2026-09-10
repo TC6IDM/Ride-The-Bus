@@ -1,0 +1,466 @@
+/* The four dealt cards: row/slot layout, the per-card multiplier chip, the
+   3D flip (back/front faces), and the running win readout beneath them. */
+
+.card-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-end;
+  gap: var(--gap);
+  margin: 0;
+}
+
+/* Each card sits in a slot with its cumulative win multiplier above it. */
+/* Pinned to the CARD's width, not to whatever the multiplier chip above it
+   happens to measure.
+
+   Without this the slot is as wide as its widest child, and the chip is that
+   child once the figure gets long: measured on a High Stakes maximum, the four
+   slots came out 97 / 97 / 99 / 100px, because "1910.20x" is wider than
+   "1.90x". The cards then sat at four slightly different pitches and shifted
+   between stages as each chip appeared - small, but it is the card row moving
+   under the player mid-round, and it grows with the ladder.
+
+   The chip keeps its own padding and simply overhangs into the gap when it
+   needs to; it is centred, so a couple of pixels either side land in the space
+   between cards rather than on top of one. */
+.card-slot {
+  width: var(--card-w);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--ui) * 0.73);
+}
+
+/* The running multiplier above each card.
+ *
+ * It was a 999px pill: green type on a dark fill inside a thin green border
+ * with its own drop shadow - which is the generic "badge" component, and there
+ * were four of them in a row across the middle of the table. Four badges is a
+ * lot of furniture for four numbers, and the numbers are the point.
+ *
+ * The container is gone. What is left is the figure itself, which is what the
+ * player is actually reading, sized up slightly now that it is not fighting a
+ * border for room and shadowed so it holds against the wood.
+ *
+ * tabular-nums is a fix rather than a refinement: this value changes on every
+ * card and the digits are not the same width in Poppins, so the number visibly
+ * shifted under its own card as it climbed. .running-win-amount already had
+ * this; the per-card figures never did.
+ */
+.card-mult {
+  /* box-sizing is border-box globally, so the padding below comes out of this
+     height rather than adding to it - the card row does not move. */
+  min-height: calc(var(--ui) * 2.18);
+  /* The slot is pinned to the card width above, so a long figure has to be
+     allowed out of it rather than widening it or wrapping onto two lines. */
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 calc(var(--ui) * 1.5);
+  font-size: calc(var(--ui) * 1.55); /* 17px */
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--win);
+  /* ---- The bed under the figure -----------------------------------------
+     These four numbers float over whatever the table happens to have behind
+     them, and what is behind them changes: felt, the wood rail, a chip stack,
+     and - on short windows, where the title lockup and the responsible-gaming
+     panel sit directly above the card row - the game's own chrome. Green type
+     on green felt with one soft shadow held up against the first of those and
+     against none of the rest.
+
+     Not a badge. The pill this used to be was removed on purpose (see the note
+     above) and putting one back would undo that. This is the SAME device the
+     wordmark uses two elements up in base.css: a radial scrim that fades out
+     before it reaches the padding box, so it darkens the ground under the
+     number without ever drawing an edge. The padding is what buys the room for
+     the fade to finish inside the element - a radial still visible at the
+     padding box gets cut off square, which is the hard edge this is avoiding.
+
+     The shadow goes to two parts for the same reason table.css gives: a tight
+     contact patch that holds the glyph edges against a busy ground, plus the
+     wide soft one that was already here. */
+  background: radial-gradient(
+    ellipse 62% 58% at 50% 50%,
+    rgba(var(--shadow-rgb), 0.62) 0%,
+    transparent 76%
+  );
+  text-shadow:
+    0 1px 2px rgba(var(--shadow-rgb), 0.95),
+    0 calc(var(--ui) * 0.15) calc(var(--ui) * 0.7) rgba(var(--shadow-rgb), 0.9);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.2s var(--ease-out), transform 0.2s var(--ease-out);
+}
+
+.card-mult.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---- Hidden while the win takeover counts -------------------------------
+   These are the only two things on the board that print a FIGURE, and both
+   print the finished one: .running-win reads "Full Game Win! $1,354.20" and the
+   four .card-mult chips print the whole stage ladder up to it. The takeover's
+   segmented count-up is the game's one suspense mechanic, and until now its
+   answer sat behind a 5px blur for the entire climb - legible, in green, four
+   lines under the counter that was still reading $0.11.
+
+   Only the numbers go. The cards, the table, the chips and the cups stay lit:
+   the player won WITH those, and hiding them at the moment of payoff is the
+   mistake win-celebration.css opens by warning against. The class is set on
+   .game-layout by Game.svelte for exactly as long as `celebration` is non-null,
+   so both come back on dismissal with no separate teardown.
+
+   Transitioned rather than snapped so the readouts leave with the veil arriving
+   rather than blinking out a frame before it. visibility rides along on the
+   same timing so a screen reader is not offered a figure the screen is hiding -
+   the takeover carries its own aria-label with the settled result. */
+:global(.takeover-open) .card-mult,
+:global(.takeover-open) .running-win {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.3s var(--ease-out),
+    visibility 0s linear 0.3s;
+}
+
+/* The board's CARD ROW goes completely while the takeover is up.
+   The takeover's fan is those same four cards brought forward, so any of the
+   board copy left showing puts one hand on screen twice - two rows of the same
+   cards, at two sizes, a few hundred pixels apart. Dimming it was tried first
+   and was not enough: at 0.16 the outlines still read through the veil as a
+   second, ghostly row, which is worse than either showing it or not. One hand
+   at a time.
+
+   It is a genuine hand-off rather than a hide: the row leaves as the overlay
+   arrives, and the overlay is drawing those exact cards. */
+:global(.takeover-open) .card-row {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.28s var(--ease-out),
+    visibility 0s linear 0.28s;
+}
+
+/* The choice row only steps BACK. It is not duplicated by anything in the
+   overlay, so hiding it would just make the table look unfinished - but the
+   squares encode the bet (red is red, cyan is cyan, none of it art-directed),
+   which makes them the loudest thing in the game and the wrong thing to be
+   competing with a payout.
+
+   The table, the rail, the chips and the cups all stay lit. That is the line
+   this stops at: the SCENE stays, the INTERFACE recedes. Blacking out the
+   former is the mistake win-celebration.css opens by warning against. */
+:global(.takeover-open) .choice-row {
+  opacity: 0.16;
+  transition: opacity 0.36s var(--ease-out);
+}
+
+/* Running cash won so far, shown under the cards during the reveal. */
+.running-win {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--ui) * 0.18);
+}
+
+.running-win-label {
+  font-size: calc(var(--ui) * 1.02); /* 11.2px */
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-felt);
+  text-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.6);
+}
+
+.running-win-amount {
+  font-size: calc(var(--ui) * 2.76); /* 30.4px */
+  font-weight: 900;
+  color: var(--win);
+  text-shadow: 0 3px 14px rgba(var(--shadow-rgb), 0.65);
+  font-variant-numeric: tabular-nums;
+}
+
+.running-win-mult {
+  font-size: calc(var(--ui) * 1.31); /* 14.4px */
+  font-weight: 800;
+  color: var(--gold-bright);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Was a fourth pale red of its own. --loss-soft is the same colour doing the
+   same job, the way the golds and the dims were collapsed. */
+.running-win.is-loss .running-win-label { color: var(--loss-soft); }
+
+.running-win.is-loss .running-win-amount { color: var(--ink-spent); }
+
+.running-win.is-win .running-win-label { color: var(--gold-bright); }
+
+/* ---- The bust, acknowledged ------------------------------------------------
+   Not a celebration and not an apology - one beat so the round has an ending.
+
+   Wins had a five-tier full-screen production and a bust had nothing at all,
+   which read as unfinished rather than as restraint. The direction is the whole
+   message: the win beat scales UP and the figure settles DOWN, so the two are
+   never mistaken for each other even at a glance, and neither needs a word. */
+.running-win.is-loss .running-win-amount {
+  animation: rw-settle 520ms var(--ease-out) both;
+}
+
+@keyframes rw-settle {
+  from {
+    transform: translateY(calc(var(--ui) * -0.5));
+    opacity: 0.4;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .running-win.is-loss .running-win-amount {
+    animation: none;
+  }
+}
+
+/* Card = a 3D flip. .card-block is the perspective frame; .card-inner holds
+   the two faces back-to-back and rotates 180deg when the card is revealed
+   (class:flipped={card}). The flip duration (--flip-dur) shrinks to 0 as the
+   turbo-speed slider approaches instant. */
+.card-block {
+  width: var(--card-w);
+  height: var(--card-h);
+  position: relative;
+  perspective: 900px;
+}
+
+.card-inner {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transition: transform var(--flip-dur, 0.5s) var(--ease-out);
+}
+
+.card-inner.flipped {
+  transform: rotateY(180deg);
+}
+
+/* Both faces occupy the frame back-to-back; only the forward-facing one shows
+   (backface-visibility: hidden). */
+.card-back,
+.card-front {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  border-radius: var(--card-radius);
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Face-down back. Deliberately the same red crosshatch as the deck prop on the
+   table (table.css) and the loader cards (loader.css), so every card in the
+   game reads as coming from one deck - the old teal-on-brown back matched
+   nothing else on screen. The white edge is an inset shadow rather than a
+   border so the geometry is unchanged from the 3px border it replaces. */
+/* Reds and the chrome edge are sampled from logo.png (#A80828 brand red,
+   #F8F8F8 white, #C8C8C8 chrome) so the deck and the brand mark are the same
+   family - the earlier #C8392F leaned orange against the logo's crimson. */
+.card-back {
+  border: none;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      rgba(var(--ink-rgb), 0.12) 0 calc(var(--ui) * 0.2),
+      transparent calc(var(--ui) * 0.2) calc(var(--ui) * 0.58)
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(var(--ink-rgb), 0.12) 0 calc(var(--ui) * 0.2),
+      transparent calc(var(--ui) * 0.2) calc(var(--ui) * 0.58)
+    ),
+    linear-gradient(160deg, var(--brand-red-lit) 0%, var(--brand-red) 55%, var(--brand-red-deep) 100%);
+  box-shadow:
+    inset 0 0 0 calc(var(--ui) * 0.32) var(--brand-paper),
+    inset 0 0 0 calc(var(--ui) * 0.45) var(--brand-chrome),
+    inset 0 calc(var(--ui) * 0.1) calc(var(--ui) * 0.3) rgba(var(--ink-rgb), 0.16),
+    0 4px 8px rgba(var(--shadow-rgb), 0.38);
+}
+
+/* Keyline inset from the chrome edge, the way a real card back is framed. */
+.card-back::before {
+  content: '';
+  position: absolute;
+  inset: calc(var(--ui) * 0.85);
+  border: 1px solid rgba(var(--ink-rgb), 0.34);
+  border-radius: calc(var(--card-radius) * 0.55);
+  pointer-events: none;
+}
+
+/* Takeover Casino chip mark, centred. The logo's own rim is the same red as
+   the card, so it needs the dark halo to separate - without it the chip's
+   outer ring dissolves into the crosshatch. */
+.card-back::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 58%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background: var(--logo-url) center / contain no-repeat;
+  filter: drop-shadow(0 0 calc(var(--ui) * 0.32) rgba(var(--shadow-rgb), 0.85));
+  pointer-events: none;
+}
+
+/* Revealed front - pre-rotated so it faces the viewer once .card-inner flips.
+ *
+ * The edge is an inset box-shadow, NOT a border, and that is the point of this
+ * rule rather than a detail of it. The back is careful to use an inset shadow
+ * "so the geometry is unchanged from the 3px border it replaces"; the front
+ * then used a real 2px border. So the two faces of one card had different box
+ * models AND different edge weights - about 5px of white-over-chrome on the
+ * back against 2px of flat cool grey on the front - and the flip showed the
+ * change. They are now the same object seen from two sides.
+ *
+ * The paper is warm rather than pure white for the same reason the chips were
+ * cooled toward the cards: everything in this scene belongs to one set. A
+ * #fff card was the only pure-white object on a table whose felt is #123a26
+ * and whose wood is #663108, and it read as a hole cut in the table rather
+ * than as paper lying on it. */
+.card-front {
+  transform: rotateY(180deg);
+  background: var(--card-paper);
+  color: var(--card-ink);
+  box-shadow:
+    inset 0 0 0 calc(var(--ui) * 0.16) var(--card-edge),
+    0 4px 8px rgba(var(--shadow-rgb), 0.38);
+}
+
+.card-face {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: stretch;
+  padding: calc(var(--ui) * 0.55);
+  box-sizing: border-box;
+}
+
+ /* The corner index: the rank with its suit directly underneath.
+ *
+ * Every playing card ever printed carries the pip there, and this one carried
+ * the rank alone - which is a small thing to add and the single strongest
+ * signal that the object is a playing card rather than a rounded rectangle
+ * with a letter on it. It also means the card is still readable when it is
+ * overlapped from the right, which is the entire reason real decks put the
+ * index in the corner in the first place.
+ *
+ * font-size is set on the INDEX, not on the rank inside it, so the pip can be
+ * sized in em against the rank it sits under - SuitIcon takes a scale in em
+ * and a child component cannot be reached by a selector from here. */
+.card-face .index {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: var(--rank-fs);
+  line-height: 1;
+  gap: calc(var(--ui) * 0.1);
+}
+
+.card-face .index-rank {
+  font-family: var(--font-display);
+  /* Condensed, so it can go up a size and still leave 10 - the one rank that is
+     two glyphs wide - sitting inside the corner index at the same width as
+     every other rank. That is the functional half of choosing this face; see
+     the note beside the @font-face block in components/app.css.
+     The tracking that used to squeeze 10 into place goes with it: the face is
+     already narrow, and negative tracking on top of it closes the counters. */
+  font-size: 1.18em;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.card-face .index.top {
+  align-self: flex-start;
+}
+
+.card-face .index.bottom {
+  align-self: flex-end;
+  transform: rotate(180deg);
+}
+
+.card-face .suit.center {
+  font-size: var(--suit-fs);
+  text-align: center;
+  margin: 0 auto;
+  line-height: 1;
+}
+
+.card-face.red-card .suit.center,
+.card-face.red-card .index { color: var(--card-red); }
+
+.card-face.black-card .suit.center,
+.card-face.black-card .index { color: var(--card-ink); }
+
+/* Bust ✕ drawn over the revealed front face. */
+.bust-x {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 0.72 of the 5.82 --ui the typed glyph was set at, which is roughly the
+     ink a cross actually put inside that em box - so the mark is the same size
+     on screen as before, it is just no longer whichever cross the device
+     happened to own. See MarkIcon.svelte. */
+  --mark-size: calc(var(--ui) * 4.19);
+  --mark-shadow: drop-shadow(0 0 calc(var(--ui) * 0.9) rgba(var(--shadow-rgb), 0.85));
+  color: var(--loss);
+  background: rgba(var(--shadow-rgb), 0.35);
+}
+
+/* A miss a Second Chance round forgave.
+   Same overlay geometry as .bust-x, deliberately NOT the same mark: a red
+   cross says the round ended here, and this one carried on. An amber return
+   arrow says "that one was let off" without borrowing the language of a loss. */
+.forgiven-mark {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--forgiven);
+  background: rgba(var(--shadow-rgb), 0.3);
+}
+
+.forgiven-mark svg {
+  width: calc(var(--ui) * 4.9);
+  height: calc(var(--ui) * 4.9);
+  filter: drop-shadow(0 0 6px rgba(var(--shadow-rgb), 0.85));
+}
+
+/* ---- Reduced motion -------------------------------------------------------
+ * The loader, the intro and the celebration honoured this already; the BOARD
+ * did not, which is where all the motion actually is.
+ *
+ * The flip still happens - it is how the game says a card has been revealed,
+ * and suppressing it would hide information rather than calm it down. It just
+ * stops being a rotation and becomes a cut. The reveal is sequenced in JS, so
+ * the cards still turn over one after another at the same pace.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .card-inner {
+    transition: none;
+  }
+
+  .card-mult {
+    transition: none;
+    transform: none;
+  }
+}

@@ -1,0 +1,90 @@
+/* The guess row as the BOARD lays it out.
+ *
+ * WHY THIS IS NOT IN choices.css
+ *
+ * Exactly the reason choice-unavailable.css gives, one step further along.
+ * choices.css is shared by the board and the intro screen, and the intro draws
+ * the four squares on their own - inside its own step panels, with its own
+ * headings, and with nothing that can be unavailable. So the board's row, its
+ * columns, its labels and its "why is Inside off" tip are all dead weight in
+ * IntroPanels.svelte, and Svelte reports each one as an unused selector.
+ *
+ * Keeping them here, imported only by Game.svelte, is what keeps that quiet.
+ * This was masked until StartScreen was split into three components: a dynamic
+ * class elsewhere in the old file made svelte-check skip its unused-selector
+ * pass entirely, so all five rules looked used.
+ *
+ * .choice-square is NOT here - the intro renders it, so it stays with the
+ * buttons it contains.
+ */
+
+/* Guesses stay on screen between rounds; lock them (no clicks, dimmed) while
+   a round is revealing or an auto run is live. */
+.choice-row.locked { pointer-events: none; opacity: 0.5; }
+
+/* Choice squares */
+.choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--gap);
+  margin: 0;
+}
+
+/* Pin the column to the square's width. Otherwise the longest labels
+   ("INSIDE / OUTSIDE") are wider than their square and drive the column, which
+   pushes the four columns past the viewport and wraps the row on phones. */
+/* position:relative so the "why is Inside off" box can be placed against the
+   column. It cannot live inside .choice-square - that is overflow:hidden and
+   would clip it to the rounded box. */
+.choice-column {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: var(--choice-size);
+  gap: calc(var(--ui) * 0.73);
+}
+
+.choice-label {
+  font-size: calc(var(--ui) * 0.95); /* 10.5px */
+  line-height: 1.2;
+  text-align: center;
+  /* The two-word labels wrap to two lines, so reserve two lines for ALL of them
+     - otherwise COLOR / SUIT sit a line higher and the four squares don not line
+     up. */
+  min-height: 2.4em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff6df;
+  text-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.7);
+}
+
+/* ---- Why a pick is unavailable -------------------------------------------
+   Only ever shown for Inside after Equal. The button carries aria-disabled
+   rather than disabled precisely so it still receives hover and focus and can
+   raise this - a `disabled` button fires no mouse events at all, which is why
+   the old native `title` never appeared either. */
+.choice-tip {
+  position: absolute;
+  top: calc(100% + var(--ui) * 0.5);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  width: max(calc(var(--ui) * 20), 160px);
+  max-width: 60vw;
+  padding: calc(var(--ui) * 0.8) calc(var(--ui) * 1);
+  border-radius: calc(var(--ui) * 0.6);
+  background: var(--tip-bed);
+  border: 1px solid var(--tip-edge);
+  color: var(--ink-warm);
+  font-size: calc(var(--ui) * 1.05);
+  /* 400: Poppins ships no 500 here, so it was already drawing as 400. */
+  font-weight: 400;
+  line-height: 1.35;
+  text-align: center;
+  text-transform: none;
+  letter-spacing: 0;
+  box-shadow: 0 calc(var(--ui) * 0.6) calc(var(--ui) * 1.4) rgba(var(--shadow-rgb), 0.55);
+  pointer-events: none;
+}

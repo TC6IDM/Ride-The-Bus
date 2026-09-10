@@ -1,0 +1,118 @@
+/* The gated advanced bet-progression panel.
+ *
+ * Split out of the single 1,032-line popups.css when each panel became its own
+ * component. Scoped to AdvancedPopup.svelte, which is the only thing that renders
+ * these classes - see the Svelte scoping note in CLAUDE.md: a stylesheet is
+ * scoped to the component that IMPORTS it, so a panel's rules have to travel
+ * with its markup.
+ *
+ * Sizes are multiples of --ui-bar, and colour comes in through the one --tint
+ * contract every menu wears. Nothing here names a colour.
+ */
+
+.popup-advanced {
+  --tint: var(--ctl-advanced);
+  --tint-rgb: var(--ctl-advanced-rgb);
+  --tint-strong: var(--ctl-advanced);
+  --tint-ink: var(--on-vol-ink);
+}
+
+.advanced-body { display: flex; flex-direction: column; gap: calc(var(--ui-bar) * 1.27); }
+
+/* The How to Play body, its rank strip and its section headings moved to
+   popup-how-to-play.css when that panel became its own component. */
+
+.control-label {
+  font-size: calc(var(--ui-bar) * 1.05);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+/* Advanced auto-bet panel (Stake-style): a switch that reveals On Win /
+   On Loss bet progression and Stop on Profit / Stop on Loss limits. */
+.advanced-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--ui-bar) * 0.73);
+}
+
+.switch {
+  flex: 0 0 auto;
+  width: calc(var(--ui-bar) * 4);
+  height: calc(var(--ui-bar) * 2.18);
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: rgba(var(--ink-rgb), 0.16);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.switch.on { background: var(--tint-strong); }
+
+.switch:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.switch-knob {
+  position: absolute;
+  /* The gap between the knob and the track, on all four sides. Proportional,
+     because the track it sits in is - 2px was 8% of the track on a desktop and
+     24% of it on a Popout S. Floored at 1px so it stays a visible gap rather
+     than rounding away at the smallest sizes. */
+  --knob-inset: max(1px, calc(var(--ui-bar) * 0.18));
+  top: var(--knob-inset);
+  left: var(--knob-inset);
+  /* The track's own height (2.18 --ui-bar) less the inset above and below,
+     rather than a separate 1.82 coefficient that only happened to agree with it
+     while the inset was 2px and --ui-bar was pinned at its 11px ceiling. */
+  width: calc(var(--ui-bar) * 2.18 - var(--knob-inset) * 2);
+  height: calc(var(--ui-bar) * 2.18 - var(--knob-inset) * 2);
+  border-radius: 50%;
+  background: var(--ink);
+  box-shadow: 0 1px 3px rgba(var(--shadow-rgb), 0.4);
+  transition: transform 0.15s;
+}
+
+/* How far the knob slides: the track's width less the knob and the inset at
+   each end, which works out to exactly 1.82 --ui-bar - the insets cancel,
+   because the knob is defined from them above.
+
+   This was a hardcoded translateX(20px), and 20px is that figure at --ui-bar's
+   11px CEILING - the value it only reaches above about 1086px of viewport.
+   Everywhere below that the track shrank and the throw did not, so switching
+   one on fired the knob clean out of its track: 4.5px past the end on Popout L,
+   7.7px on Mobile S, and 13.6px on Popout S, where the track is only 15.4px
+   wide and the knob ended up outside the panel entirely. */
+.switch.on .switch-knob {
+  transform: translateX(calc(var(--ui-bar) * 1.82));
+}
+
+/* ---- Keyboard focus -------------------------------------------------------
+ * The menu controls. .bet-entry already showed focus through :focus-within on
+ * its wrapper, and .rounds-selector did not - so typing a spin count gave no
+ * indication of where the caret was.
+ */
+.switch:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ---- Reduced motion ----
+   The switch still moves: the knob's position IS the state, so freezing it
+   would leave the control unreadable. It travels instantly instead. */
+@media (prefers-reduced-motion: reduce) {.switch,
+.switch-knob {
+    transition: none;
+  }
+}
+
+/* The switch, pressed. It is the one control here whose hover said nothing in
+   the first place - the knob position is the state - so this is purely the
+   acknowledgement that the tap landed. The knob itself does not move: that
+   travel means "on", and borrowing it for "pressed" would say the switch had
+   flipped before it had. */
+.switch:active:not(:disabled) {
+  filter: brightness(1.25);
+}

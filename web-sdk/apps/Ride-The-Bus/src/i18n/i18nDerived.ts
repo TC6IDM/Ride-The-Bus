@@ -3,7 +3,7 @@ import { stateUrlDerived } from 'state-shared';
 import { i18nDerived as i18nDerivedUiPixi } from 'components-ui-pixi';
 import { i18nDerived as i18nDerivedUiHtml } from 'components-ui-html';
 
-import { jurisdiction } from '../game/jurisdiction.svelte';
+import { jurisdiction } from '../game/jurisdiction/jurisdiction.svelte';
 
 import messagesMap from './messagesMap';
 import type en from './messagesMap/en';

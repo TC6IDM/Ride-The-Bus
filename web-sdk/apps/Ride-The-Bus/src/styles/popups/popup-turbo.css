@@ -1,0 +1,54 @@
+/* The turbo speed slider.
+ *
+ * Split out of the single 1,032-line popups.css when each panel became its own
+ * component. Scoped to TurboPopup.svelte, which is the only thing that renders
+ * these classes - see the Svelte scoping note in CLAUDE.md: a stylesheet is
+ * scoped to the component that IMPORTS it, so a panel's rules have to travel
+ * with its markup.
+ *
+ * Sizes are multiples of --ui-bar, and colour comes in through the one --tint
+ * contract every menu wears. Nothing here names a colour.
+ */
+
+/* ==== Which colour each panel wears ========================================
+ * The contract, the defaults and the reasoning are in popup-base.css. These
+ * are only the four that differ from the accent-blue default, and each one
+ * names the control in the bar that opens it.
+ *
+ * --tint-strong is --tint here rather than a darker step: the three identity
+ * hues are already light, and a fill is read through the ink on top of it, not
+ * through its own value. Which is also why --tint-ink is the DARK one - white
+ * on amber measures 1.8:1 and white on this purple 2.2:1, so a filled control
+ * in either panel would have failed outright. --on-vol-ink is the token that
+ * already exists for "text on a light fill" and it clears 4.5:1 on all three.
+ *
+ * How to Play is deliberately absent: the info icon lights the accent blue, so
+ * that panel's colour IS the default and an override would only be a second
+ * place for it to drift. Same for the popup shell itself.
+ */
+.popup-turbo {
+  --tint: var(--ctl-turbo);
+  --tint-rgb: var(--ctl-turbo-rgb);
+  --tint-strong: var(--ctl-turbo);
+  --tint-ink: var(--on-vol-ink);
+}
+
+.turbo-body { display: flex; flex-direction: column; gap: calc(var(--ui-bar) * 1.09); padding: calc(var(--ui-bar) * 0.36) calc(var(--ui-bar) * 0.18) calc(var(--ui-bar) * 0.18); }
+
+.turbo-track { display: flex; align-items: center; gap: calc(var(--ui-bar) * 0.91); }
+
+.turbo-end { font-size: calc(var(--ui-bar) * 1.02); color: var(--ink-dim); white-space: nowrap; }
+
+.turbo-slider { flex: 1 1 auto; min-width: 0; accent-color: var(--tint); cursor: pointer; }
+
+.turbo-readout { text-align: center; font-weight: 800; color: var(--tint); font-size: calc(var(--ui-bar) * 1.24); font-variant-numeric: tabular-nums; }
+
+/* ---- Keyboard focus -------------------------------------------------------
+ * The menu controls. .bet-entry already showed focus through :focus-within on
+ * its wrapper, and .rounds-selector did not - so typing a spin count gave no
+ * indication of where the caret was.
+ */
+.turbo-slider:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}

@@ -1,0 +1,305 @@
+/* The bet-mode picker, and its confirmation step.
+ *
+ * Split out of the single 1,032-line popups.css when each panel became its own
+ * component. Scoped to ModePopup.svelte, which is the only thing that renders
+ * these classes - see the Svelte scoping note in CLAUDE.md: a stylesheet is
+ * scoped to the component that IMPORTS it, so a panel's rules have to travel
+ * with its markup.
+ *
+ * Sizes are multiples of --ui-bar, and colour comes in through the one --tint
+ * contract every menu wears. Nothing here names a colour.
+ */
+
+/* .popup-bet and .popup-mode take the LIVE volatility colour instead, set
+   inline in Game.svelte from the same modeNameColor() / volatilityColorVar()
+   the bet display and the MODE button read - the two controls that open them.
+   They are listed here only so this block is the whole map. */
+.popup-mode {
+  --tint-ink: var(--on-vol-ink);
+}
+
+.action-button {
+  width: 100%;
+  padding: calc(var(--ui-bar) * 1.27);
+  font-size: calc(var(--ui-bar) * 1.53);
+  font-weight: 800;
+  border: none;
+  border-radius: calc(var(--ui-bar) * 0.91);
+  cursor: pointer;
+  /* Filled in its own panel's tint. It was a blue gradient with a hardcoded
+     #1f6fe0 bottom stop and a blue shadow to match, which made the Start
+     button in the green autoplay panel the one blue thing in it. The shading
+     is now the tint at two alphas over the panel, so one declaration serves
+     all five colours and no second hex has to be kept in step with the
+     first. */
+  background: linear-gradient(180deg, rgba(var(--tint-rgb), 1), rgba(var(--tint-rgb), 0.76));
+  color: var(--tint-ink);
+  letter-spacing: 0.03em;
+  /* Elevation by LIGHT and a contact shadow, not by a coloured bloom. A green
+     halo around a green button on a dark panel is the shadow-glow tell; the
+     same two-part shadow the table gives its props reads as the button
+     standing off the panel instead. */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 1px 2px rgba(var(--shadow-rgb), 0.5),
+    0 calc(var(--ui-bar) * 0.55) calc(var(--ui-bar) * 1.09) rgba(var(--shadow-rgb), 0.42);
+}
+
+.action-button:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+
+@media (hover: hover) {.action-button:not(:disabled):hover { filter: brightness(1.08); }
+}
+
+.action-button:not(:disabled):active { transform: translateY(1px); }
+
+/* ---- Bet mode picker -----------------------------------------------------
+   Approval requires each mode's cost and what it buys to be stated, so the
+   cost sits on the row itself rather than in a paytable elsewhere. */
+.mode-list {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ui-bar) * 0.73);
+}
+
+.mode-option {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ui-bar) * 0.36);
+  padding: calc(var(--ui-bar) * 1) calc(var(--ui-bar) * 1.09);
+  border-radius: calc(var(--ui-bar) * 0.73);
+  border: 1px solid rgba(var(--ink-rgb), 0.12);
+  background: rgba(var(--ink-rgb), 0.05);
+  color: var(--ink-body);
+  text-align: start;
+  cursor: pointer;
+  text-transform: none;
+  transition: border-color 0.12s, background 0.12s;
+}
+
+@media (hover: hover) {
+  /* ---- The picker rows wear their own mode's colour ------------------------
+   * Yellow for Classic, green for Second Chance, red for High Stakes - the same
+   * three the bolts on each row are already burning, and the same three the bet
+   * display writes the live mode name in. The accent blue said only "this row is
+   * selectable", which every row is.
+   *
+   * --vol-color and --vol-rgb are set inline per row from the family (see
+   * Game.svelte). They are the FAMILY's colour, deliberately not the live one:
+   * the picker rates the mode, and the Equal picks that can push the rating past
+   * a family ceiling are a property of the bet, not of the mode being chosen. So
+   * no row is ever purple.
+   *
+   * The washes are 0.08 and 0.14. Red is what caps them: .mode-option-name is
+   * ~15px bold, which WCAG still counts as small text, and the name sits ON its
+   * own wash - at 0.18 red-on-red measures 4.43 and fails. 0.14 holds it at 4.74
+   * with the body copy above 10. */
+  .mode-option:hover {
+    border-color: var(--vol-color, var(--tint));
+    background: rgba(var(--vol-rgb, var(--tint-rgb)), 0.08);
+  }
+}
+
+.mode-option.selected {
+  border-color: var(--vol-color, var(--tint));
+  background: rgba(var(--vol-rgb, var(--tint-rgb)), 0.14);
+  color: var(--ink);
+}
+
+.mode-option.selected .mode-option-name {
+  color: var(--vol-color, var(--tint));
+}
+
+.mode-option-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: calc(var(--ui-bar) * 0.9);
+}
+
+/* The meter sits opposite the mode's name on the head row, which is already
+   space-between - so it needs no positioning of its own, only alignment.
+   align-self overrides the row's baseline alignment: the bolts are an image,
+   not text, and baseline-aligning them hangs them off the name's descender
+   line. */
+.mode-option-vol {
+  align-self: center;
+  --bolt-size: calc(var(--ui-bar) * 1.27);
+}
+
+.mode-option-name { font-size: calc(var(--ui-bar) * 1.36); font-weight: 800; }
+
+.mode-option-blurb {
+  font-size: calc(var(--ui-bar) * 1.02);
+  line-height: 1.4;
+  color: var(--ink-dim);
+}
+
+.mode-option.selected .mode-option-blurb { color: var(--ink-body); }
+
+/* The ceiling, which approval requires stated per mode. Quiet like the blurb -
+   it is reference, not the thing being chosen - but the figure itself carries
+   weight, because with every mode at the same cost this is what actually
+   separates them. */
+.mode-option-max {
+  font-size: calc(var(--ui-bar) * 1.02);
+  font-weight: 700;
+  color: var(--ink-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.mode-option.selected .mode-option-max { color: var(--ink); }
+
+.mode-note {
+  margin: calc(var(--ui-bar) * 1) 0 0;
+  font-size: calc(var(--ui-bar) * 0.98);
+  line-height: 1.4;
+  color: var(--ink-dim);
+}
+
+/* ---- Keyboard focus -------------------------------------------------------
+ * The menu controls. .bet-entry already showed focus through :focus-within on
+ * its wrapper, and .rounds-selector did not - so typing a spin count gave no
+ * indication of where the caret was.
+ */
+.mode-option:focus-visible,
+.action-button:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ---- Pressed states ------------------------------------------------------
+ * These had hover and selected but nothing for the moment of the press, so a
+ * tap on a touch screen - which never hovers - gave no acknowledgement at all
+ * between finger down and the menu closing.
+ */
+.mode-option:active {
+  transform: translateY(1px);
+}
+
+/* ---- Reduced motion ----
+   The switch still moves: the knob's position IS the state, so freezing it
+   would leave the control unreadable. It travels instantly instead. */
+@media (prefers-reduced-motion: reduce) {.mode-option,
+.action-button {
+    transition: none;
+  }
+.mode-option:active,
+.action-button:not(:disabled):active {
+    transform: none;
+  }
+}
+
+/* ---- Mode change confirmation --------------------------------------------
+ * Stake's approval checklist requires a confirmation step before a bet mode is
+ * activated. It lives inside the picker rather than in a second stacked dialog:
+ * a popup opening on top of a popup is how a player loses track of what they
+ * were doing, and the picker already has the panel to itself.
+ */
+/* The confirmation wears the colour of the mode it is about to switch TO, so
+   the whole panel answers the question it is asking. */
+.mode-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ui-bar) * 0.55);
+  padding: calc(var(--ui-bar) * 1) calc(var(--ui-bar) * 1.09);
+  border-radius: calc(var(--ui-bar) * 0.73);
+  border: 1px solid rgba(var(--vol-rgb, var(--ink-rgb)), 0.42);
+  background: rgba(var(--vol-rgb, var(--ink-rgb)), 0.08);
+}
+
+.mode-confirm-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--ui-bar) * 0.9);
+}
+
+.mode-confirm-name {
+  font-size: calc(var(--ui-bar) * 1.45);
+  font-weight: 800;
+  color: var(--vol-color, var(--tint));
+}
+
+.mode-confirm-blurb {
+  margin: 0;
+  font-size: calc(var(--ui-bar) * 1.02);
+  line-height: 1.4;
+  color: var(--ink-body);
+}
+
+.mode-confirm-max {
+  margin: 0;
+  font-size: calc(var(--ui-bar) * 1.02);
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* What the guesses already on the board would top out at on the mode being
+   switched to. Under .mode-confirm-max and quieter than it, for the reason
+   .mode-panel-picked gives: the family ceiling is the headline and this is the
+   qualifier, and giving them equal weight would read as two competing claims. */
+.mode-confirm-picked {
+  margin: 0;
+  font-size: calc(var(--ui-bar) * 0.98);
+  color: var(--ink-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.mode-confirm-cost {
+  margin: 0;
+  font-size: calc(var(--ui-bar) * 0.98);
+  color: var(--ink-dim);
+}
+
+/* The destructive-ish action is on the right and filled; the way out is on the
+   left and quiet. Cancel is a real button rather than a link so it carries the
+   same hit area as the thing it is protecting against. */
+.mode-confirm-actions {
+  display: flex;
+  align-items: stretch;
+  gap: calc(var(--ui-bar) * 0.73);
+  margin-top: calc(var(--ui-bar) * 0.36);
+}
+
+.mode-confirm-cancel {
+  flex: 0 0 auto;
+  padding: calc(var(--ui-bar) * 1.27) calc(var(--ui-bar) * 1.6);
+  border-radius: calc(var(--ui-bar) * 0.91);
+  border: 1px solid rgba(var(--ink-rgb), 0.2);
+  background: none;
+  color: var(--ink-body);
+  font-size: calc(var(--ui-bar) * 1.53);
+  font-weight: 700;
+  cursor: pointer;
+  text-transform: none;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+@media (hover: hover) {.mode-confirm-cancel:hover {
+    background: rgba(var(--ink-rgb), 0.1);
+    border-color: rgba(var(--ink-rgb), 0.32);
+  }
+}
+
+.mode-confirm-cancel:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Filled in the target mode's own colour, with dark ink on it - the three
+   volatility colours are all light, and --on-vol-ink is the token that stops
+   this reaching for a white that would not read. Overrides .action-button's
+   blue gradient, which is still right for every other primary action. */
+.mode-confirm-go {
+  flex: 1 1 auto;
+  width: auto;
+  background: var(--vol-color, var(--tint));
+  color: var(--tint-ink);
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {.mode-confirm-cancel {
+    transition: none;
+  }
+}

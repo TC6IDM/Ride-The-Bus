@@ -1,0 +1,44 @@
+/* The one full-screen dimmer behind every popup.
+ *
+ * Stays with Game.svelte rather than moving into a panel's sheet: the component
+ * renders ONE backdrop for whichever popup is open, How to Play included, so no
+ * single panel owns it.
+ */
+
+/* Sizes here are multiples of --ui-bar so the popup box and its text scale
+   together with the window instead of the box shrinking around fixed-size text.
+
+   The controls INSIDE the control-bar popups (bet menu, turbo speed, autoplay,
+   advanced). Imported by Game.svelte alone.
+
+   Two things that used to live here now sit beside it, because Svelte scopes a
+   stylesheet to whichever component imports it and How to Play is its own
+   component now:
+     - popup-base.css        the shell both components share
+     - popup-how-to-play.css the info panel's own rules
+   Splitting them is what stops each component reporting the other's rules as
+   unused selectors. */
+
+/* ==== Popups ==== */
+
+/* Game.svelte renders the backdrop for every popup, including How to Play, so
+   this stays here rather than in popup-base.css. */
+.popup-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: rgba(var(--shadow-rgb), 0.5);
+  cursor: pointer;
+}
+
+/* The backdrop is a real button - it is how a pointer dismisses a menu - so it
+   is in the tab order and needs to say so when it gets there. An inset ring,
+   because a full-viewport outline would be drawn off-screen on all four
+   sides. */
+.popup-backdrop:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 3px var(--focus-ring);
+}

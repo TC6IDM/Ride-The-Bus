@@ -79,65 +79,11 @@
   position: relative;
 }
 
+/* The responsible-gambling readouts are in session-readouts.css, scoped to
+   SessionReadouts.svelte - a sheet is scoped to whoever imports it. */
+
 /* Game title / branding, overlaid at the top-centre of the table. The rounded
    dark plate keeps it legible instead of blending into the felt. */
-/* Responsible-gambling readouts (net position / RTP / session clock), pinned
-   to the top-right. Only rendered where the player's jurisdiction asks for
-   them - see game/jurisdiction.svelte.ts.
-
-   Overlaid rather than placed in the control bar: in the bar these pushed it
-   to five rows and 40% of viewport height on a 400x225 popout, squeezing the
-   play area. They are reference information, not controls, so they belong out
-   of the way. Absolutely positioned so they cost the flex column no height at
-   all, and pointer-events:none so they can never intercept a click meant for
-   the table. */
-.rg-panel {
-  position: absolute;
-  top: calc(var(--ui) * 0.9);
-  right: calc(var(--ui) * 0.9);
-  z-index: 6; /* above the title plate, below popups */
-  display: flex;
-  align-items: flex-start;
-  gap: calc(var(--ui-bar) * 1.45);
-  padding: calc(var(--ui-bar) * 0.64) calc(var(--ui-bar) * 1.09);
-  border-radius: calc(var(--ui-bar) * 1.09);
-  background: rgba(10, 18, 28, 0.72);
-  border: 1px solid rgba(var(--ink-rgb), 0.1);
-  backdrop-filter: blur(6px);
-  box-shadow: 0 6px 20px rgba(var(--shadow-rgb), 0.45);
-  pointer-events: none;
-}
-
-.rg-item {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  white-space: nowrap;
-  line-height: 1.15;
-}
-
-/* tabular-nums so the session clock ticking doesn't jitter the panel width. */
-.rg-item .cb-val {
-  font-variant-numeric: tabular-nums;
-}
-
-.rg-item.up .cb-val { color: var(--win-soft); }
-
-.rg-item.down .cb-val { color: var(--loss-soft); }
-
-/* Too narrow for the panel to sit beside the centred title without covering
-   it (measured: the title plate and the panel collide below ~700px). Drop it
-   into normal flow instead, where it takes its own centred row above the
-   title. It precedes .game-title in the DOM, so no reordering is needed. */
-@media (max-width: 700px) {
-  .rg-panel {
-    position: static;
-    align-self: center;
-    flex: 0 0 auto;
-    margin-top: calc(var(--ui) * 0.9);
-  }
-}
-
 .game-title {
   /* In normal flow (not absolutely positioned) so it RESERVES its space - when
      it overlaid the table it sat on top of the cards on short windows. */

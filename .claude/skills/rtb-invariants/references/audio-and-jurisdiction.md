@@ -10,7 +10,7 @@ rewritten as the audio changed.
 ---
 
 - **Every cue is synthesised. The music bed is one produced file.**
-  `audioGraph.ts` owns one `AudioContext`, one bus chain with a limiter on the
+  `audioContext.ts` owns one `AudioContext`, one bus chain with a limiter on the
   end, and a generated impulse response for the room; `sound.ts` is the cue
   book; `music.ts` is a loader and player for the bed. **One context,
   deliberately** — music and cues share the bus, because a second context is a

@@ -1,0 +1,386 @@
+/* The replay round-details panel.
+ *
+ * Split out of the single 1,178-line start-screen.css when StartScreen became
+ * three files. Scoped to ReplayDetails.svelte, which is the only thing
+ * that renders these classes - a stylesheet is scoped to whichever component
+ * IMPORTS it, so a screen's rules travel with its markup.
+ *
+ * No shared sheet, on purpose: svelte-check reports an unused selector as a
+ * warning and check:svelte must be zero, so a rule in a sheet its component
+ * does not render is a build failure. Rules all three screens need live in the
+ * shell they all sit inside.
+ */
+
+/* ---- Start / intro screen overlay ---------------------------------------- */
+.ss-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 1000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	/* The floor under the table, and NOT dead paint - this one is reachable.
+	   TableScene draws the room over the top of it (.scene is inset:0 with an
+	   opaque stack), but .scene is absolutely positioned inside a container
+	   that scrolls, so on a viewport short enough to scroll the intro the table
+	   travels up with the content and leaves the bottom of the frame bare.
+	   A flat floor colour rather than a second gradient: anything more would be
+	   covered everywhere it is actually visible. */
+	background: var(--felt-edge);
+	font-family: var(--font-body);
+	color: var(--ink-warm);
+	/* The start screen's own scaling unit, and the reason the Play button no
+	   longer falls below the fold.
+	   
+	   It used to borrow the board's --ui, which is capped at 1.55vh - fine for
+	   the board, which is mostly one big table, but this screen stacks a logo,
+	   a title, four step panels, a stats row and a button. That column totals
+	   roughly 72 units, so anything above ~1.38vh pushes the button off the
+	   bottom and forces a scroll to start the game.
+	   
+	   1.3vh keeps the whole column inside the viewport at any height, and the
+	   1.15vw term stops it growing absurdly wide on a short, wide window.
+	   --ui is aliased to it so the rules below did not all need rewriting. */
+	--ss: clamp(3px, min(1.15vw, 1.3vh), 10px);
+	--ui: var(--ss);
+	font-size: calc(var(--ss) * 1.6);
+	/* Still a scroll container, as a last resort for viewports smaller than
+	   anything the clamp floor can absorb. */
+	overflow-y: auto;
+}
+
+.ss-card {
+	/* Above .scene, which is absolutely positioned and so would otherwise paint
+	   over this static content whatever the DOM order. Same relationship
+	   .play-area has with the table on the board. */
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: calc(var(--ss) * 1.5);
+	padding: calc(var(--ss) * 2.5) calc(var(--ss) * 2);
+	/* Wide enough for four SQUARE step panels side by side.
+	   62 --ss was only wide enough for them to fit, which left each panel 136px
+	   across and 254px tall on a 1920 screen - a tall sliver, on a page with
+	   1300px of unused width either side. 128 --ss gives each panel about 300px,
+	   which is what its content is tall, so the panels come out square.
+	   The 96vw cap still binds on phones and popouts, so neither changes. */
+	max-width: min(calc(var(--ss) * 128), 96vw);
+	width: 100%;
+	text-align: center;
+	/* Centres like align-items: center, but without the trap that comes with it:
+	   a centred flex item taller than its scroll container has its top clipped
+	   and unreachable. `margin: auto` keeps both ends reachable. */
+	margin: auto;
+}
+
+/* ---- Logo ---- */
+.ss-logo {
+	width: calc(var(--ss) * 8.5);
+	height: calc(var(--ss) * 8.5);
+	background: var(--logo-url) center / contain no-repeat;
+	margin-bottom: 0;
+}
+
+/* ---- Title ----------------------------------------------------------------
+   THE SAME LOCKUP as .gl-title-main / .gl-title-sub in loader.css and
+   .game-title-main / .game-title-sub in base.css. Three screens draw the game's
+   name - the loader, this intro, and the board - and the player sees all three
+   inside the first ten seconds. Two of them already agreed; this one did not.
+
+   What it was: Poppins (the BODY face) at 900, +0.04em, uppercase, --gold. So
+   the wordmark changed typeface, case, tracking AND gold between the loader and
+   the intro that follows it, which reads as two different games handing over.
+
+   What each line of the fix is doing, all of it already argued at the two
+   places it is copied from:
+     - font-family: the display face. This string is a brand name, never
+       translated (see the note atop i18n/messagesMap/en.ts), so it is safe on
+       a latin-only subset - which a translated string would not be.
+     - 3.4 -> 4.2 units: Big Shoulders is condensed, so the same word occupies
+       far less width. Held at the old size the wordmark just gets smaller.
+       4.2 is the loader's own figure, and 1.05/4.2 below keeps the credit line
+       at the same quarter-of-the-title proportion the other two use.
+     - NEGATIVE tracking, not positive: opening a 900 weight out is the most
+       reliable signature of type that was set rather than drawn.
+     - title case, not uppercase - the other two are title case.
+     - --gold-bright, the in-game title's gold, not --gold.                   */
+.ss-title {
+	font-family: var(--font-display);
+	font-size: calc(var(--ss) * 4.2);
+	font-weight: 900;
+	letter-spacing: -0.015em;
+	color: var(--gold-bright);
+	line-height: 1;
+	text-shadow: 0 calc(var(--ss) * 0.18) calc(var(--ss) * 0.9) rgba(var(--shadow-rgb), 0.85);
+}
+
+/* ---- Staggered entrance -------------------------------------------------
+   Every direct child of the start card rises and scales in on a delay taken
+   from its own --d, so the screen assembles itself instead of appearing all at
+   once. One keyframe drives the lot; --d is set inline in StartScreen.svelte.
+
+   `both` fill mode matters: without it the elements are briefly visible at
+   their final position before their delay elapses, which flashes the whole
+   screen on the first frame.                                               */
+.ss-logo,
+.ss-title {
+	animation: ss-rise 0.52s var(--ease-out) both;
+	animation-delay: calc(var(--d, 0) * 0.075s);
+}
+
+/* The logo gets its own entrance - it is the first thing on screen and a plain
+   rise reads as flat next to the title that follows it. */
+.ss-logo {
+	animation-name: ss-logo-in;
+	animation-duration: 0.7s;
+}
+
+/* ---- Short viewports ----
+   Popout S is 400x225. The clamp above already scales the whole column, but
+   below this height the logo and the worked examples are the first things worth
+   sacrificing - the four controls are the part that has to stay legible. */
+@media (max-height: 420px) {.ss-logo {
+		width: calc(var(--ss) * 5.5);
+		height: calc(var(--ss) * 5.5);
+	}
+}
+
+/* Narrow AND short - a phone in landscape. Drop the worked examples entirely
+   rather than let the row wrap or the button slide off. */
+@media (max-height: 320px) {.ss-logo {
+		display: none;
+	}
+}
+
+/* ---- Reduced motion ----
+   The stagger and the looping hints are decoration; the content is not. Show
+   everything immediately and hold the loops still. */
+@media (prefers-reduced-motion: reduce) {.ss-logo,
+.ss-title {
+		animation: none;
+	}
+}
+
+/* ---- Replay info popup --------------------------------------------------- */
+.ss-popup-backdrop {
+	position: fixed;
+	inset: 0;
+	z-index: 1001;
+	background: rgba(var(--shadow-rgb), 0.65);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.ss-popup {
+	background: #1a2a1a;
+	border: 1px solid #3a4a2a;
+	border-radius: calc(var(--ui) * 1.2);
+	padding: calc(var(--ui) * 3) calc(var(--ui) * 3.5);
+	min-width: calc(var(--ui) * 34);
+	max-width: calc(var(--ui) * 42);
+	display: flex;
+	flex-direction: column;
+	gap: calc(var(--ui) * 2);
+	text-align: start;
+}
+
+.ss-popup-head {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	font-size: calc(var(--ui) * 2);
+	font-weight: 700;
+	color: var(--gold);
+}
+
+.ss-detail-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	font-size: calc(var(--ui) * 1.4);
+	padding: calc(var(--ui) * 0.5) 0;
+	border-bottom: 1px solid rgba(var(--ink-rgb), 0.06);
+}
+
+.ss-detail-cap {
+	color: var(--ink-warm-mute);
+}
+
+.ss-detail-val {
+	color: var(--ink-warm);
+	/* 700: Poppins ships no 600 cut, so this was already drawing as 700. */
+	font-weight: 700;
+}
+
+/* The drawn play triangle, sized to sit on the text baseline beside the
+   label - it replaces a U+25B6 that rendered as a colour emoji on phones. */
+.ss-play-tri {
+	width: calc(var(--ss) * 1.1);
+	height: calc(var(--ss) * 1.3);
+	margin-inline-start: calc(var(--ss) * 0.5);
+}
+
+.ss-play-btn {
+	margin-top: calc(var(--ui) * 1);
+	padding: calc(var(--ui) * 1.2) calc(var(--ui) * 3.5);
+	border: none;
+	border-radius: calc(var(--ui) * 0.7);
+	background: var(--gold);
+	color: #0d1f0d;
+	font-family: inherit;
+	font-size: calc(var(--ui) * 1.6);
+	font-weight: 700;
+	cursor: pointer;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	align-self: center;
+	transition: background 0.2s;
+}
+
+.ss-play-btn:focus-visible {
+	background: #ffe0a0;
+}
+
+/* ---- Responsive: very short viewports (Popout S ~225px tall) ------------- */
+@media (max-height: 320px) {.ss-overlay {
+		/* --ss's 1.3vh term is budgeted for the FULL column: logo, subtitle, lead,
+		   four panels with worked examples, stats and the button. By this height
+		   the rules above have already dropped the logo, the subtitle, the lead
+		   and the demos, so that budget is being paid for content that is no
+		   longer on screen - and 1.3vh of a 225px popout lands on the 3px clamp
+		   floor, which renders the equals badge at about 4px.
+
+		   3vh against what actually remains, and 1.6vw because four panels across
+		   400px have more room than 1.15vw assumes. Together that roughly doubles
+		   every control on the intro at popout size. */
+		--ss: clamp(4.5px, min(1.6vw, 3vh), 10px);
+		/* Slightly smaller floor so text shrinks further when height is tiny. */
+		--ui: clamp(3.2px, min(2vw, 1.55vh), 11px);
+		align-items: flex-start; /* don't center — let scroll reveal from top */
+		padding-top: calc(var(--ui) * 1.5);
+	}
+.ss-card {
+		gap: calc(var(--ui) * 1.2);
+		padding: calc(var(--ui) * 1.5) calc(var(--ui) * 2);
+	}
+.ss-logo {
+		width: calc(var(--ui) * 9);
+		height: calc(var(--ui) * 9);
+		margin-bottom: calc(var(--ui) * 0.3);
+	}
+}
+
+/* ---- Choice badges (replay info popup) ----------------------------------- */
+.ss-choices {
+	display: flex;
+	flex-wrap: wrap;
+	gap: calc(var(--ui) * 0.7);
+	justify-content: flex-end;
+}
+
+.ss-choice-badge {
+	display: inline-block;
+	padding: calc(var(--ui) * 0.25) calc(var(--ui) * 0.9);
+	border-radius: calc(var(--ui) * 0.5);
+	font-size: calc(var(--ui) * 1.25);
+	font-weight: 700;
+	text-transform: capitalize;
+	line-height: 1.5;
+}
+
+/* THE SAME COLOURS THE BOARD USES, from the same tokens.
+   These were eleven hand-picked darks - a #1a5c1a for Higher against the
+   board's #2ecc71, a #5c3a1a brown for Outside against its magenta, a #5c5c1a
+   olive for Equal against its gold. So the one screen whose whole job is to
+   restate the bet restated it in colours the player had never seen, and a
+   reviewer opening a replay got a different game's palette. The choice colours
+   are DATA in this build (tokens.css: "the one place in this UI where colour is
+   DATA rather than decoration") - a badge showing Outside has to be the Outside
+   colour or it is just wrong.
+
+   Ink is chosen per fill for contrast, not per taste: the three light fills take
+   --on-choice-ink, the dark ones take --ink. */
+.ss-choice-badge.color-red { background: var(--choice-red);     color: var(--ink); }
+
+.ss-choice-badge.color-black { background: var(--choice-black);   color: var(--ink);
+                                 box-shadow: inset 0 0 0 1px rgba(var(--ink-rgb), 0.28); }
+
+.ss-choice-badge.choice-higher { background: var(--choice-higher);  color: var(--on-choice-ink); }
+
+.ss-choice-badge.choice-lower { background: var(--choice-lower);   color: var(--ink); }
+
+.ss-choice-badge.choice-inside { background: var(--choice-inside);  color: var(--on-choice-ink); }
+
+.ss-choice-badge.choice-outside { background: var(--choice-outside); color: var(--ink); }
+
+.ss-choice-badge.choice-equal { background: var(--choice-equal);   color: var(--on-choice-ink); }
+
+/* The suit squares on the board are a dark panel with a COLOURED PIP, not four
+   coloured panels - so the badges are too: one ground, the suit carried by the
+   mark, red for hearts and diamonds and the plain ink for clubs and spades.
+   Painting each suit its own background would invent a colour the game does not
+   have and would make Heart and Diamond two different reds. */
+.ss-choice-badge.suit-heart,
+.ss-choice-badge.suit-diamond,
+.ss-choice-badge.suit-club,
+.ss-choice-badge.suit-spade {
+	background: var(--choice-black);
+	box-shadow: inset 0 0 0 1px rgba(var(--ink-rgb), 0.28);
+	color: var(--ink);
+}
+
+.ss-choice-badge.suit-heart,
+.ss-choice-badge.suit-diamond {
+	color: var(--suit-red);
+}
+
+/* ---- Narrow portrait: two steps per row ----------------------------------
+   The 1.15vw term in --ss exists only so four step panels fit across one row.
+   On a phone that is what makes the whole screen tiny: at 390px wide it
+   resolves to 4.5px, so the guess squares come out ~60px, their thirds ~20px,
+   and the "?" explanation renders at about 5px.
+
+   Two per row removes that constraint - each panel gets half the width instead
+   of a quarter - so the vw term can roughly double and everything on the screen
+   grows with it. The vh term tightens to 1.0 because the steps now occupy two
+   rows rather than one, and the Play button must stay above the fold.
+
+   Portrait only: in landscape there is width to spare and height is the scarce
+   axis, where a second row is exactly the wrong trade. */
+@media (max-width: 620px) and (orientation: portrait) {.ss-overlay {
+		--ss: clamp(5px, min(2.2vw, 1vh), 11px);
+	}
+}
+
+/* ---- Hover, gated -------------------------------------------------------
+ * Split out of the :focus-visible rules above so keyboard focus keeps working
+ * where there is no pointer at all. See the note in choices.css. */
+@media (hover: hover) {.ss-play-btn:hover {
+		background: #ffe0a0;
+	}
+}
+
+@keyframes ss-rise {
+	from {
+		opacity: 0;
+		transform: translateY(calc(var(--ui) * 1.6)) scale(0.96);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
+
+@keyframes ss-logo-in {
+	from {
+		opacity: 0;
+		transform: scale(0.5) rotate(-8deg);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1) rotate(0deg);
+	}
+}

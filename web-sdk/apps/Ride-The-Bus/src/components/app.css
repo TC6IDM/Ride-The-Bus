@@ -14,7 +14,7 @@
  * refers to a package that is not a dependency. Every player was therefore
  * seeing the generic sans-serif fallback - Segoe UI, Helvetica or Roboto
  * depending on their device - which is also why the control bar had to measure
- * its own text to fit (styles/control-bar.css).
+ * its own text to fit (styles/board/control-bar.css).
  *
  * The old <link> to use.typekit.net served proxima-nova and brandon-grotesque,
  * the SDK sample's fonts, which this game never names. It was a third-party

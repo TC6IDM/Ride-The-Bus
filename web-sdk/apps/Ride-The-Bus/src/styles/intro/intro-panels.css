@@ -1,0 +1,947 @@
+/* The intro screen: the card, the four demo panels and their tips.
+ *
+ * Split out of the single 1,178-line start-screen.css when StartScreen became
+ * three files. Scoped to IntroPanels.svelte, which is the only thing
+ * that renders these classes - a stylesheet is scoped to whichever component
+ * IMPORTS it, so a screen's rules travel with its markup.
+ *
+ * No shared sheet, on purpose: svelte-check reports an unused selector as a
+ * warning and check:svelte must be zero, so a rule in a sheet its component
+ * does not render is a build failure. Rules all three screens need live in the
+ * shell they all sit inside.
+ */
+
+.ss-card {
+	/* Above .scene, which is absolutely positioned and so would otherwise paint
+	   over this static content whatever the DOM order. Same relationship
+	   .play-area has with the table on the board. */
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: calc(var(--ss) * 1.5);
+	padding: calc(var(--ss) * 2.5) calc(var(--ss) * 2);
+	/* Wide enough for four SQUARE step panels side by side.
+	   62 --ss was only wide enough for them to fit, which left each panel 136px
+	   across and 254px tall on a 1920 screen - a tall sliver, on a page with
+	   1300px of unused width either side. 128 --ss gives each panel about 300px,
+	   which is what its content is tall, so the panels come out square.
+	   The 96vw cap still binds on phones and popouts, so neither changes. */
+	max-width: min(calc(var(--ss) * 128), 96vw);
+	width: 100%;
+	text-align: center;
+	/* Centres like align-items: center, but without the trap that comes with it:
+	   a centred flex item taller than its scroll container has its top clipped
+	   and unreachable. `margin: auto` keeps both ends reachable. */
+	margin: auto;
+}
+
+/* ---- Logo ---- */
+.ss-logo {
+	width: calc(var(--ss) * 8.5);
+	height: calc(var(--ss) * 8.5);
+	background: var(--logo-url) center / contain no-repeat;
+	margin-bottom: 0;
+}
+
+/* ---- Title ----------------------------------------------------------------
+   THE SAME LOCKUP as .gl-title-main / .gl-title-sub in loader.css and
+   .game-title-main / .game-title-sub in base.css. Three screens draw the game's
+   name - the loader, this intro, and the board - and the player sees all three
+   inside the first ten seconds. Two of them already agreed; this one did not.
+
+   What it was: Poppins (the BODY face) at 900, +0.04em, uppercase, --gold. So
+   the wordmark changed typeface, case, tracking AND gold between the loader and
+   the intro that follows it, which reads as two different games handing over.
+
+   What each line of the fix is doing, all of it already argued at the two
+   places it is copied from:
+     - font-family: the display face. This string is a brand name, never
+       translated (see the note atop i18n/messagesMap/en.ts), so it is safe on
+       a latin-only subset - which a translated string would not be.
+     - 3.4 -> 4.2 units: Big Shoulders is condensed, so the same word occupies
+       far less width. Held at the old size the wordmark just gets smaller.
+       4.2 is the loader's own figure, and 1.05/4.2 below keeps the credit line
+       at the same quarter-of-the-title proportion the other two use.
+     - NEGATIVE tracking, not positive: opening a 900 weight out is the most
+       reliable signature of type that was set rather than drawn.
+     - title case, not uppercase - the other two are title case.
+     - --gold-bright, the in-game title's gold, not --gold.                   */
+.ss-title {
+	font-family: var(--font-display);
+	font-size: calc(var(--ss) * 4.2);
+	font-weight: 900;
+	letter-spacing: -0.015em;
+	color: var(--gold-bright);
+	line-height: 1;
+	text-shadow: 0 calc(var(--ss) * 0.18) calc(var(--ss) * 0.9) rgba(var(--shadow-rgb), 0.85);
+}
+
+/* The studio line, demoted the same way base.css demotes it: wide tracking on
+   small caps at a light weight, which is what letterspacing is FOR and the
+   opposite of what it was doing on the title above.
+
+   The negative margin is load-bearing. .ss-card is a flex column with a 1.5-ss
+   gap between every child, which is right for the sections of the intro and far
+   too much for the two halves of one lockup - the credit floated away from the
+   name it belongs to. Pulling 1.05 back leaves 0.45, which is the 0.42 the
+   board and the loader set. */
+.ss-subtitle {
+	margin-top: calc(var(--ss) * -1.05);
+	font-size: calc(var(--ss) * 1.05);
+	font-weight: 400;
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+	line-height: 1;
+	color: var(--ink-lockup-sub);
+	text-shadow: 0 calc(var(--ss) * 0.15) calc(var(--ss) * 0.7) rgba(var(--shadow-rgb), 0.85);
+	margin-bottom: 0;
+}
+
+/* ---- Staggered entrance -------------------------------------------------
+   Every direct child of the start card rises and scales in on a delay taken
+   from its own --d, so the screen assembles itself instead of appearing all at
+   once. One keyframe drives the lot; --d is set inline in StartScreen.svelte.
+
+   `both` fill mode matters: without it the elements are briefly visible at
+   their final position before their delay elapses, which flashes the whole
+   screen on the first frame.                                               */
+.ss-logo,
+.ss-title,
+.ss-subtitle,
+.ss-lead,
+.ss-step,
+.ss-stats,
+.ss-continue {
+	animation: ss-rise 0.52s var(--ease-out) both;
+	animation-delay: calc(var(--d, 0) * 0.075s);
+}
+
+/* The steps need their own keyframe. ss-rise finishes on transform:none, which
+   would wipe out the fan above the moment the entrance completed - an animation
+   and a static transform cannot both own the property, so the animation has to
+   land on the resting pose rather than on nothing. */
+.ss-step {
+	animation-name: ss-step-in;
+}
+
+/* The logo gets its own entrance - it is the first thing on screen and a plain
+   rise reads as flat next to the title that follows it. */
+.ss-logo {
+	animation-name: ss-logo-in;
+	animation-duration: 0.7s;
+}
+
+/* ---- Lead line ---- */
+.ss-lead {
+	font-size: calc(var(--ui) * 1.4);
+	color: var(--ink-warm-dim);
+	max-width: calc(var(--ui) * 40);
+}
+
+/* ---- How-to-play steps ---------------------------------------------------
+   Four steps, ALWAYS on one row. `nowrap` plus `flex: 1 1 0` and `min-width: 0`
+   means they compress instead of wrapping - the previous version wrapped 3 + 1
+   on most screens, which broke the left-to-right reading of "card 1, 2, 3, 4".
+
+   The controls inside are the SAME shapes as the board (colour split, thirds
+   with an equals tab, suit quadrants), so this teaches the actual interface.  */
+.ss-steps {
+	display: flex;
+	flex-wrap: nowrap;
+	justify-content: center;
+	align-items: stretch;
+	gap: calc(var(--ss) * 1.2);
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	width: 100%;
+}
+
+.ss-step {
+	position: relative;
+	flex: 1 1 0;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: calc(var(--ss) * 0.7);
+	padding: calc(var(--ss) * 1.5) calc(var(--ss) * 0.6) calc(var(--ss) * 0.9);
+	border: 1px solid var(--panel-edge);
+	border-radius: calc(var(--ss) * 0.9);
+	/* The same material as the popups, lit from the same upper right - see
+	   popup-base.css. These used to be a green gradient with a flat green
+	   border, which made them a fifth surface treatment in a game that already
+	   had four. */
+	background: var(--panel);
+	box-shadow:
+		0 2px 6px rgba(var(--shadow-rgb), 0.5),
+		0 14px 34px rgba(var(--shadow-rgb), 0.45),
+		inset 0 1px 0 var(--panel-lit),
+		inset 0 -1px 0 var(--panel-shade);
+	/* DEALT, not gridded.
+	 *
+	 * Four equal panels in an even row is the single most recognisable
+	 * AI-landing-page shape there is, and it was the first thing on screen. The
+	 * fix is not decoration: this game DEALS four cards, so the four panels
+	 * that teach those four cards sit the way a dealt hand sits - fanned, the
+	 * middle two lifted, each one turned a little off square.
+	 *
+	 * The angles are small on purpose. The tooltip is a child of the panel and
+	 * so rotates with it, which is right - it belongs to the panel - but only
+	 * while the angle stays low enough to read as a placed card rather than as
+	 * a layout bug. */
+	transform: translateY(var(--step-lift, 0)) rotate(var(--step-tilt, 0deg));
+}
+
+.ss-step:nth-child(1) { --step-lift: calc(var(--ss) * 0.5); --step-tilt: -1.5deg; }
+
+.ss-step:nth-child(2) { --step-lift: calc(var(--ss) * -0.5); --step-tilt: -0.5deg; }
+
+.ss-step:nth-child(3) { --step-lift: calc(var(--ss) * -0.5); --step-tilt: 0.5deg; }
+
+.ss-step:nth-child(4) { --step-lift: calc(var(--ss) * 0.5); --step-tilt: 1.5deg; }
+
+/* THE HAND IS DEALT THE OTHER WAY IN ARABIC.
+   The angles above describe one spread by position: the panel at the start of
+   the row leans back, the one at the end leans forward. `rotate` is physical
+   and nth-child counts DOM order, so in a right-to-left row every panel kept
+   the angle belonging to the opposite end and the arc inverted - the fan closed
+   into a V instead of opening. The lift is symmetric about the middle of the
+   row and needs no flip; only the tilt does. */
+:global([dir='rtl']) .ss-step:nth-child(1) { --step-tilt: 1.5deg; }
+
+:global([dir='rtl']) .ss-step:nth-child(2) { --step-tilt: 0.5deg; }
+
+:global([dir='rtl']) .ss-step:nth-child(3) { --step-tilt: -0.5deg; }
+
+:global([dir='rtl']) .ss-step:nth-child(4) { --step-tilt: -1.5deg; }
+
+/* The step number, as a card index rather than a badge.
+ *
+ * It was a filled gold circle hanging off the panel's outer corner, which is
+ * the notification-dot every UI kit ships - and four of them across the top of
+ * four panels was the row's loudest feature, competing with the very controls
+ * the panels exist to demonstrate.
+ *
+ * Inside the panel now, top left, set the way the index on a playing card is:
+ * large, quiet, and out of the way. It reads as "this is card 1" rather than
+ * as "there is 1 notification". */
+/* Leading corner: this is a card INDEX and it is read first, so it belongs at
+   the edge the reading starts from - the same corner the numbered list would
+   put it in. Physical `left` pinned it to the same side in Arabic while the row
+   itself mirrored, so the panel labelled 4 wore its number on the far side from
+   where the eye enters it, and the badge below sat where the number should be. */
+.ss-step-n {
+	position: absolute;
+	top: calc(var(--ui) * 0.3);
+	inset-inline-start: calc(var(--ui) * 0.55);
+	font-size: calc(var(--ui) * 1.75);
+	font-weight: 800;
+	line-height: 1;
+	color: var(--gold);
+	/* 0.62, not the 0.45 this started at. Quiet was the intent - it is an index,
+	   not a headline - but 0.45 composites to 3.50:1 against the panel, and this
+	   is a NUMBER a player reads to follow the order of the four cards, not an
+	   ornament. 0.62 measures 5.4 and still sits well behind the control. */
+	opacity: 0.62;
+	font-variant-numeric: tabular-nums;
+}
+
+.ss-step-label {
+	/* Floored, because this names the pick the control below demonstrates and
+	   is useless once it drops under about 11px - which is where --ss alone put
+	   it on every small screen. */
+	font-size: max(calc(var(--ui) * 1.05), 11px);
+	font-weight: 700;
+	color: var(--ink-warm);
+	text-align: center;
+	line-height: 1.2;
+	/* Deliberately NOT nowrap. "Inside / Outside" is 16 characters in English
+	   and considerably longer in German and Russian, and a panel is only about a
+	   quarter of the card wide - nowrap pushed it past the panel edge in those
+	   locales. Two lines are reserved either way, so a language that wraps and
+	   one that does not produce the same panel height and the row stays even. */
+	height: calc(var(--ui) * 2.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow-wrap: anywhere;
+	/* Keeps clear of the "?" badge, which is absolutely positioned in the
+	   panel's top-right corner and so does not push this out of its way. The
+	   inset is taken off BOTH sides rather than just the right, because the
+	   text is centred - trimming one side alone would shift it off-centre. The
+	   badge grew with the panel, so a label that used to clear it no longer
+	   does, and the longer translations ran underneath it. */
+	width: calc(100% - var(--ui) * 2.8);
+}
+
+/* ---- The controls ----
+   These are the board's real controls, not a redrawing of them: the markup uses
+   .choice-square / .half-btn / .third-btn / .equal-btn / .quad-btn and the
+   stylesheet is imported below, so the colours, the split geometry and the
+   centred yellow equals badge are all whatever the board currently says they
+   are. An approximation here would teach the player the wrong interface.
+
+   choices.css sizes everything off these four variables, which the board gets
+   from .game-layout. This screen is outside that, so it declares its own at a
+   scale that fits four panels in a row. */
+.ss-step {
+	/* Set --ui and DERIVE the rest with the board's own formulas from base.css.
+	   Setting --choice-size directly, as this first did, silently breaks every
+	   proportion inside: choices.css sizes the triangles, the converge/diverge
+	   arrows and the equals badge off --ui, so a square that is not exactly
+	   8.36 --ui leaves the icons mis-scaled against it. At --choice-size: 7 --ss
+	   with --ui still at --ss, every icon came out 8.36/7 = 19% oversized, which
+	   is what made the higher/lower triangles collide with the equals badge and
+	   pushed the inside/outside arrows past their halves.
+
+	   The multiplier itself is set by how much room four panels have. Each panel
+	   takes (card - 3 gaps) / 4, and the square plus its padding has to fit
+	   inside that. 1.4 puts the row at 552px of the 580px available on a 1920
+	   desktop and stays inside the share at every size down to 640px wide; 1.5
+	   overflows everywhere. It was 0.84 - a 70px square on a screen with room
+	   for 117px - which is what made the intro read as a shrunken diagram of
+	   the game rather than the game's own controls.
+
+	   Raised again to 1.7 once the card widened to make the panels square: at
+	   1.4 the control filled under 40% of a 300px panel and looked marooned in
+	   it. The panel's height is roughly 1.85 times the square plus its label
+	   and worked example, so the square can never fill more than about half a
+	   panel that is square - 1.7 puts it at 142px, which is that half. */
+	--ui: calc(var(--ss) * 1.7);
+	--choice-size: calc(var(--ui) * 8.36);
+	--choice-fs: calc(var(--ui) * 2.04);
+	--quad-fs: calc(var(--ui) * 2.33);
+	--gap: calc(var(--ui) * 2.18);
+}
+
+/* Nothing on this screen places a bet, so the controls are demonstrations. They
+   stay focusable and clickable because that is how the worked example below is
+   switched on a touch screen. */
+.ss-step .choice-square {
+	flex: 0 0 auto;
+}
+
+/* ---- Square option panels, on screens wide enough to have the room --------
+   Only above 1100px. Below that the card is capped at 96vw, so a panel is
+   already narrower than its content is tall and asking for a square does
+   nothing useful - it just adds a second thing deciding the panel's height,
+   which is how the phone layout ended up overflowing and pushing Tap to
+   Continue below the fold.
+
+   Even here it is a suggestion, not a constraint: a flex item's min-height is
+   auto, so content taller than the width still wins and the panel grows rather
+   than clipping. justify-content centres the content in the extra height the
+   square gives it. */
+@media (min-width: 1100px) {.ss-step {
+		aspect-ratio: 1;
+		justify-content: center;
+	}
+}
+
+/* The equals badge carries a whole rule on its own - that a tie is a third
+   option - in a glyph roughly a sixth the width of the square holding it. On
+   the board that is fine because the board is the biggest thing on screen; on
+   this screen four panels share the width, so the same proportion bottoms out
+   illegibly on a phone and vanishes on a popout.
+   A floor rather than a bigger ratio, so it only ever grows where the
+   proportional size would be too small to read, and desktop is untouched
+   (--ui is 8.4px there, giving 13.8px against this 14px floor). */
+.ss-step .equal-btn {
+	/* Tracks the board's own badge (1.95 --ui in choices.css) rather than setting
+	   width/height, so there is one lever and the two screens cannot drift -
+	   which is the entire reason ChoiceIcon exists. The floor moved with it:
+	   14px was 1.64 --ui's, and 1.95/1.64 of that is 16.6px.
+	   Deliberately NOT floored higher. The floor exists so the badge stays
+	   legible when --ui bottoms out, but it does not shrink the half it sits in,
+	   so every pixel added here is taken off the inside/outside arrows beside
+	   it - and on a popout that half is only ~18px wide to begin with. */
+	--equal-size: max(calc(var(--ui) * 1.95), 16.6px);
+	/* The bars inside size themselves from --ui too, so flooring the badge alone
+	   would grow the box around an unchanged glyph. These keep the drawn "="
+	   at the same 61% / 30% of the badge it has at full size. */
+	--eq-icon-w: max(calc(var(--ui) * 1.19), 10.1px);
+	--eq-icon-h: max(calc(var(--ui) * 0.585), 5px);
+}
+
+/* ---- Help badge ----
+   Top-right of each panel. Focusable rather than hover-only so the explanation
+   is reachable by keyboard and by tap. */
+/* A real <button>, so padding and font-family need resetting - without them the
+   browser's defaults push the "?" off centre and swap the game's font out. */
+/* Trailing corner, opposite the index - and it has to be logical for a second
+   reason as well as symmetry: .ss-tip is anchored with inset-inline-end and its
+   own comment says it repeats this inset so the two line up. Left physical, the
+   badge sat on one side of an Arabic panel and its tooltip opened from the
+   other. */
+.ss-help {
+	position: absolute;
+	top: calc(var(--ui) * 0.4);
+	inset-inline-end: calc(var(--ui) * 0.4);
+	width: calc(var(--ui) * 1.9);
+	height: calc(var(--ui) * 1.9);
+	padding: 0;
+	border-radius: 50%;
+	background: #2e4224;
+	border: 1px solid var(--tip-edge);
+	color: #cfe3bd;
+	font-family: inherit;
+	font-size: calc(var(--ui) * 1.1);
+	font-weight: 800;
+	line-height: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: help;
+	z-index: 3;
+}
+
+/* The badge is deliberately small - it sits in a panel corner and must not
+   compete with the worked example - so on touch it gets a hit area larger than
+   its paint. A transparent ::before rather than padding, because padding would
+   grow the visible circle too. Nothing sits close enough for the overspill to
+   steal a tap: the badges are one per panel, in opposite corners. */
+.ss-help::before {
+	content: '';
+	position: absolute;
+	/* Centres a 44px target on a badge that draws at ~1.9 --ss. */
+	top: 50%;
+	left: 50%;
+	width: max(100%, 44px);
+	height: max(100%, 44px);
+	transform: translate(-50%, -50%);
+}
+
+@media (pointer: fine) {/* A mouse does not need the overspill, and it would otherwise trigger the
+	   tooltip before the cursor reaches the badge. */
+.ss-help::before {
+		width: 100%;
+		height: 100%;
+	}
+}
+
+.ss-help:focus-visible,
+.ss-help.open {
+	background: var(--gold);
+	border-color: var(--gold);
+	color: #12220f;
+	outline: none;
+}
+
+.ss-tip {
+	position: absolute;
+	/* Sits above the panel, which is where it sat when it hung off the badge -
+	   the badge is inset 0.4 --ui from the panel's trailing top corner and the
+	   old rule then backed off another 0.6 --ss, which came to about the same
+	   place. This inset repeats that so the two still line up.
+
+	   The extra 1.1 --ui clears the numbered circle, which hangs 0.9 --ui above
+	   its own panel's leading top corner: every tip opens back across its own
+	   panel, so without this each one covers the step number it belongs to.
+
+	   inset-inline-end, NOT `right`, and that is the whole of the Arabic frame
+	   scroll. --tip-room below counts the panels BEFORE this one in reading
+	   order; anchored physically, a right-to-left row put those panels on the
+	   other side, so panel 4's tip was handed four panels of room to open into
+	   and had none. It ran off the left edge of the window and .ss-overlay -
+	   which carries overflow-y:auto as a last resort - gained a horizontal
+	   scrollbar. Measured at every target size: 63px over at Desktop rising to
+	   170px at Mobile L, against nothing at all in English. Stake's PreChecks
+	   name a scrollable main frame directly. */
+	bottom: calc(100% + var(--ui) * 1.1);
+	inset-inline-end: calc(var(--ui) * 0.4);
+	z-index: 3;
+	/* Wider than its panel on purpose - a sentence squeezed into a quarter of
+	   the card would be a column of single words. It overlaps its neighbours,
+	   which is why it carries a z-index.
+
+	   About two panels wide, up from one. The tip grows UPWARDS from the top of
+	   its panel, and the panels sit near the top of the card, so a narrow tip is
+	   a tall one and a tall one runs off the top of the window: step 3's
+	   explanation is the longest of the four and at one panel wide it stood
+	   300px tall on a 675px screen, with its first three lines above the top
+	   edge and unreadable. Widening it is what makes it short. --tip-room caps
+	   it back to one panel where there is only one panel to open into. */
+	width: max(calc(var(--ss) * 44), 300px);
+	/* How far BACK this tip may run before it leaves the card. Every tip opens
+	   toward the start of the row, so the room a tip has is its own panel plus
+	   every panel before it, plus the gaps between them - set per position
+	   below, in percentages of the panel, which is why the tip has to be the
+	   panel's child and not the badge's. "Before" is in reading order, which is
+	   why the anchor above has to be logical: these percentages and that inset
+	   have to agree about which way the tip opens.
+
+	   Without this the first panel's tip was the odd one out: it opened the
+	   other way instead, and landed on top of the next panel's numbered circle.
+	   Flipping it to match the others is only safe if something stops it
+	   walking off the leading edge of the screen, and that is what --tip-room
+	   is. It also fixes the same overflow on the two-per-row phone layout,
+	   where panel 3 starts a new row and had been running ~39px off the edge of
+	   a 320px screen.
+
+	   This replaced a flat 46vw cap. That was a stand-in for the same idea -
+	   "no wider than about half the window" - but it was blind to which panel
+	   it was capping, so it was slack where the tip had four panels to open
+	   into and binding where it had one. The card is itself capped at 96vw, so
+	   staying inside the card is already staying inside the window. */
+	max-width: var(--tip-room, 100%);
+	padding: calc(var(--ui) * 0.8) calc(var(--ui) * 1);
+	border-radius: calc(var(--ui) * 0.6);
+	background: var(--tip-bed);
+	border: 1px solid var(--tip-edge);
+	color: var(--ink-warm);
+	font-size: calc(var(--ui) * 1.05);
+	/* 400: Poppins ships no 500 here, so it was already drawing as 400. */
+	font-weight: 400;
+	line-height: 1.35;
+	text-align: start;
+	text-transform: none;
+	letter-spacing: 0;
+	box-shadow: 0 calc(var(--ss) * 0.6) calc(var(--ss) * 1.4) rgba(var(--shadow-rgb), 0.55);
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity 0.15s;
+	pointer-events: none;
+}
+
+/* Adjacent-sibling, because the tip is no longer inside the button. */
+/* Tapped open. This is the ONLY route a touch device has to these four
+   sentences: the hover rule below is behind `@media (hover: hover)` and a tap
+   does not raise :focus-visible, so without this the badges were visible,
+   focusable, labelled and completely inert on every phone. */
+.ss-help:focus-visible + .ss-tip,
+.ss-help.open + .ss-tip {
+	opacity: 1;
+	visibility: visible;
+}
+
+/* ---- How far each tip may run --------------------------------------------
+   Four panels across, so panel n has n panels and n-1 gaps to its left. The
+   percentages resolve against the panel, which is the tip's containing block,
+   so these hold at every window size without knowing what a panel measures. */
+.ss-step:nth-child(2) .ss-tip { --tip-room: calc(200% + var(--ss) * 1.2); }
+
+.ss-step:nth-child(3) .ss-tip { --tip-room: calc(300% + var(--ss) * 2.4); }
+
+.ss-step:nth-child(4) .ss-tip { --tip-room: calc(400% + var(--ss) * 3.6); }
+
+/* ---- Worked example ----
+   Fixed height so switching picks never reflows the row - without it the whole
+   strip jumps every time the pointer moves between two picks. */
+.ss-demo {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: calc(var(--ui) * 0.3);
+	height: calc(var(--ui) * 4.6);
+	width: 100%;
+	min-width: 0;
+}
+
+.ss-card-mini {
+	position: relative;
+	/* Shrinkable. The Inside / Outside example carries three cards plus an arrow
+	   and a tick, which is the widest content in any panel - letting the cards
+	   give a little is better than letting the row escape the panel. */
+	flex: 0 1 auto;
+	min-width: 0;
+	width: calc(var(--ui) * 2.5);
+	height: calc(var(--ui) * 3.5);
+	border-radius: calc(var(--ui) * 0.35);
+	/* The board's own card colours, not a lookalike pair. The intro teaches the
+	   real interface, so a mini card that is a different white from the dealt
+	   ones teaches a card the game does not deal. */
+	background: var(--card-paper);
+	color: var(--card-ink);
+	box-shadow: 0 calc(var(--ui) * 0.15) calc(var(--ui) * 0.4) rgba(var(--shadow-rgb), 0.45);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	line-height: 1;
+	font-weight: 800;
+}
+
+.ss-card-mini.red { color: var(--card-red); }
+
+/* The Inside / Outside panel shows three cards, or four when Equal is picked
+   (either reference rank passes), so its minis run a shade narrower to keep the
+   row inside the panel. Fixed rather than conditional on the pick, so the strip
+   does not resize as the pointer moves between picks. */
+.ss-demo.is-wide .ss-card-mini {
+	width: calc(var(--ui) * 2.05);
+	height: calc(var(--ui) * 2.9);
+}
+
+.ss-demo.is-wide .ss-card-rank { font-size: calc(var(--ui) * 1.05); }
+
+.ss-demo.is-wide .ss-card-suit { font-size: calc(var(--ui) * 0.95); }
+
+/* "or" between the two ranks Equal accepts. A slash rather than a word, so it
+   needs no translation. */
+.ss-or {
+	color: var(--ink-warm-mute);
+	font-size: calc(var(--ui) * 1.1);
+	font-weight: 700;
+}
+
+.ss-card-rank { font-size: calc(var(--ui) * 1.25); }
+
+.ss-card-suit { font-size: calc(var(--ui) * 1.15); }
+
+/* In --ui, for the same reason as .ss-mark below - it stands in the same row as
+   the mini cards and has to shrink and grow with them, not with --ss. Sized
+   between the slash (1.1) and the tick (1.5): it is a connector rather than a
+   verdict, but "->" needs enough width to read as a direction. */
+.ss-arrow {
+	display: flex;
+	align-items: center;
+	color: var(--ink-warm-mute);
+	/* Half the old font-size: the drawn arrow sits on a 2:1 viewBox, so this is
+	   its HEIGHT and it draws twice as wide - matching the ~0.9em the typed
+	   glyph spanned. */
+	--mark-size: calc(var(--ui) * 0.6);
+}
+
+/* The Inside / Outside row runs narrower cards and steps every glyph down with
+   them - rank, suit and tick already do, so the arrow and the slash follow. */
+.ss-demo.is-wide .ss-arrow { --mark-size: calc(var(--ui) * 0.5); }
+
+.ss-demo.is-wide .ss-or { font-size: calc(var(--ui) * 0.95); }
+
+/* Sized in --ui, like every other thing standing in this row.
+   It used to be --ss * 1.4 while the mini cards beside it are --ui * 3.5 tall,
+   and --ui is --ss * 1.7 here - so the tick rendered at about 0.8 units against
+   a 3.5-unit card, a quarter of its height. Worse, --ui stops being a multiple
+   of --ss on small screens (it takes its own clamp), so the two drifted apart
+   at different viewport sizes rather than staying merely small.
+   1.5 puts the glyph at ~43% of the card it marks. line-height keeps it from
+   adding to the row's height. */
+.ss-mark {
+	display: flex;
+	align-items: center;
+	/* 0.72 of the font-size the glyph was set at, which is about the ink a tick
+	   put inside that em box - same size on screen, no longer font-dependent. */
+	--mark-size: calc(var(--ui) * 1.08);
+}
+
+/* The Inside / Outside row runs narrower cards, and its rank and suit glyphs
+   already step down with them - the tick follows at the same ratio. */
+.ss-demo.is-wide .ss-mark { --mark-size: calc(var(--ui) * 0.9); }
+
+.ss-mark.ok { color: #7fd18a; }
+
+.ss-mark.no { color: #d98a8a; }
+
+/* ---- Short viewports ----
+   Popout S is 400x225. The clamp above already scales the whole column, but
+   below this height the logo and the worked examples are the first things worth
+   sacrificing - the four controls are the part that has to stay legible. */
+@media (max-height: 420px) {.ss-logo {
+		width: calc(var(--ss) * 5.5);
+		height: calc(var(--ss) * 5.5);
+	}
+.ss-subtitle,
+.ss-lead {
+		display: none;
+	}
+.ss-demo {
+		height: calc(var(--ui) * 3.6);
+	}
+.ss-card-mini {
+		width: calc(var(--ui) * 2);
+		height: calc(var(--ui) * 2.8);
+	}
+.ss-mark { --mark-size: calc(var(--ui) * 0.86); }
+.ss-demo.is-wide .ss-mark { --mark-size: calc(var(--ui) * 0.72); }
+.ss-arrow { --mark-size: calc(var(--ui) * 0.48); }
+.ss-demo.is-wide .ss-arrow { --mark-size: calc(var(--ui) * 0.41); }
+.ss-demo.is-wide .ss-or { font-size: calc(var(--ui) * 0.8); }
+}
+
+/* Narrow AND short - a phone in landscape. Drop the worked examples entirely
+   rather than let the row wrap or the button slide off. */
+@media (max-height: 320px) {.ss-demo {
+		display: none;
+	}
+.ss-logo {
+		display: none;
+	}
+}
+
+/* ---- Reduced motion ----
+   The stagger and the looping hints are decoration; the content is not. Show
+   everything immediately and hold the loops still. */
+@media (prefers-reduced-motion: reduce) {.ss-logo,
+.ss-title,
+.ss-subtitle,
+.ss-lead,
+.ss-step,
+.ss-stats,
+.ss-continue {
+		animation: none;
+	}
+/* The demo swap is a state change, not decoration - keep it, just instant.
+	   These are the board's own controls, so the transition being suppressed is
+	   the one declared in choices.css. */
+.ss-step .half-btn,
+.ss-step .third-btn,
+.ss-step .quad-btn,
+.ss-step .equal-btn {
+		transition: none;
+	}
+.ss-tip {
+		transition: none;
+	}
+}
+
+/* RTP and max win.
+ *
+ * These were two huge gold numerals with captions beneath, centred side by
+ * side - the "stat row" every generated landing page puts under its feature
+ * grid, and it gave two reference figures the visual weight of the game's own
+ * name.
+ *
+ * One line now, caption first and value after it. Both stay plainly legible:
+ * Stake requires RTP and maximum win to be clearly communicated, so this is
+ * quieter, not smaller than readable. The same two figures also appear in How
+ * to Play and on every row of the mode picker. */
+.ss-stats {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: baseline;
+	gap: calc(var(--ui) * 0.6) calc(var(--ui) * 1.8);
+	margin-top: calc(var(--ui) * 0.4);
+}
+
+.ss-stat {
+	display: flex;
+	align-items: baseline;
+	gap: calc(var(--ui) * 0.5);
+}
+
+.ss-stat-val {
+	font-size: calc(var(--ui) * 1.35);
+	font-weight: 800;
+	color: var(--gold);
+	font-variant-numeric: tabular-nums;
+}
+
+.ss-stat-cap {
+	font-size: calc(var(--ui) * 1.05);
+	color: var(--ink-warm-mute);
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+}
+
+/* ---- Continue button ---- */
+.ss-continue {
+	margin-top: calc(var(--ui) * 2);
+	padding: calc(var(--ui) * 1.4) calc(var(--ui) * 4.5);
+	border: 2px solid var(--gold);
+	border-radius: calc(var(--ui) * 0.8);
+	background: transparent;
+	color: var(--gold);
+	font-family: inherit;
+	font-size: calc(var(--ui) * 1.6);
+	font-weight: 700;
+	cursor: pointer;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	transition: background 0.2s, color 0.2s;
+}
+
+.ss-continue:focus-visible {
+	background: var(--gold);
+	color: #0d1f0d;
+}
+
+/* ---- Responsive: very short viewports (Popout S ~225px tall) ------------- */
+@media (max-height: 320px) {.ss-card {
+		gap: calc(var(--ui) * 1.2);
+		padding: calc(var(--ui) * 1.5) calc(var(--ui) * 2);
+	}
+.ss-logo {
+		width: calc(var(--ui) * 9);
+		height: calc(var(--ui) * 9);
+		margin-bottom: calc(var(--ui) * 0.3);
+	}
+.ss-subtitle { display: none; }
+/* The logo, subtitle, lead and worked examples are all hidden by this
+	   height, so the four controls have the panel to themselves and can be
+	   drawn bigger - about 56px against the 21px they had before. Same reason
+	   as the phone rule: raise --ui and let the 8.36 ratio carry the square. */
+.ss-step {
+		--ui: calc(var(--ss) * 1.05);
+	}
+.ss-stats { gap: calc(var(--ui) * 0.5) calc(var(--ui) * 1.2); margin-top: 0; }
+.ss-stat-val { font-size: calc(var(--ui) * 1.2); }
+.ss-stat-cap { font-size: calc(var(--ui) * 0.95); }
+.ss-continue {
+		margin-top: calc(var(--ui) * 1);
+		padding: calc(var(--ui) * 1) calc(var(--ui) * 3);
+		font-size: calc(var(--ui) * 1.4);
+	}
+}
+
+/* ---- Narrow portrait: two steps per row ----------------------------------
+   The 1.15vw term in --ss exists only so four step panels fit across one row.
+   On a phone that is what makes the whole screen tiny: at 390px wide it
+   resolves to 4.5px, so the guess squares come out ~60px, their thirds ~20px,
+   and the "?" explanation renders at about 5px.
+
+   Two per row removes that constraint - each panel gets half the width instead
+   of a quarter - so the vw term can roughly double and everything on the screen
+   grows with it. The vh term tightens to 1.0 because the steps now occupy two
+   rows rather than one, and the Play button must stay above the fold.
+
+   Portrait only: in landscape there is width to spare and height is the scarce
+   axis, where a second row is exactly the wrong trade. */
+@media (max-width: 620px) and (orientation: portrait) {.ss-steps {
+		flex-wrap: wrap;
+	}
+/* THE FAN HAS TO BE RE-DEALT FOR TWO ROWS.
+	   The tilts above describe one hand of four spread left to right: -1.5, -0.5,
+	   +0.5, +1.5. Wrapped into a 2x2 that splits into a top row leaning left
+	   (-1.5, -0.5) and a bottom row leaning right (+0.5, +1.5) - so each row
+	   looked like it was sliding off its own side of the screen, which is the
+	   "layout bug" reading the note on .ss-step warns the angles must stay under.
+
+	   A row of two fans as a PAIR: outer edges up and out, mirrored about the
+	   gap. The lift then alternates the opposite way between the rows so the two
+	   pairs are not the same pair twice. */
+.ss-step:nth-child(odd) {
+		--step-tilt: -1.4deg;
+	}
+.ss-step:nth-child(even) {
+		--step-tilt: 1.4deg;
+	}
+/* The pair is mirrored about the gap, so in a right-to-left row the two
+	   angles swap - same flip the four-across block above makes, and it has to
+	   be repeated here because these selectors are no LESS specific than the
+	   ones up there: without it the [dir='rtl'] rules for panels 1-4 would beat
+	   this block's odd/even pair and put the four-across spread on a phone. */
+:global([dir='rtl']) .ss-step:nth-child(odd) {
+		--step-tilt: 1.4deg;
+	}
+:global([dir='rtl']) .ss-step:nth-child(even) {
+		--step-tilt: -1.4deg;
+	}
+.ss-step:nth-child(1),
+.ss-step:nth-child(4) {
+		--step-lift: calc(var(--ss) * 0.35);
+	}
+.ss-step:nth-child(2),
+.ss-step:nth-child(3) {
+		--step-lift: calc(var(--ss) * -0.35);
+	}
+/* Two rows of panels at this size leaves the column about 9px inside the
+	   viewport, and the failure that costs is the Play button dropping below
+	   the fold. The lead line is the cheapest thing to give up: it is a
+	   sentence of rules prose sitting directly above four panels that say the
+	   same thing as pictures, and the max-height rules already drop it for the
+	   same reason. */
+.ss-lead {
+		display: none;
+	}
+.ss-step {
+		/* Half the row, less half the gap between the pair. */
+		flex: 1 1 calc(50% - var(--ss) * 0.6);
+		/* Two panels per row instead of four leaves roughly double the width,
+		   so the controls can be drawn far larger - about 113px against the
+		   59px they had at four across.
+
+		   Raised through --ui, NOT --choice-size: the 8.36 ratio declared above
+		   then carries the square with it and every icon inside stays correctly
+		   proportioned. Setting --choice-size directly is the mistake that
+		   warning describes.
+
+		   Deliberately square. An earlier version stretched these to 84px tall
+		   to enlarge the thirds, which made the intro teach a shape the board
+		   does not have. Growing the whole square gets the same reach without
+		   the distortion.
+
+		   1.45 and not higher: at 1.6 the two rows of panels put the column
+		   within 14px of the shortest supported viewport, and what that costs
+		   is the Play button dropping below the fold. 1.45 keeps a ~42px margin
+		   at every phone size while still taking the square from 59px to
+		   102px. */
+		--ui: calc(var(--ss) * 1.45);
+	}
+/* The pick names sit above each control and were rendering around 9px. */
+.ss-step-label {
+		font-size: max(calc(var(--ui) * 1.15), 14px);
+		/* Two lines are still reserved so the row stays even, but as a minimum
+		   rather than a fixed height - at this size a fixed one clips the
+		   longer translations instead of letting them wrap. */
+		height: auto;
+		min-height: calc(var(--ui) * 3.4);
+	}
+/* The explanation is the point of the badge, so it gets a readable floor
+	   rather than scaling all the way down with --ss. */
+.ss-tip {
+		font-size: max(calc(var(--ss) * 1.05), 13px);
+		width: max(calc(var(--ss) * 44), 380px);
+		max-width: var(--tip-room, 100%);
+	}
+/* Two per row, so panels 3 and 4 restart the count: 3 is leftmost on the
+	   second row and has only its own width to open into, and 4 has the pair.
+	   Panel 3's tip is the one that was running off the left edge here. */
+.ss-step:nth-child(3) .ss-tip { --tip-room: 100%; }
+.ss-step:nth-child(4) .ss-tip { --tip-room: calc(200% + var(--ss) * 1.2); }
+}
+
+/* ---- Hover, gated -------------------------------------------------------
+ * Split out of the :focus-visible rules above so keyboard focus keeps working
+ * where there is no pointer at all. See the note in choices.css. */
+@media (hover: hover) {.ss-help:hover {
+		background: var(--gold);
+		border-color: var(--gold);
+		color: #12220f;
+		outline: none;
+	}
+.ss-help:hover + .ss-tip {
+		opacity: 1;
+		visibility: visible;
+	}
+.ss-continue:hover {
+		background: var(--gold);
+		color: #0d1f0d;
+	}
+}
+
+@keyframes ss-step-in {
+	from {
+		opacity: 0;
+		transform: translateY(calc(var(--ui) * 1.6)) rotate(0deg) scale(0.96);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(var(--step-lift, 0)) rotate(var(--step-tilt, 0deg)) scale(1);
+	}
+}
+
+@keyframes ss-rise {
+	from {
+		opacity: 0;
+		transform: translateY(calc(var(--ui) * 1.6)) scale(0.96);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
+
+@keyframes ss-logo-in {
+	from {
+		opacity: 0;
+		transform: scale(0.5) rotate(-8deg);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1) rotate(0deg);
+	}
+}

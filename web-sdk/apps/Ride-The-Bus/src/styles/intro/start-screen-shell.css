@@ -1,0 +1,88 @@
+/* The overlay both pre-board screens sit inside.
+ *
+ * Split out of the single 1,178-line start-screen.css when StartScreen became
+ * three files. Scoped to StartScreen.svelte, which is the only thing
+ * that renders these classes - a stylesheet is scoped to whichever component
+ * IMPORTS it, so a screen's rules travel with its markup.
+ *
+ * No shared sheet, on purpose: svelte-check reports an unused selector as a
+ * warning and check:svelte must be zero, so a rule in a sheet its component
+ * does not render is a build failure. Rules all three screens need live in the
+ * shell they all sit inside.
+ */
+
+/* ---- Start / intro screen overlay ---------------------------------------- */
+.ss-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 1000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	/* The floor under the table, and NOT dead paint - this one is reachable.
+	   TableScene draws the room over the top of it (.scene is inset:0 with an
+	   opaque stack), but .scene is absolutely positioned inside a container
+	   that scrolls, so on a viewport short enough to scroll the intro the table
+	   travels up with the content and leaves the bottom of the frame bare.
+	   A flat floor colour rather than a second gradient: anything more would be
+	   covered everywhere it is actually visible. */
+	background: var(--felt-edge);
+	font-family: var(--font-body);
+	color: var(--ink-warm);
+	/* The start screen's own scaling unit, and the reason the Play button no
+	   longer falls below the fold.
+	   
+	   It used to borrow the board's --ui, which is capped at 1.55vh - fine for
+	   the board, which is mostly one big table, but this screen stacks a logo,
+	   a title, four step panels, a stats row and a button. That column totals
+	   roughly 72 units, so anything above ~1.38vh pushes the button off the
+	   bottom and forces a scroll to start the game.
+	   
+	   1.3vh keeps the whole column inside the viewport at any height, and the
+	   1.15vw term stops it growing absurdly wide on a short, wide window.
+	   --ui is aliased to it so the rules below did not all need rewriting. */
+	--ss: clamp(3px, min(1.15vw, 1.3vh), 10px);
+	--ui: var(--ss);
+	font-size: calc(var(--ss) * 1.6);
+	/* Still a scroll container, as a last resort for viewports smaller than
+	   anything the clamp floor can absorb. */
+	overflow-y: auto;
+}
+
+/* ---- Responsive: very short viewports (Popout S ~225px tall) ------------- */
+@media (max-height: 320px) {.ss-overlay {
+		/* --ss's 1.3vh term is budgeted for the FULL column: logo, subtitle, lead,
+		   four panels with worked examples, stats and the button. By this height
+		   the rules above have already dropped the logo, the subtitle, the lead
+		   and the demos, so that budget is being paid for content that is no
+		   longer on screen - and 1.3vh of a 225px popout lands on the 3px clamp
+		   floor, which renders the equals badge at about 4px.
+
+		   3vh against what actually remains, and 1.6vw because four panels across
+		   400px have more room than 1.15vw assumes. Together that roughly doubles
+		   every control on the intro at popout size. */
+		--ss: clamp(4.5px, min(1.6vw, 3vh), 10px);
+		/* Slightly smaller floor so text shrinks further when height is tiny. */
+		--ui: clamp(3.2px, min(2vw, 1.55vh), 11px);
+		align-items: flex-start; /* don't center — let scroll reveal from top */
+		padding-top: calc(var(--ui) * 1.5);
+	}
+}
+
+/* ---- Narrow portrait: two steps per row ----------------------------------
+   The 1.15vw term in --ss exists only so four step panels fit across one row.
+   On a phone that is what makes the whole screen tiny: at 390px wide it
+   resolves to 4.5px, so the guess squares come out ~60px, their thirds ~20px,
+   and the "?" explanation renders at about 5px.
+
+   Two per row removes that constraint - each panel gets half the width instead
+   of a quarter - so the vw term can roughly double and everything on the screen
+   grows with it. The vh term tightens to 1.0 because the steps now occupy two
+   rows rather than one, and the Play button must stay above the fold.
+
+   Portrait only: in landscape there is width to spare and height is the scarce
+   axis, where a second row is exactly the wrong trade. */
+@media (max-width: 620px) and (orientation: portrait) {.ss-overlay {
+		--ss: clamp(5px, min(2.2vw, 1vh), 11px);
+	}
+}

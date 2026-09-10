@@ -33,7 +33,7 @@ const ROOT = path.resolve(__dirname, '..');
 const LIBRARY = path.join(ROOT, 'math-sdk/games/ride_the_bus/library');
 const STATS = path.join(LIBRARY, 'stats_summary.json');
 const PUBLISH = path.join(LIBRARY, 'publish_files');
-const OUT = path.join(ROOT, 'web-sdk/apps/Ride-The-Bus/src/game/modeCeilings.ts');
+const OUT = path.join(ROOT, 'web-sdk/apps/Ride-The-Bus/src/game/math/modeCeilings.ts');
 
 if (!fs.existsSync(STATS) || !fs.existsSync(path.join(PUBLISH, 'index.json'))) {
   console.error('No published math found at', LIBRARY);

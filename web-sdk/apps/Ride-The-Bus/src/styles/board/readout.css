@@ -1,0 +1,68 @@
+/* A money readout: its caption, and the figure under it.
+ *
+ * TWO COMPONENTS RENDER THESE, which is why they are not in control-bar.css.
+ * The control bar draws Balance, Last Win and Bet; SessionReadouts draws Net
+ * Position, RTP and the session timer through `.rg-item .cb-val`. Move these
+ * back into the bar's own sheet and the responsible-gambling panel silently
+ * renders unstyled - and currencies.test.ts would keep passing, because it
+ * asserts on the RULE, not on who renders it.
+ *
+ * ONE DEFINITION, TWO IMPORTERS - deliberately not a copy in each. Unlike
+ * .cb-val-multiplied, which is a one-line colour, these carry the money-fitting
+ * contract that `use:fitValue` depends on: max-width, overflow and nowrap are
+ * each load-bearing and each explained below. Two copies that had to stay in
+ * step is exactly the drift CLAUDE.md warns about.
+ *
+ * Still named .cb-* rather than renamed: the class is in the markup of both
+ * components, in currencies.test.ts, and in pressCues' class map, and a rename
+ * buys nothing here.
+ */
+
+.cb-cap { display: block; font-size: calc(var(--ui-bar) * 0.87) /* 9.6px */; letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+
+/* tabular-nums + the reserved min-widths below mean a value changing (a win
+   landing, the bet stepping) never re-flows the bar. */
+/* white-space: nowrap is what makes the fit measurable. Left to wrap, a long
+   value breaks onto a second line, scrollWidth equals clientWidth, and
+   fitToBox sees nothing to do while the readout silently doubles in height. */
+.cb-val {
+  display: block;
+  /* THE LINE THAT MAKES THE FIT WORK AT ALL, and it is not obvious.
+
+     .cb-lastwin is a flex column with `align-items: flex-end`, and a flex child
+     under anything other than `stretch` is sized to its own CONTENT - so this
+     block grew as wide as its text, straight past the max-width on the readout
+     around it. Two things followed, both silent:
+
+       - overflow: hidden below clipped nothing, because the box was never
+         smaller than the text; and
+       - fitToBox saw scrollWidth === clientWidth and concluded there was
+         nothing to shrink.
+
+     So the last-win figure never fitted and never clipped: it simply painted
+     across the balance beside it. Measured with a huge balance AND a huge win,
+     the value box came out 233px inside a 187px readout and overlapped the
+     balance by 17-42px at every size. The balance itself was fine throughout -
+     .cb-balance uses the default `stretch`, so its value WAS constrained and
+     the fit shrank it correctly. One readout worked and its neighbour did not,
+     for a reason nothing in either rule mentions.
+
+     100% of the parent, so the box is bounded in both alignment contexts and
+     scrollWidth becomes meaningful again. */
+  max-width: 100%;
+  /* A hard guard, not the mechanism. The fit above should mean this never
+     clips - but if it ever hits its floor, the text has to stop at the edge of
+     its own readout rather than paint across the controls beside it. That is
+     what it did before the fit existed: a settled figure long enough to
+     overflow, right-aligned, ran leftward straight over the MODE and info
+     buttons. Overlapping another control is worse than being cut off. */
+  overflow: hidden;
+  font-size: calc(var(--ui-bar) * 1.53) /* 16.8px */;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1.1;
+  white-space: nowrap;
+  /* Declared for intent. Poppins ships no `tnum`, so it is inert here - what
+     actually stops the bar re-flowing is the reservation above. */
+  font-variant-numeric: tabular-nums;
+}

@@ -1,0 +1,79 @@
+/* Structural changes the BOARD makes as the viewport shrinks.
+ *
+ * Split out of the single 326-line responsive.css when the bar and the board
+ * became their own components. Scoped to GameBoard.svelte, which is the only thing
+ * that renders these classes - a stylesheet is scoped to whichever component
+ * IMPORTS it, so a screen's rules travel with its markup.
+ *
+ * No shared sheet, on purpose: svelte-check reports an unused selector as a
+ * warning and check:svelte must be zero, so a rule in a sheet its component
+ * does not render is a build failure. Rules all three screens need live in the
+ * shell they all sit inside.
+ */
+
+/* ---- Touch targets on phones ---------------------------------------------
+   The layout is WIDTH-constrained in portrait: --ui resolves from min(2vw,
+   1.55vh), so on a 390x844 phone the 2vw term wins at ~7.8px and every control
+   is sized from that, while ~400px of vertical space goes unused. Measured on
+   that viewport, the guess segments came out at 21px and the bet steppers at
+   22x18px - below the 24px WCAG floor, let alone the 44px comfortable target.
+
+   NOTE ON THE NUMBERS ABOVE: they date from when the hl square was three
+   stacked segments. It is now two halves plus an overlaid equal badge, so the
+   segments measure 29px on Mobile S and 39px on Mobile L, not 27px - past the
+   floor at every phone width. `.third-btn` kept its name through that change
+   and is a half.
+
+   The fix raises --ui as far as the CARD row can take it (see below) and pays
+   for that by tightening the gap, so the square grows without the row of four
+   growing past the viewport. The square stays a square at every size - an
+   earlier version stretched it taller instead, which made the phone show a
+   different-shaped control from every other screen. The bar's own controls,
+   which are sized off --ui-bar rather than --ui, get explicit pixel minimums.
+
+   Pointer-coarse only. A narrow DESKTOP window is the same width but has a
+   mouse, where 21px is precise enough and stretching everything would just look
+   wrong. */
+@media (max-width: 620px) and (orientation: portrait) and (pointer: coarse) {/* The equal badge was the worst target on the board and the most expensive to
+     miss - it sits on the seam between two halves, so a near-miss does not do
+     nothing, it buys the other bet. At 1.95 --ui it paints 14-17px here; this
+     grows the TAP area without growing the paint (see .equal-btn::before in
+     choices.css).
+
+     32px, not 44px, and the arithmetic is the whole argument. The segments
+     either side are half a square across - 34px on Mobile M, 29px on Mobile S
+     (vertically on the hl square, horizontally on the io one). A 44px target
+     would swallow both of them whole.
+
+     The 0.45 term is what keeps 32px honest on the narrowest phone. A flat
+     32px reaches 16px either side of the seam, and on a 320px screen the
+     segment's own CENTRE - which is where a thumb actually lands - is only
+     14.7px out, so aiming at the middle of Higher would have bought Equal.
+     Tying the ceiling to the square instead puts the reach at 45% of a
+     segment's width everywhere: 13px of a 29px segment on Mobile S, 16px of a
+     39px one on Mobile L, with the segment's centre clear by 1.5-3.6px at
+     every size in between.
+
+     Net effect: the badge goes from unhittable to comfortable, and the
+     ambiguous strip along the seam resolves deliberately to Equal instead of
+     to whichever pixel happened to win - without ever reaching the point where
+     the seam swallows the segments it sits between. */
+.equal-btn {
+    --equal-hit: min(32px, calc(var(--choice-size) * 0.45));
+  }
+}
+
+/* Very short windows that are still too wide to be a Popout S - in practice a
+   phone in landscape at ~568x320. The control bar there is on two rows and
+   takes a third of the height, so claw back vertical space by dropping the
+   secondary labels and tightening the stack. Without this the cards and guess
+   squares are pushed outside the play area and overlap each other.
+
+   min-width, because Popout S is narrower AND shorter and needs none of it:
+   there the bar comes back to one row, which frees more height than every
+   label here is worth. */
+@media (max-height: 320px) and (min-width: 521px) {.choice-label { display: none; }
+.running-win-label { display: none; }
+.running-win-mult { display: none; }
+.card-mult { min-height: 0; }
+}
