@@ -8,60 +8,55 @@
  * in StartScreen.svelte, and Svelte reports each one as an unused selector.
  * Keeping them here, imported only by Game.svelte, is what keeps that quiet.
  *
- * The attribute is only ever set on .half-btn. .third-btn and .quad-btn (Colour
- * and Suit) have no unplayable combination, so they never carry aria-disabled -
- * the selectors that used to name them matched nothing anywhere in the game.
+ * WHY A CLASS AND NOT [aria-disabled='true']
  *
- * aria-disabled rather than disabled is load-bearing: a `disabled` button fires
- * no mouse events at all, so it could never raise the .choice-tip explaining
- * why the option is off. That is why the native `title` never appeared either.
+ * These rules used to key off the attribute, and that conflated two states that
+ * only looked alike:
  *
- * The :disabled equivalents of these rules stay in choices.css. Only the
- * aria-disabled variants live here.
+ *   .unavailable          this option can NEVER win, given a guess already made
+ *   aria-disabled         you cannot operate this control RIGHT NOW
+ *
+ * The second is now set on all eleven guess buttons while a round is in flight,
+ * which is correct for assistive tech - and the moment it was, every .half-btn
+ * in the row inherited this file's treatment. A player who picked Black and
+ * pressed Play watched the colour square go dark and lose its selection, while
+ * the three squares beside it dimmed normally: the Colour halves are .half-btn
+ * too, and nothing here had ever needed to tell the two states apart.
+ *
+ * A class says what is meant. The transient lock is left to .choice-row.locked's
+ * own opacity in choices-board.css, which is what every other control in the
+ * game does and what the other three squares were already doing.
+ *
+ * aria-disabled is still the right ATTRIBUTE on the Inside half, and is still
+ * load-bearing: a `disabled` button fires no mouse events at all, so it could
+ * never raise the .choice-tip explaining why the option is off. That is why the
+ * native `title` never appeared either. It is simply not what styles it.
+ *
+ * The :disabled equivalents of these rules stay in choices.css.
  */
 
-/* Dimmed and struck through rather than hidden. Removing the button would
-   reflow the row and leave the player wondering where a control went; showing
-   it plainly disabled says the option exists but is off the table for the guess
-   they have already made. The hover rules in choices.css already exclude
-   [aria-disabled='true'], so it cannot light up under the cursor either. */
-.half-btn[aria-disabled='true'],
-.half-btn[aria-disabled='true']:hover {
+/* Dimmed rather than hidden. Removing the button would reflow the row and leave
+   the player wondering where a control went; showing it knocked back says the
+   option exists but is off the table for the guess they have already made.
+   The hover and press rules in choices.css exclude .unavailable, so it cannot
+   light up under a cursor or answer a press either. */
+.half-btn.unavailable,
+.half-btn.unavailable:hover {
   cursor: not-allowed;
   box-shadow: none;
 }
 
-/* The strike, drawn rather than set as a glyph so it scales with the button and
-   needs no font support. It is ::before so that the dimming layer below paints
-   OVER it: the line then sits at exactly the same brightness as the half it
-   crosses, instead of staying white while everything round it is knocked back.
-   Ignores pointer events so it cannot swallow the tip explaining why it is off. */
-.half-btn[aria-disabled='true']::before {
-  content: '';
-  position: absolute;
-  left: 16%;
-  right: 16%;
-  /* Proportional, with a floor. 3px was a hairline across a 92px desktop
-     square and a tenth of a 29px Popout S one, so the strike read as a
-     different mark at each size. The floor keeps it a visible line where the
-     ratio would round it away, and the offset is exactly half the height so it
-     stays centred at every size. */
-  top: calc(50% - max(1px, var(--ui) * 0.135));
-  height: max(2px, calc(var(--ui) * 0.27));
-  transform: rotate(-24deg);
-  transform-origin: center;
-  background: var(--ink);
-  border-radius: max(1px, calc(var(--ui) * 0.18));
-  pointer-events: none;
-}
+/* NO STRIKE-THROUGH. There was a drawn diagonal line across the button here as
+   well, and it was doing too much: greyed-out is how everything else in this
+   game says unavailable, and a struck-out control reads as an error rather than
+   as an option that is merely off for now. The .choice-tip beside it says why in
+   words, which is the part that was actually carrying the meaning.
 
-/* The dimming, as an OVERLAY rather than a filter on the button.
+   The dimming is an OVERLAY rather than a filter on the button.
    filter: brightness() would apply to the button AND its pseudo-elements as one
-   unit, which is fine for the colour and the icon but leaves no way to have the
-   strike share their brightness rather than its own. Painting a translucent
-   black layer last dims the half, its icon and the strike together, so the
-   whole button reads as one knocked-back thing. */
-.half-btn[aria-disabled='true']::after {
+   unit; painting a translucent black layer last dims the half and its icon
+   together, so the whole button reads as one knocked-back thing. */
+.half-btn.unavailable::after {
   content: '';
   position: absolute;
   inset: 0;

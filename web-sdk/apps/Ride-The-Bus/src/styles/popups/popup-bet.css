@@ -327,3 +327,21 @@
 .cb-val-multiplied {
   color: var(--accent);
 }
+
+/* ---- Touch targets -------------------------------------------------------
+ * See the note in popup-base.css. The chips are the one control here that was
+ * nearly right already - 41.5px at 320px, 3px short - because --chip-d is solved
+ * to hold a fitted figure rather than from a target size. The typed field was
+ * the real miss: .bet-entry carries the border and the padding, but tapping that
+ * padding does not focus the input, and the input's own box was text-height.
+ */
+@media (pointer: coarse) {
+  .bet-chip {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .bet-entry-input {
+    min-height: 36px;
+  }
+}

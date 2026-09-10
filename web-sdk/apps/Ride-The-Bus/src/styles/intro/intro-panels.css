@@ -366,6 +366,24 @@
 	--eq-icon-h: max(calc(var(--ui) * 0.585), 5px);
 }
 
+/* ---- The tap target, which this screen was missing entirely ---------------
+ * choices.css gives .equal-btn::before a hit pad sized by --equal-hit, and
+ * responsive-board.css floors that for touch - but that sheet is scoped to
+ * GameBoard.svelte, and this screen imports choices.css only. So the intro badge
+ * has been paint-sized all along: 16.6px at 320px against a 24px floor, on a
+ * screen where all four guesses are taught by tapping them.
+ *
+ * Same expression as responsive-board.css:62, deliberately - including the
+ * min(32px, ...) ceiling, which is what stops the pad spilling past a half that
+ * is only ~18px wide on a popout. --choice-size is declared on .ss-step above,
+ * so it resolves here. Keep the two in step.
+ */
+@media (pointer: coarse) {
+  .ss-step .equal-btn {
+    --equal-hit: min(32px, calc(var(--choice-size) * 0.45));
+  }
+}
+
 /* ---- Help badge ----
    Top-right of each panel. Focusable rather than hover-only so the explanation
    is reachable by keyboard and by tap. */
@@ -752,6 +770,25 @@
 	letter-spacing: 0.05em;
 	text-transform: uppercase;
 	transition: background 0.2s, color 0.2s;
+}
+
+/* A finger cannot hover, and the hover above is correctly gated behind
+   @media (hover: hover) - which left the one tap that starts the game with no
+   acknowledgement at all between finger-down and the screen changing. */
+.ss-continue:active {
+	background: rgba(var(--gold-rgb), 0.22);
+	transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ss-continue:active { transform: none; }
+}
+
+/* 30.8px tall at 320px. It is the primary action of its screen and alone on its
+   row, so it takes the comfortable target rather than the 24px floor. See the
+   note in popup-base.css for why `pointer: coarse` and nothing else. */
+@media (pointer: coarse) {
+	.ss-continue { min-height: 44px; }
 }
 
 .ss-continue:focus-visible {

@@ -67,7 +67,7 @@ export default {
 	Cancel: '취소',
 	Switch: '변경',
 	'Volatility %s of %t': '변동성 %t단계 중 %s',
-	'Every mode costs 1× your bet.': '모든 모드는 베팅액의 1배입니다.',
+	'Every mode costs %s× your bet.': '모든 모드는 베팅액의 %s배입니다.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'환수율(RTP)은 모든 게임 모드에서 %s이며, 각 모드는 여러 라운드에 걸쳐 같은 수치를 돌려줍니다. 이 게임의 최대 배당은 하이 스테이크에서 베팅의 %m입니다.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
@@ -161,6 +161,7 @@ export default {
 	'Bet is below the minimum of %s': '베팅이 최소 금액 %s 미만입니다',
 	'Bet is above the maximum of %s': '베팅이 최대 금액 %s 을 초과합니다',
 	'Bet is locked while autoplay runs': '자동 플레이 중에는 베팅이 잠깁니다',
+	'Mode is locked while autoplay runs': '자동 플레이 중에는 게임 모드가 잠깁니다',
 	'Replays cannot be re-bet': '리플레이는 다시 베팅할 수 없습니다',
 	'Replay is view-only': '리플레이는 보기 전용입니다',
 	'No active game session': '활성화된 게임 세션이 없습니다',

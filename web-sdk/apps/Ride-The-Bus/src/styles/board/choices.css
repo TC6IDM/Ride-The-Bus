@@ -77,7 +77,7 @@
    guess square gets tapped every single round. The :active rule below is the
    touch-reachable half. */
 @media (hover: hover) {
-  .half-btn:hover:not(.selected):not([aria-disabled='true']),
+  .half-btn:hover:not(.selected):not(.unavailable):not([aria-disabled='true']),
   .third-btn:hover:not(.selected):not([aria-disabled='true']),
   .quad-btn:hover:not(.selected):not([aria-disabled='true']) {
     filter: brightness(1.16);
@@ -99,7 +99,7 @@
  * hover to preserve and this is the only feedback a tap can produce. It is now
  * the primary press state, and it is brighter than hover on purpose: on touch
  * it is the first thing the player sees happen. */
-.half-btn:active:not(:disabled):not([aria-disabled='true']),
+.half-btn:active:not(:disabled):not(.unavailable):not([aria-disabled='true']),
 .third-btn:active:not(:disabled):not([aria-disabled='true']),
 .quad-btn:active:not(:disabled):not([aria-disabled='true']),
 .equal-btn:active:not(.selected) {

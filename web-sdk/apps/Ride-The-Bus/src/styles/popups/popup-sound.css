@@ -124,3 +124,18 @@
   opacity: 0.38;
   cursor: not-allowed;
 }
+
+/* ---- Pressed ------------------------------------------------------------
+ * The two mute toggles are one of only two ways to silence the game, and a
+ * finger cannot hover - so without this a tap had nothing to acknowledge it
+ * between finger-down and the level bar going flat. Not motion-only, because
+ * reduced motion takes a transform away and would leave nothing behind.
+ */
+.sound-mute:active {
+  background: rgba(var(--shadow-rgb), 0.28);
+  transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sound-mute:active { transform: none; }
+}

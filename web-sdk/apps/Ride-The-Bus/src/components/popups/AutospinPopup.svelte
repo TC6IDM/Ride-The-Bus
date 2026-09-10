@@ -68,7 +68,7 @@
 {/snippet}
 
 
-  <div class="popup popup-autospin" role="dialog" aria-label={t('Autoplay')}>
+  <div class="popup popup-autospin" role="dialog" aria-modal="true" tabindex="-1" aria-label={t('Autoplay')}>
     <div class="popup-head"><span>{t('Autoplay')}</span><button class="popup-close" onclick={onclose} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
     <div class="autospin-body">
       <span class="popup-sub">{t('Number of Plays')}</span>

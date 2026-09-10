@@ -29,6 +29,7 @@
   import { numberToCurrencyString } from 'utils-shared/amount';
 
   import { choicesLocked } from '../../game/round/roundState.svelte';
+  import { sound } from '../../game/audio/sound';
 
   /**
    * Pointer or keyboard focus is on the barred Inside button.
@@ -38,6 +39,46 @@
    * anything positioned inside it gets clipped to the rounded square.
    */
   let insideBlockedHover = $state(false);
+
+  /**
+   * The barred Inside half, made answerable by a FINGER.
+   *
+   * The tip was raised by onmouseenter / onfocus only. On touch that is either
+   * nothing at all - a browser may synthesise no mouseenter - or worse, a
+   * mouseenter with no matching mouseleave until something else is tapped, so
+   * the tip appears and sticks. Meanwhile the tap itself did nothing: the
+   * button is aria-disabled rather than disabled, so the click lands and
+   * setIoChoice refuses it without a word.
+   *
+   * A tap now shows the tip on a timer and sounds the refusal. Hover keeps its
+   * untimed behaviour, because mouseleave genuinely does fire for a mouse.
+   */
+  const INSIDE_TIP_MS = 4200;
+  let insideTipTimer: ReturnType<typeof setTimeout> | null = null;
+  function flashInsideTip() {
+    insideBlockedHover = true;
+    if (insideTipTimer) clearTimeout(insideTipTimer);
+    insideTipTimer = setTimeout(() => { insideBlockedHover = false; }, INSIDE_TIP_MS);
+  }
+
+  function onInsideClick() {
+    if (!insideIsPossible()) { sound.playBlocked(); flashInsideTip(); return; }
+    pick(setIoChoice, 'inside');
+  }
+
+  /**
+   * Every guess press goes through here, because the row is LOCKED by opacity
+   * and pointer-events rather than by the `disabled` attribute - and
+   * pointer-events does not stop the keyboard. Tab + Enter during a reveal
+   * therefore changed what the NEXT round would buy, silently, while the board
+   * was still showing the last one. The setters in betState have no view of
+   * round state and should not acquire one, so the guard belongs at the call
+   * site, which is here.
+   */
+  function pick<T>(set: (value: T) => void, value: T) {
+    if (choicesLocked()) { sound.playBlocked(); return; }
+    set(value);
+  }
 </script>
 
 <!-- Inside: the card lands BETWEEN the two bounds, so the arrows converge. -->
@@ -124,21 +165,21 @@
 {@render cardRow()}
 {#if round.hasPlayed}{@render runningWinBar()}{/if}
 
-<div class="choice-row" class:locked={choicesLocked()}>
+<div class="choice-row" class:locked={choicesLocked()} aria-busy={choicesLocked()}>
   <div class="choice-column">
     <span class="choice-label">{t('Color')}</span>
     <div class="choice-square color-square" role="group" aria-label={t('Pick a color')}>
-      <button type="button" class="half-btn black-half" class:selected={guesses.color === 'black'} onclick={() => setColorChoice('black')} aria-label={t('Black')}></button>
-      <button type="button" class="half-btn red-half" class:selected={guesses.color === 'red'} onclick={() => setColorChoice('red')} aria-label={t('Red')}></button>
+      <button type="button" class="half-btn black-half" class:selected={guesses.color === 'black'} onclick={() => pick(setColorChoice, 'black')} aria-disabled={choicesLocked()} aria-label={t('Black')}></button>
+      <button type="button" class="half-btn red-half" class:selected={guesses.color === 'red'} onclick={() => pick(setColorChoice, 'red')} aria-disabled={choicesLocked()} aria-label={t('Red')}></button>
     </div>
   </div>
 
   <div class="choice-column">
     <span class="choice-label">{t('Higher')}<br />{t('Lower')}</span>
     <div class="choice-square hl-square" role="group" aria-label={t('Higher, lower, or equal')}>
-      <button type="button" class="third-btn higher-third" class:selected={guesses.hl === 'higher'} onclick={() => setHlChoice('higher')} aria-label={t('Higher')}>{@render iconTriangleUp()}</button>
-      <button type="button" class="third-btn lower-third" class:selected={guesses.hl === 'lower'} onclick={() => setHlChoice('lower')} aria-label={t('Lower')}>{@render iconTriangleDown()}</button>
-      <button type="button" class="equal-btn" class:selected={guesses.hl === 'equal'} onclick={() => setHlChoice('equal')} aria-label={t('Equal')}>{@render iconEquals()}</button>
+      <button type="button" class="third-btn higher-third" class:selected={guesses.hl === 'higher'} onclick={() => pick(setHlChoice, 'higher')} aria-disabled={choicesLocked()} aria-label={t('Higher')}>{@render iconTriangleUp()}</button>
+      <button type="button" class="third-btn lower-third" class:selected={guesses.hl === 'lower'} onclick={() => pick(setHlChoice, 'lower')} aria-disabled={choicesLocked()} aria-label={t('Lower')}>{@render iconTriangleDown()}</button>
+      <button type="button" class="equal-btn" class:selected={guesses.hl === 'equal'} onclick={() => pick(setHlChoice, 'equal')} aria-disabled={choicesLocked()} aria-label={t('Equal')}>{@render iconEquals()}</button>
     </div>
   </div>
 
@@ -149,16 +190,17 @@
         type="button"
         class="half-btn inside-half"
         class:selected={guesses.io === 'inside'}
-        onclick={() => setIoChoice('inside')}
-        aria-disabled={!insideIsPossible()}
+        class:unavailable={!insideIsPossible()}
+        onclick={onInsideClick}
+        aria-disabled={choicesLocked() || !insideIsPossible()}
         aria-label={t('Inside')}
         onmouseenter={() => (insideBlockedHover = true)}
         onmouseleave={() => (insideBlockedHover = false)}
         onfocus={() => (insideBlockedHover = true)}
         onblur={() => (insideBlockedHover = false)}
       >{@render iconInside()}</button>
-      <button type="button" class="half-btn outside-half" class:selected={guesses.io === 'outside'} onclick={() => setIoChoice('outside')} aria-label={t('Outside')}>{@render iconOutside()}</button>
-      <button type="button" class="equal-btn" class:selected={guesses.io === 'equal'} onclick={() => setIoChoice('equal')} aria-label={t('Equal')}>{@render iconEquals()}</button>
+      <button type="button" class="half-btn outside-half" class:selected={guesses.io === 'outside'} onclick={() => pick(setIoChoice, 'outside')} aria-disabled={choicesLocked()} aria-label={t('Outside')}>{@render iconOutside()}</button>
+      <button type="button" class="equal-btn" class:selected={guesses.io === 'equal'} onclick={() => pick(setIoChoice, 'equal')} aria-disabled={choicesLocked()} aria-label={t('Equal')}>{@render iconEquals()}</button>
     </div>
     <!-- Why Inside is off, in words. Rendered here rather than inside the
          square because .choice-square is overflow:hidden and would clip it
@@ -173,10 +215,10 @@
   <div class="choice-column">
     <span class="choice-label">{t('Suit')}</span>
     <div class="choice-square suit-square" role="group" aria-label={t('Pick a suit')}>
-      <button type="button" class="quad-btn red-suit" class:selected={guesses.suit === 'heart'} onclick={() => setSuitChoice('heart')} aria-label={t('Heart')}><SuitIcon suit="heart" /></button>
-      <button type="button" class="quad-btn" class:selected={guesses.suit === 'spade'} onclick={() => setSuitChoice('spade')} aria-label={t('Spade')}><SuitIcon suit="spade" /></button>
-      <button type="button" class="quad-btn" class:selected={guesses.suit === 'club'} onclick={() => setSuitChoice('club')} aria-label={t('Club')}><SuitIcon suit="club" /></button>
-      <button type="button" class="quad-btn red-suit" class:selected={guesses.suit === 'diamond'} onclick={() => setSuitChoice('diamond')} aria-label={t('Diamond')}><SuitIcon suit="diamond" /></button>
+      <button type="button" class="quad-btn red-suit" class:selected={guesses.suit === 'heart'} onclick={() => pick(setSuitChoice, 'heart')} aria-disabled={choicesLocked()} aria-label={t('Heart')}><SuitIcon suit="heart" /></button>
+      <button type="button" class="quad-btn" class:selected={guesses.suit === 'spade'} onclick={() => pick(setSuitChoice, 'spade')} aria-disabled={choicesLocked()} aria-label={t('Spade')}><SuitIcon suit="spade" /></button>
+      <button type="button" class="quad-btn" class:selected={guesses.suit === 'club'} onclick={() => pick(setSuitChoice, 'club')} aria-disabled={choicesLocked()} aria-label={t('Club')}><SuitIcon suit="club" /></button>
+      <button type="button" class="quad-btn red-suit" class:selected={guesses.suit === 'diamond'} onclick={() => pick(setSuitChoice, 'diamond')} aria-disabled={choicesLocked()} aria-label={t('Diamond')}><SuitIcon suit="diamond" /></button>
     </div>
   </div>
 </div>

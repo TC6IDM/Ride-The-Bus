@@ -67,7 +67,7 @@ export default {
 	Cancel: 'Отмена',
 	Switch: 'Сменить',
 	'Volatility %s of %t': 'Волатильность %s из %t',
-	'Every mode costs 1× your bet.': 'Каждый режим стоит 1× вашей ставки.',
+	'Every mode costs %s× your bet.': 'Каждый режим стоит %s× вашей ставки.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Возврат игроку (RTP) составляет %s в каждом режиме, и каждый возвращает эту же величину на дистанции. Максимум, который может выплатить игра, — %m вашей ставки, в режиме Высокие ставки.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
@@ -162,6 +162,7 @@ export default {
 	'Bet is below the minimum of %s': 'Ставка ниже минимума %s',
 	'Bet is above the maximum of %s': 'Ставка выше максимума %s',
 	'Bet is locked while autoplay runs': 'Ставка заблокирована во время автоигры',
+	'Mode is locked while autoplay runs': 'Режим игры заблокирован во время автоигры',
 	'Replays cannot be re-bet': 'На повтор нельзя сделать ставку заново',
 	'Replay is view-only': 'Повтор только для просмотра',
 	'No active game session': 'Нет активной игровой сессии',

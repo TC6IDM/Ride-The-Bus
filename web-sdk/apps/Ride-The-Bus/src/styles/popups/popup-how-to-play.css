@@ -14,7 +14,12 @@
    beats .popup regardless of rule order. The same viewport clamp applies, so
    it still can't overflow a narrow window. */
 .popup.popup-info {
-  width: min(calc(var(--ui-bar) * 45), calc(100vw - calc(var(--ui-bar) * 2.55)));
+  /* The viewport inset has a PIXEL FLOOR as well as a proportional value.
+     2.55 --ui-bar is 16.7px at 320px, so this panel came within 12.4px of each
+     edge - and .popup-backdrop fills everything outside it, so a tap that
+     missed the panel by a few pixels closed it instead. The proportional term
+     still wins at every larger size; 32px only binds on a phone. */
+  width: min(calc(var(--ui-bar) * 45), calc(100vw - max(32px, var(--ui-bar) * 2.55)));
 }
 
 .info-body { font-size: calc(var(--ui-bar) * 1.24); line-height: 1.5; color: var(--ink-body); }
@@ -274,4 +279,16 @@
 	.mode-tab:active {
 		transform: none;
 	}
+}
+
+/* ---- Touch targets -------------------------------------------------------
+ * See the note in popup-base.css. The three family tabs measured 20.2px tall at
+ * 320px, under the 24px WCAG 2.2 AA floor. 36px rather than 44px: they sit in a
+ * wrapping row of three and stack two-up on the narrowest phones, where 44 would
+ * cost a third of the panel's height before any rules text is read.
+ */
+@media (pointer: coarse) {
+  .mode-tab {
+    min-height: 36px;
+  }
 }

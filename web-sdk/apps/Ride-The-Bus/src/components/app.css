@@ -201,6 +201,35 @@
 	touch-action: manipulation;
 }
 
+/* ---- Two things a touch browser does on its own that this game should not let
+       it do ------------------------------------------------------------------
+ *
+ * TAP HIGHLIGHT. iOS paints a translucent grey RECTANGLE over whatever was
+ * tapped. Half the controls here are circles - the spin disc, every popup close
+ * disc, the bet chips - so the flash is the wrong shape on them, and it lands on
+ * top of press states that were designed deliberately (see the :active notes in
+ * control-bar.css and choices.css). Suppressing it is only safe because every
+ * pressable thing in the game now HAS an :active state of its own; do not remove
+ * one without restoring this.
+ *
+ * NOTE FOR THE NEXT EDITOR: betChips.test.ts locates the form-control font
+ * reset further down by searching this file for the word button followed by a
+ * comma, and takes everything up to the next brace as the rule. So prose above
+ * that rule must not contain that pair. An earlier draft of this comment listed
+ * "the spin b-u-t-t-o-n, every popup close b-u-t-t-o-n" and the test failed with
+ * "the reset does not cover <input>" - pointing at a rule nobody had touched.
+ *
+ * SELECTION. A long press on a <button> starts a text selection and, on iOS,
+ * raises the copy callout - so holding the spacebar's equivalent on a phone, or
+ * just pressing a guess square a little too long, selects its label instead of
+ * registering. Buttons only, so the error dialog's support text and the money
+ * readouts in the rules screen stay copyable. */
+button {
+	-webkit-tap-highlight-color: transparent;
+	-webkit-touch-callout: none;
+	user-select: none;
+}
+
 html,
 body {
 	height: 100%;

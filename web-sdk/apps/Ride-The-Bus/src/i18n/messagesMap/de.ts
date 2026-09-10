@@ -67,7 +67,7 @@ export default {
 	Cancel: 'Abbrechen',
 	Switch: 'Wechseln',
 	'Volatility %s of %t': 'Volatilität %s von %t',
-	'Every mode costs 1× your bet.': 'Jeder Modus kostet 1× deinen Einsatz.',
+	'Every mode costs %s× your bet.': 'Jeder Modus kostet %s× deinen Einsatz.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Die Auszahlungsquote (RTP) beträgt %s in jedem Spielmodus, und jeder Modus gibt diesen Wert über viele Runden zurück. Am meisten kann dieses Spiel %m deines Einsatzes auszahlen, im Modus Hoher Einsatz.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
@@ -162,6 +162,7 @@ export default {
 	'Bet is below the minimum of %s': 'Einsatz liegt unter dem Minimum von %s',
 	'Bet is above the maximum of %s': 'Einsatz liegt über dem Maximum von %s',
 	'Bet is locked while autoplay runs': 'Einsatz ist während des Autoplay gesperrt',
+	'Mode is locked while autoplay runs': 'Spielmodus ist während des Autoplay gesperrt',
 	'Replays cannot be re-bet': 'Wiederholungen können nicht neu gesetzt werden',
 	'Replay is view-only': 'Wiederholung ist nur zum Ansehen',
 	'No active game session': 'Keine aktive Spielsitzung',

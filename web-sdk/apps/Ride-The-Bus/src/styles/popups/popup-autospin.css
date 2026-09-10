@@ -89,7 +89,7 @@
      same two-part shadow the table gives its props reads as the button
      standing off the panel instead. */
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 1px 0 var(--panel-lit),
     0 1px 2px rgba(var(--shadow-rgb), 0.5),
     0 calc(var(--ui-bar) * 0.55) calc(var(--ui-bar) * 1.09) rgba(var(--shadow-rgb), 0.42);
 }
@@ -249,5 +249,39 @@
 .spin-pill:active,
 .action-button:not(:disabled):active {
     transform: none;
+  }
+}
+
+/* ---- Touch targets -------------------------------------------------------
+ * See the note in popup-base.css for why 36/44 and why `pointer: coarse` alone.
+ * Measured at 320px (--ui-bar 6.56px): the pills came out 20.7px tall, the
+ * steppers 27x18.6px and Start 28.7px - all under the 24px WCAG 2.2 AA floor.
+ */
+@media (pointer: coarse) {
+  /* A wrapping row of nine, so 36px rather than 44px: the pills are already the
+     tallest thing in the panel and 44 would add a row on a narrow phone. They
+     are 999px-radius pills, so extra height reads as deliberate. */
+  .spin-pill,
+  .spin-pill-inf {
+    min-height: 36px;
+  }
+
+  /* Stacked and adjacent, exactly like .cb-step in the bar - which takes a floor
+     nearer 24 than 36 for the same reason: two tall halves would be deeper than
+     the selector they sit in. */
+  .stepper-btn {
+    min-height: 26px;
+  }
+
+  /* The typed count. The wrapper carries the border and the padding, but tapping
+     the wrapper's padding does not focus the input - only the input's own box
+     does, and that box was text-height. */
+  .rounds-input {
+    min-height: 36px;
+  }
+
+  /* The primary action, and alone on its row. */
+  .action-button {
+    min-height: 44px;
   }
 }

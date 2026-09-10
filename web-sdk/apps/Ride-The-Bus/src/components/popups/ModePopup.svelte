@@ -15,8 +15,9 @@
   import MarkIcon from '../icons/MarkIcon.svelte';
   import gameConfig from '../../game/platform/config';
   import { t } from '../../i18n/i18nDerived';
-  import { FAMILY_BLURB, FAMILY_RULES, MODE_FAMILIES } from '../../game/math/modes';
+  import { FAMILY_BLURB, FAMILY_RULES } from '../../game/math/modes';
   import {
+    FAMILIES_BY_VOLATILITY,
     FAMILY_BOLTS,
     FAMILY_BOLT_CEILING,
     VOLATILITY_BOLTS,
@@ -34,6 +35,8 @@
   <div
     class="popup popup-mode"
     role="dialog"
+    aria-modal="true"
+    tabindex="-1"
     aria-label={t('Game Mode')}
     style={`--tint: ${volatilityColorVar(bet.family)}; --tint-rgb: ${volatilityColorRgbVar(bet.family)}; --tint-strong: ${volatilityColorVar(bet.family)}`}
   >
@@ -80,7 +83,16 @@
             {t('Your four guesses top out at %s your bet.').replace('%s', `${picked}×`)}
           </p>
         {/if}
-        <p class="mode-confirm-cost">{t('Every mode costs 1× your bet.')}</p>
+        <!-- The figure is interpolated from FAMILY_RULES, not written into the
+             string - the same fix the RTP line below already had, and for the
+             same reason: it was baked into all 17 locale files where nothing
+             could compare it to the cost the round is actually priced at.
+             The word "Every" is the half a placeholder cannot fix; if the
+             families ever stop sharing a cost, this sentence needs rewriting,
+             not just re-interpolating. -->
+        <p class="mode-confirm-cost">
+          {t('Every mode costs %s× your bet.').replace('%s', String(target.cost))}
+        </p>
         <div class="mode-confirm-actions">
           <button type="button" class="mode-confirm-cancel" onclick={() => (bet.pending = null)}>
             {t('Cancel')}
@@ -96,13 +108,17 @@
       </div>
     {:else}
     <div class="mode-list">
-      {#each MODE_FAMILIES as family}
+      <!-- Volatility order, not publication order. MODE_FAMILIES is
+           ['base','sc','hs'] because that is what the math publishes, so these
+           rows used to draw 3, 1, 5 bolts down the column - a ruler beside
+           three values in no order. See FAMILIES_BY_VOLATILITY. -->
+      {#each FAMILIES_BY_VOLATILITY as family}
         {@const rules = FAMILY_RULES[family]}
         <button
           type="button"
           class="mode-option"
           class:selected={bet.family === family}
-          aria-pressed={bet.family === family}
+          {...bet.family === family ? { 'aria-current': 'true' } : {}}
           style={`--vol-color: ${volatilityColorVar(family)}; --vol-rgb: ${volatilityColorRgbVar(family)}`}
           onclick={() => {
             // Re-picking the mode already in play is a no-op, so it closes

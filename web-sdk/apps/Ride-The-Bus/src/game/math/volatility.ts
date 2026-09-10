@@ -77,6 +77,26 @@ export const FAMILY_BOLTS: Record<ModeFamily, number> = {
 };
 
 /**
+ * The three families in VOLATILITY order, for anything that draws them as a list.
+ *
+ * MODE_FAMILIES is ['base', 'sc', 'hs'], which is the order the math publishes
+ * and must stay that way - it drives allPlayableModes() and, through it, which
+ * books get generated. But every screen that iterates it also prints a bolt
+ * meter on each row, so the picker and the rules tabs were rendering 3, 1, 5
+ * down the column: a ruler shown next to three values in no order at all, which
+ * asks the reader to sort it themselves and gives them no reason to think it
+ * sorts. Sorted, the meters climb 1 / 3 / 5 down the page and the list IS the
+ * ladder.
+ *
+ * DERIVED, not written out. A second literal ordering is exactly the kind of
+ * thing that agrees with FAMILY_BOLTS on the day it is written and quietly
+ * stops agreeing later; volatility.test.ts pins that it matches.
+ */
+export const FAMILIES_BY_VOLATILITY: readonly ModeFamily[] = [...MODE_FAMILIES].sort(
+  (a, b) => FAMILY_BOLTS[a] - FAMILY_BOLTS[b],
+);
+
+/**
  * How many of the four guesses were Equal picks: 0, 1 or 2.
  *
  * Only stages 2 and 3 offer Equal. Stage 1 is a colour and stage 4 a suit, and

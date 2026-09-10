@@ -159,11 +159,19 @@
   /* The lit top edge. Was 0.14, which on a 1px line is below the threshold of
      being seen at all - popup-base.css built the table's whole lighting model
      and then drew it too faint to notice, so the panels read as flat. */
-  --panel-lit: rgba(255, 240, 220, 0.3);
+  /* ONE TRIPLET, and everything warm on a panel comes off it. The colour was
+     written out longhand in four places at three different alphas, and in two
+     more it had drifted to a pure white - .action-button's lit edge in
+     popup-mode.css and popup-autospin.css both said rgba(255,255,255,0.28),
+     which is the cool-chrome-over-a-warm-table split this palette exists to
+     close, surviving inside the very sheets that close it. Anything needing
+     this colour at a new alpha writes rgba(var(--panel-lit-rgb), a). */
+  --panel-lit-rgb: 255, 240, 220;
+  --panel-lit: rgba(var(--panel-lit-rgb), 0.3);
   --panel-shade: rgba(0, 0, 0, 0.55);
   /* Hairlines on panels are warm, matching the light rather than the pure
      white the rest of the app uses over felt. */
-  --panel-edge: rgba(255, 240, 220, 0.1);
+  --panel-edge: rgba(var(--panel-lit-rgb), 0.1);
   --panel-light: rgba(28, 42, 58, 0.72);
   --panel-dark: rgba(8, 14, 22, 0.82);
   --panel-float: rgba(10, 17, 26, 0.82);
@@ -266,7 +274,13 @@
   --win: #7cffb2;
   --win-soft: #7ee2a8;
   --loss: #ff3b3b;
-  --loss-soft: #ff8f8f;
+  /* A TRIPLET, because the error dialog's edge needs this colour at an alpha
+     and the colour rule says anything needing one is an rgb triplet with the
+     hex derived from it - not a second literal kept in step by hand. The edge
+     was rgba(255, 120, 120, 0.4) written out in error-modal.css, which is not
+     one of the two files the rule exempts. */
+  --loss-soft-rgb: 255, 143, 143;
+  --loss-soft: rgb(var(--loss-soft-rgb));
   /* The running-win label, which sits on FELT rather than on slate - so it
      takes a green cast the cool ink ramp above does not have. Named because it
      was a literal in cards.css, which is not one of the two files the

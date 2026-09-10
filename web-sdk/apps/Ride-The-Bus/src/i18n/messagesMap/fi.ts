@@ -67,7 +67,7 @@ export default {
 	Cancel: 'Peruuta',
 	Switch: 'Vaihda',
 	'Volatility %s of %t': 'Volatiliteetti %s / %t',
-	'Every mode costs 1× your bet.': 'Jokainen tila maksaa 1× panoksesi.',
+	'Every mode costs %s× your bet.': 'Jokainen tila maksaa %s× panoksesi.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Palautusprosentti (RTP) on %s jokaisessa pelitilassa, ja jokainen palauttaa saman luvun monen kierroksen aikana. Eniten tämä peli voi maksaa %m panoksestasi, Suuret panokset -tilassa.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
@@ -162,6 +162,7 @@ export default {
 	'Bet is below the minimum of %s': 'Panos alittaa vähimmäismäärän %s',
 	'Bet is above the maximum of %s': 'Panos ylittää enimmäismäärän %s',
 	'Bet is locked while autoplay runs': 'Panos on lukittu automaattipelin ajaksi',
+	'Mode is locked while autoplay runs': 'Pelitila on lukittu automaattipelin ajaksi',
 	'Replays cannot be re-bet': 'Toistoihin ei voi lyödä uutta panosta',
 	'Replay is view-only': 'Uusinta on vain katseltavissa',
 	'No active game session': 'Ei aktiivista pelisessiota',

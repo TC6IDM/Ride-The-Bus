@@ -83,7 +83,7 @@ export default {
 	// decorative one at a time and only mean anything as a count, so the meter
 	// carries this instead of labelling five separate images.
 	'Volatility %s of %t': 'Volatility %s of %t',
-	'Every mode costs 1× your bet.': 'Every mode costs 1× your bet.',
+	'Every mode costs %s× your bet.': 'Every mode costs %s× your bet.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.',
 	// Shown on the card a Second Chance round let off.
@@ -201,6 +201,7 @@ export default {
 	'Bet is below the minimum of %s': 'Bet is below the minimum of %s',
 	'Bet is above the maximum of %s': 'Bet is above the maximum of %s',
 	'Bet is locked while autoplay runs': 'Bet is locked while autoplay runs',
+	'Mode is locked while autoplay runs': 'Mode is locked while autoplay runs',
 	'Replays cannot be re-bet': 'Replays cannot be re-bet',
 	'Replay is view-only': 'Replay is view-only',
 	'No active game session': 'No active game session',

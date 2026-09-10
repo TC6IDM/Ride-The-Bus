@@ -67,7 +67,7 @@ export default {
 	Cancel: 'Batal',
 	Switch: 'Ganti',
 	'Volatility %s of %t': 'Volatilitas %s dari %t',
-	'Every mode costs 1× your bet.': 'Setiap mode berbiaya 1× taruhan Anda.',
+	'Every mode costs %s× your bet.': 'Setiap mode berbiaya %s× taruhan Anda.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Return to player (RTP) adalah %s di setiap mode, dan masing-masing mengembalikan angka yang sama selama banyak ronde. Maksimum yang dapat dibayar game ini adalah %m taruhan Anda, di Taruhan Tinggi.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
@@ -163,6 +163,7 @@ export default {
 	'Bet is below the minimum of %s': 'Taruhan di bawah minimum %s',
 	'Bet is above the maximum of %s': 'Taruhan melebihi maksimum %s',
 	'Bet is locked while autoplay runs': 'Taruhan terkunci selama putar otomatis berjalan',
+	'Mode is locked while autoplay runs': 'Mode permainan terkunci selama putar otomatis berjalan',
 	'Replays cannot be re-bet': 'Tayangan ulang tidak dapat dipertaruhkan lagi',
 	'Replay is view-only': 'Tayangan ulang hanya untuk dilihat',
 	'No active game session': 'Tidak ada sesi permainan aktif',

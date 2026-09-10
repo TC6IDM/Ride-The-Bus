@@ -40,7 +40,7 @@
      same two-part shadow the table gives its props reads as the button
      standing off the panel instead. */
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 1px 0 var(--panel-lit),
     0 1px 2px rgba(var(--shadow-rgb), 0.5),
     0 calc(var(--ui-bar) * 0.55) calc(var(--ui-bar) * 1.09) rgba(var(--shadow-rgb), 0.42);
 }
@@ -55,25 +55,51 @@
 /* ---- Bet mode picker -----------------------------------------------------
    Approval requires each mode's cost and what it buys to be stated, so the
    cost sits on the row itself rather than in a paytable elsewhere. */
+/* ---- A LIST, NOT THREE CARDS IN A CARD ------------------------------------
+ * Each row used to carry its own 1px border, its own radius and its own wash,
+ * inside a .popup that already has a border, a radius and a four-layer shadow.
+ * That is one containment layer too many, and the outer one cannot be the one
+ * to go - it is a dialog. So the rows gave theirs up.
+ *
+ * What replaces it is a hairline BETWEEN rows rather than around each one, which
+ * is what turns three stacked boxes into a list - and a list is the right shape,
+ * because these three are a volatility LADDER and are now drawn in that order
+ * (see FAMILIES_BY_VOLATILITY). The meters make a clean right-hand column
+ * climbing 1 / 3 / 5 down the page, which three separately-boxed cards actively
+ * hid: every row was equally a card, so nothing about the arrangement said the
+ * three were ordered at all.
+ *
+ * The gap goes with the borders. Rows that touch and are divided by a rule read
+ * as one object with parts; rows that float apart read as three objects, which
+ * is the thing being fixed.
+ *
+ * Only the SELECTED row is still a surface, and that is the point: with nothing
+ * else boxed, one wash is unambiguous where before it was a fourth shade of
+ * card. */
 .mode-list {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--ui-bar) * 0.73);
 }
 
 .mode-option {
   display: flex;
   flex-direction: column;
   gap: calc(var(--ui-bar) * 0.36);
-  padding: calc(var(--ui-bar) * 1) calc(var(--ui-bar) * 1.09);
-  border-radius: calc(var(--ui-bar) * 0.73);
-  border: 1px solid rgba(var(--ink-rgb), 0.12);
-  background: rgba(var(--ink-rgb), 0.05);
+  padding: calc(var(--ui-bar) * 1.09);
+  border: none;
+  border-radius: calc(var(--ui-bar) * 0.55);
+  background: none;
   color: var(--ink-body);
   text-align: start;
   cursor: pointer;
   text-transform: none;
-  transition: border-color 0.12s, background 0.12s;
+  transition: background 0.12s var(--ease-out), color 0.12s var(--ease-out);
+}
+
+/* The divider, on every row but the first. Warm, like every other hairline on a
+   panel - see --panel-edge. */
+.mode-option + .mode-option {
+  border-top: 1px solid var(--panel-edge);
 }
 
 @media (hover: hover) {
@@ -94,27 +120,46 @@
    * own wash - at 0.18 red-on-red measures 4.43 and fails. 0.14 holds it at 4.74
    * with the body copy above 10. */
   .mode-option:hover {
-    border-color: var(--vol-color, var(--tint));
     background: rgba(var(--vol-rgb, var(--tint-rgb)), 0.08);
   }
 }
 
+/* The one surface left in the list. 0.14 is a MEASURED ceiling, not a taste:
+   .mode-option-name is ~15px bold and sits ON its own wash, and at 0.18 red on
+   red measures 4.43 and fails. Re-measured after the borders came off - the
+   wash now sits directly on the panel rather than inside a bordered box, and
+   the figure is unchanged because the backdrop it is composited over is. */
 .mode-option.selected {
-  border-color: var(--vol-color, var(--tint));
   background: rgba(var(--vol-rgb, var(--tint-rgb)), 0.14);
   color: var(--ink);
+}
+
+/* A selected row swallows the divider above it, so the wash reads as one block
+   rather than a block with a line stuck to its top edge. */
+.mode-option.selected,
+.mode-option.selected + .mode-option {
+  border-top-color: transparent;
 }
 
 .mode-option.selected .mode-option-name {
   color: var(--vol-color, var(--tint));
 }
 
+/* min-width: 0 on the name and a hard `flex: 0 0 auto` on the meter, because
+   the panel is 215px wide at 320px and ships in 17 locales - "Second Chance" is
+   the short version. Without the first the name cannot shrink below its content
+   and pushes the meter out of the row; without the second the meter is what
+   gets squashed, and it is a RULER, so a bent one is worse than a wrapped
+   label. The name wraps; the seven stops never move. */
 .mode-option-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: calc(var(--ui-bar) * 0.9);
 }
+
+.mode-option-name,
+.mode-confirm-name { min-width: 0; overflow-wrap: anywhere; }
 
 /* The meter sits opposite the mode's name on the head row, which is already
    space-between - so it needs no positioning of its own, only alignment.
@@ -123,6 +168,7 @@
    line. */
 .mode-option-vol {
   align-self: center;
+  flex: 0 0 auto;
   --bolt-size: calc(var(--ui-bar) * 1.27);
 }
 
@@ -172,8 +218,17 @@
  * tap on a touch screen - which never hovers - gave no acknowledgement at all
  * between finger down and the menu closing.
  */
+/* A press state that is NOT only motion.
+ *
+ * This was a 1px translate and nothing else, and the reduced-motion block below
+ * sets transform: none - so a player on a phone with reduced motion on got
+ * absolutely no acknowledgement from the biggest control in the panel. The
+ * comment above exists because a finger cannot hover; reduced motion then took
+ * back the one state it had left. The wash and the border stay put under
+ * `prefers-reduced-motion`, so something always answers the press. */
 .mode-option:active {
   transform: translateY(1px);
+  background: rgba(var(--vol-rgb, var(--tint-rgb)), 0.2);
 }
 
 /* ---- Reduced motion ----
@@ -197,14 +252,22 @@
  */
 /* The confirmation wears the colour of the mode it is about to switch TO, so
    the whole panel answers the question it is asking. */
+/* A WASH, not a box. This carried a 0.42 border as well, which made it the last
+   card-inside-a-card left in the panel once the list rows gave theirs up - and
+   it is the same nesting for the same reason, just one of it instead of three.
+   The wash alone is enough here: it is the only thing on the screen, and the
+   colour it is washed in IS the answer to the question the header is asking.
+   0.14 matches the selected row exactly, so "the mode in question" is one
+   shade throughout the panel rather than two. Safe on contrast for the same
+   measurement, with room to spare - .mode-confirm-name is larger than
+   .mode-option-name, and the ceiling was set by the smaller of the two. */
 .mode-confirm {
   display: flex;
   flex-direction: column;
   gap: calc(var(--ui-bar) * 0.55);
-  padding: calc(var(--ui-bar) * 1) calc(var(--ui-bar) * 1.09);
-  border-radius: calc(var(--ui-bar) * 0.73);
-  border: 1px solid rgba(var(--vol-rgb, var(--ink-rgb)), 0.42);
-  background: rgba(var(--vol-rgb, var(--ink-rgb)), 0.08);
+  padding: calc(var(--ui-bar) * 1.09);
+  border-radius: calc(var(--ui-bar) * 0.55);
+  background: rgba(var(--vol-rgb, var(--ink-rgb)), 0.14);
 }
 
 .mode-confirm-head {
@@ -227,10 +290,15 @@
   color: var(--ink-body);
 }
 
+/* Sized above the blurb rather than level with it. The confirmation ran five
+   paragraphs at 1.02 / 1.02 / 0.98 / 0.98 / 0.98, three of them --ink-dim - so
+   the screen whose whole job is to make someone stop and read had nothing on it
+   sized to be read first. This figure is the reason anyone switches, so it is
+   the one thing that outranks the sentence above it. */
 .mode-confirm-max {
   margin: 0;
-  font-size: calc(var(--ui-bar) * 1.02);
-  font-weight: 700;
+  font-size: calc(var(--ui-bar) * 1.24);
+  font-weight: 800;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
@@ -255,15 +323,22 @@
 /* The destructive-ish action is on the right and filled; the way out is on the
    left and quiet. Cancel is a real button rather than a link so it carries the
    same hit area as the thing it is protecting against. */
+/* wrap is the last resort, not the intent: Cancel still hugs its own text and
+   Switch still takes the rest. But `flex: 0 0 auto` on Cancel meant it could
+   not give a pixel back, so a locale where both labels run long pushed Switch
+   off the panel rather than reflowing. German, Finnish and Vietnamese are all
+   materially longer than "Cancel" / "Switch". */
 .mode-confirm-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: stretch;
   gap: calc(var(--ui-bar) * 0.73);
   margin-top: calc(var(--ui-bar) * 0.36);
 }
 
 .mode-confirm-cancel {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  min-width: 0;
   padding: calc(var(--ui-bar) * 1.27) calc(var(--ui-bar) * 1.6);
   border-radius: calc(var(--ui-bar) * 0.91);
   border: 1px solid rgba(var(--ink-rgb), 0.2);
@@ -273,7 +348,7 @@
   font-weight: 700;
   cursor: pointer;
   text-transform: none;
-  transition: background 0.12s, border-color 0.12s;
+  transition: background 0.12s var(--ease-out), border-color 0.12s var(--ease-out);
 }
 
 @media (hover: hover) {.mode-confirm-cancel:hover {
@@ -293,6 +368,7 @@
    blue gradient, which is still right for every other primary action. */
 .mode-confirm-go {
   flex: 1 1 auto;
+  min-width: 0;
   width: auto;
   background: var(--vol-color, var(--tint));
   color: var(--tint-ink);
@@ -301,5 +377,20 @@
 
 @media (prefers-reduced-motion: reduce) {.mode-confirm-cancel {
     transition: none;
+  }
+}
+
+/* ---- Touch targets -------------------------------------------------------
+ * See the note in popup-base.css for the 44/36/32 rule and for why
+ * `pointer: coarse` alone. .mode-option is a three-line card and already clears
+ * everything (~72px at 320px); the confirmation's two buttons did not - Switch
+ * came out 28.7px and Cancel 30.7px, both under the 24px WCAG 2.2 AA floor once
+ * borders are discounted, and Switch is the button that changes what the next
+ * round costs.
+ */
+@media (pointer: coarse) {
+  .mode-confirm-cancel,
+  .mode-confirm-go {
+    min-height: 44px;
   }
 }

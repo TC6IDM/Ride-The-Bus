@@ -25,7 +25,7 @@
   let { onclose }: { onclose: () => void } = $props();
 </script>
 
-  <div class="popup popup-sound" role="dialog" aria-label={t('Sound settings')}>
+  <div class="popup popup-sound" role="dialog" aria-modal="true" tabindex="-1" aria-label={t('Sound settings')}>
     <div class="popup-head"><span>{t('Sound')}</span><button class="popup-close" onclick={onclose} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
     <div class="sound-body">
       <div class="sound-row" class:is-off={busSilent('music')}>

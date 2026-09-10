@@ -68,7 +68,7 @@ export default {
 	Cancel: 'إلغاء',
 	Switch: 'تغيير',
 	'Volatility %s of %t': 'التقلب %s من %t',
-	'Every mode costs 1× your bet.': 'كل وضع يكلّف 1× من رهانك.',
+	'Every mode costs %s× your bet.': 'كل وضع يكلّف %s× من رهانك.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'نسبة العائد للاعب (RTP) هي %s في كل أوضاع اللعبة، ويعيد كل وضع النسبة نفسها على مدى جولات كثيرة. وأقصى ما يمكن أن تدفعه هذه اللعبة هو %m من رهانك، في وضع الرهانات العالية.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
@@ -163,6 +163,7 @@ export default {
 	'Bet is below the minimum of %s': 'الرهان أقل من الحد الأدنى %s',
 	'Bet is above the maximum of %s': 'الرهان أعلى من الحد الأقصى %s',
 	'Bet is locked while autoplay runs': 'الرهان مقفل أثناء تشغيل اللعب التلقائي',
+	'Mode is locked while autoplay runs': 'وضع اللعبة مقفل أثناء تشغيل اللعب التلقائي',
 	'Replays cannot be re-bet': 'لا يمكن إعادة الرهان على الإعادة',
 	'Replay is view-only': 'الإعادة للعرض فقط',
 	'No active game session': 'لا توجد جلسة لعب نشطة',

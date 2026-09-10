@@ -47,7 +47,17 @@ export function onDocumentClick(event: MouseEvent) {
   const el = (event.target as HTMLElement | null)?.closest?.('button');
   // Disabled buttons don't dispatch clicks at all, but a click landing on a
   // child of one can still bubble here, and a dead control shouldn't sound.
+  //
+  // aria-disabled is checked too, and that is not a tidiness: a button marked
+  // that way IS fully clickable, which is the whole reason the barred Inside
+  // half uses it instead (see choice-unavailable.css - a `disabled` button
+  // fires no mouse events, so it could never raise the tip explaining itself).
+  // Without this line the refused tap played the full 'choice' cue, so on a
+  // phone a guess that the game then silently declined SOUNDED accepted -
+  // which is worse than silence, because the player believes the guess landed.
+  // The caller plays sound.playBlocked() instead.
   if (!el || (el as HTMLButtonElement).disabled) return;
+  if (el.getAttribute('aria-disabled') === 'true') return;
   const target = el as HTMLElement;
   sound.playPress(pressKindFor(target), Math.max(0, choiceStageFor(target)));
 }

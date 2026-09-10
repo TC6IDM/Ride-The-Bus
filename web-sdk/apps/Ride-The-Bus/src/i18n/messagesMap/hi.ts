@@ -67,7 +67,7 @@ export default {
 	Cancel: 'रद्द करें',
 	Switch: 'बदलें',
 	'Volatility %s of %t': 'अस्थिरता: %t में से %s',
-	'Every mode costs 1× your bet.': 'हर मोड की लागत आपकी बाजी का 1× है।',
+	'Every mode costs %s× your bet.': 'हर मोड की लागत आपकी बाजी का %s× है।',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'हर गेम मोड में रिटर्न टू प्लेयर (RTP) %s है, और हर मोड कई राउंड में वही आंकड़ा लौटाता है। यह गेम अधिकतम %m आपकी बाजी दे सकता है, हाई स्टेक्स पर।',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
@@ -161,6 +161,7 @@ export default {
 	'Bet is below the minimum of %s': 'दांव न्यूनतम %s से कम है',
 	'Bet is above the maximum of %s': 'दांव अधिकतम %s से अधिक है',
 	'Bet is locked while autoplay runs': 'ऑटोप्ले चलने के दौरान दांव लॉक रहता है',
+	'Mode is locked while autoplay runs': 'ऑटोप्ले चलने के दौरान गेम मोड लॉक रहता है',
 	'Replays cannot be re-bet': 'रीप्ले पर दोबारा दांव नहीं लगाया जा सकता',
 	'Replay is view-only': 'रीप्ले केवल देखने के लिए है',
 	'No active game session': 'कोई सक्रिय गेम सत्र नहीं',

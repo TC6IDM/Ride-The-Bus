@@ -240,6 +240,23 @@
 	transition: background 0.2s;
 }
 
+/* A finger cannot hover, and the hover is gated behind @media (hover: hover) -
+   so the tap that starts the replay had nothing to acknowledge it. */
+.ss-play-btn:active {
+	filter: brightness(0.92);
+	transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ss-play-btn:active { transform: none; }
+}
+
+/* ~28.5px tall at 320px. Primary action, alone on its row - see popup-base.css
+   for why 44px and why `pointer: coarse` alone. */
+@media (pointer: coarse) {
+	.ss-play-btn { min-height: 44px; }
+}
+
 .ss-play-btn:focus-visible {
 	background: #ffe0a0;
 }

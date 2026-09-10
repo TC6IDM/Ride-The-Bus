@@ -46,6 +46,8 @@
   <div
     class="popup popup-bet"
     role="dialog"
+    aria-modal="true"
+    tabindex="-1"
     aria-label={t('Bet Menu')}
     style={`--tint: ${modeNameColor()}; --tint-rgb: ${modeRgb()}; --tint-strong: ${modeNameColor()}`}
   >

@@ -115,7 +115,7 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 	// is a guard against the obvious cases, not a substitute for reading the
 	// copy - a US reviewer is looking at the words, not the regex.
 	'High Stakes': 'High Risk',
-	'Every mode costs 1× your bet.': 'Every mode costs 1× your play amount.',
+	'Every mode costs %s× your bet.': 'Every mode costs %s× your play amount.',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
 		'Equal is the rarest guess, so the rounds built on it carry the largest winnings — and are the hardest to land. Two Equal picks landing together is the most this mode can win, at %m your play amount.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':

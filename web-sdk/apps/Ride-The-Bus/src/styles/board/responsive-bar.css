@@ -162,6 +162,23 @@
 .cb-bet-display {
     min-width: calc(var(--ui-bar) * 11);
   }
+/* THE BET BUTTON WAS NOT IN THIS LIST. At 5.82 --ui-bar it is 38.2px at 320px -
+   already larger than the 36px the icons are floored to, which is probably why
+   it read as covered, but still short of the comfortable target for the one
+   control the whole game exists to press.
+
+   44px here and 36px above is not an inconsistency: the argument against 44 is
+   that the icons, the floating buttons and the round buttons TOGETHER overflow
+   the row, and this is one control that gains 5.8px. Its row holds the bet
+   display (11 --ui-bar = 72px), autospin (36px) and itself, with the inline
+   steppers already dropped below 400px - so there is room.
+
+   .cb-cooldown is inset -0.55 --ui-bar and so extends PAST the button; it stays
+   pointer-events: none (control-bar.css) and must, or this target is moot. */
+.cb-spin {
+    min-width: 44px;
+    min-height: 44px;
+  }
 }
 
 /* Very tight: drop the inline +/- (the bet is still settable from the bet

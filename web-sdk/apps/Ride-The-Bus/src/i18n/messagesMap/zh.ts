@@ -67,7 +67,7 @@ export default {
 	Cancel: '取消',
 	Switch: '切换',
 	'Volatility %s of %t': '波动性 %t 级中的 %s',
-	'Every mode costs 1× your bet.': '每种模式的费用均为投注额的1倍。',
+	'Every mode costs %s× your bet.': '每种模式的费用均为投注额的%s倍。',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'所有游戏模式的返奖率（RTP）均为 %s，每种模式在多局之后都返还同一数值。本游戏的最高赔付为投注额的 %m，出现在高额投注模式。',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
@@ -161,6 +161,7 @@ export default {
 	'Bet is below the minimum of %s': '投注低于最低限额 %s',
 	'Bet is above the maximum of %s': '投注高于最高限额 %s',
 	'Bet is locked while autoplay runs': '自动游戏进行时无法更改投注',
+	'Mode is locked while autoplay runs': '自动游戏进行时无法更改游戏模式',
 	'Replays cannot be re-bet': '回放无法重新投注',
 	'Replay is view-only': '回放仅供查看',
 	'No active game session': '没有有效的游戏会话',

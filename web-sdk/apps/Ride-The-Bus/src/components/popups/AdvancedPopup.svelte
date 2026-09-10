@@ -20,7 +20,7 @@
   let { onclose }: { onclose: () => void } = $props();
 </script>
 
-  <div class="popup popup-advanced" role="dialog" aria-label={t('Advanced')}>
+  <div class="popup popup-advanced" role="dialog" aria-modal="true" tabindex="-1" aria-label={t('Advanced')}>
     <div class="popup-head"><span>{t('Advanced')}</span><button class="popup-close" onclick={onclose} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
     <div class="advanced-body">
       <!-- No replay branch here any more. Every row below is autoplay-scoped

@@ -67,7 +67,7 @@ export default {
 	Cancel: 'Hủy',
 	Switch: 'Đổi',
 	'Volatility %s of %t': 'Độ biến động %s trên %t',
-	'Every mode costs 1× your bet.': 'Mỗi chế độ có giá 1× tiền cược của bạn.',
+	'Every mode costs %s× your bet.': 'Mỗi chế độ có giá %s× tiền cược của bạn.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Tỷ lệ trả thưởng (RTP) là %s ở mọi chế độ, và mỗi chế độ đều trả về cùng con số đó qua nhiều vòng. Mức trả thưởng cao nhất của trò chơi là %m tiền cược của bạn, ở chế độ Cược lớn.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
@@ -162,6 +162,7 @@ export default {
 	'Bet is below the minimum of %s': 'Tiền cược thấp hơn mức tối thiểu %s',
 	'Bet is above the maximum of %s': 'Tiền cược vượt mức tối đa %s',
 	'Bet is locked while autoplay runs': 'Tiền cược bị khóa khi tự động chơi đang chạy',
+	'Mode is locked while autoplay runs': 'Chế độ chơi bị khóa khi tự động chơi đang chạy',
 	'Replays cannot be re-bet': 'Không thể đặt lại cược cho bản phát lại',
 	'Replay is view-only': 'Phát lại chỉ để xem',
 	'No active game session': 'Không có phiên chơi nào đang hoạt động',

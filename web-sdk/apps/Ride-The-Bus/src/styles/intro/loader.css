@@ -7,6 +7,11 @@
   position: fixed;
   inset: 0;
   z-index: 998; /* under Stake's loader (999), over the game */
+  /* Nothing in here is interactive, and it leaves on a 320ms fade - so without
+     this it spends that third of a second as an invisible full-viewport tap
+     blocker over a board that is already live. Visible on the replay and resume
+     paths, where .ss-overlay is not mounted above it to absorb the taps. */
+  pointer-events: none;
   display: flex;
   flex-direction: column;
   align-items: center;

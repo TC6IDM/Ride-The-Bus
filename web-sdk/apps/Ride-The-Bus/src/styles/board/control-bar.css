@@ -38,6 +38,9 @@
 .cb-panel-light {
   background: var(--panel-light);
   border: 1px solid rgba(var(--ink-rgb), 0.1);
+  /* For .cb-mode-tip, exactly as .cb-bet does for .cb-bet-tip - .cb-panel has no
+     positioning context of its own. */
+  position: relative;
 }
 .cb-panel-dark {
   background: var(--panel-dark);
@@ -349,6 +352,17 @@
   }
 }
 
+/* Flashed by a refused tap, and shown while the blocked button holds focus.
+   A phone has no hover, so the flash is the only route this explanation has to
+   the player who actually tried to spin; focus-within is the keyboard's, and it
+   only became possible once the button stopped being `disabled` while blocked.
+   Same contract as .cb-bet-tip.is-shown below. */
+.cb-cooldown-tip.is-shown,
+.cb-spin-wrap:focus-within .cb-cooldown-tip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 /* ---- "you cannot change the bet right now" -------------------------------
    Autoplay stakes the same amount every round, so while a run is going the
    whole bet group is dead: the display cannot open its menu and the steppers
@@ -483,12 +497,29 @@
 }
 
 @media (hover: hover) {
-  .cb-spin:not(:disabled):hover { box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.75); transform: scale(1.04); }
+  .cb-spin:not(:disabled):not(.blocked):hover { box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.75); transform: scale(1.04); }
 }
 
-.cb-spin:not(:disabled):active { transform: scale(0.97); }
+.cb-spin:not(:disabled):not(.blocked):active { transform: scale(0.97); }
 
-.cb-spin:disabled { opacity: 0.5; cursor: not-allowed; }
+/* .blocked carries what :disabled used to, because the button is no longer
+   disabled while it has a reason to give - see spinInert() in ControlBar.svelte.
+   It has to look identical: the change is about what a TAP can reach, not about
+   how available the control appears. Both selectors, so the two inert states
+   (the takeover and the replay intro) still grey out too.
+
+   A blocked button keeps a press state on purpose, and a different one - it
+   shrinks less far and dims, rather than taking the live 0.97 scale. Something
+   has to acknowledge the finger, and it must not feel like the press that buys a
+   round. */
+.cb-spin:disabled,
+.cb-spin.blocked { opacity: 0.5; cursor: not-allowed; }
+
+.cb-spin.blocked:active { transform: scale(0.99); filter: brightness(0.9); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cb-spin.blocked:active { transform: none; }
+}
 
 .cb-spin.stopping { border-color: #ff5d5d; background: radial-gradient(circle at 50% 35%, #5a1f27, #2a0d11 75%); }
 
@@ -497,13 +528,13 @@
 .cb-spin.slammable { border-color: #ffce3a; background: radial-gradient(circle at 50% 35%, #4a3a12, #221a06 75%); }
 
 @media (hover: hover) {
-  .cb-spin.slammable:hover { box-shadow: 0 0 20px rgba(255, 206, 58, 0.7); }
+  .cb-spin.slammable:not(.blocked):hover { box-shadow: 0 0 20px rgba(255, 206, 58, 0.7); }
 }
 
 .cb-slam-svg { width: calc(var(--ui-bar) * 3.45); height: calc(var(--ui-bar) * 3.45); transform: none; color: var(--gold-bright); }
 
 @media (hover: hover) {
-  .cb-spin.stopping:hover { box-shadow: 0 0 20px rgba(255, 80, 80, 0.85); }
+  .cb-spin.stopping:not(.blocked):hover { box-shadow: 0 0 20px rgba(255, 80, 80, 0.85); }
 }
 
 .cb-spin { position: relative; /* anchors the autoplay count over the square */ }
@@ -759,7 +790,13 @@
   box-shadow: inset 0 1px 0 var(--panel-lit), inset 0 -1px 0 var(--panel-shade);
 }
 
-.cb-mode-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.cb-mode-btn:disabled,
+.cb-mode-btn.blocked { opacity: 0.5; cursor: not-allowed; }
+
+/* A blocked press still gets acknowledged, and differently from a live one: the
+   live :active above drops the lift, this also dims. Something has to answer the
+   finger without feeling like the press that opens the picker. */
+.cb-mode-btn.blocked:active { filter: brightness(0.9); }
 
 /* The label now has a pill to sit in, so it can take the tracking that a 10px
    uppercase micro-label wants - the same register .cb-cap uses, and the
@@ -942,4 +979,49 @@
   transition:
     opacity 0.3s var(--ease-out),
     visibility 0s linear 0.3s;
+}
+
+/* ---- "you cannot change the mode right now" ------------------------------
+ * Third instance of one shape: .cb-cooldown-tip, .cb-bet-tip and this. Same
+ * material deliberately - "this control is dead, and here is why" should look
+ * the same wherever it happens.
+ *
+ * Hosted on .cb-panel-light rather than on the button, because replay disables
+ * the button outright and a disabled button receives no pointer events. Shown on
+ * hover for a mouse, FLASHED by a refused tap for a finger, and on focus for the
+ * keyboard - the last two are new, and before them this explanation existed in
+ * the source but could not be reached by any phone.
+ */
+.cb-mode-tip {
+  position: absolute;
+  bottom: calc(100% + var(--ui-bar) * 0.8);
+  left: 50%;
+  transform: translateX(-50%) translateY(calc(var(--ui-bar) * 0.36));
+  z-index: 60;
+  padding: calc(var(--ui-bar) * 0.6) calc(var(--ui-bar) * 1);
+  border-radius: calc(var(--ui-bar) * 0.64);
+  border: 1px solid rgba(var(--ink-rgb), 0.14);
+  background: rgba(8, 14, 22, 0.96);
+  box-shadow: 0 6px 18px rgba(var(--shadow-rgb), 0.55);
+  color: var(--ink-strong);
+  font-size: calc(var(--ui-bar) * 1.05);
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.14s var(--ease-out), transform 0.14s var(--ease-out);
+}
+
+@media (hover: hover) {
+  .cb-panel-light.mode-locked:hover .cb-mode-tip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.cb-mode-tip.is-shown,
+.cb-panel-light.mode-locked:focus-within .cb-mode-tip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }

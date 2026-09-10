@@ -397,6 +397,26 @@ export function betLockedReason(): string | null {
 }
 
 /**
+ * Why the MODE button is dead right now, or null when it is live.
+ *
+ * Same three conditions as choicesLocked(), which is what used to drive the
+ * button's `disabled` attribute - and that left it the one control in the bar
+ * that went grey with no explanation on any pointer type at all. The bet group
+ * beside it has had .cb-bet-tip for exactly this since it was written.
+ *
+ * Its own string rather than betLockedReason()'s, because that one names the
+ * BET: "Bet is locked while autoplay runs" over the mode button would be
+ * answering a question nobody asked. The other two branches genuinely are the
+ * same sentence, so they are shared.
+ */
+export function modeLockedReason(): string | null {
+  if (auto.running) return t('Mode is locked while autoplay runs');
+  if (stateUrlDerived.replay()) return t('Replays cannot be re-bet');
+  if (roundInProgress()) return t('Round in progress');
+  return null;
+}
+
+/**
  * The most the four guesses currently picked can actually pay, on `family`.
  *
  * NOT FAMILY_RULES[family].maxWin, and the difference is the point. That is

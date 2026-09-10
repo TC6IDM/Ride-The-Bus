@@ -265,8 +265,8 @@
    *
    * formatBetInput already runs on blur and does the snapping, but a keydown
    * fires BEFORE the field loses focus - so this calls it directly rather than
-   * relying on the blur that closing the popup happens to cause. Escape is left
-   * to the popup's own handler.
+   * relying on the blur that closing the popup happens to cause. Escape is
+   * handled for every panel at once, further down this file.
    */
   function onBetInputKey(event: KeyboardEvent) {
     if (event.key !== 'Enter') return;
@@ -288,6 +288,62 @@
     if (roundInProgress() && (openPopup === 'bet' || openPopup === 'mode')) {
       openPopup = null;
     }
+  });
+
+  /**
+   * Escape closes whichever panel is open.
+   *
+   * This file used to say "Escape is left to the popup's own handler", and no
+   * popup ever had one - so for all seven panels Escape did nothing, and the
+   * only ways out were the close button and the backdrop, both of which a
+   * keyboard user has to find by tabbing past everything inside the panel
+   * first. One handler serves all of them because openPopup is a single value:
+   * the switchboard below can only ever have one branch live.
+   *
+   * Here rather than in each panel for the same reason the round effect above
+   * is: every entry point is covered without any of them remembering to.
+   */
+  $effect(() => {
+    if (!openPopup) return;
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      closePopup();
+    };
+    window.addEventListener('keydown', onEscape);
+    return () => window.removeEventListener('keydown', onEscape);
+  });
+
+  /**
+   * Where the keyboard goes when a panel opens, and where it comes back to.
+   *
+   * Every panel declares role="dialog" and now aria-modal, but focus never
+   * moved into one - so a screen reader announced the dialog and then carried on
+   * reading the board behind the backdrop, and a keyboard user had to tab from
+   * wherever they were.
+   *
+   * The PANEL takes focus, not its first control: landing on a control reads
+   * that control's label in place of the dialog's, and in the mode picker the
+   * first control is the row for the family already in play. Each root carries
+   * tabindex="-1" for this, which is not focusable by Tab and so adds nothing to
+   * the tab order.
+   *
+   * No focus TRAP. Tab still reaches the board behind the backdrop, which is a
+   * real gap and a bigger change than this one - the backdrop is itself a
+   * <button> and sits before the panel in the DOM, so the cycle is at least not
+   * broken. Worth doing properly rather than approximately.
+   */
+  let popupReturnFocus: HTMLElement | null = null;
+
+  $effect(() => {
+    if (openPopup) {
+      popupReturnFocus = document.activeElement as HTMLElement | null;
+      // After the panel has actually been rendered by the switchboard.
+      requestAnimationFrame(() => document.querySelector<HTMLElement>('.popup')?.focus());
+      return;
+    }
+    popupReturnFocus?.focus();
+    popupReturnFocus = null;
   });
 
   $effect(() => {

@@ -67,7 +67,7 @@ export default {
 	Cancel: 'キャンセル',
 	Switch: '変更する',
 	'Volatility %s of %t': 'ボラティリティ %t段階中 %s',
-	'Every mode costs 1× your bet.': 'どのモードもベット額の1倍です。',
+	'Every mode costs %s× your bet.': 'どのモードもベット額の%s倍です。',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'還元率（RTP）はどのゲームモードでも %s で、いずれも多数のラウンドで同じ数値を還元します。このゲームの最大配当はハイステークスでベットの %m です。',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
@@ -161,6 +161,7 @@ export default {
 	'Bet is below the minimum of %s': 'ベットが最小額 %s を下回っています',
 	'Bet is above the maximum of %s': 'ベットが最大額 %s を上回っています',
 	'Bet is locked while autoplay runs': '自動プレイ中はベットを変更できません',
+	'Mode is locked while autoplay runs': '自動プレイ中はゲームモードを変更できません',
 	'Replays cannot be re-bet': 'リプレイに賭け直すことはできません',
 	'Replay is view-only': 'リプレイは閲覧専用です',
 	'No active game session': '有効なゲームセッションがありません',

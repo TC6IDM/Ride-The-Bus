@@ -55,6 +55,38 @@
 
 .switch:disabled { opacity: 0.55; cursor: not-allowed; }
 
+/* ---- Touch target for the switch ----------------------------------------
+ * The track is 26x14px at 320px - under the 24px floor on BOTH axes, and the
+ * worst target in the game. It cannot simply grow: .switch-knob is positioned
+ * from the track's own height, so a taller track leaves the knob pinned to the
+ * top of it.
+ *
+ * So the target is a transparent pad centred on the track, the device
+ * .ss-help::before uses for its 15.7px badge. 32px rather than 44px, and the
+ * reason is collision: .advanced-body stacks these 1.27 --ui-bar apart, which
+ * is a ~23px pitch at 320px - a 44px pad would overlap its neighbour by 21px
+ * and a tap between two switches would toggle the wrong one. The row gets a
+ * matching min-height so the pitch can actually hold the pad.
+ *
+ * The pad paints before .switch-knob (tree order, both positioned, no z-index),
+ * so the knob still draws on top of it.
+ */
+@media (pointer: coarse) {
+  .advanced-row {
+    min-height: 32px;
+  }
+
+  .switch::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: max(100%, 44px);
+    height: 32px;
+  }
+}
+
 .switch-knob {
   position: absolute;
   /* The gap between the knob and the track, on all four sides. Proportional,

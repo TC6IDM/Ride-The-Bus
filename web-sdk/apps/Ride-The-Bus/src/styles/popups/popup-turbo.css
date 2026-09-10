@@ -41,6 +41,16 @@
 
 .turbo-slider { flex: 1 1 auto; min-width: 0; accent-color: var(--tint); cursor: pointer; }
 
+/* A range input has no height of its own beyond the UA's ~16px. popup-sound.css
+   fixed exactly this for .sound-slider and explains the reasoning in full; this
+   slider is its twin and was simply missed. Height rather than a taller track,
+   so the native thumb keeps its size and gains the room around it. */
+.turbo-slider { height: 24px; }
+
+@media (pointer: coarse) {
+  .turbo-slider { height: 32px; }
+}
+
 .turbo-readout { text-align: center; font-weight: 800; color: var(--tint); font-size: calc(var(--ui-bar) * 1.24); font-variant-numeric: tabular-nums; }
 
 /* ---- Keyboard focus -------------------------------------------------------

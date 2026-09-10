@@ -26,6 +26,7 @@
     betBlockedReason,
     betIsValid,
     betLockedReason,
+    modeLockedReason,
     betValue,
     familyRules,
     guesses,
@@ -157,6 +158,42 @@ function spinBlockedReason(): string | null {
 }
 
 /**
+ * Whether the button is truly INERT, as opposed to merely blocked.
+ *
+ * spinDisabled() used to drive the `disabled` attribute directly, and that made
+ * every one of spinBlockedReason()'s seven strings unreachable on a phone: a
+ * disabled button fires no pointer events, so nothing could raise the tip, and
+ * .cb-cooldown-tip is only shown by :hover - which a finger does not have. The
+ * result was the worst feedback in the game. A player taps the one button the
+ * whole game is about, and gets no sound (pressCues skips disabled buttons), no
+ * press state, and no explanation.
+ *
+ * So the button stays LIVE wherever there is something to say, and onSpin()
+ * answers the tap. Exactly the trade .cb-bet-display already makes, with the
+ * same reasoning: a greyed control tells a player the game is broken, where a
+ * live one that answers back tells them why. It still LOOKS unavailable -
+ * .cb-spin.blocked carries what :disabled used to.
+ *
+ * Inert is reserved for the two states with no reason to give, and in both the
+ * board is behind a full-screen overlay anyway: the win takeover, and the replay
+ * intro. spinDisabled() itself is unchanged and is still what onSpin() and the
+ * spacebar guard test, so nothing can be bought in a blocked state.
+ */
+const spinInert = () => spinDisabled() && spinBlockedReason() === null;
+
+/**
+ * The blocked tip, flashed by a refused tap - the phone's only route to it.
+ * Same shape and duration as flashBetTip() above; see the note there.
+ */
+let spinTipVisible = $state(false);
+let spinTipTimer: ReturnType<typeof setTimeout> | null = null;
+function flashSpinTip() {
+  spinTipVisible = true;
+  if (spinTipTimer) clearTimeout(spinTipTimer);
+  spinTipTimer = setTimeout(() => { spinTipVisible = false; }, BET_TIP_MS);
+}
+
+/**
  * Replay mode, with the round already played through once.
  *
  * Stake's Bet Replay section asks for a "Play Again" button once a replay
@@ -194,7 +231,13 @@ function onSpin() {
     playRevealSequence();
     return;
   }
-  if (spinDisabled()) return;
+  if (spinDisabled()) {
+    // Refused, not ignored. The tip is the answer; the blocked cue is only what
+    // says the press was heard. Both are reachable by tap now, which is the
+    // whole point - see spinInert() above.
+    if (spinBlockedReason()) { sound.playBlocked(); flashSpinTip(); }
+    return;
+  }
   runRound().catch((err) => console.error('[RideTheBus] play failed', err));
 }
 // Bet menu: choose a preset level then close.
@@ -210,6 +253,30 @@ function flashBetTip() {
   betTipVisible = true;
   if (betTipTimer) clearTimeout(betTipTimer);
   betTipTimer = setTimeout(() => { betTipVisible = false; }, BET_TIP_MS);
+}
+
+/**
+ * The MODE button's blocked tip. The button used to be `disabled` outright on
+ * choicesLocked(), which made it the one control in the bar that went grey with
+ * no explanation on ANY pointer type - the bet group beside it has had
+ * .cb-bet-tip for exactly this since it was written. Same trade as
+ * .cb-bet-display and .cb-spin: live so a tap can be answered, and it still
+ * looks unavailable.
+ *
+ * Replay keeps the hard `disabled`, where Stake's guidance asks for the bet
+ * controls to be inert rather than merely talkative.
+ */
+let modeTipVisible = $state(false);
+let modeTipTimer: ReturnType<typeof setTimeout> | null = null;
+function flashModeTip() {
+  modeTipVisible = true;
+  if (modeTipTimer) clearTimeout(modeTipTimer);
+  modeTipTimer = setTimeout(() => { modeTipVisible = false; }, BET_TIP_MS);
+}
+
+function onModeClick() {
+  if (modeLockedReason()) { sound.playBlocked(); flashModeTip(); return; }
+  togglePopup('mode');
 }
 
 function onBetDisplayClick() {
@@ -358,7 +425,7 @@ $effect(() => {
     </button>
   {/if}
 
-  <div class="cb-panel cb-panel-light">
+  <div class="cb-panel cb-panel-light" class:mode-locked={modeLockedReason() !== null}>
     <!-- Opens the mixer rather than toggling. Muting is two actions now
          instead of one, which is the price of having separate music and cue
          levels at all; the panel's two speaker buttons are what satisfy
@@ -385,13 +452,25 @@ $effect(() => {
     <button
       class="cb-icon cb-mode-btn"
       class:active={openPopup === 'mode'}
-      onclick={() => togglePopup('mode')}
-      disabled={choicesLocked()}
+      class:blocked={modeLockedReason() !== null}
+      onclick={onModeClick}
+      disabled={stateUrlDerived.replay()}
       aria-label={t('Choose game mode')}
       title={t(familyRules().label)}
     >
       <span class="cb-mode-word">{t('Mode')}</span>
     </button>
+
+    <!-- Why the MODE button is dead. Hosted on the PANEL rather than the button,
+         for the reason .cb-bet-tip gives: in replay the button really is
+         disabled and so receives no pointer events at all. Wrapping the button
+         instead was rejected - the light pill is pinned to one line on a phone
+         (flex-wrap: nowrap in responsive-bar.css) and a new flex item in it is
+         the kind of change that breaks that. -->
+    {#if modeLockedReason()}
+      <span class="cb-mode-tip" class:is-shown={modeTipVisible} role="tooltip" aria-live="polite"
+        >{modeLockedReason()}</span>
+    {/if}
 
     <!-- `solo` when the balance is hidden (replay). One child under
          space-between sits at the START, so the Last Win readout ended up
@@ -521,8 +600,9 @@ $effect(() => {
       class="cb-spin"
       class:stopping={auto.running}
       class:slammable={canSlam()}
+      class:blocked={spinBlockedReason() !== null}
       onclick={onSpin}
-      disabled={spinDisabled()}
+      disabled={spinInert()}
       aria-label={auto.running
         ? t('Stop autoplay')
         : canSlam()
@@ -612,7 +692,8 @@ $effect(() => {
     {/if}
     <!-- Any reason the button is dead, not just the cooldown. -->
     {#if spinBlockedReason()}
-      <span class="cb-cooldown-tip" role="tooltip">{spinBlockedReason()}</span>
+      <span class="cb-cooldown-tip" class:is-shown={spinTipVisible} role="tooltip" aria-live="polite"
+        >{spinBlockedReason()}</span>
     {/if}
     </div>
   </div>

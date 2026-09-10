@@ -23,6 +23,7 @@
 	// reads cannot drift from what the RGS credits - see payoutTable.ts.
 	import { bustRowsFor, payoutRowsFor } from '../../game/math/payoutTable';
 	import { FAMILY_BLURB, FAMILY_RULES, MODE_FAMILIES, type ModeFamily } from '../../game/math/modes';
+	import { FAMILIES_BY_VOLATILITY } from '../../game/math/volatility';
 	import gameConfig from '../../game/platform/config';
 	import { t } from '../../i18n/i18nDerived';
 	import MarkIcon from '../icons/MarkIcon.svelte';
@@ -68,7 +69,7 @@
 	const pickedCeiling = $derived(props.ceilingFor?.(viewing) ?? null);
 </script>
 
-  <div class="popup popup-info" role="dialog" aria-label={t('How to play')}>
+  <div class="popup popup-info" role="dialog" aria-modal="true" tabindex="-1" aria-label={t('How to play')}>
     <div class="popup-head"><span>{t('How to Play')}</span><button class="popup-close" onclick={props.onclose} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
     <div class="info-body">
       <p>{t('Guess your way through four cards:')}</p>
@@ -111,7 +112,7 @@
            reopening builds a fresh one - which is what makes it snap back to
            whatever the player is actually on, with no reset logic. -->
       <h4 class="info-h">{t('Game modes')}</h4>
-      <p>{t('Every mode costs 1× your bet.')}</p>
+      <p>{t('Every mode costs %s× your bet.').replace('%s', String(viewingRules.cost))}</p>
       <!-- Interpolated from game/config.ts for the same reason as the RTP line
            further down: this used to write "96.00%" into the string itself, in
            all 17 locale files, so the one figure a reviewer checks against the
@@ -122,7 +123,13 @@
       </p>
 
       <div class="mode-tabs" role="tablist" aria-label={t('Game modes')}>
-        {#each MODE_FAMILIES as family}
+        <!-- Volatility order, matching the mode picker's rows. These tabs draw
+             no bolt meter of their own, so the ordering is not load-bearing
+             here the way it is there - but the same three modes listed in two
+             different orders on two screens a player moves between is its own
+             small confusion, and the picker's is the order that means
+             something. See FAMILIES_BY_VOLATILITY. -->
+        {#each FAMILIES_BY_VOLATILITY as family}
           <button
             type="button"
             role="tab"

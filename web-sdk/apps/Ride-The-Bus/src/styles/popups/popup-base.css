@@ -56,7 +56,12 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: min(calc(var(--ui-bar) * 32.73), calc(100vw - calc(var(--ui-bar) * 2.55)));
+  /* The viewport inset has a PIXEL FLOOR as well as a proportional value.
+     2.55 --ui-bar is 16.7px at 320px, so this panel came within 12.4px of each
+     edge - and .popup-backdrop fills everything outside it, so a tap that
+     missed the panel by a few pixels closed it instead. The proportional term
+     still wins at every larger size; 32px only binds on a phone. */
+  width: min(calc(var(--ui-bar) * 32.73), calc(100vw - max(32px, var(--ui-bar) * 2.55)));
   max-height: calc(100vh - calc(var(--ui-bar) * 3.64));
   overflow-y: auto;
   /* Every menu wears the colour of the control that opened it, and its
@@ -75,8 +80,8 @@
   background:
     linear-gradient(
       168deg,
-      rgba(255, 240, 220, 0.055) 0%,
-      rgba(255, 240, 220, 0.018) 26%,
+      rgba(var(--panel-lit-rgb), 0.055) 0%,
+      rgba(var(--panel-lit-rgb), 0.018) 26%,
       transparent 52%
     ),
     var(--panel);
@@ -149,11 +154,17 @@
 }
 
 @media (hover: hover) {
+  /* Lit, not haloed. This carried `box-shadow: 0 0 10px rgba(--tint-rgb, 0.5)`
+     - a coloured bloom around a coloured control on a dark panel, which is the
+     shadow-glow tell that popup-mode.css names and refuses one file over:
+     "a green halo around a green button on a dark panel". The wash and the
+     border already say the button is under the cursor; the lit top edge is the
+     same device .popup itself uses to stand off the table. */
   .popup-close:hover {
     color: var(--ink);
     border-color: var(--tint);
     background: rgba(var(--tint-rgb), 0.16);
-    box-shadow: 0 0 10px rgba(var(--tint-rgb), 0.5);
+    box-shadow: inset 0 1px 0 var(--panel-lit);
   }
 }
 
@@ -174,5 +185,38 @@
 @media (prefers-reduced-motion: reduce) {
   .popup-close:active {
     transform: none;
+  }
+}
+/* ---- Touch targets -------------------------------------------------------
+ * These panels postdate the pass that set the board's and the bar's floors, so
+ * they were never measured against one. At 320px --ui-bar is 6.56px, which put
+ * every control below under the 24px WCAG 2.2 AA minimum.
+ *
+ * The house has three floors already and they disagree on purpose:
+ * responsive-bar.css argues 36px over 44px because 44 breaks the bar onto a
+ * third row, and popup-sound.css takes 32px because a range track has to keep
+ * painting thin. So: 44px for a control that is alone or primary, 36px in a
+ * dense row, 32px where the paint must stay small. The board's own numbers are
+ * left exactly as responsive-board.css derived them.
+ *
+ * pointer: coarse, NOT (max-width) and NOT portrait - a phone held sideways
+ * needs this as much as one held upright, and Popout S is a 400px mouse window
+ * whose unit is deliberately tiny and must not be floored.
+ */
+@media (pointer: coarse) {
+  /* 36px, not 44, and this one was settled by looking at it: at 44 the disc is
+     four times the height of the header text beside it on a 320px phone and
+     reads as the most important thing in the panel, which a close button is
+     not. It also costs 8px of a 568px screen before any content. 36 is the
+     figure responsive-bar.css settles on for the bar icons, for a version of
+     the same reason, and still clears the 24px WCAG 2.2 AA floor by half again.
+     It was 15.5px square at 320px, across all seven panels.
+
+     --mark-size is deliberately NOT grown with it: the glyph stays the size it
+     was drawn at and gains room around it, the same trade .sound-slider's
+     height makes. */
+  .popup-close {
+    min-width: 36px;
+    min-height: 36px;
   }
 }

@@ -67,7 +67,7 @@ export default {
 	Cancel: 'İptal',
 	Switch: 'Değiştir',
 	'Volatility %s of %t': 'Oynaklık %t üzerinden %s',
-	'Every mode costs 1× your bet.': 'Her mod bahsinizin 1 katıdır.',
+	'Every mode costs %s× your bet.': 'Her mod bahsinizin %s katıdır.',
 	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
 		'Oyuncuya dönüş (RTP) her oyun modunda %s olup her mod çok sayıda turda aynı oranı döndürür. Bu oyunun ödeyebileceği en yüksek tutar, Yüksek Bahis modunda bahsinizin %m katıdır.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
@@ -162,6 +162,7 @@ export default {
 	'Bet is below the minimum of %s': 'Bahis %s alt sınırının altında',
 	'Bet is above the maximum of %s': 'Bahis %s üst sınırının üzerinde',
 	'Bet is locked while autoplay runs': 'Otomatik oyun sürerken bahis kilitlidir',
+	'Mode is locked while autoplay runs': 'Otomatik oyun sürerken oyun modu kilitlidir',
 	'Replays cannot be re-bet': 'Tekrarlar yeniden oynanamaz',
 	'Replay is view-only': 'Tekrar yalnızca görüntülemeliktir',
 	'No active game session': 'Etkin oyun oturumu yok',
