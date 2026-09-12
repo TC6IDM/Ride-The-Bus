@@ -73,7 +73,7 @@
     inset 0 0 0 1px var(--chip-dark),
     0 1px 2px rgba(var(--shadow-rgb), 0.55),
     0 calc(var(--ui-bar) * 0.36) calc(var(--ui-bar) * 0.73) rgba(var(--shadow-rgb), 0.45);
-  transition: transform 0.14s var(--ease-out), box-shadow 0.14s var(--ease-out);
+  transition: transform var(--dur-control) var(--ease-out), box-shadow var(--dur-control) var(--ease-out);
 }
 
 /* The five denominations. Same tokens table.css binds its perspective chips to
@@ -269,7 +269,7 @@
   margin-bottom: calc(var(--ui-bar) * 0.91);
   border-radius: calc(var(--ui-bar) * 0.91);
   border: 1px solid rgba(var(--ink-rgb), 0.18);
-  background: rgba(5, 12, 18, 0.6);
+  background: var(--field-well);
 }
 
 .bet-entry:focus-within { border-color: var(--tint); box-shadow: 0 0 12px rgba(var(--tint-rgb), 0.35); }
@@ -291,7 +291,7 @@
 
 .popup-bet .popup-sub { display: block; margin-bottom: calc(var(--ui-bar) * 0.64); }
 
-.popup-sub { font-size: calc(var(--ui-bar) * 0.93); letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-dim); font-weight: 700; }
+.popup-sub { font-size: calc(var(--ui-bar) * 0.93); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink-dim); font-weight: 700; }
 
 /* ---- Keyboard focus -------------------------------------------------------
  * The menu controls. .bet-entry already showed focus through :focus-within on

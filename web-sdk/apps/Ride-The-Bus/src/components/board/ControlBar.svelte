@@ -63,6 +63,7 @@
     openPopup = $bindable(),
     betRowEl = $bindable(),
     introPhase,
+    chromeInert,
   }: {
     /** Which panel is open. The switchboard that renders them is the parent's. */
     openPopup:
@@ -78,6 +79,13 @@
     betRowEl: HTMLElement | undefined;
     /** The intro phase, so the spin button can refuse before the board is up. */
     introPhase: 'loading' | 'start' | 'replay-info' | 'playing';
+    /**
+     * True while a dialog is up, so the bar can take itself out of the tab
+     * order. The parent owns this rather than deriving it from openPopup here,
+     * because the error dialog renders outside the layout root and openPopup
+     * does not know about it.
+     */
+    chromeInert: boolean;
   } = $props();
 
   const IS_PROD = Boolean((import.meta as any).env?.PROD);
@@ -415,6 +423,7 @@ $effect(() => {
      See the volatility notes in CLAUDE.md before collapsing them. -->
 <footer
   class="control-bar"
+  inert={chromeInert}
   style={`--vol-color: ${volatilityColorVar(bet.family)}; --vol-rgb: ${volatilityColorRgbVar(bet.family)}; --mode-ink: ${modeNameColor()}; --mode-rgb: ${modeRgb()}`}
 >
   <!-- Removed, not just disabled, when the regulator bars Turbo: a greyed

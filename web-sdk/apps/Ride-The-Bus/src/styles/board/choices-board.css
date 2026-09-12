@@ -54,7 +54,7 @@
      - otherwise COLOR / SUIT sit a line higher and the four squares don not line
      up. */
   min-height: 2.4em;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--track-label);
   text-transform: uppercase;
   color: #fff6df;
   text-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.7);

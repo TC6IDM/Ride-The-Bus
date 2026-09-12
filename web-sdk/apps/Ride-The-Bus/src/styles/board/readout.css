@@ -18,7 +18,20 @@
  * buys nothing here.
  */
 
-.cb-cap { display: block; font-size: calc(var(--ui-bar) * 0.87) /* 9.6px */; letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+/* The caption is WARM MUTE, not the accent, and this was the last cool thing on
+   a warmed bar.
+
+   tokens.css states the accent rule narrowly: "one accent for anything that is
+   CHOSEN (a bet, a mode, a tab), and a fixed identity colour per control that
+   OPENS something." A caption is neither - BALANCE is not a thing you pick and
+   not a thing you press - so --accent here was the one use in the file with no
+   argument behind it, and it put six blue labels on a mahogany table.
+
+   --ink-warm-mute measures 5.29 / 6.87 / 6.49 against the three grounds these
+   render on, where --accent measured 5.20 / 6.75 / 6.38. Deliberately matched:
+   the caption changes temperature and keeps its exact weight in the hierarchy,
+   so nothing about what the eye reaches first has moved. */
+.cb-cap { display: block; font-size: calc(var(--ui-bar) * 0.87) /* 9.6px */; letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink-warm-mute); font-weight: 700; }
 
 /* tabular-nums + the reserved min-widths below mean a value changing (a win
    landing, the bet stepping) never re-flows the bar. */

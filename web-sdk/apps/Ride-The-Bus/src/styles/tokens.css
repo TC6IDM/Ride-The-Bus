@@ -70,6 +70,24 @@
      long note beside the @font-face block in components/app.css. */
   --font-display: 'Big Shoulders', 'Poppins', sans-serif;
 
+  /* The micro-label track.
+     Six values - 0.16em, 0.09em, 0.08em, 0.08em, 0.08em and 0.09em - were doing
+     one job across the board and the panels: a small uppercase caption over a
+     figure. Five of the six sat within one hundredth of each other, which is not
+     six decisions, and the sixth (.running-win-label at 0.16em) was simply the
+     odd one out rather than a louder label on purpose.
+
+     NOT applied to .game-title-sub, which is 0.22em and stays: that is the
+     lockup's credit line, it is set across the loader, the intro and the board
+     as one mark, and CLAUDE.md's rule is that changing one means changing all
+     three. It is a wordmark component, not a caption.
+
+     NOT applied to the How to Play panel's 0.05/0.06/0.07 labels either. That is
+     a dense reference screen where each label is paired with its own size, and
+     widening them would reflow the payout table for a difference no one can
+     see. */
+  --track-label: 0.09em;
+
   /* ==== Surfaces: the room ===============================================
      The felt ramp, taken from the LIVE one in table.css .scene - the layer the
      player actually sees.
@@ -172,9 +190,38 @@
   /* Hairlines on panels are warm, matching the light rather than the pure
      white the rest of the app uses over felt. */
   --panel-edge: rgba(var(--panel-lit-rgb), 0.1);
-  --panel-light: rgba(28, 42, 58, 0.72);
-  --panel-dark: rgba(8, 14, 22, 0.82);
-  --panel-float: rgba(10, 17, 26, 0.82);
+  /* WARMED TO THE TABLE, and this is the other half of the join at the top of
+     this file.
+
+     These three are the control bar's panels and nothing else uses them. They
+     were blue-slate - composited over the felt, (25,46,52) and (10,22,25),
+     blue-dominant - sitting directly beneath popups painted --panel #1c1917,
+     which is (28,25,23) and red-dominant. Two panels, same lightness, opposite
+     temperature, on screen at the same time. The note at --panel above spends a
+     paragraph on why blue-slate was wrong there; it was just as wrong here, and
+     the bar is the surface a player looks at for the whole session.
+
+     Re-hued to --panel's own R:G:B ratio at the SAME composited lightness, so
+     nothing changes weight in the layout. The raw values look far more
+     saturated than the result because they are solved BACKWARDS through their
+     own alpha and the green felt behind them - at 0.72 the felt contributes
+     nearly a third of what you see, and it pulls everything toward green. */
+  --panel-light: rgba(54, 38, 34, 0.82);
+  /* A TRIPLET, because the bar paints this colour at two alphas: 0.82 for the
+     panel and 0.96 for the three tooltips that float off it. The second was
+     written out longhand five times in control-bar.css, which is the same
+     failure --panel-lit-rgb above was made a triplet to stop. */
+  --panel-dark-rgb: 23, 12, 10;
+  --panel-dark: rgba(var(--panel-dark-rgb), 0.82);
+  --panel-float: rgba(26, 14, 12, 0.82);
+  /* The recessed well a value is typed into - the bet field and the autoplay
+     rounds field. Named because it is the one panel colour used by two
+     different panels, and each had its own copy. */
+  --field-well: rgba(5, 12, 18, 0.6);
+  /* Ink for a control sitting on GOLD, on the green screens. The intro's
+     continue button and the replay screen's play button are the same control
+     wearing two class names, and they each spelled this out. */
+  --on-gold-ink: #0d1f0d;
 
   /* ==== Accent ==========================================================
      The interactive blue, and the per-control identity colours beside it.
@@ -273,7 +320,11 @@
   /* ==== State ============================================================ */
   --win: #7cffb2;
   --win-soft: #7ee2a8;
-  --loss: #ff3b3b;
+  /* A triplet, for the same reason --loss-soft-rgb below is one: the spin
+     button's stop indicator needs this colour at an alpha, and it had been
+     written out as rgba(255, 59, 59, 0.7) rather than named. */
+  --loss-rgb: 255, 59, 59;
+  --loss: rgb(var(--loss-rgb));
   /* A TRIPLET, because the error dialog's edge needs this colour at an alpha
      and the colour rule says anything needing one is an rgb triplet with the
      hex derived from it - not a second literal kept in step by hand. The edge
@@ -488,8 +539,20 @@
      a control that overshoots reads as unreliable. */
   --ease-pop: cubic-bezier(0.2, 1.5, 0.4, 1);
 
-  /* No duration tokens yet, on purpose. The app runs 0.1s / 0.12s / 0.14s /
-     0.15s / 0.2s / 0.25s and up, and picking three winners out of that is the
-     same redesign the alpha note above defers. Curves were drift and are fixed;
-     durations are a decision, and belong with the motion pass. */
+  /* ONE duration token, not a ladder, and the line between them is the same one
+     this file draws for the curves above.
+
+     0.12s, 0.14s and 0.15s were doing a single job - "a control changed state"
+     - in 51 places across nine files. Three values 30ms apart, chosen
+     independently, that nobody can tell apart on a hover wash: that is drift by
+     the same definition the curve note uses ("The curves differed in the third
+     decimal place, which is not a design decision, it is drift").
+
+     Everything else is LEFT ALONE, deliberately, and that is why this is not the
+     ladder the old note here deferred. 0.1s is a press. 0.2s is the intro's
+     buttons, which are bigger and further from the eye. 0.25s is the loader bar.
+     Every value at 0.28s and above belongs to one tuned entrance or ambient loop
+     - the deal, the count-up, the beam's breathe - and each was set against what
+     it animates. Those are decisions. Only the near-identical trio was drift. */
+  --dur-control: 0.14s;
 }

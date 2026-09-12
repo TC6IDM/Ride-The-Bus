@@ -43,7 +43,7 @@
   font-variant-numeric: tabular-nums;
   cursor: pointer;
   text-transform: none;
-  transition: box-shadow 0.12s, border-color 0.12s, background 0.12s, color 0.12s;
+  transition: box-shadow var(--dur-control) var(--ease-out), border-color var(--dur-control) var(--ease-out), background var(--dur-control) var(--ease-out), color var(--dur-control) var(--ease-out);
 }
 
 .spin-pill-inf {
@@ -61,7 +61,7 @@
 
 .autospin-body { display: flex; flex-direction: column; gap: calc(var(--ui-bar) * 0.91); }
 
-.popup-sub { font-size: calc(var(--ui-bar) * 0.93); letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-dim); font-weight: 700; }
+.popup-sub { font-size: calc(var(--ui-bar) * 0.93); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink-dim); font-weight: 700; }
 
 .autospin-input { align-self: stretch; }
 
@@ -108,7 +108,7 @@
   align-items: stretch;
   border-radius: calc(var(--ui-bar) * 0.91);
   overflow: hidden;
-  background: rgba(5, 12, 18, 0.6);
+  background: var(--field-well);
   border: 1px solid rgba(var(--ink-rgb), 0.16);
 }
 

@@ -239,6 +239,42 @@ async function findBook(mode, id) {
 }
 
 /* ---- HTTP ---------------------------------------------------------------- */
+/* ---- Forced failures -----------------------------------------------------
+   This server exists to rehearse the real RGS, and a real RGS sometimes says
+   no. ErrorModal maps eight documented response codes onto eight different
+   sentences, and two of them (ERR_IS, ERR_ATE) swap the dialog's only action
+   from Close to Reload - so "the error dialog" is really four or five different
+   screens, and until this existed none of them could be looked at. The game
+   could not reach any of them in dev either: devSession.ts supplies the balance
+   and the limits, so nothing calls /wallet/authenticate, and a dead rgs_url
+   therefore raises nothing until a round is actually bought.
+
+   The client reads a failure out of the BODY, not the HTTP status - see the
+   check in roundPlace.svelte.ts: `data.error || status.statusCode !== 'SUCCESS'`
+   - so an armed failure answers 200 with a failing body, exactly as the RGS
+   does.
+
+   Armed over HTTP rather than by a flag, because the game is already running by
+   the time a test knows which failure it wants:
+
+     GET /__force-error/ERR_IS     arm
+     GET /__force-error/off        disarm
+     GET /__force-error            report
+
+   Dev-only by construction: nothing ships this file. */
+let forcedError = null;
+
+const FORCED_MESSAGES = {
+  ERR_VAL: 'Bet amount is not a valid level for this mode.',
+  ERR_IPB: 'Insufficient player balance.',
+  ERR_IS: 'Invalid session.',
+  ERR_ATE: 'Authentication token expired.',
+  ERR_GLE: 'Gambling limit exceeded.',
+  ERR_LOC: 'Location not permitted.',
+  ERR_GEN: 'General error.',
+  ERR_MAINTENANCE: 'Game is under maintenance.',
+};
+
 const json = (res, status, body) => {
   res.writeHead(status, {
     'content-type': 'application/json',
@@ -780,6 +816,99 @@ createServer(async (req, res) => {
         costMultiplier: MODES.get(mode).cost,
         bookId: id,
         state: book.events,
+      });
+    }
+
+    // ---- Arm / disarm / report a forced failure ----
+    if (parts[0] === '__force-error') {
+      const want = parts[1];
+      if (want === undefined) {
+        return json(res, 200, { forcedError });
+      }
+      if (want === 'off' || want === 'none' || want === 'clear') {
+        forcedError = null;
+        console.log('  forced error CLEARED');
+        return json(res, 200, { forcedError: null });
+      }
+      forcedError = want;
+      console.log(`  forced error ARMED: ${want}`);
+      return json(res, 200, { forcedError });
+    }
+
+    // ---- /wallet/authenticate ----
+    // Needed before ANY of the above can be exercised, and its absence is why
+    // "point rgs_url at a dead port" never produced an error dialog: the SDK
+    // calls this on load, the 404 left the session unestablished, and the spin
+    // button then bought nothing to fail. game/dev/devSession.ts fills in the
+    // balance and the limits when they arrive as zero, which made it look as
+    // though nothing was calling the wallet at all.
+    //
+    // Amounts are RAW MICRO-UNITS - constants-shared/bet.ts: "amount 1000000 is
+    // 1 dollar" - so these are $1,000,000 of balance, a $0.10 floor and step,
+    // and a $10,000 ceiling. The three limits sit inside `config` beside
+    // betLevels, which is the shape RGS.md's worked example documents and the
+    // one every helper in betLimits.ts reads.
+    if (parts[0] === 'wallet' && parts[1] === 'authenticate') {
+      const DOLLAR = 1_000_000;
+      console.log('  /wallet/authenticate -> SUCCESS (local stand-in session)');
+      return json(res, 200, {
+        status: { statusCode: 'SUCCESS', statusMessage: '' },
+        balance: { amount: 1_000_000 * DOLLAR, currency: 'USD' },
+        config: {
+          minBet: 0.1 * DOLLAR,
+          maxBet: 10_000 * DOLLAR,
+          stepBet: 0.1 * DOLLAR,
+          betLevels: [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100].map((d) => d * DOLLAR),
+        },
+        round: null,
+      });
+    }
+
+    // ---- /wallet/balance ----
+    // The game polls this so a deposit made on Stake with the game open is not
+    // left stale on the bar. Answering it keeps that poll quiet.
+    if (parts[0] === 'wallet' && parts[1] === 'balance') {
+      return json(res, 200, {
+        status: { statusCode: 'SUCCESS', statusMessage: '' },
+        balance: { amount: 1_000_000 * 1_000_000, currency: 'USD' },
+      });
+    }
+
+    // ---- /wallet/end-round ----
+    // Never reached while /wallet/play only ever refuses, but a round that got
+    // as far as settling would hang without it.
+    if (parts[0] === 'wallet' && parts[1] === 'end-round') {
+      return json(res, 200, {
+        status: { statusCode: 'SUCCESS', statusMessage: '' },
+        balance: { amount: 1_000_000 * 1_000_000, currency: 'USD' },
+      });
+    }
+
+    // ---- /wallet/play ----
+    // Only ever answers a FAILURE. This server cannot play a real round - it
+    // serves published books by simulation ID and has no wallet - so an
+    // unarmed call says so plainly instead of 404ing into the client's generic
+    // "no round state" message, which reads like a math problem rather than a
+    // missing endpoint.
+    if (parts[0] === 'wallet' && parts[1] === 'play') {
+      if (forcedError) {
+        const code = forcedError;
+        console.log(`  /wallet/play -> forced ${code}`);
+        return json(res, 200, {
+          status: {
+            statusCode: code,
+            statusMessage: FORCED_MESSAGES[code] || `Forced ${code} from the replay RGS.`,
+          },
+        });
+      }
+      console.log('  /wallet/play -> not implemented (replay server serves books only)');
+      return json(res, 200, {
+        status: {
+          statusCode: 'ERR_GEN',
+          statusMessage:
+            'The local replay RGS serves published books only and cannot buy a round. ' +
+            'Arm a specific failure with /__force-error/<CODE>.',
+        },
       });
     }
 

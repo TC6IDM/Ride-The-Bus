@@ -38,6 +38,7 @@
 	import { logoAsset } from '../../game/ui/logoAsset.svelte';
 	import { numberToCurrencyString } from 'utils-shared/amount';
 	import { labelEms } from '../../game/ui/typeFit';
+	import { titleFaceFor } from '../../game/ui/displayFace';
 
 	import MarkIcon from '../icons/MarkIcon.svelte';
 	import SuitIcon from '../icons/SuitIcon.svelte';
@@ -137,6 +138,18 @@
 	 * type is chosen once, for the widest string that will ever appear, and the
 	 * count grows into it.
 	 */
+	/**
+	 * The tier name, and the face that can draw ALL of it.
+	 *
+	 * Derived rather than called twice in the markup because t() is reactive and
+	 * the face has to be decided from the SAME string that gets rendered - call
+	 * it twice and a locale change between the two lands a class chosen for the
+	 * previous language. game/ui/displayFace.ts has the argument for why this is
+	 * a three-way answer rather than "display or not".
+	 */
+	const titleText = $derived(t(activeTier.label));
+	const titleFace = $derived(titleFaceFor(titleText));
+
 	const amountEms = $derived(labelEms(numberToCurrencyString(props.amount)));
 
 	let amountEl: HTMLElement | undefined = $state(undefined);
@@ -524,7 +537,7 @@
 		     which replays the entrance animation, so the title vanished and rose
 		     back up on every promotion. It stays put now; the word swaps in place,
 		     the colour cross-fades, and promoteTitle gives it a pop. -->
-		<div class="wc-title" bind:this={titleEl}>{t(activeTier.label)}</div>
+		<div class="wc-title face-{titleFace}" bind:this={titleEl}>{titleText}</div>
 
 		<!-- is-holding only brightens the glow; the pop is applied through
 		     popAmount(amountEl) so it cannot clobber the entrance animation. -->

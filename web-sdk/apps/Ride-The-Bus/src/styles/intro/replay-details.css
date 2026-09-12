@@ -229,7 +229,7 @@
 	border: none;
 	border-radius: calc(var(--ui) * 0.7);
 	background: var(--gold);
-	color: #0d1f0d;
+	color: var(--on-gold-ink);
 	font-family: inherit;
 	font-size: calc(var(--ui) * 1.6);
 	font-weight: 700;
@@ -237,7 +237,7 @@
 	letter-spacing: 0.05em;
 	text-transform: uppercase;
 	align-self: center;
-	transition: background 0.2s;
+	transition: background 0.2s var(--ease-out);
 }
 
 /* A finger cannot hover, and the hover is gated behind @media (hover: hover) -

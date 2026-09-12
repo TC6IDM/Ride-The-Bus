@@ -20,6 +20,9 @@
    of the way. Absolutely positioned so they cost the flex column no height at
    all, and pointer-events:none so they can never intercept a click meant for
    the table. */
+/* Warmed with the bar's panels - see the note on --panel-light in tokens.css.
+   This plate floats over the same wood and was the coolest thing on the board:
+   blue caps on a blue-slate ground, top right, over a mahogany table. */
 .rg-panel {
   position: absolute;
   top: calc(var(--ui) * 0.9);
@@ -30,7 +33,7 @@
   gap: calc(var(--ui-bar) * 1.45);
   padding: calc(var(--ui-bar) * 0.64) calc(var(--ui-bar) * 1.09);
   border-radius: calc(var(--ui-bar) * 1.09);
-  background: rgba(10, 18, 28, 0.72);
+  background: rgba(32, 13, 11, 0.72);
   border: 1px solid rgba(var(--ink-rgb), 0.1);
   backdrop-filter: blur(6px);
   box-shadow: 0 6px 20px rgba(var(--shadow-rgb), 0.45);

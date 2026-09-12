@@ -34,7 +34,11 @@
    Pointer-coarse only. A narrow DESKTOP window is the same width but has a
    mouse, where 21px is precise enough and stretching everything would just look
    wrong. */
-@media (max-width: 620px) and (orientation: portrait) and (pointer: coarse) {/* The equal badge was the worst target on the board and the most expensive to
+/* Coarse pointer, full stop - not width, not orientation. The three terms this
+   used to carry meant a phone in LANDSCAPE got no floor at all, while the note
+   above already said "pointer-coarse only". popup-base.css settled the same
+   question the same way when the panels were measured. */
+@media (pointer: coarse) {/* The equal badge was the worst target on the board and the most expensive to
      miss - it sits on the seam between two halves, so a near-miss does not do
      nothing, it buys the other bet. At 1.95 --ui it paints 14-17px here; this
      grows the TAP area without growing the paint (see .equal-btn::before in

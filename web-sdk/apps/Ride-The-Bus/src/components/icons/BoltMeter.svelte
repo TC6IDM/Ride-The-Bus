@@ -76,7 +76,7 @@
 		/* The unlit stops are drawn, not omitted: the rating is "3 of 5", and a
 		   meter that renders three bolts and stops cannot say what the 5 was. */
 		color: rgba(255, 255, 255, 0.16);
-		transition: color 0.12s;
+		transition: color var(--dur-control) var(--ease-out);
 	}
 
 	.bolt.lit {

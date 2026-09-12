@@ -63,7 +63,7 @@
   font-size: var(--choice-fs);
   font-weight: 800;
   line-height: 1;
-  transition: filter 0.15s, transform 0.15s;
+  transition: filter var(--dur-control) var(--ease-out), transform var(--dur-control) var(--ease-out);
 }
 
 /* Hover: a lighter version of the selected treatment, so it reads as a
@@ -368,7 +368,7 @@
     0 4px 10px rgba(var(--shadow-rgb), 0.45),
     0 0 0 2px rgba(var(--ink-rgb), 0.25),
     inset 0 0 0 1px rgba(var(--ink-rgb), 0.28);
-  transition: box-shadow 0.15s, transform 0.15s, filter 0.15s;
+  transition: box-shadow var(--dur-control) var(--ease-out), transform var(--dur-control) var(--ease-out), filter var(--dur-control) var(--ease-out);
 }
 
 /* The tap target, kept independent of the paint. Transparent and centred on

@@ -170,7 +170,7 @@
 
 .running-win-label {
   font-size: calc(var(--ui) * 1.02); /* 11.2px */
-  letter-spacing: 0.16em;
+  letter-spacing: var(--track-label);
   text-transform: uppercase;
   color: var(--ink-felt);
   text-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.6);

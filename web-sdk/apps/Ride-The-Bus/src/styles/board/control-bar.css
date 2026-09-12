@@ -89,7 +89,7 @@
   color: var(--ink-body);
   cursor: pointer;
   text-transform: none;
-  transition: box-shadow 0.15s, border-color 0.15s, background 0.15s, color 0.15s;
+  transition: box-shadow var(--dur-control) var(--ease-out), border-color var(--dur-control) var(--ease-out), background var(--dur-control) var(--ease-out), color var(--dur-control) var(--ease-out);
 }
 
 /* Small square icon buttons (info / sound) */
@@ -107,7 +107,7 @@
   color: var(--ink-body);
   cursor: pointer;
   text-transform: none;
-  transition: box-shadow 0.15s, border-color 0.15s, background 0.15s, color 0.15s;
+  transition: box-shadow var(--dur-control) var(--ease-out), border-color var(--dur-control) var(--ease-out), background var(--dur-control) var(--ease-out), color var(--dur-control) var(--ease-out);
 }
 
 .cb-svg { width: calc(var(--ui-bar) * 1.82) /* 20px */; height: calc(var(--ui-bar) * 1.82); display: block; }
@@ -218,7 +218,7 @@
   background: none;
   cursor: pointer;
   text-transform: none;
-  transition: box-shadow 0.15s, border-color 0.15s, background 0.15s;
+  transition: box-shadow var(--dur-control) var(--ease-out), border-color var(--dur-control) var(--ease-out), background var(--dur-control) var(--ease-out);
 }
 
 .cb-bet-display .cb-cap { text-align: end; }
@@ -235,14 +235,14 @@
 .cb-bet-display.active {
   border-color: var(--mode-ink, var(--accent));
   background: rgba(var(--mode-rgb, var(--accent-rgb)), 0.12);
-  box-shadow: 0 0 12px rgba(var(--mode-rgb, var(--accent-rgb)), 0.35);
+  box-shadow: inset 0 1px 0 var(--panel-lit);
 }
 
 @media (hover: hover) {
   .cb-bet-display:hover {
     border-color: var(--mode-ink, var(--accent));
     background: rgba(var(--mode-rgb, var(--accent-rgb)), 0.12);
-    box-shadow: 0 0 12px rgba(var(--mode-rgb, var(--accent-rgb)), 0.35);
+    box-shadow: inset 0 1px 0 var(--panel-lit);
   }
 }
 
@@ -263,7 +263,7 @@
   font-weight: 800;
   line-height: 1;
   cursor: pointer;
-  transition: box-shadow 0.12s, border-color 0.12s, color 0.12s;
+  transition: box-shadow var(--dur-control) var(--ease-out), border-color var(--dur-control) var(--ease-out), color var(--dur-control) var(--ease-out);
 }
 
 /* ~14px in a 25px button (56%), matching the stepper chevrons' weight. Drawn
@@ -277,7 +277,7 @@
 @media (hover: hover) {
   .cb-step:hover:not(:disabled) {
     border-color: var(--mode-ink, var(--accent));
-    box-shadow: 0 0 8px rgba(var(--mode-rgb, var(--accent-rgb)), 0.5);
+    box-shadow: inset 0 1px 0 var(--panel-lit);
   }
 }
 
@@ -333,7 +333,7 @@
   padding: calc(var(--ui-bar) * 0.6) calc(var(--ui-bar) * 1);
   border-radius: calc(var(--ui-bar) * 0.64);
   border: 1px solid rgba(var(--ink-rgb), 0.14);
-  background: rgba(8, 14, 22, 0.96);
+  background: rgba(var(--panel-dark-rgb), 0.96);
   box-shadow: 0 6px 18px rgba(var(--shadow-rgb), 0.55);
   color: var(--ink-strong);
   font-size: calc(var(--ui-bar) * 1.05);
@@ -342,7 +342,7 @@
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.14s var(--ease-out), transform 0.14s var(--ease-out);
+  transition: opacity var(--dur-control) var(--ease-out), transform var(--dur-control) var(--ease-out);
 }
 
 @media (hover: hover) {
@@ -383,7 +383,7 @@
   padding: calc(var(--ui-bar) * 0.6) calc(var(--ui-bar) * 1);
   border-radius: calc(var(--ui-bar) * 0.64);
   border: 1px solid rgba(var(--ink-rgb), 0.14);
-  background: rgba(8, 14, 22, 0.96);
+  background: rgba(var(--panel-dark-rgb), 0.96);
   box-shadow: 0 6px 18px rgba(var(--shadow-rgb), 0.55);
   color: var(--ink-strong);
   font-size: calc(var(--ui-bar) * 1.05);
@@ -392,7 +392,7 @@
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.14s var(--ease-out), transform 0.14s var(--ease-out);
+  transition: opacity var(--dur-control) var(--ease-out), transform var(--dur-control) var(--ease-out);
 }
 
 @media (hover: hover) {
@@ -400,6 +400,18 @@
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
+}
+
+/* The keyboard's route to the same explanation.
+   .cb-cooldown-tip and .cb-mode-tip - the two rules this one is otherwise
+   byte-identical to - each carry a :focus-within alongside their hover, and
+   this one did not. A player tabbing onto a locked bet button therefore got
+   silence where the same player gets a reason on the spin button and on the
+   mode button. Hosted on the panel, not the button, for the reason the note
+   above the markup gives: a disabled button receives no events. */
+.cb-bet.bet-locked:focus-within .cb-bet-tip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 /* Flashed by a refused tap. A phone has no hover, so this is the only way the
@@ -416,7 +428,7 @@
   left: 50%;
   transform: translateX(-50%);
   border: calc(var(--ui-bar) * 0.45) solid transparent;
-  border-top-color: rgba(8, 14, 22, 0.96);
+  border-top-color: rgba(var(--panel-dark-rgb), 0.96);
 }
 
 /* The locked display is NOT dimmed. Greying the game's biggest control reads
@@ -455,7 +467,7 @@
   left: 50%;
   transform: translateX(-50%);
   border: calc(var(--ui-bar) * 0.45) solid transparent;
-  border-top-color: rgba(8, 14, 22, 0.96);
+  border-top-color: rgba(var(--panel-dark-rgb), 0.96);
 }
 
 /* Round icon buttons (autospin, and the floating turbo / advanced) */
@@ -473,13 +485,38 @@
   color: var(--ink-body);
   cursor: pointer;
   text-transform: none;
-  transition: box-shadow 0.15s, border-color 0.15s, background 0.15s, color 0.15s;
+  transition: box-shadow var(--dur-control) var(--ease-out), border-color var(--dur-control) var(--ease-out), background var(--dur-control) var(--ease-out), color var(--dur-control) var(--ease-out);
 }
 
 .cb-round:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* The big Spin button */
+/* ---- LIT, NOT HALOED -----------------------------------------------------
+ * The fourteen coloured glows this file used to carry are gone, replaced by the
+ * lit top edge popup-base.css:157-168 defines for exactly this job. Both that
+ * file and popup-mode.css:38-41 remove the effect by name - "a green halo around
+ * a green button on a dark panel is the shadow-glow tell" - and the bar then
+ * shipped it on every control it has.
+ *
+ * Nothing about the WAYFINDING changed: border-color, colour and the tinted wash
+ * all stay, so an open menu is still found by its hue rather than by re-reading
+ * four identical icons. Only the bloom went.
+ *
+ * THE SPIN BUTTON'S OWN PALETTE. Four radial gradients and three glows were raw
+ * hex on the one control the whole game exists to press - including a fourth
+ * blue with no relation to --accent, and a third red matching neither --loss nor
+ * the #ff5d5d on the line beside it. A closed set for one control, so it is
+ * declared here rather than in tokens.css, which is the shape that file asks
+ * for. The three pairs keep their shipped values; only the red border and the
+ * amber border now name the tokens they were already equal to. */
 .cb-spin {
+  --spin-lit: #2a4d74;
+  --spin-deep: #12233a;
+  --spin-stop-lit: #5a1f27;
+  --spin-stop-deep: #2a0d11;
+  --spin-slam-lit: #4a3a12;
+  --spin-slam-deep: #221a06;
+  --spin-well: #0d0d10;
   width: calc(var(--ui-bar) * 5.82) /* 64px */;
   height: calc(var(--ui-bar) * 5.82);
   flex: 0 0 auto;
@@ -489,15 +526,15 @@
   justify-content: center;
   border-radius: 50%;
   border: max(2px, calc(var(--ui-bar) * 0.27)) solid rgba(var(--ink-rgb), 0.85);
-  background: radial-gradient(circle at 50% 35%, #2a4d74, #12233a 75%);
+  background: radial-gradient(circle at 50% 35%, var(--spin-lit), var(--spin-deep) 75%);
   color: var(--ink);
   cursor: pointer;
   text-transform: none;
-  transition: box-shadow 0.15s, border-color 0.15s, transform 0.1s;
+  transition: box-shadow var(--dur-control) var(--ease-out), border-color var(--dur-control) var(--ease-out), transform 0.1s var(--ease-out);
 }
 
 @media (hover: hover) {
-  .cb-spin:not(:disabled):not(.blocked):hover { box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.75); transform: scale(1.04); }
+  .cb-spin:not(:disabled):not(.blocked):hover { box-shadow: inset 0 1px 0 var(--panel-lit); transform: scale(1.04); }
 }
 
 .cb-spin:not(:disabled):not(.blocked):active { transform: scale(0.97); }
@@ -521,20 +558,20 @@
   .cb-spin.blocked:active { transform: none; }
 }
 
-.cb-spin.stopping { border-color: #ff5d5d; background: radial-gradient(circle at 50% 35%, #5a1f27, #2a0d11 75%); }
+.cb-spin.stopping { border-color: var(--loss-soft); background: radial-gradient(circle at 50% 35%, var(--spin-stop-lit), var(--spin-stop-deep) 75%); }
 
 /* Skip-the-reveal state. Amber rather than the spin blue or the stop red: it is
    neither starting nor ending anything, just hurrying the current round along. */
-.cb-spin.slammable { border-color: #ffce3a; background: radial-gradient(circle at 50% 35%, #4a3a12, #221a06 75%); }
+.cb-spin.slammable { border-color: var(--ctl-turbo); background: radial-gradient(circle at 50% 35%, var(--spin-slam-lit), var(--spin-slam-deep) 75%); }
 
 @media (hover: hover) {
-  .cb-spin.slammable:not(.blocked):hover { box-shadow: 0 0 20px rgba(255, 206, 58, 0.7); }
+  .cb-spin.slammable:not(.blocked):hover { box-shadow: inset 0 1px 0 var(--panel-lit); }
 }
 
 .cb-slam-svg { width: calc(var(--ui-bar) * 3.45); height: calc(var(--ui-bar) * 3.45); transform: none; color: var(--gold-bright); }
 
 @media (hover: hover) {
-  .cb-spin.stopping:not(.blocked):hover { box-shadow: 0 0 20px rgba(255, 80, 80, 0.85); }
+  .cb-spin.stopping:not(.blocked):hover { box-shadow: inset 0 1px 0 var(--panel-lit); }
 }
 
 .cb-spin { position: relative; /* anchors the autoplay count over the square */ }
@@ -555,8 +592,8 @@
      size, and 2px is still a visible outline on the smallest one. */
   border: max(2px, calc(var(--ui-bar) * 0.38)) solid var(--loss);
   border-radius: calc(var(--ui-bar) * 0.64);
-  background: #0d0d10;
-  box-shadow: 0 0 10px rgba(255, 59, 59, 0.7);
+  background: var(--spin-well);
+  box-shadow: 0 0 10px rgba(var(--loss-rgb), 0.7);
 }
 
 /* Rounds left in an auto run, centred inside the stop square. Still positioned
@@ -607,7 +644,7 @@
  * was undone. These are five near-identical round icons in a 40px strip;
  * colour is how a player finds the one they opened last time without reading
  * every glyph again. */
-.cb-icon.active { border-color: var(--accent); color: var(--ink); background: rgba(var(--accent-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.45); }
+.cb-icon.active { border-color: var(--accent); color: var(--ink); background: rgba(var(--accent-rgb), 0.16); box-shadow: inset 0 1px 0 var(--panel-lit); }
 
 /* The sound button opens a panel, so it wears that panel's identity rather than
    the accent blue every other .cb-icon lights with. (0,3,0) against the (0,2,0)
@@ -620,7 +657,7 @@
   border-color: var(--ctl-sound);
   color: var(--ctl-sound-ink);
   background: rgba(var(--ctl-sound-rgb), 0.16);
-  box-shadow: 0 0 12px rgba(var(--ctl-sound-rgb), 0.4);
+  box-shadow: inset 0 1px 0 var(--panel-lit);
 }
 
 @media (hover: hover) {
@@ -628,30 +665,30 @@
     border-color: var(--ctl-sound);
     color: var(--ctl-sound-ink);
     background: rgba(var(--ctl-sound-rgb), 0.16);
-    box-shadow: 0 0 12px rgba(var(--ctl-sound-rgb), 0.4);
+    box-shadow: inset 0 1px 0 var(--panel-lit);
   }
 }
 
 @media (hover: hover) {
-  .cb-icon:hover { border-color: var(--accent); color: var(--ink); background: rgba(var(--accent-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.45); }
+  .cb-icon:hover { border-color: var(--accent); color: var(--ink); background: rgba(var(--accent-rgb), 0.16); box-shadow: inset 0 1px 0 var(--panel-lit); }
 }
 
-.cb-turbo.active { border-color: var(--ctl-turbo); color: var(--ctl-turbo-ink); background: rgba(var(--ctl-turbo-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--ctl-turbo-rgb), 0.5); }
+.cb-turbo.active { border-color: var(--ctl-turbo); color: var(--ctl-turbo-ink); background: rgba(var(--ctl-turbo-rgb), 0.16); box-shadow: inset 0 1px 0 var(--panel-lit); }
 
 @media (hover: hover) {
-  .cb-turbo:hover { border-color: var(--ctl-turbo); color: var(--ctl-turbo-ink); background: rgba(var(--ctl-turbo-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--ctl-turbo-rgb), 0.5); }
+  .cb-turbo:hover { border-color: var(--ctl-turbo); color: var(--ctl-turbo-ink); background: rgba(var(--ctl-turbo-rgb), 0.16); box-shadow: inset 0 1px 0 var(--panel-lit); }
 }
 
-.cb-autospin.active { border-color: var(--ctl-autospin); color: var(--ctl-autospin-ink); background: rgba(var(--ctl-autospin-rgb), 0.14); box-shadow: 0 0 12px rgba(var(--ctl-autospin-rgb), 0.45); }
+.cb-autospin.active { border-color: var(--ctl-autospin); color: var(--ctl-autospin-ink); background: rgba(var(--ctl-autospin-rgb), 0.14); box-shadow: inset 0 1px 0 var(--panel-lit); }
 
 @media (hover: hover) {
-  .cb-autospin:hover:not(:disabled) { border-color: var(--ctl-autospin); color: var(--ctl-autospin-ink); background: rgba(var(--ctl-autospin-rgb), 0.14); box-shadow: 0 0 12px rgba(var(--ctl-autospin-rgb), 0.45); }
+  .cb-autospin:hover:not(:disabled) { border-color: var(--ctl-autospin); color: var(--ctl-autospin-ink); background: rgba(var(--ctl-autospin-rgb), 0.14); box-shadow: inset 0 1px 0 var(--panel-lit); }
 }
 
-.cb-advanced.active { border-color: var(--ctl-advanced); color: var(--ctl-advanced-ink); background: rgba(var(--ctl-advanced-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--ctl-advanced-rgb), 0.45); }
+.cb-advanced.active { border-color: var(--ctl-advanced); color: var(--ctl-advanced-ink); background: rgba(var(--ctl-advanced-rgb), 0.16); box-shadow: inset 0 1px 0 var(--panel-lit); }
 
 @media (hover: hover) {
-  .cb-advanced:hover { border-color: var(--ctl-advanced); color: var(--ctl-advanced-ink); background: rgba(var(--ctl-advanced-rgb), 0.16); box-shadow: 0 0 12px rgba(var(--ctl-advanced-rgb), 0.45); }
+  .cb-advanced:hover { border-color: var(--ctl-advanced); color: var(--ctl-advanced-ink); background: rgba(var(--ctl-advanced-rgb), 0.16); box-shadow: inset 0 1px 0 var(--panel-lit); }
 }
 
 .cb-float:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -807,7 +844,7 @@
 .cb-mode-word {
   font-size: calc(var(--ui-bar) * 0.95);
   font-weight: 900;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--track-label);
   /* The tracking is added to the RIGHT of the last letter too, which would sit
      the word a hair left of centre in its own padding. */
   text-indent: 0.08em;
@@ -1001,7 +1038,7 @@
   padding: calc(var(--ui-bar) * 0.6) calc(var(--ui-bar) * 1);
   border-radius: calc(var(--ui-bar) * 0.64);
   border: 1px solid rgba(var(--ink-rgb), 0.14);
-  background: rgba(8, 14, 22, 0.96);
+  background: rgba(var(--panel-dark-rgb), 0.96);
   box-shadow: 0 6px 18px rgba(var(--shadow-rgb), 0.55);
   color: var(--ink-strong);
   font-size: calc(var(--ui-bar) * 1.05);
@@ -1010,7 +1047,7 @@
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.14s var(--ease-out), transform 0.14s var(--ease-out);
+  transition: opacity var(--dur-control) var(--ease-out), transform var(--dur-control) var(--ease-out);
 }
 
 @media (hover: hover) {

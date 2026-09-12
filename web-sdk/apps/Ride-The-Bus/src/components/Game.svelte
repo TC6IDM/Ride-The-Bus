@@ -333,6 +333,19 @@
    * <button> and sits before the panel in the DOM, so the cycle is at least not
    * broken. Worth doing properly rather than approximately.
    */
+  /**
+   * Everything behind an open dialog is inert, which is what makes the
+   * aria-modal="true" on each panel a true statement rather than a claim.
+   *
+   * It sits on the board regions, not on .game-layout, because the panels are
+   * rendered inside .game-layout and would switch themselves off with it.
+   *
+   * The error dialog counts too, and it is the reason this is derived here
+   * rather than from ControlBar's own openPopup: ErrorModal renders OUTSIDE
+   * .game-layout and openPopup knows nothing about it.
+   */
+  const chromeInert = $derived(openPopup !== null || stateModal.modal?.name === 'error');
+
   let popupReturnFocus: HTMLElement | null = null;
 
   $effect(() => {
@@ -681,10 +694,10 @@
     <span class="game-title-sub">by Takeover Casino</span>
   </div>
 
-  <main class="play-area">
+  <main class="play-area" inert={chromeInert}>
     <GameBoard />
   </main>
-  <ControlBar bind:openPopup bind:betRowEl {introPhase} />
+  <ControlBar bind:openPopup bind:betRowEl {introPhase} {chromeInert} />
 
   {#if openPopup}
     <button class="popup-backdrop" aria-label={t('Close menu')} onclick={closePopup}></button>

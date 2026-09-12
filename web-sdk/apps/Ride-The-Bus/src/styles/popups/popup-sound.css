@@ -31,7 +31,7 @@
 
 .sound-track { display: flex; flex-direction: column; gap: calc(var(--ui-bar) * 0.27); flex: 1 1 auto; min-width: 0; }
 
-.sound-label { font-size: calc(var(--ui-bar) * 0.93); letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-dim); font-weight: 700; }
+.sound-label { font-size: calc(var(--ui-bar) * 0.93); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink-dim); font-weight: 700; }
 
 /* The track paints thin; the TARGET must not be. A range input has no height of
    its own beyond the UA's ~16px, which sits under the 24px floor the guess

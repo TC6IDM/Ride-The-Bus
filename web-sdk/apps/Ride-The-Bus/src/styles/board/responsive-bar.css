@@ -143,19 +143,11 @@
      and on Mobile M the row broke into a third line with the advanced button
      stranded alone under it. 36px clears the 24px WCAG 2.2 AA floor by half
      again and fits every phone width down to 320. */
-.cb-icon,
-.cb-round,
-.cb-float {
-    min-width: 36px;
-    min-height: 36px;
-  }
+/* (the 36px floor moved to the pointer-coarse block at the end of this file) */
 /* The +/- pair is stacked and adjacent, so they get a floor nearer the 24px
      one than the 36px above - two tall halves would be deeper than the panel
      they sit in, and 36px wide is width the bet figure needs more. */
-.cb-step {
-    min-width: 30px;
-    min-height: 26px;
-  }
+/* (the 30x26 floor moved to the pointer-coarse block at the end of this file) */
 /* The reserved width for the bet figure, trimmed. It is measured from
      "$1,000,000.00", which is not a bet anyone places on a phone, and on this
      row every pixel it reserves is taken off the four controls beside it. */
@@ -175,10 +167,7 @@
 
    .cb-cooldown is inset -0.55 --ui-bar and so extends PAST the button; it stays
    pointer-events: none (control-bar.css) and must, or this target is moot. */
-.cb-spin {
-    min-width: 44px;
-    min-height: 44px;
-  }
+/* (the 44px floor moved to the pointer-coarse block at the end of this file) */
 }
 
 /* Very tight: drop the inline +/- (the bet is still settable from the bet
@@ -247,5 +236,56 @@
 .cb-readouts.solo .cb-lastwin {
     min-width: calc(var(--ui-bar) * 26);
     max-width: calc(var(--ui-bar) * 26);
+  }
+}
+
+/* ---- Tap-target floors ----------------------------------------------------
+ * Coarse pointer, full stop.
+ *
+ * These were inside the (max-width: 620px) and (orientation: portrait) and
+ * (pointer: coarse) block above, whose own comment opens "Pointer-coarse only".
+ * The two extra terms did something nobody wrote down: A PHONE HELD SIDEWAYS
+ * GOT NO FLOOR. popup-base.css had already reached the right predicate when the
+ * panels were measured - "a phone held sideways needs this as much as one held
+ * upright" - and these predate that.
+ *
+ * They are here rather than re-gated in place because that block also carries
+ * .cb-bet-display's narrowed reservation, which is a WIDTH BUDGET decision
+ * about a phone row and has nothing to do with fingers. It keeps the old gate.
+ *
+ * Popout S is deliberately NOT floored, and that is the same note's other half:
+ * it is "a 400px mouse window whose unit is deliberately tiny and must not be
+ * floored". npm run shots -- --popups measures 9px targets there; flooring them
+ * would also break the rule that Popout S is Popout L at exactly half size.
+ */
+@media (pointer: coarse) {
+  /* 36px, not 44px: at 44 the three icons, the two floating buttons and the
+     round buttons together push both rows of the bar past a 375px viewport.
+     36 clears the 24px WCAG 2.2 AA floor by half again and fits down to 320. */
+  .cb-icon,
+  .cb-round,
+  .cb-float {
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  /* The +/- pair is stacked and adjacent, so it floors nearer 24 than 36 - two
+     tall halves would be deeper than the panel they sit in, and 36px of width
+     is width the bet figure needs more. */
+  .cb-step {
+    min-width: 30px;
+    min-height: 26px;
+  }
+
+  /* The one control the whole game exists to press. 44 here against 36 above is
+     not an inconsistency: the case against 44 is that the icons, floats and
+     round buttons TOGETHER overflow the row, and this is a single control
+     gaining 5.8px on a row that has the space.
+
+     .cb-cooldown is inset past the button's edge and stays pointer-events:none
+     in control-bar.css - it must, or this target is moot. */
+  .cb-spin {
+    min-width: 44px;
+    min-height: 44px;
   }
 }

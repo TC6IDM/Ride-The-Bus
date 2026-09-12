@@ -412,7 +412,9 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	cursor: help;
+	/* pointer, not help: this is a real <button> that opens a tip, and `help`
+	   is the cursor for text that explains itself. */
+	cursor: pointer;
 	z-index: 3;
 }
 
@@ -520,7 +522,7 @@
 	box-shadow: 0 calc(var(--ss) * 0.6) calc(var(--ss) * 1.4) rgba(var(--shadow-rgb), 0.55);
 	opacity: 0;
 	visibility: hidden;
-	transition: opacity 0.15s;
+	transition: opacity var(--dur-control) var(--ease-out);
 	pointer-events: none;
 }
 
@@ -769,7 +771,7 @@
 	cursor: pointer;
 	letter-spacing: 0.05em;
 	text-transform: uppercase;
-	transition: background 0.2s, color 0.2s;
+	transition: background 0.2s var(--ease-out), color 0.2s var(--ease-out);
 }
 
 /* A finger cannot hover, and the hover above is correctly gated behind
@@ -793,7 +795,7 @@
 
 .ss-continue:focus-visible {
 	background: var(--gold);
-	color: #0d1f0d;
+	color: var(--on-gold-ink);
 }
 
 /* ---- Responsive: very short viewports (Popout S ~225px tall) ------------- */
@@ -840,40 +842,45 @@
 @media (max-width: 620px) and (orientation: portrait) {.ss-steps {
 		flex-wrap: wrap;
 	}
-/* THE FAN HAS TO BE RE-DEALT FOR TWO ROWS.
-	   The tilts above describe one hand of four spread left to right: -1.5, -0.5,
-	   +0.5, +1.5. Wrapped into a 2x2 that splits into a top row leaning left
-	   (-1.5, -0.5) and a bottom row leaning right (+0.5, +1.5) - so each row
-	   looked like it was sliding off its own side of the screen, which is the
-	   "layout bug" reading the note on .ss-step warns the angles must stay under.
+/* THE FAN IS FLAT IN TWO ROWS, and that is not the same judgement as the
+	   four-across spread above.
 
-	   A row of two fans as a PAIR: outer edges up and out, mirrored about the
-	   gap. The lift then alternates the opposite way between the rows so the two
-	   pairs are not the same pair twice. */
+	   The tilt up there breaks up "four equal panels in an even row", which the
+	   note on .ss-step calls the most recognisable AI-landing-page shape there
+	   is. That argument is about a ROW. Wrapped into a 2x2 every panel gains a
+	   vertical neighbour, so each angle now has an aligned edge beside it to be
+	   measured against - and a tilt with a straight edge next to it does not
+	   read as a dealt hand, it reads as four cards that failed to line up.
+
+	   An earlier pass re-dealt the angles as a mirrored pair per row rather than
+	   flattening them. That fixed the worse bug it describes (each row sliding
+	   off its own side of the screen) without fixing the staggering, because the
+	   stagger was never about which way the angles pointed.
+
+	   The odd/even and [dir='rtl'] selectors are kept at zero rather than
+	   replaced by one flat .ss-step rule, and that is load-bearing: the
+	   four-across block ships [dir='rtl'] .ss-step:nth-child(n), which
+	   out-specifies a bare .ss-step, so dropping these would put the
+	   four-across spread back on a right-to-left phone. */
 .ss-step:nth-child(odd) {
-		--step-tilt: -1.4deg;
+		--step-tilt: 0deg;
 	}
 .ss-step:nth-child(even) {
-		--step-tilt: 1.4deg;
+		--step-tilt: 0deg;
 	}
-/* The pair is mirrored about the gap, so in a right-to-left row the two
-	   angles swap - same flip the four-across block above makes, and it has to
-	   be repeated here because these selectors are no LESS specific than the
-	   ones up there: without it the [dir='rtl'] rules for panels 1-4 would beat
-	   this block's odd/even pair and put the four-across spread on a phone. */
 :global([dir='rtl']) .ss-step:nth-child(odd) {
-		--step-tilt: 1.4deg;
+		--step-tilt: 0deg;
 	}
 :global([dir='rtl']) .ss-step:nth-child(even) {
-		--step-tilt: -1.4deg;
+		--step-tilt: 0deg;
 	}
 .ss-step:nth-child(1),
 .ss-step:nth-child(4) {
-		--step-lift: calc(var(--ss) * 0.35);
+		--step-lift: 0px;
 	}
 .ss-step:nth-child(2),
 .ss-step:nth-child(3) {
-		--step-lift: calc(var(--ss) * -0.35);
+		--step-lift: 0px;
 	}
 /* Two rows of panels at this size leaves the column about 9px inside the
 	   viewport, and the failure that costs is the Play button dropping below
@@ -946,7 +953,7 @@
 	}
 .ss-continue:hover {
 		background: var(--gold);
-		color: #0d1f0d;
+		color: var(--on-gold-ink);
 	}
 }
 

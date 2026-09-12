@@ -48,7 +48,7 @@
   background: rgba(var(--ink-rgb), 0.16);
   position: relative;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background var(--dur-control) var(--ease-out);
 }
 
 .switch.on { background: var(--tint-strong); }
@@ -104,7 +104,7 @@
   border-radius: 50%;
   background: var(--ink);
   box-shadow: 0 1px 3px rgba(var(--shadow-rgb), 0.4);
-  transition: transform 0.15s;
+  transition: transform var(--dur-control) var(--ease-out);
 }
 
 /* How far the knob slides: the track's width less the knob and the inset at

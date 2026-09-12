@@ -74,6 +74,57 @@
 
   const canReload = $derived(Boolean(code && RELOADABLE.has(code)));
 
+  const isOpen = $derived(stateModal.modal?.name === 'error');
+
+  /**
+   * The dialog takes focus, and hands it back.
+   *
+   * Game.svelte does this for the other seven panels, and could not do it for
+   * this one twice over: its effect is keyed on openPopup, which this dialog is
+   * not part of, and it selects '.popup', which this root is not. Rather than
+   * teach that effect about a second shape, the dialog that lives outside the
+   * switchboard owns its own behaviour.
+   *
+   * The ROOT takes focus, not the button, for the reason the other effect
+   * records: landing on a control reads that control's label in place of the
+   * dialog's, and here the dialog's label IS the error message.
+   */
+  let modalEl: HTMLElement | undefined = $state();
+  let returnFocus: HTMLElement | null = null;
+
+  $effect(() => {
+    if (!isOpen) {
+      returnFocus?.focus();
+      returnFocus = null;
+      return;
+    }
+    returnFocus = document.activeElement as HTMLElement | null;
+    // After the {#if} branch has actually rendered the node.
+    requestAnimationFrame(() => modalEl?.focus());
+  });
+
+  /**
+   * Escape closes - but only when there is something to close TO.
+   *
+   * ERR_IS and ERR_ATE are dead sessions, and for those the dialog's only
+   * action is Reload. Letting Escape dismiss it there would leave a player
+   * looking at a board that cannot take a bet, with nothing on screen saying
+   * why - which is the same failure the backdrop comment refuses ("an
+   * unacknowledged failure should not be dismissable by a stray click"),
+   * reached by a different key. Where a Close button exists, Escape does
+   * exactly what Close does.
+   */
+  $effect(() => {
+    if (!isOpen || canReload) return;
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      stateModal.modal = null;
+    };
+    window.addEventListener('keydown', onEscape);
+    return () => window.removeEventListener('keydown', onEscape);
+  });
+
   function reload() {
     if (props.onReload) props.onReload();
     else window.location.reload();
@@ -84,8 +135,18 @@
   <!-- Deliberately has no backdrop click-to-dismiss: an unacknowledged failure
        should not be dismissable by a stray click on the table. -->
   <div class="err-backdrop" role="presentation"></div>
-  <div class="err-modal" role="alertdialog" aria-modal="true" aria-label={t('Error')}>
-    <h2 class="err-title">{message}</h2>
+  <!-- Named by the message, not by the word "Error". aria-label used to win
+       over the <h2> below it, so a screen reader announced "Error" and then had
+       to be walked into the dialog to find out which one. -->
+  <div
+    class="err-modal"
+    role="alertdialog"
+    aria-modal="true"
+    aria-labelledby="err-modal-title"
+    tabindex="-1"
+    bind:this={modalEl}
+  >
+    <h2 class="err-title" id="err-modal-title">{message}</h2>
 
     {#if detail}
       <p class="err-detail">{detail}</p>

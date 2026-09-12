@@ -30,8 +30,21 @@
    reads --tint-rgb / --tint-ink, which only .popup declares. */
 .err-modal {
   --ui-bar: clamp(3px, min(calc((100vw - 30px) / 96), 2.4vh), 11px);
-  --tint-rgb: var(--accent-rgb);
-  --tint-ink: var(--ink);
+  /* GOLD, not the accent blue this used to take.
+     Every other panel wears the colour of the control that opened it; this one
+     has no opener, so it opted out of the contract and hardcoded --accent -
+     which left the single brightest object in the dialog as a cool blue pill on
+     a warm table, and made this the last piece of the dark-SaaS chrome the
+     token file was written to remove. It was invisible in review for a plain
+     reason: nothing could reach this dialog in dev until `npm run shots
+     -- --errors` existed, so nobody had looked at it.
+
+     Gold is what the game already uses for a primary affordance - the MODE
+     button, the intro's continue button - and it is the one identity colour not
+     spent on a bar control, so it carries no wayfinding meaning to confuse
+     here. --on-gold-ink is the dark ink those same gold surfaces print on. */
+  --tint-rgb: var(--gold-rgb);
+  --tint-ink: var(--on-gold-ink);
   position: fixed;
   z-index: 91;
   left: 50%;
@@ -65,6 +78,12 @@
   font-weight: 800;
   line-height: 1.3;
   color: var(--ink);
+  /* These messages are whole sentences and they are centred, so the default
+     greedy wrap strands the last word on a line of its own - "Please reload the
+     / game." was the shipped result for ERR_IS. balance evens the lines instead;
+     browsers without it fall back to the greedy wrap, which is what was there
+     before. Safe on a heading: the cap is a few lines, not a paragraph. */
+  text-wrap: balance;
 }
 
 /* The underlying payload. Kept quiet - it is for support, not the player -

@@ -81,6 +81,14 @@
  * --ink-cream and --ink-warm-dim now.                                       */
 
 .wc-overlay {
+	/* THE VEIL'S OWN GREEN, as two triplets.
+	   It was written out longhand seven times across three rules - the base
+	   gradient, the pointer-coarse copy and the @supports copy - so the three
+	   could disagree with nothing to stop them. One screen, so these are local
+	   variables rather than tokens: tokens.css exempts a closed one-screen
+	   palette, and asks only that it stop being spelled out repeatedly. */
+	--wc-veil-lit-rgb: 8, 20, 8;
+	--wc-veil-deep-rgb: 2, 6, 2;
 	position: fixed;
 	inset: 0;
 	/* Above the start screen (1000/1001) and everything under it. The takeover
@@ -116,7 +124,7 @@
 	--wc-hot: rgb(var(--wc-hot-rgb, 245, 215, 140));
 
 	/* DO NOT BLACK OUT THE TABLE.
-	   This was rgba(2, 6, 2, 0.94) - near-opaque - which extinguished the
+	   This was rgba(var(--wc-veil-deep-rgb), 0.94) - near-opaque - which extinguished the
 	   hand-sampled felt, the chips, the cups and the four cards the round was
 	   just won with, and replaced the best-looking thing in the game with a
 	   generic dark vignette. The player won WITH those cards; hiding them at
@@ -126,8 +134,8 @@
 	   legible over a busy scene instead of sheer darkness doing it. */
 	background: radial-gradient(
 		ellipse at center,
-		rgba(8, 20, 8, calc(var(--wc-veil, 0.6) * 0.62)) 0%,
-		rgba(2, 6, 2, var(--wc-veil, 0.6)) 72%
+		rgba(var(--wc-veil-lit-rgb), calc(var(--wc-veil, 0.6) * 0.62)) 0%,
+		rgba(var(--wc-veil-deep-rgb), var(--wc-veil, 0.6)) 72%
 	);
 	/* Was blur(5px) saturate(0.72), which turned the hand-sampled table into
 	   brown mush - the same loss the scrim above refuses, taken by another route.
@@ -150,8 +158,8 @@
 		-webkit-backdrop-filter: none;
 		background: radial-gradient(
 			ellipse at center,
-			rgba(8, 20, 8, calc(var(--wc-veil, 0.6) * 0.78)) 0%,
-			rgba(2, 6, 2, calc(var(--wc-veil, 0.6) + 0.1)) 72%
+			rgba(var(--wc-veil-lit-rgb), calc(var(--wc-veil, 0.6) * 0.78)) 0%,
+			rgba(var(--wc-veil-deep-rgb), calc(var(--wc-veil, 0.6) + 0.1)) 72%
 		);
 	}
 }
@@ -163,8 +171,8 @@
 	.wc-overlay {
 		background: radial-gradient(
 			ellipse at center,
-			rgba(8, 20, 8, calc(var(--wc-veil, 0.6) * 0.86)) 0%,
-			rgba(2, 6, 2, calc(var(--wc-veil, 0.6) + 0.18)) 72%
+			rgba(var(--wc-veil-lit-rgb), calc(var(--wc-veil, 0.6) * 0.86)) 0%,
+			rgba(var(--wc-veil-deep-rgb), calc(var(--wc-veil, 0.6) + 0.18)) 72%
 		);
 	}
 }
@@ -326,17 +334,17 @@
 	mask-image: linear-gradient(
 		115deg,
 		transparent 40%,
-		rgba(0, 0, 0, 0.5) 46%,
+		rgba(var(--shadow-rgb), 0.5) 46%,
 		#000 50%,
-		rgba(0, 0, 0, 0.5) 54%,
+		rgba(var(--shadow-rgb), 0.5) 54%,
 		transparent 60%
 	);
 	-webkit-mask-image: linear-gradient(
 		115deg,
 		transparent 40%,
-		rgba(0, 0, 0, 0.5) 46%,
+		rgba(var(--shadow-rgb), 0.5) 46%,
 		#000 50%,
-		rgba(0, 0, 0, 0.5) 54%,
+		rgba(var(--shadow-rgb), 0.5) 54%,
 		transparent 60%
 	);
 }
@@ -487,7 +495,7 @@
 		118deg,
 		transparent 34%,
 		rgba(var(--wc-hot-rgb, 245, 215, 140), 0.5) 47%,
-		rgba(255, 255, 255, 0.55) 50%,
+		rgba(var(--ink-rgb), 0.55) 50%,
 		rgba(var(--wc-hot-rgb, 245, 215, 140), 0.5) 53%,
 		transparent 66%
 	);
@@ -736,9 +744,9 @@
 	background: linear-gradient(
 		to bottom,
 		transparent 0%,
-		rgba(2, 6, 2, 0.44) 16%,
-		rgba(2, 6, 2, 0.66) 38%,
-		rgba(2, 6, 2, 0.62) 76%,
+		rgba(var(--wc-veil-deep-rgb), 0.44) 16%,
+		rgba(var(--wc-veil-deep-rgb), 0.66) 38%,
+		rgba(var(--wc-veil-deep-rgb), 0.62) 76%,
 		transparent 100%
 	);
 }
@@ -765,7 +773,18 @@
 	   faces' declared unicode-range and drop to the OS font, where 900 is
 	   usually synthesised. Nothing CSS can do about that without shipping CJK
 	   webfonts, which the bundle budget will not take - but overflow-wrap is
-	   what keeps the synthesised, wider result inside the viewport. */
+	   what keeps the synthesised, wider result inside the viewport.
+
+	   Those five were the half of this that was already understood, and a whole
+	   string in one OS font is a fair price. The other half is that
+	   unicode-range falls back PER CHARACTER, which makes an ALMOST-covered
+	   locale worse off than an uncovered one: Polish "Duza Wygrana" drew its
+	   z-dot from Poppins - which ships latin-ext, where Big Shoulders does not -
+	   in the middle of a Big Shoulders word, and Vietnamese broke twice against
+	   a gap that reaches neither file. The face is picked per string now, by
+	   titleFaceFor() in game/ui/displayFace.ts. DO NOT set font-family on
+	   .wc-title without reading that file; .face-body and .face-system below
+	   are the two answers that are not this one. */
 	overflow-wrap: anywhere;
 	min-width: 0;
 	text-shadow:
@@ -777,10 +796,36 @@
 	   element.animate(), see promoteTitle. */
 	animation: wc-title-in 1.24s var(--ease-pop) both;
 	/* The palette variables change under the element as the tier climbs, so
-	   var(--ease-out) the colour across instead of letting it snap mid-pop. */
+	   ease the colour across instead of letting it snap mid-pop. */
 	transition:
 		color 0.45s var(--ease-out),
 		text-shadow 0.45s var(--ease-out);
+}
+
+/* The two faces .wc-title falls back to, chosen per string - see the note above
+   and game/ui/displayFace.ts.
+
+   Neither restates size, weight, colour, tracking or shadow. They change the
+   font FILE and nothing else, so the tier ladder, the glow and the entrance all
+   stay exactly where the rule above put them. */
+.wc-title.face-body {
+	font-family: var(--font-body);
+	/* Big Shoulders is condensed and Poppins is not, so the same word is wider
+	   here. The title already carries overflow-wrap: anywhere and a vw cap; this
+	   pulls the cap down a step so a Latin-ext tier name has the same amount of
+	   room as the display face had, rather than the same font-size. */
+	font-size: min(calc(var(--ui) * 4.9), 9.6vw);
+	letter-spacing: -0.01em;
+}
+
+/* No webfont covers this string, so the OS picks - and the OS face could be
+   anything. Nothing is asserted about its metrics beyond giving it the room the
+   widest plausible answer needs; 900 is very often synthesised here, which is
+   the case overflow-wrap on the rule above exists for. */
+.wc-title.face-system {
+	font-family: sans-serif;
+	font-size: min(calc(var(--ui) * 4.6), 9.2vw);
+	letter-spacing: 0;
 }
 
 .wc-amount {
@@ -872,7 +917,7 @@
 .wc-prompt {
 	margin-top: calc(var(--ui) * 1.8);
 	font-size: calc(var(--ui) * 1.3);
-	letter-spacing: 0.08em;
+	letter-spacing: var(--track-label);
 	text-transform: uppercase;
 	color: var(--ink-warm-dim);
 	opacity: 0.72;
@@ -892,24 +937,6 @@
 	}
 	to {
 		opacity: 1;
-	}
-}
-
-@keyframes wc-spin {
-	to {
-		transform: rotate(360deg);
-	}
-}
-
-@keyframes wc-pulse {
-	0%,
-	100% {
-		transform: scale(0.94);
-		opacity: 0.34;
-	}
-	50% {
-		transform: scale(1.06);
-		opacity: 0.5;
 	}
 }
 

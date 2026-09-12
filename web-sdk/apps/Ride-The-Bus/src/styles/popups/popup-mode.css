@@ -93,7 +93,7 @@
   text-align: start;
   cursor: pointer;
   text-transform: none;
-  transition: background 0.12s var(--ease-out), color 0.12s var(--ease-out);
+  transition: background var(--dur-control) var(--ease-out), color var(--dur-control) var(--ease-out);
 }
 
 /* The divider, on every row but the first. Warm, like every other hairline on a
@@ -348,7 +348,7 @@
   font-weight: 700;
   cursor: pointer;
   text-transform: none;
-  transition: background 0.12s var(--ease-out), border-color 0.12s var(--ease-out);
+  transition: background var(--dur-control) var(--ease-out), border-color var(--dur-control) var(--ease-out);
 }
 
 @media (hover: hover) {.mode-confirm-cancel:hover {

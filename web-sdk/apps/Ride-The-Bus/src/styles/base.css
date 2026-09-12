@@ -64,7 +64,10 @@
      would drift apart - which is exactly the argument tokens.css makes for
      every other shared colour, so it belongs there with them. */
   height: 100vh;
-  width: 100vw;
+  /* 100%, not 100vw: 100vw counts the scrollbar gutter, so on any platform that
+     shows one this box is wider than the space it has. overflow: hidden below
+     was hiding that rather than preventing it. */
+  width: 100%;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
