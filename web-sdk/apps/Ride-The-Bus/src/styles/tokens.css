@@ -71,12 +71,12 @@
      have the SAME specificity, so which one won came down to whichever Vite
      happened to emit last. app.css now selects "html body" (0,0,2) so the
      question cannot be reopened by a bundle reshuffle. See the note there. */
-  --font-body: 'Poppins', sans-serif;
+  --font-body: 'Barlow', sans-serif;
   /* The display face. Two slots only - the wordmark and the card ranks - which
      is what keeps it a register rather than a third body font. Its subset is
      latin, NOT latin-ext, so it must not be put on a translated string. See the
      long note beside the @font-face block in components/app.css. */
-  --font-display: 'Big Shoulders', 'Poppins', sans-serif;
+  --font-display: 'Big Shoulders', 'Barlow', sans-serif;
 
   /* The micro-label track.
      Six values - 0.16em, 0.09em, 0.08em, 0.08em, 0.08em and 0.09em - were doing

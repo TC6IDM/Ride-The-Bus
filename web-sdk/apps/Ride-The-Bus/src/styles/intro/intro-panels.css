@@ -519,7 +519,8 @@
 	border: 1px solid var(--tip-edge);
 	color: var(--ink-warm);
 	font-size: calc(var(--ui) * 1.05);
-	/* 400: Poppins ships no 500 here, so it was already drawing as 400. */
+	/* 400: the body face ships no 500 (components/app.css), and a 500 resolves
+	   to 400 - written down rather than left to the fallback. */
 	font-weight: 400;
 	line-height: 1.35;
 	text-align: start;

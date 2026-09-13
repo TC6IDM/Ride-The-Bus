@@ -44,9 +44,9 @@
  * border for room and shadowed so it holds against the wood.
  *
  * tabular-nums is a fix rather than a refinement: this value changes on every
- * card and the digits are not the same width in Poppins, so the number visibly
- * shifted under its own card as it climbed. .running-win-amount already had
- * this; the per-card figures never did.
+ * card, and a figure whose digits change width shifts under its own card as it
+ * climbs. It is live now that the body face ships `tnum` (components/app.css);
+ * under Poppins it was declared and inert, and the number did shift.
  */
 .card-mult {
   /* box-sizing is border-box globally, so the padding below comes out of this
@@ -178,7 +178,10 @@
 
 .running-win-amount {
   font-size: calc(var(--ui) * 2.76); /* 30.4px */
-  font-weight: 900;
+  /* 800, not 900: the body face ships three weights (see components/app.css),
+     and at 30px the difference between its 800 and a 900 is not a step anyone
+     reads. Big Shoulders keeps its 900 for the wordmark. */
+  font-weight: 800;
   color: var(--win);
   text-shadow: 0 3px 14px rgba(var(--shadow-rgb), 0.65);
   font-variant-numeric: tabular-nums;

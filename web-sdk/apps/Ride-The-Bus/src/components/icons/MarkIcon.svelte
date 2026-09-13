@@ -4,17 +4,19 @@
 	 *
 	 * This is the same argument SuitIcon.svelte makes, applied to the glyphs it
 	 * did not cover, and it is a correctness fix rather than a taste one. The
-	 * self-hosted Poppins declares these unicode-ranges:
+	 * self-hosted body face's latin block declares this unicode-range (Google's
+	 * standard latin subset; it was the same under Poppins and is under Barlow):
 	 *
 	 *   U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
 	 *   U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
 	 *   U+2212, U+2215, U+FEFF, U+FFFD
 	 *
 	 * U+2715 MULTIPLICATION X, U+2713 CHECK MARK and U+2192 RIGHTWARDS ARROW are
-	 * in none of them. Note how close the near miss is: the range carries U+2191
-	 * and U+2193, the up and down arrows, but not the right one in between. So
-	 * every one of those characters fell straight through Poppins to whatever the
-	 * device substitutes - which on Android and iOS is routinely a colour emoji,
+	 * not in it. Note how close the near miss is: the range carries U+2191 and
+	 * U+2193, the up and down arrows, but not the right one in between (and the
+	 * shipped Barlow files do not even carry those two). So every one of those
+	 * characters fell straight through the webfont to whatever the device
+	 * substitutes - which on Android and iOS is routinely a colour emoji,
 	 * at a weight and colour the game does not control. Stake names emoji icons
 	 * directly as a mark against a release.
 	 *
@@ -23,8 +25,8 @@
 	 * own typeface.
 	 *
 	 * NOT drawn here, deliberately: the card RANKS. A to K are ASCII, they are
-	 * inside U+0000-00FF, and Poppins ships them in the latin subset this game
-	 * already self-hosts. There is no fallback bug to fix, and hand-cutting
+	 * inside U+0000-00FF, and both self-hosted faces ship them in the latin
+	 * subset. There is no fallback bug to fix, and hand-cutting
 	 * thirteen glyph outlines would trade a real typeface for a worse one.
 	 *
 	 * SIZING LIVES HERE, not in the parent stylesheet. Svelte scopes a stylesheet

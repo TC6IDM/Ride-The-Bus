@@ -232,7 +232,8 @@
 
 .ss-detail-val {
 	color: var(--ink-warm);
-	/* 700: Poppins ships no 600 cut, so this was already drawing as 700. */
+	/* 700: the body face ships no 600 (components/app.css), and a 600 resolves
+	   upward to 700 - written down rather than left to the fallback. */
 	font-weight: 700;
 }
 

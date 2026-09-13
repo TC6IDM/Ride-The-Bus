@@ -1,7 +1,8 @@
 # Design — Ride The Bus
 
 The locked design system for this app, written by the second Hallmark pass
-(2026-09-12). Every later visual change reads this first. It is deliberately
+(2026-09-12; the type decision amended 2026-09-13). Every later visual change
+reads this first. It is deliberately
 short and carries **no values**: the numbers live in `src/styles/tokens.css`,
 the rules in the repo-root `CLAUDE.md`, and the arguments in
 `.claude/skills/rtb-invariants/`. A hex restated here would be a hex that
@@ -52,14 +53,20 @@ parity of contrast against the three panel grounds (the table is in
 - Display: **Big Shoulders** 700/900 — the wordmark, the card ranks, the win
   title. Latin only; never on a translated string without reading
   `game/ui/displayFace.ts`.
-- Body and UI: **Poppins** 400/700/800/900, self-hosted, latin + latin-ext.
+- Body and UI: **Barlow** 400/700/800, self-hosted, latin + latin-ext +
+  vietnamese. **A pairing, not a default:** both faces are drawn from signage
+  (industrial for Big Shoulders, Californian road signs for Barlow), so the
+  wordmark and the figure under it read as one decision. Poppins (the 2019
+  template default) and Geist (the 2025 one) were each tried and rejected —
+  the argument is at the top of `components/app.css`.
 - Small caps: `--track-label`, uppercase, only on a two-word caption over a
   figure. Never on a sentence.
-- **No tabular figures exist in either face** (measured: no `tnum`). A figure
-  that changes while the player watches — the takeover count-up, the session
-  clock — renders through `components/board/Figure.svelte`, which boxes each
-  digit one "0" wide; its width and `typeFit.evenDigitEms()` are pinned
-  together by a test. Every other figure is width-reserved by its container.
+- **Figures are tabular** — Barlow ships `tnum`, so `font-variant-numeric:
+  tabular-nums` is live and a figure keeps its width as its digits change.
+  `typeFit.labelEms()` is measured against Barlow 800 (every digit 0.56 em);
+  its test table is the record. If the face ever changes, that table, the
+  `unicode-range` transcription in `displayFace.ts` and the two fitting
+  contracts are what must be re-measured — not guessed.
 
 ## Icons
 
@@ -110,10 +117,14 @@ width, where prose needs the measure.
 
 ## Known deviations, recorded
 
-- Poppins is on Hallmark's banned-defaults list for body type. Kept
-  deliberately: the money-fitting contract (`typeFit.ts`, `use:fitValue`) is
-  measured against it, and it covers all 17 locales. Swapping to a face with
-  real tabular figures is a candidate follow-up pass, not a per-page override.
+- Barlow has no rupee sign (U+20B9, absent from the family), so an INR
+  session prints `₹` from the OS sans beside Barlow digits. PHP, KRW, VND and
+  ILS were already in that position under every face tried. Recorded, not
+  fixed: drawing a currency glyph is the one place the "draw what the font
+  does not own" rule would cost more than it buys.
+- Arabic, Hindi, Russian, Japanese, Korean and Chinese fall back to the OS
+  sans-serif wholesale; neither face has a cut for those scripts and the
+  inlined bundle will not take one.
 - The win takeover's title carries a two-layer glow. Atmospheric allows it;
   it is stamped as such at the top of `win-celebration.css`.
 - The intro's four step panels are dealt (fanned, lifted) rather than gridded;

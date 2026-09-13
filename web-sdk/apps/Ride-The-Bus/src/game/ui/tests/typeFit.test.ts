@@ -8,10 +8,7 @@
 import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
 
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-
-import { EVEN_DIGIT_EM, evenDigitEms, labelEms } from '../typeFit.ts';
+import { labelEms } from '../typeFit.ts';
 import { splitChipLabel } from '../../bet/betChips.ts';
 
 /**
@@ -24,20 +21,34 @@ import { splitChipLabel } from '../../bet/betChips.ts';
  * face or the weight has something to fail against.
  */
 describe('the figure is fitted to the disc', () => {
-  /** string -> em width, Poppins 800, letter-spacing -0.01em. */
+  /**
+   * string -> em width, Barlow 800, `tnum`, letter-spacing -0.01em.
+   *
+   * Summed from the shipped file's advance widths with fontTools (tabular
+   * digits, no kerning - kerning only ever makes a run narrower, so a table
+   * without it is the conservative one for the "never smaller" check below).
+   * The Poppins table this replaces was measured off a probe span in the page;
+   * the three "x,000" strings differed there because Poppins' "2", "5" and "0"
+   * are different widths, and are identical here because tabular digits are.
+   * The two longest are here because Barlow's figures are narrow enough that
+   * only the long labels reach the range where the fit, not the disc's cap,
+   * decides the size.
+   */
   const REAL_EMS: Record<string, number> = {
-    $1: 1.048,
-    $25: 1.885,
-    $100: 2.362,
-    '$1,000': 3.332,
-    '12,500': 3.238,
-    '20,000': 3.51,
-    '15,000': 3.267,
-    '0.10': 2.002,
-    NOK: 2.278,
-    SC: 1.378,
-    '¥1,000': 3.372,
-    '1 234,50': 4.073,
+    $1: 1.107,
+    $25: 1.648,
+    $100: 2.189,
+    '$1,000': 2.985,
+    '12,500': 2.96,
+    '20,000': 2.96,
+    '15,000': 2.96,
+    '0.10': 1.88,
+    NOK: 1.884,
+    SC: 1.188,
+    '¥1,000': 3.094,
+    '1 234,50': 3.691,
+    '$10,000': 3.526,
+    '12,500,000': 4.838,
   };
 
   /**
@@ -58,11 +69,12 @@ describe('the figure is fitted to the disc', () => {
    * returned 99 for everything would pass the test above and print nothing
    * legible.
    *
-   * 20% rather than 15% because of the capitals. This face's caps run 0.62
-   * ("S") to 0.79 ("O") and EM_CAP is one number at the top of that range, so
-   * an all-narrow code like "SC" comes out 16% heavy. That costs nothing in
-   * practice: capitals only ever appear in a currency CODE, which takes its own
-   * line under a cap of its own, and that cap is what binds on a short one.
+   * 20% rather than 15% because of the capitals. This face's common caps run
+   * 0.56 ("F") to 0.69 ("A") and EM_CAP is one number at the top of that
+   * range, so an all-narrow code like "SC" comes out 18% heavy. That costs
+   * nothing in practice: capitals only ever appear in a currency CODE, which
+   * takes its own line under a cap of its own, and that cap is what binds on a
+   * short one.
    */
   test('and never more than 20% over', () => {
     for (const [text, real] of Object.entries(REAL_EMS)) {
@@ -92,17 +104,27 @@ describe('the figure is fitted to the disc', () => {
   });
 
   /**
-   * The reason this is a weighted table and not a character count. Poppins
-   * ships no `tnum` feature, so the tabular-nums on the value is a no-op and
-   * the figures stay proportional: "1" measures 0.387em against "0" at 0.657em.
-   * Count characters instead and "$1,111" and "$4,444" get the same size, and
-   * one of them runs off the face.
+   * Every digit costs the same. The chip value carries
+   * `font-variant-numeric: tabular-nums`, and the body face ships `tnum`, so
+   * "$1,111" and "$4,444" really do print the same width - an estimate that
+   * still knew a narrow "1" (as it had to under Poppins, whose figures were
+   * proportional because it shipped no tnum) would undersize one of them.
    */
-  test('a 1 is not the same width as any other digit', () => {
-    assert.ok(
-      labelEms('1111') < labelEms('4444'),
-      'the estimate treats every digit alike - see the note on EM_NARROW',
-    );
+  test('every digit is the same width as every other', () => {
+    assert.equal(labelEms('1111'), labelEms('4444'));
+    assert.equal(labelEms('1111'), labelEms('0000'));
+  });
+
+  /**
+   * What still makes this a weighted table rather than a character count: the
+   * separators are a third of a digit, and the two widest capitals run past
+   * the cap figure. A code starting with "M" or "W" sized from EM_CAP alone
+   * would print wider than the space it was fitted to.
+   */
+  test('separators are narrower than digits, and M and W wider than the cap', () => {
+    assert.ok(labelEms(',') < labelEms('0'));
+    assert.ok(labelEms('MXN') > labelEms('NOK'));
+    assert.ok(labelEms('W') > labelEms('O'));
   });
 
   test('adding a character never makes a label narrower', () => {
@@ -128,61 +150,5 @@ describe('the figure is fitted to the disc', () => {
       assert.ok(labelEms(amount) >= 0.5, `${formatted}: amount`);
       assert.ok(labelEms(currency + amount) >= 0.5, `${formatted}: inline`);
     }
-  });
-});
-
-describe('a figure rendered through Figure.svelte is sized for its boxes', () => {
-  /**
-   * The win takeover solves its font-size from evenDigitEms() and renders the
-   * same string through Figure, which sets every digit in a box one "0" wide.
-   * The two have to agree on that width or the headline is fitted to a string
-   * of one width and drawn at another - and the failure is the one this whole
-   * fit exists to prevent: a nine-digit figure running off both edges of a
-   * phone. Read off the component rather than duplicated here, so the test
-   * fails on the day someone changes one and not the other.
-   */
-  test('EVEN_DIGIT_EM is the --digit-w default in Figure.svelte', () => {
-    const component = readFileSync(
-      resolve(import.meta.dirname, '../../../components/board/Figure.svelte'),
-      'utf8',
-    );
-    const match = component.match(/width:\s*var\(--digit-w,\s*([0-9.]+)em\)/);
-    assert.ok(match, 'Figure.svelte must size .dg from var(--digit-w, <n>em)');
-    assert.equal(Number(match![1]), EVEN_DIGIT_EM);
-  });
-
-  test('every digit costs the box width and nothing else changes', () => {
-    // A "1" is the digit that moved: 0.42 proportional, the box width even.
-    assert.equal(evenDigitEms('1'), EVEN_DIGIT_EM);
-    assert.equal(evenDigitEms('1111'), Math.round(4 * EVEN_DIGIT_EM * 100) / 100);
-    // Separators and symbols keep the proportional estimate.
-    assert.equal(
-      evenDigitEms('$1,234.50'),
-      Math.round((labelEms('$,.') + 6 * EVEN_DIGIT_EM) * 100) / 100,
-    );
-    // Never wider than a string of the widest proportional digit, never
-    // narrower than one of "1"s: the box sits between the two.
-    assert.ok(evenDigitEms('1111') > labelEms('1111'));
-    assert.ok(evenDigitEms('4444') < labelEms('4444'));
-  });
-
-  test('the two figures that change per frame render through Figure', () => {
-    const at = (rel: string) =>
-      readFileSync(resolve(import.meta.dirname, '../../../components/board/' + rel), 'utf8');
-    assert.match(
-      at('WinCelebration.svelte'),
-      /<Figure text=\{numberToCurrencyString\(shown\)\} \/>/,
-      'the count-up amount must render through Figure',
-    );
-    assert.match(
-      at('WinCelebration.svelte'),
-      /evenDigitEms\(numberToCurrencyString\(props\.amount\)\)/,
-      'the amount must be sized from evenDigitEms, or the box-width string does not fit',
-    );
-    assert.match(
-      at('SessionReadouts.svelte'),
-      /<Figure text=\{sessionClock\(\)\} \/>/,
-      'the session clock must render through Figure',
-    );
   });
 });

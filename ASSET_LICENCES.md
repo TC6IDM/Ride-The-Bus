@@ -23,7 +23,30 @@ anything in that directory ships to players.
 
 **There are no sound-effect files to licence.** Presses, card flips, wins and
 fanfares are generated in code at runtime by `audioGraph.ts`, so none of them is
-a recording and none needs a row above. The music bed below is the only audio
+a recording and none needs a row above.
+
+---
+
+## Typefaces — `src/fonts/`, inlined into the build
+
+Not in `static/`, but they ship: `bundleStrategy: "inline"` base64s every file
+Vite processes into `index.html`. Both families are under the SIL Open Font
+License 1.1, which permits self-hosting and redistribution and requires the
+licence text to travel with the files — it does, as the two `OFL-*.txt` beside
+them, and any copy of these fonts must carry it. The families keep their real
+names (neither declares a Reserved Font Name, but renaming would only mislead).
+The `unicode-range` subsets are Google Fonts' own, fetched from
+`fonts.googleapis.com` with a Chrome user agent so the woff2 subsets are served;
+`components/app.css` explains why each subset is or is not shipped.
+
+| File | Source | Licence | Acquired | Notes |
+|---|---|---|---|---|
+| `src/fonts/barlow-{latin,latin-ext,vietnamese}-{400,700,800}.woff2` (9 files) | Barlow by Jeremy Tribby, via Google Fonts | SIL OFL 1.1 — `src/fonts/OFL-Barlow.txt` | 2026-09-13 | The body face. 137 kB total. Static family, three of its nine weights; no Cyrillic cut exists, and the family has no U+20B9 rupee glyph — both recorded in `design.md`. |
+| `src/fonts/bigshoulders-latin-{700,900}.woff2` | Big Shoulders by Patric King (XOtype Co.), via Google Fonts | SIL OFL 1.1 — `src/fonts/OFL-BigShoulders.txt` | 2026-08-29 | The display face: wordmark, card ranks, win title. 24pt optical cut, latin only by design. 27 kB. |
+
+**Retired:** Poppins (Indian Type Foundry, OFL 1.1) was the body face until
+2026-09-13 — eight files, 53 kB. Removed with its licence text in the same
+commit that added Barlow; the reasons are at the top of `components/app.css`. The music bed below is the only audio
 asset the game will ship, and therefore the only one this file has to account
 for.
 

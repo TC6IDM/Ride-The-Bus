@@ -188,15 +188,15 @@ describe('the chrome does not slide back', () => {
   const GAME = GAME_MARKUP;
 
   /**
-   * The game self-hosts Poppins and then printed its most-read numbers in
-   * Arial for the whole life of the code.
+   * The game self-hosts its body face and then printed its most-read numbers
+   * in Arial for the whole life of the code.
    *
    * A <button> does not inherit font-family - the UA stylesheet's own
    * `font: 400 13.333px Arial` wins - so `html body { font-family }` reached
    * everything EXCEPT the controls. Measured in the running game before the
    * fix: the control bar's bet display and mode name, all three mode-picker
    * rows, How to Play's tabs, the autoplay pills, the panel action button and
-   * every bet chip's value were Arial on a Poppins panel.
+   * every bet chip's value were Arial on a panel set in the game's own face.
    *
    * Stake names "standard fonts" as a cause of a 1-star rating, and nothing
    * about this is visible in a stylesheet - only in the computed style of a

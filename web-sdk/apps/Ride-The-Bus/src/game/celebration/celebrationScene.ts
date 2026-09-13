@@ -24,8 +24,8 @@
  * which is the particle burst every generated casino screen ships and says
  * nothing about what game you just won. Ride The Bus is four cards and four
  * guesses; its celebration should be made of its own deck. The marks come
- * from SuitIcon - already drawn as SVG because Poppins does not own U+2660..
- * U+2666 and the fallback is a colour emoji on most phones.
+ * from SuitIcon - already drawn as SVG because the body face does not own
+ * U+2660..U+2666 and the fallback is a colour emoji on most phones.
  *
  * Sixteen over 360deg, four of each suit so no one suit dominates, jittered
  * off the exact spoke angles and alternating short/long so the ring does not

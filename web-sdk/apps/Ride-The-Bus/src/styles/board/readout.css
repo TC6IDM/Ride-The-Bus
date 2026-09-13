@@ -75,7 +75,9 @@
   color: var(--ink);
   line-height: 1.1;
   white-space: nowrap;
-  /* Declared for intent. Poppins ships no `tnum`, so it is inert here - what
-     actually stops the bar re-flowing is the reservation above. */
+  /* Live: the body face ships `tnum` (components/app.css), so a figure keeps
+     its width as its digits change. Under Poppins this was inert, and the
+     reservation above was the only thing stopping the bar re-flowing; the
+     reservation stays, because a win landing must not move the bar either. */
   font-variant-numeric: tabular-nums;
 }

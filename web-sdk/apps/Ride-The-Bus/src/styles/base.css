@@ -160,9 +160,10 @@
 .game-title-sub {
   margin-top: calc(var(--ui) * 0.42);
   font-size: calc(var(--ui) * 0.95); /* 10.5px */
-  /* 500, not the 600 this asked for: Poppins ships 400/700/800/900 here, so
-     600 was silently rendering at 700 - the opposite of the demotion this
-     line exists to make. 500 resolves to 400, which is the intent. */
+  /* 400, not the 600 this once asked for: the body face ships 400/700/800
+     (components/app.css), and CSS resolves a missing 600 UPWARD to 700 - the
+     opposite of the demotion this line exists to make. Written as 400 rather
+     than left to the fallback. */
   font-weight: 400;
   letter-spacing: 0.22em;
   text-transform: uppercase;

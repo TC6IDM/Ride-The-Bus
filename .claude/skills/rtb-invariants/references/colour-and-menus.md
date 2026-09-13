@@ -64,7 +64,7 @@ rather than on every turn. Nothing here is reworded.
     sizes, than the "Quick Bets" caption above it — while leaving the longest
     label at 67% of the face and the shortest at 24%. `labelEms()` publishes
     each label's own width as `--ems` and the CSS solves the size from it, so
-    desktop now runs 13.3–21 px. **Weighted, not a character count**: Poppins
+    desktop now runs 13.3–21 px. **Weighted, not a character count**: the body face
     ships no `tnum`, so `font-variant-numeric: tabular-nums` is a no-op here and
     the figures are proportional — `1` measures 0.387 em against `0` at 0.657 —
     and counting characters would size `$1,111` and `$4,444` alike and overflow
@@ -205,14 +205,23 @@ rather than on every turn. Nothing here is reworded.
   was every popup's; the intro's continue was an outline in tracked uppercase
   and the replay's Play a flat slab. Both take the recipe now (copied per
   sheet, for the scoping reason every panel copies it).
-- **Figures hold still through `Figure.svelte`, not through the face.** Neither
-  self-hosted face ships `tnum` (fontTools: the Poppins subset has no GSUB
-  features at all; digits run 0.387–0.691em at 800). Every `tabular-nums` in
-  the app is inert and two comments claimed otherwise. The takeover count-up
-  wobbled under a centred headline and the session clock breathed its plate
-  every second; both render through `Figure`, which boxes each digit one "0"
-  wide, and the takeover sizes its type from `evenDigitEms()` so the boxed
-  string is the one the font is fitted to. A test pins the two widths together.
-  Everything else is width-reserved and changes per round. The body face
-  itself — a Hallmark banned default — was kept deliberately; a swap is a
-  candidate follow-up pass, recorded in `design.md`.
+- **Figures hold still because the face has tabular figures — and the face
+  was chosen, not defaulted.** Under Poppins neither self-hosted face shipped
+  `tnum` (fontTools: the subset had no GSUB features at all; digits ran
+  0.387–0.691em at 800), so every `tabular-nums` in the app was inert while
+  two comments claimed otherwise: the takeover count-up wobbled under a
+  centred headline and the session clock breathed its plate every second. For
+  one commit (`c2a13a74`) a `Figure.svelte` boxed each digit to hold them
+  still; the body face was then swapped and the component retired, because a
+  box that matches the tabular advance exactly is dead machinery. Three faces
+  were measured, not guessed: **Poppins** (the 2019 template default),
+  **Geist** (the 2025 one — it read as the very cool-dashboard chrome the
+  panel work removed, so allowlisted is not the same as chosen) and
+  **Barlow**, which shares Big Shoulders' signage DNA and made the wordmark
+  and the figure under it read as one decision for the first time. Barlow
+  ships `tnum` (0.551em at 800) and a Vietnamese block; it has no Cyrillic and
+  no rupee glyph, both recorded in `design.md`. Every constant that was
+  measured against Poppins — `typeFit.ts`'s table, its test's `REAL_EMS`, the
+  ranking in `currencies.test.ts`, the `unicode-range` transcription in
+  `displayFace.ts` — was re-measured off the shipped files with fontTools, and
+  the two rules that asked for a 900 the family does not ship take 800.

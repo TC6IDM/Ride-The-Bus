@@ -1,5 +1,13 @@
 [
   {
+    "date": "2026-09-13",
+    "scope": "app",
+    "macrostructure": "n/a - typography only",
+    "theme": "locked (src/styles/tokens.css, design.md) - body face Poppins -> Barlow, paired with Big Shoulders; Geist tried and rejected",
+    "enrichment": "none",
+    "brief": "Ride The Bus - body face swap: tabular figures live, Vietnamese in the game's own face, three faces measured with fontTools before choosing"
+  },
+  {
     "date": "2026-09-12",
     "scope": "app",
     "macrostructure": "n/a - a game board, a control bar, seven panels and two overlays",

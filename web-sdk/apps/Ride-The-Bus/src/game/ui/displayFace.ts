@@ -21,20 +21,22 @@
  * string in one OS font is fine. What it misses is the Latin-ext case, which
  * behaves differently:
  *
- *   pl  "Duza Wygrana" (z-dot)  - Big Shoulders has no z-dot, POPPINS DOES
- *                                 (it ships latin-ext; Big Shoulders does not),
- *                                 so the accent is drawn by the body face
- *                                 inside a display-face word.
+ *   pl  "Duza Wygrana" (z-dot)  - Big Shoulders has no z-dot, THE BODY FACE
+ *                                 DOES (it ships latin-ext; Big Shoulders does
+ *                                 not), so the accent was drawn by the body
+ *                                 face inside a display-face word.
  *   vi  "Thang Lon" (stacked)   - U+1EAF and U+1EDB fall in the gap between
- *                                 Poppins' U+1E00-1E9F and U+1EF2-1EFF, so
- *                                 they reach NEITHER webfont and come from the
- *                                 OS - again inside the word.
+ *                                 latin-ext's U+1E00-1E9F and U+1EF2-1EFF, so
+ *                                 under Poppins they reached NEITHER webfont
+ *                                 and came from the OS - again inside the word.
  *
  * Those two are the actual defect, and they are why the answer here is three-way
  * rather than a swap. Falling back from display to body fixes Polish, because
- * Poppins covers the whole string; it does NOT fix Vietnamese, because Poppins
- * does not. Only dropping to the generic stack renders that one in a single
- * face.
+ * the body face covers the whole string. Under Poppins it did NOT fix
+ * Vietnamese, and only dropping to the generic stack rendered that one in a
+ * single face; the body face is Barlow now, which ships a vietnamese subset,
+ * so vi resolves to `body` and `system` is left for the scripts neither face
+ * has a cut for - Arabic, Hindi, Russian, Japanese, Korean, Chinese.
  *
  * WHY COVERAGE AND NOT A LOCALE LIST. A list of "safe" locales is a second copy
  * of a fact that lives in the copy itself, and it goes stale the first time a
@@ -54,7 +56,7 @@ type Range = readonly [number, number];
 /**
  * The subset BOTH self-hosted faces are served with.
  *
- * Transcribed from the `unicode-range` on the four Poppins latin blocks and the
+ * Transcribed from the `unicode-range` on the body face's latin block and the
  * two Big Shoulders blocks in components/app.css - they are byte-identical,
  * which the test also asserts, because a weight served with a wider range would
  * make this answer wrong in one direction only and that is the hardest kind to
@@ -83,12 +85,12 @@ export const LATIN_SUBSET: ReadonlyArray<Range> = [
 ];
 
 /**
- * The extra subset POPPINS ALONE is served with. Big Shoulders has no
+ * The extra subset THE BODY FACE ALONE is served with. Big Shoulders has no
  * latin-ext file, and that asymmetry is the whole bug: it is what lets one
  * accented letter in an otherwise-Latin word come from the other face.
  *
- * Note the gap at U+1EA0-1EF1. That is most of the Vietnamese precomposed block,
- * and it is absent from the shipped file rather than from this transcription.
+ * Note the gap at U+1EA0-1EF1. That is most of the Vietnamese precomposed block;
+ * Google serves it as its own subset, VIETNAMESE_SUBSET below.
  */
 export const LATIN_EXT_SUBSET: ReadonlyArray<Range> = [
 	[0x0100, 0x02ba],
@@ -111,12 +113,37 @@ export const LATIN_EXT_SUBSET: ReadonlyArray<Range> = [
 ];
 
 /**
+ * The subset the BODY FACE ALONE adds beyond latin-ext, transcribed from the
+ * vietnamese blocks in components/app.css (the test checks). It closes the
+ * U+1EA0-1EF1 gap the latin-ext block leaves.
+ */
+export const VIETNAMESE_SUBSET: ReadonlyArray<Range> = [
+	[0x0102, 0x0103],
+	[0x0110, 0x0111],
+	[0x0128, 0x0129],
+	[0x0168, 0x0169],
+	[0x01a0, 0x01a1],
+	[0x01af, 0x01b0],
+	[0x0300, 0x0301],
+	[0x0303, 0x0304],
+	[0x0308, 0x0309],
+	[0x0323, 0x0323],
+	[0x0329, 0x0329],
+	[0x1ea0, 0x1ef9],
+	[0x20ab, 0x20ab],
+];
+
+/** Everything the body face can draw that the display face cannot. */
+const BODY_ONLY: ReadonlyArray<Range> = [...LATIN_EXT_SUBSET, ...VIETNAMESE_SUBSET];
+
+/**
  * Which face to set on a string so that ALL of it comes from one file.
  *
  * - `display` - every codepoint is in the Big Shoulders subset.
- * - `body`    - not all are, but every one is in Poppins (latin + latin-ext).
+ * - `body`    - not all are, but every one is in the body face (latin,
+ *               latin-ext, vietnamese).
  * - `system`  - neither covers it; hand the whole string to the OS stack, which
- *               is what ar/hi/ja/ko/zh/ru already do and is not a regression
+ *               is what ar/hi/ja/ko/ru/zh already do and is not a regression
  *               for them.
  *
  * All-or-nothing at each step on purpose: a "mostly covered" string is precisely
@@ -133,7 +160,7 @@ export function titleFaceFor(text: string): 'display' | 'body' | 'system' {
 		if (cp === undefined) continue;
 
 		if (inRanges(cp, LATIN_SUBSET)) continue;
-		if (inRanges(cp, LATIN_EXT_SUBSET)) {
+		if (inRanges(cp, BODY_ONLY)) {
 			needsBody = true;
 			continue;
 		}

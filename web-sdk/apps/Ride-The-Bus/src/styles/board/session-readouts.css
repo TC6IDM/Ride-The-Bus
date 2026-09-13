@@ -53,13 +53,13 @@
   line-height: 1.15;
 }
 
-/* Declared for intent, and inert: Poppins ships no tnum, so the figures are
-   proportional (measured - a "1" is 0.387em against 0.657em for a "0" at this
-   weight) and this line on its own held nothing still. The session clock ticks
-   once a second and this plate is pinned to the RIGHT, so every "1" that came
-   or went moved its left edge by a few pixels - a panel that breathed with the
-   clock. What actually keeps it still is Figure.svelte, which sets each digit
-   in a box one "0" wide; SessionReadouts renders the timer through it. */
+/* LIVE, and load-bearing here: the session clock ticks once a second and this
+   plate is pinned to the RIGHT, so a digit that changed width would move the
+   plate's left edge every tick. Barlow ships tnum, so every digit is 0.551em
+   and the plate holds still. Under Poppins this declaration was inert (no
+   tnum; a "1" measured 0.387em against 0.657em for a "0") and the plate
+   breathed with the clock - which is worth knowing if the face ever changes
+   again. */
 .rg-item .cb-val {
   font-variant-numeric: tabular-nums;
 }

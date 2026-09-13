@@ -752,7 +752,7 @@
 }
 
 .wc-title {
-	/* THE GAME'S OWN FACE. This was var(--font-body) - Poppins at 900 with
+	/* THE GAME'S OWN FACE. This was var(--font-body) - the body face at 900 with
 	   POSITIVE tracking and uppercase - which made the biggest type in the game
 	   the one screen not wearing the lockup CLAUDE.md defines across the loader,
 	   the intro and the board. Big Shoulders at negative tracking in title case
@@ -779,7 +779,7 @@
 	   string in one OS font is a fair price. The other half is that
 	   unicode-range falls back PER CHARACTER, which makes an ALMOST-covered
 	   locale worse off than an uncovered one: Polish "Duza Wygrana" drew its
-	   z-dot from Poppins - which ships latin-ext, where Big Shoulders does not -
+	   z-dot from the body face - which ships latin-ext, where Big Shoulders does not -
 	   in the middle of a Big Shoulders word, and Vietnamese broke twice against
 	   a gap that reaches neither file. The face is picked per string now, by
 	   titleFaceFor() in game/ui/displayFace.ts. DO NOT set font-family on
@@ -810,10 +810,16 @@
    stay exactly where the rule above put them. */
 .wc-title.face-body {
 	font-family: var(--font-body);
-	/* Big Shoulders is condensed and Poppins is not, so the same word is wider
-	   here. The title already carries overflow-wrap: anywhere and a vw cap; this
-	   pulls the cap down a step so a Latin-ext tier name has the same amount of
-	   room as the display face had, rather than the same font-size. */
+	/* 800: the body face ships no 900 (components/app.css). Inheriting the
+	   title's 900 would resolve to the same cut, but written down so the rule
+	   does not silently ask for a weight that is not there. */
+	font-weight: 800;
+	/* Big Shoulders is condensed and the body face, though narrower than most,
+	   is not, so the same word is wider here. The title already carries
+	   overflow-wrap: anywhere and a vw cap; this pulls the cap down a step so a
+	   Latin-ext or Vietnamese tier name has the same amount of room as the
+	   display face had, rather than the same font-size. Verified at Mobile S
+	   with "Thắng tối đa". */
 	font-size: min(calc(var(--ui) * 4.9), 9.6vw);
 	letter-spacing: -0.01em;
 }
@@ -833,14 +839,16 @@
 	   body face for the number. That split is the lockup's own rule - the
 	   wordmark is display, the credit line under it is body.
 
-	   STABLE DIGIT WIDTHS COME FROM Figure.svelte, NOT FROM THE FACE. This note
-	   used to say "Poppins' tabular figures are proven here"; they are not -
-	   the face ships none (measured: no tnum, "1" at 0.387em against "0" at
-	   0.657em), and under a centred headline every changed digit shifted the
-	   whole figure by the difference, so the count-up wobbled as its cents
-	   turned over. WinCelebration renders the amount through Figure, which
-	   sets each digit in a box one "0" wide, and sizes the type from
-	   evenDigitEms() so the box-width string is the one the font is fitted to.
+	   STABLE DIGIT WIDTHS COME FROM THE FACE, and that has to stay true. Barlow
+	   ships `tnum`, so the tabular-nums declared below holds every digit at
+	   0.551em and the count-up turns its cents over without the figure moving.
+	   Under Poppins that declaration was inert (measured: no tnum, "1" at
+	   0.387em against "0" at 0.657em) and this note claimed the opposite; for
+	   one commit the game boxed each digit in a component (Figure.svelte,
+	   c2a13a74) to hold it still. If the body face is ever swapped for one
+	   without tabular figures, that component is the fallback - and it was
+	   retired rather than kept because a box that matches the advance exactly
+	   is dead machinery nobody would remember the purpose of.
 
 	   Was --ui * 4, a full third smaller than the title above it: the word
 	   describing the win outranked the win. They are co-leads now - the title
@@ -865,11 +873,10 @@
 	font-weight: 800;
 	line-height: 1.1;
 	color: var(--ink-cream);
-	/* Declared for intent, and inert: Poppins ships no `tnum` feature, so this
-	   is a no-op here. What holds the line steady is Figure (each digit in a
-	   fixed box - see the note at the top of this rule) plus the font-size being
-	   solved once from the settled string above, so the block is as wide as it
-	   will ever need to be before the count starts. */
+	/* LIVE, and load-bearing: this is what holds the digits still during the
+	   count (see the note at the top of this rule). The font-size is also solved
+	   once from the settled string above, so the block is as wide as it will
+	   ever need to be before the count starts. */
 	font-variant-numeric: tabular-nums;
 	text-shadow: 0 0 calc(var(--ui) * 1.4) rgba(var(--ink-rgb), 0.35);
 	/* Runs once, on mount - nothing below may set `animation` on this element or

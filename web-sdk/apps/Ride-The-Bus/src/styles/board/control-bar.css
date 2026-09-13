@@ -138,7 +138,10 @@
    renders them too, so they cannot live in the bar's own sheet. */
 
 /* Reserved widths were measured from the widest value each field can ever show
-   at this font (800 16.8px Poppins), IN DOLLARS: balance up to $99,999,999.00 =
+   at 800 16.8px in Poppins, the body face at the time - Barlow's tabular digits
+   are narrower (0.551em against Poppins' 0.606-0.691), so every reservation
+   below holds with room to spare and none needed re-measuring - IN DOLLARS:
+   balance up to $99,999,999.00 =
    140px; last win up to maxBet x the 5000x wincap ($5,000,000.00 = 129px) plus
    the multiplier chip - 220px measured; bet up to $1,000,000.00 = 129px + 16px
    padding. That way a win landing or the bet stepping never re-flows the bar.
@@ -725,8 +728,9 @@
 .cb-bet-base {
   display: block;
   font-size: calc(var(--ui-bar) * 0.86);
-  /* 700: this was 600, which Poppins has no cut for and which was already
-     rendering as 700. Written down rather than left to the fallback. */
+  /* 700: this was 600, which the body face has no cut for (components/app.css)
+     and which resolves upward to 700. Written down rather than left to the
+     fallback. */
   font-weight: 700;
   color: var(--ink-dim);
   font-variant-numeric: tabular-nums;
@@ -866,7 +870,8 @@
    `Chế độ` contains a space. */
 .cb-mode-word {
   font-size: calc(var(--ui-bar) * 0.95);
-  font-weight: 900;
+  /* 800 - the heaviest cut the body face ships (components/app.css). */
+  font-weight: 800;
   letter-spacing: var(--track-label);
   /* The tracking is added to the RIGHT of the last letter too, which would sit
      the word a hair left of centre in its own padding. */

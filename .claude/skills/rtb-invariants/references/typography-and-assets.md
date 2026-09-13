@@ -12,7 +12,7 @@ rather than on every turn. Nothing here is reworded.
   own `font: 400 13.333px Arial` on `button`, `input`, `select` and `textarea`,
   and that beats inheritance — so `html body { font-family }` in `app.css`
   reached every element in the game *except the ones the player clicks*. This
-  game self-hosts Poppins and then printed its most-read numbers in the system
+  game self-hosts its body face and then printed its most-read numbers in the system
   sans, for the whole life of the code. Measured in the running page before the
   fix: the control bar's bet display and mode name (`.cb-val`, `.cb-cap`,
   `.cb-mode-word`, `.cb-bet-mode` — on screen at all times), all three
@@ -24,7 +24,7 @@ rather than on every turn. Nothing here is reworded.
   - Invisible in the source and invisible in a stylesheet: it only shows in the
     *computed* style of a running page, which is how it survived a full art
     pass. `betChips.test.ts` pins the reset, and the way to check it is to walk
-    the live DOM for anything not drawing in Poppins — not to read CSS.
+    the live DOM for anything not drawing in the body face — not to read CSS.
   - Stake names "standard fonts" as a top cause of a 1-star rating.
 - **The logo is WebP, with the PNG as a real fallback, and the choice is made
   in JS rather than in CSS.** `logo.webp` is 81 KB against the PNG's 743 KB and
@@ -41,7 +41,7 @@ rather than on every turn. Nothing here is reworded.
   downwards. **Not** a `canvas.toDataURL('image/webp')` probe, which is the usual
   one-liner and is wrong for exactly the browsers it exists to protect: Safari
   could decode WebP from 14 but could not encode it until 17.
-- **Glyphs are drawn when, and only when, the font does not own them.** Poppins
+- **Glyphs are drawn when, and only when, the font does not own them.** The body face (Barlow now, Poppins before it — the same Google latin subset)
   is self-hosted latin-only, and `✕` U+2715, `✓` U+2713, `→` U+2192 and the four
   suits fall outside every declared `unicode-range` — they dropped to the system
   font, which on Android and iOS means a colour emoji. `SuitIcon.svelte` and
