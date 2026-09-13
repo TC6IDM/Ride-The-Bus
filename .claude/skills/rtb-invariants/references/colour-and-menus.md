@@ -135,3 +135,84 @@ rather than on every turn. Nothing here is reworded.
   on general colour-theory grounds and it was rejected — five near-identical
   round icons in a 40 px strip are found by colour, not by re-reading glyphs.
   Do not collapse them again.
+- **One ink ramp, warm — the second Hallmark pass's headline.** The first pass
+  re-hued every panel to the table and left the *ink* where it was: a cool
+  blue-grey ramp (`#dfe8f2` / `#cfe0f0` / `#93a4b5`) printing on graphite panels
+  that had been warmed precisely so they would stop reading as web chrome. The
+  intro drew the identical material with a warm ramp, so the two screens a
+  player moves between in one tap were one panel with two inks — visible as
+  icy "Second Chance" and How to Play copy in the 2026-09-10 shots. `readout.css`
+  had made the argument for one caption and stopped. The ramp was re-pointed
+  **at parity of contrast** against the three panel grounds (the table is in
+  `tokens.css` beside the values; dim comes out at 6.92 / 5.80 / 7.38 against
+  6.84 / 5.73 / 7.31) and the intro's three names became aliases of the same
+  three values. Nothing moved in the hierarchy; only the temperature.
+- **One panel material, as three tokens.** `popup-base.css` had built the lit
+  face, the two-part shadow and the inset edge pair — and argued each — and the
+  argument stayed in that one sheet. The bar's pills and discs, the RG plate and
+  the error dialog each carried the single blurred blob `table.css` calls "a
+  sticker, not an object", and the error dialog swapped the edge for a red
+  hairline all round; the replay panel was a flat green box on black with no
+  edge at all. `--panel-face` / `--panel-elevation` / `--panel-elevation-low`
+  are what every panel reads now. The **low** variant exists because a pill an
+  inch off the felt does not cast a popup's shadow — same shape, scaled.
+- **Lit, not haloed, everywhere.** `control-bar.css` removed fourteen coloured
+  blooms and then shipped two more on the MODE button, one on the stop square
+  and one on the cooldown ring; `popup-autospin.css` and `popup-bet.css` put a
+  bloom on focus and hover in the sheets that refuse it by name. All gone. The
+  bolt meter's 3px separation bloom on a 12px glyph stays — it is argued and
+  measured to do a job the hue alone did not.
+- **The replay details panel is a panel.** It rendered its own opaque
+  `.ss-overlay` on top of the shell's — the one `StartScreen.svelte` mounts a
+  `TableScene` into "so the first thing a player sees is the place" — so the
+  table was dead paint on every replay and the screen Stake's Fairness view
+  opens on was a green box on pure black, with "Guesses" running into its
+  badges. The wrapper is gone, the panel wears the material and the tint
+  contract (gold), the header speaks the popup-head voice, and the row has a
+  gap. **The lockup behind it stays dimmed on purpose.**
+- **Controls are lines, gauges are fills.** Three Material glyphs — the turbo
+  bolt, the autoplay sync, the advanced "tune" — sat beside an info mark,
+  steppers and a lemniscate drawn by hand: three icon sets on a 40px strip.
+  Worse, the turbo bolt was the *same fill* as the volatility meter's, so one
+  glyph meant speed at one end of the bar and risk under the bet amount. The
+  three are stroked now, in `MarkIcon`'s voice (round caps, ~2.2 on a 24 grid);
+  the meter keeps the fill. One silhouette keeps the two bolts kin; the
+  treatment tells them apart. The spin button's marks are shapes, and it is
+  the hero — the stated exception.
+- **The slider is the game's.** `<input type="range">` with `accent-color`
+  hands the whole control to the browser — three different sliders across
+  Chrome, Firefox and Safari inside a hand-built panel, the last UA-chrome
+  widgets in the game. `components/popups/RangeSlider.svelte` keeps the real
+  input (keyboard, name, `disabled`) and paints the track and thumb itself,
+  taking `--tint` from whichever panel it is in. One child component rather
+  than two copied rule sets, for `readout.css`'s reason.
+- **Panels arrive.** Every panel was mounted by an `{#if}` with no animation
+  in a game whose takeover has a tuned arrival. 220ms from 0.96 scale, the
+  backdrop 200ms ahead, reduced motion 120ms of opacity. **No exit,
+  deliberately** — it would need an `out:` directive in seven components plus
+  a reduced-motion-aware JS transition, for a menu every OS closes instantly.
+- **A panel's own focus ring.** `Game.svelte` focuses `.popup` on open and no
+  rule said what that looks like, so a keyboard-opened panel wore Chrome's
+  default double ring around the whole dialog — measured off a screenshot as
+  2px of `#fff` over 4px of `#101010`, the one focus indicator in the game
+  that was not `--focus-ring`. The device is `win-celebration.css`'s: the ring
+  goes on the part that names the panel — the header's rule thickens to 2px in
+  `--tint`. The error dialog, which has no header rule, takes the standard
+  ring. The sound panel had **no** focus indicator on any of its four controls;
+  the shots probe found it by tabbing.
+- **The primary action has one voice.** `.action-button` — the tint's two-stop
+  fill, the lit top edge, the contact shadow, dark ink, 800, sentence case —
+  was every popup's; the intro's continue was an outline in tracked uppercase
+  and the replay's Play a flat slab. Both take the recipe now (copied per
+  sheet, for the scoping reason every panel copies it).
+- **Figures hold still through `Figure.svelte`, not through the face.** Neither
+  self-hosted face ships `tnum` (fontTools: the Poppins subset has no GSUB
+  features at all; digits run 0.387–0.691em at 800). Every `tabular-nums` in
+  the app is inert and two comments claimed otherwise. The takeover count-up
+  wobbled under a centred headline and the session clock breathed its plate
+  every second; both render through `Figure`, which boxes each digit one "0"
+  wide, and the takeover sizes its type from `evenDigitEms()` so the boxed
+  string is the one the font is fitted to. A test pins the two widths together.
+  Everything else is width-reserved and changes per round. The body face
+  itself — a Hallmark banned default — was kept deliberately; a swap is a
+  candidate follow-up pass, recorded in `design.md`.

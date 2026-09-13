@@ -60,14 +60,44 @@ const EM_CAP = 0.8;
 const EM_OTHER = 0.72;
 
 export function labelEms(text: string): number {
-  let ems = 0;
+  return ems(text, (ch) => EM_NARROW[ch] ?? EM_DIGIT);
+}
+
+/**
+ * The width of one digit's box in Figure.svelte, in ems.
+ *
+ * Poppins' "0" at weight 800 is 0.657em; the box is a hair over it. This
+ * constant and the `--digit-w` default in components/board/Figure.svelte MUST
+ * agree - typeFit.test.ts reads the component and checks - because the win
+ * takeover solves its font-size from evenDigitEms() and then renders the same
+ * string through Figure. If the two disagree the headline is sized for a
+ * string of one width and printed at another.
+ */
+export const EVEN_DIGIT_EM = 0.66;
+
+/**
+ * labelEms() for a string that Figure.svelte will render: every digit takes
+ * exactly the box width, whatever the digit, and everything else keeps the
+ * proportional estimate above. Only the "1" (0.42 in the table) differs from
+ * the plain estimate by more than the rounding; that is the whole point, since
+ * the "1" is the digit that made a figure's width move under the player.
+ */
+export function evenDigitEms(text: string): number {
+  return ems(text, () => EVEN_DIGIT_EM);
+}
+
+/** The shared walk; only what a DIGIT costs differs between the two. */
+function ems(text: string, digitEms: (ch: string) => number): number {
+  let total = 0;
   for (const ch of text) {
-    const narrow = EM_NARROW[ch];
-    if (narrow !== undefined) ems += narrow;
-    else if (ch >= '0' && ch <= '9') ems += EM_DIGIT;
-    else if (ch >= 'A' && ch <= 'Z') ems += EM_CAP;
-    else ems += EM_OTHER;
+    if (ch >= '0' && ch <= '9') total += digitEms(ch);
+    else {
+      const narrow = EM_NARROW[ch];
+      if (narrow !== undefined) total += narrow;
+      else if (ch >= 'A' && ch <= 'Z') total += EM_CAP;
+      else total += EM_OTHER;
+    }
   }
   // Never zero: the CSS divides by this, and a 0 would make font-size infinite.
-  return Math.max(Math.round(ems * 100) / 100, 0.5);
+  return Math.max(Math.round(total * 100) / 100, 0.5);
 }

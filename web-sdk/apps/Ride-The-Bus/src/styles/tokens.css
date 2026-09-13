@@ -1,12 +1,20 @@
-/* Hallmark - audit + redesign, not a greenfield build. Ride The Bus, Aug 2026.
+/* Hallmark - audit + redesign, not a greenfield build. Ride The Bus.
  * genre: atmospheric  ·  anchor: the table (felt #123a26, wood #663108, brand
- * crimson #a80828)  ·  audit: 5 critical / 10 major / 5 minor
+ * crimson #a80828)  ·  design-system: design.md  ·  designed-as-app
+ * pass 1, Aug 2026:  audit 5 critical / 10 major / 5 minor
+ * pass 2, Sep 2026:  audit 4 critical / 12 major / 7 minor
+ *   pre-emit critique: P5 H4 E4 S5 R5 V4
  *
- * The audit's headline was that this app shipped TWO design systems that never
- * met: a hand-sampled warm table, and generic cool dark-SaaS chrome laid over
- * it. This file is the join. Read the accent note below before changing any
- * colour - two of the decisions in here were made, reverted, and remade, and
- * the reasoning is recorded so that does not happen a third time.
+ * The first pass's headline was that this app shipped TWO design systems that
+ * never met: a hand-sampled warm table, and generic cool dark-SaaS chrome laid
+ * over it. This file is the join. The second pass found the seams the first
+ * had left: a cool INK ramp still printing on the panels the first pass had
+ * warmed, one shadow for the popups and another for the bar, three Material
+ * glyphs beside the drawn ones, and one screen nobody had redesigned. Read the
+ * accent note below before changing any colour - two of the decisions in here
+ * were made, reverted, and remade, and the reasoning is recorded so that does
+ * not happen a third time. design.md, beside this app's package.json, is the
+ * short statement of the system; this file is its values.
  */
 /* The shared vocabulary: colour, and the shapes motion moves in.
  *
@@ -142,19 +150,46 @@
   --ink-lockup-sub: rgba(255, 224, 170, 0.72);
 
   /* ==== Ink ==============================================================
-     Cool ramp - the control bar, the popups, the board. */
-  --ink: #fff;
-  --ink-strong: #dfe8f2;
-  --ink-body: #cfe0f0;
-  /* One dim, not two. #93a4b5 and #97a8b8 are separated by less than a
-     perceptible step and were used for the same job on adjacent lines of the
-     control bar. */
-  --ink-dim: #93a4b5;
+     ONE RAMP, WARM. This was two: a cool blue-grey ramp (#dfe8f2 / #cfe0f0 /
+     #93a4b5, "the control bar, the popups, the board") and a warm one for the
+     intro. The cool one predates the panels being re-hued to the table, and it
+     survived that change - so every popup, and the bar, printed blue-white type
+     on a graphite panel that had been warmed precisely so it would stop reading
+     as web chrome. The intro drew the IDENTICAL material with the warm ramp,
+     and the two screens a player moves between in one tap were the same panel
+     with two different inks. readout.css had already made this argument for one
+     caption ("the last cool thing on a warmed bar") and stopped there.
 
-  /* Warm ramp - the intro, which sits on green rather than on slate. */
-  --ink-warm: #e8e0d0;
-  --ink-warm-dim: #c8c0b0;
-  --ink-warm-mute: #a0a080;
+     Re-pointed AT PARITY, not by eye. Each step was solved to match the cool
+     step it replaces against the three grounds these render on - --panel, the
+     bar's light pill composited over the felt (#2f2721), and its dark pill
+     (#15120e) - so nothing moves in the hierarchy:
+
+                        panel   light   dark
+       strong  was      14.13   11.84   15.08
+               now      14.07   11.79   15.02
+       body    was      12.97   10.87   13.85
+               now      11.30    9.46   12.06
+       dim     was       6.84    5.73    7.31
+               now       6.92    5.80    7.38
+
+     Body gives up a step and a half it never needed; dim, the one that has to
+     clear 4.5:1 for small captions, comes out fractionally ahead. */
+  --ink: #fff;
+  --ink-strong: #ece6da;
+  --ink-body: #d6cfc2;
+  /* One dim, not two. The cool #93a4b5 and #97a8b8 were separated by less than
+     a perceptible step and were used for the same job on adjacent lines of the
+     control bar; this is the one warm value both of them became. */
+  --ink-dim: #aaa294;
+
+  /* The intro's three names, kept for the sheets that use them, now ALIASES of
+     the three steps above: six names, three values. The old values (#e8e0d0 /
+     #c8c0b0 / #a0a080) were each within a step of the ramp they now point at,
+     which is the proof that the two ramps were always trying to be one. */
+  --ink-warm: var(--ink-strong);
+  --ink-warm-dim: var(--ink-body);
+  --ink-warm-mute: var(--ink-dim);
 
   /* ==== Panels ===========================================================
      Translucent because they float over the table and the felt has to show
@@ -190,6 +225,43 @@
   /* Hairlines on panels are warm, matching the light rather than the pure
      white the rest of the app uses over felt. */
   --panel-edge: rgba(var(--panel-lit-rgb), 0.1);
+
+  /* ==== The panel material, as three values ==============================
+     What makes a panel read as an OBJECT lying in the room rather than a box
+     drawn over it: a lit face, and the table's own shadow. popup-base.css built
+     all three and argued each - the short gradient "so the fall-off runs down
+     and left" from the one light at the upper right; the two-part drop shadow
+     ("a tight dark contact patch plus a wide soft one - because a single
+     blurred blob reads as a sticker, not an object"); and the inset pair that
+     gives the slab a lit top edge and a shaded bottom one.
+
+     It then stayed in that one sheet. The bar's pills, the floating turbo and
+     advanced discs, the responsible-gambling plate and the error dialog each
+     carried the single blurred blob that note names as the tell, and the error
+     dialog swapped the edge for a red hairline all the way round - so the game
+     had one material for its menus and another for the surface a player looks
+     at for the whole session. Named here, every panel reads the same three
+     values and the material cannot fork again.
+
+     --panel-elevation-low is the same shape for something that SITS on the
+     table rather than floating over it - the bar, the RG plate - scaled down
+     so a pill an inch from the felt does not cast a popup's shadow. */
+  --panel-face: linear-gradient(
+    168deg,
+    rgba(var(--panel-lit-rgb), 0.055) 0%,
+    rgba(var(--panel-lit-rgb), 0.018) 26%,
+    transparent 52%
+  );
+  --panel-elevation:
+    0 2px 6px rgba(var(--shadow-rgb), 0.55),
+    0 18px 50px rgba(var(--shadow-rgb), 0.6),
+    inset 0 1px 0 var(--panel-lit),
+    inset 0 -1px 0 var(--panel-shade);
+  --panel-elevation-low:
+    0 1px 3px rgba(var(--shadow-rgb), 0.5),
+    0 8px 22px rgba(var(--shadow-rgb), 0.45),
+    inset 0 1px 0 var(--panel-lit),
+    inset 0 -1px 0 var(--panel-shade);
   /* WARMED TO THE TABLE, and this is the other half of the join at the top of
      this file.
 
@@ -216,8 +288,14 @@
   --panel-float: rgba(26, 14, 12, 0.82);
   /* The recessed well a value is typed into - the bet field and the autoplay
      rounds field. Named because it is the one panel colour used by two
-     different panels, and each had its own copy. */
-  --field-well: rgba(5, 12, 18, 0.6);
+     different panels, and each had its own copy.
+
+     A DARKENING, not a colour. It was rgba(5, 12, 18, 0.6) - a blue-black -
+     and on the warmed panels it was the one cool rectangle left in the bet and
+     autoplay menus. Black at an alpha takes the temperature of whatever panel
+     it is cut into, so the well reads as recessed in the panel's own material
+     rather than as a different material set into it. */
+  --field-well: rgba(var(--shadow-rgb), 0.42);
   /* Ink for a control sitting on GOLD, on the green screens. The intro's
      continue button and the replay screen's play button are the same control
      wearing two class names, and they each spelled this out. */
@@ -513,7 +591,13 @@
      colour, so this is dark: 10.56 on the green, 12.27 on the yellow, 6.23 on
      the red. A hardcoded white would be the bug the accent-ink rule exists to
      stop. */
-  --on-vol-ink: #14110a;
+  /* A triplet, because the white bet chip prints its currency code in this ink
+     at an alpha, and that was the one place it was written out longhand
+     (rgba(20, 17, 10, 0.78) in popup-bet.css). Same rule as every other
+     colour that is ever needed at an alpha: the hex is derived FROM the
+     triplet, so there is one place to change. */
+  --on-vol-ink-rgb: 20, 17, 10;
+  --on-vol-ink: rgb(var(--on-vol-ink-rgb));
   /* The same job on a CHOICE fill - the replay panel's guess badges, which are
      the choice colours at label size. Aliased rather than re-spelled: three of
      the choice fills (--choice-higher green, --choice-inside cyan,
@@ -549,10 +633,11 @@
      decimal place, which is not a design decision, it is drift").
 
      Everything else is LEFT ALONE, deliberately, and that is why this is not the
-     ladder the old note here deferred. 0.1s is a press. 0.2s is the intro's
-     buttons, which are bigger and further from the eye. 0.25s is the loader bar.
-     Every value at 0.28s and above belongs to one tuned entrance or ambient loop
-     - the deal, the count-up, the beam's breathe - and each was set against what
-     it animates. Those are decisions. Only the near-identical trio was drift. */
+     ladder the old note here deferred. 0.1s is a press. 0.2s is the card
+     multiplier rising into place, and the backdrop under a panel. 0.22s is a
+     panel arriving (popup-base.css). 0.25s is the loader bar. Every value at
+     0.28s and above belongs to one tuned entrance or ambient loop - the deal,
+     the count-up, the beam's breathe - and each was set against what it
+     animates. Those are decisions. Only the near-identical trio was drift. */
   --dur-control: 0.14s;
 }

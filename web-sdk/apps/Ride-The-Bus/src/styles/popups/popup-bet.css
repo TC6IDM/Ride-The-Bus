@@ -235,7 +235,10 @@
 }
 
 .bet-chip.chip-white .bet-chip-cur {
-  color: rgba(20, 17, 10, 0.78);
+  /* The same dark ink the figure below it takes, at the alpha the code's
+     subordinate weight wants - named, now that tokens.css carries it as a
+     triplet, rather than written out. */
+  color: rgba(var(--on-vol-ink-rgb), 0.78);
 }
 
 @media (hover: hover) {.bet-chip:hover:not(.active) {
@@ -272,7 +275,8 @@
   background: var(--field-well);
 }
 
-.bet-entry:focus-within { border-color: var(--tint); box-shadow: 0 0 12px rgba(var(--tint-rgb), 0.35); }
+/* Lit rather than haloed - see .rounds-selector:focus-within in popup-autospin.css. */
+.bet-entry:focus-within { border-color: var(--tint); box-shadow: inset 0 1px 0 var(--panel-lit); }
 
 .bet-entry-cur { font-size: calc(var(--ui-bar) * 1.6); font-weight: 800; color: var(--ink); }
 

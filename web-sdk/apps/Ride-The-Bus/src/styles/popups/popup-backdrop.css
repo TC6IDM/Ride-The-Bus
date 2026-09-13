@@ -32,6 +32,25 @@
   margin: 0;
   background: rgba(var(--shadow-rgb), 0.5);
   cursor: pointer;
+  /* Fades up with the panel it dims (popup-base.css, .popup). Slightly quicker
+     than the panel so the room has already darkened by the time the panel is
+     fully there - the veil arrives first, then the object on it. */
+  animation: backdrop-in 200ms var(--ease-out) both;
+}
+
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popup-backdrop {
+    animation-duration: 120ms;
+  }
 }
 
 /* The backdrop is a real button - it is how a pointer dismisses a menu - so it

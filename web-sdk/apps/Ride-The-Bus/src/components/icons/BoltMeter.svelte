@@ -2,9 +2,14 @@
 	/**
 	 * A row of lightning bolts, `lit` of them burning.
 	 *
-	 * The bolt is the SAME path the turbo button draws in Game.svelte. That is
-	 * deliberate: two different lightning glyphs on one screen would read as two
-	 * different ideas, and this game already has a bug class about exactly that.
+	 * The bolt is the SAME silhouette the turbo button draws in ControlBar.svelte
+	 * - and, deliberately, not the same treatment. This one is FILLED; that one
+	 * is an outline. Controls are lines, gauges are fills: a stroked mark is
+	 * something you press, a filled one is something you read. They used to be
+	 * pixel-identical, and "speed" on the far left of the bar and "risk" under
+	 * the bet amount were one glyph three inches apart, which is this game's
+	 * two-units-on-one-screen bug class wearing an icon. One silhouette keeps
+	 * them kin; the fill is what tells them apart.
 	 *
 	 * SIZING AND COLOUR LIVE HERE, not in popups.css. Svelte scopes a stylesheet
 	 * to the component that imports it, and a child component's elements never
@@ -55,7 +60,7 @@
 			fill="currentColor"
 			aria-hidden="true"
 		>
-			<path d="M7 2v11h3v9l7-12h-4l4-8z" />
+			<path d="M13.5 2.2 4.5 13.4h7.3l-1.3 8.4 9-11.2h-7.3Z" />
 		</svg>
 	{/each}
 </span>
@@ -75,16 +80,21 @@
 		height: var(--bolt-size, 12px);
 		/* The unlit stops are drawn, not omitted: the rating is "3 of 5", and a
 		   meter that renders three bolts and stops cannot say what the 5 was. */
-		color: rgba(255, 255, 255, 0.16);
+		color: rgba(var(--ink-rgb), 0.16);
 		transition: color var(--dur-control) var(--ease-out);
 	}
 
+	/* Fallbacks name the tokens rather than restating their hex - the value has
+	   one home, and a meter that fails to receive --vol-color still burns the
+	   ramp's own yellow. */
 	.bolt.lit {
-		color: var(--vol-color, #ffc93c);
+		color: var(--vol-color, var(--vol-base));
 		/* A slight bloom, so the burning stops separate from the dead ones on a
 		   busy background as well as by hue - the popup rows sit on translucent
-		   white over the felt. */
-		filter: drop-shadow(0 0 calc(var(--bolt-size, 12px) * 0.25) var(--vol-color, #ffc93c));
+		   white over the felt. Kept through the pass that removed the bar's
+		   other glows: this one is a 3px separation on a 12px glyph, and it is
+		   doing a job the hue alone was measured not to do. */
+		filter: drop-shadow(0 0 calc(var(--bolt-size, 12px) * 0.25) var(--vol-color, var(--vol-base)));
 	}
 
 	/* Past the family ceiling. Only the OVERFLOW stops change colour, not the
@@ -93,7 +103,7 @@
 	   Recolouring all seven would lose the family at exactly the moment the
 	   rating is most worth reading. */
 	.bolt.lit.overflow {
-		color: var(--vol-overflow, #9d4edd);
-		filter: drop-shadow(0 0 calc(var(--bolt-size, 12px) * 0.3) var(--vol-overflow, #9d4edd));
+		color: var(--vol-overflow);
+		filter: drop-shadow(0 0 calc(var(--bolt-size, 12px) * 0.3) var(--vol-overflow));
 	}
 </style>

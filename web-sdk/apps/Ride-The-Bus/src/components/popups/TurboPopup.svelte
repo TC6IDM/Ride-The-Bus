@@ -12,6 +12,7 @@
      colour of its own. -->
 <script lang="ts">
   import MarkIcon from '../icons/MarkIcon.svelte';
+  import RangeSlider from './RangeSlider.svelte';
   import { t } from '../../i18n/i18nDerived';
   import { jurisdiction, TURBO_CAP_WITHOUT_SUPER } from '../../game/jurisdiction/jurisdiction.svelte';
   import { onTurboInput, pacing } from '../../game/round/revealPacing.svelte';
@@ -27,15 +28,14 @@
         <!-- The track's own max is capped when super turbo is barred, so the
              slider can't even be dragged to instant - the clamp above is the
              backstop, this is the affordance. -->
-        <input
-          class="turbo-slider"
-          type="range"
-          min="0"
+        <!-- The game's own slider, not the browser's - see RangeSlider.svelte. -->
+        <RangeSlider
+          min={0}
           max={jurisdiction.superTurboDisabled() ? TURBO_CAP_WITHOUT_SUPER : 1}
-          step="0.05"
+          step={0.05}
           bind:value={pacing.turboSpeed}
           oninput={onTurboInput}
-          aria-label={t('Turbo speed')}
+          label={t('Turbo speed')}
         />
         <span class="turbo-end">{jurisdiction.superTurboDisabled() ? t('Fast') : t('Instant')}</span>
       </div>

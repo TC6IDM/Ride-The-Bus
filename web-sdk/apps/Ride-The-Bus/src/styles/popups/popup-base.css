@@ -72,38 +72,80 @@
   padding: calc(var(--ui-bar) * 1.27);
   border-radius: calc(var(--ui-bar) * 1.09);
   border: 1px solid var(--panel-edge);
-  /* A lit FACE, not just a lit line. The inset hairlines below give the panel
-     an edge; this gives it a surface for the edge to belong to - the light is
-     at the upper right, the same one the table, the chips and the cups are
-     lit by, so the fall-off runs down and left. Short, because a gradient
-     running the full height would read as a gradient rather than as light. */
-  background:
-    linear-gradient(
-      168deg,
-      rgba(var(--panel-lit-rgb), 0.055) 0%,
-      rgba(var(--panel-lit-rgb), 0.018) 26%,
-      transparent 52%
-    ),
-    var(--panel);
-  /* FOUR layers, and the first two are the table's own idiom rather than a
-     modal drop-shadow.
-     
-     table.css builds every prop's shadow in two parts - "a tight dark contact
-     patch plus a wide soft one - because a single blurred blob reads as a
-     sticker, not an object" - and a popup floating over that table has the
-     same problem to solve. The single 0 14px 44px it had was exactly the blob
-     that note warns about.
-     
-     The two inset lines are the lit top edge and the shaded bottom one, from
-     the same light at the upper right that the table, the chips and the cups
-     are all lit by. That pair is what makes the panel read as having a
-     thickness. */
-  box-shadow:
-    0 2px 6px rgba(var(--shadow-rgb), 0.55),
-    0 18px 50px rgba(var(--shadow-rgb), 0.6),
-    inset 0 1px 0 var(--panel-lit),
-    inset 0 -1px 0 var(--panel-shade);
+  /* THE MATERIAL, from tokens.css. It was built here first - a lit FACE (the
+     short gradient, so the fall-off from the one light at the upper right runs
+     down and left without reading as a gradient) over the table's two-part
+     shadow (a tight contact patch plus a wide soft one, because "a single
+     blurred blob reads as a sticker, not an object") with the inset pair that
+     gives the slab a lit top edge and a shaded bottom one. The argument for
+     each stays in tokens.css beside the values; what changed is that the bar,
+     the RG plate, the error dialog and the replay panel now read the SAME
+     three values rather than each drawing a shadow of their own. */
+  background: var(--panel-face), var(--panel);
+  box-shadow: var(--panel-elevation);
   color: var(--ink-strong);
+  /* ARRIVES, rather than appearing. Every panel used to be mounted by an {#if}
+     with no animation at all, so the biggest surfaces in the game snapped in
+     cold - in a game whose win takeover has a tuned 440ms arrival. 220ms from
+     0.96 scale, on the same curve every hover in the app uses. The translate
+     is the panel's own centring and has to be in the keyframe, or the
+     animation's first frame would plant the panel at the top-left corner.
+
+     NO EXIT, deliberately. A leaving animation needs a Svelte out: directive
+     in seven components plus a reduced-motion-aware transition in JS, for a
+     menu that every OS closes instantly anyway. Arrival is the moment that
+     carries information ("this came from that button"); leaving carries none. */
+  animation: popup-in 220ms var(--ease-out) both;
+}
+
+@keyframes popup-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* The panel's OWN focus ring. Game.svelte focuses .popup when it opens, and
+   nothing here said what that should look like - so a player who opened a menu
+   from the keyboard got the browser's default: a white-and-black double ring
+   drawn around the whole dialog, the one focus indicator in the game that was
+   not --focus-ring (measured off a screenshot at 2px of #fff over 4px of
+   #101010, all the way round). A rectangle around a dialog is also a poor
+   indicator - it says "this whole thing", which the player already knows.
+
+   The device win-celebration.css uses instead: the ring goes on the part of the
+   panel that names it. The header's rule thickens to 2px in the panel's own
+   tint. Every --tint clears 3:1 on --panel, it costs no layout (an inset shadow,
+   not a border), and it is never transitioned - a ring that fades in leaves a
+   keyboard player with no indicator for the length of the fade. */
+.popup:focus-visible {
+  outline: none;
+}
+
+.popup:focus-visible .popup-head {
+  box-shadow: inset 0 -2px 0 var(--tint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Still arrives - a panel that is simply there one frame reads as a glitch,
+     and 120ms of opacity is under the threshold anyone reports as motion. The
+     scale goes. */
+  .popup {
+    animation: popup-fade 120ms var(--ease-out) both;
+  }
+}
+
+@keyframes popup-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* The header, given some structure.

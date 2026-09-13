@@ -1,6 +1,7 @@
 /* Bottom control bar: info/sound icons, balance + last win, the bet display
    with steppers, and the round spin / turbo / autoplay / advanced buttons.
-   Each control gets its own hover-glow colour. */
+   Each control that OPENS something wears its own identity colour - a border,
+   a wash and its ink, never a glow; see "LIT, NOT HALOED" further down. */
 
 /* ==== Floating control bar ====
    The bar itself is transparent and sits over the table; the controls are
@@ -33,7 +34,13 @@
   padding: calc(var(--ui-bar) * 0.64) calc(var(--ui-bar) * 1.09);
   border-radius: calc(var(--ui-bar) * 1.45);
   backdrop-filter: blur(6px);
-  box-shadow: 0 6px 20px rgba(var(--shadow-rgb), 0.45);
+  /* The panel material at the bar's height (tokens.css). This was a single
+     0 6px 20px blob - the popups had been rebuilt on the table's two-part
+     shadow with a lit top edge, and the bar, the surface a player looks at for
+     the whole session, still wore the sticker. One material now; the low
+     variant because a pill an inch off the felt does not cast a popup's
+     shadow. */
+  box-shadow: var(--panel-elevation-low);
 }
 .cb-panel-light {
   background: var(--panel-light);
@@ -85,7 +92,8 @@
   border: 1px solid rgba(var(--ink-rgb), 0.14);
   background: var(--panel-float);
   backdrop-filter: blur(6px);
-  box-shadow: 0 6px 20px rgba(var(--shadow-rgb), 0.45);
+  /* Same material as .cb-panel, for the same reason. */
+  box-shadow: var(--panel-elevation-low);
   color: var(--ink-body);
   cursor: pointer;
   text-transform: none;
@@ -318,7 +326,8 @@
 
 .cb-cooldown-fill {
   stroke: var(--accent);
-  filter: drop-shadow(0 0 3px rgba(var(--accent-rgb), 0.8));
+  /* No bloom. A 5-unit accent stroke on a dark track is visible on its own;
+     the drop-shadow that was here was the shadow-glow tell in miniature. */
 }
 
 /* Tooltip above the button. Shown on hovering the WRAPPER, because the button
@@ -345,10 +354,17 @@
   transition: opacity var(--dur-control) var(--ease-out), transform var(--dur-control) var(--ease-out);
 }
 
+/* The hover route waits; the tap and keyboard routes below do not.
+   transition-delay is read from the state being ENTERED, so 700ms here delays
+   the tip appearing under a resting pointer - a mouse crossing the bar does not
+   pop explanations - and leaving takes the base rule's 0s, so it clears at
+   once. A refused tap (.is-shown) and keyboard focus reached the control
+   deliberately and get the answer immediately. */
 @media (hover: hover) {
   .cb-spin-wrap:hover .cb-cooldown-tip {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
+    transition-delay: 700ms;
   }
 }
 
@@ -399,6 +415,8 @@
   .cb-bet.bet-locked:hover .cb-bet-tip {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
+    /* Delayed on hover only - see .cb-cooldown-tip. */
+    transition-delay: 700ms;
   }
 }
 
@@ -593,7 +611,9 @@
   border: max(2px, calc(var(--ui-bar) * 0.38)) solid var(--loss);
   border-radius: calc(var(--ui-bar) * 0.64);
   background: var(--spin-well);
-  box-shadow: 0 0 10px rgba(var(--loss-rgb), 0.7);
+  /* The 2px red border on a dark well already says STOP; the 10px red bloom
+     that sat around it was the one halo left on the bar after the pass that
+     removed the other fourteen, and it went for the same reason they did. */
 }
 
 /* Rounds left in an auto run, centred inside the stop square. Still positioned
@@ -797,10 +817,14 @@
     rgba(var(--vol-rgb, var(--gold-rgb)), 0.34),
     rgba(var(--vol-rgb, var(--gold-rgb)), 0.2)
   );
+  /* The lit and shaded edges only. This carried a 12px bloom in the mode's
+     colour on top of them - a coloured halo around a coloured control on a
+     dark bar, in the file whose own note above says the fourteen of those it
+     used to carry are gone. The deeper wash and the white ink already say
+     "open". */
   box-shadow:
     inset 0 1px 0 var(--panel-lit),
-    inset 0 -1px 0 var(--panel-shade),
-    0 0 12px rgba(var(--vol-rgb, var(--gold-rgb)), 0.45);
+    inset 0 -1px 0 var(--panel-shade);
 }
 
 @media (hover: hover) {
@@ -814,8 +838,7 @@
     );
     box-shadow:
       inset 0 1px 0 var(--panel-lit),
-      inset 0 -1px 0 var(--panel-shade),
-      0 0 14px rgba(var(--vol-rgb, var(--gold-rgb)), 0.5);
+      inset 0 -1px 0 var(--panel-shade);
   }
 }
 
@@ -1054,6 +1077,8 @@
   .cb-panel-light.mode-locked:hover .cb-mode-tip {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
+    /* Delayed on hover only - see .cb-cooldown-tip. */
+    transition-delay: 700ms;
   }
 }
 

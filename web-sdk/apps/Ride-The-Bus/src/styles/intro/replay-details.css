@@ -11,43 +11,14 @@
  * shell they all sit inside.
  */
 
-/* ---- Start / intro screen overlay ---------------------------------------- */
-.ss-overlay {
-	position: fixed;
-	inset: 0;
-	z-index: 1000;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	/* The floor under the table, and NOT dead paint - this one is reachable.
-	   TableScene draws the room over the top of it (.scene is inset:0 with an
-	   opaque stack), but .scene is absolutely positioned inside a container
-	   that scrolls, so on a viewport short enough to scroll the intro the table
-	   travels up with the content and leaves the bottom of the frame bare.
-	   A flat floor colour rather than a second gradient: anything more would be
-	   covered everywhere it is actually visible. */
-	background: var(--felt-edge);
-	font-family: var(--font-body);
-	color: var(--ink-warm);
-	/* The start screen's own scaling unit, and the reason the Play button no
-	   longer falls below the fold.
-	   
-	   It used to borrow the board's --ui, which is capped at 1.55vh - fine for
-	   the board, which is mostly one big table, but this screen stacks a logo,
-	   a title, four step panels, a stats row and a button. That column totals
-	   roughly 72 units, so anything above ~1.38vh pushes the button off the
-	   bottom and forces a scroll to start the game.
-	   
-	   1.3vh keeps the whole column inside the viewport at any height, and the
-	   1.15vw term stops it growing absurdly wide on a short, wide window.
-	   --ui is aliased to it so the rules below did not all need rewriting. */
-	--ss: clamp(3px, min(1.15vw, 1.3vh), 10px);
-	--ui: var(--ss);
-	font-size: calc(var(--ss) * 1.6);
-	/* Still a scroll container, as a last resort for viewports smaller than
-	   anything the clamp floor can absorb. */
-	overflow-y: auto;
-}
+/* ---- The overlay is the SHELL's ----------------------------------------
+   start-screen-shell.css owns .ss-overlay - the fixed frame, the felt floor,
+   the --ss / --ui unit and the ink - and StartScreen.svelte mounts the table
+   into it. This sheet used to carry a second copy of that rule for a second
+   .ss-overlay the component wrapped itself in, and that wrapper was opaque:
+   the table underneath was dead paint on every replay. The wrapper is gone
+   (see ReplayDetails.svelte), so everything below inherits the unit and the
+   ink from the shell exactly as the intro does. */
 
 .ss-card {
 	/* Above .scene, which is absolutely positioned and so would otherwise paint
@@ -164,6 +135,9 @@
 }
 
 /* ---- Replay info popup --------------------------------------------------- */
+/* Over the table, now that there is a table to be over. The scrim is the same
+   weight the error dialog's is: the room stays visible, the panel is what is
+   lit. Fades up with the panel, like .popup-backdrop. */
 .ss-popup-backdrop {
 	position: fixed;
 	inset: 0;
@@ -172,11 +146,23 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	animation: ss-backdrop-in 200ms var(--ease-out) both;
 }
 
+/* THE SAME PANEL AS EVERY OTHER PANEL. This was a flat #1a2a1a box with a
+   #3a4a2a border - a fifth surface treatment, kept in no token, on the one
+   screen a Stake reviewer reaches first - and it drew no light and cast no
+   shadow. It takes the material from tokens.css and the tint contract from
+   popup-base.css: gold, the game's primary-action colour, with the dark ink
+   every gold surface prints on. */
 .ss-popup {
-	background: #1a2a1a;
-	border: 1px solid #3a4a2a;
+	--tint: var(--gold);
+	--tint-rgb: var(--gold-rgb);
+	--tint-strong: var(--gold);
+	--tint-ink: var(--on-gold-ink);
+	background: var(--panel-face), var(--panel);
+	border: 1px solid var(--panel-edge);
+	box-shadow: var(--panel-elevation);
 	border-radius: calc(var(--ui) * 1.2);
 	padding: calc(var(--ui) * 3) calc(var(--ui) * 3.5);
 	min-width: calc(var(--ui) * 34);
@@ -185,21 +171,56 @@
 	flex-direction: column;
 	gap: calc(var(--ui) * 2);
 	text-align: start;
+	color: var(--ink-strong);
+	/* Arrives like every panel - popup-base.css has the argument. Restated
+	   here because this sheet is scoped to ReplayDetails alone. */
+	animation: ss-popup-in 220ms var(--ease-out) both;
 }
 
+@keyframes ss-popup-in {
+	from {
+		opacity: 0;
+		transform: scale(0.96);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+@keyframes ss-backdrop-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+/* The popup header voice (popup-base.css .popup-head): the panel's strong ink,
+   one weight down from a title, and a rule beneath. It was gold at 700, which
+   made this the one panel whose heading wore the colour its own button uses
+   for "press me". A heading is not an action. */
 .ss-popup-head {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	font-size: calc(var(--ui) * 2);
+	padding-bottom: calc(var(--ui) * 1.2);
+	border-bottom: 1px solid var(--panel-edge);
+	font-size: calc(var(--ui) * 1.8);
 	font-weight: 700;
-	color: var(--gold);
+	letter-spacing: 0.02em;
+	color: var(--ink-strong);
 }
 
+/* A GAP between the caption and its value. There was none, and the one row
+   whose value is four badges rather than a word - Guesses - ran its badges
+   straight into the caption, "GuessesRed", at every size. */
 .ss-detail-row {
 	display: flex;
 	justify-content: space-between;
 	align-items: baseline;
+	gap: calc(var(--ui) * 1.2);
 	font-size: calc(var(--ui) * 1.4);
 	padding: calc(var(--ui) * 0.5) 0;
 	border-bottom: 1px solid rgba(var(--ink-rgb), 0.06);
@@ -223,27 +244,36 @@
 	margin-inline-start: calc(var(--ss) * 0.5);
 }
 
+/* THE GAME'S ONE PRIMARY-ACTION VOICE - the .action-button recipe the popups
+   and the error dialog use, in the gold tint: a shallow two-stop fill in the
+   tint, the panel's lit top edge, the table's two-part contact shadow, dark ink,
+   sentence case. It was a flat gold slab in tracked uppercase, which made the
+   two green screens speak a different CTA language from every dialog on the
+   table. Copied rather than shared because a sheet is scoped to whoever
+   imports it; keep it in step with error-modal.css. */
 .ss-play-btn {
 	margin-top: calc(var(--ui) * 1);
 	padding: calc(var(--ui) * 1.2) calc(var(--ui) * 3.5);
 	border: none;
 	border-radius: calc(var(--ui) * 0.7);
-	background: var(--gold);
-	color: var(--on-gold-ink);
+	background: linear-gradient(180deg, rgba(var(--tint-rgb), 1), rgba(var(--tint-rgb), 0.76));
+	color: var(--tint-ink);
 	font-family: inherit;
 	font-size: calc(var(--ui) * 1.6);
-	font-weight: 700;
+	font-weight: 800;
 	cursor: pointer;
-	letter-spacing: 0.05em;
-	text-transform: uppercase;
+	letter-spacing: 0.03em;
 	align-self: center;
-	transition: background 0.2s var(--ease-out);
+	box-shadow:
+		inset 0 1px 0 var(--panel-lit),
+		0 1px 2px rgba(var(--shadow-rgb), 0.5),
+		0 calc(var(--ui) * 0.55) calc(var(--ui) * 1.09) rgba(var(--shadow-rgb), 0.42);
 }
 
 /* A finger cannot hover, and the hover is gated behind @media (hover: hover) -
    so the tap that starts the replay had nothing to acknowledge it. */
 .ss-play-btn:active {
-	filter: brightness(0.92);
+	filter: brightness(0.94);
 	transform: translateY(1px);
 }
 
@@ -258,28 +288,12 @@
 }
 
 .ss-play-btn:focus-visible {
-	background: #ffe0a0;
+	outline: 2px solid var(--focus-ring);
+	outline-offset: 2px;
 }
 
 /* ---- Responsive: very short viewports (Popout S ~225px tall) ------------- */
-@media (max-height: 320px) {.ss-overlay {
-		/* --ss's 1.3vh term is budgeted for the FULL column: logo, subtitle, lead,
-		   four panels with worked examples, stats and the button. By this height
-		   the rules above have already dropped the logo, the subtitle, the lead
-		   and the demos, so that budget is being paid for content that is no
-		   longer on screen - and 1.3vh of a 225px popout lands on the 3px clamp
-		   floor, which renders the equals badge at about 4px.
-
-		   3vh against what actually remains, and 1.6vw because four panels across
-		   400px have more room than 1.15vw assumes. Together that roughly doubles
-		   every control on the intro at popout size. */
-		--ss: clamp(4.5px, min(1.6vw, 3vh), 10px);
-		/* Slightly smaller floor so text shrinks further when height is tiny. */
-		--ui: clamp(3.2px, min(2vw, 1.55vh), 11px);
-		align-items: flex-start; /* don't center — let scroll reveal from top */
-		padding-top: calc(var(--ui) * 1.5);
-	}
-.ss-card {
+@media (max-height: 320px) {.ss-card {
 		gap: calc(var(--ui) * 1.2);
 		padding: calc(var(--ui) * 1.5) calc(var(--ui) * 2);
 	}
@@ -296,6 +310,11 @@
 	flex-wrap: wrap;
 	gap: calc(var(--ui) * 0.7);
 	justify-content: flex-end;
+	/* Takes the row's spare width and may shrink below its content, so four
+	   badges wrap onto a second line under the caption instead of pushing
+	   into it. */
+	flex: 1 1 auto;
+	min-width: 0;
 }
 
 .ss-choice-badge {
@@ -354,29 +373,11 @@
 	color: var(--suit-red);
 }
 
-/* ---- Narrow portrait: two steps per row ----------------------------------
-   The 1.15vw term in --ss exists only so four step panels fit across one row.
-   On a phone that is what makes the whole screen tiny: at 390px wide it
-   resolves to 4.5px, so the guess squares come out ~60px, their thirds ~20px,
-   and the "?" explanation renders at about 5px.
-
-   Two per row removes that constraint - each panel gets half the width instead
-   of a quarter - so the vw term can roughly double and everything on the screen
-   grows with it. The vh term tightens to 1.0 because the steps now occupy two
-   rows rather than one, and the Play button must stay above the fold.
-
-   Portrait only: in landscape there is width to spare and height is the scarce
-   axis, where a second row is exactly the wrong trade. */
-@media (max-width: 620px) and (orientation: portrait) {.ss-overlay {
-		--ss: clamp(5px, min(2.2vw, 1vh), 11px);
-	}
-}
-
 /* ---- Hover, gated -------------------------------------------------------
  * Split out of the :focus-visible rules above so keyboard focus keeps working
  * where there is no pointer at all. See the note in choices.css. */
 @media (hover: hover) {.ss-play-btn:hover {
-		background: #ffe0a0;
+		filter: brightness(1.08);
 	}
 }
 

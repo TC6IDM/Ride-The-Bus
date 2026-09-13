@@ -33,24 +33,11 @@
 
 .sound-label { font-size: calc(var(--ui-bar) * 0.93); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink-dim); font-weight: 700; }
 
-/* The track paints thin; the TARGET must not be. A range input has no height of
-   its own beyond the UA's ~16px, which sits under the 24px floor the guess
-   segments, the bar icons and the speaker beside it are all measured against -
-   this panel postdates the pass that set that floor, so it was never checked.
-   Height rather than a taller track: the native track centres itself in the
-   box, so the thumb keeps its size and gains the room around it. */
-.sound-slider {
-  width: 100%;
-  min-width: 0;
-  accent-color: var(--tint);
-  cursor: pointer;
-  height: 24px;
-}
-
-@media (pointer: coarse) {
-  /* Same argument as .cb-icon's 36px floor: a thumb is not a cursor. */
-  .sound-slider { height: 32px; }
-}
+/* The slider is RangeSlider.svelte - a child component that paints itself and
+   takes --tint from this panel. The 24px target (32px on a coarse pointer), the
+   disabled treatment and the focus ring all moved in with it. Nothing here
+   reaches into it: a child's elements never carry this sheet's scope class,
+   which is the same note SoundIcon carries below. */
 
 /* Fixed width so the two rows' sliders start and end at the same place; the
    number is tabular for the same reason the bar readouts are. */
@@ -119,10 +106,17 @@
   opacity: 0.55;
 }
 
-.sound-slider:disabled {
-  accent-color: var(--ink-dim);
-  opacity: 0.38;
-  cursor: not-allowed;
+
+/* ---- Keyboard focus -------------------------------------------------------
+ * The one panel that must always be reachable - "an option to disable sounds"
+ * is a blocker everywhere - and the one panel with no focus indicator on any
+ * of its own controls: this sheet had hover, active and disabled rules, and
+ * nothing about reading it said a state was missing. The shots probe found it
+ * by tabbing ("NOTHING CHANGES ON FOCUS"). Same ring as the turbo slider.
+ */
+.sound-mute:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
 /* ---- Pressed ------------------------------------------------------------

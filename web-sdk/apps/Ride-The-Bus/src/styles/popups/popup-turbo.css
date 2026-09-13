@@ -39,26 +39,15 @@
 
 .turbo-end { font-size: calc(var(--ui-bar) * 1.02); color: var(--ink-dim); white-space: nowrap; }
 
-.turbo-slider { flex: 1 1 auto; min-width: 0; accent-color: var(--tint); cursor: pointer; }
-
-/* A range input has no height of its own beyond the UA's ~16px. popup-sound.css
-   fixed exactly this for .sound-slider and explains the reasoning in full; this
-   slider is its twin and was simply missed. Height rather than a taller track,
-   so the native thumb keeps its size and gains the room around it. */
-.turbo-slider { height: 24px; }
-
-@media (pointer: coarse) {
-  .turbo-slider { height: 32px; }
-}
+/* The slider is RangeSlider.svelte - a child component that paints itself and
+   takes --tint from this panel. Its target height (24px, 32px on a coarse
+   pointer) and its focus ring moved in with it; nothing here reaches into it,
+   for the reason popup-sound.css gives about SoundIcon: a child's elements
+   never carry this sheet's scope class. The track fills the row because the
+   component is `display: block; width: 100%` inside a flex item - the wrapper
+   below is what carries the flex. */
+.turbo-track > :global(.range) { flex: 1 1 auto; min-width: 0; }
 
 .turbo-readout { text-align: center; font-weight: 800; color: var(--tint); font-size: calc(var(--ui-bar) * 1.24); font-variant-numeric: tabular-nums; }
 
-/* ---- Keyboard focus -------------------------------------------------------
- * The menu controls. .bet-entry already showed focus through :focus-within on
- * its wrapper, and .rounds-selector did not - so typing a spin count gave no
- * indication of where the caret was.
- */
-.turbo-slider:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
-}
+/* Keyboard focus on the slider lives in RangeSlider.svelte. */

@@ -15,7 +15,7 @@
   import { t } from '../../i18n/i18nDerived';
   import { stateUrlDerived } from 'state-shared';
   import { jurisdiction } from '../../game/jurisdiction/jurisdiction.svelte';
-  import { advanced, stops } from '../../game/round/autoplaySettings.svelte';
+  import { stops } from '../../game/round/autoplaySettings.svelte';
 
   let { onclose }: { onclose: () => void } = $props();
 </script>

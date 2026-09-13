@@ -33,10 +33,15 @@
   gap: calc(var(--ui-bar) * 1.45);
   padding: calc(var(--ui-bar) * 0.64) calc(var(--ui-bar) * 1.09);
   border-radius: calc(var(--ui-bar) * 1.09);
-  background: rgba(32, 13, 11, 0.72);
+  /* The bar's own light pill, not a colour of its own. This was
+     rgba(32, 13, 11, 0.72) written out - a fourth spelling of the warm panel,
+     kept in step with --panel-light by hand - and it sat on the single blurred
+     blob the popups were rebuilt to get rid of. Same material, same low
+     elevation as the bar it echoes (tokens.css). */
+  background: var(--panel-light);
   border: 1px solid rgba(var(--ink-rgb), 0.1);
   backdrop-filter: blur(6px);
-  box-shadow: 0 6px 20px rgba(var(--shadow-rgb), 0.45);
+  box-shadow: var(--panel-elevation-low);
   pointer-events: none;
 }
 
@@ -48,7 +53,13 @@
   line-height: 1.15;
 }
 
-/* tabular-nums so the session clock ticking doesn't jitter the panel width. */
+/* Declared for intent, and inert: Poppins ships no tnum, so the figures are
+   proportional (measured - a "1" is 0.387em against 0.657em for a "0" at this
+   weight) and this line on its own held nothing still. The session clock ticks
+   once a second and this plate is pinned to the RIGHT, so every "1" that came
+   or went moved its left edge by a few pixels - a panel that breathed with the
+   clock. What actually keeps it still is Figure.svelte, which sets each digit
+   in a box one "0" wide; SessionReadouts renders the timer through it. */
 .rg-item .cb-val {
   font-variant-numeric: tabular-nums;
 }

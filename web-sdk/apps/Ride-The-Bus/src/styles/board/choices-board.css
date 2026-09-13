@@ -56,7 +56,10 @@
   min-height: 2.4em;
   letter-spacing: var(--track-label);
   text-transform: uppercase;
-  color: #fff6df;
+  /* Was #fff6df, a fifth warm white kept in no token. --ink-cream is the warm
+     near-white the takeover prints its amount in; a hair lighter here, and one
+     value instead of two. */
+  color: var(--ink-cream);
   text-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.7);
 }
 

@@ -402,9 +402,13 @@
 	height: calc(var(--ui) * 1.9);
 	padding: 0;
 	border-radius: 50%;
-	background: #2e4224;
+	/* The tip's own material, since the badge opens the tip: --tip-bed and
+	   --tip-edge are the green-on-green pair tokens.css names for exactly this
+	   box. It was #2e4224 / #cfe3bd, two greens kept in no token and a shade
+	   off the tip they open. */
+	background: var(--tip-bed);
 	border: 1px solid var(--tip-edge);
-	color: #cfe3bd;
+	color: var(--ink-warm);
 	font-family: inherit;
 	font-size: calc(var(--ui) * 1.1);
 	font-weight: 800;
@@ -446,7 +450,9 @@
 .ss-help.open {
 	background: var(--gold);
 	border-color: var(--gold);
-	color: #12220f;
+	/* The ink every gold surface prints on (tokens.css); was a #12220f of its
+	   own, a step off it. */
+	color: var(--on-gold-ink);
 	outline: none;
 }
 
@@ -651,9 +657,13 @@
    already step down with them - the tick follows at the same ratio. */
 .ss-demo.is-wide .ss-mark { --mark-size: calc(var(--ui) * 0.9); }
 
-.ss-mark.ok { color: #7fd18a; }
+/* The verdict colours are the game's own: the soft win green the RG plate
+   uses for a positive net position, and the soft loss red the running-win
+   label busts in. They were #7fd18a and #d98a8a, a green and a red kept in no
+   token and matching nothing else on screen. */
+.ss-mark.ok { color: var(--win-soft); }
 
-.ss-mark.no { color: #d98a8a; }
+.ss-mark.no { color: var(--loss-soft); }
 
 /* ---- Short viewports ----
    Popout S is 400x225. The clamp above already scales the whole column, but
@@ -757,28 +767,40 @@
 	letter-spacing: 0.1em;
 }
 
-/* ---- Continue button ---- */
+/* ---- Continue button ----
+   THE GAME'S ONE PRIMARY-ACTION VOICE - the .action-button recipe every dialog
+   on the table uses, in the gold tint: a shallow two-stop fill, the panel's lit
+   top edge, the table's contact shadow, dark ink, sentence case. This was an
+   OUTLINE button in tracked uppercase - "TAP TO CONTINUE" - while the replay
+   screen's Play was a flat gold slab and every popup's action was a filled
+   gradient, so the game's first, second and every later primary action each
+   spoke differently. Copied rather than shared, because a sheet is scoped to
+   whoever imports it; keep it in step with error-modal.css. */
 .ss-continue {
+	--tint-rgb: var(--gold-rgb);
+	--tint-ink: var(--on-gold-ink);
 	margin-top: calc(var(--ui) * 2);
 	padding: calc(var(--ui) * 1.4) calc(var(--ui) * 4.5);
-	border: 2px solid var(--gold);
+	border: none;
 	border-radius: calc(var(--ui) * 0.8);
-	background: transparent;
-	color: var(--gold);
+	background: linear-gradient(180deg, rgba(var(--tint-rgb), 1), rgba(var(--tint-rgb), 0.76));
+	color: var(--tint-ink);
 	font-family: inherit;
 	font-size: calc(var(--ui) * 1.6);
-	font-weight: 700;
+	font-weight: 800;
 	cursor: pointer;
-	letter-spacing: 0.05em;
-	text-transform: uppercase;
-	transition: background 0.2s var(--ease-out), color 0.2s var(--ease-out);
+	letter-spacing: 0.03em;
+	box-shadow:
+		inset 0 1px 0 var(--panel-lit),
+		0 1px 2px rgba(var(--shadow-rgb), 0.5),
+		0 calc(var(--ui) * 0.55) calc(var(--ui) * 1.09) rgba(var(--shadow-rgb), 0.42);
 }
 
 /* A finger cannot hover, and the hover above is correctly gated behind
    @media (hover: hover) - which left the one tap that starts the game with no
    acknowledgement at all between finger-down and the screen changing. */
 .ss-continue:active {
-	background: rgba(var(--gold-rgb), 0.22);
+	filter: brightness(0.94);
 	transform: translateY(1px);
 }
 
@@ -794,8 +816,8 @@
 }
 
 .ss-continue:focus-visible {
-	background: var(--gold);
-	color: var(--on-gold-ink);
+	outline: 2px solid var(--focus-ring);
+	outline-offset: 2px;
 }
 
 /* ---- Responsive: very short viewports (Popout S ~225px tall) ------------- */
@@ -944,7 +966,7 @@
 @media (hover: hover) {.ss-help:hover {
 		background: var(--gold);
 		border-color: var(--gold);
-		color: #12220f;
+		color: var(--on-gold-ink);
 		outline: none;
 	}
 .ss-help:hover + .ss-tip {
@@ -952,8 +974,7 @@
 		visibility: visible;
 	}
 .ss-continue:hover {
-		background: var(--gold);
-		color: var(--on-gold-ink);
+		filter: brightness(1.08);
 	}
 }
 

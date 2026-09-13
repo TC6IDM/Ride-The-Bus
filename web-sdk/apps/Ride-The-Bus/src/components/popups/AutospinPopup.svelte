@@ -13,7 +13,6 @@
 <script lang="ts">
   import MarkIcon from '../icons/MarkIcon.svelte';
   import { t } from '../../i18n/i18nDerived';
-  import { jurisdiction } from '../../game/jurisdiction/jurisdiction.svelte';
   import {
     AUTOSPIN_PRESETS,
     auto,

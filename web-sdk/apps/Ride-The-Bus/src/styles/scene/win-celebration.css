@@ -829,10 +829,18 @@
 }
 
 .wc-amount {
-	/* Stays on the BODY face on purpose. The count-up needs stable digit widths
-	   and Poppins' tabular figures are proven here; the display face is for the
-	   word, the body face for the number. That split is the lockup's own rule -
-	   the wordmark is display, the credit line under it is body.
+	/* Stays on the BODY face on purpose: the display face is for the word, the
+	   body face for the number. That split is the lockup's own rule - the
+	   wordmark is display, the credit line under it is body.
+
+	   STABLE DIGIT WIDTHS COME FROM Figure.svelte, NOT FROM THE FACE. This note
+	   used to say "Poppins' tabular figures are proven here"; they are not -
+	   the face ships none (measured: no tnum, "1" at 0.387em against "0" at
+	   0.657em), and under a centred headline every changed digit shifted the
+	   whole figure by the difference, so the count-up wobbled as its cents
+	   turned over. WinCelebration renders the amount through Figure, which
+	   sets each digit in a box one "0" wide, and sizes the type from
+	   evenDigitEms() so the box-width string is the one the font is fitted to.
 
 	   Was --ui * 4, a full third smaller than the title above it: the word
 	   describing the win outranked the win. They are co-leads now - the title
@@ -857,11 +865,11 @@
 	font-weight: 800;
 	line-height: 1.1;
 	color: var(--ink-cream);
-	/* Declared for intent, and currently inert: Poppins ships no `tnum` feature,
-	   so this is a no-op here and the figures stay proportional. What actually
-	   holds the line steady during the count is the font-size being solved once
-	   from the settled string above, so the box is already as wide as it will
-	   ever need to be. */
+	/* Declared for intent, and inert: Poppins ships no `tnum` feature, so this
+	   is a no-op here. What holds the line steady is Figure (each digit in a
+	   fixed box - see the note at the top of this rule) plus the font-size being
+	   solved once from the settled string above, so the block is as wide as it
+	   will ever need to be before the count starts. */
 	font-variant-numeric: tabular-nums;
 	text-shadow: 0 0 calc(var(--ui) * 1.4) rgba(var(--ink-rgb), 0.35);
 	/* Runs once, on mount - nothing below may set `animation` on this element or

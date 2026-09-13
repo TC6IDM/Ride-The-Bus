@@ -228,6 +228,31 @@ reading before proposing it again.
 - **The accent rule is narrower than "one accent"**: one accent for anything
   *chosen*; a fixed identity colour per control that *opens* something. These are
   wayfinding, not drift — a pass collapsed all five and was rejected.
+- **One ink ramp, warm.** `--ink-strong` / `--ink-body` / `--ink-dim`;
+  `--ink-warm*` are aliases of the same three. The cool blue-grey ramp survived
+  the panels being warmed and printed icy type on every popup for a month —
+  the second Hallmark pass re-pointed it at parity of contrast (table in
+  `tokens.css`). Nothing cool goes on a warm panel.
+- **One panel material, as tokens.** `--panel-face` / `--panel-elevation` /
+  `--panel-elevation-low` over `--panel`. Every panel — popups, the bar's pills
+  and discs, the RG plate, the error dialog, the replay panel — reads those
+  three; no sheet spells its own shadow. A single blurred blob is "a sticker,
+  not an object" (`table.css`), and a uniform hairline all round is a box that
+  was drawn rather than lit. **Lit, not haloed:** no coloured bloom around a
+  coloured control, anywhere.
+- **Controls are lines, gauges are fills.** A pressable glyph is stroked in
+  `MarkIcon`'s voice (round caps, ~2.2 on a 24 grid); a glyph that is read
+  (the bolt meter) is filled. The turbo bolt and the meter share a silhouette
+  and differ by exactly this. The spin button's shapes are the stated
+  exception.
+- **A panel opened from the keyboard shows its own ring, not the browser's** —
+  `.popup:focus-visible { outline: none }` plus the header's rule thickening in
+  `--tint`. Chrome's default double ring around a whole dialog was live on all
+  seven panels until a screenshot was pixel-sampled.
+- **The system is written down in `web-sdk/apps/Ride-The-Bus/design.md`**
+  (genre, material, ink, type, icons, CTA voice, motion, focus, what every panel
+  shares). It carries no values — `tokens.css` does — so it cannot drift. Read
+  it before any visual change; Hallmark reads it first.
 
 ### Money and the control bar — `references/currency-and-control-bar.md`
 

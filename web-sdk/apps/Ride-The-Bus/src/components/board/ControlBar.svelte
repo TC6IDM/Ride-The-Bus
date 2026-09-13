@@ -428,9 +428,33 @@ $effect(() => {
 >
   <!-- Removed, not just disabled, when the regulator bars Turbo: a greyed
        control still advertises a feature the player may not have. -->
+  <!-- CONTROLS ARE LINES, GAUGES ARE FILLS.
+       This bolt is the same silhouette the volatility meter burns under the
+       bet amount (BoltMeter.svelte), and it used to be the same FILL too - so
+       one glyph meant "speed" at this end of the bar and "risk" three inches
+       away, and nothing separated the two but position. Drawn as an outline
+       it is still unmistakably the bolt (Stake's own turbo mark), and the
+       reading is now the one every other icon on this bar already gives: a
+       stroked mark is something you press, a filled one is something you
+       read. The spin button is the stated exception - its marks are SHAPES
+       (two cards, a stop square, two chevrons) and it is the hero control.
+
+       Round caps and joins, 2.2 wide: MarkIcon's voice. It was a Material
+       glyph, like the two the autoplay and advanced buttons used to carry,
+       beside an info mark, steppers and a lemniscate that were all drawn by
+       hand - three icon sets on one 40px strip.
+
+       THE SILHOUETTE CHANGED WITH THE TREATMENT, and the meter changed with
+       it. Material's bolt has a three-unit stem down its left side; outlined
+       at 2.2 the stroke fills the stem and the shape read as a zigzag glyph,
+       not a bolt. This is the symmetric bolt every icon set draws - a point,
+       two shoulders, a tail - which outlines cleanly, and BoltMeter fills the
+       same path so the two are still one silhouette. -->
   {#if !jurisdiction.turboDisabled()}
     <button class="cb-float cb-turbo" class:active={pacing.turboSpeed > 0 || openPopup === 'turbo'} onclick={() => togglePopup('turbo')} aria-label={t('Turbo speed')}>
-      <svg class="cb-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 2v11h3v9l7-12h-4l4-8z" /></svg>
+      <svg class="cb-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M13.5 2.2 4.5 13.4h7.3l-1.3 8.4 9-11.2h-7.3Z" />
+      </svg>
     </button>
   {/if}
 
@@ -594,10 +618,18 @@ $effect(() => {
 
   <div class="cb-panel cb-panel-dark cb-actions">
     {#if !jurisdiction.autoplayDisabled()}
+      <!-- Two arcs with open heads, stroked - the repeat mark in the same
+           voice as the info mark and the steppers. It was Material's filled
+           sync glyph with a play triangle dropped into the middle; the
+           triangle went with the fill, since at 30px a 5-unit triangle in a
+           2.2 stroke is a blob and the arcs alone are the universal autoplay
+           mark. See the note above the turbo button. -->
       <button class="cb-round cb-autospin" class:active={openPopup === 'autospin'} onclick={() => togglePopup('autospin')} disabled={auto.running || stateUrlDerived.replay()} aria-label={t('Autoplay settings')}>
-        <svg class="cb-svg cb-autospin-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8A5.87 5.87 0 0 1 6 12c0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" />
-          <path d="M10.4 9.7 14.6 12l-4.2 2.3z" />
+        <svg class="cb-svg cb-autospin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4.6 12a7.4 7.4 0 0 1 12.7-5.2L19.4 8.9" />
+          <path d="M19.6 4v5h-5" />
+          <path d="M19.4 12a7.4 7.4 0 0 1-12.7 5.2L4.6 15.1" />
+          <path d="M4.4 20v-5h5" />
         </svg>
       </button>
     {/if}
@@ -718,8 +750,16 @@ $effect(() => {
        control: "hide balance display, play buttons, bet amount selector,
        autoplay settings". The bet display, the steppers and the autoplay
        button were already disabled here; this was the one that was not. -->
+  <!-- Three sliders, stroked: each rail is broken where its knob crosses it,
+       so the knob reads as a tick ON the rail rather than a box drawn over it.
+       It was Material's square-ended "tune" glyph, the most visibly foreign
+       of the three - see the note above the turbo button. -->
   <button class="cb-float cb-advanced" class:active={openPopup === 'advanced'} onclick={() => togglePopup('advanced')} disabled={stateUrlDerived.replay()} aria-label={t('Advanced settings')}>
-    <svg class="cb-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z" /></svg>
+    <svg class="cb-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+      <path d="M3 5h9.4M17.6 5H21M15 2.4v5.2" />
+      <path d="M3 12h2.4M10.6 12H21M8 9.4v5.2" />
+      <path d="M3 19h7.4M15.6 19H21M13 16.4v5.2" />
+    </svg>
   </button>
 </footer>
 

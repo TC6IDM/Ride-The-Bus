@@ -405,10 +405,12 @@
    an outer ring is what actually reads. */
 .equal-btn.selected {
   filter: brightness(1.18);
+  /* The 3px white ring IS the state - the same ring the halves draw inset.
+     A 14px white halo used to sit outside it, and on a badge this small the
+     halo was wider than the badge: a glow, not a selection. */
   box-shadow:
     0 4px 12px rgba(var(--shadow-rgb), 0.5),
     0 0 0 3px var(--ink),
-    0 0 14px rgba(var(--ink-rgb), 0.55),
     inset 0 0 0 1px rgba(var(--ink-rgb), 0.55);
   /* Trimmed from 1.14: the badge grows on select, and at 1.95 --ui a bigger
      lift walked it back into the arrows this change just cleared. */

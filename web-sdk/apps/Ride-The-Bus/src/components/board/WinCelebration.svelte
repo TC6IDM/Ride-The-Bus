@@ -37,7 +37,8 @@
 	 */
 	import { logoAsset } from '../../game/ui/logoAsset.svelte';
 	import { numberToCurrencyString } from 'utils-shared/amount';
-	import { labelEms } from '../../game/ui/typeFit';
+	import { evenDigitEms } from '../../game/ui/typeFit';
+	import Figure from './Figure.svelte';
 	import { titleFaceFor } from '../../game/ui/displayFace';
 
 	import MarkIcon from '../icons/MarkIcon.svelte';
@@ -150,7 +151,12 @@
 	const titleText = $derived(t(activeTier.label));
 	const titleFace = $derived(titleFaceFor(titleText));
 
-	const amountEms = $derived(labelEms(numberToCurrencyString(props.amount)));
+	// evenDigitEms, not labelEms: the amount is rendered through Figure below,
+	// which sets every digit in a box one "0" wide, so the settled string is
+	// wider than its proportional width - a "1" takes 0.66em, not 0.42. Sizing
+	// from the plain estimate would fit the type to a narrower string than the
+	// one that is drawn, and a nine-digit figure would run off both edges again.
+	const amountEms = $derived(evenDigitEms(numberToCurrencyString(props.amount)));
 
 	let amountEl: HTMLElement | undefined = $state(undefined);
 	let fanEl: HTMLElement | undefined = $state(undefined);
@@ -548,7 +554,12 @@
 			style="--amount-ems: {amountEms}"
 			bind:this={amountEl}
 		>
-			{numberToCurrencyString(shown)}
+			<!-- Through Figure, so the digits hold their places as the count
+			     turns them over. Poppins has no tabular figures (see Figure.svelte
+			     and the note on .wc-amount in win-celebration.css); under a
+			     centred headline every changed digit used to shift the whole
+			     figure by the width difference, and the count-up wobbled. -->
+			<Figure text={numberToCurrencyString(shown)} />
 		</div>
 
 		<!-- Climbs with the amount, so the multiplier and the title agree at

@@ -8,7 +8,10 @@
 import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
 
-import { labelEms } from '../typeFit.ts';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+import { EVEN_DIGIT_EM, evenDigitEms, labelEms } from '../typeFit.ts';
 import { splitChipLabel } from '../../bet/betChips.ts';
 
 /**
@@ -125,5 +128,61 @@ describe('the figure is fitted to the disc', () => {
       assert.ok(labelEms(amount) >= 0.5, `${formatted}: amount`);
       assert.ok(labelEms(currency + amount) >= 0.5, `${formatted}: inline`);
     }
+  });
+});
+
+describe('a figure rendered through Figure.svelte is sized for its boxes', () => {
+  /**
+   * The win takeover solves its font-size from evenDigitEms() and renders the
+   * same string through Figure, which sets every digit in a box one "0" wide.
+   * The two have to agree on that width or the headline is fitted to a string
+   * of one width and drawn at another - and the failure is the one this whole
+   * fit exists to prevent: a nine-digit figure running off both edges of a
+   * phone. Read off the component rather than duplicated here, so the test
+   * fails on the day someone changes one and not the other.
+   */
+  test('EVEN_DIGIT_EM is the --digit-w default in Figure.svelte', () => {
+    const component = readFileSync(
+      resolve(import.meta.dirname, '../../../components/board/Figure.svelte'),
+      'utf8',
+    );
+    const match = component.match(/width:\s*var\(--digit-w,\s*([0-9.]+)em\)/);
+    assert.ok(match, 'Figure.svelte must size .dg from var(--digit-w, <n>em)');
+    assert.equal(Number(match![1]), EVEN_DIGIT_EM);
+  });
+
+  test('every digit costs the box width and nothing else changes', () => {
+    // A "1" is the digit that moved: 0.42 proportional, the box width even.
+    assert.equal(evenDigitEms('1'), EVEN_DIGIT_EM);
+    assert.equal(evenDigitEms('1111'), Math.round(4 * EVEN_DIGIT_EM * 100) / 100);
+    // Separators and symbols keep the proportional estimate.
+    assert.equal(
+      evenDigitEms('$1,234.50'),
+      Math.round((labelEms('$,.') + 6 * EVEN_DIGIT_EM) * 100) / 100,
+    );
+    // Never wider than a string of the widest proportional digit, never
+    // narrower than one of "1"s: the box sits between the two.
+    assert.ok(evenDigitEms('1111') > labelEms('1111'));
+    assert.ok(evenDigitEms('4444') < labelEms('4444'));
+  });
+
+  test('the two figures that change per frame render through Figure', () => {
+    const at = (rel: string) =>
+      readFileSync(resolve(import.meta.dirname, '../../../components/board/' + rel), 'utf8');
+    assert.match(
+      at('WinCelebration.svelte'),
+      /<Figure text=\{numberToCurrencyString\(shown\)\} \/>/,
+      'the count-up amount must render through Figure',
+    );
+    assert.match(
+      at('WinCelebration.svelte'),
+      /evenDigitEms\(numberToCurrencyString\(props\.amount\)\)/,
+      'the amount must be sized from evenDigitEms, or the box-width string does not fit',
+    );
+    assert.match(
+      at('SessionReadouts.svelte'),
+      /<Figure text=\{sessionClock\(\)\} \/>/,
+      'the session clock must render through Figure',
+    );
   });
 });

@@ -7,7 +7,6 @@
 
      Styles are styles/replay-details.css, scoped here. -->
 <script lang="ts">
-	import { logoAsset } from '../../game/ui/logoAsset.svelte';
 	import { numberToCurrencyString } from 'utils-shared/amount';
 	import { t } from '../../i18n/i18nDerived';
 	import { FAMILY_RULES, familyOf, parseModeName } from '../../game/math/modes';
@@ -69,13 +68,21 @@
 	}
 </script>
 
-		<!-- ---- Replay info popup (over the start screen) ---- -->
-		<div class="ss-overlay" style={`--logo-url: url(${logoAsset.url})`}>
-			<!-- Card underneath so the start screen is visible behind -->
-			<div class="ss-card" aria-hidden="true" style="opacity: 0.55; pointer-events: none">
-				<div class="ss-logo"></div>
-				<h1 class="ss-title">Ride The Bus</h1>
-			</div>
+		<!-- ---- Replay info popup (over the start screen) ----
+		     NO OVERLAY OF ITS OWN. This used to wrap the lockup below in a second
+		     .ss-overlay - position: fixed, inset: 0, painted --felt-edge, opaque -
+		     stacked on top of the shell's. StartScreen.svelte mounts a TableScene
+		     into ITS overlay "so the first thing a player sees is the place", and
+		     on the replay path that table was dead paint under this wrapper: the
+		     round-details panel, which is what Stake's Fairness view opens on, sat
+		     on a black screen. The shell's overlay already carries --logo-url,
+		     the unit and the ink; this component is its child and inherits all
+		     three. -->
+		<!-- The lockup, dimmed, so the details read as a card on the table
+		     rather than a form on a page. -->
+		<div class="ss-card" aria-hidden="true" style="opacity: 0.55; pointer-events: none">
+			<div class="ss-logo"></div>
+			<h1 class="ss-title">Ride The Bus</h1>
 		</div>
 
 		<div class="ss-popup-backdrop">

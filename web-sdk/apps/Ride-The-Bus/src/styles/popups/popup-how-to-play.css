@@ -73,7 +73,9 @@
 .rank-chip:last-child {
   border-color: var(--tint);
   background: rgba(var(--tint-rgb), 0.22);
-  color: #cfe4ff;
+  /* Was #cfe4ff - a blue-white kept in no token; the wash beneath is what
+     says "the ends", the ink does not need to say it again. */
+  color: var(--ink);
 }
 
 .rank-ends {
@@ -157,13 +159,15 @@
 	color: var(--gold);
 }
 
-/* The panel the tabs drive. Bordered so it reads as one switchable unit
-   rather than three loose sections that happen to follow the buttons. */
+/* The panel the tabs drive. NOT a box: it was bordered and washed "so it
+   reads as one switchable unit", which put a card inside the card - the same
+   nesting popup-mode.css took out of the picker, and for the same reason: the
+   popup is already a bordered, shadowed dialog, and a second frame inside it
+   is one containment layer too many. The selected tab's wash is what says
+   which mode is on screen, and the section headings below say the rest. The
+   inline padding stays so the block lines up under the tabs. */
 .mode-panel {
 	padding: calc(var(--ui-bar) * 0.9) calc(var(--ui-bar) * 1.09);
-	border: 1px solid rgba(var(--ink-rgb), 0.1);
-	border-radius: calc(var(--ui-bar) * 0.73);
-	background: rgba(var(--ink-rgb), 0.03);
 }
 
 .mode-panel-blurb { color: var(--ink-body); }

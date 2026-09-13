@@ -12,6 +12,7 @@
      colour of its own. -->
 <script lang="ts">
   import MarkIcon from '../icons/MarkIcon.svelte';
+  import RangeSlider from './RangeSlider.svelte';
   import SoundIcon from '../icons/SoundIcon.svelte';
   import { t } from '../../i18n/i18nDerived';
   import {
@@ -41,16 +42,17 @@
         </button>
         <div class="sound-track">
           <span class="sound-label">{t('Music')}</span>
-          <input
-            class="sound-slider"
-            type="range"
-            min="0"
-            max="100"
-            step="1"
+          <!-- The game's own slider, not the browser's - see RangeSlider.svelte.
+               It takes the panel's --tint from the DOM; the handler reads the
+               input's value off the event exactly as before. -->
+          <RangeSlider
+            min={0}
+            max={100}
+            step={1}
             value={mixer.musicVolume}
             oninput={onMusicInput}
             disabled={busSilent('music')}
-            aria-label={t('Music')}
+            label={t('Music')}
           />
         </div>
         <!-- The STORED level, not the effective one. Printing 0 while the
@@ -74,16 +76,14 @@
         </button>
         <div class="sound-track">
           <span class="sound-label">{t('Game Sounds')}</span>
-          <input
-            class="sound-slider"
-            type="range"
-            min="0"
-            max="100"
-            step="1"
+          <RangeSlider
+            min={0}
+            max={100}
+            step={1}
             value={mixer.sfxVolume}
             oninput={onSfxInput}
             disabled={busSilent('sfx')}
-            aria-label={t('Game Sounds')}
+            label={t('Game Sounds')}
           />
         </div>
         <span class="sound-readout">{mixer.sfxVolume}</span>

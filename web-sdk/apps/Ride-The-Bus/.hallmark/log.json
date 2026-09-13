@@ -1,0 +1,10 @@
+[
+  {
+    "date": "2026-09-12",
+    "scope": "app",
+    "macrostructure": "n/a - a game board, a control bar, seven panels and two overlays",
+    "theme": "locked (src/styles/tokens.css, design.md) - atmospheric, anchored on the sampled table",
+    "enrichment": "none",
+    "brief": "Ride The Bus - Hallmark pass 2: audit + redesign of every popup, modal and UI element (4 critical / 12 major / 7 minor)"
+  }
+]
