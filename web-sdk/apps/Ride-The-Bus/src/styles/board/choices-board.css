@@ -51,8 +51,16 @@
   line-height: 1.2;
   text-align: center;
   /* The two-word labels wrap to two lines, so reserve two lines for ALL of them
-     - otherwise COLOR / SUIT sit a line higher and the four squares don not line
-     up. */
+     - otherwise COLOR / SUIT sit a line higher and the four squares do not line
+     up. And CENTRE the text in that reservation: a one-line label left at the
+     top of a two-line box sat level with HIGHER and INSIDE, with an empty line
+     under it, and read as a label that had slipped up rather than one that was
+     level with its neighbours. The text is in an inner span (GameBoard.svelte)
+     because a <br> laid out directly by a flex container becomes an item of its
+     own and the two words would sit side by side. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-height: 2.4em;
   letter-spacing: var(--track-label);
   text-transform: uppercase;
@@ -82,7 +90,9 @@
   border: 1px solid var(--tip-edge);
   color: var(--ink-warm);
   font-size: calc(var(--ui) * 1.05);
-  /* 400: Poppins ships no 500 here, so it was already drawing as 400. */
+  /* 400: body weight for a sentence of explanation. (It once asked for a 500
+     the body face of the time did not ship; the body face is variable now, and
+     400 is the intent rather than the fallback.) */
   font-weight: 400;
   line-height: 1.35;
   text-align: center;

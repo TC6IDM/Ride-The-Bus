@@ -167,7 +167,11 @@
 
 <div class="choice-row" class:locked={choicesLocked()} aria-busy={choicesLocked()}>
   <div class="choice-column">
-    <span class="choice-label">{t('Color')}</span>
+    <!-- The label's text sits in an inner span so the outer box can centre it:
+         the two-word labels beside this one run to two lines, and a one-line
+         label left at the top of the same box reads as sitting a line too
+         high. See .choice-label in choices-board.css. -->
+    <span class="choice-label"><span>{t('Color')}</span></span>
     <div class="choice-square color-square" role="group" aria-label={t('Pick a color')}>
       <button type="button" class="half-btn black-half" class:selected={guesses.color === 'black'} onclick={() => pick(setColorChoice, 'black')} aria-disabled={choicesLocked()} aria-label={t('Black')}></button>
       <button type="button" class="half-btn red-half" class:selected={guesses.color === 'red'} onclick={() => pick(setColorChoice, 'red')} aria-disabled={choicesLocked()} aria-label={t('Red')}></button>
@@ -175,7 +179,7 @@
   </div>
 
   <div class="choice-column">
-    <span class="choice-label">{t('Higher')}<br />{t('Lower')}</span>
+    <span class="choice-label"><span>{t('Higher')}<br />{t('Lower')}</span></span>
     <div class="choice-square hl-square" role="group" aria-label={t('Higher, lower, or equal')}>
       <button type="button" class="third-btn higher-third" class:selected={guesses.hl === 'higher'} onclick={() => pick(setHlChoice, 'higher')} aria-disabled={choicesLocked()} aria-label={t('Higher')}>{@render iconTriangleUp()}</button>
       <button type="button" class="third-btn lower-third" class:selected={guesses.hl === 'lower'} onclick={() => pick(setHlChoice, 'lower')} aria-disabled={choicesLocked()} aria-label={t('Lower')}>{@render iconTriangleDown()}</button>
@@ -184,7 +188,7 @@
   </div>
 
   <div class="choice-column">
-    <span class="choice-label">{t('Inside')}<br />{t('Outside')}</span>
+    <span class="choice-label"><span>{t('Inside')}<br />{t('Outside')}</span></span>
     <div class="choice-square io-square" role="group" aria-label={t('Inside, outside, or equal')}>
       <button
         type="button"
@@ -213,7 +217,7 @@
   </div>
 
   <div class="choice-column">
-    <span class="choice-label">{t('Suit')}</span>
+    <span class="choice-label"><span>{t('Suit')}</span></span>
     <div class="choice-square suit-square" role="group" aria-label={t('Pick a suit')}>
       <button type="button" class="quad-btn red-suit" class:selected={guesses.suit === 'heart'} onclick={() => pick(setSuitChoice, 'heart')} aria-disabled={choicesLocked()} aria-label={t('Heart')}><SuitIcon suit="heart" /></button>
       <button type="button" class="quad-btn" class:selected={guesses.suit === 'spade'} onclick={() => pick(setSuitChoice, 'spade')} aria-disabled={choicesLocked()} aria-label={t('Spade')}><SuitIcon suit="spade" /></button>

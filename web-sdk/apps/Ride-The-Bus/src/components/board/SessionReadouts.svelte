@@ -12,7 +12,6 @@
   import { round, sessionClock } from '../../game/round/roundState.svelte';
   import { t } from '../../i18n/i18nDerived';
   import { numberToCurrencyString } from 'utils-shared/amount';
-  import Figure from './Figure.svelte';
 </script>
 
 <!-- Responsible-gambling readouts, rendered only where the player's regulator
@@ -38,11 +37,7 @@
     {#if jurisdiction.showSessionTimer()}
       <div class="rg-item">
         <span class="cb-cap">{t('Session')}</span>
-        <!-- Through Figure: the clock ticks once a second on a plate pinned to
-             the right edge, and with Poppins' proportional digits every "1"
-             that came or went moved the plate's left edge. See Figure.svelte
-             and the note on .rg-item .cb-val in session-readouts.css. -->
-        <span class="cb-val"><Figure text={sessionClock()} /></span>
+        <span class="cb-val">{sessionClock()}</span>
       </div>
     {/if}
   </aside>

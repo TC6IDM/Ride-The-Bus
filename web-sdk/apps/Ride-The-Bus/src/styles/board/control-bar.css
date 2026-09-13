@@ -138,7 +138,10 @@
    renders them too, so they cannot live in the bar's own sheet. */
 
 /* Reserved widths were measured from the widest value each field can ever show
-   at this font (800 16.8px Poppins), IN DOLLARS: balance up to $99,999,999.00 =
+   at 800 16.8px in Poppins, the body face at the time - Geist's tabular digits
+   (0.648em) sit inside Poppins' 0.606-0.691 range, so every reservation below
+   still holds and none needed re-measuring - IN DOLLARS: balance up to
+   $99,999,999.00 =
    140px; last win up to maxBet x the 5000x wincap ($5,000,000.00 = 129px) plus
    the multiplier chip - 220px measured; bet up to $1,000,000.00 = 129px + 16px
    padding. That way a win landing or the bet stepping never re-flows the bar.
@@ -725,8 +728,9 @@
 .cb-bet-base {
   display: block;
   font-size: calc(var(--ui-bar) * 0.86);
-  /* 700: this was 600, which Poppins has no cut for and which was already
-     rendering as 700. Written down rather than left to the fallback. */
+  /* 700: the label weight every readout uses. (This was 600, which the body
+     face of the time did not ship and which resolved to 700; the body face is
+     variable now, and 700 is the intent rather than the fallback.) */
   font-weight: 700;
   color: var(--ink-dim);
   font-variant-numeric: tabular-nums;

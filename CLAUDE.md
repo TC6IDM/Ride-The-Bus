@@ -291,6 +291,15 @@ reading before proposing it again.
   probe is wrong for exactly those browsers.
 - **Glyphs are drawn when, and only when, the font does not own them.** Card
   ranks are ASCII and deliberately NOT drawn.
+- **The body face is Geist (variable, one file per subset), and its metrics
+  are measured, never guessed.** It ships `tnum`, so every `tabular-nums` in
+  the app is live (they were inert for the whole life of Poppins).
+  `typeFit.ts`'s width table, `displayFace.ts`'s `unicode-range` transcription
+  and the currency ranking test are all measured off the shipped woff2 files
+  with fontTools; changing the face means re-measuring all three, and the
+  tests fail if the `@font-face` ranges and the transcription drift apart.
+  Known costs — no won or dong glyph; the 2025-default look — are in
+  `design.md`.
 
 ### Audio and jurisdiction — `references/audio-and-jurisdiction.md`
 

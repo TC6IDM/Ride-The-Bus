@@ -232,7 +232,9 @@
 
 .ss-detail-val {
 	color: var(--ink-warm);
-	/* 700: Poppins ships no 600 cut, so this was already drawing as 700. */
+	/* 700: the label weight every readout uses. (It once asked for a 600 the
+	   body face of the time did not ship; the body face is variable now, and 700
+	   is the intent rather than the fallback.) */
 	font-weight: 700;
 }
 

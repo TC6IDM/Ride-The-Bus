@@ -160,9 +160,11 @@
 .game-title-sub {
   margin-top: calc(var(--ui) * 0.42);
   font-size: calc(var(--ui) * 0.95); /* 10.5px */
-  /* 500, not the 600 this asked for: Poppins ships 400/700/800/900 here, so
-     600 was silently rendering at 700 - the opposite of the demotion this
-     line exists to make. 500 resolves to 400, which is the intent. */
+  /* 400: the lightest weight the game sets anywhere, because this is a credit
+     line and the demotion IS the design. It once asked for 600, which the body
+     face of the time did not ship and which resolved upward to 700 - the
+     opposite of the intent. The body face is variable now and would honour any
+     weight; 400 is still the answer. */
   font-weight: 400;
   letter-spacing: 0.22em;
   text-transform: uppercase;

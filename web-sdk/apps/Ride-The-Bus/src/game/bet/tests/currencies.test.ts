@@ -117,22 +117,24 @@ describe('the widest figure each currency can settle on', () => {
   };
 
   /**
-   * The worst three, measured: TZS, UGX and XOF all reach 24 characters and
-   * 14.72 ems at a $500,000-equivalent cap - "TZS 2,578,770,000,000.00", and
-   * XOF with its five-character "F CFA " prefix. NGN is fourth. VND and IDR
-   * have weaker units still but no minor unit, which saves them three
+   * The worst four, measured: NGN, TZS, UGX and XOF all reach 24 characters at
+   * a $500,000-equivalent cap - "TZS 2,578,770,000,000.00", and XOF with its
+   * five-character "F CFA " prefix. The three three-letter codes tie at 13.68
+   * ems and XOF leads at 13.80, because the body face's digits are tabular:
+   * under Poppins, whose figures were proportional, NGN's narrow "1"s put it
+   * fourth at some distance and the layout was built against 14.72 ems. VND
+   * and IDR have weaker units still but no minor unit, which saves them three
    * characters.
    */
-  test('the worst three are the ones the layout was built against', () => {
-    const widest = ISO.map((code) => ({
+  test('the worst four are the ones the layout was built against', () => {
+    const ranked = ISO.map((code) => ({
       code,
       ems: labelEms(format(code, 500_000 * (UNITS_PER_USD[code] ?? 1) * HIGH_STAKES_CAP)),
-    }))
-      .sort((a, b) => b.ems - a.ems)
-      .slice(0, 3)
-      .map((r) => r.code)
-      .sort();
-    assert.deepEqual(widest, ['TZS', 'UGX', 'XOF']);
+    })).sort((a, b) => b.ems - a.ems);
+    const widest = ranked.slice(0, 4).map((r) => r.code).sort();
+    assert.deepEqual(widest, ['NGN', 'TZS', 'UGX', 'XOF']);
+    // Inside the width the CSS was solved for under the previous face.
+    assert.ok(ranked[0].ems <= 14.72, `the widest figure grew to ${ranked[0].ems} ems`);
   });
 
   test('none exceeds the width the takeover is built to fit', () => {

@@ -1,7 +1,8 @@
 # Design — Ride The Bus
 
 The locked design system for this app, written by the second Hallmark pass
-(2026-09-12). Every later visual change reads this first. It is deliberately
+(2026-09-12; the type decision amended 2026-09-13). Every later visual change
+reads this first. It is deliberately
 short and carries **no values**: the numbers live in `src/styles/tokens.css`,
 the rules in the repo-root `CLAUDE.md`, and the arguments in
 `.claude/skills/rtb-invariants/`. A hex restated here would be a hex that
@@ -52,14 +53,21 @@ parity of contrast against the three panel grounds (the table is in
 - Display: **Big Shoulders** 700/900 — the wordmark, the card ranks, the win
   title. Latin only; never on a translated string without reading
   `game/ui/displayFace.ts`.
-- Body and UI: **Poppins** 400/700/800/900, self-hosted, latin + latin-ext.
+- Body and UI: **Geist**, variable (one file per subset covers every weight),
+  self-hosted in latin, latin-ext, vietnamese and cyrillic. The game sets it
+  at 400/700/800/900. Chosen after measuring three faces with fontTools:
+  Poppins (no tabular figures, a banned default) and Barlow (kin to Big
+  Shoulders, but static, no Cyrillic, no rupee) — the argument is at the top
+  of `components/app.css`. Geist's neutrality is the point: the wordmark and
+  the table carry the character, the type stays out of the way.
 - Small caps: `--track-label`, uppercase, only on a two-word caption over a
   figure. Never on a sentence.
-- **No tabular figures exist in either face** (measured: no `tnum`). A figure
-  that changes while the player watches — the takeover count-up, the session
-  clock — renders through `components/board/Figure.svelte`, which boxes each
-  digit one "0" wide; its width and `typeFit.evenDigitEms()` are pinned
-  together by a test. Every other figure is width-reserved by its container.
+- **Figures are tabular** — Geist ships `tnum`, so `font-variant-numeric:
+  tabular-nums` is live and a figure keeps its width as its digits change.
+  `typeFit.labelEms()` is measured against Geist 800 (every digit 0.65 em);
+  its test table is the record. If the face ever changes, that table, the
+  `unicode-range` transcription in `displayFace.ts` and the two fitting
+  contracts are what must be re-measured — not guessed.
 
 ## Icons
 
@@ -110,10 +118,16 @@ width, where prose needs the measure.
 
 ## Known deviations, recorded
 
-- Poppins is on Hallmark's banned-defaults list for body type. Kept
-  deliberately: the money-fitting contract (`typeFit.ts`, `use:fitValue`) is
-  measured against it, and it covers all 17 locales. Swapping to a face with
-  real tabular figures is a candidate follow-up pass, not a per-page override.
+- Geist is the 2025 scaffold default, and on a warm table a neutral grotesque
+  can read as dashboard chrome. Accepted with eyes open: it was chosen for
+  coverage (Vietnamese, Cyrillic, the rupee, the peso, the sheqel) and for
+  tabular figures, and the rest of the system — the sampled table, the
+  drawn glyphs, the material, the wordmark — is what carries the character.
+- Neither face ships the won (U+20A9) or the dong (U+20AB); KRW and VND
+  print those from the OS font beside Geist digits, as they did under Poppins.
+- Arabic, Hindi, Japanese, Korean and Chinese fall back to the OS sans-serif
+  wholesale; neither face has a cut for those scripts and the inlined bundle
+  will not take one.
 - The win takeover's title carries a two-layer glow. Atmospheric allows it;
   it is stamped as such at the top of `win-celebration.css`.
 - The intro's four step panels are dealt (fanned, lifted) rather than gridded;
