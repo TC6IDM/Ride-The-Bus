@@ -241,7 +241,7 @@
   color: rgba(var(--on-vol-ink-rgb), 0.78);
 }
 
-@media (hover: hover) {.bet-chip:hover:not(.active) {
+@media (any-hover: hover) {.bet-chip:hover:not(.active) {
     transform: translateY(calc(var(--ui-bar) * -0.18));
   }
 }

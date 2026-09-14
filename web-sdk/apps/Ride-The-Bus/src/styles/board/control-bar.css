@@ -249,7 +249,7 @@
   box-shadow: inset 0 1px 0 var(--panel-lit);
 }
 
-@media (hover: hover) {
+@media (any-hover: hover) {
   .cb-bet-display:hover {
     border-color: var(--mode-ink, var(--accent));
     background: rgba(var(--mode-rgb, var(--accent-rgb)), 0.12);
@@ -285,7 +285,7 @@
   height: calc(var(--ui-bar) * 1.8);
 }
 
-@media (hover: hover) {
+@media (any-hover: hover) {
   .cb-step:hover:not(:disabled) {
     border-color: var(--mode-ink, var(--accent));
     box-shadow: inset 0 1px 0 var(--panel-lit);
@@ -363,7 +363,7 @@
    pop explanations - and leaving takes the base rule's 0s, so it clears at
    once. A refused tap (.is-shown) and keyboard focus reached the control
    deliberately and get the answer immediately. */
-@media (hover: hover) {
+@media (any-hover: hover) {
   .cb-spin-wrap:hover .cb-cooldown-tip {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
@@ -414,7 +414,7 @@
   transition: opacity var(--dur-control) var(--ease-out), transform var(--dur-control) var(--ease-out);
 }
 
-@media (hover: hover) {
+@media (any-hover: hover) {
   .cb-bet.bet-locked:hover .cb-bet-tip {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
@@ -554,7 +554,7 @@
   transition: box-shadow var(--dur-control) var(--ease-out), border-color var(--dur-control) var(--ease-out), transform 0.1s var(--ease-out);
 }
 
-@media (hover: hover) {
+@media (any-hover: hover) {
   .cb-spin:not(:disabled):not(.blocked):hover { box-shadow: inset 0 1px 0 var(--panel-lit); transform: scale(1.04); }
 }
 
@@ -585,13 +585,13 @@
    neither starting nor ending anything, just hurrying the current round along. */
 .cb-spin.slammable { border-color: var(--ctl-turbo); background: radial-gradient(circle at 50% 35%, var(--spin-slam-lit), var(--spin-slam-deep) 75%); }
 
-@media (hover: hover) {
+@media (any-hover: hover) {
   .cb-spin.slammable:not(.blocked):hover { box-shadow: inset 0 1px 0 var(--panel-lit); }
 }
 
 .cb-slam-svg { width: calc(var(--ui-bar) * 3.45); height: calc(var(--ui-bar) * 3.45); transform: none; color: var(--gold-bright); }
 
-@media (hover: hover) {
+@media (any-hover: hover) {
   .cb-spin.stopping:not(.blocked):hover { box-shadow: inset 0 1px 0 var(--panel-lit); }
 }
 
@@ -683,7 +683,7 @@
   box-shadow: inset 0 1px 0 var(--panel-lit);
 }
 
-@media (hover: hover) {
+@media (any-hover: hover) {
   .cb-icon.cb-sound:hover {
     border-color: var(--ctl-sound);
     color: var(--ctl-sound-ink);
@@ -692,25 +692,25 @@
   }
 }
 
-@media (hover: hover) {
+@media (any-hover: hover) {
   .cb-icon:hover { border-color: var(--accent); color: var(--ink); background: rgba(var(--accent-rgb), 0.16); box-shadow: inset 0 1px 0 var(--panel-lit); }
 }
 
 .cb-turbo.active { border-color: var(--ctl-turbo); color: var(--ctl-turbo-ink); background: rgba(var(--ctl-turbo-rgb), 0.16); box-shadow: inset 0 1px 0 var(--panel-lit); }
 
-@media (hover: hover) {
+@media (any-hover: hover) {
   .cb-turbo:hover { border-color: var(--ctl-turbo); color: var(--ctl-turbo-ink); background: rgba(var(--ctl-turbo-rgb), 0.16); box-shadow: inset 0 1px 0 var(--panel-lit); }
 }
 
 .cb-autospin.active { border-color: var(--ctl-autospin); color: var(--ctl-autospin-ink); background: rgba(var(--ctl-autospin-rgb), 0.14); box-shadow: inset 0 1px 0 var(--panel-lit); }
 
-@media (hover: hover) {
+@media (any-hover: hover) {
   .cb-autospin:hover:not(:disabled) { border-color: var(--ctl-autospin); color: var(--ctl-autospin-ink); background: rgba(var(--ctl-autospin-rgb), 0.14); box-shadow: inset 0 1px 0 var(--panel-lit); }
 }
 
 .cb-advanced.active { border-color: var(--ctl-advanced); color: var(--ctl-advanced-ink); background: rgba(var(--ctl-advanced-rgb), 0.16); box-shadow: inset 0 1px 0 var(--panel-lit); }
 
-@media (hover: hover) {
+@media (any-hover: hover) {
   .cb-advanced:hover { border-color: var(--ctl-advanced); color: var(--ctl-advanced-ink); background: rgba(var(--ctl-advanced-rgb), 0.16); box-shadow: inset 0 1px 0 var(--panel-lit); }
 }
 
@@ -831,7 +831,7 @@
     inset 0 -1px 0 var(--panel-shade);
 }
 
-@media (hover: hover) {
+@media (any-hover: hover) {
   .cb-mode-btn:hover:not(:disabled) {
     border-color: var(--vol-color, var(--gold));
     color: var(--ink);
@@ -1077,7 +1077,7 @@
   transition: opacity var(--dur-control) var(--ease-out), transform var(--dur-control) var(--ease-out);
 }
 
-@media (hover: hover) {
+@media (any-hover: hover) {
   .cb-panel-light.mode-locked:hover .cb-mode-tip {
     opacity: 1;
     transform: translateX(-50%) translateY(0);

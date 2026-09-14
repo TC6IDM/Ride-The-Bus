@@ -536,7 +536,7 @@
 
 /* Adjacent-sibling, because the tip is no longer inside the button. */
 /* Tapped open. This is the ONLY route a touch device has to these four
-   sentences: the hover rule below is behind `@media (hover: hover)` and a tap
+   sentences: the hover rule below is behind `@media (any-hover: hover)` and a tap
    does not raise :focus-visible, so without this the badges were visible,
    focusable, labelled and completely inert on every phone. */
 .ss-help:focus-visible + .ss-tip,
@@ -799,7 +799,7 @@
 }
 
 /* A finger cannot hover, and the hover above is correctly gated behind
-   @media (hover: hover) - which left the one tap that starts the game with no
+   @media (any-hover: hover) - which left the one tap that starts the game with no
    acknowledgement at all between finger-down and the screen changing. */
 .ss-continue:active {
 	filter: brightness(0.94);
@@ -965,7 +965,7 @@
 /* ---- Hover, gated -------------------------------------------------------
  * Split out of the :focus-visible rules above so keyboard focus keeps working
  * where there is no pointer at all. See the note in choices.css. */
-@media (hover: hover) {.ss-help:hover {
+@media (any-hover: hover) {.ss-help:hover {
 		background: var(--gold);
 		border-color: var(--gold);
 		color: var(--on-gold-ink);

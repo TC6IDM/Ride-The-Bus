@@ -167,7 +167,7 @@
 	/* ---- States. Hover lifts the thumb's brightness a step; the press takes
 	   it back below rest, the same "in, not brighter" language every control on
 	   the bar speaks. Hover is gated so a tapped thumb does not keep it. */
-	@media (hover: hover) {
+	@media (any-hover: hover) {
 		.range:not(:disabled):hover::-webkit-slider-thumb {
 			filter: brightness(1.08);
 		}

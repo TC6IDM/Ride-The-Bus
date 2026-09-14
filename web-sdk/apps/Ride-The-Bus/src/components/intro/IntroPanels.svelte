@@ -75,7 +75,8 @@
 	 * Which help tip is open, identified by its own text.
 	 *
 	 * The tips used to open on :hover and :focus-visible alone. Hover is gated
-	 * behind `@media (hover: hover)` so it never fires on a phone, and a touch
+	 * behind `@media (any-hover: hover)` (see choices.css for why not `hover:
+	 * hover`) so it never fires on a phone, and a touch
 	 * tap does not produce :focus-visible - that state is reserved for
 	 * keyboard-like input. So on every phone the four badges were visible,
 	 * focusable, labelled, and did nothing at all when tapped. The sentence

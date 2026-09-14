@@ -91,7 +91,7 @@
 }
 
 /* Hover only where there is a pointer, and never on the disabled slider. */
-@media (hover: hover) {.sound-mute:hover { border-color: var(--tint); background: rgba(var(--tint-rgb), 0.2); color: var(--tint); }
+@media (any-hover: hover) {.sound-mute:hover { border-color: var(--tint); background: rgba(var(--tint-rgb), 0.2); color: var(--tint); }
 .sound-mute.off:hover { border-color: var(--loss); }
 }
 

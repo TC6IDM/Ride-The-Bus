@@ -47,7 +47,7 @@
 
 .action-button:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
-@media (hover: hover) {.action-button:not(:disabled):hover { filter: brightness(1.08); }
+@media (any-hover: hover) {.action-button:not(:disabled):hover { filter: brightness(1.08); }
 }
 
 .action-button:not(:disabled):active { transform: translateY(1px); }
@@ -102,7 +102,7 @@
   border-top: 1px solid var(--panel-edge);
 }
 
-@media (hover: hover) {
+@media (any-hover: hover) {
   /* ---- The picker rows wear their own mode's colour ------------------------
    * Yellow for Classic, green for Second Chance, red for High Stakes - the same
    * three the bolts on each row are already burning, and the same three the bet
@@ -351,7 +351,7 @@
   transition: background var(--dur-control) var(--ease-out), border-color var(--dur-control) var(--ease-out);
 }
 
-@media (hover: hover) {.mode-confirm-cancel:hover {
+@media (any-hover: hover) {.mode-confirm-cancel:hover {
     background: rgba(var(--ink-rgb), 0.1);
     border-color: rgba(var(--ink-rgb), 0.32);
   }

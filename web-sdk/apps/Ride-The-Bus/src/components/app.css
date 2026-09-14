@@ -352,7 +352,7 @@ textarea {
 	background-clip: padding-box;
 }
 
-@media (hover: hover) {
+@media (any-hover: hover) {
 	::-webkit-scrollbar-thumb:hover {
 		background: rgba(var(--scroll-thumb-rgb, var(--gold-rgb)), 0.62);
 		background-clip: padding-box;

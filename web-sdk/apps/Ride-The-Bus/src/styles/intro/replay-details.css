@@ -272,7 +272,7 @@
 		0 calc(var(--ui) * 0.55) calc(var(--ui) * 1.09) rgba(var(--shadow-rgb), 0.42);
 }
 
-/* A finger cannot hover, and the hover is gated behind @media (hover: hover) -
+/* A finger cannot hover, and the hover is gated behind @media (any-hover: hover) -
    so the tap that starts the replay had nothing to acknowledge it. */
 .ss-play-btn:active {
 	filter: brightness(0.94);
@@ -378,7 +378,7 @@
 /* ---- Hover, gated -------------------------------------------------------
  * Split out of the :focus-visible rules above so keyboard focus keeps working
  * where there is no pointer at all. See the note in choices.css. */
-@media (hover: hover) {.ss-play-btn:hover {
+@media (any-hover: hover) {.ss-play-btn:hover {
 		filter: brightness(1.08);
 	}
 }

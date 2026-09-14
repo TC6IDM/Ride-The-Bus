@@ -55,7 +55,7 @@
 
 /* Lit, not haloed: the bar's own hover idiom. The 10px tint bloom that was
    here is the shadow-glow tell popup-mode.css refuses by name. */
-@media (hover: hover) {.spin-pill:hover { border-color: var(--tint); color: var(--ink); box-shadow: inset 0 1px 0 var(--panel-lit); }
+@media (any-hover: hover) {.spin-pill:hover { border-color: var(--tint); color: var(--ink); box-shadow: inset 0 1px 0 var(--panel-lit); }
 }
 
 .spin-pill.active { background: var(--tint-strong); border-color: var(--tint-strong); color: var(--tint-ink); }
@@ -98,7 +98,7 @@
 
 .action-button:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
-@media (hover: hover) {.action-button:not(:disabled):hover { filter: brightness(1.08); }
+@media (any-hover: hover) {.action-button:not(:disabled):hover { filter: brightness(1.08); }
 }
 
 .action-button:not(:disabled):active { transform: translateY(1px); }
@@ -207,7 +207,7 @@
    are the busiest control in the autoplay panel - the one a player holds down
    to set a spin count - and a neutral highlight there was the largest patch of
    the panel that did not know what colour it was. */
-@media (hover: hover) {.stepper-btn:hover { background: rgba(var(--tint-rgb), 0.18); color: var(--tint); }
+@media (any-hover: hover) {.stepper-btn:hover { background: rgba(var(--tint-rgb), 0.18); color: var(--tint); }
 }
 
 .stepper-btn:active { background: rgba(var(--tint-rgb), 0.26); color: var(--tint); }

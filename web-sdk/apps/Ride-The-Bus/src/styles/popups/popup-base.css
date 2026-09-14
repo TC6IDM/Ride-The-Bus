@@ -195,7 +195,7 @@
   transition: background var(--dur-control) var(--ease-out), border-color var(--dur-control) var(--ease-out), color var(--dur-control) var(--ease-out);
 }
 
-@media (hover: hover) {
+@media (any-hover: hover) {
   /* Lit, not haloed. This carried `box-shadow: 0 0 10px rgba(--tint-rgb, 0.5)`
      - a coloured bloom around a coloured control on a dark panel, which is the
      shadow-glow tell that popup-mode.css names and refuses one file over:

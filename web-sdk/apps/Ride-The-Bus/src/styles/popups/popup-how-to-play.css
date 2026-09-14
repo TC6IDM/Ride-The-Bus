@@ -139,7 +139,7 @@
 	transition: border-color var(--dur-control) var(--ease-out), background var(--dur-control) var(--ease-out), color var(--dur-control) var(--ease-out);
 }
 
-@media (hover: hover) {
+@media (any-hover: hover) {
 	.mode-tab:hover { border-color: var(--tint); color: var(--ink); }
 }
 

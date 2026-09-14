@@ -75,8 +75,21 @@
    control keeps its :hover styling until something ELSE is tapped - the stuck
    state the interaction rules warn about, and very visible in a game where a
    guess square gets tapped every single round. The :active rule below is the
-   touch-reachable half. */
-@media (hover: hover) {
+   touch-reachable half.
+
+   `any-hover`, NOT `hover`. `(hover: hover)` asks whether the PRIMARY input
+   can hover, and Chromium on a Windows touch laptop answers no whenever it
+   decides the finger is primary - tablet posture, a folded-back keyboard,
+   DevTools' device toolbar - even with a mouse plugged in and moving. Every
+   hover rule in this app sits behind this one gate, so that answer switched
+   off the help tips, the guess-square preview and every icon glow at once,
+   while clicks and keyboard focus kept working, which is what made it look
+   like a bug in the rules rather than in the gate. `(any-hover: hover)` asks
+   whether ANY attached input can hover: still false on a phone, so the stuck
+   state above stays impossible there, and true on a laptop however the
+   browser ranks its inputs. The 14 sheets that gate hover all use it; grep
+   `hover: hover` should find nothing. */
+@media (any-hover: hover) {
   .half-btn:hover:not(.selected):not(.unavailable):not([aria-disabled='true']),
   .third-btn:hover:not(.selected):not([aria-disabled='true']),
   .quad-btn:hover:not(.selected):not([aria-disabled='true']) {
@@ -387,7 +400,7 @@
   transform: translate(-50%, -50%);
 }
 
-@media (hover: hover) {
+@media (any-hover: hover) {
   /* Lighter than .selected, and a smaller lift, for the same reason as the
      halves above: hover previews the selection without imitating it. */
   .equal-btn:hover:not(.selected) {

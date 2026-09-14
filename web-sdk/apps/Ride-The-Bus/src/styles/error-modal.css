@@ -196,7 +196,7 @@
     0 calc(var(--ui-bar) * 0.55) calc(var(--ui-bar) * 1.09) rgba(var(--shadow-rgb), 0.42);
 }
 
-@media (hover: hover) {
+@media (any-hover: hover) {
   .err-actions .action-button:hover { filter: brightness(1.08); }
 }
 
