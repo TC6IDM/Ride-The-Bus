@@ -84,6 +84,8 @@ export default {
 	'Your second wrong guess': 'Lần đoán sai thứ hai',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
 		'Bằng là lựa chọn hiếm nhất, nên các vòng dựa vào nó mang lại phần thắng lớn nhất — và khó nhất. Hai lựa chọn Bằng cùng trúng là mức cao nhất của chế độ này, ở %m tiền cược của bạn.',
+	'Only some four-guess combinations reach a mode’s maximum. Once your four guesses are picked, their own ceiling is shown above whenever it is lower.':
+		'Chỉ một số tổ hợp bốn dự đoán đạt tới mức tối đa của chế độ. Sau khi chọn đủ bốn dự đoán, mức trần riêng của chúng sẽ hiện ở trên mỗi khi thấp hơn.',
 	Playing: 'Đang chơi',
 	'Card 2, 3 or 4': 'Lá 2, 3 hoặc 4',
 	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
@@ -107,8 +109,8 @@ export default {
 	'Payouts follow the odds': 'Tiền thưởng theo xác suất',
 	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
 		'Mỗi dự đoán đúng được trả theo đúng xác suất thực, nên lựa chọn càng khó xảy ra thì trả càng cao — và điều đó phụ thuộc vào các lá bài đã lật.',
-	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
-		'Khi trên bàn là lá 3, Nhỏ hơn trả khoảng 4,75× vì chỉ 8 trong 51 lá còn lại nhỏ hơn, còn Lớn hơn chỉ trả khoảng 1,19× vì có tới 40 lá lớn hơn. Đổi lá 3 thành lá 8 thì ngược lại: Nhỏ hơn giảm còn khoảng 1,57× và Lớn hơn tăng lên khoảng 2,08×. Bằng nhau luôn khó nhất, khoảng 12×.',
+	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
+		'Khi trên bàn là lá 3, Nhỏ hơn trả khoảng %1× vì chỉ 8 trong 51 lá còn lại nhỏ hơn, còn Lớn hơn chỉ trả khoảng %2× vì có tới 40 lá lớn hơn. Đổi lá 3 thành lá 8 thì ngược lại: Nhỏ hơn giảm còn khoảng %3× và Lớn hơn tăng lên khoảng %4×. Bằng nhau luôn khó nhất, khoảng %5×.',
 	'Payout table': 'Bảng trả thưởng',
 	Card: 'Lá bài',
 	Pick: 'Lựa chọn',
@@ -218,8 +220,7 @@ export default {
 	Controls: 'Điều khiển',
 	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
 		'Dùng ô hiển thị tiền cược cùng nút cộng và trừ để đặt số tiền cược. Chạm vào số tiền cược để mở menu chọn nhanh.',
-	'The speaker button mutes and unmutes the game sounds.':
-		'Nút loa dùng để tắt và bật lại âm thanh trò chơi.',
+	'The speaker button opens the sound settings, where music and effects can be muted separately.': 'Nút loa mở phần cài đặt âm thanh, nơi có thể tắt riêng nhạc nền và hiệu ứng.',
 	'The i button opens this screen at any time.': 'Nút i mở màn hình này bất cứ lúc nào.',
 	'The lightning button adjusts the speed of the card reveal.':
 		'Nút tia chớp điều chỉnh tốc độ lật bài.',
@@ -227,6 +228,10 @@ export default {
 		'Nút mũi tên tròn mở phần cài đặt tự động chơi.',
 	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
 		'Nút thanh trượt cho phép bật hoặc tắt tính năng dừng khi thắng trọn vòng trong các lượt tự động chơi.',
+	'The large round button deals the round. While autoplay runs it becomes the Stop button.':
+		'Nút tròn lớn chia ván chơi. Khi tự động chơi đang chạy, nút này trở thành nút Dừng.',
+	'The Mode button opens the game-mode picker. Switching mode asks you to confirm before it applies.':
+		'Nút Chế độ mở bảng chọn chế độ chơi. Đổi chế độ sẽ yêu cầu xác nhận trước khi áp dụng.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'Trò chơi này không có vòng quay miễn phí, vòng thưởng, jackpot hay tính năng kích hoạt lại. Mỗi vòng là một lượt rút bốn lá bài độc lập.',
 	'Big Win': 'Thắng Lớn',
@@ -252,8 +257,8 @@ export default {
 	'Play Again': 'Phát lại',
 	'The round ends and pays nothing.':
 		'Vòng chơi kết thúc và không trả gì.',
-	'The round ends, keeping %s% of what you had built.':
-		'Vòng chơi kết thúc, giữ lại %s% số đã tích lũy.',
+	'The round ends, keeping about %s% of what you had built.':
+		'Vòng chơi kết thúc, giữ lại khoảng %s% số đã tích lũy.',
 	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
 		'Từ lá 2 trở đi, sai lầm này được bỏ qua — bạn giữ %s% số đã tích lũy và vòng chơi tiếp tục.',
 };

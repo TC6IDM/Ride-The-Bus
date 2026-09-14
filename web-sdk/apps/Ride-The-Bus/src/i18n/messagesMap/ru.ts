@@ -84,6 +84,8 @@ export default {
 	'Your second wrong guess': 'Ваш второй промах',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
 		'«Равно» — самый редкий выбор, поэтому построенные на нём раунды дают наибольшие выигрыши и даются труднее всего. Два «Равно» подряд — максимум этого режима, %m вашей ставки.',
+	'Only some four-guess combinations reach a mode’s maximum. Once your four guesses are picked, their own ceiling is shown above whenever it is lower.':
+		'Лишь некоторые сочетания четырёх предположений достигают максимума режима. Когда все четыре выбраны, их собственный потолок показывается выше, если он ниже.',
 	Playing: 'В игре',
 	'Card 2, 3 or 4': 'Карта 2, 3 или 4',
 	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
@@ -107,8 +109,8 @@ export default {
 	'Payouts follow the odds': 'Выплаты зависят от вероятности',
 	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
 		'Каждый верный прогноз оплачивается по его реальной вероятности: чем менее вероятен ваш выбор, тем больше выплата — и это зависит от уже открытых карт.',
-	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
-		'Если на столе тройка, «Меньше» платит около 4,75×, потому что лишь 8 из 51 оставшейся карты младше, а «Больше» — около 1,19×, потому что таких карт 40. Замените тройку на восьмёрку, и всё меняется: «Меньше» падает примерно до 1,57×, а «Больше» растёт до 2,08×. «Равно» всегда самый маловероятный вариант — около 12×.',
+	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
+		'Если на столе тройка, «Меньше» платит около %1×, потому что лишь 8 из 51 оставшейся карты младше, а «Больше» — около %2×, потому что таких карт 40. Замените тройку на восьмёрку, и всё меняется: «Меньше» падает примерно до %3×, а «Больше» растёт до %4×. «Равно» всегда самый маловероятный вариант — около %5×.',
 	'Payout table': 'Таблица выплат',
 	Card: 'Карта',
 	Pick: 'Выбор',
@@ -215,8 +217,7 @@ export default {
 	Controls: 'Управление',
 	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
 		'Задайте сумму ставки с помощью индикатора ставки и кнопок «плюс» и «минус». Нажмите на сумму ставки, чтобы открыть меню быстрого выбора.',
-	'The speaker button mutes and unmutes the game sounds.':
-		'Кнопка динамика включает и выключает звуки игры.',
+	'The speaker button opens the sound settings, where music and effects can be muted separately.': 'Кнопка динамика открывает настройки звука, где музыку и эффекты можно отключить по отдельности.',
 	'The i button opens this screen at any time.': 'Кнопка i открывает этот экран в любой момент.',
 	'The lightning button adjusts the speed of the card reveal.':
 		'Кнопка молнии регулирует скорость раскрытия карт.',
@@ -224,6 +225,10 @@ export default {
 		'Кнопка с круговыми стрелками открывает настройки автоигры.',
 	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
 		'Кнопка с ползунками позволяет включить или выключить остановку при полном выигрыше во время автоигры.',
+	'The large round button deals the round. While autoplay runs it becomes the Stop button.':
+		'Большая круглая кнопка сдаёт раунд. Во время автоигры она становится кнопкой «Стоп».',
+	'The Mode button opens the game-mode picker. Switching mode asks you to confirm before it applies.':
+		'Кнопка «Режим» открывает выбор игрового режима. Смена режима требует подтверждения перед применением.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'В этой игре нет бесплатных вращений, бонусных раундов, джекпотов и функций повторного запуска. Каждый раунд — это одна независимая раздача из четырёх карт.',
 	'Big Win': 'Крупный выигрыш',
@@ -250,8 +255,8 @@ export default {
 	'Play Again': 'Воспроизвести снова',
 	'The round ends and pays nothing.':
 		'Раунд заканчивается и ничего не выплачивает.',
-	'The round ends, keeping %s% of what you had built.':
-		'Раунд заканчивается, сохраняя %s% накопленного.',
+	'The round ends, keeping about %s% of what you had built.':
+		'Раунд заканчивается, сохраняя около %s% накопленного.',
 	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
 		'Начиная со второй карты промах прощается — вы сохраняете %s% накопленного, и раунд продолжается.',
 };

@@ -17,8 +17,13 @@
   // Ceiling. Neither a backdrop that never loads (offline, 404, corrupt file)
   // nor an auth call that never returns may strand the player on a loading
   // screen, so past this we hand over regardless and let the game's own error
-  // handling take it from there.
-  const MAX_MS = 8000;
+  // handling take it from there. "The game's own error handling" did not
+  // exist for a hung authenticate until Authenticate.svelte gained a launch
+  // timeout (LAUNCH_TIMEOUT_MS, 10 s): before that, this fade landed on an
+  // empty table with no dialog, because the error modal renders inside the
+  // game tree that never mounted. Kept just ABOVE that timeout so the modal
+  // is already up when this clears.
+  const MAX_MS = 10_500;
 
   let visible = $state(true);
   let progress = $state(0);

@@ -187,10 +187,19 @@ pnpm run build --filter=ride-the-bus
 **Upload the contents of `web-sdk\apps\Ride-The-Bus\build\`** to Stake
 Engine's Files page, under the Front End section.
 
-The build process does not always exit cleanly on Windows. Check for emitted
-assets in `web-sdk\apps\Ride-The-Bus\build\_app\immutable\assets\` rather than
-waiting on the exit code, and stop the dev server first - a build and a dev
-server on the same app contend with each other.
+What the game actually serves is `index.html` (the whole app, inlined -
+`bundleStrategy: "inline"`), `favicon.png`, `logo.webp`, `logo.png` and
+`music/`. **`build\_app\` is dead weight**: SvelteKit still emits the
+un-inlined bundle and two stylesheets there (about 1.7 MB) and nothing in
+`index.html` references them. Leave it out of the upload, or upload it and
+accept the size - either works, but do not take its presence as evidence that
+the page loads anything from it. `build\music\.gitignore` is copied along with
+the rest of `static/` and is harmless.
+
+The build process does not always exit cleanly on Windows. Check for a fresh
+`web-sdk\apps\Ride-The-Bus\build\index.html` rather than waiting on the exit
+code, and stop the dev server first - a build and a dev server on the same app
+contend with each other.
 
 Then on the dashboard: **Publish Game** → publish both Math/RGS and Front
 End (publishing only one half leaves the other stale and the game won't run).

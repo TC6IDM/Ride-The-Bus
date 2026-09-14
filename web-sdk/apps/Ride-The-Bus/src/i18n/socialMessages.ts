@@ -65,8 +65,8 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 	'Guess your way through four cards:': 'Guess your way through four cards:',
 	'Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.':
 		'Pick all four, set your play amount, and hit Play. Each correct guess multiplies your winnings; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.',
-	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
-		'With a 3 on the table, Lower wins about 4.75× because only 8 of the 51 remaining cards are lower, while Higher wins about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.',
+	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
+		'With a 3 on the table, Lower wins about %1× because only 8 of the 51 remaining cards are lower, while Higher wins about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.',
 	'Payouts follow the odds': 'Winnings follow the odds',
 	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
 		'Every correct guess wins at its true odds, so the less likely your pick, the more it wins — and that depends on the cards already showing.',
@@ -115,7 +115,7 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 	// is a guard against the obvious cases, not a substitute for reading the
 	// copy - a US reviewer is looking at the words, not the regex.
 	'High Stakes': 'High Risk',
-	'Every mode costs %s× your bet.': 'Every mode costs %s× your play amount.',
+	'Every mode costs %s× your bet.': 'Every mode can be played for %s× your play amount.',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
 		'Equal is the rarest guess, so the rounds built on it carry the largest winnings — and are the hardest to land. Two Equal picks landing together is the most this mode can win, at %m your play amount.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':

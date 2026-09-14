@@ -112,6 +112,8 @@ export default {
 	'Your second wrong guess': 'Your second wrong guess',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
 		'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.',
+	'Only some four-guess combinations reach a mode’s maximum. Once your four guesses are picked, their own ceiling is shown above whenever it is lower.':
+		'Only some four-guess combinations reach a mode’s maximum. Once your four guesses are picked, their own ceiling is shown above whenever it is lower.',
 	Playing: 'Playing',
 	'Card 2, 3 or 4': 'Card 2, 3 or 4',
 	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
@@ -136,8 +138,8 @@ export default {
 	'Payouts follow the odds': 'Payouts follow the odds',
 	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
 		'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.',
-	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
-		'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.',
+	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
+		'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.',
 	// Paytable. The rows themselves are generated from payout.ts; these are the
 	// headings and the two pick names that are not already guess-selector labels.
 	'Payout table': 'Payout table',
@@ -264,8 +266,7 @@ export default {
 	Controls: 'Controls',
 	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
 		'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.',
-	'The speaker button mutes and unmutes the game sounds.':
-		'The speaker button mutes and unmutes the game sounds.',
+	'The speaker button opens the sound settings, where music and effects can be muted separately.': 'The speaker button opens the sound settings, where music and effects can be muted separately.',
 	'The i button opens this screen at any time.': 'The i button opens this screen at any time.',
 	'The lightning button adjusts the speed of the card reveal.':
 		'The lightning button adjusts the speed of the card reveal.',
@@ -273,6 +274,10 @@ export default {
 		'The circular arrow button opens the autoplay settings.',
 	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
 		'The sliders button lets you toggle stop-on-full-win for autoplay runs.',
+	'The large round button deals the round. While autoplay runs it becomes the Stop button.':
+		'The large round button deals the round. While autoplay runs it becomes the Stop button.',
+	'The Mode button opens the game-mode picker. Switching mode asks you to confirm before it applies.':
+		'The Mode button opens the game-mode picker. Switching mode asks you to confirm before it applies.',
 
 	// Big-win takeover. Tier names are ordered by rarity - see game/math/winTiers.ts.
 	// "Max Win" is deliberately reused from the start screen's stat row: it is
@@ -302,8 +307,8 @@ export default {
 	'Play Again': 'Play Again',
 	'The round ends and pays nothing.':
 		'The round ends and pays nothing.',
-	'The round ends, keeping %s% of what you had built.':
-		'The round ends, keeping %s% of what you had built.',
+	'The round ends, keeping about %s% of what you had built.':
+		'The round ends, keeping about %s% of what you had built.',
 	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
 		'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.',
 };

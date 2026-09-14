@@ -55,13 +55,12 @@ export function restoreReplay() {
   if (!resume?.state) return;
   replayStarted = true;
 
-  // The Authenticate replay path (handleReplay) does not set stateBet.currency
-  // from the replay URL's ?currency= param, so currency display always falls
-  // back to USD / $. Read it here so numberToCurrencyString formats correctly.
-  if (typeof window !== 'undefined') {
-    const replayCurrency = new URLSearchParams(window.location.search).get('currency');
-    if (replayCurrency) stateBet.currency = replayCurrency;
-  }
+  // ?currency= is applied by Authenticate.svelte's handleReplay, through
+  // stateUrlDerived.currency(), which only accepts three letters. A copy of
+  // that here used to read the RAW parameter and overwrite it, so
+  // ?currency=ab made Intl.NumberFormat throw and took every amount on screen
+  // down with it - the same failure the ?lang= resolver exists to prevent. Do
+  // not read the parameter here; the validated path is the only one.
 
   // Restore the guess squares to the combination the round was originally
   // played with, so the viewer sees which choices were made. The bet mode
@@ -184,6 +183,17 @@ export function restoreResume() {
   // Authenticate populates these from round.amount, so the multipliers
   // resolve to the cash the player actually staked.
   round.initialBet = stateBet.wageredBetAmount || stateBet.betAmount || 0;
+  // And the bar's Bet readout has to say the same number. This line was only
+  // in the replay path above; here bet.input stayed at its '1' default (nudged
+  // to the nearest level by Game.svelte), so a player returning to a 25.00
+  // round watched it finish beside a readout claiming 1.00. Stake's checklist
+  // names this case: "active rounds restore the bet amount from the
+  // authenticate response".
+  if (round.initialBet > 0) {
+    bet.input = String(round.initialBet);
+    // The opening-bet effect in Game.svelte must not re-seed over this.
+    bet.defaulted = true;
+  }
   round.hasPlayed = true;
   // Same hold as replay: a resumed round must not reveal behind the loader.
   waitForLoaderGone()

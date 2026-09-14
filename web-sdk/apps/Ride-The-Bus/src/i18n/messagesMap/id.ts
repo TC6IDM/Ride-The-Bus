@@ -84,6 +84,8 @@ export default {
 	'Your second wrong guess': 'Tebakan salah kedua Anda',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
 		'Sama adalah tebakan paling langka, jadi ronde yang dibangun di atasnya membawa kemenangan terbesar — dan paling sulit. Dua tebakan Sama sekaligus adalah maksimum mode ini, sebesar %m taruhan Anda.',
+	'Only some four-guess combinations reach a mode’s maximum. Once your four guesses are picked, their own ceiling is shown above whenever it is lower.':
+		'Hanya sebagian kombinasi empat tebakan yang mencapai maksimum suatu mode. Setelah keempat tebakan Anda dipilih, batas atasnya sendiri ditampilkan di atas setiap kali lebih rendah.',
 	Playing: 'Sedang dimainkan',
 	'Card 2, 3 or 4': 'Kartu 2, 3 atau 4',
 	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
@@ -108,8 +110,8 @@ export default {
 	'Payouts follow the odds': 'Pembayaran mengikuti peluang',
 	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
 		'Setiap tebakan benar dibayar sesuai peluang sebenarnya, jadi makin kecil kemungkinan pilihan Anda, makin besar bayarannya — dan itu tergantung pada kartu yang sudah terbuka.',
-	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
-		'Dengan kartu 3 di meja, Lebih kecil membayar sekitar 4,75× karena hanya 8 dari 51 kartu tersisa yang lebih kecil, sedangkan Lebih besar membayar sekitar 1,19× karena ada 40 kartu yang lebih besar. Ubah 3 menjadi 8 dan keadaannya terbalik: Lebih kecil turun ke sekitar 1,57× dan Lebih besar naik ke sekitar 2,08×. Sama selalu paling sulit, sekitar 12×.',
+	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
+		'Dengan kartu 3 di meja, Lebih kecil membayar sekitar %1× karena hanya 8 dari 51 kartu tersisa yang lebih kecil, sedangkan Lebih besar membayar sekitar %2× karena ada 40 kartu yang lebih besar. Ubah 3 menjadi 8 dan keadaannya terbalik: Lebih kecil turun ke sekitar %3× dan Lebih besar naik ke sekitar %4×. Sama selalu paling sulit, sekitar %5×.',
 	'Payout table': 'Tabel pembayaran',
 	Card: 'Kartu',
 	Pick: 'Pilihan',
@@ -219,8 +221,7 @@ export default {
 	Controls: 'Kontrol',
 	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
 		'Gunakan tampilan taruhan serta tombol plus dan minus untuk mengatur jumlah taruhan Anda. Ketuk jumlah taruhan untuk membuka menu pilihan cepat.',
-	'The speaker button mutes and unmutes the game sounds.':
-		'Tombol pengeras suara membisukan dan menyalakan kembali suara permainan.',
+	'The speaker button opens the sound settings, where music and effects can be muted separately.': 'Tombol pengeras suara membuka pengaturan suara, tempat musik dan efek dapat dibisukan secara terpisah.',
 	'The i button opens this screen at any time.': 'Tombol i membuka layar ini kapan saja.',
 	'The lightning button adjusts the speed of the card reveal.':
 		'Tombol petir mengatur kecepatan pembukaan kartu.',
@@ -228,6 +229,10 @@ export default {
 		'Tombol panah melingkar membuka pengaturan putar otomatis.',
 	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
 		'Tombol penggeser memungkinkan Anda mengaktifkan atau menonaktifkan berhenti saat menang penuh untuk sesi putar otomatis.',
+	'The large round button deals the round. While autoplay runs it becomes the Stop button.':
+		'Tombol bulat besar membagikan ronde. Saat putar otomatis berjalan, tombol ini menjadi tombol Berhenti.',
+	'The Mode button opens the game-mode picker. Switching mode asks you to confirm before it applies.':
+		'Tombol Mode membuka pemilih mode permainan. Mengganti mode meminta konfirmasi sebelum diterapkan.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'Permainan ini tidak memiliki putaran gratis, ronde bonus, jackpot, atau fitur pemicu ulang. Setiap ronde adalah satu penarikan empat kartu yang berdiri sendiri.',
 	'Big Win': 'Kemenangan Besar',
@@ -254,8 +259,8 @@ export default {
 	'Play Again': 'Putar Lagi',
 	'The round ends and pays nothing.':
 		'Ronde berakhir dan tidak membayar apa pun.',
-	'The round ends, keeping %s% of what you had built.':
-		'Ronde berakhir dan Anda menyimpan %s% dari yang telah terkumpul.',
+	'The round ends, keeping about %s% of what you had built.':
+		'Ronde berakhir dan Anda menyimpan sekitar %s% dari yang telah terkumpul.',
 	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
 		'Mulai kartu 2 kesalahan ini dimaafkan — Anda menyimpan %s% dari yang terkumpul dan ronde berlanjut.',
 };

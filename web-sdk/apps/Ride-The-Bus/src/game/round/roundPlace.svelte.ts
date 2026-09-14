@@ -309,6 +309,13 @@ export function runRound(): Promise<boolean> {
  */
 
 export async function playRound(): Promise<boolean> {
+  // Replay is view-only: the spin button re-runs the fetched round (see
+  // ControlBar.onSpin) and never comes here. Stake's replay spec is explicit -
+  // "prevent any transition from replay into normal play" - and the only
+  // thing that used to keep this path closed was betIsValid() failing on a
+  // replay's zero balance. An 'engine-replay' seed below would otherwise POST
+  // /wallet/play with an empty session.
+  if (stateUrlDerived.replay()) return false;
   // The Start button is disabled unless these hold, but guard anyway.
   if (!betIsValid() || !allChoicesMade()) return false;
   round.error = false;

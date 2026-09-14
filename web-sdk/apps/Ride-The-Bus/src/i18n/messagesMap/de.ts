@@ -84,6 +84,8 @@ export default {
 	'Your second wrong guess': 'Dein zweiter Fehler',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
 		'Gleich ist der seltenste Tipp, also tragen die darauf gebauten Runden die größten Gewinne — und sind am schwersten zu treffen. Zwei Gleich-Tipps zusammen sind das Maximum dieses Modus, bei %m deines Einsatzes.',
+	'Only some four-guess combinations reach a mode’s maximum. Once your four guesses are picked, their own ceiling is shown above whenever it is lower.':
+		'Nur manche Kombinationen aus vier Tipps erreichen das Maximum eines Modus. Sobald alle vier Tipps gewählt sind, wird ihre eigene Obergrenze oben angezeigt, wann immer sie niedriger ist.',
 	Playing: 'Aktiv',
 	'Card 2, 3 or 4': 'Karte 2, 3 oder 4',
 	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
@@ -107,8 +109,8 @@ export default {
 	'Payouts follow the odds': 'Auszahlungen richten sich nach den Chancen',
 	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
 		'Jeder richtige Tipp wird zu seinen echten Chancen ausgezahlt: Je unwahrscheinlicher deine Wahl, desto mehr bringt sie — und das hängt von den bereits offenen Karten ab.',
-	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
-		'Liegt eine 3 auf dem Tisch, zahlt Tiefer etwa 4,75×, weil nur 8 der 51 verbleibenden Karten niedriger sind, während Höher nur etwa 1,19× zahlt, weil 40 davon höher sind. Wird aus der 3 eine 8, dreht sich das um: Tiefer fällt auf etwa 1,57× und Höher steigt auf etwa 2,08×. Gleich ist mit rund 12× immer der weiteste Schuss.',
+	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
+		'Liegt eine 3 auf dem Tisch, zahlt Tiefer etwa %1×, weil nur 8 der 51 verbleibenden Karten niedriger sind, während Höher nur etwa %2× zahlt, weil 40 davon höher sind. Wird aus der 3 eine 8, dreht sich das um: Tiefer fällt auf etwa %3× und Höher steigt auf etwa %4×. Gleich ist mit rund %5× immer der weiteste Schuss.',
 	'Payout table': 'Auszahlungstabelle',
 	Card: 'Karte',
 	Pick: 'Tipp',
@@ -218,8 +220,7 @@ export default {
 	Controls: 'Bedienelemente',
 	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
 		'Stelle deinen Einsatz über die Einsatzanzeige und die Plus- und Minus-Schaltflächen ein. Tippe auf den Einsatzbetrag, um das Schnellauswahlmenü zu öffnen.',
-	'The speaker button mutes and unmutes the game sounds.':
-		'Die Lautsprecher-Schaltfläche schaltet die Spielgeräusche stumm und wieder ein.',
+	'The speaker button opens the sound settings, where music and effects can be muted separately.': 'Die Lautsprecher-Schaltfläche öffnet die Toneinstellungen, in denen Musik und Effekte getrennt stummgeschaltet werden können.',
 	'The i button opens this screen at any time.':
 		'Die i-Schaltfläche öffnet diesen Bildschirm jederzeit.',
 	'The lightning button adjusts the speed of the card reveal.':
@@ -228,6 +229,10 @@ export default {
 		'Die Schaltfläche mit den kreisförmigen Pfeilen öffnet die Autoplay-Einstellungen.',
 	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
 		'Mit der Regler-Schaltfläche kannst du das Stoppen bei einem Komplettgewinn für Autoplay-Läufe ein- und ausschalten.',
+	'The large round button deals the round. While autoplay runs it becomes the Stop button.':
+		'Die große runde Schaltfläche teilt die Runde aus. Während Autoplay läuft, wird sie zur Stopp-Schaltfläche.',
+	'The Mode button opens the game-mode picker. Switching mode asks you to confirm before it applies.':
+		'Die Modus-Schaltfläche öffnet die Spielmodus-Auswahl. Ein Moduswechsel muss bestätigt werden, bevor er wirksam wird.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'Dieses Spiel hat keine Freispiele, Bonusrunden, Jackpots oder Wiederauslöse-Funktionen. Jede Runde ist eine einzelne, unabhängige Ziehung von vier Karten.',
 	'Big Win': 'Großer Gewinn',
@@ -255,8 +260,8 @@ export default {
 	'Play Again': 'Erneut abspielen',
 	'The round ends and pays nothing.':
 		'Die Runde endet und zahlt nichts aus.',
-	'The round ends, keeping %s% of what you had built.':
-		'Die Runde endet, und %s% des Aufgebauten bleiben erhalten.',
+	'The round ends, keeping about %s% of what you had built.':
+		'Die Runde endet, und etwa %s% des Aufgebauten bleiben erhalten.',
 	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
 		'Ab Karte 2 wird er verziehen — %s% des Aufgebauten bleiben erhalten und die Runde geht weiter.',
 };

@@ -326,9 +326,9 @@ is the only proof the subscription was paid before the tracks were generated.
 
 ### ⚠️ Still outstanding
 
-1. **Drop the four PDFs into `licence-evidence/`.** The directory and its rules
-   exist; the documents themselves are still only wherever they were downloaded.
-   Two go in `terms/` and are committed; two go in `private/` and are not.
+1. ~~**Drop the four PDFs into `licence-evidence/`.**~~ **Done.** Both Terms
+   PDFs are in `terms/` (committed) and the invoice and receipt are in
+   `private/` (ignored), as the evidence table above records.
 2. **Archive the page behind each generation URL** — screenshot or
    print-to-PDF — **while the subscription is live.** The URLs and song ids are
    recorded and verified, but a URL is only evidence for as long as it resolves,

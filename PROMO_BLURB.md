@@ -29,8 +29,8 @@ price for all three modes.
 > lock the whole run in before a single card turns.
 >
 > Nothing pays a flat rate. Each guess is priced off the cards still in the
-> deck, so calling Lower on a 3 pays about 4.75× while Higher pays 1.19×, and
-> the odds shift under you as the run builds. Three modes change only what a
+> deck, so in Classic calling Lower on a 3 pays about 4.75× while Higher pays
+> 1.19×, and the odds shift under you as the run builds. Three modes change only what a
 > miss leaves behind: Classic keeps 30%, High Stakes keeps 20% and pays further,
 > and Second Chance keeps half of what you had built on your first wrong call
 > from card two on and plays through it. All three cost the same and return the
@@ -52,9 +52,9 @@ price for all three modes.
 > all four, then watch it play.
 >
 > Nothing pays a flat rate. Every guess is priced off what is still in the deck,
-> so a Lower on a 3 pays about 4.75× where Higher pays 1.19×, and turn that 3
-> into an 8 and it flips. Tie the rank and you are on the longest shot on the
-> table at roughly 12×. The multiplier compounds across all four calls, and the
+> so in Classic a Lower on a 3 pays about 4.75× where Higher pays 1.19×, and
+> turn that 3 into an 8 and it flips. Tie the rank and you are on the longest
+> shot on the table at roughly 12×. The multiplier compounds across all four calls, and the
 > odds move under you the whole way down.
 >
 > Three ways to back the same four calls, at the same price. **Classic** keeps
@@ -76,6 +76,10 @@ price for all three modes.
   exactly that reason (see `src/i18n/socialMessages.ts`). If the blurb is used
   in a social context, the mode must be called High Risk and "pays" must become
   "wins". The versions above are the standard-market wording.
+- **The 4.75× / 1.19× / 12× examples are Classic's.** High Stakes prices the
+  same calls at 5.28× / 1.22× / 13.76× and Second Chance at 3.67× / 1.13× /
+  8.96× (`oddsExampleFor` in `payoutTable.ts`). The blurbs say "in Classic"
+  for that reason; keep the qualifier if the sentence is reworded.
 - **Do not add a max-win figure other than 1910.2×.** That is the High Stakes
   ceiling and the game's overall maximum. Classic tops out at 1354.2× and
   Second Chance at 585.2×, so a blanket "win up to 1354×" would be wrong in two

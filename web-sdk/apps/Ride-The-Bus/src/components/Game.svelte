@@ -12,6 +12,7 @@
   // Vite warned about exactly this on every build.
   import {
     stateBet,
+    stateConfig,
     stateUrlDerived,
     stateMeta,
     stateModal,
@@ -372,8 +373,16 @@
     return () => ro.disconnect();
   });
 
-  // Once (when the RGS's levels arrive) nudge an out-of-range starting bet to
-  // the nearest valid level, so the player opens on a playable amount.
+  // Once (when the RGS's levels arrive) choose the opening bet.
+  //
+  // In order: the amount of the session's last round (authenticate returns it
+  // as round.amount and Authenticate.svelte parks it in stateBet.betAmount -
+  // the stock SDK's UI reads that field directly, so its games reopen on the
+  // player's last bet, and this one used to open on 1 regardless); then the
+  // operator's defaultBetLevel from the same response; then whatever bet.input
+  // already holds. Whichever is chosen is then nudged onto the nearest valid
+  // level if it sits outside the range, so the player opens on a playable
+  // amount.
   //
   // betLevels() so "valid" means the same thing here as it does on the chips:
   // the raw list can carry levels the same authenticate response puts out of
@@ -383,12 +392,17 @@
     if (bet.defaulted || !stateUrlDerived.sessionID()) return;
     const levels = betLevels();
     if (levels && levels.length) {
-      const v = Number(bet.input);
       const lo = Math.min(...levels);
       const hi = Math.max(...levels);
-      if (!(v >= lo && v <= hi)) {
-        bet.input = String(levels.reduce((best, l) => (Math.abs(l - v) < Math.abs(best - v) ? l : best), levels[0]));
-      }
+      const inRange = (n: number) => n >= lo && n <= hi;
+      // stateBet.betAmount defaults to 1 whether or not authenticate set it,
+      // so a returned round (betToResume) is the signal that it did.
+      const lastRound = stateBet.betToResume ? stateBet.betAmount : 0;
+      const seeds = [lastRound, stateConfig.defaultBetAmount, Number(bet.input)];
+      const v = seeds.find((n) => Number.isFinite(n) && n > 0) ?? Number(bet.input);
+      bet.input = inRange(v)
+        ? String(v)
+        : String(levels.reduce((best, l) => (Math.abs(l - v) < Math.abs(best - v) ? l : best), levels[0]));
       bet.defaulted = true;
     }
   });
@@ -436,7 +450,18 @@
     introPhase = 'playing';
     introDismissed = true;
     const resume = stateBet.betToResume as any;
-    if (!resume?.state) return;
+    if (!resume?.state) {
+      // /bet/replay failed at launch. Authenticate.svelte showed the error
+      // then, but the player closed it and reached Play, which used to do
+      // nothing at all - an empty board with no explanation. Say so again,
+      // through the same modal, so a broken replay link always explains
+      // itself (Stake's replay spec: "handle errors with a message").
+      stateModal.modal = {
+        name: 'error',
+        error: new Error('Replay data could not be loaded for this event. Please reload.'),
+      };
+      return;
+    }
     animateRoundFromEvents(
       resume.state,
       `${resume.roundID ?? stateUrlDerived.event()}`,

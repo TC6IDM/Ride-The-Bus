@@ -83,6 +83,8 @@ export default {
 	'Your second wrong guess': '두 번째 오답',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
 		'같음은 가장 드문 예상이라 이를 기반으로 한 라운드가 가장 큰 배당을 주며 가장 어렵습니다. 같음 2회가 함께 맞는 것이 이 모드의 상한으로, 베팅의 %m입니다.',
+	'Only some four-guess combinations reach a mode’s maximum. Once your four guesses are picked, their own ceiling is shown above whenever it is lower.':
+		'네 가지 예측 조합 중 일부만 모드의 최대치에 도달합니다. 네 가지 예측을 모두 고르면, 그 조합의 상한이 더 낮을 때마다 위에 표시됩니다.',
 	Playing: '플레이 중',
 	'Card 2, 3 or 4': '카드 2, 3 또는 4',
 	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
@@ -106,8 +108,8 @@ export default {
 	'Payouts follow the odds': '배당은 확률을 따릅니다',
 	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
 		'모든 적중은 실제 확률에 따라 지급되므로, 선택이 일어나기 어려울수록 배당이 커집니다. 이는 이미 공개된 카드에 따라 달라집니다.',
-	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
-		'테이블에 3이 있으면 남은 51장 중 더 낮은 카드는 8장뿐이라 로우는 약 4.75배, 더 높은 카드는 40장이라 하이는 약 1.19배입니다. 3을 8로 바꾸면 반대가 되어 로우는 약 1.57배로 낮아지고 하이는 약 2.08배로 올라갑니다. 이퀄은 언제나 가장 어려워 약 12배입니다.',
+	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
+		'테이블에 3이 있으면 남은 51장 중 더 낮은 카드는 8장뿐이라 로우는 약 %1배, 더 높은 카드는 40장이라 하이는 약 %2배입니다. 3을 8로 바꾸면 반대가 되어 로우는 약 %3배로 낮아지고 하이는 약 %4배로 올라갑니다. 이퀄은 언제나 가장 어려워 약 %5배입니다.',
 	'Payout table': '배당표',
 	Card: '카드',
 	Pick: '선택',
@@ -215,8 +217,7 @@ export default {
 	Controls: '조작 방법',
 	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
 		'베팅 표시와 플러스·마이너스 버튼으로 베팅 금액을 설정하세요. 베팅 금액을 탭하면 빠른 선택 메뉴가 열립니다.',
-	'The speaker button mutes and unmutes the game sounds.':
-		'스피커 버튼으로 게임 소리를 음소거하거나 해제합니다.',
+	'The speaker button opens the sound settings, where music and effects can be muted separately.': '스피커 버튼은 사운드 설정을 열며, 음악과 효과음을 따로 음소거할 수 있습니다.',
 	'The i button opens this screen at any time.': 'i 버튼을 누르면 언제든지 이 화면이 열립니다.',
 	'The lightning button adjusts the speed of the card reveal.':
 		'번개 버튼으로 카드가 공개되는 속도를 조절합니다.',
@@ -224,6 +225,10 @@ export default {
 		'원형 화살표 버튼으로 자동 플레이 설정을 엽니다.',
 	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
 		'슬라이더 버튼으로 자동 플레이 중 완전 당첨 시 정지 기능을 켜거나 끌 수 있습니다.',
+	'The large round button deals the round. While autoplay runs it becomes the Stop button.':
+		'큰 원형 버튼이 라운드를 진행합니다. 자동 플레이 중에는 정지 버튼이 됩니다.',
+	'The Mode button opens the game-mode picker. Switching mode asks you to confirm before it applies.':
+		'모드 버튼은 게임 모드 선택 화면을 엽니다. 모드 변경은 적용 전에 확인을 요청합니다.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'이 게임에는 무료 스핀, 보너스 라운드, 잭팟 또는 재발동 기능이 없습니다. 각 라운드는 독립적인 단일 4장 카드 드로우입니다.',
 	'Big Win': '빅 윈',
@@ -249,8 +254,8 @@ export default {
 	'Play Again': '다시 재생',
 	'The round ends and pays nothing.':
 		'라운드가 종료되며 배당은 없습니다.',
-	'The round ends, keeping %s% of what you had built.':
-		'라운드가 종료되며 쌓아온 금액의 %s%가 남습니다.',
+	'The round ends, keeping about %s% of what you had built.':
+		'라운드가 종료되며 쌓아온 금액의 약 %s%가 남습니다.',
 	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
 		'카드 2부터는 한 번 넘어가며, 쌓아온 금액의 %s%를 유지한 채 라운드가 이어집니다.',
 };

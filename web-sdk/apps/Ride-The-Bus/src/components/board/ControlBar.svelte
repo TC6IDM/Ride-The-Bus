@@ -321,6 +321,12 @@ function onKeyDown(event: KeyboardEvent) {
   // as a belt-and-braces guard: Space reaching the spin button from behind a
   // full-screen overlay would buy a round the player never asked for.
   if (celebration.active) return;
+  // A panel or the error dialog is up. The footer is `inert` so the spin
+  // button cannot be clicked, but this listener is on window and inert does
+  // nothing to it - and the open panel takes focus onto its own DIV, which
+  // spaceIsForUs() below lets through. Without this line, pressing Space while
+  // reading How to Play bought a round behind the panel.
+  if (chromeInert) return;
   // Regulator has barred the shortcut - leave Space to the browser.
   if (jurisdiction.spacebarDisabled()) return;
   if (!spaceIsForUs(event.target)) return;

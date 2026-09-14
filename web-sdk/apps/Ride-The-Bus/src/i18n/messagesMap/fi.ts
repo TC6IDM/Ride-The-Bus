@@ -84,6 +84,8 @@ export default {
 	'Your second wrong guess': 'Toinen virheesi',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
 		'Tasan on harvinaisin valinta, joten sille rakentuvat kierrokset tuovat suurimmat voitot — ja ovat vaikeimpia osua. Kaksi Tasan-osumaa yhdessä on tämän tilan enimmäismäärä, %m panoksestasi.',
+	'Only some four-guess combinations reach a mode’s maximum. Once your four guesses are picked, their own ceiling is shown above whenever it is lower.':
+		'Vain osa neljän arvauksen yhdistelmistä yltää tilan enimmäisvoittoon. Kun neljä arvaustasi on valittu, niiden oma yläraja näytetään yllä aina, kun se on pienempi.',
 	Playing: 'Pelissä',
 	'Card 2, 3 or 4': 'Kortti 2, 3 tai 4',
 	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
@@ -107,8 +109,8 @@ export default {
 	'Payouts follow the odds': 'Voitot seuraavat todennäköisyyksiä',
 	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
 		'Jokainen oikea arvaus maksetaan sen todellisen todennäköisyyden mukaan: mitä epätodennäköisempi valintasi, sitä enemmän se maksaa — ja se riippuu jo näkyvissä olevista korteista.',
-	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
-		'Kun pöydällä on 3, Pienempi maksaa noin 4,75×, koska vain 8 jäljellä olevasta 51 kortista on pienempiä, kun taas Suurempi maksaa noin 1,19×, koska niitä on 40. Vaihda kolmonen kahdeksikoksi ja tilanne kääntyy: Pienempi laskee noin 1,57×:een ja Suurempi nousee noin 2,08×:een. Yhtä suuri on aina epätodennäköisin, noin 12×.',
+	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
+		'Kun pöydällä on 3, Pienempi maksaa noin %1×, koska vain 8 jäljellä olevasta 51 kortista on pienempiä, kun taas Suurempi maksaa noin %2×, koska niitä on 40. Vaihda kolmonen kahdeksikoksi ja tilanne kääntyy: Pienempi laskee noin %3×:een ja Suurempi nousee noin %4×:een. Yhtä suuri on aina epätodennäköisin, noin %5×.',
 	'Payout table': 'Maksutaulukko',
 	Card: 'Kortti',
 	Pick: 'Valinta',
@@ -216,8 +218,7 @@ export default {
 	Controls: 'Ohjaimet',
 	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
 		'Aseta panoksesi panosnäytöllä sekä plus- ja miinuspainikkeilla. Napauta panoksen määrää avataksesi pikavalintavalikon.',
-	'The speaker button mutes and unmutes the game sounds.':
-		'Kaiutinpainike mykistää pelin äänet ja palauttaa ne.',
+	'The speaker button opens the sound settings, where music and effects can be muted separately.': 'Kaiutinpainike avaa ääniasetukset, joissa musiikin ja tehosteet voi mykistää erikseen.',
 	'The i button opens this screen at any time.': 'i-painike avaa tämän näytön milloin tahansa.',
 	'The lightning button adjusts the speed of the card reveal.':
 		'Salamapainike säätää korttien paljastumisen nopeutta.',
@@ -225,6 +226,10 @@ export default {
 		'Pyöreä nuolipainike avaa automaattipelin asetukset.',
 	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
 		'Liukusäädinpainikkeella voit ottaa käyttöön tai poistaa käytöstä pysäytyksen täyteen voittoon automaattipeleissä.',
+	'The large round button deals the round. While autoplay runs it becomes the Stop button.':
+		'Suuri pyöreä painike jakaa kierroksen. Automaattipelin aikana siitä tulee Pysäytä-painike.',
+	'The Mode button opens the game-mode picker. Switching mode asks you to confirm before it applies.':
+		'Tila-painike avaa pelitilan valitsimen. Tilan vaihto pyytää vahvistuksen ennen käyttöönottoa.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'Tässä pelissä ei ole ilmaiskierroksia, bonuskierroksia, jättipotteja eikä uudelleenlaukaisuominaisuuksia. Jokainen kierros on yksittäinen, itsenäinen neljän kortin nosto.',
 	'Big Win': 'Iso voitto',
@@ -251,8 +256,8 @@ export default {
 	'Play Again': 'Toista uudelleen',
 	'The round ends and pays nothing.':
 		'Kierros päättyy eikä maksa mitään.',
-	'The round ends, keeping %s% of what you had built.':
-		'Kierros päättyy ja säilytät %s% kertyneestä.',
+	'The round ends, keeping about %s% of what you had built.':
+		'Kierros päättyy ja säilytät noin %s% kertyneestä.',
 	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
 		'Kortista 2 alkaen se annetaan anteeksi — säilytät %s% kertyneestä ja kierros jatkuu.',
 };

@@ -84,6 +84,8 @@ export default {
 	'Your second wrong guess': 'Twoja druga pomyłka',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
 		'Równe to najrzadszy typ, więc rundy na nim oparte niosą największe wygrane — i są najtrudniejsze. Dwa trafienia Równe naraz to maksimum tego trybu, %m twojego zakładu.',
+	'Only some four-guess combinations reach a mode’s maximum. Once your four guesses are picked, their own ceiling is shown above whenever it is lower.':
+		'Tylko niektóre kombinacje czterech typów osiągają maksimum trybu. Po wybraniu czterech typów ich własny limit jest pokazywany powyżej, gdy jest niższy.',
 	Playing: 'W grze',
 	'Card 2, 3 or 4': 'Karta 2, 3 lub 4',
 	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
@@ -107,8 +109,8 @@ export default {
 	'Payouts follow the odds': 'Wypłaty zależą od prawdopodobieństwa',
 	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
 		'Każdy trafny typ jest wypłacany zgodnie z rzeczywistym prawdopodobieństwem: im mniej prawdopodobny wybór, tym wyższa wypłata — a to zależy od kart już odkrytych.',
-	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
-		'Gdy na stole leży 3, Niżej płaci około 4,75×, bo tylko 8 z 51 pozostałych kart jest niższych, a Wyżej około 1,19×, bo takich kart jest 40. Zamień tę 3 na 8, a wszystko się odwraca: Niżej spada do około 1,57×, a Wyżej rośnie do około 2,08×. Równo zawsze jest najtrudniejsze — około 12×.',
+	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
+		'Gdy na stole leży 3, Niżej płaci około %1×, bo tylko 8 z 51 pozostałych kart jest niższych, a Wyżej około %2×, bo takich kart jest 40. Zamień tę 3 na 8, a wszystko się odwraca: Niżej spada do około %3×, a Wyżej rośnie do około %4×. Równo zawsze jest najtrudniejsze — około %5×.',
 	'Payout table': 'Tabela wypłat',
 	Card: 'Karta',
 	Pick: 'Wybór',
@@ -216,8 +218,7 @@ export default {
 	Controls: 'Sterowanie',
 	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
 		'Ustaw kwotę zakładu za pomocą wskaźnika zakładu oraz przycisków plus i minus. Dotknij kwoty zakładu, aby otworzyć menu szybkiego wyboru.',
-	'The speaker button mutes and unmutes the game sounds.':
-		'Przycisk głośnika wycisza i włącza dźwięki gry.',
+	'The speaker button opens the sound settings, where music and effects can be muted separately.': 'Przycisk głośnika otwiera ustawienia dźwięku, gdzie muzykę i efekty można wyciszyć osobno.',
 	'The i button opens this screen at any time.':
 		'Przycisk i otwiera ten ekran w dowolnym momencie.',
 	'The lightning button adjusts the speed of the card reveal.':
@@ -226,6 +227,10 @@ export default {
 		'Przycisk okrągłych strzałek otwiera ustawienia autoodtwarzania.',
 	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
 		'Przycisk suwaków pozwala włączyć lub wyłączyć zatrzymanie po pełnej wygranej w seriach automatycznych.',
+	'The large round button deals the round. While autoplay runs it becomes the Stop button.':
+		'Duży okrągły przycisk rozdaje rundę. Podczas autogry staje się przyciskiem Stop.',
+	'The Mode button opens the game-mode picker. Switching mode asks you to confirm before it applies.':
+		'Przycisk Tryb otwiera wybór trybu gry. Zmiana trybu wymaga potwierdzenia, zanim zostanie zastosowana.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'Ta gra nie zawiera darmowych spinów, rund bonusowych, jackpotów ani funkcji ponownego wyzwalania. Każda runda to pojedyncze, niezależne losowanie czterech kart.',
 	'Big Win': 'Duża Wygrana',
@@ -252,8 +257,8 @@ export default {
 	'Play Again': 'Odtwórz ponownie',
 	'The round ends and pays nothing.':
 		'Runda kończy się i nic nie wypłaca.',
-	'The round ends, keeping %s% of what you had built.':
-		'Runda kończy się, a Ty zachowujesz %s% zgromadzonej kwoty.',
+	'The round ends, keeping about %s% of what you had built.':
+		'Runda kończy się, a Ty zachowujesz około %s% zgromadzonej kwoty.',
 	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
 		'Od karty 2 błąd jest wybaczany — zachowujesz %s% zgromadzonej kwoty, a runda trwa dalej.',
 };

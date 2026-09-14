@@ -37,7 +37,7 @@
 </GlobalStyle>
 
 <!-- Our loader, drawn entirely in CSS. It waits for the logo to decode and the
-     game tree to mount, with a 1400ms floor and 8000ms ceiling, so the board
+     game tree to mount, with a 1400ms floor and 10.5s ceiling, so the board
      can never pop in behind the player. -->
 <GameLoader />
 

@@ -84,6 +84,8 @@ export default {
 	'Your second wrong guess': 'आपका दूसरा गलत अनुमान',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
 		'बराबर सबसे दुर्लभ अनुमान है, इसलिए उस पर बने राउंड सबसे बड़ी जीत देते हैं — और सबसे कठिन हैं। दो बराबर एक साथ लगना इस मोड का अधिकतम है, आपकी बाजी का %m।',
+	'Only some four-guess combinations reach a mode’s maximum. Once your four guesses are picked, their own ceiling is shown above whenever it is lower.':
+		'चार अनुमानों के केवल कुछ संयोजन ही किसी मोड के अधिकतम तक पहुँचते हैं। आपके चारों अनुमान चुनने के बाद, जब भी उनकी अपनी सीमा कम हो, वह ऊपर दिखाई जाती है।',
 	Playing: 'खेल रहे हैं',
 	'Card 2, 3 or 4': 'कार्ड 2, 3 या 4',
 	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
@@ -106,8 +108,8 @@ export default {
 	'Payouts follow the odds': 'भुगतान संभावना के अनुसार होता है',
 	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
 		'हर सही अनुमान का भुगतान उसकी वास्तविक संभावना के अनुसार होता है, इसलिए आपका चयन जितना कम संभावित होगा, भुगतान उतना अधिक होगा — और यह पहले से खुले कार्डों पर निर्भर करता है।',
-	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
-		'यदि मेज़ पर 3 है, तो शेष 51 कार्डों में से केवल 8 ही छोटे हैं, इसलिए छोटा लगभग 4.75× देता है, जबकि 40 कार्ड बड़े होने के कारण बड़ा केवल 1.19× देता है। उस 3 को 8 कर दें तो स्थिति उलट जाती है: छोटा घटकर लगभग 1.57× और बड़ा बढ़कर लगभग 2.08× हो जाता है। बराबर हमेशा सबसे कठिन होता है, लगभग 12×।',
+	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
+		'यदि मेज़ पर 3 है, तो शेष 51 कार्डों में से केवल 8 ही छोटे हैं, इसलिए छोटा लगभग %1× देता है, जबकि 40 कार्ड बड़े होने के कारण बड़ा केवल %2× देता है। उस 3 को 8 कर दें तो स्थिति उलट जाती है: छोटा घटकर लगभग %3× और बड़ा बढ़कर लगभग %4× हो जाता है। बराबर हमेशा सबसे कठिन होता है, लगभग %5×।',
 	'Payout table': 'भुगतान तालिका',
 	Card: 'कार्ड',
 	Pick: 'चुनाव',
@@ -215,8 +217,7 @@ export default {
 	Controls: 'नियंत्रण',
 	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
 		'अपनी दांव राशि तय करने के लिए दांव डिस्प्ले और प्लस-माइनस बटन का उपयोग करें। त्वरित-चयन मेनू खोलने के लिए दांव राशि पर टैप करें।',
-	'The speaker button mutes and unmutes the game sounds.':
-		'स्पीकर बटन गेम की आवाज़ को म्यूट और अनम्यूट करता है।',
+	'The speaker button opens the sound settings, where music and effects can be muted separately.': 'स्पीकर बटन ध्वनि सेटिंग खोलता है, जहाँ संगीत और प्रभावों को अलग-अलग म्यूट किया जा सकता है।',
 	'The i button opens this screen at any time.': 'i बटन इस स्क्रीन को कभी भी खोलता है।',
 	'The lightning button adjusts the speed of the card reveal.':
 		'बिजली बटन कार्ड खुलने की गति को समायोजित करता है।',
@@ -224,6 +225,10 @@ export default {
 		'गोल तीर बटन ऑटोप्ले सेटिंग्स खोलता है।',
 	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
 		'स्लाइडर बटन से आप ऑटोप्ले के दौरान पूरी जीत पर रुकने की सुविधा चालू या बंद कर सकते हैं।',
+	'The large round button deals the round. While autoplay runs it becomes the Stop button.':
+		'बड़ा गोल बटन राउंड बाँटता है। ऑटोप्ले चलते समय यह रोकें बटन बन जाता है।',
+	'The Mode button opens the game-mode picker. Switching mode asks you to confirm before it applies.':
+		'मोड बटन गेम-मोड चयनकर्ता खोलता है। मोड बदलने पर लागू होने से पहले पुष्टि माँगी जाती है।',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'इस गेम में कोई फ्री स्पिन, बोनस राउंड, जैकपॉट या री-ट्रिगर फीचर नहीं है। हर राउंड चार कार्ड का एक अकेला, स्वतंत्र ड्रॉ है।',
 	'Big Win': 'बड़ी जीत',
@@ -249,8 +254,8 @@ export default {
 	'Play Again': 'फिर से चलाएँ',
 	'The round ends and pays nothing.':
 		'राउंड समाप्त हो जाता है और कुछ नहीं देता।',
-	'The round ends, keeping %s% of what you had built.':
-		'राउंड समाप्त होता है और आपने जो बनाया था उसका %s% बचा रहता है।',
+	'The round ends, keeping about %s% of what you had built.':
+		'राउंड समाप्त होता है और आपने जो बनाया था उसका लगभग %s% बचा रहता है।',
 	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
 		'कार्ड 2 से आगे इसे माफ़ किया जाता है — आपने जो बनाया था उसका %s% बचता है और राउंड जारी रहता है।',
 };

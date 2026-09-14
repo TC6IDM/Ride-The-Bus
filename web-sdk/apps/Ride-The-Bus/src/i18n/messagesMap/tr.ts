@@ -84,6 +84,8 @@ export default {
 	'Your second wrong guess': 'İkinci yanlış tahmininiz',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
 		'Eşit en nadir tahmindir, bu yüzden ona dayanan turlar en büyük kazançları taşır ve en zorudur. İki Eşit tahminin birlikte tutması bu modun üst sınırıdır, bahsinizin %m katı.',
+	'Only some four-guess combinations reach a mode’s maximum. Once your four guesses are picked, their own ceiling is shown above whenever it is lower.':
+		'Dört tahminin yalnızca bazı kombinasyonları bir modun en yüksek değerine ulaşır. Dört tahmininiz seçildiğinde, kendi üst sınırı daha düşük olduğunda yukarıda gösterilir.',
 	Playing: 'Oynanıyor',
 	'Card 2, 3 or 4': 'Kart 2, 3 veya 4',
 	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
@@ -107,8 +109,8 @@ export default {
 	'Payouts follow the odds': 'Ödemeler olasılığa göre belirlenir',
 	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
 		'Her doğru tahmin gerçek olasılığına göre ödenir; seçiminiz ne kadar olası değilse o kadar çok kazandırır — bu da açıkta duran kartlara bağlıdır.',
-	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
-		'Masada 3 varsa, kalan 51 karttan yalnızca 8’i daha düşük olduğu için Düşük yaklaşık 4,75× öder; 40’ı daha yüksek olduğu için Yüksek yalnızca 1,19× öder. O 3’ü 8 yapın, durum tersine döner: Düşük yaklaşık 1,57×’e iner, Yüksek 2,08×’e çıkar. Eşit her zaman en zor olanıdır, yaklaşık 12×.',
+	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
+		'Masada 3 varsa, kalan 51 karttan yalnızca 8’i daha düşük olduğu için Düşük yaklaşık %1× öder; 40’ı daha yüksek olduğu için Yüksek yalnızca %2× öder. O 3’ü 8 yapın, durum tersine döner: Düşük yaklaşık %3×’e iner, Yüksek %4×’e çıkar. Eşit her zaman en zor olanıdır, yaklaşık %5×.',
 	'Payout table': 'Ödeme tablosu',
 	Card: 'Kart',
 	Pick: 'Seçim',
@@ -216,8 +218,7 @@ export default {
 	Controls: 'Kontroller',
 	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
 		'Bahis tutarınızı ayarlamak için bahis göstergesini ve artı ile eksi düğmelerini kullanın. Hızlı seçim menüsünü açmak için bahis tutarına dokunun.',
-	'The speaker button mutes and unmutes the game sounds.':
-		'Hoparlör düğmesi oyun seslerini kapatır ve yeniden açar.',
+	'The speaker button opens the sound settings, where music and effects can be muted separately.': 'Hoparlör düğmesi ses ayarlarını açar; müzik ve efektler burada ayrı ayrı kapatılabilir.',
 	'The i button opens this screen at any time.': 'i düğmesi bu ekranı istediğiniz zaman açar.',
 	'The lightning button adjusts the speed of the card reveal.':
 		'Şimşek düğmesi kartların açılma hızını ayarlar.',
@@ -225,6 +226,10 @@ export default {
 		'Dairesel ok düğmesi otomatik oyun ayarlarını açar.',
 	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
 		'Sürgü düğmesi, otomatik oyun serilerinde tam kazançta durmayı açıp kapatmanızı sağlar.',
+	'The large round button deals the round. While autoplay runs it becomes the Stop button.':
+		'Büyük yuvarlak düğme turu dağıtır. Otomatik oyun sürerken Durdur düğmesine dönüşür.',
+	'The Mode button opens the game-mode picker. Switching mode asks you to confirm before it applies.':
+		'Mod düğmesi oyun modu seçicisini açar. Mod değiştirmek uygulanmadan önce onay ister.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'Bu oyunda ücretsiz dönüş, bonus turu, ikramiye veya yeniden tetikleme özelliği yoktur. Her tur, tek ve bağımsız bir dört kart çekilişidir.',
 	'Big Win': 'Büyük Kazanç',
@@ -251,8 +256,8 @@ export default {
 	'Play Again': 'Tekrar oynat',
 	'The round ends and pays nothing.':
 		'Tur sona erer ve hiçbir ödeme yapılmaz.',
-	'The round ends, keeping %s% of what you had built.':
-		'Tur sona erer ve biriktirdiğinizin %s% kadarını korursunuz.',
+	'The round ends, keeping about %s% of what you had built.':
+		'Tur sona erer ve biriktirdiğinizin yaklaşık %s% kadarını korursunuz.',
 	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
 		'2. karttan itibaren bu hata affedilir — biriktirdiğinizin %s% kadarını korur ve tur devam eder.',
 };

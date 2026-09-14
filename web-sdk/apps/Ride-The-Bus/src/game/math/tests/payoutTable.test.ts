@@ -13,7 +13,8 @@
 import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
 
-import { PAYOUT_ROWS, bustRowsFor } from '../payoutTable.ts';
+import { PAYOUT_ROWS, bustRowsFor, oddsExampleFor, payoutRowsFor } from '../payoutTable.ts';
+import { partialMultiplier, stageRetention } from '../payout.ts';
 import {
 	localColorPayouts,
 	localHigherLowerPayouts,
@@ -221,6 +222,74 @@ describe('paytable is complete and self-consistent', () => {
 			for (const key of keys) {
 				assert.ok(mod[key], `${locale} has no entry for the bust sentence "${key}"`);
 			}
+		}
+	});
+});
+
+describe('the worked example in How to Play', () => {
+	// THE BUG THIS EXISTS FOR. "With a 3 on the table, Lower pays about 4.75x"
+	// was typed into the copy with Classic's five figures, and rendered ABOVE
+	// the mode tabs - so a High Stakes player read 4.75x on a page whose own
+	// paytable said 5.28x, and a reviewer checking a High Stakes round against
+	// the rules found the board and the rules disagreeing. The catalogues now
+	// carry %1..%5 and the figures come from the same function as the table.
+	const EXAMPLE_KEY =
+		'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.';
+
+	test('every family quotes its own odds, solved against its own retention', () => {
+		for (const f of MODE_FAMILIES) {
+			const rules = FAMILY_RULES[f];
+			const r = stageRetention(rules, 1, false);
+			const o = oddsExampleFor(rules);
+			const expect = (cards: number) => Math.round(partialMultiplier(cards / 51, 1, r) * 100) / 100;
+			assert.equal(o.lowerOn3, expect(8), `${f} lower on 3`);
+			assert.equal(o.higherOn3, expect(40), `${f} higher on 3`);
+			assert.equal(o.lowerOn8, expect(28), `${f} lower on 8`);
+			assert.equal(o.higherOn8, expect(20), `${f} higher on 8`);
+			assert.equal(o.equal, expect(3), `${f} equal`);
+		}
+	});
+
+	test('the three families genuinely differ, which is why the example moves', () => {
+		const base = oddsExampleFor(FAMILY_RULES.base);
+		const hs = oddsExampleFor(FAMILY_RULES.hs);
+		const sc = oddsExampleFor(FAMILY_RULES.sc);
+		assert.ok(hs.lowerOn3 > base.lowerOn3 && base.lowerOn3 > sc.lowerOn3);
+		assert.ok(hs.equal > base.equal && base.equal > sc.equal);
+	});
+
+	test('the example figures sit inside the stage-2 rows of the same table', () => {
+		for (const f of MODE_FAMILIES) {
+			const rows = payoutRowsFor(FAMILY_RULES[f]);
+			const o = oddsExampleFor(FAMILY_RULES[f]);
+			const row = (label: string) => rows.find((r) => r.stage === 2 && r.label === label)!;
+			for (const [label, v] of [['Lower', o.lowerOn3], ['Lower', o.lowerOn8], ['Higher', o.higherOn3], ['Higher', o.higherOn8], ['Equal', o.equal]] as const) {
+				const { min, max } = row(label);
+				assert.ok(v >= min - EPS && v <= max + EPS, `${f} ${label} ${v} outside ${min}-${max}`);
+			}
+		}
+	});
+
+	test('no catalogue carries a typed-in figure for the example', async () => {
+		const { readdirSync } = await import('node:fs');
+		const pathMod = await import('node:path');
+		const { fileURLToPath } = await import('node:url');
+		const here = pathMod.dirname(fileURLToPath(import.meta.url));
+		const dir = pathMod.join(here, '../../../i18n/messagesMap');
+		const locales = readdirSync(dir)
+			.filter((f) => f.endsWith('.ts') && f !== 'index.ts' && !f.endsWith('.test.ts'))
+			.map((f) => f.replace(/\.ts$/, ''));
+		const social = (await import('../../../i18n/socialMessages.ts')).default as Record<string, string>;
+		const values = [social[EXAMPLE_KEY]];
+		for (const locale of locales) {
+			const mod = (await import(`../../../i18n/messagesMap/${locale}.ts`)).default as Record<string, string>;
+			values.push(mod[EXAMPLE_KEY]);
+		}
+		assert.equal(values.length, 17);
+		for (const v of values) {
+			assert.ok(v, 'catalogue is missing the worked example');
+			for (const ph of ['%1', '%2', '%3', '%4', '%5']) assert.ok(v.includes(ph), `missing ${ph} in "${v.slice(0, 40)}"`);
+			assert.doesNotMatch(v, /4[.,]75|1[.,]19|1[.,]57|2[.,]08/, 'a Classic figure is typed into the copy');
 		}
 	});
 });

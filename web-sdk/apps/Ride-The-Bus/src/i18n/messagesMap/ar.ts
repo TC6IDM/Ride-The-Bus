@@ -85,6 +85,8 @@ export default {
 	'Your second wrong guess': 'ثاني تخمين خاطئ لك',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
 		'الاختيار "متساوٍ" هو الأندر، لذا تحمل الجولات المبنية عليه أكبر الأرباح — وهي الأصعب. وتحقيق اختيارين متساويين معًا هو أقصى ما يدفعه هذا الوضع، عند %m من رهانك.',
+	'Only some four-guess combinations reach a mode’s maximum. Once your four guesses are picked, their own ceiling is shown above whenever it is lower.':
+		'بعض تركيبات التخمينات الأربع فقط تبلغ الحد الأقصى للوضع. بعد اختيار تخميناتك الأربع، يُعرض سقفها الخاص أعلاه كلما كان أقل.',
 	Playing: 'قيد اللعب',
 	'Card 2, 3 or 4': 'البطاقة 2 أو 3 أو 4',
 	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
@@ -108,8 +110,8 @@ export default {
 	'Payouts follow the odds': 'المكافآت تتبع الاحتمالات',
 	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
 		'كل تخمين صحيح يُدفع وفق احتمالاته الحقيقية، فكلما قل احتمال اختيارك زاد ما يدفعه — وذلك يعتمد على البطاقات الظاهرة بالفعل.',
-	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
-		'مع وجود 3 على الطاولة، يدفع «أقل» نحو 4.75× لأن 8 فقط من البطاقات الـ51 المتبقية أقل منها، بينما يدفع «أعلى» نحو 1.19× لأن 40 منها أعلى. حوّل الـ3 إلى 8 فينقلب الأمر: ينخفض «أقل» إلى نحو 1.57× ويرتفع «أعلى» إلى نحو 2.08×. و«متساوٍ» هو دائمًا الأبعد احتمالًا بنحو 12×.',
+	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
+		'مع وجود 3 على الطاولة، يدفع «أقل» نحو %1× لأن 8 فقط من البطاقات الـ51 المتبقية أقل منها، بينما يدفع «أعلى» نحو %2× لأن 40 منها أعلى. حوّل الـ3 إلى 8 فينقلب الأمر: ينخفض «أقل» إلى نحو %3× ويرتفع «أعلى» إلى نحو %4×. و«متساوٍ» هو دائمًا الأبعد احتمالًا بنحو %5×.',
 	'Payout table': 'جدول الأرباح',
 	Card: 'البطاقة',
 	Pick: 'الاختيار',
@@ -217,14 +219,17 @@ export default {
 	Controls: 'أدوات التحكم',
 	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
 		'استخدم شاشة الرهان وزرَّي الجمع والطرح لتحديد مبلغ رهانك. اضغط على مبلغ الرهان لفتح قائمة الاختيار السريع.',
-	'The speaker button mutes and unmutes the game sounds.':
-		'زر مكبر الصوت يكتم أصوات اللعبة ويعيد تشغيلها.',
+	'The speaker button opens the sound settings, where music and effects can be muted separately.': 'زر مكبر الصوت يفتح إعدادات الصوت، حيث يمكن كتم الموسيقى والمؤثرات كلٌّ على حدة.',
 	'The i button opens this screen at any time.': 'زر i يفتح هذه الشاشة في أي وقت.',
 	'The lightning button adjusts the speed of the card reveal.': 'زر البرق يضبط سرعة كشف البطاقات.',
 	'The circular arrow button opens the autoplay settings.':
 		'زر الأسهم الدائرية يفتح إعدادات اللعب التلقائي.',
 	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
 		'زر المؤشرات يتيح لك تفعيل أو تعطيل التوقف عند الفوز الكامل في جولات اللعب التلقائي.',
+	'The large round button deals the round. While autoplay runs it becomes the Stop button.':
+		'الزر الدائري الكبير يوزّع الجولة. وأثناء التشغيل التلقائي يتحول إلى زر الإيقاف.',
+	'The Mode button opens the game-mode picker. Switching mode asks you to confirm before it applies.':
+		'زر الوضع يفتح قائمة اختيار وضع اللعبة. ويطلب تبديل الوضع تأكيدك قبل تطبيقه.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'لا تحتوي هذه اللعبة على لفات مجانية أو جولات مكافأة أو جوائز كبرى أو ميزات إعادة التفعيل. كل جولة هي سحب مستقل واحد لأربع بطاقات.',
 	'Big Win': 'فوز كبير',
@@ -250,8 +255,8 @@ export default {
 	'Play Again': 'العب مرة أخرى',
 	'The round ends and pays nothing.':
 		'تنتهي الجولة ولا تدفع شيئًا.',
-	'The round ends, keeping %s% of what you had built.':
-		'تنتهي الجولة مع الاحتفاظ بـ %s% مما جمعته.',
+	'The round ends, keeping about %s% of what you had built.':
+		'تنتهي الجولة مع الاحتفاظ بنحو %s% مما جمعته.',
 	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
 		'من الورقة 2 فصاعدًا يُتجاوز عنه — تحتفظ بـ %s% مما جمعته وتستمر الجولة.',
 };

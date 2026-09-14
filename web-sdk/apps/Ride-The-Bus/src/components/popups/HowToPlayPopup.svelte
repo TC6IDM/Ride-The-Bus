@@ -21,7 +21,7 @@
 	import { ranks } from '../../game/round/roundContract';
 	// Derived from payout.ts rather than written out, so the paytable a player
 	// reads cannot drift from what the RGS credits - see payoutTable.ts.
-	import { bustRowsFor, payoutRowsFor } from '../../game/math/payoutTable';
+	import { bustRowsFor, oddsExampleFor, payoutRowsFor } from '../../game/math/payoutTable';
 	import { FAMILY_BLURB, FAMILY_RULES, MODE_FAMILIES, type ModeFamily } from '../../game/math/modes';
 	import { FAMILIES_BY_VOLATILITY } from '../../game/math/volatility';
 	import gameConfig from '../../game/platform/config';
@@ -63,6 +63,18 @@
 	const viewingRules = $derived(FAMILY_RULES[viewing]);
 	const rows = $derived(payoutRowsFor(viewingRules));
 	const bustRules = $derived(bustRowsFor(viewingRules));
+	// The worked example's five figures, for the family on screen. Substituted
+	// in order for %1..%5 - the catalogues carry the placeholders, never the
+	// numbers, so no locale can quote Classic's odds on another mode.
+	const oddsExample = $derived(oddsExampleFor(viewingRules));
+	const exampleText = $derived.by(() => {
+		const o = oddsExample;
+		const figures = [o.lowerOn3, o.higherOn3, o.lowerOn8, o.higherOn8, o.equal];
+		return figures.reduce(
+			(text, n, i) => text.replace(`%${i + 1}`, n.toFixed(2)),
+			t('With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.'),
+		);
+	});
 	// Null when the caller did not supply one (the popup is also reachable from
 	// the start screen, where no guesses exist yet) or when the guesses are
 	// incomplete. Either way the family figure stands alone.
@@ -98,7 +110,11 @@
 
       <h4 class="info-h">{t('Payouts follow the odds')}</h4>
       <p>{t('Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.')}</p>
-      <p>{t('With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.')}</p>
+      <!-- The worked example ("with a 3 on the table, Lower pays about...")
+           used to be the next paragraph here, above the mode tabs, with
+           Classic's figures typed into it. It is inside the mode panel now,
+           under the paytable, because its numbers are that table's numbers
+           and move with the family the same way. -->
       <p>{t('Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.')}</p>
 
       <!-- ---- Game modes ------------------------------------------------
@@ -168,6 +184,12 @@
             {t('Your four guesses top out at %s your bet.').replace('%s', `${pickedCeiling}×`)}
           </p>
         {/if}
+        <!-- Says in words what the conditional line above only shows by
+             example: the family figure is a ceiling SOME combinations reach,
+             and the bet in front of the player has its own. Without this a
+             player opening the rules from the start screen - no guesses
+             picked, so no line above - read the family figure as their own. -->
+        <p class="mode-panel-picked">{t('Only some four-guess combinations reach a mode’s maximum. Once your four guesses are picked, their own ceiling is shown above whenever it is lower.')}</p>
 
         <!-- Approval requires payout amounts stated for every pick. There is no
              fixed paytable to print - each stage pays its true odds against the
@@ -193,6 +215,10 @@
             {/each}
           </tbody>
         </table>
+        <!-- The worked example, computed for this family - see oddsExampleFor.
+             Two Higher/Lower figures and the Equal figure are stage-2 rows of
+             the table above, so a player can check one against the other. -->
+        <p>{exampleText}</p>
         <!-- WHY THIS PARAGRAPH IS SO EXACT ABOUT ROUNDING.
              The table above quotes 1.99x for the colour pick, and the chip
              beside card 1 reads 1.90x for the same pick - because that chip is
@@ -243,8 +269,10 @@
 
       <h4 class="info-h">{t('Controls')}</h4>
       <ul>
+        <li>{t('The large round button deals the round. While autoplay runs it becomes the Stop button.')}</li>
+        <li>{t('The Mode button opens the game-mode picker. Switching mode asks you to confirm before it applies.')}</li>
         <li>{t('Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.')}</li>
-        <li>{t('The speaker button mutes and unmutes the game sounds.')}</li>
+        <li>{t('The speaker button opens the sound settings, where music and effects can be muted separately.')}</li>
         <li>{t('The i button opens this screen at any time.')}</li>
         <li>{t('The lightning button adjusts the speed of the card reveal.')}</li>
         <li>{t('The circular arrow button opens the autoplay settings.')}</li>

@@ -83,6 +83,8 @@ export default {
 	'Your second wrong guess': '你的第二次猜错',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
 		'“相等”是最难中的选择，因此以它为核心的回合赔付最高，也最难达成。两次“相等”同时命中是本模式的上限，为投注额的 %m。',
+	'Only some four-guess combinations reach a mode’s maximum. Once your four guesses are picked, their own ceiling is shown above whenever it is lower.':
+		'只有部分四步猜测组合能达到某模式的最高赔付。选好四步猜测后，若其自身上限更低，会显示在上方。',
 	Playing: '游戏中',
 	'Card 2, 3 or 4': '第二、三或四张牌',
 	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
@@ -106,8 +108,8 @@ export default {
 	'Payouts follow the odds': '赔付取决于概率',
 	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
 		'每次猜中都按其真实概率赔付，因此你的选择越难出现，赔付越高——而这取决于已经亮出的牌。',
-	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
-		'若桌上是 3，剩余 51 张牌中只有 8 张更小，因此「更小」约赔 4.75 倍；而更大的有 40 张，因此「更大」仅约 1.19 倍。把 3 换成 8，情况就反过来：「更小」降至约 1.57 倍，「更大」升至约 2.08 倍。「相同」始终是最难中的，约 12 倍。',
+	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
+		'若桌上是 3，剩余 51 张牌中只有 8 张更小，因此「更小」约赔 %1 倍；而更大的有 40 张，因此「更大」仅约 %2 倍。把 3 换成 8，情况就反过来：「更小」降至约 %3 倍，「更大」升至约 %4 倍。「相同」始终是最难中的，约 %5 倍。',
 	'Payout table': '赔付表',
 	Card: '牌',
 	Pick: '选择',
@@ -212,12 +214,16 @@ export default {
 	Controls: '操作说明',
 	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
 		'使用投注显示区以及加号和减号按钮设置投注金额。点击投注金额可打开快速选择菜单。',
-	'The speaker button mutes and unmutes the game sounds.': '扬声器按钮用于静音和取消静音游戏声音。',
+	'The speaker button opens the sound settings, where music and effects can be muted separately.': '扬声器按钮打开声音设置，可分别静音音乐和音效。',
 	'The i button opens this screen at any time.': 'i 按钮可随时打开此界面。',
 	'The lightning button adjusts the speed of the card reveal.': '闪电按钮用于调整翻牌速度。',
 	'The circular arrow button opens the autoplay settings.': '圆形箭头按钮用于打开自动游戏设置。',
 	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
 		'滑块按钮可开启或关闭自动游戏中的全胜时停止功能。',
+	'The large round button deals the round. While autoplay runs it becomes the Stop button.':
+		'大圆形按钮发牌开始本轮。自动游戏进行时，它会变成停止按钮。',
+	'The Mode button opens the game-mode picker. Switching mode asks you to confirm before it applies.':
+		'模式按钮打开游戏模式选择。切换模式前会要求确认。',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'本游戏没有免费旋转、奖励回合、累积奖池或重新触发功能。每一轮都是独立的一次四张牌抽取。',
 	'Big Win': '大奖',
@@ -243,8 +249,8 @@ export default {
 	'Play Again': '再看一次',
 	'The round ends and pays nothing.':
 		'本轮结束，不予派彩。',
-	'The round ends, keeping %s% of what you had built.':
-		'本轮结束，保留已累积金额的 %s%。',
+	'The round ends, keeping about %s% of what you had built.':
+		'本轮结束，保留已累积金额的约 %s%。',
 	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
 		'从第 2 张牌起可获宽恕，保留已累积金额的 %s%，本轮继续。',
 };

@@ -167,10 +167,11 @@ look.**
   subscription — fresh generations, not re-downloads, because the licence
   attaches when the Output is *generated*. `ASSET_LICENCES.md` carries a row per
   file with the verbatim Styles and Exclude Styles fields, the settings
-  (instrumental, 50% weirdness, 50% style influence) and the SHA-256. **Four
-  items in that file are still open**: the ten generation URLs, the
-  subscription invoice, and a saved copy of Suno's Terms as they read on
-  2026-09-02 — time-critical, because a new Terms took effect 2026-09-03.
+  (instrumental, 50% weirdness, 50% style influence) and the SHA-256. The
+  invoice, receipt and both Terms PDFs are in `licence-evidence/` (checked
+  2026-09-13). **Two items in that file are still open**, neither
+  Stake-facing: archiving the page behind each generation URL while the
+  subscription is live, and backing up `audio-masters/` off this machine.
 
   The WAV masters live in the repo-root `audio-masters/`, outside the app so they are never
   served, and the shipped MP3s were encoded from them at 112 kbps in a single

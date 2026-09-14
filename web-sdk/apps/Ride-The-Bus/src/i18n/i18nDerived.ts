@@ -1,7 +1,11 @@
 import { stateUrlDerived } from 'state-shared';
 
-import { i18nDerived as i18nDerivedUiPixi } from 'components-ui-pixi';
-import { i18nDerived as i18nDerivedUiHtml } from 'components-ui-html';
+// Deep imports, NOT the package barrels. `components-ui-pixi`'s index.ts also
+// exports its Pixi UI components, so importing the barrel for two i18n
+// objects put the whole of PixiJS - about 375 KB of a 1.05 MB bundle - into a
+// game that never draws a canvas. Bundle size is a named 3-star criterion.
+import { i18nDerived as i18nDerivedUiPixi } from 'components-ui-pixi/src/i18n/i18nDerived';
+import { i18nDerived as i18nDerivedUiHtml } from 'components-ui-html/src/i18n/i18nDerived';
 
 import { jurisdiction } from '../game/jurisdiction/jurisdiction.svelte';
 

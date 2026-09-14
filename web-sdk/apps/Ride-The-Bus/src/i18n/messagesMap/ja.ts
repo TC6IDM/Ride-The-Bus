@@ -83,6 +83,8 @@ export default {
 	'Your second wrong guess': '2度目のミス',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
 		'イコールは最も出にくい予想なので、それを軸にしたラウンドが最大の配当を生み、同時に最も難しくなります。イコール2回が揃うのがこのモードの上限で、ベットの %m です。',
+	'Only some four-guess combinations reach a mode’s maximum. Once your four guesses are picked, their own ceiling is shown above whenever it is lower.':
+		'4つの予想の組み合わせのうち、モードの最大配当に届くのは一部だけです。4つの予想を選ぶと、その組み合わせ自体の上限が低い場合に上に表示されます。',
 	Playing: 'プレイ中',
 	'Card 2, 3 or 4': 'カード2・3・4',
 	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
@@ -106,8 +108,8 @@ export default {
 	'Payouts follow the odds': '配当は確率に連動します',
 	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
 		'的中はすべて本来の確率どおりに支払われます。選択が起こりにくいほど配当は高くなり、それは場に出ているカードによって決まります。',
-	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
-		'場に3がある場合、残り51枚のうち3より小さいのは8枚だけなのでローは約4.75倍、逆に大きいのは40枚あるためハイは約1.19倍です。3が8になると関係は逆転し、ローは約1.57倍、ハイは約2.08倍になります。イコールは常に最も起こりにくく、およそ12倍です。',
+	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
+		'場に3がある場合、残り51枚のうち3より小さいのは8枚だけなのでローは約%1倍、逆に大きいのは40枚あるためハイは約%2倍です。3が8になると関係は逆転し、ローは約%3倍、ハイは約%4倍になります。イコールは常に最も起こりにくく、およそ%5倍です。',
 	'Payout table': '配当表',
 	Card: 'カード',
 	Pick: '予想',
@@ -216,8 +218,7 @@ export default {
 	Controls: '操作方法',
 	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
 		'ベット表示とプラス・マイナスボタンでベット額を設定します。ベット額をタップするとクイック選択メニューが開きます。',
-	'The speaker button mutes and unmutes the game sounds.':
-		'スピーカーボタンでゲーム音のミュートと解除を切り替えます。',
+	'The speaker button opens the sound settings, where music and effects can be muted separately.': 'スピーカーボタンでサウンド設定が開き、音楽と効果音を別々にミュートできます。',
 	'The i button opens this screen at any time.': 'i ボタンでいつでもこの画面を開けます。',
 	'The lightning button adjusts the speed of the card reveal.':
 		'稲妻ボタンでカードがめくられる速度を調整します。',
@@ -225,6 +226,10 @@ export default {
 		'円形矢印ボタンでオートプレイ設定を開きます。',
 	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
 		'スライダーボタンでオートプレイ中のフルウィン時停止を切り替えられます。',
+	'The large round button deals the round. While autoplay runs it becomes the Stop button.':
+		'大きな丸いボタンでラウンドを配ります。オートプレイ中は停止ボタンになります。',
+	'The Mode button opens the game-mode picker. Switching mode asks you to confirm before it applies.':
+		'モードボタンでゲームモードの選択画面が開きます。モードの切り替えは、適用前に確認を求めます。',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'このゲームにはフリースピン、ボーナスラウンド、ジャックポット、再トリガー機能はありません。各ラウンドは独立した1回の4枚カードドローです。',
 	'Big Win': '大当たり',
@@ -250,8 +255,8 @@ export default {
 	'Play Again': 'もう一度再生',
 	'The round ends and pays nothing.':
 		'ラウンドは終了し、配当はありません。',
-	'The round ends, keeping %s% of what you had built.':
-		'ラウンドが終了し、積み上げた分の%s%が残ります。',
+	'The round ends, keeping about %s% of what you had built.':
+		'ラウンドが終了し、積み上げた分の約%s%が残ります。',
 	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
 		'カード2以降は免除され、積み上げた分の%s%を残してラウンドが続きます。',
 };

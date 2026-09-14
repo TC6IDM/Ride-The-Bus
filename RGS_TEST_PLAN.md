@@ -57,17 +57,20 @@ pass in a browser", not as done.
 | Check | Local evidence |
 | --- | --- |
 | `CMP-01` RTP stated | 96.00% present in How to Play |
+| `CMP-06b` Worked example per mode | "Lower on a 3 pays about …" reads 4.75× / 3.67× / 5.28× on the Classic / Second Chance / High Stakes tabs, matching that tab's own paytable |
 | `CMP-03` Disclaimer | all required points present |
 | `CMP-06` Paytable | 8 payout rows rendered |
 | `CMP-07` Mode description and cost | 3 tabs, cost and ceiling on each |
 | `CMP-08` UI guide | Controls section names every bar button |
 | `CMP-09` Sound can be disabled | both buses mute independently and survive a reload |
 | `CMP-10` Spacebar bound to the bet button | plays with nothing focused; refuses on a focused INPUT and on a focused BUTTON |
+| `CMP-10b` Spacebar refused behind a panel | How to Play open, all four guesses picked, Space: no `/wallet/play` (it used to buy one behind the panel); with the panel closed the same press does |
 | `CMP-11` Frame never scrolls | all seven target sizes, idle / bet menu open / How to Play open |
 | `CMP-12` Double-tap zoom off, pinch intact | `touch-action: manipulation`, no `user-scalable=no` |
 | `BET-12` Mode change confirmed | picking a family shows the confirmation; Cancel leaves the live mode alone |
 | `BET-13` Autoplay confirmed | the panel opens with a Start button and begins no round on its own |
 | `LNG-05` Malformed `?lang=` | `en_US`, `zz!!`, `en;a`, empty, `po`, `xx`, `ar`, `de` all render every money readout, no RangeError |
+| `REP-04b` Malformed `?currency=` on a replay | `currency=ab` renders the replay in the USD default, no RangeError (the raw parameter used to override the validated one) |
 | `SOC-01` No restricted term on screen | 761 visible strings swept across board, rules (3 tabs), bet menu, autoplay, mode picker and confirmation |
 | `SOC-02` High Risk naming | mode tabs read Classic / Second Chance / High Risk |
 | `SOC-03` English only in social mode | `de`, `ar`, `ja` all render English, `dir=ltr` |

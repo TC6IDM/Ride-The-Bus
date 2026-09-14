@@ -141,6 +141,42 @@ export function payoutRowsFor(rules: FamilyRules = FAMILY_RULES.base): PayoutRow
 /** The Classic table, kept for callers that predate the mode families. */
 export const PAYOUT_ROWS: readonly PayoutRow[] = payoutRowsFor(FAMILY_RULES.base);
 
+/**
+ * The worked example in How to Play - "with a 3 on the table, Lower pays
+ * about 4.75x..." - as figures, for one mode family.
+ *
+ * Computed, and per family, for the same reason as the table above. The
+ * sentence used to carry Classic's five numbers typed into the copy and sat
+ * ABOVE the mode tabs, so a High Stakes player read 4.75x on a page whose own
+ * paytable, two paragraphs down, said 5.28x - and a reviewer checking a
+ * High Stakes round against the rules found the board and the rules
+ * disagreeing. Retention is what each stage's multiplier is solved against,
+ * so the example moves with the family exactly as the table does.
+ *
+ * Card 2 against a 3: two ranks (A, 2) are lower = 8 of 51; ten ranks are
+ * higher = 40 of 51. Against an 8: seven ranks lower = 28; five higher = 20.
+ * Equal is always the 3 remaining cards of the rank, whatever it is.
+ */
+export type OddsExample = {
+	lowerOn3: number;
+	higherOn3: number;
+	lowerOn8: number;
+	higherOn8: number;
+	equal: number;
+};
+
+export function oddsExampleFor(rules: FamilyRules = FAMILY_RULES.base): OddsExample {
+	const retention = stageRetention(rules, 1, false);
+	const at = (cards: number) => round2(partialMultiplier(cards / 51, 1, retention));
+	return {
+		lowerOn3: at(8),
+		higherOn3: at(40),
+		lowerOn8: at(28),
+		higherOn8: at(20),
+		equal: at(3),
+	};
+}
+
 /* FULL_WIN_ROWS used to live here: a three-row breakdown of what a full win
    pays by how many Equal picks it used (17.3x / 67.5x / 1329.2x average, topping
    out at 1354.2x). It was removed rather than made per-family because nothing
@@ -185,7 +221,7 @@ export type BustRow = {
 	 */
 	key:
 		| 'The round ends and pays nothing.'
-		| 'The round ends, keeping %s% of what you had built.'
+		| 'The round ends, keeping about %s% of what you had built.'
 		| 'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.';
 	/** Percentage to substitute for `%s`, or null when the sentence takes none. */
 	percent: number | null;
@@ -203,6 +239,13 @@ export type BustRow = {
  * one appears.
  */
 export function bustRowsFor(rules: FamilyRules = FAMILY_RULES.base): BustRow[] {
+	// "About", because it is not exactly this. A bust keeps
+	// retention x DECAY^(stages never played) - see computeFinalMultiplier -
+	// so a card-2 miss on Classic banks 29.85% of the running total, not 30%,
+	// and on a 10.00x total the board settles 2.9x where a player computing
+	// 30% expects 3.0x. The sentence used to state the bare figure; a reviewer
+	// checking a bust against the rules would have found them disagreeing.
+	// Forgiveness (below) carries no decay term, so its figure IS exact.
 	const laterPercent = Math.round(rules.retention[1]! * 100);
 
 	// Card 1 is never forgiven in any family, so it always reads the same.
@@ -223,7 +266,7 @@ export function bustRowsFor(rules: FamilyRules = FAMILY_RULES.base): BustRow[] {
 			},
 			{
 				label: 'Your second wrong guess',
-				key: 'The round ends, keeping %s% of what you had built.',
+				key: 'The round ends, keeping about %s% of what you had built.',
 				percent: laterPercent,
 			},
 		];
@@ -233,7 +276,7 @@ export function bustRowsFor(rules: FamilyRules = FAMILY_RULES.base): BustRow[] {
 		first,
 		{
 			label: 'Card 2, 3 or 4',
-			key: 'The round ends, keeping %s% of what you had built.',
+			key: 'The round ends, keeping about %s% of what you had built.',
 			percent: laterPercent,
 		},
 	];

@@ -84,6 +84,8 @@ export default {
 	'Your second wrong guess': 'Tu segundo fallo',
 	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
 		'Igual es la elección más rara, así que las rondas basadas en ella traen las mayores ganancias — y son las más difíciles. Dos aciertos Igual juntos es lo máximo que paga este modo, con %m tu apuesta.',
+	'Only some four-guess combinations reach a mode’s maximum. Once your four guesses are picked, their own ceiling is shown above whenever it is lower.':
+		'Solo algunas combinaciones de cuatro predicciones alcanzan el máximo de un modo. Una vez elegidas tus cuatro predicciones, su propio tope se muestra arriba siempre que sea menor.',
 	Playing: 'En juego',
 	'Card 2, 3 or 4': 'Carta 2, 3 o 4',
 	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
@@ -107,8 +109,8 @@ export default {
 	'Payouts follow the odds': 'Los pagos siguen las probabilidades',
 	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
 		'Cada acierto se paga según sus probabilidades reales, así que cuanto menos probable sea tu elección, más paga — y eso depende de las cartas ya visibles.',
-	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
-		'Con un 3 sobre la mesa, Menor paga unas 4,75× porque solo 8 de las 51 cartas restantes son menores, mientras que Mayor paga unas 1,19× porque 40 lo son. Cambia ese 3 por un 8 y se invierte: Menor baja a unas 1,57× y Mayor sube a unas 2,08×. Igual es siempre la apuesta más difícil, con unas 12×.',
+	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
+		'Con un 3 sobre la mesa, Menor paga unas %1× porque solo 8 de las 51 cartas restantes son menores, mientras que Mayor paga unas %2× porque 40 lo son. Cambia ese 3 por un 8 y se invierte: Menor baja a unas %3× y Mayor sube a unas %4×. Igual es siempre la apuesta más difícil, con unas %5×.',
 	'Payout table': 'Tabla de pagos',
 	Card: 'Carta',
 	Pick: 'Elección',
@@ -217,8 +219,7 @@ export default {
 	Controls: 'Controles',
 	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
 		'Usa el indicador de apuesta y los botones de más y menos para fijar tu importe. Toca el importe de la apuesta para abrir el menú de selección rápida.',
-	'The speaker button mutes and unmutes the game sounds.':
-		'El botón del altavoz silencia y reactiva los sonidos del juego.',
+	'The speaker button opens the sound settings, where music and effects can be muted separately.': 'El botón del altavoz abre los ajustes de sonido, donde la música y los efectos se pueden silenciar por separado.',
 	'The i button opens this screen at any time.':
 		'El botón i abre esta pantalla en cualquier momento.',
 	'The lightning button adjusts the speed of the card reveal.':
@@ -227,6 +228,10 @@ export default {
 		'El botón de las flechas circulares abre los ajustes de juego automático.',
 	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
 		'El botón de los controles deslizantes activa o desactiva la parada al ganar la partida completa en las series automáticas.',
+	'The large round button deals the round. While autoplay runs it becomes the Stop button.':
+		'El botón redondo grande reparte la ronda. Mientras el juego automático está en marcha, se convierte en el botón de Parar.',
+	'The Mode button opens the game-mode picker. Switching mode asks you to confirm before it applies.':
+		'El botón Modo abre el selector de modo de juego. Cambiar de modo pide confirmación antes de aplicarse.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'Este juego no tiene giros gratis, rondas de bonificación, botes ni funciones de reactivación. Cada ronda es una única extracción independiente de cuatro cartas.',
 	'Big Win': 'Gran Ganancia',
@@ -254,8 +259,8 @@ export default {
 	'Play Again': 'Reproducir de nuevo',
 	'The round ends and pays nothing.':
 		'La ronda termina y no paga nada.',
-	'The round ends, keeping %s% of what you had built.':
-		'La ronda termina y conservas el %s% de lo acumulado.',
+	'The round ends, keeping about %s% of what you had built.':
+		'La ronda termina y conservas aproximadamente el %s% de lo acumulado.',
 	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
 		'A partir de la carta 2 se perdona: conservas el %s% de lo acumulado y la ronda continúa.',
 };

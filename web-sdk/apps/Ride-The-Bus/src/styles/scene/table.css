@@ -29,6 +29,17 @@
  * table's width), so they are literally the reference's percentages and stay
  * proportional to the table at any viewport - they no longer drift against the
  * UI's --ui scale.
+ *
+ * They are written `calc(N * var(--cq))` rather than `Ncqw`, and the
+ * difference is iOS 15. `--cq` is 1cqw where the engine has container units
+ * (Safari 16+, Chrome 105+) and the same length in viewport units where it
+ * does not - see the @supports block on .table below. Written as bare `cqw`,
+ * every one of these sixty declarations was simply dropped on an older
+ * engine: the rim shadows vanished, and every prop whose width is a custom
+ * property (--chip-w, --cup-w, --deck-w) collapsed, because a custom property
+ * holding a unit the engine cannot resolve is invalid at computed-value time
+ * and there is no way to give it a fallback declaration. Stake's final
+ * checklist has "works correctly on older mobile devices" as its own line.
  */
 
 .scene {
@@ -92,6 +103,26 @@
      shrank against a table that was not changing size with it. Props are
      unaffected: they sit inside .table-surface, which is a nearer container. */
   container-type: inline-size;
+  /* One percent of the table's width - see the header. The token is
+     substituted where it is used, so inside .table-surface it resolves
+     against THAT container, which is the same width (inset: 0). */
+  --cq: 1cqw;
+}
+
+/* Engines without container units (Safari < 16). The table's width is the
+   literal expression above, so one percent of it is exactly this - not an
+   approximation - and the portrait override below restates it for the
+   portrait width. aspect-ratio arrived in Safari 15; before that the table
+   had no height at all, so it is spelled out from the same numbers. */
+@supports not (width: 1cqw) {
+  .table {
+    --cq: min(0.96vw, 1.3vh);
+  }
+}
+@supports not (aspect-ratio: 1 / 1) {
+  .table {
+    height: calc(min(96vw, 130vh) / 1.479);
+  }
 }
 
 /* The apron: the same ellipse pushed down, in much darker wood, so the crescent
@@ -110,8 +141,8 @@
      and the table stood on the felt with no shadow whatsoever. In cqw they are
      a fraction of the table width and hold at any size. */
   box-shadow:
-    -0.4cqw 1.1cqw 1.5cqw rgba(0, 0, 0, 0.5),
-    -1.3cqw 2.8cqw 4.6cqw rgba(0, 0, 0, 0.44);
+    calc(-0.4 * var(--cq)) calc(1.1 * var(--cq)) calc(1.5 * var(--cq)) rgba(0, 0, 0, 0.5),
+    calc(-1.3 * var(--cq)) calc(2.8 * var(--cq)) calc(4.6 * var(--cq)) rgba(0, 0, 0, 0.44);
 }
 
 /* The top face. Sampled across the middle: #5D2D09 at the left rim, peaking
@@ -150,8 +181,8 @@
      pseudo-element so it paints below every child (an ::after sits ABOVE them
      in DOM order, and was quietly wiping out the lit rim beneath it). */
   box-shadow:
-    inset 0 0 6cqw rgba(24, 9, 0, 0.42),
-    inset 0 -0.8cqw 1.9cqw rgba(0, 0, 0, 0.24);
+    inset 0 0 calc(6 * var(--cq)) rgba(24, 9, 0, 0.42),
+    inset 0 calc(-0.8 * var(--cq)) calc(1.9 * var(--cq)) rgba(0, 0, 0, 0.24);
 }
 
 /* The surface of the wood, in two parts.
@@ -187,10 +218,10 @@
        size cannot afford. */
     repeating-linear-gradient(
       0deg,
-      transparent 0 10.6cqw,
-      rgba(46, 20, 0, 0.09) 10.6cqw 10.75cqw,
-      rgba(255, 210, 165, 0.018) 10.75cqw 10.95cqw,
-      transparent 10.95cqw 11.3cqw
+      transparent 0 calc(10.6 * var(--cq)),
+      rgba(46, 20, 0, 0.09) calc(10.6 * var(--cq)) calc(10.75 * var(--cq)),
+      rgba(255, 210, 165, 0.018) calc(10.75 * var(--cq)) calc(10.95 * var(--cq)),
+      transparent calc(10.95 * var(--cq)) calc(11.3 * var(--cq))
     ),
     /* Broad figure: three soft patches of lighter and darker timber, which is
        what actually breaks up a surface this size. Lines alone cannot do it -
@@ -210,26 +241,26 @@
        version at 0.42 opacity was the noisiest thing on screen. */
     repeating-linear-gradient(
       0.5deg,
-      rgba(255, 206, 158, 0.028) 0 0.1cqw,
-      transparent 0.1cqw 0.55cqw,
-      rgba(255, 206, 158, 0.016) 0.55cqw 0.62cqw,
-      transparent 0.62cqw 1.28cqw,
-      rgba(58, 26, 2, 0.042) 1.28cqw 1.4cqw,
-      transparent 1.4cqw 2.3cqw
+      rgba(255, 206, 158, 0.028) 0 calc(0.1 * var(--cq)),
+      transparent calc(0.1 * var(--cq)) calc(0.55 * var(--cq)),
+      rgba(255, 206, 158, 0.016) calc(0.55 * var(--cq)) calc(0.62 * var(--cq)),
+      transparent calc(0.62 * var(--cq)) calc(1.28 * var(--cq)),
+      rgba(58, 26, 2, 0.042) calc(1.28 * var(--cq)) calc(1.4 * var(--cq)),
+      transparent calc(1.4 * var(--cq)) calc(2.3 * var(--cq))
     ),
     repeating-linear-gradient(
       -0.6deg,
-      rgba(58, 26, 2, 0.045) 0 0.22cqw,
-      transparent 0.22cqw 1.05cqw,
-      rgba(255, 198, 148, 0.02) 1.05cqw 1.18cqw,
-      transparent 1.18cqw 3.1cqw
+      rgba(58, 26, 2, 0.045) 0 calc(0.22 * var(--cq)),
+      transparent calc(0.22 * var(--cq)) calc(1.05 * var(--cq)),
+      rgba(255, 198, 148, 0.02) calc(1.05 * var(--cq)) calc(1.18 * var(--cq)),
+      transparent calc(1.18 * var(--cq)) calc(3.1 * var(--cq))
     ),
     repeating-linear-gradient(
       0.9deg,
-      rgba(255, 190, 140, 0.018) 0 0.4cqw,
-      transparent 0.4cqw 2.2cqw,
-      rgba(46, 20, 0, 0.032) 2.2cqw 2.5cqw,
-      transparent 2.5cqw 4.7cqw
+      rgba(255, 190, 140, 0.018) 0 calc(0.4 * var(--cq)),
+      transparent calc(0.4 * var(--cq)) calc(2.2 * var(--cq)),
+      rgba(46, 20, 0, 0.032) calc(2.2 * var(--cq)) calc(2.5 * var(--cq)),
+      transparent calc(2.5 * var(--cq)) calc(4.7 * var(--cq))
     );
 }
 
@@ -281,7 +312,7 @@
   position: absolute;
   border-radius: 50%;
   background: rgba(26, 9, 0, 0.42);
-  filter: blur(0.45cqw);
+  filter: blur(calc(0.45 * var(--cq)));
 }
 
 .chip-shadow::after,
@@ -293,7 +324,7 @@
   inset: -50% -6% -50% -34%;
   border-radius: 50%;
   background: rgba(24, 8, 0, 0.17);
-  filter: blur(1.6cqw);
+  filter: blur(calc(1.6 * var(--cq)));
 }
 
 /* ---- chips (cylinders) --------------------------------------------------- */
@@ -306,7 +337,7 @@
   /* 5% of the table's width, down from the 7.5% measured off the reference
      render: against a party cup that is 8.8% wide, a chip at 7.5% was nearly
      the same size as the cup, which is not how the two objects compare. */
-  --chip-w: 5cqw;
+  --chip-w: calc(5 * var(--cq));
   --chip-h: calc(var(--chip-w) * var(--flat));
   --chip-lip: calc(var(--chip-w) * 0.13);
   --side: calc(var(--chip-lip) * var(--stack, 1));
@@ -350,8 +381,8 @@
   /* The join to the chip below: a hairline right on the disc's own front arc,
      so every chip in a pile is countable, over the softer shadow it drops. */
   box-shadow:
-    inset 0 -0.05cqw 0 rgba(0, 0, 0, 0.5),
-    inset 0 -0.16cqw 0.18cqw rgba(0, 0, 0, 0.3);
+    inset 0 calc(-0.05 * var(--cq)) 0 rgba(0, 0, 0, 0.5),
+    inset 0 calc(-0.16 * var(--cq)) calc(0.18 * var(--cq)) rgba(0, 0, 0, 0.3);
 }
 
 /* The wall's surface: the cream rim dashes wrapping round it.
@@ -526,7 +557,7 @@
    * version used. Those two numbers are the whole difference between a cup
    * standing on this table and a cup photographed from the side. */
   transform: translate(-50%, -100%);
-  --cup-w: 8.8cqw;
+  --cup-w: calc(8.8 * var(--cq));
   --mouth: calc(var(--cup-w) * var(--flat)); /* the mouth ellipse's height */
   width: var(--cup-w);
   height: calc(var(--cup-w) * 1.49);
@@ -540,7 +571,7 @@
   bottom: -9%;
   width: 128%;
   height: 38%;
-  filter: blur(1cqw);
+  filter: blur(calc(1 * var(--cq)));
 }
 
 /* Tapered body, lit from the right: sampled #660E01 on the left, #7F1302 in
@@ -632,7 +663,7 @@
   position: absolute;
   border-radius: 50%;
   background: radial-gradient(closest-side, transparent 0 96.5%, rgba(58, 6, 0, 0.4) 96.5% 100%);
-  filter: drop-shadow(0 0.1cqw 0 rgba(255, 170, 142, 0.15));
+  filter: drop-shadow(0 calc(0.1 * var(--cq)) 0 rgba(255, 170, 142, 0.15));
   /* Two masks, intersected.
    *
    * The first keeps the visible part of the ring. Cutting it at the ellipse's
@@ -713,7 +744,7 @@
   );
   /* Biased right: the light comes over the right shoulder, so it reaches down
      the far LEFT of the inside and the right inner wall is the part in shade. */
-  box-shadow: inset -0.06cqw 0.12cqw 0.28cqw rgba(0, 0, 0, 0.34);
+  box-shadow: inset calc(-0.06 * var(--cq)) calc(0.12 * var(--cq)) calc(0.28 * var(--cq)) rgba(0, 0, 0, 0.34);
 }
 
 /* The drink, filling the rim's inner opening (70% of the mouth) and nudged
@@ -751,7 +782,7 @@
      dome of liquid bulging out of the cup once the mouth opened up to its real
      ellipse - it was only ever hidden by how narrow the old one was. */
   background: linear-gradient(180deg, #4a1902 0%, #6b2703 24%, #8a3806 60%, #722d08 100%);
-  box-shadow: inset -0.07cqw 0.16cqw 0.3cqw rgba(0, 0, 0, 0.5);
+  box-shadow: inset calc(-0.07 * var(--cq)) calc(0.16 * var(--cq)) calc(0.3 * var(--cq)) rgba(0, 0, 0, 0.5);
 }
 
 /* A cup somebody has got further through. The level drops, so the surface sits
@@ -777,7 +808,7 @@
      table rather than standing up facing the viewer (a 1:1.4 card seen at this
      camera projects to 1:0.95, which is exactly what the reference render
      measures); and --deck-dim below sinks it into the table's ambient light. */
-  --deck-w: 7.6cqw;
+  --deck-w: calc(7.6 * var(--cq));
   --deck-dim: 0.4; /* how far into shadow the whole card sits */
   width: var(--deck-w);
   height: calc(var(--deck-w) * 1.12);
@@ -813,7 +844,7 @@
     linear-gradient(rgba(0, 0, 0, var(--deck-dim)), rgba(0, 0, 0, var(--deck-dim))),
     linear-gradient(90deg, rgba(0, 0, 0, 0.36) 0%, transparent 24%, rgba(255, 255, 255, 0.08) 100%),
     repeating-linear-gradient(180deg, #cfc7ba 0 1.2px, #7d7668 1.2px 2.4px);
-  box-shadow: -0.14cqw 0.2cqw 0.45cqw rgba(0, 0, 0, 0.42);
+  box-shadow: calc(-0.14 * var(--cq)) calc(0.2 * var(--cq)) calc(0.45 * var(--cq)) rgba(0, 0, 0, 0.42);
 }
 
 /* The back of the top card. Every value here is the dealt card's
@@ -931,6 +962,17 @@
     width: min(124vw, 74vh);
     aspect-ratio: 0.95 / 1;
     top: 46%;
+  }
+  /* The same two fallbacks as the landscape block, for this width. */
+  @supports not (width: 1cqw) {
+    .table {
+      --cq: min(1.24vw, 0.74vh);
+    }
+  }
+  @supports not (aspect-ratio: 1 / 1) {
+    .table {
+      height: calc(min(124vw, 74vh) / 0.95);
+    }
   }
 
   /* The apron is a fixed fraction of the FACE height, and the face is far
