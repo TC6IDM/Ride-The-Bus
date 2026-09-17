@@ -155,7 +155,7 @@ function spinBlockedReason(): string | null {
   // Replay is view-only — these non-replay checks don't apply.
   if (stateUrlDerived.replay()) return null;
   if (gate.held) {
-    return t('Spins must be %s seconds apart').replace('%s', cooldownSecondsLabel());
+    return t('Rounds must be %s seconds apart').replace('%s', cooldownSecondsLabel());
   }
   if (round.state === 'playing' || round.isProcessing || round.resumeInProgress) return t('Round in progress');
   if (!allChoicesMade()) return t('Pick all 4 guesses');
@@ -625,17 +625,32 @@ $effect(() => {
   <div class="cb-panel cb-panel-dark cb-actions">
     {#if !jurisdiction.autoplayDisabled()}
       <!-- Two arcs with open heads, stroked - the repeat mark in the same
-           voice as the info mark and the steppers. It was Material's filled
-           sync glyph with a play triangle dropped into the middle; the
-           triangle went with the fill, since at 30px a 5-unit triangle in a
-           2.2 stroke is a blob and the arcs alone are the universal autoplay
-           mark. See the note above the turbo button. -->
+           voice as the info mark and the steppers - with an A for Autoplay
+           inside them. The A is small - 4.2 units tall, a third of the ring -
+           and stroked lighter than the arcs (1.2 against 2.2): at the ring's
+           own weight its counter closes and it reads as a wedge. The arcs
+           were once
+           Material's filled sync glyph with a play triangle in the middle; the
+           triangle went with the fill for the same reason. See the note above
+           the turbo button. -->
       <button class="cb-round cb-autospin" class:active={openPopup === 'autospin'} onclick={() => togglePopup('autospin')} disabled={auto.running || stateUrlDerived.replay()} aria-label={t('Autoplay settings')}>
         <svg class="cb-svg cb-autospin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M4.6 12a7.4 7.4 0 0 1 12.7-5.2L19.4 8.9" />
-          <path d="M19.6 4v5h-5" />
-          <path d="M19.4 12a7.4 7.4 0 0 1-12.7 5.2L4.6 15.1" />
-          <path d="M4.4 20v-5h5" />
+          <!-- The arcs are turned 45deg so the two heads sit at 3 and 9
+               o'clock. Unturned, their arms reach in toward the centre at
+               exactly the height of the A's feet, and the letter had to be
+               squeezed to about four units wide to miss them - at which point
+               its counter closed and it read as a wedge. With the heads at the
+               sides the A's narrowest part is what passes them. The heads are
+               3.6 units a side, not 5: turned, a 5-unit inner arm reached four
+               units from the centre and grazed the A's legs, and the outer tip
+               ran past the 24-unit box. -->
+          <g transform="rotate(45 12 12)">
+            <path d="M4.6 12a7.4 7.4 0 0 1 12.7-5.2L19.4 8.9" />
+            <path d="M19.6 5.4v3.6h-3.6" />
+            <path d="M19.4 12a7.4 7.4 0 0 1-12.7 5.2L4.6 15.1" />
+            <path d="M4.4 18.6v-3.6h3.6" />
+          </g>
+          <path d="M10.6 14.1 12 9.9l1.4 4.2M11.2 12.8h1.6" stroke-width="1.2" />
         </svg>
       </button>
     {/if}
@@ -656,7 +671,7 @@ $effect(() => {
           ? t('Skip the reveal')
           : replayFinished()
             ? t('Play Again')
-            : t('Spin')}
+            : t('Deal')}
     >
       {#if auto.running}
         <span class="cb-spin-square" aria-hidden="true"></span>

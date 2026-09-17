@@ -3,7 +3,7 @@
  *
  * SETTINGS ONLY. The loop that actually plays the rounds is in
  * autoplayLoop.svelte.ts, and the split is deliberate: startAuto calls into the
- * round flow, and the round flow reads `auto.running` and `stops.slamOnAuto`
+ * round flow, and the round flow reads `auto.running` and `stops.onFullWin`
  * back out. Kept in one module that would be a cycle between two of them; with
  * the state on its own the dependencies are a DAG, which is the version a
  * reader can follow.
@@ -13,7 +13,7 @@
  * asks:
  *
  *   auto      the live run - what was asked for and what is left of it
- *   stops     the four passive switches on the autoplay panel
+ *   stops     the two passive switches on the autoplay panel
  *   advanced  the gated bet-progression fields (see ADVANCED_ENABLED)
  *   run       the running net result, for the stop-on checks
  */
@@ -44,7 +44,7 @@ export const autoRoundsValid = () =>
   auto.infinite ||
   (Number.isFinite(Number(auto.roundsInput)) && Math.floor(Number(auto.roundsInput)) >= 1);
 /**
- * The four passive switches on the autoplay panel.
+ * The two passive switches on the autoplay panel.
  *
  * Passive is the load-bearing word: every one of these either ends a run or
  * shortens an animation. None of them touches the stake, which is what keeps
@@ -70,28 +70,11 @@ export const stops = $state({
    */
   skipWinOnAuto: true,
 
-  /**
-   * Skip the card reveal during an auto run - the same effect as pressing Skip
-   * on every round, applied automatically.
-   *
-   * Default OFF, unlike the takeover skip above. That one removes a wait the
-   * player did not ask for; this one removes the game's main animation, which
-   * is a taste question rather than an annoyance. Turbo already covers "faster"
-   * for anyone who wants it by degrees; this is for players who want the result
-   * and nothing else.
-   */
-  slamOnAuto: false,
-
-  /**
-   * Skip the card reveal while the spacebar is HELD.
-   *
-   * Hold only, not the single tap. A tap is one deliberate round and the reveal
-   * is the point of it; a hold is a run, and a run is where throughput matters.
-   * Separate from slamOnAuto because they answer different questions - that one
-   * is about unattended runs, this is about a player driving from the keyboard.
-   * Default OFF, like the other skip.
-   */
-  slamOnSpaceHold: false,
+  // There is deliberately no "skip the card reveal" switch here, for autoplay
+  // or for a held spacebar. Both existed once. A slam collapses the reveal to
+  // exactly the instant end of the turbo scale (paceMs in revealPacing), so
+  // each was the turbo slider at maximum applied to some rounds and not
+  // others - a second control for a result the first one already gives.
 });
 
 // Advanced auto-bet strategy (Stake-style). When the Advanced switch is on:

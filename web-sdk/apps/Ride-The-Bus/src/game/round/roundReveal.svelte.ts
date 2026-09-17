@@ -18,10 +18,8 @@
  */
 import type { Card } from './roundContract';
 import { loaderGone } from '../platform/ready.svelte';
-import { jurisdiction } from '../jurisdiction/jurisdiction.svelte';
 import { sound } from '../audio/sound';
 import { DECAY, forgivenessAvailable, quantizeMultiplier } from '../math/payout';
-import { auto, stops } from './autoplaySettings.svelte';
 import { familyRules } from '../bet/betState.svelte';
 import { cueLead, pacing, revealWait } from './revealPacing.svelte';
 import { resetForNewRound, round } from './roundState.svelte';
@@ -96,18 +94,11 @@ export async function playRevealSequence() {
   // compounded exactly like computeFinalMultiplier / gamestate.run_spin; we
   // only quantize for the per-card display and the final payout, so the
   // last card's shown multiplier equals the credited win.
-  // Each round starts un-slammed; the flag only lives for one reveal.
-  //
-  // Unless the player has asked autoplay to skip the reveal outright, which
-  // is the same thing the Skip button does - so it reuses the same flag and
-  // inherits the instant-turbo pacing rather than inventing a faster path.
-  // Still gated on the regulator's slam-stop rule: a jurisdiction that bars
-  // skipping the animation bars it here too, however it was requested.
-  // Bet spacing is governed by rgsPacing regardless, so this cannot outrun
-  // the RGS no matter how short the reveal becomes.
-  const skipForHold = stops.slamOnSpaceHold && auto.spaceHoldRunning;
-  const skipForAuto = auto.running && stops.slamOnAuto;
-  pacing.slamRequested = (skipForAuto || skipForHold) && !jurisdiction.slamstopDisabled();
+  // Each round starts un-slammed; the flag only lives for one reveal, and
+  // only the Skip button sets it. (Autoplay and a held spacebar used to be
+  // able to pre-set it from two panel switches; a slam paces exactly like
+  // turbo at maximum, so those were the slider twice over and are gone.)
+  pacing.slamRequested = false;
   // The hand goes down. Fills the ~650ms between the press and the first card,
   // which used to be silent - the press resolved into nothing and the round
   // began with a card already landing.

@@ -222,7 +222,7 @@ export type BustRow = {
 	key:
 		| 'The round ends and pays nothing.'
 		| 'The round ends, keeping about %s% of what you had built.'
-		| 'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.';
+		| 'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.';
 	/** Percentage to substitute for `%s`, or null when the sentence takes none. */
 	percent: number | null;
 };
@@ -261,7 +261,7 @@ export function bustRowsFor(rules: FamilyRules = FAMILY_RULES.base): BustRow[] {
 			first,
 			{
 				label: 'Your first wrong guess',
-				key: 'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.',
+				key: 'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.',
 				percent: kept,
 			},
 			{

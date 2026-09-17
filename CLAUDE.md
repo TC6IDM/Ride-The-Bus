@@ -603,7 +603,7 @@ places to find one cue, and every change costs an `npm run audio` pass. Size
 there is not complexity.
 
 **Autoplay is split in two on purpose.** `startAuto` calls the round flow, and
-the round flow reads `auto.running` / `stops.slamOnAuto` back out. In one module
+the round flow reads `auto.running` / `stops.onFullWin` back out. In one module
 that is a cycle; with the settings on their own it is a DAG.
 
 **`$effect` only runs inside a component, so the effects stay in `Game.svelte`** —

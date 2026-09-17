@@ -32,8 +32,8 @@ export default {
 	Busted: 'Busted',
 	'Revealing…': 'Revealing…',
 
-	// Spin button / action states
-	Spin: 'Spin',
+	// Deal button / action states
+	Deal: 'Deal',
 	Stop: 'Stop',
 	left: 'left',
 	'Pick all 4 guesses': 'Pick all 4 guesses',
@@ -50,7 +50,7 @@ export default {
 	'Turbo Speed': 'Turbo Speed',
 	Normal: 'Normal',
 	Instant: 'Instant',
-	'Off — full animation': 'Off — full animation',
+	'Off: full animation': 'Off: full animation',
 	'% faster': '% faster',
 
 	// Sound popup. Two buses, because a player who wants the music off usually
@@ -83,9 +83,8 @@ export default {
 	// decorative one at a time and only mean anything as a count, so the meter
 	// carries this instead of labelling five separate images.
 	'Volatility %s of %t': 'Volatility %s of %t',
-	'Every mode costs %s× your bet.': 'Every mode costs %s× your bet.',
-	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
-		'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.',
+	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on High Stakes.':
+		'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on High Stakes.',
 	// Shown on the card a Second Chance round let off.
 	Forgiven: 'Forgiven',
 	'Game modes': 'Game modes',
@@ -95,49 +94,42 @@ export default {
 	'High Stakes': 'High Stakes',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'A wrong first card ends the round. Later misses keep 30% of what you had built.',
-	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
-		'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.',
-	'Every mode returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
-		'Every mode returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.',
+	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
+		'A wrong first card ends the round. After that your first miss is forgiven and play continues.',
+	'Every mode costs %c× your bet and returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
+		'Every mode costs %c× your bet and returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.',
 
 	// Advanced popup
 	Advanced: 'Advanced',
-	'Skip card reveal on spacebar hold': 'Skip card reveal on spacebar hold',
-	'Skip the card reveal while the spacebar is held':
-		'Skip the card reveal while the spacebar is held',
-	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
-		'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.',
 	'Card 1': 'Card 1',
 	'Your first wrong guess': 'Your first wrong guess',
 	'Your second wrong guess': 'Your second wrong guess',
-	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
-		'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.',
-	'Only some four-guess combinations reach a mode’s maximum. Once your four guesses are picked, their own ceiling is shown above whenever it is lower.':
-		'Only some four-guess combinations reach a mode’s maximum. Once your four guesses are picked, their own ceiling is shown above whenever it is lower.',
+	'Guess all four right and the payout depends on how hard your picks were. Equal is the rarest guess, so rounds built on it pay the most; two Equal picks together is the most this mode can pay, at %m your bet.':
+		'Guess all four right and the payout depends on how hard your picks were. Equal is the rarest guess, so rounds built on it pay the most; two Equal picks together is the most this mode can pay, at %m your bet.',
+	'Only some guess combinations reach a mode’s maximum. Once your four are picked, their own ceiling is shown above.':
+		'Only some guess combinations reach a mode’s maximum. Once your four are picked, their own ceiling is shown above.',
 	Playing: 'Playing',
 	'Card 2, 3 or 4': 'Card 2, 3 or 4',
 	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
 		'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.',
-	'Stop on full game win': 'Stop on full game win',
 
 	// How to play
 	'How to Play': 'How to Play',
 	'Guess your way through four cards:': 'Guess your way through four cards:',
-	'Colour — red or black for card 1.': 'Colour — red or black for card 1.',
-	'Higher / Lower — versus card 1 (or =).': 'Higher / Lower — versus card 1 (or =).',
-	'Inside / Outside — between cards 1 & 2 (or =).':
-		'Inside / Outside — between cards 1 & 2 (or =).',
-	'Suit — the suit of card 4.': 'Suit — the suit of card 4.',
-	'Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.':
-		'Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.',
+	'Color: red or black for card 1.': 'Color: red or black for card 1.',
+	'Higher / Lower: versus card 1 (or =).': 'Higher / Lower: versus card 1 (or =).',
+	'Inside / Outside: between cards 1 & 2 (or =).': 'Inside / Outside: between cards 1 & 2 (or =).',
+	'Suit: the suit of card 4.': 'Suit: the suit of card 4.',
+	'Pick all four, set your bet and deal. Each right guess multiplies your win; get all four for a full game win. What a wrong guess costs you depends on the game mode, explained below.':
+		'Pick all four, set your bet and deal. Each right guess multiplies your win; get all four for a full game win. What a wrong guess costs you depends on the game mode, explained below.',
 	'Card order': 'Card order',
-	'Ace is low and King is high — worth knowing, since plenty of card games play it the other way. Suit never affects rank; only the number counts for Higher / Lower and Inside / Outside.':
-		'Ace is low and King is high — worth knowing, since plenty of card games play it the other way. Suit never affects rank; only the number counts for Higher / Lower and Inside / Outside.',
+	'Ace is low and King is high. Suit never affects rank: only the number counts for Higher / Lower and Inside / Outside.':
+		'Ace is low and King is high. Suit never affects rank: only the number counts for Higher / Lower and Inside / Outside.',
 	Lowest: 'Lowest',
 	Highest: 'Highest',
 	'Payouts follow the odds': 'Payouts follow the odds',
-	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
-		'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.',
+	'Every correct guess pays its true odds against the cards left in the deck, so the less likely your pick, the more it pays, and the same guess can pay differently from one round to the next.':
+		'Every correct guess pays its true odds against the cards left in the deck, so the less likely your pick, the more it pays, and the same guess can pay differently from one round to the next.',
 	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
 		'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.',
 	// Paytable. The rows themselves are generated from payout.ts; these are the
@@ -148,23 +140,12 @@ export default {
 	Pays: 'Pays',
 	'Red or Black': 'Red or Black',
 	'Any suit': 'Any suit',
-	'Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.':
-		'Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.',
+	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
+		'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.',
 	'If you guess wrong': 'If you guess wrong',
 	'Full game wins': 'Full game wins',
-	'Guess all four cards right and the payout depends on how hard your picks were:':
-		'Guess all four cards right and the payout depends on how hard your picks were:',
-	'Speed and autoplay': 'Speed and autoplay',
-	'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.':
-		'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.',
-	'Autoplay (the circular arrows) replays the same four guesses for a set number of rounds, or unlimited. The round counter sits on the button while it runs — press the red square to stop, and the round already in play finishes first.':
-		'Autoplay (the circular arrows) replays the same four guesses for a set number of rounds, or unlimited. The round counter sits on the button while it runs — press the red square to stop, and the round already in play finishes first.',
-	'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.':
-		'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.',
-	'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.':
-		'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.',
-	'Tap the spacebar to play one round, or hold it to keep spinning until you let go.':
-		'Tap the spacebar to play one round, or hold it to keep spinning until you let go.',
+	'Speed and skip settings change only what you see, never the cards, the odds or the payout.':
+		'Speed and skip settings change only what you see, never the cards, the odds or the payout.',
 
 	// Accessible control names (screen readers)
 	'Pick a color': 'Pick a color',
@@ -197,7 +178,7 @@ export default {
 	// %s is substituted at render time - keep it in translations. Deliberately
 	// NOT {seconds}: Lingui parses braces as ICU placeholders and, with no
 	// value passed, silently renders them as an empty string.
-	'Spins must be %s seconds apart': 'Spins must be %s seconds apart',
+	'Rounds must be %s seconds apart': 'Rounds must be %s seconds apart',
 	'Round in progress': 'Round in progress',
 	'Insufficient funds': 'Insufficient funds',
 	'Bet is below the minimum of %s': 'Bet is below the minimum of %s',
@@ -234,7 +215,7 @@ export default {
 	'Unlimited plays': 'Unlimited plays',
 	'More plays': 'More plays',
 	'Fewer plays': 'Fewer plays',
-	'Stop autoplay on a full game win': 'Stop autoplay on a full game win',
+	'Stop autoplay on full game win': 'Stop autoplay on full game win',
 	'Close menu': 'Close menu',
 	Close: 'Close',
 	'Game information': 'Game information',
@@ -257,27 +238,26 @@ export default {
 	Play: 'Play',
 
 	// Rule additions (new)
-	'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.':
-		'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.',
 
 	// User interaction guide (new)
 	Controls: 'Controls',
-	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
-		'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.',
-	'The speaker button opens the sound settings, where music and effects can be muted separately.': 'The speaker button opens the sound settings, where music and effects can be muted separately.',
-	'The i button opens this screen at any time.': 'The i button opens this screen at any time.',
-	'The lightning button adjusts the speed of the card reveal.':
-		'The lightning button adjusts the speed of the card reveal.',
-	'The circular arrow button opens the autoplay settings.':
-		'The circular arrow button opens the autoplay settings.',
-	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
-		'The sliders button lets you toggle stop-on-full-win for autoplay runs.',
-	'The large round button deals the round. While autoplay runs it becomes the Stop button.':
-		'The large round button deals the round. While autoplay runs it becomes the Stop button.',
-	'The Mode button opens the game-mode picker. Switching mode asks you to confirm before it applies.':
-		'The Mode button opens the game-mode picker. Switching mode asks you to confirm before it applies.',
+	'Plus and minus set your bet. Tap the amount for the quick-bet menu.':
+		'Plus and minus set your bet. Tap the amount for the quick-bet menu.',
+	'The speaker opens the sound settings. Music and game sounds mute separately.':
+		'The speaker opens the sound settings. Music and game sounds mute separately.',
+	'The i button opens this screen.': 'The i button opens this screen.',
+	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
+		'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.',
+	'The circular arrows open autoplay, which repeats your four guesses for a set number of rounds or unlimited. The counter sits on the button while it runs.':
+		'The circular arrows open autoplay, which repeats your four guesses for a set number of rounds or unlimited. The counter sits on the button while it runs.',
+	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
+		'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.',
+	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
+		'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.',
+	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
+		'Mode opens the game-mode picker. Switching asks you to confirm before it applies.',
 
 	// Big-win takeover. Tier names are ordered by rarity - see game/math/winTiers.ts.
 	// "Max Win" is deliberately reused from the start screen's stat row: it is
@@ -294,12 +274,10 @@ export default {
 	'Guess the color of card 1: red or black.': 'Guess the color of card 1: red or black.',
 	'Guess whether card 2 is higher or lower than card 1, or equal to it.':
 		'Guess whether card 2 is higher or lower than card 1, or equal to it.',
-	'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either of the first 2 cards. If you pick Equal on step 2, Inside becomes impossible: nothing can fall between two cards of the same rank.':
-		'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either of the first 2 cards. If you pick Equal on step 2, Inside becomes impossible: nothing can fall between two cards of the same rank.',
+	'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either. After Equal on step 2 there is nothing to fall between, so Inside is unavailable.':
+		'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either. After Equal on step 2 there is nothing to fall between, so Inside is unavailable.',
 	'Guess the suit of card 4: hearts, diamonds, clubs or spades.':
 		'Guess the suit of card 4: hearts, diamonds, clubs or spades.',
-	'Skip card reveal on autoplay': 'Skip card reveal on autoplay',
-	'Skip the card reveal during autoplay': 'Skip the card reveal during autoplay',
 	'Skip win animations on autoplay': 'Skip win animations on autoplay',
 	'Skip big win animations during autoplay': 'Skip big win animations during autoplay',
 	'Your four guesses top out at %s your bet.':
@@ -309,6 +287,6 @@ export default {
 		'The round ends and pays nothing.',
 	'The round ends, keeping about %s% of what you had built.':
 		'The round ends, keeping about %s% of what you had built.',
-	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
-		'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.',
+	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
+		'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.',
 };

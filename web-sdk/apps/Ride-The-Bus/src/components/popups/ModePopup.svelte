@@ -77,22 +77,24 @@
              guesses already on the board would top out at if the switch goes
              through. Only 8 of a family's 64 combinations reach the headline,
              so without this line the confirmation overstates most switches by
-             about five times. -->
-        {#if picked !== null && picked !== target.maxWin}
+             about five times.
+             Shown whenever the guesses are complete, INCLUDING when the two
+             figures agree. It used to hide itself in that case so the eight
+             max-reaching combinations were not told the same number twice -
+             but from the player's side that read as the line simply failing to
+             appear for their pick, and the two figures agreeing IS the
+             information. -->
+        {#if picked !== null}
           <p class="mode-confirm-picked">
             {t('Your four guesses top out at %s your bet.').replace('%s', `${picked}×`)}
           </p>
         {/if}
-        <!-- The figure is interpolated from FAMILY_RULES, not written into the
-             string - the same fix the RTP line below already had, and for the
-             same reason: it was baked into all 17 locale files where nothing
-             could compare it to the cost the round is actually priced at.
-             The word "Every" is the half a placeholder cannot fix; if the
-             families ever stop sharing a cost, this sentence needs rewriting,
-             not just re-interpolating. -->
-        <p class="mode-confirm-cost">
-          {t('Every mode costs %s× your bet.').replace('%s', String(target.cost))}
-        </p>
+        <!-- No cost line here any more. All three families cost the same, so
+             a "costs 1x your bet" line on the confirmation restated what the
+             bet readout already shows and read as though the switch carried
+             a price. The cost is still stated, once, in the note at the foot
+             of this panel and again in How to Play, which is where Stake's
+             checklist looks for it. -->
         <div class="mode-confirm-actions">
           <button type="button" class="mode-confirm-cancel" onclick={() => (bet.pending = null)}>
             {t('Cancel')}
@@ -161,11 +163,16 @@
       {/each}
     </div>
     {/if}
-    <!-- Interpolated from game/config.ts, not written into the string. The
-         figure used to be baked into all 17 locale files, where nothing could
-         compare it to the RTP the math is actually reweighted to. -->
+    <!-- Cost and RTP in one sentence, both interpolated - from FAMILY_RULES
+         and game/config.ts - rather than written into the string. They used
+         to be baked into all 17 locale files, where nothing could compare
+         them to the cost a round is priced at or the RTP the math is
+         reweighted to. The word "Every" is the half a placeholder cannot fix;
+         if the families ever stop sharing a cost, this sentence needs
+         rewriting, not just re-interpolating. -->
     <p class="mode-note">
-      {t('Every mode returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.')
+      {t('Every mode costs %c× your bet and returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.')
+        .replace('%c', String(FAMILY_RULES[bet.family].cost))
         .replace('%s', `${(gameConfig.rtp * 100).toFixed(2)}%`)}
     </p>
   </div>

@@ -39,7 +39,7 @@
         />
         <span class="turbo-end">{jurisdiction.superTurboDisabled() ? t('Fast') : t('Instant')}</span>
       </div>
-      <div class="turbo-readout">{pacing.turboSpeed <= 0 ? t('Off — full animation') : pacing.turboSpeed >= 1 ? t('Instant') : `${Math.round(pacing.turboSpeed * 100)}${t('% faster')}`}</div>
+      <div class="turbo-readout">{pacing.turboSpeed <= 0 ? t('Off: full animation') : pacing.turboSpeed >= 1 ? t('Instant') : `${Math.round(pacing.turboSpeed * 100)}${t('% faster')}`}</div>
     </div>
   </div>
 

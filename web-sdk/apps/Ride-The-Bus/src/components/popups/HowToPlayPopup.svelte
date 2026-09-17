@@ -86,15 +86,19 @@
     <div class="info-body">
       <p>{t('Guess your way through four cards:')}</p>
       <ol>
-        <li>{t('Colour — red or black for card 1.')}</li>
-        <li>{t('Higher / Lower — versus card 1 (or =).')}</li>
-        <li>{t('Inside / Outside — between cards 1 & 2 (or =).')}</li>
-        <li>{t('Suit — the suit of card 4.')}</li>
+        <li>{t('Color: red or black for card 1.')}</li>
+        <li>{t('Higher / Lower: versus card 1 (or =).')}</li>
+        <li>{t('Inside / Outside: between cards 1 & 2 (or =).')}</li>
+        <li>{t('Suit: the suit of card 4.')}</li>
       </ol>
-      <p>{t('Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.')}</p>
+      <!-- What a miss costs is deliberately NOT stated here: it is different in
+           all three families (nothing at card 1; 30% or 20% after; forgiven
+           once on Second Chance), and a one-line summary that fits one of them
+           is wrong for the other two. The mode panel below says it per family. -->
+      <p>{t('Pick all four, set your bet and deal. Each right guess multiplies your win; get all four for a full game win. What a wrong guess costs you depends on the game mode, explained below.')}</p>
 
       <h4 class="info-h">{t('Card order')}</h4>
-      <p>{t('Ace is low and King is high — worth knowing, since plenty of card games play it the other way. Suit never affects rank; only the number counts for Higher / Lower and Inside / Outside.')}</p>
+      <p>{t('Ace is low and King is high. Suit never affects rank: only the number counts for Higher / Lower and Inside / Outside.')}</p>
       <!-- Rendered from the same `ranks` array the game runs on, so it cannot
            disagree with the real ordering. An ordered list because that is
            exactly what it is: lowest to highest. -->
@@ -109,13 +113,14 @@
       </div>
 
       <h4 class="info-h">{t('Payouts follow the odds')}</h4>
-      <p>{t('Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.')}</p>
-      <!-- The worked example ("with a 3 on the table, Lower pays about...")
-           used to be the next paragraph here, above the mode tabs, with
-           Classic's figures typed into it. It is inside the mode panel now,
-           under the paytable, because its numbers are that table's numbers
-           and move with the family the same way. -->
-      <p>{t('Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.')}</p>
+      <!-- One paragraph, not two. This used to be followed by a second one
+           ("Payouts are dynamic and change based on which cards remain...")
+           that said the same thing again in different words; the "dynamic
+           payouts" statement Stake's checklist wants is the last clause here.
+           The worked example ("with a 3 on the table, Lower pays about...")
+           is inside the mode panel, under the paytable, because its numbers
+           are that table's numbers and move with the family the same way. -->
+      <p>{t('Every correct guess pays its true odds against the cards left in the deck, so the less likely your pick, the more it pays, and the same guess can pay differently from one round to the next.')}</p>
 
       <!-- ---- Game modes ------------------------------------------------
            One switchable block rather than three sections each fixed to the
@@ -128,13 +133,20 @@
            reopening builds a fresh one - which is what makes it snap back to
            whatever the player is actually on, with no reset logic. -->
       <h4 class="info-h">{t('Game modes')}</h4>
-      <p>{t('Every mode costs %s× your bet.').replace('%s', String(viewingRules.cost))}</p>
-      <!-- Interpolated from game/config.ts for the same reason as the RTP line
-           further down: this used to write "96.00%" into the string itself, in
-           all 17 locale files, so the one figure a reviewer checks against the
-           math lived in seventeen places that no test compared. -->
+      <!-- The cost and the RTP in ONE sentence. Stake's checklist wants the
+           cost of every mode stated in the rules ("Game modes include
+           description and cost information"), so it cannot simply go - but as
+           a line of its own above this one it read as a rule in its own right,
+           when all it says is that the three modes are priced the same.
+           Both figures are interpolated rather than written into the string:
+           they used to be typed into all 17 locale files, where nothing could
+           compare them to the cost the round is priced at or the RTP the math
+           is reweighted to. The word "Every" is the half a placeholder cannot
+           fix; if the families ever stop sharing a cost, this sentence needs
+           rewriting, not just re-interpolating. -->
       <p>
-        {t('Every mode returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.')
+        {t('Every mode costs %c× your bet and returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.')
+          .replace('%c', String(viewingRules.cost))
           .replace('%s', `${(gameConfig.rtp * 100).toFixed(2)}%`)}
       </p>
 
@@ -177,9 +189,12 @@
              and to be realistically obtainable, so both numbers belong here,
              clearly labelled as different things.
 
-             Suppressed when the two are equal, so the eight combinations that
-             DO reach the ceiling are not told the same number twice. -->
-        {#if pickedCeiling !== null && pickedCeiling !== viewingRules.maxWin}
+             Shown whenever the guesses are complete, INCLUDING when the two
+             agree. It used to hide itself for the eight combinations that DO
+             reach the ceiling, so they were not told the same number twice -
+             but from the player's side the line simply failed to appear for
+             their pick, and the two figures agreeing IS the information. -->
+        {#if pickedCeiling !== null}
           <p class="mode-panel-picked">
             {t('Your four guesses top out at %s your bet.').replace('%s', `${pickedCeiling}×`)}
           </p>
@@ -189,7 +204,7 @@
              and the bet in front of the player has its own. Without this a
              player opening the rules from the start screen - no guesses
              picked, so no line above - read the family figure as their own. -->
-        <p class="mode-panel-picked">{t('Only some four-guess combinations reach a mode’s maximum. Once your four guesses are picked, their own ceiling is shown above whenever it is lower.')}</p>
+        <p class="mode-panel-picked">{t('Only some guess combinations reach a mode’s maximum. Once your four are picked, their own ceiling is shown above.')}</p>
 
         <!-- Approval requires payout amounts stated for every pick. There is no
              fixed paytable to print - each stage pays its true odds against the
@@ -230,7 +245,7 @@
              The figures in the table are the true factors and must stay at 2dp:
              rounding them to 1.9x would make the table WRONG, because two 1.99x
              stages compound to 3.96x, not 3.61x. -->
-        <p>{t('Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.')}</p>
+        <p>{t('Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.')}</p>
 
         <!-- Computed per mode. This was once a single fixed list saying both
              "Card 2 - you get 0.5x your bet back" AND "you keep 30%", which
@@ -252,31 +267,29 @@
              is stated is the exact ceiling - which IS known exactly - and the
              ordering, which holds everywhere. -->
         <h5 class="info-sub">{t('Full game wins')}</h5>
-        <p>{t('Guess all four cards right and the payout depends on how hard your picks were:')}</p>
-        <p>{t('Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.')
+        <p>{t('Guess all four right and the payout depends on how hard your picks were. Equal is the rarest guess, so rounds built on it pay the most; two Equal picks together is the most this mode can pay, at %m your bet.')
           .replace('%m', `${viewingRules.maxWin}×`)}</p>
       </div>
 
-      <h4 class="info-h">{t('Speed and autoplay')}</h4>
-      <ul>
-        <li>{t('Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.')}</li>
-        <li>{t('Autoplay (the circular arrows) replays the same four guesses for a set number of rounds, or unlimited. The round counter sits on the button while it runs — press the red square to stop, and the round already in play finishes first.')}</li>
-        <li>{t('Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.')}</li>
-        <li>{t('Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.')}</li>
-        <li>{t('Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.')}</li>
-        <li>{t('Tap the spacebar to play one round, or hold it to keep spinning until you let go.')}</li>
-      </ul>
-
+      <!-- The user interaction guide Stake asks for: every button on the bar,
+           one line each, in the order they sit on the bar. There used to be a
+           "Speed and autoplay" section above this one that described the
+           lightning, circular-arrow and sliders buttons a second time, at
+           twice the length, with "it never changes the cards, the odds or the
+           payout" repeated in three separate bullets. What those bullets said
+           is folded into the button's own line here, and the reassurance is
+           said once, at the end. -->
       <h4 class="info-h">{t('Controls')}</h4>
       <ul>
-        <li>{t('The large round button deals the round. While autoplay runs it becomes the Stop button.')}</li>
-        <li>{t('The Mode button opens the game-mode picker. Switching mode asks you to confirm before it applies.')}</li>
-        <li>{t('Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.')}</li>
-        <li>{t('The speaker button opens the sound settings, where music and effects can be muted separately.')}</li>
-        <li>{t('The i button opens this screen at any time.')}</li>
-        <li>{t('The lightning button adjusts the speed of the card reveal.')}</li>
-        <li>{t('The circular arrow button opens the autoplay settings.')}</li>
-        <li>{t('The sliders button lets you toggle stop-on-full-win for autoplay runs.')}</li>
+        <li>{t('The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.')}</li>
+        <li>{t('Mode opens the game-mode picker. Switching asks you to confirm before it applies.')}</li>
+        <li>{t('Plus and minus set your bet. Tap the amount for the quick-bet menu.')}</li>
+        <li>{t('The lightning button is Turbo: how fast the cards flip, from Normal to Instant.')}</li>
+        <li>{t('The circular arrows open autoplay, which repeats your four guesses for a set number of rounds or unlimited. The counter sits on the button while it runs.')}</li>
+        <li>{t('The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.')}</li>
+        <li>{t('The speaker opens the sound settings. Music and game sounds mute separately.')}</li>
+        <li>{t('The i button opens this screen.')}</li>
+        <li>{t('Speed and skip settings change only what you see, never the cards, the odds or the payout.')}</li>
       </ul>
 
       <h4 class="info-h">{t('Game information')}</h4>
@@ -293,7 +306,7 @@
              It used to state 1354.2x flatly, which stopped being true the
              moment High Stakes reached 3820.5x - and "the most this game can
              pay" is exactly the claim a reviewer checks. -->
-        {t('Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.')
+        {t('Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on High Stakes.')
           .replace('%s', `${(gameConfig.rtp * 100).toFixed(2)}%`)
           .replace('%m', `${maxWinOverall}×`)}
       </p>

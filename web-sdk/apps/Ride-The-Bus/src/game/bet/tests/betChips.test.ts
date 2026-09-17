@@ -164,7 +164,7 @@ describe('what a chip can actually print', () => {
   });
 
   test('a string with no digits at all does not throw', () => {
-    assert.deepEqual(splitChipLabel('—'), { currency: '', amount: '—' });
+    assert.deepEqual(splitChipLabel('–'), { currency: '', amount: '–' });
   });
 });
 

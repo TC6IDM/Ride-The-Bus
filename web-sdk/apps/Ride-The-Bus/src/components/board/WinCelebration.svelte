@@ -187,7 +187,7 @@
 			t(props.tier.label),
 			numberToCurrencyString(props.amount),
 			counting ? t('Tap to skip') : t('Tap to continue'),
-		].join(' — ');
+		].join(', ');
 
 	/** Mark the celebration finished: nothing left to count, only to dismiss. */
 	function settle() {

@@ -3,7 +3,7 @@
  *
  * Separate from autoplaySettings.svelte.ts on purpose. This module CALLS the
  * round flow, and the round flow READS the settings (`auto.running`,
- * `stops.slamOnAuto`) back out. With the state and the loop in one module that
+ * `stops.onFullWin`) back out. With the state and the loop in one module that
  * is a cycle; with the state on its own it is a DAG, and the DAG is the version
  * a reader can follow.
  *

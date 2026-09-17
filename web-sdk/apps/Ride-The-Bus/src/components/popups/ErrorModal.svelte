@@ -64,7 +64,7 @@
       typeof e?.error === 'string' ? e.error : null,
       typeof e?.message === 'string' ? e.message : null,
     ].filter(Boolean);
-    if (parts.length) return [...new Set(parts)].join(' — ');
+    if (parts.length) return [...new Set(parts)].join('. ');
     try {
       return JSON.stringify(e);
     } catch {

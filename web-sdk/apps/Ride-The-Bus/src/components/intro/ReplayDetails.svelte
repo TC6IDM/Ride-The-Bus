@@ -94,7 +94,7 @@
 				<div class="ss-detail-row">
 					<span class="ss-detail-cap">{t('Play amount')}</span>
 					<span class="ss-detail-val">
-						{betAmount > 0 ? numberToCurrencyString(betAmount) : '—'}
+						{betAmount > 0 ? numberToCurrencyString(betAmount) : '–'}
 					</span>
 				</div>
 

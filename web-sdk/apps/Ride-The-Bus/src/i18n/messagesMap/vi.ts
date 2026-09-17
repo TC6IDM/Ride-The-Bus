@@ -19,11 +19,11 @@ export default {
 	Busted: 'Thua',
 	'Revealing…': 'Đang lật bài…',
 
-	Spin: 'Chơi',
+	Deal: 'Chia bài',
 	Stop: 'Dừng',
 	left: 'còn lại',
 	'Pick all 4 guesses': 'Chọn cả 4 dự đoán',
-	'Enter a number of plays': 'Nhập số lượt chơi',
+	'Enter a number of plays': 'Nhập số vòng',
 	'Enter a valid bet': 'Nhập mức cược hợp lệ',
 	'Set rounds': 'Đặt số vòng',
 	Start: 'Bắt đầu',
@@ -34,7 +34,7 @@ export default {
 	'Turbo Speed': 'Tốc độ turbo',
 	Normal: 'Bình thường',
 	Instant: 'Tức thì',
-	'Off — full animation': 'Tắt — hoạt ảnh đầy đủ',
+	'Off: full animation': 'Tắt: hoạt ảnh đầy đủ',
 	'% faster': ' % nhanh hơn',
 
 	'Sound settings': 'Cài đặt âm thanh',
@@ -55,8 +55,8 @@ export default {
 	Classic: 'Cổ điển',
 	'Second Chance': 'Cơ hội thứ hai',
 	'High Stakes': 'Cược lớn',
-	'Every mode returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
-		'Mọi chế độ đều trả về cùng mức %s qua nhiều vòng. Chỉ khác ở tần suất và mức trả thưởng của mỗi vòng.',
+	'Every mode costs %c× your bet and returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
+		'Mọi chế độ đều có giá %c× tiền cược của bạn và trả về cùng mức %s qua nhiều vòng. Chỉ khác ở tần suất và mức trả thưởng của mỗi vòng.',
 	Forgiven: 'Được bỏ qua',
 	'Game modes': 'Chế độ chơi',
 	'Max win': 'Thắng tối đa',
@@ -67,48 +67,41 @@ export default {
 	Cancel: 'Hủy',
 	Switch: 'Đổi',
 	'Volatility %s of %t': 'Độ biến động %s trên %t',
-	'Every mode costs %s× your bet.': 'Mỗi chế độ có giá %s× tiền cược của bạn.',
-	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
-		'Tỷ lệ trả thưởng (RTP) là %s ở mọi chế độ, và mỗi chế độ đều trả về cùng con số đó qua nhiều vòng. Mức trả thưởng cao nhất của trò chơi là %m tiền cược của bạn, ở chế độ Cược lớn.',
+	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on High Stakes.':
+		'Tỷ lệ trả thưởng (RTP) là %s ở mọi chế độ. Mức trả thưởng cao nhất của trò chơi là %m tiền cược của bạn, ở chế độ Cược lớn.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'Sai lá bài đầu tiên là kết thúc vòng. Các lần sai sau giữ lại 30% số đã tích lũy.',
-	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
-		'Lá 1 vẫn kết thúc vòng. Sau đó lần đoán sai đầu tiên được bỏ qua và trò chơi tiếp tục.',
-	'Skip card reveal on spacebar hold': 'Bỏ qua phần lật bài khi dùng phím cách',
-	'Skip the card reveal while the spacebar is held':
-		'Bỏ qua phần lật bài ở các vòng bắt đầu bằng phím cách',
-	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
-		'Bỏ qua phần lật bài khi dùng phím cách (nút thanh trượt) chơi các vòng bắt đầu bằng phím cách mà không có hoạt ảnh lật bài. Nó chỉ thay đổi hoạt ảnh, không bao giờ thay đổi lá bài, tỷ lệ hay mức trả thưởng.',
+	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
+		'Sai lá bài đầu tiên là kết thúc vòng. Sau đó lần đoán sai đầu tiên được bỏ qua và trò chơi tiếp tục.',
 	'Card 1': 'Lá 1',
 	'Your first wrong guess': 'Lần đoán sai đầu tiên',
 	'Your second wrong guess': 'Lần đoán sai thứ hai',
-	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
-		'Bằng là lựa chọn hiếm nhất, nên các vòng dựa vào nó mang lại phần thắng lớn nhất — và khó nhất. Hai lựa chọn Bằng cùng trúng là mức cao nhất của chế độ này, ở %m tiền cược của bạn.',
-	'Only some four-guess combinations reach a mode’s maximum. Once your four guesses are picked, their own ceiling is shown above whenever it is lower.':
-		'Chỉ một số tổ hợp bốn dự đoán đạt tới mức tối đa của chế độ. Sau khi chọn đủ bốn dự đoán, mức trần riêng của chúng sẽ hiện ở trên mỗi khi thấp hơn.',
+	'Guess all four right and the payout depends on how hard your picks were. Equal is the rarest guess, so rounds built on it pay the most; two Equal picks together is the most this mode can pay, at %m your bet.':
+		'Đoán đúng cả bốn thì mức trả thưởng tùy vào độ khó của các lựa chọn. Bằng nhau là dự đoán hiếm nhất, nên các vòng dựa trên nó trả cao nhất; hai lựa chọn Bằng nhau cùng trúng là mức tối đa của chế độ này, %m tiền cược của bạn.',
+	'Only some guess combinations reach a mode’s maximum. Once your four are picked, their own ceiling is shown above.':
+		'Chỉ một số tổ hợp dự đoán đạt tới mức tối đa của chế độ. Sau khi chọn đủ bốn, mức trần riêng của chúng sẽ hiện ở trên.',
 	Playing: 'Đang chơi',
 	'Card 2, 3 or 4': 'Lá 2, 3 hoặc 4',
 	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
 		'Sai lá bài đầu tiên là kết thúc vòng. Các lần sai sau chỉ giữ lại 20%, nên mỗi lần đoán đúng có giá trị hơn.',
-	'Stop on full game win': 'Dừng khi thắng toàn ván',
 
 	'How to Play': 'Cách chơi',
 	'Guess your way through four cards:': 'Dự đoán lần lượt bốn lá bài:',
-	'Colour — red or black for card 1.': 'Màu — lá 1 là đỏ hay đen.',
-	'Higher / Lower — versus card 1 (or =).': 'Lớn hơn / Nhỏ hơn — so với lá 1 (hoặc =).',
-	'Inside / Outside — between cards 1 & 2 (or =).':
-		'Ở giữa / Ngoài khoảng — giữa lá 1 và lá 2 (hoặc =).',
-	'Suit — the suit of card 4.': 'Chất — chất của lá 4.',
-	'Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.':
-		'Chọn cả bốn, đặt mức cược rồi nhấn Chơi. Mỗi dự đoán đúng sẽ nhân tiền thắng; dự đoán sai kết thúc vòng chơi nhưng bạn vẫn giữ phần đã tích được. Đoán đúng cả bốn để thắng toàn ván.',
+	'Color: red or black for card 1.': 'Màu: lá 1 là đỏ hay đen.',
+	'Higher / Lower: versus card 1 (or =).': 'Lớn hơn / Nhỏ hơn: so với lá 1 (hoặc =).',
+	'Inside / Outside: between cards 1 & 2 (or =).':
+		'Ở giữa / Ngoài khoảng: giữa lá 1 và lá 2 (hoặc =).',
+	'Suit: the suit of card 4.': 'Chất: chất của lá 4.',
+	'Pick all four, set your bet and deal. Each right guess multiplies your win; get all four for a full game win. What a wrong guess costs you depends on the game mode, explained below.':
+		'Chọn cả bốn, đặt tiền cược rồi chia bài. Mỗi dự đoán đúng nhân tiền thắng lên; đoán đúng cả bốn là thắng toàn ván. Đoán sai mất gì tùy vào chế độ chơi, xem bên dưới.',
 	'Card order': 'Thứ tự lá bài',
-	'Ace is low and King is high — worth knowing, since plenty of card games play it the other way. Suit never affects rank; only the number counts for Higher / Lower and Inside / Outside.':
-		'Át là nhỏ nhất và K là lớn nhất — nên nhớ điều này, vì nhiều trò bài áp dụng ngược lại. Chất không bao giờ ảnh hưởng đến thứ hạng; chỉ số điểm mới quan trọng với Lớn hơn / Nhỏ hơn và Ở giữa / Ngoài khoảng.',
+	'Ace is low and King is high. Suit never affects rank: only the number counts for Higher / Lower and Inside / Outside.':
+		'Át là nhỏ nhất và K là lớn nhất. Chất không bao giờ ảnh hưởng đến thứ hạng: chỉ số điểm mới quan trọng với Lớn hơn / Nhỏ hơn và Ở giữa / Ngoài khoảng.',
 	Lowest: 'Nhỏ nhất',
 	Highest: 'Lớn nhất',
 	'Payouts follow the odds': 'Tiền thưởng theo xác suất',
-	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
-		'Mỗi dự đoán đúng được trả theo đúng xác suất thực, nên lựa chọn càng khó xảy ra thì trả càng cao — và điều đó phụ thuộc vào các lá bài đã lật.',
+	'Every correct guess pays its true odds against the cards left in the deck, so the less likely your pick, the more it pays, and the same guess can pay differently from one round to the next.':
+		'Mỗi dự đoán đúng được trả theo đúng xác suất thực so với các lá còn lại trong bộ bài, nên lựa chọn càng khó xảy ra thì trả càng cao, và cùng một dự đoán có thể trả khác nhau giữa các vòng.',
 	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
 		'Khi trên bàn là lá 3, Nhỏ hơn trả khoảng %1× vì chỉ 8 trong 51 lá còn lại nhỏ hơn, còn Lớn hơn chỉ trả khoảng %2× vì có tới 40 lá lớn hơn. Đổi lá 3 thành lá 8 thì ngược lại: Nhỏ hơn giảm còn khoảng %3× và Lớn hơn tăng lên khoảng %4×. Bằng nhau luôn khó nhất, khoảng %5×.',
 	'Payout table': 'Bảng trả thưởng',
@@ -117,23 +110,12 @@ export default {
 	Pays: 'Trả',
 	'Red or Black': 'Đỏ hoặc đen',
 	'Any suit': 'Bất kỳ chất nào',
-	'Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.':
-		'Mỗi chặng nhân với chặng trước đó và chúng cộng dồn ở độ chính xác đầy đủ — các con số ở trên là chính xác, không làm tròn. Chỉ khoản chi trả cuối cùng của ván mới được làm tròn xuống, một lần duy nhất, tới một chữ số thập phân. Tổng đang chạy bên cạnh các lá bài cũng được làm tròn theo cách đó ở từng bước, nên trong ván nó có thể hiển thị thấp hơn các con số này một chút.',
+	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
+		'Các chặng nhân với nhau ở độ chính xác đầy đủ, nên các con số ở trên là chính xác. Chỉ khoản chi trả cuối cùng mới được làm tròn xuống tới một chữ số thập phân. Tổng đang chạy bên cạnh các lá bài cũng được làm tròn theo cách đó ở từng bước, nên giữa vòng nó có thể hiển thị thấp hơn các con số này một chút.',
 	'If you guess wrong': 'Nếu bạn đoán sai',
 	'Full game wins': 'Thắng toàn ván',
-	'Guess all four cards right and the payout depends on how hard your picks were:':
-		'Nếu đoán đúng cả bốn lá, tiền thưởng phụ thuộc vào độ khó của các lựa chọn:',
-	'Speed and autoplay': 'Tốc độ và tự động chơi',
-	'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.':
-		'Turbo (nút tia chớp) điều chỉnh từ Bình thường đến Tức thì và chỉ thay đổi tốc độ lật bài. Nó không bao giờ thay đổi lá bài, xác suất hay tiền thưởng.',
-	'Autoplay (the circular arrows) replays the same four guesses for a set number of rounds, or unlimited. The round counter sits on the button while it runs — press the red square to stop, and the round already in play finishes first.':
-		'Tự động chơi (mũi tên vòng tròn) lặp lại cùng bốn dự đoán trong số vòng đã đặt hoặc không giới hạn. Bộ đếm vòng hiển thị trên nút khi đang chạy — nhấn ô vuông đỏ để dừng; vòng đang diễn ra sẽ hoàn tất trước.',
-	'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.':
-		'Dừng khi thắng toàn ván (nút thanh trượt) kết thúc lượt tự động ngay khi một vòng đoán đúng cả bốn lá. Nó chỉ dừng lượt chạy; mức cược của bạn không thay đổi.',
-	'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.':
-		'Bỏ qua phần lật bài khi tự động chơi (nút thanh trượt) chạy tự động chơi mà không có hoạt ảnh lật bài. Nó chỉ thay đổi hoạt ảnh, không bao giờ thay đổi lá bài, tỷ lệ hay mức trả thưởng.',
-	'Tap the spacebar to play one round, or hold it to keep spinning until you let go.':
-		'Nhấn phím cách để chơi một vòng, hoặc giữ phím để tiếp tục chơi cho đến khi bạn thả ra.',
+	'Speed and skip settings change only what you see, never the cards, the odds or the payout.':
+		'Cài đặt tốc độ và bỏ qua chỉ thay đổi những gì bạn thấy, không bao giờ thay đổi lá bài, xác suất hay mức trả thưởng.',
 
 	'Pick a color': 'Chọn màu',
 	'Higher, lower, or equal': 'Lớn hơn, nhỏ hơn hoặc bằng nhau',
@@ -158,7 +140,7 @@ export default {
 	'Autoplay settings': 'Cài đặt tự động chơi',
 	'Advanced settings': 'Cài đặt nâng cao',
 	'Stop autoplay': 'Dừng tự động chơi',
-	'Spins must be %s seconds apart': 'Các vòng phải cách nhau %s giây',
+	'Rounds must be %s seconds apart': 'Các vòng phải cách nhau %s giây',
 	'Round in progress': 'Vòng đang diễn ra',
 	'Insufficient funds': 'Số dư không đủ',
 	'Bet is below the minimum of %s': 'Tiền cược thấp hơn mức tối thiểu %s',
@@ -194,11 +176,11 @@ export default {
 	'Unlimited plays': 'Không giới hạn vòng',
 	'More plays': 'Tăng số vòng',
 	'Fewer plays': 'Giảm số vòng',
-	'Stop autoplay on a full game win': 'Dừng tự động chơi khi thắng toàn ván',
+	'Stop autoplay on full game win': 'Dừng tự động chơi khi thắng toàn ván',
 	'Close menu': 'Đóng menu',
 	Close: 'Đóng',
-	'Game information': 'Thong tin tro choi',
-	Disclaimer: 'Mien tru trach nhiem',
+	'Game information': 'Thông tin trò chơi',
+	Disclaimer: 'Miễn trừ trách nhiệm',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and © 2026 Stake Engine.':
 		'Sự cố làm vô hiệu mọi khoản thắng và lượt chơi. Cần có kết nối internet ổn định. Nếu bị mất kết nối, hãy tải lại trò chơi để hoàn tất các vòng chưa xong. Mức hoàn trả dự kiến được tính trên nhiều lượt chơi. Hình ảnh trò chơi không đại diện cho bất kỳ thiết bị vật lý nào và chỉ mang tính minh họa. Tiền thắng được thanh toán theo số tiền nhận từ Remote Game Server chứ không theo các sự kiện trong trình duyệt web. TM và © 2026 Stake Engine.',
 	'Loading replay…': 'Đang tải bản phát lại…',
@@ -215,23 +197,22 @@ export default {
 	Play: 'Phát',
 
 	// Rule additions (new)
-	'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.':
-		'Mức chi trả thay đổi linh hoạt theo những lá bài còn lại trong bộ bài — dự đoán của bạn càng ít khả năng xảy ra thì mức chi trả càng cao. Cùng một dự đoán có thể trả về số tiền khác nhau giữa các vòng.',
 	Controls: 'Điều khiển',
-	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
-		'Dùng ô hiển thị tiền cược cùng nút cộng và trừ để đặt số tiền cược. Chạm vào số tiền cược để mở menu chọn nhanh.',
-	'The speaker button opens the sound settings, where music and effects can be muted separately.': 'Nút loa mở phần cài đặt âm thanh, nơi có thể tắt riêng nhạc nền và hiệu ứng.',
-	'The i button opens this screen at any time.': 'Nút i mở màn hình này bất cứ lúc nào.',
-	'The lightning button adjusts the speed of the card reveal.':
-		'Nút tia chớp điều chỉnh tốc độ lật bài.',
-	'The circular arrow button opens the autoplay settings.':
-		'Nút mũi tên tròn mở phần cài đặt tự động chơi.',
-	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
-		'Nút thanh trượt cho phép bật hoặc tắt tính năng dừng khi thắng trọn vòng trong các lượt tự động chơi.',
-	'The large round button deals the round. While autoplay runs it becomes the Stop button.':
-		'Nút tròn lớn chia ván chơi. Khi tự động chơi đang chạy, nút này trở thành nút Dừng.',
-	'The Mode button opens the game-mode picker. Switching mode asks you to confirm before it applies.':
-		'Nút Chế độ mở bảng chọn chế độ chơi. Đổi chế độ sẽ yêu cầu xác nhận trước khi áp dụng.',
+	'Plus and minus set your bet. Tap the amount for the quick-bet menu.':
+		'Cộng và trừ đặt tiền cược. Chạm vào số tiền để mở menu cược nhanh.',
+	'The speaker opens the sound settings. Music and game sounds mute separately.':
+		'Loa mở cài đặt âm thanh. Nhạc và âm thanh trò chơi tắt tiếng riêng biệt.',
+	'The i button opens this screen.': 'Nút i mở màn hình này.',
+	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
+		'Nút tia chớp là Turbo: tốc độ lật bài, từ Bình thường đến Tức thì.',
+	'The circular arrows open autoplay, which repeats your four guesses for a set number of rounds or unlimited. The counter sits on the button while it runs.':
+		'Mũi tên vòng tròn mở tự động chơi, lặp lại bốn dự đoán của bạn trong số vòng đã đặt hoặc không giới hạn. Bộ đếm hiển thị trên nút khi đang chạy.',
+	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
+		'Nút thanh trượt chứa hai tùy chọn tự động chơi: dừng khi thắng toàn ván, và bỏ qua hiệu ứng thắng.',
+	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
+		'Nút tròn lớn chia bài cho một vòng. Phím cách cũng vậy: nhấn để chơi một vòng, giữ để chia tiếp. Khi tự động chơi đang chạy, nút này trở thành Dừng và vòng đang chơi sẽ kết thúc trước.',
+	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
+		'Chế độ mở bảng chọn chế độ chơi. Việc chuyển đổi sẽ yêu cầu xác nhận trước khi áp dụng.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'Trò chơi này không có vòng quay miễn phí, vòng thưởng, jackpot hay tính năng kích hoạt lại. Mỗi vòng là một lượt rút bốn lá bài độc lập.',
 	'Big Win': 'Thắng Lớn',
@@ -239,19 +220,17 @@ export default {
 	'Mega Win': 'Siêu Thắng',
 	'Epic Win': 'Thắng Huyền Thoại',
 	'Tap to skip': 'Chạm để bỏ qua',
-	'Skip card reveal on autoplay': 'Bỏ qua phần lật bài khi tự động chơi',
-	'Skip the card reveal during autoplay': 'Bỏ qua phần lật bài trong khi tự động chơi',
 	'Skip win animations on autoplay': 'Bỏ qua hiệu ứng thắng khi tự động chơi',
 	'Skip big win animations during autoplay': 'Bỏ qua hiệu ứng thắng lớn trong khi tự động chơi',
 	'Guess the color of card 1: red or black.': 'Đoán màu của lá bài 1: đỏ hay đen.',
 	'Guess whether card 2 is higher or lower than card 1, or equal to it.':
 		'Đoán xem lá bài 2 cao hơn hay thấp hơn lá bài 1, hoặc bằng nhau.',
-	'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either of the first 2 cards. If you pick Equal on step 2, Inside becomes impossible: nothing can fall between two cards of the same rank.':
-		'Đoán xem lá bài 3 nằm giữa lá 1 và 2, ngoài chúng, hay bằng một trong hai lá đầu tiên. Nếu bạn chọn Bằng ở bước 2, Trong sẽ trở nên bất khả thi: không có gì nằm giữa hai lá bài cùng giá trị.',
+	'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either. After Equal on step 2 there is nothing to fall between, so Inside is unavailable.':
+		'Đoán xem lá 3 nằm giữa lá 1 và 2, nằm ngoài, hay bằng một trong hai. Sau khi chọn Bằng nhau ở bước 2 thì không có gì nằm giữa được, nên Ở giữa không khả dụng.',
 	'Guess the suit of card 4: hearts, diamonds, clubs or spades.':
-		'Đoán chất của lá bài 4: cơ, rô, tép hay bích.',
+		'Đoán chất của lá bài 4: cơ, rô, chuồn hay bích.',
 	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
-		'Bạn đã chọn Bằng, nên lá 1 và lá 2 cùng giá trị. Không có gì nằm giữa chúng, vì vậy Trong không thể thắng.',
+		'Bạn đã chọn Bằng nhau, nên lá 1 và lá 2 cùng giá trị. Không có gì nằm giữa chúng, vì vậy Ở giữa không thể thắng.',
 	'Your four guesses top out at %s your bet.':
 		'Bốn dự đoán của bạn tối đa đạt %s tiền cược.',
 	'Play Again': 'Phát lại',
@@ -259,6 +238,6 @@ export default {
 		'Vòng chơi kết thúc và không trả gì.',
 	'The round ends, keeping about %s% of what you had built.':
 		'Vòng chơi kết thúc, giữ lại khoảng %s% số đã tích lũy.',
-	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
-		'Từ lá 2 trở đi, sai lầm này được bỏ qua — bạn giữ %s% số đã tích lũy và vòng chơi tiếp tục.',
+	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
+		'Từ lá 2 trở đi, sai lầm này được bỏ qua: bạn giữ %s% số đã tích lũy và vòng chơi tiếp tục.',
 };

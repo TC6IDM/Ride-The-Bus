@@ -19,11 +19,11 @@ export default {
 	Busted: 'Przegrana',
 	'Revealing…': 'Odkrywanie…',
 
-	Spin: 'Zagraj',
+	Deal: 'Rozdaj',
 	Stop: 'Zatrzymaj',
 	left: 'pozostało',
 	'Pick all 4 guesses': 'Wybierz wszystkie 4 typy',
-	'Enter a number of plays': 'Podaj liczbę gier',
+	'Enter a number of plays': 'Podaj liczbę rund',
 	'Enter a valid bet': 'Podaj prawidłową stawkę',
 	'Set rounds': 'Ustaw liczbę rund',
 	Start: 'Start',
@@ -34,7 +34,7 @@ export default {
 	'Turbo Speed': 'Prędkość turbo',
 	Normal: 'Normalna',
 	Instant: 'Natychmiastowa',
-	'Off — full animation': 'Wyłączone — pełna animacja',
+	'Off: full animation': 'Wyłączone: pełna animacja',
 	'% faster': ' % szybciej',
 
 	'Sound settings': 'Ustawienia dźwięku',
@@ -55,8 +55,8 @@ export default {
 	Classic: 'Klasyczny',
 	'Second Chance': 'Druga szansa',
 	'High Stakes': 'Wysoka stawka',
-	'Every mode returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
-		'Każdy tryb zwraca te same %s na przestrzeni wielu rund. Zmienia się tylko to, jak często i ile runda wypłaca.',
+	'Every mode costs %c× your bet and returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
+		'Każdy tryb kosztuje %c× twojego zakładu i zwraca te same %s na przestrzeni wielu rund. Zmienia się tylko to, jak często i ile runda wypłaca.',
 	Forgiven: 'Wybaczone',
 	'Game modes': 'Tryby gry',
 	'Max win': 'Maks. wygrana',
@@ -67,73 +67,55 @@ export default {
 	Cancel: 'Anuluj',
 	Switch: 'Zmień',
 	'Volatility %s of %t': 'Zmienność %s z %t',
-	'Every mode costs %s× your bet.': 'Każdy tryb kosztuje %s× twojego zakładu.',
-	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
-		'Zwrot dla gracza (RTP) wynosi %s w każdym trybie, a każdy zwraca tę samą wartość na przestrzeni wielu rund. Najwięcej, ile ta gra może wypłacić, to %m twojego zakładu, w trybie Wysoka stawka.',
+	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on High Stakes.':
+		'Zwrot dla gracza (RTP) wynosi %s w każdym trybie. Najwięcej, ile ta gra może wypłacić, to %m twojego zakładu, w trybie Wysoka stawka.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'Błąd przy pierwszej karcie kończy rundę. Późniejsze pomyłki zachowują 30% zgromadzonej kwoty.',
-	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
-		'Karta 1 nadal kończy rundę. Potem pierwsza pomyłka jest wybaczana i gra trwa dalej.',
-	'Skip card reveal on spacebar hold': 'Pomiń odkrywanie kart przy spacji',
-	'Skip the card reveal while the spacebar is held':
-		'Pomiń odkrywanie kart w rundach rozpoczętych spacją',
-	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
-		'Pomiń odkrywanie kart przy spacji (przycisk suwaków) rozgrywa rundy rozpoczęte spacją bez animacji kart. Zmienia tylko animację, nigdy kart, szans ani wypłaty.',
+	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
+		'Błąd przy pierwszej karcie kończy rundę. Potem pierwsza pomyłka jest wybaczana i gra trwa dalej.',
 	'Card 1': 'Karta 1',
 	'Your first wrong guess': 'Twoja pierwsza pomyłka',
 	'Your second wrong guess': 'Twoja druga pomyłka',
-	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
-		'Równe to najrzadszy typ, więc rundy na nim oparte niosą największe wygrane — i są najtrudniejsze. Dwa trafienia Równe naraz to maksimum tego trybu, %m twojego zakładu.',
-	'Only some four-guess combinations reach a mode’s maximum. Once your four guesses are picked, their own ceiling is shown above whenever it is lower.':
-		'Tylko niektóre kombinacje czterech typów osiągają maksimum trybu. Po wybraniu czterech typów ich własny limit jest pokazywany powyżej, gdy jest niższy.',
+	'Guess all four right and the payout depends on how hard your picks were. Equal is the rarest guess, so rounds built on it pay the most; two Equal picks together is the most this mode can pay, at %m your bet.':
+		'Traf wszystkie cztery, a wypłata zależy od tego, jak trudne były twoje typy. Równo to najrzadszy typ, więc rundy na nim oparte wypłacają najwięcej; dwa typy Równo razem to maksimum, jakie ten tryb może wypłacić: %m twojego zakładu.',
+	'Only some guess combinations reach a mode’s maximum. Once your four are picked, their own ceiling is shown above.':
+		'Tylko niektóre kombinacje typów osiągają maksimum trybu. Po wybraniu czterech ich własny limit jest pokazywany powyżej.',
 	Playing: 'W grze',
 	'Card 2, 3 or 4': 'Karta 2, 3 lub 4',
 	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
 		'Błąd przy pierwszej karcie kończy rundę. Późniejsze pomyłki zachowują tylko 20%, więc każde trafienie jest warte więcej.',
-	'Stop on full game win': 'Zatrzymaj przy pełnej wygranej',
 
 	'How to Play': 'Jak grać',
 	'Guess your way through four cards:': 'Odgadnij kolejno cztery karty:',
-	'Colour — red or black for card 1.': 'Kolor — czerwona czy czarna dla karty 1.',
-	'Higher / Lower — versus card 1 (or =).': 'Wyżej / Niżej — względem karty 1 (lub =).',
-	'Inside / Outside — between cards 1 & 2 (or =).':
-		'Wewnątrz / Na zewnątrz — pomiędzy kartami 1 i 2 (lub =).',
-	'Suit — the suit of card 4.': 'Symbol — symbol karty 4.',
-	'Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.':
-		'Wybierz wszystkie cztery, ustaw stawkę i naciśnij Zagraj. Każdy trafny typ mnoży wygraną; błędny kończy rundę, ale zachowujesz to, co dotąd zabezpieczyłeś. Traf wszystkie cztery, aby zdobyć pełną wygraną.',
+	'Color: red or black for card 1.': 'Kolor: czerwona czy czarna dla karty 1.',
+	'Higher / Lower: versus card 1 (or =).': 'Wyżej / Niżej: względem karty 1 (lub =).',
+	'Inside / Outside: between cards 1 & 2 (or =).':
+		'Wewnątrz / Na zewnątrz: pomiędzy kartami 1 i 2 (lub =).',
+	'Suit: the suit of card 4.': 'Symbol: symbol karty 4.',
+	'Pick all four, set your bet and deal. Each right guess multiplies your win; get all four for a full game win. What a wrong guess costs you depends on the game mode, explained below.':
+		'Wybierz wszystkie cztery, ustaw zakład i rozdaj. Każdy trafny typ mnoży wygraną; traf wszystkie cztery, by zdobyć pełną wygraną. Ile kosztuje pomyłka, zależy od trybu gry, patrz niżej.',
 	'Card order': 'Kolejność kart',
-	'Ace is low and King is high — worth knowing, since plenty of card games play it the other way. Suit never affects rank; only the number counts for Higher / Lower and Inside / Outside.':
-		'As jest najniższy, a król najwyższy — warto o tym pamiętać, bo wiele gier karcianych stosuje odwrotną zasadę. Symbol nigdy nie wpływa na siłę karty; w Wyżej / Niżej oraz Wewnątrz / Na zewnątrz liczy się tylko wartość.',
+	'Ace is low and King is high. Suit never affects rank: only the number counts for Higher / Lower and Inside / Outside.':
+		'As jest najniższy, a król najwyższy. Symbol nigdy nie wpływa na siłę karty: w Wyżej / Niżej oraz Wewnątrz / Na zewnątrz liczy się tylko wartość.',
 	Lowest: 'Najniższa',
 	Highest: 'Najwyższa',
 	'Payouts follow the odds': 'Wypłaty zależą od prawdopodobieństwa',
-	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
-		'Każdy trafny typ jest wypłacany zgodnie z rzeczywistym prawdopodobieństwem: im mniej prawdopodobny wybór, tym wyższa wypłata — a to zależy od kart już odkrytych.',
+	'Every correct guess pays its true odds against the cards left in the deck, so the less likely your pick, the more it pays, and the same guess can pay differently from one round to the next.':
+		'Każdy trafny typ jest wypłacany zgodnie z rzeczywistym prawdopodobieństwem względem kart pozostałych w talii: im mniej prawdopodobny wybór, tym wyższa wypłata, a ten sam typ może wypłacić inaczej w kolejnej rundzie.',
 	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
-		'Gdy na stole leży 3, Niżej płaci około %1×, bo tylko 8 z 51 pozostałych kart jest niższych, a Wyżej około %2×, bo takich kart jest 40. Zamień tę 3 na 8, a wszystko się odwraca: Niżej spada do około %3×, a Wyżej rośnie do około %4×. Równo zawsze jest najtrudniejsze — około %5×.',
+		'Gdy na stole leży 3, Niżej płaci około %1×, bo tylko 8 z 51 pozostałych kart jest niższych, a Wyżej około %2×, bo takich kart jest 40. Zamień tę 3 na 8, a wszystko się odwraca: Niżej spada do około %3×, a Wyżej rośnie do około %4×. Równo zawsze jest najtrudniejsze, około %5×.',
 	'Payout table': 'Tabela wypłat',
 	Card: 'Karta',
 	Pick: 'Wybór',
 	Pays: 'Wypłaca',
 	'Red or Black': 'Czerwony lub czarny',
-	'Any suit': 'Dowolny kolor',
-	'Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.':
-		'Każdy etap mnoży poprzedni, a wartości kumulują się z pełną dokładnością — liczby powyżej są dokładne, nie zaokrąglone. Tylko końcowa wypłata rundy jest zaokrąglana w dół, jeden raz, do jednego miejsca po przecinku. Suma bieżąca obok kart jest zaokrąglana tak samo na każdym kroku, więc w trakcie rundy może wyglądać nieco niżej niż te wartości.',
+	'Any suit': 'Dowolny symbol',
+	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
+		'Etapy mnożą się z pełną dokładnością, więc liczby powyżej są dokładne. Tylko końcowa wypłata jest zaokrąglana w dół, do jednego miejsca po przecinku. Suma bieżąca obok kart jest zaokrąglana tak samo na każdym kroku, więc w trakcie rundy może wyglądać nieco niżej niż te wartości.',
 	'If you guess wrong': 'Jeśli się pomylisz',
 	'Full game wins': 'Pełne wygrane',
-	'Guess all four cards right and the payout depends on how hard your picks were:':
-		'Jeśli trafisz wszystkie cztery karty, wypłata zależy od tego, jak trudne były Twoje typy:',
-	'Speed and autoplay': 'Prędkość i autogra',
-	'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.':
-		'Turbo (przycisk z błyskawicą) reguluje się od Normalnej do Natychmiastowej i zmienia wyłącznie szybkość odkrywania kart. Nigdy nie zmienia kart, prawdopodobieństwa ani wypłaty.',
-	'Autoplay (the circular arrows) replays the same four guesses for a set number of rounds, or unlimited. The round counter sits on the button while it runs — press the red square to stop, and the round already in play finishes first.':
-		'Autogra (okrągłe strzałki) powtarza te same cztery typy przez ustaloną liczbę rund lub bez limitu. Licznik rund widnieje na przycisku podczas gry — naciśnij czerwony kwadrat, aby zatrzymać; trwająca runda zakończy się jako pierwsza.',
-	'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.':
-		'Zatrzymaj przy pełnej wygranej (przycisk z suwakami) kończy autogrę w chwili, gdy runda trafi wszystkie cztery karty. Zatrzymuje tylko serię; Twoja stawka się nie zmienia.',
-	'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.':
-		'Pomiń odkrywanie kart przy autograniu (przycisk suwaków) uruchamia autogranie bez animacji kart. Zmienia tylko animację, nigdy kart, szans ani wypłaty.',
-	'Tap the spacebar to play one round, or hold it to keep spinning until you let go.':
-		'Naciśnij spację, aby zagrać jedną rundę, lub przytrzymaj ją, aby grać dalej, aż ją puścisz.',
+	'Speed and skip settings change only what you see, never the cards, the odds or the payout.':
+		'Ustawienia prędkości i pomijania zmieniają tylko to, co widzisz, nigdy kart, szans ani wypłaty.',
 
 	'Pick a color': 'Wybierz kolor',
 	'Higher, lower, or equal': 'Wyżej, niżej lub równo',
@@ -158,7 +140,7 @@ export default {
 	'Autoplay settings': 'Ustawienia autogry',
 	'Advanced settings': 'Ustawienia zaawansowane',
 	'Stop autoplay': 'Zatrzymaj autogrę',
-	'Spins must be %s seconds apart': 'Odstęp między rundami musi wynosić %s s',
+	'Rounds must be %s seconds apart': 'Odstęp między rundami musi wynosić %s s',
 	'Round in progress': 'Runda w toku',
 	'Insufficient funds': 'Niewystarczające środki',
 	'Bet is below the minimum of %s': 'Zakład jest poniżej minimum %s',
@@ -192,11 +174,11 @@ export default {
 	'Unlimited plays': 'Bez limitu rund',
 	'More plays': 'Więcej rund',
 	'Fewer plays': 'Mniej rund',
-	'Stop autoplay on a full game win': 'Zatrzymaj autogrę przy pełnej wygranej',
+	'Stop autoplay on full game win': 'Zatrzymaj autogrę przy pełnej wygranej',
 	'Close menu': 'Zamknij menu',
 	Close: 'Zamknij',
 	'Game information': 'Informacje o grze',
-	Disclaimer: 'Zastrzezenie',
+	Disclaimer: 'Zastrzeżenie',
 	'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and © 2026 Stake Engine.':
 		'Awaria unieważnia wszystkie wygrane i rozgrywki. Wymagane jest stabilne połączenie internetowe. W razie rozłączenia załaduj grę ponownie, aby dokończyć nieukończone rundy. Oczekiwany zwrot jest obliczany na podstawie wielu rozgrywek. Wyświetlacz gry nie przedstawia żadnego urządzenia fizycznego i ma charakter wyłącznie poglądowy. Wygrane są rozliczane według kwoty otrzymanej z Remote Game Server, a nie na podstawie zdarzeń w przeglądarce internetowej. TM i © 2026 Stake Engine.',
 	'Loading replay…': 'Wczytywanie powtórki…',
@@ -213,24 +195,22 @@ export default {
 	Play: 'Odtwórz',
 
 	// Rule additions (new)
-	'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.':
-		'Wypłaty są dynamiczne i zmieniają się w zależności od tego, jakie karty pozostały w talii — im mniej prawdopodobny twój typ, tym wyższa wypłata. Ten sam typ może zwrócić różne kwoty w kolejnych rundach.',
 	Controls: 'Sterowanie',
-	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
-		'Ustaw kwotę zakładu za pomocą wskaźnika zakładu oraz przycisków plus i minus. Dotknij kwoty zakładu, aby otworzyć menu szybkiego wyboru.',
-	'The speaker button opens the sound settings, where music and effects can be muted separately.': 'Przycisk głośnika otwiera ustawienia dźwięku, gdzie muzykę i efekty można wyciszyć osobno.',
-	'The i button opens this screen at any time.':
-		'Przycisk i otwiera ten ekran w dowolnym momencie.',
-	'The lightning button adjusts the speed of the card reveal.':
-		'Przycisk błyskawicy reguluje szybkość odsłaniania kart.',
-	'The circular arrow button opens the autoplay settings.':
-		'Przycisk okrągłych strzałek otwiera ustawienia autoodtwarzania.',
-	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
-		'Przycisk suwaków pozwala włączyć lub wyłączyć zatrzymanie po pełnej wygranej w seriach automatycznych.',
-	'The large round button deals the round. While autoplay runs it becomes the Stop button.':
-		'Duży okrągły przycisk rozdaje rundę. Podczas autogry staje się przyciskiem Stop.',
-	'The Mode button opens the game-mode picker. Switching mode asks you to confirm before it applies.':
-		'Przycisk Tryb otwiera wybór trybu gry. Zmiana trybu wymaga potwierdzenia, zanim zostanie zastosowana.',
+	'Plus and minus set your bet. Tap the amount for the quick-bet menu.':
+		'Plus i minus ustawiają zakład. Dotknij kwoty, by otworzyć menu szybkich zakładów.',
+	'The speaker opens the sound settings. Music and game sounds mute separately.':
+		'Głośnik otwiera ustawienia dźwięku. Muzykę i dźwięki gry wycisza się osobno.',
+	'The i button opens this screen.': 'Przycisk i otwiera ten ekran.',
+	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
+		'Przycisk błyskawicy to Turbo: jak szybko odkrywają się karty, od Normalnej do Natychmiastowej.',
+	'The circular arrows open autoplay, which repeats your four guesses for a set number of rounds or unlimited. The counter sits on the button while it runs.':
+		'Okrągłe strzałki otwierają autogrę, która powtarza twoje cztery typy przez ustaloną liczbę rund lub bez limitu. Licznik widnieje na przycisku w trakcie działania.',
+	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
+		'Przycisk suwaków zawiera dwie opcje autogry: zatrzymaj przy pełnej wygranej oraz pomiń animacje wygranej.',
+	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
+		'Duży okrągły przycisk rozdaje rundę. Spacja też: naciśnij dla jednej rundy, przytrzymaj, by rozdawać dalej. Podczas autogry przycisk staje się przyciskiem Zatrzymaj, a trwająca runda kończy się najpierw.',
+	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
+		'Tryb otwiera wybór trybu gry. Zmiana wymaga potwierdzenia, zanim zacznie obowiązywać.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'Ta gra nie zawiera darmowych spinów, rund bonusowych, jackpotów ani funkcji ponownego wyzwalania. Każda runda to pojedyncze, niezależne losowanie czterech kart.',
 	'Big Win': 'Duża Wygrana',
@@ -238,20 +218,17 @@ export default {
 	'Mega Win': 'Mega Wygrana',
 	'Epic Win': 'Epicka Wygrana',
 	'Tap to skip': 'Dotknij, aby pominąć',
-	'Skip card reveal on autoplay': 'Pomiń odkrywanie kart przy autograniu',
-	'Skip the card reveal during autoplay': 'Pomiń odkrywanie kart podczas autogrania',
-	'Skip win animations on autoplay': 'Pomijaj animacje wygranych w autoodtwarzaniu',
-	'Skip big win animations during autoplay':
-		'Pomijaj animacje dużych wygranych podczas autoodtwarzania',
+	'Skip win animations on autoplay': 'Pomijaj animacje wygranych w autogrze',
+	'Skip big win animations during autoplay': 'Pomijaj animacje dużych wygranych podczas autogry',
 	'Guess the color of card 1: red or black.': 'Zgadnij kolor karty 1: czerwony czy czarny.',
 	'Guess whether card 2 is higher or lower than card 1, or equal to it.':
 		'Zgadnij, czy karta 2 jest wyższa czy niższa od karty 1, albo równa jej.',
-	'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either of the first 2 cards. If you pick Equal on step 2, Inside becomes impossible: nothing can fall between two cards of the same rank.':
-		'Zgadnij, czy karta 3 wypada między kartami 1 i 2, poza nimi, albo równa jednej z dwóch pierwszych. Jeśli w kroku 2 wybierzesz Równe, Wewnątrz staje się niemożliwe: między dwiema kartami tej samej wartości nic się nie zmieści.',
+	'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either. After Equal on step 2 there is nothing to fall between, so Inside is unavailable.':
+		'Zgadnij, czy karta 3 wypadnie między kartami 1 i 2, poza nimi, czy będzie równa jednej z nich. Po wyborze Równo w kroku 2 nic nie może wypaść pomiędzy, więc Wewnątrz jest niedostępne.',
 	'Guess the suit of card 4: hearts, diamonds, clubs or spades.':
-		'Zgadnij kolor karty 4: kier, karo, trefl czy pik.',
+		'Zgadnij symbol karty 4: kier, karo, trefl czy pik.',
 	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
-		'Wybrałeś Równe, więc karty 1 i 2 mają tę samą wartość. Nic nie zmieści się między nimi, więc Wewnątrz nie może wygrać.',
+		'Wybrano Równo, więc karty 1 i 2 mają tę samą wartość. Nic nie zmieści się między nimi, więc Wewnątrz nie może wygrać.',
 	'Your four guesses top out at %s your bet.':
 		'Twoje cztery typy sięgają maksymalnie %s twojej stawki.',
 	'Play Again': 'Odtwórz ponownie',
@@ -259,6 +236,6 @@ export default {
 		'Runda kończy się i nic nie wypłaca.',
 	'The round ends, keeping about %s% of what you had built.':
 		'Runda kończy się, a Ty zachowujesz około %s% zgromadzonej kwoty.',
-	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
-		'Od karty 2 błąd jest wybaczany — zachowujesz %s% zgromadzonej kwoty, a runda trwa dalej.',
+	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
+		'Od karty 2 błąd jest wybaczany: zachowujesz %s% zgromadzonej kwoty, a runda trwa dalej.',
 };

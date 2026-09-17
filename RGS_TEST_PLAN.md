@@ -711,12 +711,15 @@ live in the How to Play panel behind the `i` button.
 
 - [ ] **CMP-07 · Every mode states its description and its cost** — *Blocker*
   **Expect:** all three families are reachable from the tabs in How to Play,
-  each with its blurb, its ceiling, its retention rule and "Every mode costs 1x
-  your bet". Verbatim ("Game modes include description and cost information").
+  each with its blurb, its ceiling and its retention rule, and the line under
+  the Game modes heading reads "Every mode costs 1x your bet and returns the
+  same 96.00%...". The cost is stated once, in that sentence - not as a line of
+  its own. Verbatim ("Game modes include description and cost information").
 
-- [ ] **CMP-08 · The UI guide is present** — *Blocker*
-  **Expect:** the Controls and Speed sections in How to Play name every button
-  on the bar and say what it does. Verbatim ("A User Interface guide briefly
+- [ ] **CMP-08 · The UI guide is present** - *Blocker*
+  **Expect:** the Controls section in How to Play names every button on the
+  bar, one line each, and says what it does. There is no separate Speed section
+  any more; turbo, autoplay and the sliders are described on their own lines. Verbatim ("A User Interface guide briefly
   describing what the UI buttons do"; "User interaction guide is included in the
   game information").
 

@@ -19,11 +19,11 @@ export default {
 	Busted: 'हार',
 	'Revealing…': 'खोला जा रहा है…',
 
-	Spin: 'खेलें',
+	Deal: 'बाँटें',
 	Stop: 'रोकें',
 	left: 'शेष',
 	'Pick all 4 guesses': 'चारों अनुमान चुनें',
-	'Enter a number of plays': 'खेलों की संख्या दर्ज करें',
+	'Enter a number of plays': 'राउंड की संख्या दर्ज करें',
 	'Enter a valid bet': 'मान्य दांव दर्ज करें',
 	'Set rounds': 'राउंड तय करें',
 	Start: 'शुरू करें',
@@ -34,7 +34,7 @@ export default {
 	'Turbo Speed': 'टर्बो गति',
 	Normal: 'सामान्य',
 	Instant: 'तत्काल',
-	'Off — full animation': 'बंद — पूर्ण एनिमेशन',
+	'Off: full animation': 'बंद: पूर्ण एनिमेशन',
 	'% faster': '% तेज़',
 
 	'Sound settings': 'ध्वनि सेटिंग्स',
@@ -55,8 +55,8 @@ export default {
 	Classic: 'क्लासिक',
 	'Second Chance': 'दूसरा मौका',
 	'High Stakes': 'हाई स्टेक्स',
-	'Every mode returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
-		'हर मोड कई राउंड में वही %s लौटाता है। बदलता सिर्फ यह है कि राउंड कितनी बार और कितना भुगतान करता है।',
+	'Every mode costs %c× your bet and returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
+		'हर मोड की लागत आपके दांव का %c× है और हर मोड कई राउंड में वही %s लौटाता है। बदलता सिर्फ यह है कि राउंड कितनी बार और कितना भुगतान करता है।',
 	Forgiven: 'माफ किया',
 	'Game modes': 'गेम मोड',
 	'Max win': 'अधिकतम जीत',
@@ -67,47 +67,40 @@ export default {
 	Cancel: 'रद्द करें',
 	Switch: 'बदलें',
 	'Volatility %s of %t': 'अस्थिरता: %t में से %s',
-	'Every mode costs %s× your bet.': 'हर मोड की लागत आपकी बाजी का %s× है।',
-	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
-		'हर गेम मोड में रिटर्न टू प्लेयर (RTP) %s है, और हर मोड कई राउंड में वही आंकड़ा लौटाता है। यह गेम अधिकतम %m आपकी बाजी दे सकता है, हाई स्टेक्स पर।',
+	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on High Stakes.':
+		'हर गेम मोड में रिटर्न टू प्लेयर (RTP) %s है। यह गेम अधिकतम %m आपके दांव दे सकता है, हाई स्टेक्स पर।',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'पहला कार्ड गलत होने पर राउंड खत्म। बाद की गलतियाँ जमा राशि का 30% रखती हैं।',
-	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
-		'कार्ड 1 अब भी राउंड खत्म करता है। उसके बाद आपका पहला गलत अनुमान माफ होता है और खेल चलता रहता है।',
-	'Skip card reveal on spacebar hold': 'स्पेसबार पर कार्ड खुलना छोड़ें',
-	'Skip the card reveal while the spacebar is held':
-		'स्पेसबार से शुरू हुए राउंड में कार्ड खुलना छोड़ें',
-	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
-		'स्पेसबार पर कार्ड खुलना छोड़ें (स्लाइडर बटन) स्पेसबार से शुरू हुए राउंड को कार्ड एनिमेशन के बिना चलाता है। यह केवल एनिमेशन बदलता है, कार्ड, संभावनाएँ या भुगतान कभी नहीं।',
+	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
+		'पहला कार्ड गलत होने पर राउंड खत्म। उसके बाद आपकी पहली गलती माफ होती है और खेल चलता रहता है।',
 	'Card 1': 'कार्ड 1',
 	'Your first wrong guess': 'आपका पहला गलत अनुमान',
 	'Your second wrong guess': 'आपका दूसरा गलत अनुमान',
-	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
-		'बराबर सबसे दुर्लभ अनुमान है, इसलिए उस पर बने राउंड सबसे बड़ी जीत देते हैं — और सबसे कठिन हैं। दो बराबर एक साथ लगना इस मोड का अधिकतम है, आपकी बाजी का %m।',
-	'Only some four-guess combinations reach a mode’s maximum. Once your four guesses are picked, their own ceiling is shown above whenever it is lower.':
-		'चार अनुमानों के केवल कुछ संयोजन ही किसी मोड के अधिकतम तक पहुँचते हैं। आपके चारों अनुमान चुनने के बाद, जब भी उनकी अपनी सीमा कम हो, वह ऊपर दिखाई जाती है।',
+	'Guess all four right and the payout depends on how hard your picks were. Equal is the rarest guess, so rounds built on it pay the most; two Equal picks together is the most this mode can pay, at %m your bet.':
+		'चारों सही करें तो भुगतान इस पर निर्भर करता है कि आपके चयन कितने कठिन थे। बराबर सबसे दुर्लभ अनुमान है, इसलिए उस पर बने राउंड सबसे अधिक भुगतान करते हैं; दो बराबर एक साथ इस मोड का अधिकतम है, आपके दांव का %m।',
+	'Only some guess combinations reach a mode’s maximum. Once your four are picked, their own ceiling is shown above.':
+		'अनुमानों के केवल कुछ संयोजन ही किसी मोड के अधिकतम तक पहुँचते हैं। आपके चारों चुनने के बाद उनकी अपनी सीमा ऊपर दिखाई जाती है।',
 	Playing: 'खेल रहे हैं',
 	'Card 2, 3 or 4': 'कार्ड 2, 3 या 4',
 	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
 		'पहला कार्ड गलत होने पर राउंड खत्म। बाद की गलतियाँ केवल 20% रखती हैं, इसलिए हर सही अनुमान ज्यादा कीमती है।',
-	'Stop on full game win': 'पूरी जीत पर रोकें',
 
 	'How to Play': 'कैसे खेलें',
 	'Guess your way through four cards:': 'चार कार्ड का क्रम से अनुमान लगाएं:',
-	'Colour — red or black for card 1.': 'रंग — कार्ड 1 लाल है या काला।',
-	'Higher / Lower — versus card 1 (or =).': 'बड़ा / छोटा — कार्ड 1 की तुलना में (या =)।',
-	'Inside / Outside — between cards 1 & 2 (or =).': 'बीच में / बाहर — कार्ड 1 और 2 के बीच (या =)।',
-	'Suit — the suit of card 4.': 'सूट — कार्ड 4 का सूट।',
-	'Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.':
-		'चारों चुनें, अपना दांव तय करें और खेलें दबाएं। हर सही अनुमान आपकी जीत को गुणा करता है; गलत अनुमान राउंड समाप्त कर देता है, पर तब तक सुरक्षित की गई राशि आपकी रहती है। चारों सही होने पर पूरी जीत मिलती है।',
+	'Color: red or black for card 1.': 'रंग: कार्ड 1 लाल है या काला।',
+	'Higher / Lower: versus card 1 (or =).': 'बड़ा / छोटा: कार्ड 1 की तुलना में (या =)।',
+	'Inside / Outside: between cards 1 & 2 (or =).': 'बीच में / बाहर: कार्ड 1 और 2 के बीच (या =)।',
+	'Suit: the suit of card 4.': 'सूट: कार्ड 4 का सूट।',
+	'Pick all four, set your bet and deal. Each right guess multiplies your win; get all four for a full game win. What a wrong guess costs you depends on the game mode, explained below.':
+		'चारों चुनें, अपना दांव तय करें और बाँटें। हर सही अनुमान आपकी जीत को कई गुना करता है; चारों सही करें तो पूरी जीत मिलती है। गलत अनुमान की कीमत गेम मोड पर निर्भर करती है, नीचे देखें।',
 	'Card order': 'कार्ड का क्रम',
-	'Ace is low and King is high — worth knowing, since plenty of card games play it the other way. Suit never affects rank; only the number counts for Higher / Lower and Inside / Outside.':
-		'इक्का सबसे छोटा और बादशाह सबसे बड़ा है — यह जानना ज़रूरी है, क्योंकि कई कार्ड खेलों में इसका उल्टा होता है। सूट कभी क्रम को प्रभावित नहीं करता; बड़ा / छोटा और बीच में / बाहर के लिए केवल संख्या मायने रखती है।',
+	'Ace is low and King is high. Suit never affects rank: only the number counts for Higher / Lower and Inside / Outside.':
+		'इक्का सबसे छोटा और बादशाह सबसे बड़ा है। सूट कभी क्रम को प्रभावित नहीं करता: बड़ा / छोटा और बीच में / बाहर के लिए केवल संख्या मायने रखती है।',
 	Lowest: 'सबसे छोटा',
 	Highest: 'सबसे बड़ा',
 	'Payouts follow the odds': 'भुगतान संभावना के अनुसार होता है',
-	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
-		'हर सही अनुमान का भुगतान उसकी वास्तविक संभावना के अनुसार होता है, इसलिए आपका चयन जितना कम संभावित होगा, भुगतान उतना अधिक होगा — और यह पहले से खुले कार्डों पर निर्भर करता है।',
+	'Every correct guess pays its true odds against the cards left in the deck, so the less likely your pick, the more it pays, and the same guess can pay differently from one round to the next.':
+		'हर सही अनुमान का भुगतान डेक में बची कार्डों के मुकाबले उसकी वास्तविक संभावना के अनुसार होता है, इसलिए आपका चयन जितना कम संभावित होगा, भुगतान उतना अधिक होगा, और एक ही अनुमान हर राउंड में अलग भुगतान कर सकता है।',
 	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
 		'यदि मेज़ पर 3 है, तो शेष 51 कार्डों में से केवल 8 ही छोटे हैं, इसलिए छोटा लगभग %1× देता है, जबकि 40 कार्ड बड़े होने के कारण बड़ा केवल %2× देता है। उस 3 को 8 कर दें तो स्थिति उलट जाती है: छोटा घटकर लगभग %3× और बड़ा बढ़कर लगभग %4× हो जाता है। बराबर हमेशा सबसे कठिन होता है, लगभग %5×।',
 	'Payout table': 'भुगतान तालिका',
@@ -116,23 +109,12 @@ export default {
 	Pays: 'भुगतान',
 	'Red or Black': 'लाल या काला',
 	'Any suit': 'कोई भी सूट',
-	'Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.':
-		'हर चरण पिछले को गुणा करता है, और ये पूरी सटीकता के साथ जुड़ते हैं — ऊपर दिए गए आंकड़े सटीक हैं, गोल किए हुए नहीं। केवल राउंड का अंतिम भुगतान एक बार नीचे की ओर एक दशमलव तक किया जाता है। कार्डों के पास दिखने वाला चलता योग हर चरण में उसी तरह कम किया जाता है, इसलिए राउंड के दौरान वह इन आंकड़ों से थोड़ा कम दिख सकता है।',
+	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
+		'चरण पूरी सटीकता के साथ आपस में गुणा होते हैं, इसलिए ऊपर दिए गए आंकड़े सटीक हैं। केवल अंतिम भुगतान नीचे की ओर एक दशमलव तक किया जाता है। कार्डों के पास दिखने वाला चलता योग हर चरण में उसी तरह कम किया जाता है, इसलिए राउंड के दौरान वह इन आंकड़ों से थोड़ा कम दिख सकता है।',
 	'If you guess wrong': 'यदि अनुमान गलत हो',
 	'Full game wins': 'पूरी जीत के भुगतान',
-	'Guess all four cards right and the payout depends on how hard your picks were:':
-		'चारों कार्ड सही होने पर भुगतान इस बात पर निर्भर करता है कि आपके चयन कितने कठिन थे:',
-	'Speed and autoplay': 'गति और ऑटोप्ले',
-	'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.':
-		'टर्बो (बिजली वाला बटन) सामान्य से तत्काल तक समायोजित होता है और केवल कार्ड पलटने की गति बदलता है। यह कार्ड, संभावना या भुगतान को कभी नहीं बदलता।',
-	'Autoplay (the circular arrows) replays the same four guesses for a set number of rounds, or unlimited. The round counter sits on the button while it runs — press the red square to stop, and the round already in play finishes first.':
-		'ऑटोप्ले (गोल तीर) उन्हीं चार अनुमानों को तय संख्या में या असीमित राउंड तक दोहराता है। चलने के दौरान बटन पर राउंड काउंटर दिखता है — रोकने के लिए लाल वर्ग दबाएं; चल रहा राउंड पहले पूरा होगा।',
-	'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.':
-		'पूरी जीत पर रोकें (स्लाइडर बटन) किसी राउंड में चारों कार्ड सही होते ही ऑटोप्ले समाप्त कर देता है। यह केवल क्रम रोकता है; आपका दांव कभी नहीं बदलता।',
-	'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.':
-		'ऑटोप्ले में कार्ड खुलना छोड़ें (स्लाइडर बटन) ऑटोप्ले को कार्ड एनिमेशन के बिना चलाता है। यह केवल एनिमेशन बदलता है, कार्ड, संभावनाएँ या भुगतान कभी नहीं।',
-	'Tap the spacebar to play one round, or hold it to keep spinning until you let go.':
-		'एक राउंड खेलने के लिए स्पेसबार दबाएं, या छोड़ने तक लगातार खेलने के लिए दबाए रखें।',
+	'Speed and skip settings change only what you see, never the cards, the odds or the payout.':
+		'गति और छोड़ने की सेटिंग्स सिर्फ वह बदलती हैं जो आप देखते हैं, कार्ड, संभावनाएँ या भुगतान कभी नहीं।',
 
 	'Pick a color': 'रंग चुनें',
 	'Higher, lower, or equal': 'बड़ा, छोटा या बराबर',
@@ -157,7 +139,7 @@ export default {
 	'Autoplay settings': 'ऑटोप्ले सेटिंग्स',
 	'Advanced settings': 'उन्नत सेटिंग्स',
 	'Stop autoplay': 'ऑटोप्ले रोकें',
-	'Spins must be %s seconds apart': 'राउंड के बीच %s सेकंड का अंतर आवश्यक है',
+	'Rounds must be %s seconds apart': 'राउंड के बीच %s सेकंड का अंतर आवश्यक है',
 	'Round in progress': 'राउंड चल रहा है',
 	'Insufficient funds': 'पर्याप्त शेष राशि नहीं',
 	'Bet is below the minimum of %s': 'दांव न्यूनतम %s से कम है',
@@ -191,7 +173,7 @@ export default {
 	'Unlimited plays': 'असीमित राउंड',
 	'More plays': 'अधिक राउंड',
 	'Fewer plays': 'कम राउंड',
-	'Stop autoplay on a full game win': 'पूरी जीत पर ऑटोप्ले रोकें',
+	'Stop autoplay on full game win': 'पूरी जीत पर ऑटोप्ले रोकें',
 	'Close menu': 'मेन्यू बंद करें',
 	Close: 'बंद करें',
 	'Game information': 'गेम जानकारी',
@@ -212,23 +194,22 @@ export default {
 	Play: 'चलाएं',
 
 	// Rule additions (new)
-	'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.':
-		'भुगतान गतिशील होते हैं और इस पर निर्भर करते हैं कि डेक में कौन से कार्ड बचे हैं — आपका चुनाव जितना कम संभावित होगा, भुगतान उतना ही अधिक होगा। एक ही अनुमान अलग-अलग राउंड में अलग-अलग राशि दे सकता है।',
 	Controls: 'नियंत्रण',
-	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
-		'अपनी दांव राशि तय करने के लिए दांव डिस्प्ले और प्लस-माइनस बटन का उपयोग करें। त्वरित-चयन मेनू खोलने के लिए दांव राशि पर टैप करें।',
-	'The speaker button opens the sound settings, where music and effects can be muted separately.': 'स्पीकर बटन ध्वनि सेटिंग खोलता है, जहाँ संगीत और प्रभावों को अलग-अलग म्यूट किया जा सकता है।',
-	'The i button opens this screen at any time.': 'i बटन इस स्क्रीन को कभी भी खोलता है।',
-	'The lightning button adjusts the speed of the card reveal.':
-		'बिजली बटन कार्ड खुलने की गति को समायोजित करता है।',
-	'The circular arrow button opens the autoplay settings.':
-		'गोल तीर बटन ऑटोप्ले सेटिंग्स खोलता है।',
-	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
-		'स्लाइडर बटन से आप ऑटोप्ले के दौरान पूरी जीत पर रुकने की सुविधा चालू या बंद कर सकते हैं।',
-	'The large round button deals the round. While autoplay runs it becomes the Stop button.':
-		'बड़ा गोल बटन राउंड बाँटता है। ऑटोप्ले चलते समय यह रोकें बटन बन जाता है।',
-	'The Mode button opens the game-mode picker. Switching mode asks you to confirm before it applies.':
-		'मोड बटन गेम-मोड चयनकर्ता खोलता है। मोड बदलने पर लागू होने से पहले पुष्टि माँगी जाती है।',
+	'Plus and minus set your bet. Tap the amount for the quick-bet menu.':
+		'प्लस और माइनस आपका दांव तय करते हैं। त्वरित दांव मेनू के लिए राशि पर टैप करें।',
+	'The speaker opens the sound settings. Music and game sounds mute separately.':
+		'स्पीकर ध्वनि सेटिंग्स खोलता है। संगीत और गेम ध्वनियाँ अलग-अलग म्यूट होती हैं।',
+	'The i button opens this screen.': 'i बटन यह स्क्रीन खोलता है।',
+	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
+		'बिजली वाला बटन टर्बो है: कार्ड कितनी तेज़ी से पलटते हैं, सामान्य से तत्काल तक।',
+	'The circular arrows open autoplay, which repeats your four guesses for a set number of rounds or unlimited. The counter sits on the button while it runs.':
+		'गोल तीर ऑटोप्ले खोलते हैं, जो आपके चारों अनुमानों को तय संख्या के राउंड तक या असीमित दोहराता है। चलते समय गिनती बटन पर दिखती है।',
+	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
+		'स्लाइडर बटन में ऑटोप्ले के दो विकल्प हैं: पूरी जीत पर रोकें, और जीत एनिमेशन छोड़ें।',
+	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
+		'बड़ा गोल बटन राउंड बाँटता है। स्पेसबार भी: एक राउंड के लिए दबाएँ, बाँटते रहने के लिए दबाए रखें। ऑटोप्ले चलते समय यह बटन रोकें बन जाता है, और चल रहा राउंड पहले पूरा होता है।',
+	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
+		'मोड गेम-मोड चयनकर्ता खोलता है। बदलने से पहले पुष्टि माँगी जाती है।',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
 		'इस गेम में कोई फ्री स्पिन, बोनस राउंड, जैकपॉट या री-ट्रिगर फीचर नहीं है। हर राउंड चार कार्ड का एक अकेला, स्वतंत्र ड्रॉ है।',
 	'Big Win': 'बड़ी जीत',
@@ -236,19 +217,17 @@ export default {
 	'Mega Win': 'मेगा जीत',
 	'Epic Win': 'अद्भुत जीत',
 	'Tap to skip': 'छोड़ने के लिए टैप करें',
-	'Skip card reveal on autoplay': 'ऑटोप्ले में कार्ड खुलना छोड़ें',
-	'Skip the card reveal during autoplay': 'ऑटोप्ले के दौरान कार्ड खुलना छोड़ें',
 	'Skip win animations on autoplay': 'ऑटोप्ले पर जीत एनिमेशन छोड़ें',
 	'Skip big win animations during autoplay': 'ऑटोप्ले के दौरान बड़ी जीत के एनिमेशन छोड़ें',
 	'Guess the color of card 1: red or black.': 'कार्ड 1 का रंग बताएं: लाल या काला।',
 	'Guess whether card 2 is higher or lower than card 1, or equal to it.':
 		'बताएं कि कार्ड 2 कार्ड 1 से बड़ा है या छोटा, या बराबर।',
-	'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either of the first 2 cards. If you pick Equal on step 2, Inside becomes impossible: nothing can fall between two cards of the same rank.':
-		'बताएं कि कार्ड 3 कार्ड 1 और 2 के बीच आता है, उनके बाहर, या पहले दो में से किसी एक के बराबर। यदि आप चरण 2 में बराबर चुनते हैं, तो अंदर असंभव हो जाता है: एक ही रैंक के दो कार्डों के बीच कुछ नहीं आ सकता।',
+	'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either. After Equal on step 2 there is nothing to fall between, so Inside is unavailable.':
+		'अनुमान लगाएँ कि कार्ड 3 कार्ड 1 और 2 के बीच में आता है, उनके बाहर, या किसी एक के बराबर। चरण 2 में बराबर चुनने के बाद बीच में कुछ नहीं आ सकता, इसलिए बीच में उपलब्ध नहीं है।',
 	'Guess the suit of card 4: hearts, diamonds, clubs or spades.':
 		'कार्ड 4 का सूट बताएं: पान, ईंट, चिड़ी या हुकुम।',
 	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
-		'आपने बराबर चुना, इसलिए कार्ड 1 और 2 की रैंक समान है। उनके बीच कुछ नहीं आ सकता, इसलिए अंदर जीत नहीं सकता।',
+		'आपने बराबर चुना, इसलिए कार्ड 1 और 2 की रैंक समान है। उनके बीच कुछ नहीं आ सकता, इसलिए बीच में जीत नहीं सकता।',
 	'Your four guesses top out at %s your bet.':
 		'आपके चारों अनुमान अधिकतम आपकी दांव राशि का %s तक पहुँचते हैं।',
 	'Play Again': 'फिर से चलाएँ',
@@ -256,6 +235,6 @@ export default {
 		'राउंड समाप्त हो जाता है और कुछ नहीं देता।',
 	'The round ends, keeping about %s% of what you had built.':
 		'राउंड समाप्त होता है और आपने जो बनाया था उसका लगभग %s% बचा रहता है।',
-	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
-		'कार्ड 2 से आगे इसे माफ़ किया जाता है — आपने जो बनाया था उसका %s% बचता है और राउंड जारी रहता है।',
+	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
+		'कार्ड 2 से आगे इसे माफ़ किया जाता है: आपने जो बनाया था उसका %s% बचता है और राउंड जारी रहता है।',
 };

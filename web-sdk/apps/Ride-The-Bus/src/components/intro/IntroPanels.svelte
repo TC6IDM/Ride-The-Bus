@@ -233,7 +233,7 @@
 				<!-- 3: inside, outside or equal against cards 1 and 2 -->
 				<li class="ss-step" style="--d: 6">
 					<span class="ss-step-n">3</span>
-					{@render help('Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either of the first 2 cards. If you pick Equal on step 2, Inside becomes impossible: nothing can fall between two cards of the same rank.')}
+					{@render help('Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either. After Equal on step 2 there is nothing to fall between, so Inside is unavailable.')}
 					<span class="ss-step-label">{t('Inside')} / {t('Outside')}</span>
 
 					<div class="choice-square io-square" role="group" onmouseleave={() => (hover.io = null)} aria-label={t('Inside, outside, or equal')}>

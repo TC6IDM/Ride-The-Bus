@@ -184,8 +184,8 @@ describe('every locale covers every English key', () => {
 
 		test(`${lang}: keeps the %s placeholder`, () => {
 			// Substituted at render time. Lose it and the tooltip reads
-			// "Spins must be seconds apart" with no number.
-			const key = 'Spins must be %s seconds apart';
+			// "Rounds must be seconds apart" with no number.
+			const key = 'Rounds must be %s seconds apart';
 			assert.ok(messages[key]?.includes('%s'), `${lang} dropped %s from "${key}"`);
 		});
 	}

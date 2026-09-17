@@ -173,11 +173,11 @@ export const FAMILY_RULES: Record<ModeFamily, FamilyRules> = {
  */
 export const FAMILY_BLURB: Record<ModeFamily, string> & {
   base: 'A wrong first card ends the round. Later misses keep 30% of what you had built.';
-  sc: 'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.';
+  sc: 'A wrong first card ends the round. After that your first miss is forgiven and play continues.';
   hs: 'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.';
 } = {
   base: 'A wrong first card ends the round. Later misses keep 30% of what you had built.',
-  sc: 'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.',
+  sc: 'A wrong first card ends the round. After that your first miss is forgiven and play continues.',
   hs: 'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.',
 };
 

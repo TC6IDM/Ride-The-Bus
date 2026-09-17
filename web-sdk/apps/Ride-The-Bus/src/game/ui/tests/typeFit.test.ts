@@ -133,7 +133,7 @@ describe('the figure is fitted to the disc', () => {
 
   /** The CSS divides by this. A zero would resolve font-size to infinity. */
   test('never returns zero, whatever it is handed', () => {
-    for (const text of ['', ' ', '—', ' ']) {
+    for (const text of ['', ' ', '–', ' ']) {
       assert.ok(labelEms(text) >= 0.5, `"${text}" gave ${labelEms(text)}`);
     }
   });

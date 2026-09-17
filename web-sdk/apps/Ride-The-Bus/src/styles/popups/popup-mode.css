@@ -314,12 +314,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.mode-confirm-cost {
-  margin: 0;
-  font-size: calc(var(--ui-bar) * 0.98);
-  color: var(--ink-dim);
-}
-
 /* The destructive-ish action is on the right and filled; the way out is on the
    left and quiet. Cancel is a real button rather than a link so it carries the
    same hit area as the thing it is protecting against. */
