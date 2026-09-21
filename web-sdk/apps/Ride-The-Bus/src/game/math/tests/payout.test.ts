@@ -12,22 +12,24 @@
  */
 import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
-import { readdirSync, existsSync, createReadStream } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { createReadStream, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { createInterface } from 'node:readline';
 import { createZstdDecompress } from 'node:zlib';
 
 import {
-  DECAY,
-  STAGE_RETENTION,
-  TARGET_RTP,
   computeFinalMultiplier,
+  DECAY,
+  decayFor,
   forgivenessAvailable,
   partialMultiplier,
   quantizeMultiplier,
+  STAGE_RETENTION,
   stageRetention,
+  TARGET_RTP,
 } from '../payout.ts';
-import { FAMILY_RULES, MODE_FAMILIES, familyOf, type ModeFamily } from '../modes.ts';
+import { FAMILY_RULES, MODE_FAMILIES, familyOf, stageCount, type ModeFamily } from '../modes.ts';
+import { INDEX, PUBLISH_DIR, mathBuildIsCurrent } from '../../mathBuild.testlib.ts';
 
 describe('constants match the math-sdk', () => {
   test('DECAY**4 === target_rtp', () => {
@@ -120,11 +122,6 @@ describe('computeFinalMultiplier', () => {
 // Parity with the published books.
 // ---------------------------------------------------------------------------
 
-const PUBLISH_DIR = resolve(
-  import.meta.dirname,
-  '../../../../../../../math-sdk/games/ride_the_bus/library/publish_files',
-);
-
 type Book = { id: number; payoutMultiplier: number; events: any[] };
 
 /**
@@ -151,17 +148,25 @@ async function readBooks(file: string, limit: number): Promise<Book[]> {
 }
 
 describe('parity with the published books', () => {
-  const available = existsSync(PUBLISH_DIR);
+  // Absent OR stale skips (a build publishing a different mode list from the
+  // client predates it - see mathBuild.testlib.ts). A build with the same
+  // modes and different numbers is a drift, and fails below as it must.
+  const available = mathBuildIsCurrent();
 
-  test('publish_files exists (skip parity if the math has not been built)', () => {
-    if (!available) {
-      console.warn(`  ! ${PUBLISH_DIR} missing - run the math build to enable parity tests`);
-    }
+  test('publish_files is current (skip parity if the math has not been rebuilt)', () => {
     assert.ok(true);
   });
 
   test('client arithmetic reproduces each book payoutMultiplier exactly', { skip: !available }, async () => {
-    const files = readdirSync(PUBLISH_DIR).filter((f) => f.startsWith('books_') && f.endsWith('.jsonl.zst'));
+    // The PUBLISHED books, read off index.json - not a directory listing.
+    // run.py does not sweep publish_files between builds, so the directory
+    // also holds whatever an earlier build left there; the day the trips
+    // mode was renamed, the previous build's books_tr_any_equal_equal_any
+    // survived beside the new file and a listing replayed it against rules it
+    // was never built to. index.json is what the RGS is given, and it is the
+    // set mathBuildIsCurrent() judged current a moment ago.
+    const index = JSON.parse(readFileSync(INDEX, 'utf8')) as { modes: { name: string; events: string }[] };
+    const files = index.modes.map((m) => m.events);
     assert.ok(files.length > 0, 'no book files found');
 
     let checked = 0;
@@ -177,9 +182,14 @@ describe('parity with the published books', () => {
       // only family; it would silently mis-check every sc_ and hs_ book.
       const mode = file.slice('books_'.length, -'.jsonl.zst'.length);
       const rules = FAMILY_RULES[familyOf(mode)];
+      // A book carries one reveal per stage the family deals - four on the
+      // guess families, three on Three of a Kind. Not `< 4`: that guard
+      // silently skipped every trips book, and a parity test that checks
+      // nothing passes.
+      const dealt = stageCount(rules);
       for (const book of await readBooks(join(PUBLISH_DIR, file), 400)) {
         const reveals = (book.events || []).filter((e: any) => e.type === 'reveal');
-        if (reveals.length < 4) continue;
+        assert.equal(reveals.length, dealt, `${file} id=${book.id}: ${reveals.length} reveals, family deals ${dealt}`);
         const stages = reveals.map((e: any) => ({ correct: Boolean(e.correct), payout: e.payout }));
         const got = computeFinalMultiplier(stages, rules);
         const want = book.payoutMultiplier / 100;
@@ -226,14 +236,22 @@ describe('parity with the published books', () => {
 describe('mode families', () => {
   /** The rarest winning path: two Equal picks, all four correct. */
   const MAX_WIN_PROBABILITIES = [0.5, 3 / 51, 2 / 50, 12 / 49];
+  /**
+   * Three of a Kind's only winning path, on its 12-card deck: card 1 dealt
+   * (p = 1), card 2 one of the 3 matching ranks in 11, card 3 one of 2 in 10.
+   * Three stages - the round is three cards.
+   */
+  const TRIPS_PROBABILITIES = [1, 3 / 11, 2 / 10];
 
   const maxWinFor = (family: ModeFamily) => {
     const rules = FAMILY_RULES[family];
-    const stages = MAX_WIN_PROBABILITIES.map((probability, stage) => ({
+    const probabilities = rules.fixedChoices ? TRIPS_PROBABILITIES : MAX_WIN_PROBABILITIES;
+    const stages = probabilities.map((probability, stage) => ({
       correct: true,
       // No miss occurs on this path, so any forgiveness is still in hand and is
-      // what every stage is priced against.
-      payout: partialMultiplier(probability, stage, stageRetention(rules, stage, false)),
+      // what every stage is priced against. The family's own decay, exactly
+      // as gamestate.py builds the stage table.
+      payout: partialMultiplier(probability, stage, stageRetention(rules, stage, false), decayFor(rules)),
     }));
     return computeFinalMultiplier(stages, rules);
   };
@@ -241,7 +259,47 @@ describe('mode families', () => {
   test('each family reaches the ceiling its design was chosen for', () => {
     assert.equal(maxWinFor('base'), 1354.2);
     assert.equal(maxWinFor('sc'), 585.2);
-    assert.equal(maxWinFor('hs'), 1910.2);
+    assert.equal(maxWinFor('hs'), 2169.2);
+    assert.equal(maxWinFor('tr'), 4583.3);
+  });
+
+  test('Three of a Kind is 1 x 11/3 x 5, times its cost of 250 - fair odds, three cards', () => {
+    // Pinned as arithmetic so the shape cannot drift quietly: a fourth stage,
+    // a scale on a stage, or a different deck would all move this figure.
+    const rules = FAMILY_RULES.tr;
+    const stages = TRIPS_PROBABILITIES.map((probability, stage) => ({
+      correct: true,
+      payout: partialMultiplier(probability, stage, 0, decayFor(rules)),
+    }));
+    assert.equal(stages.length, 3);
+    assert.deepEqual(stages.map((s) => +s.payout.toFixed(6)), [1, +(11 / 3).toFixed(6), 5]);
+    assert.equal(computeFinalMultiplier(stages, rules), 4583.3);
+    assert.equal(decayFor(rules), 1, 'the free card pays exactly 1.00x');
+    assert.equal(rules.cost, 250);
+    assert.equal(rules.retention.length, 3, 'one retention entry per stage');
+    // Under the tail line the tier is built on - see game_calculations.py.
+    assert.ok(rules.maxWin < 5000);
+    // ...and the cost is the last round figure that keeps it there: one step
+    // to 273x and the only win crosses 5,000x, where P(>= 5,000x) becomes the
+    // whole hit rate against a 1% limit.
+    assert.ok(Math.floor((11 / 3) * 5 * 273 * 10) / 10 >= 5000);
+    assert.ok(Math.floor((11 / 3) * 5 * 272 * 10) / 10 < 5000);
+    assert.ok(rules.maxWin / rules.cost < 40, 'a binary win must stay under 40x its cost');
+  });
+
+  test('a three-stage round busts with the decay of the stages it never played', () => {
+    // A miss on card 2 of a three-card round skips ONE stage, not two: the
+    // bust term is decay ** (stages - 1 - stage), from the round's own length.
+    // Retention is 0 on Three of a Kind so its own figure is 0 either way -
+    // pinned on a synthetic three-stage family with retention, where the
+    // exponent shows.
+    const rules = { ...FAMILY_RULES.base, retention: [0, 0.3, 0.3] as const };
+    const stages = [
+      { correct: true, payout: 2 },
+      { correct: false, payout: 0 },
+      { correct: true, payout: 9 },
+    ];
+    assert.equal(computeFinalMultiplier(stages, rules), Math.floor(2 * 0.3 * DECAY * 10) / 10);
   });
 
   test('the advertised max win is the one the maths reaches', () => {
@@ -269,9 +327,10 @@ describe('mode families', () => {
     );
   });
 
-  test('no family exceeds Stake 500,000x payout ceiling', () => {
+  test('no family exceeds the 2-star payout cap of 25,000x', () => {
+    // Three of a Kind sits exactly ON it, by design - see game_calculations.py.
     for (const family of MODE_FAMILIES) {
-      assert.ok(maxWinFor(family) <= 500_000, `${family} pays too much`);
+      assert.ok(maxWinFor(family) <= 25_000, `${family} pays too much`);
     }
   });
 
@@ -337,7 +396,7 @@ describe('mode families', () => {
     for (const family of MODE_FAMILIES) {
       const rules = FAMILY_RULES[family];
       for (const spent of [false, true]) {
-        for (let stage = 0; stage < 4; stage += 1) {
+        for (let stage = 0; stage < rules.retention.length; stage += 1) {
           const retention = stageRetention(rules, stage, spent);
           for (const p of [0.05, 0.25, 0.5, 0.8, 0.98]) {
             const m = partialMultiplier(p, stage, retention);

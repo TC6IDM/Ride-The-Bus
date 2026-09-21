@@ -83,10 +83,14 @@ export default {
 	// decorative one at a time and only mean anything as a count, so the meter
 	// carries this instead of labelling five separate images.
 	'Volatility %s of %t': 'Volatility %s of %t',
-	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on High Stakes.':
-		'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on High Stakes.',
+	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.':
+		'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.',
 	// Shown on the card a Second Chance round let off.
 	Forgiven: 'Forgiven',
+	// The intro's tagline and the first line of How to Play's Game modes.
+	'%n ways to play': '%n ways to play',
+	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
+		'Every combination of picks on a guess mode is its own bet, priced on its own odds.',
 	'Game modes': 'Game modes',
 	'Choose game mode': 'Choose game mode',
 	Classic: 'Classic',
@@ -96,8 +100,8 @@ export default {
 		'A wrong first card ends the round. Later misses keep 30% of what you had built.',
 	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
 		'A wrong first card ends the round. After that your first miss is forgiven and play continues.',
-	'Every mode costs %c× your bet and returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
-		'Every mode costs %c× your bet and returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.',
+	'This mode costs %c× your bet. Every mode returns the same %s over many rounds; what changes is how often a round pays and how much it can pay.':
+		'This mode costs %c× your bet. Every mode returns the same %s over many rounds; what changes is how often a round pays and how much it can pay.',
 
 	// Advanced popup
 	Advanced: 'Advanced',
@@ -110,8 +114,8 @@ export default {
 		'Only some guess combinations reach a mode’s maximum. Once your four are picked, their own ceiling is shown above.',
 	Playing: 'Playing',
 	'Card 2, 3 or 4': 'Card 2, 3 or 4',
-	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
-		'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.',
+	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
+		'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.',
 
 	// How to play
 	'How to Play': 'How to Play',
@@ -289,4 +293,32 @@ export default {
 		'The round ends, keeping about %s% of what you had built.',
 	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
 		'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.',
+
+	// Three of a Kind - the fixed-combination family. 'Any' is the caption on
+	// a dealt card's square and its badge on the replay screen; 'Any suit' above
+	// is a different key (the four-guess paytable's stage-4 row).
+	'Three of a Kind':
+		'Three of a Kind',
+	'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.':
+		'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.',
+	'Costs %c× your bet':
+		'Costs %c× your bet',
+	'Any':
+		'Any',
+	'Any card':
+		'Any card',
+	'Any wrong guess':
+		'Any wrong guess',
+	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
+		'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.',
+	'Three of a kind pays %m your bet, about one round in %n.':
+		'Three of a kind pays %m your bet, about one round in %n.',
+	'%c× your base bet of %b':
+		'%c× your base bet of %b',
+	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
+		'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.',
+	'Card 2 must match card 1':
+		'Card 2 must match card 1',
+	'Card 3 must match card 1':
+		'Card 3 must match card 1',
 };

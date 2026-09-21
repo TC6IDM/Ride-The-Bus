@@ -10,10 +10,45 @@ rather than on every turn. Nothing here is reworded.
 
 ## Current state
 
-680/680 tests, 0 type errors, 0 CSS warnings, lint clean, and the
-client reproduces all 76,800 published books exactly. The published math build
-(192 modes, RTP 96.0000% everywhere, spread 0.000000%, zero volatility
-violations) is generated.
+759/759 tests (none skipped), 0 type errors, 0 CSS warnings, lint clean. **A fourth family shipped in the client and the math on 2026-09-20:
+Three of a Kind** — a 12-card A K Q deck, three cards, no guesses, nothing on a
+miss, cost 250×, one outcome of 4,583.3× the base bet at a recorded 1 in 19. High
+Stakes went from 20% to 16% retention in the same pass (ceiling 1910.2× →
+2169.2×). CLAUDE.md's "The game" section and THE ALL-OR-NOTHING BOUND in
+`game_calculations.py` carry the design; `modes-and-volatility.md` beside this
+file carries the whole analysis, including the build that failed.
+
+**The math build on disk is current (2026-09-20 23:15) and measured as
+predicted.** The build before it, of the first trips design — four cards, cost
+1000×, 25,000× — had failed Stake's verifier on every tail row (P ≥ 5,000×
+0.0384 vs 0.01, P ≥ 10,000× vs 0.005, P ≥ 25,000× vs 0.002, CVaR absolute
+25,000 vs 20,000, ETL above 10,000× 0.96 vs 0.6); the rebuild of the 250× /
+4,583.3× design reads: trips RTP 96.0000%, non-zero hit rate 1 in 19.10, max
+458330 raw, P(≥5,000×) 0, etl40b 0, etl10k 0, cvar 4,583.3 (18.3 per stake);
+High Stakes worst CVaR 624.6 (`hs_red_equal_equal_heart`), std 36.58, max
+216920 raw. Stake's console reports the statistics valid. `modeCeilings.ts` is
+the generator's output again, 193 entries, no placeholder.
+
+**The local verifier's `fails 3-star volatility limits: cvar 4583.3 > 800` is
+a false alarm and stays.** `math-sdk/utils/rgs_verification.py` applies one
+flat 3-star table to every mode and compares the un-normalised CVaR (the SDK's
+`conditional_value_at_risk` never divides by cost) to a limit meant for 1×
+modes. Stake considers both figures — 18.3 normalised against 700, 4,583.3
+un-normalised against 20,000 — and passes both. The warning is recorded here so
+the next reader does not re-tune a mode that is inside every real limit.
+
+**`run.py` leaves the previous build's files in `publish_files/`.** The
+superseded `books_tr_any_equal_equal_any.jsonl.zst` and its LUT (19:13) were
+still there beside the 23:15 build and the parity test replayed them against
+the client until it was made to read the mode list off `index.json`. They are
+not in the index, so the RGS would ignore them, but the folder is what gets
+uploaded: delete them (or any `*_any_*` leftover) before the next upload.
+
+The remaining soft point is the trips mode's non-paying share: 94.8% of its
+rounds pay nothing, past the "90,000 of 100,000 may be grounds for rejection"
+example in Stake's guidelines even though its hit rate clears 1 in 20. The
+first fix if review objects is written in `game_calculations.py` (a token pair
+payout); the user chose to submit it binary.
 
 **It is NOT committed**, and the note here used to say it was. `math-sdk/.gitignore`
 line 9 is `**/library/**`, so `git ls-files` on the library returns nothing: the
@@ -28,9 +63,10 @@ written down.
 ignores the `.eslintrc.cjs` every app in the vendored SDK still ships. The old
 `.eslintrc.cjs` is now dead and only kept so the app still matches its siblings.
 
-The math clears the **2-star** risk limits, not merely the 3-star ones: worst
-std 32.938 (limit 0.6–50.0), worst ETL 0.695 (limit 0.8), worst CVaR 568.8
-(limit 700), worst non-zero hit rate 1 in 2.03 (limit 1 in 20), P(≥5000×) zero.
+The four-guess families clear the **2-star** risk limits, not merely the 3-star
+ones. Last measured (2026-09-20 build, High Stakes at 16%): worst std 36.58
+(limit 0.6–50.0), worst etl40b 0.725 (limit 0.8), worst CVaR 624.6 (limit 700),
+worst non-zero hit rate 1 in 2.03 (limit 1 in 20), P(≥5000×) zero.
 
 ### Seeing the game, rather than reasoning about it
 
@@ -360,8 +396,9 @@ look.**
     - `logo.png` is now the WebP's fallback rather than the file the game
       loads, so it stays at 710×710 and byte-identical to the tile asset.
       README's older 4-layer Tile Editor description has been corrected.
-  - **The live-session checks in `RGS_TEST_PLAN.md` remain unrun — now 95, not
-    52.** The plan was strong on this project's own regression history and thin
+  - **The live-session checks in `RGS_TEST_PLAN.md` remain unrun — now 97, not
+    52.** Two are new with Three of a Kind (BET-14, BET-15): whether the RGS
+    applies `maxBet` to the base amount under a 250× cost, and the tier caps. The plan was strong on this project's own regression history and thin
     on the criteria Stake publishes; 33 were added covering the spacebar binding,
     the mute control, autoplay confirmation, an invalid `rgs_url`, a malformed
     `?lang=`, min/max bet selectability, the paytable and UI guide, double-tap

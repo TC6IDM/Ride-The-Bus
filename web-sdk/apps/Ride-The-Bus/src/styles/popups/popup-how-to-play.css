@@ -266,6 +266,15 @@
   color: var(--gold);
 }
 
+/* The "193 ways to play" line under the Game modes heading: the count in the
+   panel's tint, the sentence after it in the body ink - the same pairing
+   .mode-panel-max draws, so a figure the section wants read is always the
+   tinted thing in it. */
+.info-tagline strong {
+  color: var(--tint);
+  font-variant-numeric: tabular-nums;
+}
+
 /* Keyboard focus on the mode tabs. */
 .mode-tab:focus-visible {
   outline: 2px solid var(--focus-ring);

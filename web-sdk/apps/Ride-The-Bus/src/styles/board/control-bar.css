@@ -718,9 +718,17 @@
 
 /* The bet figure when the mode multiplies it. Blue says "this is not the plain
    bet" without needing a sentence; the arithmetic sits underneath for anyone
-   who wants it. Used in the control bar and the bet menu alike, so the two
-   can never show different numbers for the same selection. */
-.cb-val-multiplied { color: var(--accent); }
+   who wants it.
+
+   Compound selector on purpose. readout.css sets `.cb-val { color: var(--ink) }`
+   and is imported AFTER this sheet, so a bare `.cb-val-multiplied` at the same
+   specificity lost on order and the figure stayed white on the first mode that
+   ever multiplied - which is exactly what was seen the day Three of a Kind
+   arrived. The bet menu's chips do NOT take this colour: they are coloured by
+   rank (tokens.css), and a rule that turned the value blue on four of five
+   chip faces and left it black on the white one read as an inconsistency, not
+   a signal. The bar is where the signal lives. */
+.cb-val.cb-val-multiplied { color: var(--accent); }
 
 /* .bet-cell-base used to be grouped in here and matched nothing - see the
    commit that split the popups out, which is where svelte-check first got a
@@ -899,7 +907,13 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: calc(var(--ui-bar) * 0.36);
+  /* Tight, because this line has to fit INSIDE the bet display's capped
+     width: seven bolts at 1em plus "Three of a Kind" ran 10px past the
+     panel's left edge, and the panel's hover border drew straight through
+     the meter. The bolts are 0.8em of this line rather than 1em; the count is
+     the ruler, not the size, and the picker's meter is its own size anyway. */
+  gap: calc(var(--ui-bar) * 0.25);
+  max-width: 100%;
   font-size: calc(var(--ui-bar) * 0.86);
   font-weight: 800;
   /* The mode name is written in its own volatility colour - green for Second
@@ -919,7 +933,7 @@
      panel again. The gold fallback is what shows if it fails to resolve. */
   color: var(--mode-ink, var(--gold));
   white-space: nowrap;
-  --bolt-size: 1em;
+  --bolt-size: 0.8em;
 }
 
 /* ---- Keyboard focus -------------------------------------------------------

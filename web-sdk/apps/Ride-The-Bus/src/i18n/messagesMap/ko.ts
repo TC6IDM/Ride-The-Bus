@@ -55,9 +55,13 @@ export default {
 	Classic: '클래식',
 	'Second Chance': '세컨드 챈스',
 	'High Stakes': '하이 스테이크',
-	'Every mode costs %c× your bet and returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
-		'모든 모드는 베팅액의 %c배이며, 여러 라운드에 걸쳐 동일한 %s를 돌려줍니다. 달라지는 것은 배당 빈도와 크기입니다.',
+	'This mode costs %c× your bet. Every mode returns the same %s over many rounds; what changes is how often a round pays and how much it can pay.':
+		'이 모드의 비용은 베팅의 %c배입니다. 모든 모드는 많은 라운드에 걸쳐 같은 %s를 돌려주며, 다른 점은 라운드가 얼마나 자주, 얼마나 많이 지급하는가입니다.',
 	Forgiven: '면제됨',
+	// The intro's tagline and the first line of How to Play's Game modes.
+	'%n ways to play': '%n가지 플레이 방법',
+	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
+		'추측 모드의 모든 선택 조합은 각각 별도의 베팅이며, 각자의 확률에 따라 가격이 매겨집니다.',
 	'Game modes': '게임 모드',
 	'Max win': '최대 배당',
 	// Confirmation before a bet mode is activated - required by the approval
@@ -67,8 +71,8 @@ export default {
 	Cancel: '취소',
 	Switch: '변경',
 	'Volatility %s of %t': '변동성 %t단계 중 %s',
-	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on High Stakes.':
-		'환수율(RTP)은 모든 게임 모드에서 %s입니다. 이 게임의 최대 배당은 하이 스테이크에서 베팅의 %m입니다.',
+	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.':
+		'환수율(RTP)은 모든 게임 모드에서 %s입니다. 이 게임의 최대 배당은 %f에서 베팅의 %m입니다.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'첫 카드를 틀리면 라운드가 끝납니다. 이후 실수는 쌓아둔 배수의 30%를 남깁니다.',
 	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
@@ -82,8 +86,8 @@ export default {
 		'예측 조합 중 일부만 모드의 최대치에 도달합니다. 네 가지를 모두 고르면 그 조합의 상한이 위에 표시됩니다.',
 	Playing: '플레이 중',
 	'Card 2, 3 or 4': '카드 2, 3 또는 4',
-	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
-		'첫 카드를 틀리면 라운드가 끝납니다. 이후 실수는 20%만 남기므로 정답 하나하나의 가치가 커집니다.',
+	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
+		'첫 카드를 틀리면 라운드가 끝납니다. 이후 실수는 16%만 남기므로 정답 하나하나의 가치가 커집니다.',
 
 	'How to Play': '게임 방법',
 	'Guess your way through four cards:': '네 장의 카드를 차례로 예측하세요:',
@@ -237,4 +241,30 @@ export default {
 		'라운드가 종료되며 쌓아온 금액의 약 %s%가 남습니다.',
 	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
 		'카드 2부터는 한 번 넘어가며, 쌓아온 금액의 %s%를 유지한 채 라운드가 이어집니다.',
+
+	// Three of a Kind.
+	'Three of a Kind':
+		'트리플',
+	'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.':
+		'에이스, 킹, 퀸으로 이루어진 12장 덱에서 세 장. 카드 2와 3은 카드 1과 같은 숫자여야 하며, 그 외에는 아무것도 지급되지 않습니다.',
+	'Costs %c× your bet':
+		'비용은 베팅의 %c배',
+	'Any':
+		'아무거나',
+	'Any card':
+		'아무 카드나',
+	'Any wrong guess':
+		'틀린 예측',
+	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
+		'12장 덱으로 진행됩니다: 각 무늬의 에이스, 킹, 퀸. 카드 1이 공개되고, 카드 2와 3은 그 숫자와 같아야 합니다. 세 장의 카드, 한 번의 승리.',
+	'Three of a kind pays %m your bet, about one round in %n.':
+		'트리플은 베팅의 %m를 지급하며, 약 %n라운드에 한 번입니다.',
+	'%c× your base bet of %b':
+		'기본 베팅 %b의 %c배',
+	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
+		'*%f 기준입니다. 게임 모드마다 최대 당첨금이 다르며, 모드 선택과 게임 방법에 표시됩니다.',
+	'Card 2 must match card 1':
+		'카드 2는 카드 1과 같아야 합니다',
+	'Card 3 must match card 1':
+		'카드 3은 카드 1과 같아야 합니다',
 };

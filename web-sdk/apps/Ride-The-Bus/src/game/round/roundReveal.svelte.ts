@@ -19,7 +19,8 @@
 import type { Card } from './roundContract';
 import { loaderGone } from '../platform/ready.svelte';
 import { sound } from '../audio/sound';
-import { DECAY, forgivenessAvailable, quantizeMultiplier } from '../math/payout';
+import { decayFor, forgivenessAvailable, quantizeMultiplier } from '../math/payout';
+import { FREE_CHOICE, stageCount } from '../math/modes';
 import { familyRules } from '../bet/betState.svelte';
 import { cueLead, pacing, revealWait } from './revealPacing.svelte';
 import { resetForNewRound, round } from './roundState.svelte';
@@ -118,7 +119,10 @@ export async function playRevealSequence() {
     const event = round.revealEvents[i];
     if (!busted && event.correct) {
       running *= event.payout;
-      sound.playStageWin(i, cueLead(i));
+      // A free card (Three of a Kind's cards 1 and 4) is dealt, not won: it
+      // gets the flip and nothing else. A stage-win cue on a 1.00x would tell
+      // the player they had just got something right.
+      if (event.choice !== FREE_CHOICE) sound.playStageWin(i, cueLead(i));
     } else if (!busted) {
       // A forgiven miss keeps its fraction and the round plays on - no bust
       // marker, no decay term (that stands in for stages a bust skips, and
@@ -135,7 +139,9 @@ export async function playRevealSequence() {
         sound.playForgiven(cueLead(i));
       } else {
         round.bustedIndex = i;
-        running *= familyRules().retention[i]! * DECAY ** (3 - i);
+        // The stages never played, counted from the round's own length -
+        // three on Three of a Kind. Mirrors computeFinalMultiplier.
+        running *= familyRules().retention[i]! * decayFor(familyRules()) ** (round.revealEvents.length - 1 - i);
         busted = true;
         sound.playBust(cueLead(i));
       }
@@ -166,8 +172,11 @@ export async function animateRoundFromEvents(
   }
 
   const reveals = events.filter((event: any) => event.type === 'reveal');
-  if (reveals.length < 4) {
-    throw new Error('Round did not contain all 4 reveal stages');
+  // As many reveals as the family deals: four on the four-guess ride, three
+  // on Three of a Kind. A book with fewer is not a round of this mode.
+  const expected = stageCount(familyRules());
+  if (reveals.length < expected) {
+    throw new Error(`Round did not contain all ${expected} reveal stages`);
   }
 
   round.revealEvents = reveals.map((event: any) => ({

@@ -5,7 +5,7 @@ import subprocess
 
 from gamestate import GameState
 from game_config import GameConfig
-from game_calculations import MODE_FAMILIES, all_published_modes, mode_name
+from game_calculations import MODE_FAMILIES, all_published_modes, family_of, mode_name
 from reweight_luts import reweight_all
 from src.state.run_sims import create_books
 from src.write_data.write_configs import generate_configs
@@ -13,8 +13,9 @@ from utils.rgs_verification import execute_all_tests
 
 if __name__ == "__main__":
 
-    # This build is ~43M simulations across the 192 bet modes - 64 choice
-    # combinations in each of three families - so it runs in parallel.
+    # This build is ~44M simulations across the 193 bet modes - 64 choice
+    # combinations in each of three families, plus Three of a Kind - so it
+    # runs in parallel.
     # src/state/run_sims.py spawns real multiprocessing.Process
     # workers (not GIL-bound threads), each taking a disjoint slice of the
     # global simulation index.
@@ -52,7 +53,9 @@ if __name__ == "__main__":
     # The same counts apply to every family. Second Chance wins more often, so
     # its rare combos are actually LESS noisy than Classic's at the same count -
     # over-provisioning there is cheap insurance, and keeping one table means a
-    # family cannot be added with a count nobody checked.
+    # family cannot be added with a count nobody checked. Three of a Kind is
+    # two equals and so gets 800k, which at a physical 1 in 35 is ~23k sweeps;
+    # its single outcome makes the RTP exact regardless.
     MIN_SIMS_PER_MODE = 100_000
     SIMS_BY_EQUAL_COUNT = {0: int(1e5), 1: int(2e5), 2: int(8e5)}
 
@@ -84,11 +87,11 @@ if __name__ == "__main__":
 
     print(f"Simulating {len(num_sim_args)} bet modes, "
           f"{sum(num_sim_args.values()):,} simulations total:")
+    # family_of, not a hand-written prefix tuple: the last version of this
+    # print listed ("sc_", "hs_") and would have counted a fourth family's
+    # modes as Classic's.
     for _family in MODE_FAMILIES:
-        _mine = {m: c for m, c in num_sim_args.items()
-                 if (m.startswith(MODE_FAMILIES[_family]["prefix"])
-                     if MODE_FAMILIES[_family]["prefix"]
-                     else not m.startswith(("sc_", "hs_")))}
+        _mine = {m: c for m, c in num_sim_args.items() if family_of(m) == _family}
         print(f"  {_family:5} {len(_mine):3} modes, {sum(_mine.values()):>11,} simulations")
 
     run_conditions = {"run_sims": True}

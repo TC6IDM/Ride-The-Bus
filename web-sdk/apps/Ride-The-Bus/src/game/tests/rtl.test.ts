@@ -158,8 +158,9 @@ describe('the intro screen fits the frame in Arabic', () => {
     // rotate is physical and nth-child counts DOM order, so a mirrored row gave
     // every panel the angle belonging to the opposite end and the arc inverted.
     const flips = css.match(/:global\(\[dir='rtl'\]\)\s*\.ss-step:nth-child\([^)]+\)/g) ?? [];
-    // Four for the row of four, plus the odd/even pair the phone layout needs.
-    assert.ok(flips.length >= 6, `only ${flips.length} right-to-left tilt rules`);
+    // Four for the row of four, plus four more for the phone's 2x2, which is
+    // dealt at its own angles and mirrored on its own.
+    assert.ok(flips.length >= 8, `only ${flips.length} right-to-left tilt rules`);
   });
 
   test('the index and the help badge sit in opposite corners, logically', () => {

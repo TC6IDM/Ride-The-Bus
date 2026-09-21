@@ -370,6 +370,16 @@
 	color: var(--ink);
 }
 
+/* A dealt card - Three of a Kind's cards 1 and 4, where no guess was made.
+   The suit ground with no pip colour: nothing was chosen, so no choice colour
+   is the right colour. Both the colour slot and the suit slot use it. */
+.ss-choice-badge.color-any,
+.ss-choice-badge.suit-any {
+	background: var(--choice-black);
+	box-shadow: inset 0 0 0 1px rgba(var(--ink-rgb), 0.28);
+	color: var(--ink-dim);
+}
+
 .ss-choice-badge.suit-heart,
 .ss-choice-badge.suit-diamond {
 	color: var(--suit-red);

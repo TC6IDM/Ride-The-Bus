@@ -16,6 +16,7 @@
   import MarkIcon from '../icons/MarkIcon.svelte';
   import SuitIcon from '../icons/SuitIcon.svelte';
   import {
+    familyRules,
     guesses,
     insideIsPossible,
     setColorChoice,
@@ -23,7 +24,7 @@
     setIoChoice,
     setSuitChoice,
   } from '../../game/bet/betState.svelte';
-  import { isCleanSweep } from '../../game/math/modes';
+  import { isCleanSweep, stageCount } from '../../game/math/modes';
   import { round } from '../../game/round/roundState.svelte';
   import { t } from '../../i18n/i18nDerived';
   import { numberToCurrencyString } from 'utils-shared/amount';
@@ -67,6 +68,20 @@
   }
 
   /**
+   * Is the family one with no guesses? Three of a Kind deals three cards and
+   * asks nothing: card 1 is dealt, cards 2 and 3 must match it. Its board is
+   * a different shape - three slots, and two full-size Equal squares under
+   * cards 2 and 3 in place of the four guess columns - rather than the
+   * four-guess row with parts greyed out, which read as a broken control.
+   *
+   * `guesses` is neither read nor cleared while this is up: the picks from
+   * the last four-guess mode stay parked and come back with it.
+   */
+  const fixed = $derived(familyRules().fixedChoices !== null);
+  /** How many card slots this family deals - four, or three on trips. */
+  const slots = $derived(stageCount(familyRules()));
+
+  /**
    * Every guess press goes through here, because the row is LOCKED by opacity
    * and pointer-events rather than by the `disabled` attribute - and
    * pointer-events does not stop the keyboard. Tab + Enter during a reveal
@@ -101,8 +116,11 @@
 {/snippet}
 
 {#snippet cardRow()}
+  <!-- As many slots as the family deals. roundState keeps four always; a
+       three-card family simply never fills the fourth, and drawing it would
+       show a card that never turns. -->
   <div class="card-row">
-    {#each round.revealedCards as card, index}
+    {#each round.revealedCards.slice(0, slots) as card, index}
       <div class="card-slot">
         <div class="card-mult" class:show={round.stageMultipliers[index] !== null}>
           {(round.stageMultipliers[index] ?? 0).toFixed(2)}×
@@ -165,6 +183,27 @@
 {@render cardRow()}
 {#if round.hasPlayed}{@render runningWinBar()}{/if}
 
+{#if fixed}
+  <!-- Three of a Kind: no guesses to make. Two Equal squares under the gaps
+       between the three cards - what the mode plays, stated by the controls
+       themselves rather than by a caption over disabled ones, each labelled
+       the way the four-guess columns are. The squares are read-only - the
+       round is one bet mode, so there is nothing a press could change. -->
+  <div class="choice-row trips-row" class:locked={choicesLocked()} aria-busy={choicesLocked()}>
+    <div class="choice-column">
+      <span class="choice-label"><span>{t('Equal')}</span></span>
+      <div class="equal-slot" role="img" aria-label={t('Card 2 must match card 1')}>
+        <span class="equal-btn equal-full selected">{@render iconEquals()}</span>
+      </div>
+    </div>
+    <div class="choice-column">
+      <span class="choice-label"><span>{t('Equal')}</span></span>
+      <div class="equal-slot" role="img" aria-label={t('Card 3 must match card 1')}>
+        <span class="equal-btn equal-full selected">{@render iconEquals()}</span>
+      </div>
+    </div>
+  </div>
+{:else}
 <div class="choice-row" class:locked={choicesLocked()} aria-busy={choicesLocked()}>
   <div class="choice-column">
     <!-- The label's text sits in an inner span so the outer box can centre it:
@@ -226,6 +265,7 @@
     </div>
   </div>
 </div>
+{/if}
 
 <style>
   @import '../../styles/board/cards.css';

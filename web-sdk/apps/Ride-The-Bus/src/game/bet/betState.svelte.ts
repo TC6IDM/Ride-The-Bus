@@ -28,16 +28,10 @@ import {
   snapToStep,
 } from './betLimits';
 import { currencySymbol } from './currencySymbol';
-import { FAMILY_RULES, isCombinationPlayable, modeName, type ModeFamily } from '../math/modes';
+import { FAMILY_RULES, isCombinationPlayable, modeChoices, modeName, type ModeFamily } from '../math/modes';
 import { MODE_CEILINGS } from '../math/modeCeilings';
 import { t } from '../../i18n/i18nDerived';
-import {
-  FAMILY_BOLT_CEILING,
-  VOLATILITY_BOLTS,
-  boltsFor,
-  volatilityColorRgbVar,
-  volatilityColorVar,
-} from '../math/volatility';
+import { VOLATILITY_BOLTS, boltsFor, volatilityColorRgbVar, volatilityColorVar } from '../math/volatility';
 import { winTiersFor } from '../math/winTiers';
 
 import { auto } from '../round/autoplaySettings.svelte';
@@ -147,32 +141,22 @@ export const roundCost = (amount: number = betValue()) => amount * familyRules()
  */
 export const liveBolts = () => boltsFor(bet.family, guesses.hl, guesses.io);
 /**
- * The colour the live mode name is written in - the rating's own colour
- * rather than a fixed gold, so the word and the bolts beside it agree.
+ * The colour the live mode name is written in - the family's own colour, so
+ * the word and the bolts beside it agree.
  *
- * Past FAMILY_BOLT_CEILING it goes to the overflow purple, which in practice
- * means High Stakes with one or two Equal picks and nothing else: the
- * families sit at 1 / 3 / 5 against a ceiling of 5, so only the 5 can be
- * pushed over it. That is the same threshold BoltMeter uses to recolour the
- * stops, passed to it as overflowAfter, so the word can never disagree with
- * the meter.
- *
- * The -ink variant, not --vol-overflow itself: this is 9.5px text and wants
- * 4.5:1 where a bolt only needs 3:1. See tokens.css.
+ * This used to turn purple past a ceiling of five bolts, which in practice
+ * meant High Stakes with an Equal pick. Purple is now a FAMILY colour - Three
+ * of a Kind's, the mode whose zero-rate is off the scale the other three span
+ * (see volatility.ts) - so High Stakes with two Equals draws seven red bolts
+ * and the word stays red with them. One meaning per hue.
  */
-export const modeNameColor = () =>
-  liveBolts() > FAMILY_BOLT_CEILING
-    ? 'var(--vol-overflow-ink)'
-    : volatilityColorVar(bet.family);
+export const modeNameColor = () => volatilityColorVar(bet.family);
 /**
  * The same colour as an rgb triplet, for the washes and glows on the bet
- * panel's own controls. Derived through the same ceiling test as
- * modeNameColor so the two can never name different colours.
+ * panel's own controls. Derived from the same family so the two can never
+ * name different colours.
  */
-export const modeRgb = () =>
-  liveBolts() > FAMILY_BOLT_CEILING
-    ? 'var(--vol-overflow-ink-rgb)'
-    : volatilityColorRgbVar(bet.family);
+export const modeRgb = () => volatilityColorRgbVar(bet.family);
 /** The meter's screen-reader text. Both stops are substituted so the sentence
  *  cannot go stale if the ruler ever gains a stop. */
 export const volatilityLabel = (lit: number) =>
@@ -272,7 +256,12 @@ export function formatBetInput() {
   );
 }
 
-export const allChoicesMade = () => Boolean(guesses.color && guesses.hl && guesses.io && guesses.suit);
+/**
+ * Is there a complete bet to send? Four picks on a four-guess family; always,
+ * on a family whose four tokens are fixed (Three of a Kind has nothing to
+ * pick, so its Start button is never waiting on the board).
+ */
+export const allChoicesMade = () => modeChoices(bet.family, guesses) !== null;
 
 // --- The one impossible pairing --------------------------------------------
 // Stage 2 "equal" ties card 2 to card 1's rank, which leaves nothing strictly
@@ -432,7 +421,8 @@ export function modeLockedReason(): string | null {
  * than an invented one.
  */
 export function selectedCeiling(family: ModeFamily): number | null {
-  if (!guesses.color || !guesses.hl || !guesses.io || !guesses.suit) return null;
-  if (!isCombinationPlayable(guesses.hl, guesses.io)) return null;
-  return MODE_CEILINGS[modeName(guesses.color, guesses.hl, guesses.io, guesses.suit, family)] ?? null;
+  const choices = modeChoices(family, guesses);
+  if (!choices) return null;
+  if (!isCombinationPlayable(guesses.hl, guesses.io) && !FAMILY_RULES[family].fixedChoices) return null;
+  return MODE_CEILINGS[modeName(choices, family)] ?? null;
 }

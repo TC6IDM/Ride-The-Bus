@@ -5,7 +5,7 @@
  *
  * WHY THE CLIENT CANNOT WORK THESE OUT FOR ITSELF.
  *
- * Every one of the 192 published bet modes is one full four-guess combination,
+ * Every one of the 192 four-guess bet modes is one full guess combination,
  * and each reaches a different ceiling: 68.2x to 1354.2x inside Classic alone.
  * The client already owns the payout maths, so enumerating the theoretical
  * maximum of a combination would be easy - and WRONG, because the RGS can only
@@ -72,8 +72,16 @@ for (const name of published) {
   ceilings[name] = Math.round(raw) / 100;
 }
 
+// Longest prefix first, like game_calculations.py:_PREFIXES; a fourth family
+// added here must be added to the same list in replay-events.js and
+// replay-server.mjs, which each keep their own copy for the same reason.
+const FAMILY_PREFIXES = [
+  ['tr_', 'tr'],
+  ['sc_', 'sc'],
+  ['hs_', 'hs'],
+];
 const familyOf = (name) =>
-  name.startsWith('sc_') ? 'sc' : name.startsWith('hs_') ? 'hs' : 'base';
+  FAMILY_PREFIXES.find(([prefix]) => name.startsWith(prefix))?.[1] ?? 'base';
 
 const entries = published
   .map((name) => `  '${name}': ${ceilings[name]},`)

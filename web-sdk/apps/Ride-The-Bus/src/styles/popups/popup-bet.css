@@ -321,15 +321,36 @@
   }
 }
 
-/* The bet figure when the mode multiplies it. A COPY of the rule in
-   control-bar.css, because the chip and the bar's bet display are two scopes
-   now and each needs its own. The original's point stands and is the reason
-   both must keep saying the same thing: "used in the control bar and the bet
-   menu alike, so the two can never show different numbers for the same
-   selection." All three families cost 1.0x today, so nothing applies this yet;
-   it is here for the moment one does not. */
-.cb-val-multiplied {
+/* The round's cost, on a mode that multiplies the bet - the figure that
+   leads the menu there. `.cb-val-multiplied` is the bar's class and the
+   bar's blue (control-bar.css), copied here because the two are separate
+   scopes; both must keep saying the same thing. The chips deliberately do
+   NOT take it: coloured by rank, they stayed one colour per face, and a value
+   that went blue on four faces and black on the white one read as a mistake. */
+.bet-entry-cost {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--ui-bar) * 0.18);
+  margin-bottom: calc(var(--ui-bar) * 0.64);
+}
+
+.bet-entry-cost-val {
+  font-size: calc(var(--ui-bar) * 2);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.cb-val.cb-val-multiplied {
   color: var(--accent);
+}
+
+.bet-entry-cost-note {
+  font-size: calc(var(--ui-bar) * 0.93);
+  font-weight: 700;
+  color: var(--ink-dim);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ---- Touch targets -------------------------------------------------------

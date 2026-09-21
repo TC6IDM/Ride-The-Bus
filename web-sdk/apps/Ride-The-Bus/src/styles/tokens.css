@@ -570,14 +570,25 @@
   --vol-sc-rgb: 61, 220, 132;
   --vol-base-rgb: 255, 201, 60;
   --vol-hs-rgb: 255, 92, 92;
+  /* Three of a Kind: the purple. Off the green-yellow-red ramp rather than a
+     deeper red, because it is not "more of the same" - by the column that
+     puts it there (96% of rounds pay nothing) it is past the top of the scale
+     the three four-guess modes span; see volatility.ts. This is the LIFTED
+     purple, not the bolt-only #9d4edd below: unlike the other three it is
+     read as 9.5px text in the bar (the mode name takes its family's colour)
+     and #9d4edd misses 4.5:1 there at 4.00; this measures 5.32 and holds the
+     hue. A bolt at this value survives its drop-shadow fine. Dark --on-vol-ink
+     on it is 5.3, so the confirm button keeps its rule. */
+  --vol-tr-rgb: 176, 106, 232;
   --vol-sc: rgb(var(--vol-sc-rgb));
   --vol-base: rgb(var(--vol-base-rgb));
   --vol-hs: rgb(var(--vol-hs-rgb));
-  /* Stops past the family ceiling, which only Equal picks on High Stakes
-     reach. Deliberately off the green-yellow-red ramp rather than a deeper
-     red: it is not "more of the same", it is past the top of the scale the
-     three modes span. Kept bright enough to survive the drop-shadow on a dark
-     bar. */
+  --vol-tr: rgb(var(--vol-tr-rgb));
+  /* The deeper purple the win takeover's Epic tier reads. It USED to be the
+     colour of the stops past a family's bolt ceiling (High Stakes with an
+     Equal pick); that ceiling is gone - purple is Three of a Kind's own colour
+     now, above - and this stays only for the Epic palette, which is the same
+     reading: past the top of the family bands. */
   --vol-overflow: #9d4edd;
   /* The same purple, lifted, for when it has to be TEXT rather than a bolt.
      A bolt is a graphic and clears WCAG at 3:1; the mode name beside it is
@@ -587,10 +598,10 @@
      The bolt keeps the deeper value: it carries a drop-shadow that the text
      does not, and it was tuned to survive that. */
   /* Text on a volatility FILL - the confirm button, once it takes the colour
-     of the mode it is about to switch to. Every one of the three is a light
+     of the mode it is about to switch to. Every one of the four is a light
      colour, so this is dark: 10.56 on the green, 12.27 on the yellow, 6.23 on
-     the red. A hardcoded white would be the bug the accent-ink rule exists to
-     stop. */
+     the red, 5.3 on the purple. A hardcoded white would be the bug the
+     accent-ink rule exists to stop. */
   /* A triplet, because the white bet chip prints its currency code in this ink
      at an alpha, and that was the one place it was written out longhand
      (rgba(20, 17, 10, 0.78) in popup-bet.css). Same rule as every other

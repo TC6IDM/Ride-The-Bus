@@ -13,29 +13,28 @@
  */
 import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
-import { existsSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
 
 import {
+  allPlayableModes,
   COLOR_CHOICES,
   FAMILY_RULES,
+  familyOf,
+  FREE_CHOICE,
   HIGHER_LOWER_CHOICES,
   INSIDE_OUTSIDE_CHOICES,
-  MODE_FAMILIES,
-  SUIT_CHOICES,
-  allPlayableModes,
-  familyOf,
   isCombinationPlayable,
+  MODE_FAMILIES,
+  modeChoices,
   modeName,
   parseModeName,
+  stageCount,
+  SUIT_CHOICES,
 } from '../modes.ts';
 import { DECAY } from '../payout.ts';
 import { GAME_ALL, GAME_SOURCES } from '../../sources.testlib.ts';
 
-const INDEX_PATH = resolve(
-  import.meta.dirname,
-  '../../../../../../../math-sdk/games/ride_the_bus/library/publish_files/index.json',
-);
+import { INDEX as INDEX_PATH, mathBuildIsCurrent } from '../../mathBuild.testlib.ts';
 
 describe('isCombinationPlayable', () => {
   test('rejects only equal-then-inside', () => {
@@ -62,19 +61,66 @@ describe('isCombinationPlayable', () => {
 });
 
 describe('allPlayableModes', () => {
-  test('is 64 per family, being 72 minus the 8 that pair equal with inside', () => {
+  test('is 64 per four-guess family, being 72 minus the 8 that pair equal with inside, plus one trips mode', () => {
     const all = allPlayableModes();
     assert.equal(
       COLOR_CHOICES.length * HIGHER_LOWER_CHOICES.length * INSIDE_OUTSIDE_CHOICES.length * SUIT_CHOICES.length,
       72,
     );
-    assert.equal(all.length, 64 * MODE_FAMILIES.length);
+    const fourGuess = MODE_FAMILIES.filter((family) => FAMILY_RULES[family].fixedChoices === null);
+    const fixed = MODE_FAMILIES.filter((family) => FAMILY_RULES[family].fixedChoices !== null);
+    assert.deepEqual(fixed, ['tr'], 'Three of a Kind is the one family with no guesses');
+    assert.equal(all.length, 64 * fourGuess.length + fixed.length);
+    assert.equal(all.length, 193);
     assert.equal(new Set(all).size, all.length, 'no duplicates');
 
-    for (const family of MODE_FAMILIES) {
+    for (const family of fourGuess) {
       const mine = all.filter((name) => familyOf(name) === family);
       assert.equal(mine.length, 64, `${family} should offer 64 combinations`);
     }
+    assert.deepEqual(
+      all.filter((name) => familyOf(name) === 'tr'),
+      ['tr_any_equal_equal'],
+      'Three of a Kind publishes exactly its one combination',
+    );
+  });
+
+  test('the free token exists only where a family fixes it', () => {
+    // `any` is not a pick. It may appear in a slug only at the stages the
+    // family's fixed combination says, and only on that family - so a
+    // four-guess family can never be asked for a card it did not guess, and
+    // the trips family can never be sent the picks left on the board.
+    assert.equal(familyOf('tr_any_equal_equal'), 'tr');
+    assert.deepEqual(parseModeName('tr_any_equal_equal'), {
+      family: 'tr',
+      choices: [FREE_CHOICE, 'equal', 'equal'],
+      color: FREE_CHOICE,
+      higherLower: 'equal',
+      insideOutside: 'equal',
+      suit: null,
+    });
+    assert.equal(parseModeName('red_higher_outside_spade')?.choices.length, 4);
+    for (const bad of [
+      'any_higher_outside_spade',
+      'sc_any_equal_equal',
+      'tr_any_equal_equal_any',
+      'tr_red_equal_equal',
+      'tr_any_equal_equal_spade',
+      'tr_any_higher_outside',
+      'red_higher_outside',
+    ]) {
+      assert.equal(parseModeName(bad), null, `"${bad}" is not a published mode`);
+    }
+
+    // modeChoices ignores the board on a fixed family and needs all four on
+    // the others.
+    const board = { color: 'red', hl: 'higher', io: 'outside', suit: 'spade' } as const;
+    assert.deepEqual(modeChoices('tr', board), FAMILY_RULES.tr.fixedChoices);
+    assert.deepEqual(modeChoices('tr', { color: null, hl: null, io: null, suit: null }), FAMILY_RULES.tr.fixedChoices);
+    assert.deepEqual(modeChoices('base', board), ['red', 'higher', 'outside', 'spade']);
+    assert.equal(modeChoices('base', { ...board, suit: null }), null);
+    assert.equal(stageCount(FAMILY_RULES.tr), 3, 'trips deals three cards');
+    assert.equal(stageCount(FAMILY_RULES.base), 4);
   });
 
   test('contains no equal-then-inside mode, in any family', () => {
@@ -106,9 +152,13 @@ describe('family rules match the math', () => {
     assert.equal(Math.min(...costs), FAMILY_RULES.base.cost);
   });
 
-  test('no cost multiplier exceeds Stake 2,000x ceiling', () => {
+  test('no cost multiplier exceeds the 2-star tier ceiling of 1,000x', () => {
+    // The tier table in stake-approval/references/approval-guidelines.md:
+    // 1,000x at 2-star, 1,500x at 3-star. Three of a Kind sits exactly on the
+    // 2-star figure, and its payout sits exactly on that tier's 25,000x cap.
     for (const family of MODE_FAMILIES) {
-      assert.ok(FAMILY_RULES[family].cost <= 2000, `${family} cost is too high`);
+      assert.ok(FAMILY_RULES[family].cost <= 1000, `${family} cost is too high`);
+      assert.ok(FAMILY_RULES[family].maxWin <= 25000, `${family} pays above the 2-star payout cap`);
     }
   });
 
@@ -136,12 +186,10 @@ describe('family rules match the math', () => {
 });
 
 describe('parity with the published math', () => {
-  const available = existsSync(INDEX_PATH);
+  // Absent OR stale skips - see mathBuild.testlib.ts.
+  const available = mathBuildIsCurrent();
 
   test('index.json exists (skip parity if the math has not been built)', () => {
-    if (!available) {
-      console.warn(`  ! ${INDEX_PATH} missing - run the math build to enable this check`);
-    }
     assert.ok(true);
   });
 
@@ -187,16 +235,14 @@ describe('parity with the published math', () => {
   });
 
   test('every published mode name round-trips through modeName', { skip: !available }, () => {
+    // Through parseModeName, not a four-way destructure: a slug's length is
+    // its stage count, and Three of a Kind's has three tokens. Splitting into
+    // four handed modeName an undefined fourth, which joined as a trailing
+    // underscore - the test went red on the first build to publish the mode.
     for (const name of publishedModes()) {
-      const family = familyOf(name);
-      const body = name.slice(FAMILY_RULES[family].prefix.length);
-      const [color, higherLower, insideOutside, suit] = body.split('_') as [
-        (typeof COLOR_CHOICES)[number],
-        (typeof HIGHER_LOWER_CHOICES)[number],
-        (typeof INSIDE_OUTSIDE_CHOICES)[number],
-        (typeof SUIT_CHOICES)[number],
-      ];
-      assert.equal(modeName(color, higherLower, insideOutside, suit, family), name);
+      const parsed = parseModeName(name);
+      assert.ok(parsed, `${name} does not parse`);
+      assert.equal(modeName(parsed.choices, parsed.family), name);
     }
   });
 
@@ -216,14 +262,11 @@ describe('parity with the published math', () => {
 });
 
 describe('parseModeName', () => {
-  test('round-trips every one of the 192 published modes', () => {
+  test('round-trips every one of the 193 published modes', () => {
     for (const name of allPlayableModes()) {
       const parsed = parseModeName(name);
       assert.ok(parsed, `${name} did not parse`);
-      assert.equal(
-        modeName(parsed.color, parsed.higherLower, parsed.insideOutside, parsed.suit, parsed.family),
-        name,
-      );
+      assert.equal(modeName(parsed.choices, parsed.family), name);
     }
   });
 
@@ -234,6 +277,7 @@ describe('parseModeName', () => {
     assert.equal('sc_red_higher_equal_spade'.split('_').length, 5);
     assert.deepEqual(parseModeName('sc_red_higher_equal_spade'), {
       family: 'sc',
+      choices: ['red', 'higher', 'equal', 'spade'],
       color: 'red',
       higherLower: 'higher',
       insideOutside: 'equal',
@@ -253,7 +297,7 @@ describe('parseModeName', () => {
     }
   });
 
-  test('a plain four-part split silently drops 128 of the 192 modes', () => {
+  test('a plain four-part split silently drops 128 of the 193 modes, and misreads one', () => {
     // The cost of getting this wrong, in numbers, because the failure is silent.
     //
     // Restoring the four guess squares from a mode name happens in three places:
@@ -265,15 +309,18 @@ describe('parseModeName', () => {
     //
     // Anything reading a mode name must go through parseModeName.
     const all = allPlayableModes();
-    assert.equal(all.length, 192);
+    assert.equal(all.length, 193);
 
     const naive = all.filter((name) => name.split('_').length === 4);
-    assert.equal(naive.length, 64, 'a four-part split sees only the unprefixed Classic family');
+    // Four parts: the 64 unprefixed Classic modes - and tr_any_equal_equal,
+    // whose prefix plus three tokens also makes four. A part count was never
+    // the right test, which is the point.
+    assert.equal(naive.length, 65, 'a four-part split sees Classic, plus the three-token trips slug');
     assert.equal(all.length - naive.length, 128, 'sc_ and hs_ modes a naive split drops');
-    assert.ok(naive.every((name) => familyOf(name) === 'base'));
+    assert.ok(naive.every((name) => familyOf(name) === 'base' || name === 'tr_any_equal_equal'));
 
     // parseModeName loses none of them.
-    assert.equal(all.filter((name) => parseModeName(name) !== null).length, 192);
+    assert.equal(all.filter((name) => parseModeName(name) !== null).length, 193);
   });
 
   // The SECOND half of the same bug. Once parseModeName was in place all three
@@ -309,12 +356,6 @@ describe('parseModeName', () => {
     );
 
     for (const block of restores) {
-      for (const field of ['family', 'color', 'higherLower', 'insideOutside', 'suit']) {
-        assert.ok(
-          block.includes(`parsed.${field}`),
-          `a mode-restore block in Game.svelte drops parsed.${field}`,
-        );
-      }
       assert.ok(
         // `bet.family` since the bet moved into betState.svelte.ts. Still
         // pinned to an ASSIGNMENT of parsed.family, not merely a mention of it:
@@ -323,7 +364,25 @@ describe('parseModeName', () => {
         /\bbet\.family = parsed\.family/.test(block),
         'a mode-restore block parses the family but never applies it to bet.family',
       );
+      // The four guesses go through ONE helper, restoreGuesses, which is what
+      // skips them on a family that has none (Three of a Kind's slug carries
+      // `any` for cards 1 and 4, which is not a pick). Both sites must call it.
+      assert.ok(
+        /\brestoreGuesses\(parsed\)/.test(block),
+        'a mode-restore block does not put the guesses back through restoreGuesses',
+      );
     }
+
+    // And the helper itself must carry all four, and the fixed-family guard.
+    const helper = source.match(/function restoreGuesses\([\s\S]*?\n}/)?.[0];
+    assert.ok(helper, 'restoreGuesses is missing');
+    for (const field of ['color', 'higherLower', 'insideOutside', 'suit']) {
+      assert.ok(helper.includes(`parsed.${field}`), `restoreGuesses drops parsed.${field}`);
+    }
+    assert.ok(
+      /fixedChoices\) return;/.test(helper),
+      'restoreGuesses must leave the board alone on a family with fixed choices',
+    );
   });
 
   /**

@@ -684,6 +684,7 @@
       cards={celebration.active.cards}
       bustedIndex={celebration.active.bustedIndex}
       forgivenIndex={celebration.active.forgivenIndex}
+      family={celebration.active.family}
       autoSkipMs={celebrationAutoSkipMs()}
       ondismiss={dismissCelebration}
     />

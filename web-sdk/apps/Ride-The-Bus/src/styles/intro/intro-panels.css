@@ -113,6 +113,7 @@
 .ss-lead,
 .ss-step,
 .ss-stats,
+.ss-stat-foot,
 .ss-continue {
 	animation: ss-rise 0.52s var(--ease-out) both;
 	animation-delay: calc(var(--d, 0) * 0.075s);
@@ -712,6 +713,7 @@
 .ss-lead,
 .ss-step,
 .ss-stats,
+.ss-stat-foot,
 .ss-continue {
 		animation: none;
 	}
@@ -767,6 +769,30 @@
 	color: var(--ink-warm-mute);
 	text-transform: uppercase;
 	letter-spacing: 0.1em;
+}
+
+/* The tagline: the figure leads, so the strip reads "193 WAYS TO PLAY" and
+   then the two readouts. Same type as the readouts - it is not a headline. */
+.ss-stat-tagline {
+	gap: calc(var(--ui) * 0.4);
+}
+
+/* The asterisk on the max win, and its footnote. The mark rides the figure at
+   the figure's weight so it cannot be missed; the sentence under the stats is
+   set in the caption's voice - a qualification, not a headline. */
+.ss-stat-note {
+	font-size: 0.75em;
+	vertical-align: super;
+	margin-inline-start: 0.06em;
+}
+
+.ss-stat-foot {
+	margin: calc(var(--ui) * 0.3) 0 0;
+	font-size: calc(var(--ui) * 0.95);
+	line-height: 1.35;
+	color: var(--ink-warm-mute);
+	text-align: center;
+	max-width: calc(var(--ui) * 40);
 }
 
 /* ---- Continue button ----
@@ -866,37 +892,50 @@
 @media (max-width: 620px) and (orientation: portrait) {.ss-steps {
 		flex-wrap: wrap;
 	}
-/* THE FAN IS FLAT IN TWO ROWS, and that is not the same judgement as the
-	   four-across spread above.
+/* THE HAND IS STILL DEALT IN TWO ROWS - just re-dealt, not flattened.
 
-	   The tilt up there breaks up "four equal panels in an even row", which the
-	   note on .ss-step calls the most recognisable AI-landing-page shape there
-	   is. That argument is about a ROW. Wrapped into a 2x2 every panel gains a
-	   vertical neighbour, so each angle now has an aligned edge beside it to be
-	   measured against - and a tilt with a straight edge next to it does not
-	   read as a dealt hand, it reads as four cards that failed to line up.
+	   A pass before this one set every angle to zero here, arguing that once
+	   the row wraps into a 2x2 each panel has an aligned edge beside it, and a
+	   tilt next to a straight edge reads as a layout bug. It was overruled on
+	   the phone itself: four square panels stacked flat is the same
+	   AI-landing-page shape the note on .ss-step is there to break, and it is
+	   the first thing on screen at exactly the size most players see it at.
 
-	   An earlier pass re-dealt the angles as a mirrored pair per row rather than
-	   flattening them. That fixed the worse bug it describes (each row sliding
-	   off its own side of the screen) without fixing the staggering, because the
-	   stagger was never about which way the angles pointed.
+	   So the phone keeps a tilt, smaller than the four-across spread, and the
+	   angles are chosen for a GRID rather than a row: each row leans apart
+	   (1 and 3 anticlockwise, 2 and 4 clockwise), so no two neighbours share a
+	   parallel edge and the columns do not line up either. The lift stays
+	   flat: on two rows there is no middle to lift.
 
-	   The odd/even and [dir='rtl'] selectors are kept at zero rather than
-	   replaced by one flat .ss-step rule, and that is load-bearing: the
-	   four-across block ships [dir='rtl'] .ss-step:nth-child(n), which
-	   out-specifies a bare .ss-step, so dropping these would put the
-	   four-across spread back on a right-to-left phone. */
-.ss-step:nth-child(odd) {
-		--step-tilt: 0deg;
+	   [dir='rtl'] mirrors the tilt for the same reason the four-across block
+	   does - `rotate` is physical and nth-child counts DOM order - and both
+	   sets are declared per nth-child rather than as one bare .ss-step rule
+	   because the four-across block ships [dir='rtl'] .ss-step:nth-child(n),
+	   which out-specifies a bare .ss-step and would put the wide spread back
+	   on a right-to-left phone. */
+.ss-step:nth-child(1) {
+		--step-tilt: -1deg;
 	}
-.ss-step:nth-child(even) {
-		--step-tilt: 0deg;
+.ss-step:nth-child(2) {
+		--step-tilt: 1deg;
 	}
-:global([dir='rtl']) .ss-step:nth-child(odd) {
-		--step-tilt: 0deg;
+.ss-step:nth-child(3) {
+		--step-tilt: -1deg;
 	}
-:global([dir='rtl']) .ss-step:nth-child(even) {
-		--step-tilt: 0deg;
+.ss-step:nth-child(4) {
+		--step-tilt: 1deg;
+	}
+:global([dir='rtl']) .ss-step:nth-child(1) {
+		--step-tilt: 1deg;
+	}
+:global([dir='rtl']) .ss-step:nth-child(2) {
+		--step-tilt: -1deg;
+	}
+:global([dir='rtl']) .ss-step:nth-child(3) {
+		--step-tilt: 1deg;
+	}
+:global([dir='rtl']) .ss-step:nth-child(4) {
+		--step-tilt: -1deg;
 	}
 .ss-step:nth-child(1),
 .ss-step:nth-child(4) {

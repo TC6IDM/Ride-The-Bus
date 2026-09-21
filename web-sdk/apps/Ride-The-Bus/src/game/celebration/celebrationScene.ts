@@ -120,16 +120,37 @@ export const BURST = Array.from({ length: BURST_COUNT }, (_, i) => ({
  * is the ladder a player can actually see: every tier draws all four cards,
  * the higher ones open the hand wider. Intensity, never presence.
  */
-export const FAN = Array.from({ length: 4 }, (_, i) => {
-	// -1.5, -0.5, 0.5, 1.5 - centred, so the fan has no middle card to sit
-	// dead-straight and look like the odd one out.
-	const offset = i - 1.5;
-	return {
-		index: i,
-		tilt: +(offset * 6.2).toFixed(2),
-		shift: +(offset * 4.4).toFixed(2),
-		/** The outer cards ride lower, the way a real fan hangs. */
-		drop: +(Math.abs(offset) * 1.05).toFixed(2),
-		delay: +(0.16 + i * 0.075).toFixed(3),
-	};
-});
+export type FanSlot = {
+	index: number;
+	tilt: number;
+	shift: number;
+	/** The outer cards ride lower, the way a real fan hangs. */
+	drop: number;
+	delay: number;
+};
+
+/**
+ * A fan of `count` cards, centred. Four on the four-guess ride, three on
+ * Three of a Kind - the takeover fans the cards the round actually dealt,
+ * and a three-card round with an empty fourth slot would read as a card that
+ * never turned.
+ *
+ * Offsets run -(n-1)/2 .. +(n-1)/2, so a four-card fan has no middle card
+ * sitting dead-straight and looking like the odd one out, and a three-card
+ * fan does have one, which is the right shape for a hand of three.
+ */
+export function fanFor(count: number): FanSlot[] {
+	return Array.from({ length: count }, (_, i) => {
+		const offset = i - (count - 1) / 2;
+		return {
+			index: i,
+			tilt: +(offset * 6.2).toFixed(2),
+			shift: +(offset * 4.4).toFixed(2),
+			drop: +(Math.abs(offset) * 1.05).toFixed(2),
+			delay: +(0.16 + i * 0.075).toFixed(3),
+		};
+	});
+}
+
+/** The four-card fan - the default, and what the tests pin the geometry on. */
+export const FAN: readonly FanSlot[] = fanFor(4);

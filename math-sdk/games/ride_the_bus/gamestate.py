@@ -3,7 +3,13 @@
 import random
 
 from game_override import GameStateOverride
-from game_calculations import MODE_FAMILIES, build_deck, rank_value, parse_mode_name
+from game_calculations import (
+    FREE_CHOICE,
+    MODE_FAMILIES,
+    build_deck,
+    parse_mode_name,
+    rank_value,
+)
 from src.events.events import *
 
 
@@ -21,10 +27,10 @@ class GameState(GameStateOverride):
             # before this round was ever played, so the outcome below is a
             # single, independent, stateless resolution against a choice
             # that's already fixed, not something discovered mid-round.
-            family, color_choice, hl_choice, io_choice, suit_choice = parse_mode_name(
-                self.betmode
-            )
-            choices = [color_choice, hl_choice, io_choice, suit_choice]
+            # One entry per stage: four on the four-guess families, three on
+            # Three of a Kind. The stage count IS the combination's length.
+            family, *choices = parse_mode_name(self.betmode)
+            stages = len(choices)
 
             # What a miss keeps, and whether the first one is forgiven, is the
             # only thing that separates the three families - see MODE_FAMILIES.
@@ -34,9 +40,9 @@ class GameState(GameStateOverride):
             forgive_from = family_config["forgive_from"]
             cost = family_config["cost"]
 
-            deck = build_deck()
+            deck = build_deck(family)
             random.shuffle(deck)
-            drawn = deck[:4]
+            drawn = deck[:stages]
             drawn_ranks = [rank_value(rank) for rank, _ in drawn]
 
             # Partial credit: a miss doesn't zero the round - it keeps
@@ -55,8 +61,8 @@ class GameState(GameStateOverride):
             running_multiplier = 1.0
             busted = False
             forgiveness_spent = False
-            decay = self.target_rtp_decay()
-            for stage_index in range(4):
+            decay = self.target_rtp_decay(family)
+            for stage_index in range(stages):
                 rank, suit = drawn[stage_index]
                 choice = choices[stage_index]
 
@@ -75,7 +81,12 @@ class GameState(GameStateOverride):
                 else:
                     stage_retention = retention_table[stage_index]
 
-                payouts = self._stage_payouts(stage_index, deck, drawn_ranks, stage_retention)
+                payouts = self._stage_payouts(stage_index, deck, drawn_ranks, stage_retention, decay)
+                if choice == FREE_CHOICE:
+                    # No guess: the card is shown and the stage pays decay
+                    # (p = 1 in the martingale), which is exactly 1.0 on the
+                    # only family that uses it.
+                    payouts[FREE_CHOICE] = self.partial_multiplier(1.0, stage_index, stage_retention, decay)
                 correct = (
                     not busted
                     and self._is_correct_guess(stage_index, choice, rank, suit, drawn_ranks)
@@ -91,7 +102,7 @@ class GameState(GameStateOverride):
                         forgiveness_spent = True
                     else:
                         running_multiplier *= stage_retention
-                        running_multiplier *= decay ** (3 - stage_index)
+                        running_multiplier *= decay ** (stages - 1 - stage_index)
                         busted = True
 
                 event = {
@@ -127,7 +138,7 @@ class GameState(GameStateOverride):
     def run_freespin(self):
         pass
 
-    def _stage_payouts(self, stage_index, deck, drawn_ranks, retention) -> dict:
+    def _stage_payouts(self, stage_index, deck, drawn_ranks, retention, decay=None) -> dict:
         """
         The payout table for one stage, priced against `retention`.
 
@@ -141,17 +152,20 @@ class GameState(GameStateOverride):
         and so on.
         """
         if stage_index == 0:
-            return self.color_payouts(deck[0:], retention)
+            return self.color_payouts(deck[0:], retention, decay)
         if stage_index == 1:
-            return self.higher_lower_payouts(deck[1:], drawn_ranks[0], retention)
+            return self.higher_lower_payouts(deck[1:], drawn_ranks[0], retention, decay)
         if stage_index == 2:
             return self.inside_outside_payouts(
-                deck[2:], drawn_ranks[0], drawn_ranks[1], retention
+                deck[2:], drawn_ranks[0], drawn_ranks[1], retention, decay
             )
-        return self.suit_payouts(deck[3:], retention)
+        return self.suit_payouts(deck[3:], retention, decay)
 
     @staticmethod
     def _is_correct_guess(stage_index, guess, rank, suit, drawn_ranks) -> bool:
+        # A free card is never wrong - there was nothing to get wrong.
+        if guess == FREE_CHOICE:
+            return True
         value = rank_value(rank)
         if stage_index == 0:
             color = "red" if suit in ("♥", "♦") else "black"

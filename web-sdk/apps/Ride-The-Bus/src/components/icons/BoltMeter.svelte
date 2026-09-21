@@ -31,19 +31,9 @@
 		 * only mean something as a count. Pre-translated by the caller.
 		 */
 		label: string;
-		/**
-		 * Stops past this one burn --vol-overflow instead of --vol-color.
-		 *
-		 * Marks the point where the rating has left the range the three modes
-		 * span on their own and is being driven by the guesses. Defaults to the
-		 * total, i.e. no overflow stops at all.
-		 */
-		overflowAfter?: number;
 	};
 
 	const props: Props = $props();
-
-	const overflowAfter = $derived(props.overflowAfter ?? props.total);
 
 	// A plain index array. `{#each Array(n) as _, i}` iterates holes and trips the
 	// unused-binding lint; this says what it means and costs nothing at five.
@@ -55,7 +45,6 @@
 		<svg
 			class="bolt"
 			class:lit={index < props.lit}
-			class:overflow={index >= overflowAfter}
 			viewBox="0 0 24 24"
 			fill="currentColor"
 			aria-hidden="true"
@@ -97,13 +86,8 @@
 		filter: drop-shadow(0 0 calc(var(--bolt-size, 12px) * 0.25) var(--vol-color, var(--vol-base)));
 	}
 
-	/* Past the family ceiling. Only the OVERFLOW stops change colour, not the
-	   whole meter: the first five still say which mode you are on, and the purple
-	   ones say the guesses have taken it beyond what any mode reaches by itself.
-	   Recolouring all seven would lose the family at exactly the moment the
-	   rating is most worth reading. */
-	.bolt.lit.overflow {
-		color: var(--vol-overflow);
-		filter: drop-shadow(0 0 calc(var(--bolt-size, 12px) * 0.3) var(--vol-overflow));
-	}
+	/* There used to be an `overflow` stop colour here - purple on the stops past
+	   a family's own ceiling, for High Stakes with an Equal pick. Purple is a
+	   FAMILY colour now (Three of a Kind's, through --vol-color like every
+	   other), so every lit bolt on a meter is one hue: the family's. */
 </style>

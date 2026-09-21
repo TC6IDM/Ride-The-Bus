@@ -23,9 +23,9 @@
  * allowImportingTsExtensions for exactly this reason, and Vite resolves them
  * unchanged. Drop an extension here and the whole test file fails to load.
  */
-import { partialMultiplier, stageRetention } from './payout.ts';
-import { ranks, rankValue } from '../round/roundContract.ts';
-import { FAMILY_RULES, type FamilyRules } from './modes.ts';
+import { decayFor, partialMultiplier, stageRetention } from './payout.ts';
+import { createDeck, ranks, rankValue } from '../round/roundContract.ts';
+import { FAMILY_RULES, FREE_CHOICE, type FamilyRules } from './modes.ts';
 
 /** Cards of each rank in a full deck. */
 const PER_RANK = 4;
@@ -40,7 +40,7 @@ export type PayoutRow = {
 	 * winTiers.ts: `t()` is keyed on the English map and a widened `string` is
 	 * not assignable to it, so the popup would not compile.
 	 */
-	label: 'Red or Black' | 'Higher' | 'Lower' | 'Equal' | 'Inside' | 'Outside' | 'Any suit';
+	label: 'Red or Black' | 'Higher' | 'Lower' | 'Equal' | 'Inside' | 'Outside' | 'Any suit' | 'Any card';
 	/** Lowest this pick can pay, as a multiple of the running total. */
 	min: number;
 	/** Highest it can pay. Equal to `min` when the odds never move. */
@@ -72,6 +72,8 @@ const range = (multipliers: number[]) => ({
  * actually faces at the start of a round.
  */
 export function payoutRowsFor(rules: FamilyRules = FAMILY_RULES.base): PayoutRow[] {
+	if (rules.fixedChoices) return fixedPayoutRows(rules);
+
 	const retentionAt = (stage: number) => stageRetention(rules, stage, false);
 
 	/* Stage 1: always 26 of 52, so red and black are one fixed figure. */
@@ -138,6 +140,34 @@ export function payoutRowsFor(rules: FamilyRules = FAMILY_RULES.base): PayoutRow
 	];
 }
 
+/**
+ * The table for a family with no guesses - Three of a Kind. Its deck is
+ * symmetric (every rank has the same number of cards), so every figure is a
+ * single value: card 1 dealt at 1.00x, card 2 matching 3 of 11 at 3.67x, card
+ * 3 matching 2 of 10 at 5.00x. Computed from the deck and the same functions
+ * the round is priced with, like the four-guess table above, and for the same
+ * reason: a typed-in 5.00x is the slow-motion version of the worst bug this
+ * game can have. One row per stage the family deals - three here.
+ */
+function fixedPayoutRows(rules: FamilyRules): PayoutRow[] {
+	const choices = rules.fixedChoices!;
+	const decay = decayFor(rules);
+	const deck = createDeck(rules.deck);
+	const perRank = deck.filter((card) => card.rank === deck[0]!.rank).length;
+	const label = (stage: number): PayoutRow['label'] =>
+		choices[stage] === FREE_CHOICE ? 'Any card' : 'Equal';
+	// The odds a match faces at each stage: the copies of card 1's rank still
+	// in the deck over the cards left. A free card is p = 1.
+	const probability = (stage: number) =>
+		choices[stage] === FREE_CHOICE ? 1 : (perRank - stage) / (deck.length - stage);
+	return choices.map((_, stage) => {
+		const value = round2(
+			partialMultiplier(probability(stage), stage, stageRetention(rules, stage, false), decay),
+		);
+		return { stage: stage + 1, label: label(stage), min: value, max: value };
+	});
+}
+
 /** The Classic table, kept for callers that predate the mode families. */
 export const PAYOUT_ROWS: readonly PayoutRow[] = payoutRowsFor(FAMILY_RULES.base);
 
@@ -202,7 +232,7 @@ export function oddsExampleFor(rules: FamilyRules = FAMILY_RULES.base): OddsExam
  */
 export type BustRow = {
 	/** English text, which is also the i18n key. */
-	label: 'Card 1' | 'Card 2, 3 or 4' | 'Your first wrong guess' | 'Your second wrong guess';
+	label: 'Card 1' | 'Card 2, 3 or 4' | 'Your first wrong guess' | 'Your second wrong guess' | 'Any wrong guess';
 	/**
 	 * The i18n KEY for the sentence, not the sentence.
 	 *
@@ -254,6 +284,12 @@ export function bustRowsFor(rules: FamilyRules = FAMILY_RULES.base): BustRow[] {
 		key: 'The round ends and pays nothing.',
 		percent: null,
 	};
+
+	// Nothing on any miss, in one row: the family that keeps nothing has one
+	// rule, and listing it per card would be the same sentence three times.
+	if (rules.fixedChoices) {
+		return [{ label: 'Any wrong guess', key: 'The round ends and pays nothing.', percent: null }];
+	}
 
 	if (rules.forgive !== null) {
 		const kept = Math.round(rules.forgive * 100);

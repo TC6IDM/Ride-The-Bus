@@ -45,6 +45,9 @@ export const round = $state({
   /** The book's four reveal events, as they arrived. */
   revealEvents: [] as RevealEvent[],
   /** The cards turned so far. null = still face down. */
+  // Four wide always: a three-card family (Three of a Kind) leaves the last
+  // slot null and the board renders stageCount() of them. Sizing the array
+  // per family would put a second source of the stage count in state.
   revealedCards: [null, null, null, null] as (Card | null)[],
   /** Which card ended the round, or null. */
   bustedIndex: null as number | null,

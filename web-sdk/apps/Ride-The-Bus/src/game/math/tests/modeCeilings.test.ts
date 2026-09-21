@@ -17,9 +17,7 @@
  */
 import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
-import { existsSync, readFileSync } from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
 
 import { MODE_CEILINGS } from '../modeCeilings.ts';
 import {
@@ -30,21 +28,26 @@ import {
   familyOf,
   type ModeFamily,
 } from '../modes.ts';
-
-const HERE = path.dirname(fileURLToPath(import.meta.url));
-const LIBRARY = path.join(HERE, '../../../../../../../math-sdk/games/ride_the_bus/library');
-const STATS = path.join(LIBRARY, 'stats_summary.json');
+import { INDEX, STATS, mathBuildIsCurrent } from '../../mathBuild.testlib.ts';
 
 const published = allPlayableModes();
+/** The families whose 64 combinations climb to a shared ceiling. */
+const LADDER_FAMILIES = MODE_FAMILIES.filter((family) => FAMILY_RULES[family].fixedChoices === null);
 
 describe('the generated ceilings table', () => {
   test('covers exactly the modes the client can play', () => {
     assert.deepEqual(Object.keys(MODE_CEILINGS).sort(), [...published].sort());
   });
 
-  test('has 192 entries - three families of 64', () => {
-    assert.equal(published.length, 192);
-    assert.equal(Object.keys(MODE_CEILINGS).length, 192);
+  test('has 193 entries - three families of 64, and Three of a Kind', () => {
+    assert.equal(published.length, 193);
+    assert.equal(Object.keys(MODE_CEILINGS).length, 193);
+  });
+
+  test('Three of a Kind has one mode, and its ceiling IS the family figure', () => {
+    // A one-outcome mode: the only thing it can pay is the most it can pay.
+    assert.equal(MODE_CEILINGS['tr_any_equal_equal'], FAMILY_RULES.tr.maxWin);
+    assert.equal(FAMILY_RULES.tr.maxWin, 4583.3);
   });
 
   test('is frozen, so nothing can edit a ceiling at runtime', () => {
@@ -79,7 +82,7 @@ describe('ceilings against their family', () => {
     // This is what makes FAMILY_RULES.maxWin an honest headline rather than a
     // number nothing reaches: two Equal picks is the hardest round in the game,
     // and the four suits x two colours that make it are the eight that top out.
-    for (const family of MODE_FAMILIES) {
+    for (const family of LADDER_FAMILIES) {
       const atCeiling = published
         .filter((mode) => familyOf(mode) === family)
         .filter((mode) => MODE_CEILINGS[mode] === FAMILY_RULES[family].maxWin);
@@ -107,7 +110,7 @@ describe('ceilings against their family', () => {
     // Stated as a property rather than a comment so the motivation cannot be
     // quietly lost. If a future build made every mode reach its family ceiling,
     // this table would be redundant and this test says so.
-    for (const family of MODE_FAMILIES) {
+    for (const family of LADDER_FAMILIES) {
       const mine = published.filter((mode) => familyOf(mode) === family);
       const short = mine.filter((mode) => MODE_CEILINGS[mode]! < FAMILY_RULES[family].maxWin);
       assert.equal(short.length, 56, `${family}: only ${short.length} of 64 fall short`);
@@ -141,7 +144,10 @@ describe('ceilingFor', () => {
 });
 
 describe('parity with the published math', () => {
-  const haveMath = existsSync(STATS);
+  // Skips on an absent build AND on a stale one (a build that publishes a
+  // different mode list from the client, i.e. predates it) - see
+  // mathBuild.testlib.ts for why the second case exists.
+  const haveMath = mathBuildIsCurrent();
 
   test('every ceiling matches stats_summary.json', { skip: !haveMath }, () => {
     const stats = JSON.parse(readFileSync(STATS, 'utf8')) as Record<string, { max_win: number }>;
@@ -160,9 +166,7 @@ describe('parity with the published math', () => {
   });
 
   test('the build publishes exactly the modes the client offers', { skip: !haveMath }, () => {
-    const index = JSON.parse(
-      readFileSync(path.join(LIBRARY, 'publish_files/index.json'), 'utf8'),
-    ) as { modes: { name: string }[] };
+    const index = JSON.parse(readFileSync(INDEX, 'utf8')) as { modes: { name: string }[] };
     assert.deepEqual(index.modes.map((m) => m.name).sort(), [...published].sort());
   });
 });

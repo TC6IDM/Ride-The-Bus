@@ -101,14 +101,26 @@ describe('every currency formats', () => {
 /**
  * The width the control bar and the win takeover have to survive.
  *
- * High Stakes' cap is 1910.20x, and an operator sets maxBet in the currency's
- * own units - so a weak unit produces a very long settled figure. These do not
- * assert a layout (a test cannot see one); they assert that the estimate the
- * layout is driven from stays inside the range the CSS was built for, so a new
- * currency with a wilder shape shows up here rather than on a phone.
+ * An operator sets maxBet in the currency's own units, so a weak unit produces
+ * a very long settled figure. These do not assert a layout (a test cannot see
+ * one); they assert that the estimate the layout is driven from stays inside
+ * the range the CSS was built for, so a new currency with a wilder shape shows
+ * up here rather than on a phone.
+ *
+ * THE STRESS FIGURE IS A STRESS FIGURE. It was built as "a $500,000 bet at
+ * High Stakes' 1910.2x cap", and stays at that shape even though the game's
+ * ceiling is now 25,000x (Three of a Kind, at cost 1000x on a base the 2-star
+ * tier caps at $100) and High Stakes reaches 2169.2x: Stake's 2-star maximum
+ * exposure is $10,000,000 per bet, so no settled figure can be wider than that
+ * in any currency, and the $955M this models is already a hundred times past
+ * it. Multiplying by 25,000 instead would grow the figure by three digits the
+ * layout will never be asked to draw, and fail the width the CSS was solved
+ * for - for a number that cannot occur. Kept as the original bound, named
+ * for what it is.
  */
 describe('the widest figure each currency can settle on', () => {
-  const HIGH_STAKES_CAP = 1910.2;
+  /** A $500k bet at the old High Stakes ceiling - see the note above. */
+  const STRESS_CAP = 1910.2;
   /** A $500,000-equivalent cap, order of magnitude only. */
   const UNITS_PER_USD: Record<string, number> = {
     IDR: 15900, VND: 25400, KRW: 1380, CLP: 960, NGN: 1600, UGX: 3700,
@@ -129,7 +141,7 @@ describe('the widest figure each currency can settle on', () => {
   test('the worst four are the ones the layout was built against', () => {
     const ranked = ISO.map((code) => ({
       code,
-      ems: labelEms(format(code, 500_000 * (UNITS_PER_USD[code] ?? 1) * HIGH_STAKES_CAP)),
+      ems: labelEms(format(code, 500_000 * (UNITS_PER_USD[code] ?? 1) * STRESS_CAP)),
     })).sort((a, b) => b.ems - a.ems);
     const widest = ranked.slice(0, 4).map((r) => r.code).sort();
     assert.deepEqual(widest, ['NGN', 'TZS', 'UGX', 'XOF']);
@@ -144,7 +156,7 @@ describe('the widest figure each currency can settle on', () => {
     const LIMIT_EMS = 26;
     for (const code of ISO) {
       const cap = 500_000 * (UNITS_PER_USD[code] ?? 1);
-      const text = format(code, cap * HIGH_STAKES_CAP);
+      const text = format(code, cap * STRESS_CAP);
       const ems = labelEms(text);
       assert.ok(ems <= LIMIT_EMS, `${code}: "${text}" is ${ems} ems, over ${LIMIT_EMS}`);
     }

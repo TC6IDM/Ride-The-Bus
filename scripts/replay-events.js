@@ -4,7 +4,7 @@
  *   node scripts/replay-events.js
  *
  * Stake's frontend approval asks for replay event IDs per bet mode covering
- * normal win, big win, win cap and loss. With 192 bet modes that is 768 IDs, so
+ * normal win, big win, win cap and loss. With 193 bet modes that is 772 IDs, so
  * they are derived from the published lookup tables rather than collected by
  * hand.
  *
@@ -23,7 +23,7 @@ const PUBLISH = path.join(LIBRARY, 'publish_files');
 /**
  * Normally every published mode. REPLAY_EVENTS_MODES limits it to a
  * comma-separated few, for smoke-testing this script without paying for a scan
- * of all 192 books.
+ * of all 193 books.
  *
  * A filtered run writes REPLAY_EVENTS.partial.md instead, and says so. It must
  * not be able to leave a truncated table where the real one belongs - that file
@@ -53,9 +53,20 @@ const idx = JSON.parse(fs.readFileSync(path.join(PUBLISH, 'index.json'), 'utf8')
  * exist - this only supplies the labels, and a family it does not recognise
  * still appears in the table under its own name.
  */
-const FAMILY_LABELS = { base: 'Classic', sc: 'Second Chance', hs: 'High Stakes' };
+const FAMILY_LABELS = {
+  base: 'Classic',
+  sc: 'Second Chance',
+  hs: 'High Stakes',
+  tr: 'Three of a Kind',
+};
+// Longest prefix first, like game_calculations.py:_PREFIXES.
+const FAMILY_PREFIXES = [
+  ['tr_', 'tr'],
+  ['sc_', 'sc'],
+  ['hs_', 'hs'],
+];
 const familyOf = (name) =>
-  name.startsWith('sc_') ? 'sc' : name.startsWith('hs_') ? 'hs' : 'base';
+  FAMILY_PREFIXES.find(([prefix]) => name.startsWith(prefix))?.[1] ?? 'base';
 
 const rows = [];
 
@@ -197,7 +208,7 @@ is meant to demonstrate.
   // One table per family, each stating its own cost and ceiling.
   //
   // A reviewer asking "what is the max win on High Stakes" should not have to
-  // scan 192 interleaved rows for it, and the families genuinely differ: they
+  // scan 193 interleaved rows for it, and the families genuinely differ: they
   // carry different costs and reach different caps, so a single combined figure
   // would describe none of them.
   for (const family of Object.keys(FAMILY_LABELS)) {
@@ -297,7 +308,7 @@ is meant to demonstrate.
    whenever the simulation set changes - which is exactly when it goes stale.
 
    Both are resolved in ONE pass per book, stopping as soon as everything
-   applicable is found. 192 files, ~900 MB compressed; a minute or two against a
+   applicable is found. 193 files, ~900 MB compressed; a minute or two against a
    40-minute build.                                                          */
 
 /**
@@ -308,7 +319,9 @@ is meant to demonstrate.
  * FAMILY_LABELS above is one: this script runs from the repo root with no path
  * into the Svelte app.
  */
-const CELEBRATION_FLOOR = { base: 1000, sc: 1100, hs: 1200 };
+// Three of a Kind's ladder is one rung at its 4,583.3x ceiling (458,330 raw):
+// its only win IS the floor, so the "bust + win" column is `-` by construction.
+const CELEBRATION_FLOOR = { base: 1000, sc: 1100, hs: 1200, tr: 458330 };
 
 /** The `id` field at the head of every book line, without parsing the line. */
 const ID_HEAD = /^\{"id":\s*(\d+)/;

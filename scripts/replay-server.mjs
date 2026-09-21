@@ -111,8 +111,15 @@ const SCENARIOS = (() => {
   return byMode;
 })();
 
+// Longest prefix first, like game_calculations.py:_PREFIXES. A fourth family
+// added here also needs a row in FAM in the page below.
+const FAMILY_PREFIXES = [
+  ['tr_', 'tr'],
+  ['sc_', 'sc'],
+  ['hs_', 'hs'],
+];
 const familyOf = (name) =>
-  name.startsWith('sc_') ? 'sc' : name.startsWith('hs_') ? 'hs' : 'base';
+  FAMILY_PREFIXES.find(([prefix]) => name.startsWith(prefix))?.[1] ?? 'base';
 
 /* ---- Scenarios -----------------------------------------------------------
    `event` is normally a simulation ID straight out of REPLAY_EVENTS.md, but
@@ -361,6 +368,7 @@ function landingPage() {
   button.pick.fam-base{--pick-c:#ffc93c}
   button.pick.fam-sc{--pick-c:#3ddc84}
   button.pick.fam-hs{--pick-c:#ff5c5c}
+  button.pick.fam-tr{--pick-c:#9d4edd}
 
   button.pick.red{--pick-c:#b3252b}
   button.pick.blk{--pick-c:#cfd6e4}
@@ -474,7 +482,13 @@ const state = { fam:'hs_', color:'red', hl:'equal', io:'equal', suit:'heart',
                 ev:'max', cur:'USD', lang:'en' };
 
 const FAM  = [['','Classic','fam-base'],['sc_','Second Chance','fam-sc'],
-              ['hs_','High Stakes','fam-hs']];
+              ['hs_','High Stakes','fam-hs'],['tr_','Three of a Kind','fam-tr']];
+/* Three of a Kind has no guesses and only three cards: its one mode is
+   any_equal_equal, so the pickers are forced to that combination (the suit
+   picker to nothing at all) while it is selected and restored when the player
+   leaves it. Mirrors fixedChoices in modes.ts. */
+const FIXED = { 'tr_': { color: 'any', hl: 'equal', io: 'equal', suit: null } };
+let parked = null;
 /* Third entry is the colour class - see the button.pick rules in the stylesheet
    above, which take their values from the game's own tokens.css. */
 const COL  = [['red','Red','red'],['black','Black','blk']];
@@ -521,8 +535,9 @@ const CUR = [
 ];
 const LANG = ['en','ar','de','es','fi','fr','hi','id','ja','ko','pl','pt','ru','tr','vi','zh'];
 
+// One token per stage; a null token is a stage the family does not have.
 const modeName = () =>
-  state.fam + state.color + '_' + state.hl + '_' + state.io + '_' + state.suit;
+  state.fam + [state.color, state.hl, state.io, state.suit].filter((t) => t !== null).join('_');
 
 // Equal-then-Inside is not a published mode: nothing falls strictly between two
 // cards of the same rank.
@@ -534,6 +549,9 @@ const insideBlocked = () => state.hl === 'equal';
 // Leaving it selectable produced a URL the server answers with a 404, which is
 // a worse way to learn this than a greyed-out button.
 const forgivenBlocked = () => state.fam !== 'sc_';
+
+// A guess picker on a family that has no guesses.
+const guessesFixed = () => Boolean(FIXED[state.fam]);
 
 /* A scanned scenario this mode has no round for.
    sc_red_lower_outside_heart has no drawable bust-win, for instance: in
@@ -554,6 +572,7 @@ function fill(id, items, key, multFor) {
     if (cls) b.setAttribute('data-c', '');
     b.setAttribute('aria-pressed', String(state[key] === val));
     if (id === 'io' && val === 'inside' && insideBlocked()) b.disabled = true;
+    if (['color', 'hl', 'io', 'suit'].includes(id) && guessesFixed()) b.disabled = true;
     if (id === 'ev' && val === 'forgiven' && forgivenBlocked()) b.disabled = true;
     if (id === 'ev' && scenarioMissing(val)) b.disabled = true;
     const mult = multFor ? multFor(val) : null;
@@ -573,6 +592,15 @@ function render() {
   // Repair an impossible pick rather than let it build an unpublished mode -
   // the same guard the game applies when Equal takes Inside away.
   if (insideBlocked() && state.io === 'inside') state.io = 'equal';
+  // Three of a Kind carries its own four tokens; park the player's picks on
+  // the way in and put them back on the way out.
+  if (guessesFixed()) {
+    if (!parked) parked = { color: state.color, hl: state.hl, io: state.io, suit: state.suit };
+    Object.assign(state, FIXED[state.fam]);
+  } else if (parked) {
+    Object.assign(state, parked);
+    parked = null;
+  }
   // Same for a forgiven round on a family that cannot forgive: switching away
   // from Second Chance must not leave a dead scenario selected.
   if (forgivenBlocked() && state.ev === 'forgiven') state.ev = 'max';

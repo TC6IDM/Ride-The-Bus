@@ -195,6 +195,20 @@
 
 .mode-option.selected .mode-option-max { color: var(--ink); }
 
+/* The cost, on the one family where it is not 1x. Set like the ceiling above
+   it - same size, same weight - because on a 250x mode the price is as much
+   the thing being chosen as the payout is, and a quieter line would let a
+   player read the 4,583.3x and miss the 250x beside it. Rendered only when
+   cost != 1; see ModePopup.svelte. */
+.mode-option-cost {
+  font-size: calc(var(--ui-bar) * 1.02);
+  font-weight: 700;
+  color: var(--ink-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.mode-option.selected .mode-option-cost { color: var(--ink); }
+
 .mode-note {
   margin: calc(var(--ui-bar) * 1) 0 0;
   font-size: calc(var(--ui-bar) * 0.98);
@@ -296,6 +310,18 @@
    sized to be read first. This figure is the reason anyone switches, so it is
    the one thing that outranks the sentence above it. */
 .mode-confirm-max {
+  margin: 0;
+  font-size: calc(var(--ui-bar) * 1.24);
+  font-weight: 800;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The cost on the confirmation, at the ceiling's own weight: this step exists
+   so a 250x mode is never activated without its price having been read, and
+   the price is the half of the bargain the player is about to pay. Above the
+   ceiling in the markup, so the cost is read before the prize. */
+.mode-confirm-cost {
   margin: 0;
   font-size: calc(var(--ui-bar) * 1.24);
   font-weight: 800;

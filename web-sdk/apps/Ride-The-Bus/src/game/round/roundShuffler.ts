@@ -19,7 +19,7 @@
  * A real-money build should not carry a card generator even as dead code - it
  * is the first thing an auditor reading the bundle would query.
  */
-import { createDeck, type Card } from './roundContract.ts';
+import { createDeck, type Card, type DeckSpecLike } from './roundContract.ts';
 
 export type RoundContract = {
 	roundId: string;
@@ -62,12 +62,13 @@ const shuffleDeck = (deck: Card[], seed: string) => {
 	return shuffled;
 };
 
-export const createRoundContract = (seed: string): RoundContract => {
+/** `deck` is the family's spec - null for the standard 52. See createDeck. */
+export const createRoundContract = (seed: string, deck: DeckSpecLike = null): RoundContract => {
 	const normalizedSeed = seed.trim() || 'ride-the-bus-default-round';
 
 	return {
 		roundId: normalizedSeed,
 		seed: normalizedSeed,
-		deck: shuffleDeck(createDeck(), normalizedSeed),
+		deck: shuffleDeck(createDeck(deck), normalizedSeed),
 	};
 };

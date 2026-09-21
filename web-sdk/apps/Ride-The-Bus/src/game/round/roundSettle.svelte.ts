@@ -28,7 +28,7 @@ import { computeFinalMultiplier } from '../math/payout';
 import { isCleanSweep } from '../math/modes';
 import { winTierFor } from '../math/winTiers';
 
-import { familyRules, roundCost, winTiers } from '../bet/betState.svelte';
+import { bet, familyRules, roundCost, winTiers } from '../bet/betState.svelte';
 import { showWinCelebration } from '../celebration/celebrationState.svelte';
 import { revealWait } from './revealPacing.svelte';
 import { engineRound, isEngineRound, round } from './roundState.svelte';
@@ -166,6 +166,6 @@ export async function settleRound() {
   // the auto loop awaits runRound, so the run pauses without the loop needing
   // to know the takeover exists.
   if (celebrationTier) {
-    await showWinCelebration(celebrationTier, round.wonAmount, round.lastWinMultiplier, tiers);
+    await showWinCelebration(celebrationTier, round.wonAmount, round.lastWinMultiplier, tiers, bet.family);
   }
 }

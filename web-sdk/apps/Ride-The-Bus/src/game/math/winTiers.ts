@@ -26,13 +26,26 @@
  *                    Big        Huge        Mega         Epic          Max
  *   Classic        10x  1:70   40x 1:304  120x 1:3083  300x 1:16198  1354.2x 1:36380
  *   Second Chance  11x  1:70   28x 1:290   60x 1:3048  130x 1:15730   585.2x 1:36435
- *   High Stakes    12x  1:72   50x 1:297  130x 1:3437  440x 1:16107  1910.2x 1:36335
+ *   High Stakes    12x  1:71   55x 1:305  145x 1:3502  500x 1:16691  2169.2x 1:37766
+ *
+ * High Stakes' row was re-solved when its retention went from 20% to 16% (the
+ * old row - 12 / 50 / 130 / 440, max 1910.2x - reproduced from the same
+ * enumeration before the change, which is what makes the new one trustworthy).
  *
  * Each family's Epic sits below a gap in its own distribution, for the reason
  * Classic's sits at 300x rather than a rounder 400x: nothing pays between 381.9x
  * and 1260x there, so a threshold inside the gap would be RARER than the Max Win
  * above it and the ladder would read backwards. The gaps are at 381.9x->1260x
- * (Classic), 172.2x->549.1x (Second Chance) and 531.3x->1771.8x (High Stakes).
+ * (Classic), 172.2x->549.1x (Second Chance) and 600.5x->2009.7x (High Stakes).
+ *
+ * THREE OF A KIND HAS ONE RUNG, AND IT IS MAX. Its only win IS its ceiling -
+ * 4,583.3x the base bet, about 1 in 19 - so a five-band ladder would invent four
+ * thresholds nothing ever lands between. winTiersFor returns a single Max tier
+ * sitting on the ceiling: the win is the most the mode can pay, so it is called
+ * that, even though it is not rare the way the other families' Max is. The
+ * rarity semantics of the label are a property of the ladder families;
+ * winTierFor already handles a one-tier list (equality on the last tier, and
+ * the full-game floor lands on tiers[0], which is the same tier).
  *
  * Tiering is on PAYOUT SIZE, not on surviving all four cards. Busting on card 3
  * or 4 still keeps a share of the multiplier built so far and reaches 129x,
@@ -48,7 +61,7 @@ import { FAMILY_RULES, type ModeFamily } from './modes.ts';
  * declared bound that never binds, so it is NOT the right number to celebrate.
  *
  * This is the BASE family's ceiling, not the game's. Second Chance stops at
- * 585.2x and High Stakes reaches 1910.2x - use winTiersFor to get a family's
+ * 585.2x and High Stakes reaches 2169.2x - use winTiersFor to get a family's
  * own ladder. Kept as the default so callers with no family behave as before. */
 export const MAX_WIN_MULTIPLIER = FAMILY_RULES.base.maxWin;
 
@@ -89,18 +102,29 @@ export type WinTier = {
  * lives in FAMILY_RULES.maxWin, and restating it would be a second copy of a
  * number the tests pin to the payout maths.
  */
-const FAMILY_BANDS: Record<ModeFamily, readonly [number, number, number, number]> = {
+/** The families that climb a ladder - every family whose guesses are its own. */
+type LadderFamily = Exclude<ModeFamily, 'tr'>;
+
+const FAMILY_BANDS: Record<LadderFamily, readonly [number, number, number, number]> = {
   base: [10, 40, 120, 300],
   sc: [11, 28, 60, 130],
-  hs: [12, 50, 130, 440],
+  hs: [12, 55, 145, 500],
 };
 
 /** Measured frequency of each band or better, including Max. For the rules
  *  screen and the test plan - nothing branches on these. */
-const FAMILY_ONE_IN: Record<ModeFamily, readonly [number, number, number, number, number]> = {
+const FAMILY_ONE_IN: Record<LadderFamily, readonly [number, number, number, number, number]> = {
   base: [70, 304, 3083, 16198, 36380],
   sc: [70, 290, 3048, 15730, 36435],
-  hs: [72, 297, 3437, 16107, 36335],
+  hs: [71, 305, 3502, 16691, 37766],
+};
+
+/**
+ * How often a one-rung family's single win lands - its RECORDED frequency,
+ * after the reweighter. Three of a Kind is 18.333 x cost at 96% RTP: 1 in 19.
+ */
+const SINGLE_RUNG_ONE_IN: Record<Exclude<ModeFamily, LadderFamily>, number> = {
+  tr: 19,
 };
 
 const TIER_META = [
@@ -119,8 +143,19 @@ const TIER_META = [
  * enough: an out-of-order band silently makes a tier unreachable.
  */
 export function winTiersFor(family: ModeFamily): readonly WinTier[] {
-  const bands = FAMILY_BANDS[family];
-  const oneIn = FAMILY_ONE_IN[family];
+  if (FAMILY_RULES[family].fixedChoices) {
+    // One rung, sitting on the ceiling, and it is Max - see the header.
+    return [
+      {
+        id: 'max' as const,
+        minMultiplier: FAMILY_RULES[family].maxWin,
+        label: 'Max Win' as const,
+        oneIn: SINGLE_RUNG_ONE_IN[family as Exclude<ModeFamily, LadderFamily>],
+      },
+    ];
+  }
+  const bands = FAMILY_BANDS[family as LadderFamily];
+  const oneIn = FAMILY_ONE_IN[family as LadderFamily];
   return [
     ...TIER_META.map((meta, i) => ({
       id: meta.id,
@@ -176,7 +211,7 @@ export function winTierFor(
 
   // The Max band is matched on EQUALITY, not on ">= its floor" like every band
   // below it. "Max Win" is a claim about hitting the ceiling exactly, and the
-  // ceiling is a single reachable multiplier (1354.2 / 585.2 / 1910.2) rather
+  // ceiling is a single reachable multiplier (1354.2 / 585.2 / 2169.2) rather
   // than the bottom of an open-ended range - so a payout ABOVE it is not a max
   // win, it is a number this ladder cannot explain, and announcing the rarest
   // screen in the game over it would be a lie about what the player just did.

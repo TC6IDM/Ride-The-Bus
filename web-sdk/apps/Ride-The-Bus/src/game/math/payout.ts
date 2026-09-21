@@ -12,6 +12,7 @@
  * Python counterparts:
  *   TARGET_RTP        -> game_config.py:target_rtp
  *   DECAY             -> game_calculations.py:target_rtp_decay
+ *   decayFor          -> the same, for a family with its own target_rtp
  *   STAGE_RETENTION   -> game_calculations.py:STAGE_RETENTION
  *   partialMultiplier -> game_calculations.py:partial_multiplier
  *   quantizeMultiplier-> game_calculations.py:quantize_multiplier
@@ -28,6 +29,15 @@ export const TARGET_RTP = 0.99;
 
 /** Per-stage decay constant: decay**4 == TARGET_RTP. */
 export const DECAY = Math.pow(TARGET_RTP, 0.25);
+
+/**
+ * The decay a family is priced against. DECAY for the four-guess families;
+ * exactly 1 for Three of a Kind, whose targetRtp is 1.0 so its free card pays
+ * 1.00x. Mirrors target_rtp_decay(family) in game_calculations.py.
+ */
+export function decayFor(rules: Pick<FamilyRules, 'targetRtp'>): number {
+  return Math.pow(rules.targetRtp, 0.25);
+}
 
 /**
  * Fraction of the running multiplier kept when a guess misses at each stage.
@@ -53,9 +63,10 @@ export function partialMultiplier(
   probability: number,
   stageIndex: number,
   retention: number = STAGE_RETENTION[stageIndex],
+  decay: number = DECAY,
 ): number {
   if (probability <= 0) return 0;
-  return (DECAY - (1 - probability) * retention) / probability;
+  return (decay - (1 - probability) * retention) / probability;
 }
 
 /**
@@ -114,8 +125,9 @@ export type PayoutStage = {
  */
 export function computeFinalMultiplier(
   stages: PayoutStage[],
-  rules: Pick<FamilyRules, 'retention' | 'forgive' | 'forgiveFrom' | 'cost'> = FAMILY_RULES.base,
+  rules: Pick<FamilyRules, 'retention' | 'forgive' | 'forgiveFrom' | 'cost' | 'targetRtp'> = FAMILY_RULES.base,
 ): number {
+  const decay = decayFor(rules);
   let running = 1;
   let busted = false;
   let forgivenessSpent = false;
@@ -134,7 +146,9 @@ export function computeFinalMultiplier(
       continue;
     }
     running *= rules.retention[stage]!;
-    running *= DECAY ** (3 - stage);
+    // The stages never played - counted from the round's own length, which is
+    // three on Three of a Kind.
+    running *= decay ** (stages.length - 1 - stage);
     busted = true;
   }
   // Scaled by cost BEFORE quantizing, matching gamestate.py. payoutMultiplier is

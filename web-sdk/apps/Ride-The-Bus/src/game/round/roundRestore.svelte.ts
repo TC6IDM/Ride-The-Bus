@@ -20,10 +20,25 @@
  */
 import { stateBet, stateUrlDerived } from 'state-shared';
 
-import { parseModeName } from '../math/modes';
+import { FAMILY_RULES, FREE_CHOICE, parseModeName } from '../math/modes';
 import { bet, guesses } from '../bet/betState.svelte';
 import { engineRound, round } from './roundState.svelte';
 import { animateRoundFromEvents, waitForLoaderGone } from './roundReveal.svelte';
+
+/**
+ * Put a parsed mode's four guesses back on the board - unless the family has
+ * no guesses. Three of a Kind's slug carries `any` for cards 1 and 4, which is
+ * not a pick a player can make: its board is a preset drawn from
+ * FAMILY_RULES.fixedChoices, and the guesses left from the last four-guess
+ * mode are deliberately kept so they are still there on the way back.
+ */
+function restoreGuesses(parsed: NonNullable<ReturnType<typeof parseModeName>>) {
+  if (FAMILY_RULES[parsed.family].fixedChoices) return;
+  guesses.color = parsed.color as Exclude<typeof parsed.color, typeof FREE_CHOICE>;
+  guesses.hl = parsed.higherLower;
+  guesses.io = parsed.insideOutside;
+  guesses.suit = parsed.suit as Exclude<typeof parsed.suit, typeof FREE_CHOICE>;
+}
 
 /**
  * What the replay path learns before the reveal is allowed to start.
@@ -79,15 +94,12 @@ export function restoreReplay() {
   // getting this wrong was not merely cosmetic. A High Stakes replay left on
   // the Classic ladder measures a 1400x win against Classic's 1354.2 ceiling
   // and announces MAX WIN over a round that paid well under High Stakes'
-  // real 1910.2 max. parseModeName has always returned the family; both this
+  // real 2169.2 max. parseModeName has always returned the family; both this
   // path and the resume path below simply dropped it.
   const parsed = parseModeName(String(resume.mode ?? stateUrlDerived.mode() ?? ''));
   if (parsed) {
     bet.family = parsed.family;
-    guesses.color = parsed.color;
-    guesses.hl = parsed.higherLower;
-    guesses.io = parsed.insideOutside;
-    guesses.suit = parsed.suit;
+    restoreGuesses(parsed);
   }
 
   // The replay URL carries the original stake, so the multipliers shown
@@ -174,10 +186,7 @@ export function restoreResume() {
   const parsed = parseModeName(String(resume.mode ?? ''));
   if (parsed) {
     bet.family = parsed.family;
-    guesses.color = parsed.color;
-    guesses.hl = parsed.higherLower;
-    guesses.io = parsed.insideOutside;
-    guesses.suit = parsed.suit;
+    restoreGuesses(parsed);
   }
 
   // Authenticate populates these from round.amount, so the multipliers

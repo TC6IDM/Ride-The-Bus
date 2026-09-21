@@ -55,9 +55,13 @@ export default {
 	Classic: 'Classique',
 	'Second Chance': 'Seconde chance',
 	'High Stakes': 'Gros enjeux',
-	'Every mode costs %c× your bet and returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
-		'Tous les modes coûtent %c× votre mise et rendent les mêmes %s sur de nombreuses manches. Seules changent la fréquence des gains et leur ampleur.',
+	'This mode costs %c× your bet. Every mode returns the same %s over many rounds; what changes is how often a round pays and how much it can pay.':
+		'Ce mode coûte %c× votre mise. Chaque mode rend le même %s sur de nombreuses manches ; ce qui change, c’est la fréquence et le montant des gains.',
 	Forgiven: 'Pardonné',
+	// The intro's tagline and the first line of How to Play's Game modes.
+	'%n ways to play': '%n façons de jouer',
+	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
+		'Chaque combinaison de choix dans un mode de devinette est une mise à part entière, tarifée selon ses propres cotes.',
 	'Game modes': 'Modes de jeu',
 	'Max win': 'Gain maximum',
 	// Confirmation before a bet mode is activated - required by the approval
@@ -67,8 +71,8 @@ export default {
 	Cancel: 'Annuler',
 	Switch: 'Changer',
 	'Volatility %s of %t': 'Volatilité %s sur %t',
-	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on High Stakes.':
-		'Le taux de redistribution (RTP) est de %s dans tous les modes. Ce jeu peut rapporter au maximum %m votre mise, en mode Gros enjeux.',
+	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.':
+		'Le taux de redistribution (RTP) est de %s dans tous les modes. Ce jeu peut rapporter au maximum %m votre mise, en mode %f.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'Une première carte manquée met fin à la manche. Les erreurs suivantes conservent 30% du cumul.',
 	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
@@ -82,8 +86,8 @@ export default {
 		'Seules certaines combinaisons de pronostics atteignent le maximum d’un mode. Une fois vos quatre choisis, leur propre plafond s’affiche ci-dessus.',
 	Playing: 'En cours',
 	'Card 2, 3 or 4': 'Carte 2, 3 ou 4',
-	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
-		'Une première carte manquée met fin à la manche. Les erreurs suivantes ne conservent que 20%, chaque bonne réponse vaut donc davantage.',
+	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
+		'Une première carte manquée met fin à la manche. Les erreurs suivantes ne conservent que 16%, chaque bonne réponse vaut donc davantage.',
 
 	'How to Play': 'Comment jouer',
 	'Guess your way through four cards:': 'Devinez au fil de quatre cartes :',
@@ -241,4 +245,30 @@ export default {
 		'La manche se termine et vous gardez environ %s% de vos gains accumulés.',
 	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
 		'À partir de la carte 2, il est pardonné : vous gardez %s% de vos gains et la manche continue.',
+
+	// Three of a Kind.
+	'Three of a Kind':
+		'Brelan',
+	'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.':
+		'Trois cartes d’un jeu de 12 cartes composé d’as, de rois et de dames. Les cartes 2 et 3 doivent correspondre à la carte 1 ; tout le reste ne paie rien.',
+	'Costs %c× your bet':
+		'Coûte %c× votre mise',
+	'Any':
+		'N’importe',
+	'Any card':
+		'N’importe quelle carte',
+	'Any wrong guess':
+		'Toute erreur',
+	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
+		'Joué avec un jeu de 12 cartes : l’as, le roi et la dame de chaque couleur. La carte 1 est distribuée ; les cartes 2 et 3 doivent avoir sa valeur. Trois cartes, un gain.',
+	'Three of a kind pays %m your bet, about one round in %n.':
+		'Le brelan paie %m votre mise, environ une manche sur %n.',
+	'%c× your base bet of %b':
+		'%c× votre mise de base de %b',
+	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
+		'*Sur %f. Chaque mode de jeu a son propre gain maximum, indiqué dans le sélecteur de mode et dans Comment jouer.',
+	'Card 2 must match card 1':
+		'La carte 2 doit correspondre à la carte 1',
+	'Card 3 must match card 1':
+		'La carte 3 doit correspondre à la carte 1',
 };

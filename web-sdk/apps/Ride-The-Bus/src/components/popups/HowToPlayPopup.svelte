@@ -22,14 +22,23 @@
 	// Derived from payout.ts rather than written out, so the paytable a player
 	// reads cannot drift from what the RGS credits - see payoutTable.ts.
 	import { bustRowsFor, oddsExampleFor, payoutRowsFor } from '../../game/math/payoutTable';
-	import { FAMILY_BLURB, FAMILY_RULES, MODE_FAMILIES, type ModeFamily } from '../../game/math/modes';
+	import { winTiersFor } from '../../game/math/winTiers';
+	import { FAMILY_BLURB, FAMILY_RULES, MODE_FAMILIES, allPlayableModes, type ModeFamily } from '../../game/math/modes';
 	import { FAMILIES_BY_VOLATILITY } from '../../game/math/volatility';
 	import gameConfig from '../../game/platform/config';
 	import { t } from '../../i18n/i18nDerived';
 	import MarkIcon from '../icons/MarkIcon.svelte';
 
-	/** The biggest figure any mode can pay, for the RTP statement below. */
-	const maxWinOverall = Math.max(...MODE_FAMILIES.map((f) => FAMILY_RULES[f].maxWin));
+	/** The biggest figure any mode can pay, and WHICH mode, for the RTP
+	 *  statement below. The mode is derived rather than written into the
+	 *  sentence: it was "on High Stakes" for as long as High Stakes held the
+	 *  ceiling, and stopped being true the day Three of a Kind arrived. */
+	const maxWinFamily = MODE_FAMILIES.reduce((best, f) =>
+		FAMILY_RULES[f].maxWin > FAMILY_RULES[best].maxWin ? f : best,
+	);
+	const maxWinOverall = FAMILY_RULES[maxWinFamily].maxWin;
+	// Counted, not typed - see the same line on the intro (IntroPanels.svelte).
+	const waysToPlay = allPlayableModes().length;
 
 	/** "1.99×" for a fixed row, "1.04× – 9.19×" for one that swings. */
 	const payRange = (min: number, max: number) =>
@@ -61,6 +70,12 @@
 	// always lands back on whatever the player is actually playing.
 	let viewing = $state<ModeFamily>(props.family ?? 'base');
 	const viewingRules = $derived(FAMILY_RULES[viewing]);
+	// A family with no guesses is a different game on the same board, and its
+	// panel says so: the deck it deals from, one bust rule, no worked example
+	// (there is no Higher or Lower to work), and a full-game line that states
+	// the one figure and how often it lands rather than "depends on your picks".
+	const viewingFixed = $derived(Boolean(viewingRules.fixedChoices));
+	const viewingOneIn = $derived(winTiersFor(viewing)[0]?.oneIn ?? 0);
 	const rows = $derived(payoutRowsFor(viewingRules));
 	const bustRules = $derived(bustRowsFor(viewingRules));
 	// The worked example's five figures, for the family on screen. Substituted
@@ -133,6 +148,14 @@
            reopening builds a fresh one - which is what makes it snap back to
            whatever the player is actually on, with no reset logic. -->
       <h4 class="info-h">{t('Game modes')}</h4>
+      <!-- The tagline the intro leads its stats with, as the section's first
+           line here, and what it counts said plainly: every set of four picks
+           is priced as its own bet mode, which is why the list of modes the
+           RGS publishes is 193 long and not 4. -->
+      <p class="info-tagline">
+        <strong>{t('%n ways to play').replace('%n', waysToPlay.toLocaleString())}</strong>
+        {t('Every combination of picks on a guess mode is its own bet, priced on its own odds.')}
+      </p>
       <!-- The cost and the RTP in ONE sentence. Stake's checklist wants the
            cost of every mode stated in the rules ("Game modes include
            description and cost information"), so it cannot simply go - but as
@@ -145,7 +168,7 @@
            fix; if the families ever stop sharing a cost, this sentence needs
            rewriting, not just re-interpolating. -->
       <p>
-        {t('Every mode costs %c× your bet and returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.')
+        {t('This mode costs %c× your bet. Every mode returns the same %s over many rounds; what changes is how often a round pays and how much it can pay.')
           .replace('%c', String(viewingRules.cost))
           .replace('%s', `${(gameConfig.rtp * 100).toFixed(2)}%`)}
       </p>
@@ -176,6 +199,11 @@
 
       <div class="mode-panel">
         <p class="mode-panel-blurb">{t(FAMILY_BLURB[viewing])}</p>
+        <!-- The deck, on the family that does not deal the standard 52. Stated
+             before any figure, because every figure below follows from it. -->
+        {#if viewingFixed}
+          <p class="mode-panel-blurb">{t('Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.')}</p>
+        {/if}
         <p class="mode-panel-max">
           {t('Max win')} <strong>{viewingRules.maxWin}×</strong> {t('Bet')}
         </p>
@@ -194,7 +222,7 @@
              reach the ceiling, so they were not told the same number twice -
              but from the player's side the line simply failed to appear for
              their pick, and the two figures agreeing IS the information. -->
-        {#if pickedCeiling !== null}
+        {#if pickedCeiling !== null && !viewingFixed}
           <p class="mode-panel-picked">
             {t('Your four guesses top out at %s your bet.').replace('%s', `${pickedCeiling}×`)}
           </p>
@@ -203,8 +231,11 @@
              example: the family figure is a ceiling SOME combinations reach,
              and the bet in front of the player has its own. Without this a
              player opening the rules from the start screen - no guesses
-             picked, so no line above - read the family figure as their own. -->
-        <p class="mode-panel-picked">{t('Only some guess combinations reach a mode’s maximum. Once your four are picked, their own ceiling is shown above.')}</p>
+             picked, so no line above - read the family figure as their own.
+             Not on a family with no guesses: there its one figure IS the bet's. -->
+        {#if !viewingFixed}
+          <p class="mode-panel-picked">{t('Only some guess combinations reach a mode’s maximum. Once your four are picked, their own ceiling is shown above.')}</p>
+        {/if}
 
         <!-- Approval requires payout amounts stated for every pick. There is no
              fixed paytable to print - each stage pays its true odds against the
@@ -232,8 +263,11 @@
         </table>
         <!-- The worked example, computed for this family - see oddsExampleFor.
              Two Higher/Lower figures and the Equal figure are stage-2 rows of
-             the table above, so a player can check one against the other. -->
-        <p>{exampleText}</p>
+             the table above, so a player can check one against the other.
+             Not on a family with no Higher or Lower to work. -->
+        {#if !viewingFixed}
+          <p>{exampleText}</p>
+        {/if}
         <!-- WHY THIS PARAGRAPH IS SO EXACT ABOUT ROUNDING.
              The table above quotes 1.99x for the colour pick, and the chip
              beside card 1 reads 1.90x for the same pick - because that chip is
@@ -267,8 +301,17 @@
              is stated is the exact ceiling - which IS known exactly - and the
              ordering, which holds everywhere. -->
         <h5 class="info-sub">{t('Full game wins')}</h5>
-        <p>{t('Guess all four right and the payout depends on how hard your picks were. Equal is the rarest guess, so rounds built on it pay the most; two Equal picks together is the most this mode can pay, at %m your bet.')
-          .replace('%m', `${viewingRules.maxWin}×`)}</p>
+        {#if viewingFixed}
+          <!-- One figure, and how often. The frequency is the ladder's own
+               `oneIn` - the recorded figure, after the reweighter - so the
+               sentence cannot quote a rate the tables do not deal. -->
+          <p>{t('Three of a kind pays %m your bet, about one round in %n.')
+            .replace('%m', `${viewingRules.maxWin}×`)
+            .replace('%n', String(viewingOneIn))}</p>
+        {:else}
+          <p>{t('Guess all four right and the payout depends on how hard your picks were. Equal is the rarest guess, so rounds built on it pay the most; two Equal picks together is the most this mode can pay, at %m your bet.')
+            .replace('%m', `${viewingRules.maxWin}×`)}</p>
+        {/if}
       </div>
 
       <!-- The user interaction guide Stake asks for: every button on the bar,
@@ -306,9 +349,10 @@
              It used to state 1354.2x flatly, which stopped being true the
              moment High Stakes reached 3820.5x - and "the most this game can
              pay" is exactly the claim a reviewer checks. -->
-        {t('Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on High Stakes.')
+        {t('Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.')
           .replace('%s', `${(gameConfig.rtp * 100).toFixed(2)}%`)
-          .replace('%m', `${maxWinOverall}×`)}
+          .replace('%m', `${maxWinOverall}×`)
+          .replace('%f', t(FAMILY_RULES[maxWinFamily].label))}
       </p>
 
       <h4 class="info-h">{t('Disclaimer')}</h4>

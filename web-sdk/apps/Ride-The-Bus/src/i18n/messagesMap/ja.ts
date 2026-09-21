@@ -55,9 +55,13 @@ export default {
 	Classic: 'クラシック',
 	'Second Chance': 'セカンドチャンス',
 	'High Stakes': 'ハイステークス',
-	'Every mode costs %c× your bet and returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
-		'どのモードもベット額の%c倍で、多数のラウンドで同じ%sを還元します。変わるのは配当の頻度と大きさです。',
+	'This mode costs %c× your bet. Every mode returns the same %s over many rounds; what changes is how often a round pays and how much it can pay.':
+		'このモードのコストは賭け金の%c倍です。どのモードも多くのラウンドを通じて同じ%sを返します。変わるのは、ラウンドが支払う頻度と金額です。',
 	Forgiven: '免除',
+	// The intro's tagline and the first line of How to Play's Game modes.
+	'%n ways to play': '%n通りの遊び方',
+	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
+		'推測モードでの選択の組み合わせはそれぞれ独立したベットで、それぞれのオッズで価格が決まります。',
 	'Game modes': 'ゲームモード',
 	'Max win': '最大配当',
 	// Confirmation before a bet mode is activated - required by the approval
@@ -67,8 +71,8 @@ export default {
 	Cancel: 'キャンセル',
 	Switch: '変更する',
 	'Volatility %s of %t': 'ボラティリティ %t段階中 %s',
-	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on High Stakes.':
-		'還元率（RTP）はどのゲームモードでも %s です。このゲームの最大配当はハイステークスでベットの %m です。',
+	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.':
+		'還元率（RTP）はどのゲームモードでも %s です。このゲームの最大配当は%fでベットの %m です。',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'1枚目を外すとラウンド終了。以降のミスは積み上げた分の30%を保持します。',
 	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
@@ -82,8 +86,8 @@ export default {
 		'予想の組み合わせのうち、モードの最大配当に届くのは一部だけです。4つを選ぶと、その組み合わせ自体の上限が上に表示されます。',
 	Playing: 'プレイ中',
 	'Card 2, 3 or 4': 'カード2・3・4',
-	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
-		'1枚目を外すとラウンド終了です。以降のミスは20%しか残らないぶん、的中1つ1つの価値が高くなります。',
+	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
+		'1枚目を外すとラウンド終了です。以降のミスは16%しか残らないぶん、的中1つ1つの価値が高くなります。',
 
 	'How to Play': '遊び方',
 	'Guess your way through four cards:': '4枚のカードを順に予想します：',
@@ -237,4 +241,30 @@ export default {
 		'ラウンドが終了し、積み上げた分の約%s%が残ります。',
 	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
 		'カード2以降は免除され、積み上げた分の%s%を残してラウンドが続きます。',
+
+	// Three of a Kind.
+	'Three of a Kind':
+		'スリーカード',
+	'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.':
+		'エース、キング、クイーンの12枚デッキから3枚。カード2と3はカード1と同じ数字でなければならず、それ以外は何も支払われません。',
+	'Costs %c× your bet':
+		'コストは賭け金の%c倍',
+	'Any':
+		'任意',
+	'Any card':
+		'任意のカード',
+	'Any wrong guess':
+		'外れたとき',
+	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
+		'12枚のデッキで遊びます：各スートのエース、キング、クイーン。カード1が配られ、カード2と3はその数字と一致する必要があります。3枚のカード、1つの勝ち。',
+	'Three of a kind pays %m your bet, about one round in %n.':
+		'スリーカードは賭け金の%mを支払います。およそ%nラウンドに1回です。',
+	'%c× your base bet of %b':
+		'基本賭け金%bの%c倍',
+	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
+		'*%fでの値です。ゲームモードごとに最大配当が異なり、モード選択と遊び方に表示されています。',
+	'Card 2 must match card 1':
+		'カード2はカード1と同じ数字',
+	'Card 3 must match card 1':
+		'カード3はカード1と同じ数字',
 };

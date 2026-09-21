@@ -48,6 +48,8 @@
 		higher: 'Higher', lower: 'Lower',
 		inside: 'Inside', outside: 'Outside', equal: 'Equal',
 		heart: 'Heart', diamond: 'Diamond', club: 'Club', spade: 'Spade',
+		// Three of a Kind's dealt cards: no guess was made, and the badge says so.
+		any: 'Any',
 	} as const;
 
 	function modeBadges(mode: string): { label: string; cssClass: string }[] {

@@ -52,6 +52,22 @@
     style={`--tint: ${modeNameColor()}; --tint-rgb: ${modeRgb()}; --tint-strong: ${modeNameColor()}`}
   >
     <div class="popup-head"><span>{t('Bet Menu')}</span><button class="popup-close" onclick={onclose} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
+    <!-- On a mode that multiplies the bet, the figure a player is about to
+         spend leads: the round's cost, in the bar's own blue, with the
+         arithmetic under it. The field below stays the BASE bet - that is
+         what the RGS's minBet / maxBet / stepBet are written against and what
+         the chips set - so a player typing here is typing the number the
+         limits speak in, and the line above tells them what it becomes. -->
+    {#if familyRules().cost !== 1}
+      <div class="bet-entry-cost">
+        <span class="bet-entry-cost-val cb-val cb-val-multiplied">{numberToCurrencyString(roundCost() > 0 ? roundCost() : 0)}</span>
+        <span class="bet-entry-cost-note">
+          {t('%c× your base bet of %b')
+            .replace('%c', String(familyRules().cost))
+            .replace('%b', numberToCurrencyString(betValue() > 0 ? betValue() : 0))}
+        </span>
+      </div>
+    {/if}
     <div class="bet-entry">
       <span class="bet-entry-cur">{currencySymbol()}</span>
       <!-- Enter commits. Typing an amount and pressing Enter is what every
@@ -109,7 +125,6 @@
               </span>
               <span
                 class="bet-chip-value"
-                class:cb-val-multiplied={familyRules().cost !== 1}
                 style="--ems: {labelEms(label.amount)}"
               >
                 {label.amount}
@@ -117,7 +132,6 @@
             {:else}
               <span
                 class="bet-chip-value"
-                class:cb-val-multiplied={familyRules().cost !== 1}
                 style="--ems: {labelEms(label.currency + label.amount)}"
               >
                 {label.currency}{label.amount}

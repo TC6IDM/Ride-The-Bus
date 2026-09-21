@@ -11,7 +11,7 @@
 <script lang="ts">
 	import { t } from '../../i18n/i18nDerived';
 	import gameConfig from '../../game/platform/config';
-	import { FAMILY_RULES, MODE_FAMILIES } from '../../game/math/modes';
+	import { FAMILY_RULES, MODE_FAMILIES, allPlayableModes } from '../../game/math/modes';
 	import ChoiceIcon from '../icons/ChoiceIcon.svelte';
 	import MarkIcon from '../icons/MarkIcon.svelte';
 	import SuitIcon from '../icons/SuitIcon.svelte';
@@ -30,7 +30,21 @@
 
 	/** The biggest figure any mode can pay - High Stakes', at the time of
 	 *  writing. Derived so it cannot drift from the maths. */
-	const maxWinOverall = Math.max(...MODE_FAMILIES.map((f) => FAMILY_RULES[f].maxWin));
+	/** The biggest figure ANY mode can reach, and which mode - for the asterisk. */
+	const maxWinFamily = MODE_FAMILIES.reduce((best, f) =>
+		FAMILY_RULES[f].maxWin > FAMILY_RULES[best].maxWin ? f : best,
+	);
+	const maxWinOverall = FAMILY_RULES[maxWinFamily].maxWin;
+	// The tagline's number is the published mode count, counted rather than
+	// typed: every guess combination on every family is its own bet mode, so
+	// this is 3 x 64 + 1 and moves the day a family or a combination does.
+	const waysToPlay = allPlayableModes().length;
+	// The tagline split at its placeholder, so the figure can be set in the
+	// value's type between the caption's words wherever the locale puts it.
+	const tagline = $derived.by(() => {
+		const [before, after] = t('%n ways to play').split('%n');
+		return { before: before.trim(), after: after.trim() };
+	});
 
 	/**
 	 * The how-to-play picks behave like the real ones on the board.
@@ -300,6 +314,15 @@
 			</ol>
 
 			<div class="ss-stats" style="--d: 8">
+				<!-- The tagline, first in the strip and figure-first, unlike the two
+				     readouts after it: "193 ways to play" is a sentence, not a
+				     caption and a value. The key carries the placeholder so a locale
+				     can put the number where its grammar wants it. -->
+				<div class="ss-stat ss-stat-tagline">
+					{#if tagline.before}<span class="ss-stat-cap">{tagline.before}</span>{/if}
+					<span class="ss-stat-val">{waysToPlay.toLocaleString()}</span>
+					{#if tagline.after}<span class="ss-stat-cap">{tagline.after}</span>{/if}
+				</div>
 				<div class="ss-stat">
 					<span class="ss-stat-cap">{t('RTP')}</span>
 					<span class="ss-stat-val">{(gameConfig.rtp * 100).toFixed(2)}%</span>
@@ -310,11 +333,20 @@
 					     screen shown before a mode is chosen, so it understated the
 					     game by the whole of High Stakes. -->
 					<span class="ss-stat-cap">{t('Max Win')}</span>
-					<span class="ss-stat-val">{maxWinOverall.toLocaleString()}×</span>
+					<span class="ss-stat-val">{maxWinOverall.toLocaleString()}×<span class="ss-stat-note" aria-hidden="true">*</span></span>
 				</div>
 			</div>
+			<!-- The asterisk's sentence. The figure above is the game's ceiling,
+			     which is one mode's; a player who reads it as "the game pays up to
+			     this" and then plays Classic has been told a number that mode
+			     cannot reach. Named through the family label rather than typed,
+			     so it follows whichever mode holds the ceiling. -->
+			<p class="ss-stat-foot" style="--d: 9">
+				{t('*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.')
+					.replace('%f', t(FAMILY_RULES[maxWinFamily].label))}
+			</p>
 
-			<button class="ss-continue" style="--d: 9" onclick={oncontinue}>
+			<button class="ss-continue" style="--d: 10" onclick={oncontinue}>
 				{t('Tap to continue')}
 			</button>
 		</div>

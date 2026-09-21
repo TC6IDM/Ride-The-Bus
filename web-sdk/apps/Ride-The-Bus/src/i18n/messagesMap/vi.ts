@@ -55,9 +55,13 @@ export default {
 	Classic: 'Cổ điển',
 	'Second Chance': 'Cơ hội thứ hai',
 	'High Stakes': 'Cược lớn',
-	'Every mode costs %c× your bet and returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
-		'Mọi chế độ đều có giá %c× tiền cược của bạn và trả về cùng mức %s qua nhiều vòng. Chỉ khác ở tần suất và mức trả thưởng của mỗi vòng.',
+	'This mode costs %c× your bet. Every mode returns the same %s over many rounds; what changes is how often a round pays and how much it can pay.':
+		'Chế độ này tốn %c× tiền cược của bạn. Mọi chế độ đều trả lại cùng %s qua nhiều ván; khác biệt chỉ là ván thắng thường xuyên ra sao và thắng được bao nhiêu.',
 	Forgiven: 'Được bỏ qua',
+	// The intro's tagline and the first line of How to Play's Game modes.
+	'%n ways to play': '%n cách chơi',
+	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
+		'Mỗi tổ hợp lựa chọn trong chế độ đoán là một cược riêng, được định giá theo tỷ lệ cược của riêng nó.',
 	'Game modes': 'Chế độ chơi',
 	'Max win': 'Thắng tối đa',
 	// Confirmation before a bet mode is activated - required by the approval
@@ -67,8 +71,8 @@ export default {
 	Cancel: 'Hủy',
 	Switch: 'Đổi',
 	'Volatility %s of %t': 'Độ biến động %s trên %t',
-	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on High Stakes.':
-		'Tỷ lệ trả thưởng (RTP) là %s ở mọi chế độ. Mức trả thưởng cao nhất của trò chơi là %m tiền cược của bạn, ở chế độ Cược lớn.',
+	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.':
+		'Tỷ lệ trả thưởng (RTP) là %s ở mọi chế độ. Mức trả thưởng cao nhất của trò chơi là %m tiền cược của bạn, ở chế độ %f.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'Sai lá bài đầu tiên là kết thúc vòng. Các lần sai sau giữ lại 30% số đã tích lũy.',
 	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
@@ -82,8 +86,8 @@ export default {
 		'Chỉ một số tổ hợp dự đoán đạt tới mức tối đa của chế độ. Sau khi chọn đủ bốn, mức trần riêng của chúng sẽ hiện ở trên.',
 	Playing: 'Đang chơi',
 	'Card 2, 3 or 4': 'Lá 2, 3 hoặc 4',
-	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
-		'Sai lá bài đầu tiên là kết thúc vòng. Các lần sai sau chỉ giữ lại 20%, nên mỗi lần đoán đúng có giá trị hơn.',
+	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
+		'Sai lá bài đầu tiên là kết thúc vòng. Các lần sai sau chỉ giữ lại 16%, nên mỗi lần đoán đúng có giá trị hơn.',
 
 	'How to Play': 'Cách chơi',
 	'Guess your way through four cards:': 'Dự đoán lần lượt bốn lá bài:',
@@ -240,4 +244,30 @@ export default {
 		'Vòng chơi kết thúc, giữ lại khoảng %s% số đã tích lũy.',
 	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
 		'Từ lá 2 trở đi, sai lầm này được bỏ qua: bạn giữ %s% số đã tích lũy và vòng chơi tiếp tục.',
+
+	// Three of a Kind.
+	'Three of a Kind':
+		'Bộ ba',
+	'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.':
+		'Ba lá từ bộ 12 lá gồm Át, Già và Đầm. Lá 2 và lá 3 phải trùng với lá 1; ít hơn thế thì không trả gì.',
+	'Costs %c× your bet':
+		'Tốn %c× tiền cược của bạn',
+	'Any':
+		'Bất kỳ',
+	'Any card':
+		'Lá bài bất kỳ',
+	'Any wrong guess':
+		'Bất kỳ lần đoán sai nào',
+	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
+		'Chơi với bộ bài 12 lá: Át, Già và Đầm của mỗi chất. Lá 1 được chia; lá 2 và lá 3 phải cùng hạng với nó. Ba lá bài, một lần thắng.',
+	'Three of a kind pays %m your bet, about one round in %n.':
+		'Bộ ba trả %m tiền cược của bạn, khoảng một ván trong %n ván.',
+	'%c× your base bet of %b':
+		'%c× tiền cược cơ bản %b của bạn',
+	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
+		'*Ở chế độ %f. Mỗi chế độ chơi có mức thắng tối đa riêng, hiển thị trong phần chọn chế độ và Cách chơi.',
+	'Card 2 must match card 1':
+		'Lá 2 phải trùng với lá 1',
+	'Card 3 must match card 1':
+		'Lá 3 phải trùng với lá 1',
 };

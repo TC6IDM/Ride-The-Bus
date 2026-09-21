@@ -55,9 +55,13 @@ export default {
 	Classic: '经典',
 	'Second Chance': '第二次机会',
 	'High Stakes': '高额投注',
-	'Every mode costs %c× your bet and returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
-		'每种模式的费用均为投注额的%c倍，多局之后的回报率都是%s。不同之处在于中奖的频率和金额。',
+	'This mode costs %c× your bet. Every mode returns the same %s over many rounds; what changes is how often a round pays and how much it can pay.':
+		'此模式费用为您投注的%c倍。所有模式在多局之后的回报率都是相同的%s；不同的只是每局赔付的频率与金额。',
 	Forgiven: '已豁免',
+	// The intro's tagline and the first line of How to Play's Game modes.
+	'%n ways to play': '%n 种玩法',
+	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
+		'猜测模式中的每一种选择组合都是一注独立的投注，按其自身赔率定价。',
 	'Game modes': '游戏模式',
 	'Max win': '最高赔付',
 	// Confirmation before a bet mode is activated - required by the approval
@@ -67,8 +71,8 @@ export default {
 	Cancel: '取消',
 	Switch: '切换',
 	'Volatility %s of %t': '波动性 %t 级中的 %s',
-	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on High Stakes.':
-		'所有游戏模式的返奖率（RTP）均为 %s。本游戏的最高赔付为投注额的 %m，出现在高额投注模式。',
+	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.':
+		'所有游戏模式的返奖率（RTP）均为 %s。本游戏的最高赔付为投注额的 %m，出现在%f模式。',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'第一张牌猜错即结束本局。之后猜错保留已累积的30%。',
 	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
@@ -82,8 +86,8 @@ export default {
 		'只有部分猜测组合能达到某模式的最高赔付。选好四步后，其自身上限会显示在上方。',
 	Playing: '游戏中',
 	'Card 2, 3 or 4': '第二、三或四张牌',
-	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
-		'第一张牌猜错即结束本局。之后猜错仅保留20%，因此每一次猜对都更有价值。',
+	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
+		'第一张牌猜错即结束本局。之后猜错仅保留16%，因此每一次猜对都更有价值。',
 
 	'How to Play': '玩法说明',
 	'Guess your way through four cards:': '依次预测四张牌：',
@@ -231,4 +235,30 @@ export default {
 	'The round ends, keeping about %s% of what you had built.': '本局结束，保留已累积金额的约 %s%。',
 	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
 		'从第 2 张牌起可获宽恕，保留已累积金额的 %s%，本局继续。',
+
+	// Three of a Kind.
+	'Three of a Kind':
+		'三条',
+	'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.':
+		'从12张牌（A、K、Q）的牌组中发三张牌。第2、3张牌必须与第1张牌点数相同；否则没有任何赔付。',
+	'Costs %c× your bet':
+		'费用为您投注的%c倍',
+	'Any':
+		'任意',
+	'Any card':
+		'任意牌',
+	'Any wrong guess':
+		'任何猜错',
+	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
+		'使用12张牌的牌组：每种花色的A、K、Q。发出第1张牌；第2、3张牌的点数必须与之相同。三张牌，一次赢取。',
+	'Three of a kind pays %m your bet, about one round in %n.':
+		'三条赔付您投注的%m，大约每%n局出现一次。',
+	'%c× your base bet of %b':
+		'基础投注%b的%c倍',
+	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
+		'*为%f的数值。每种游戏模式各有不同的最高赢取，见模式选择和游戏说明。',
+	'Card 2 must match card 1':
+		'第2张牌须与第1张牌相同',
+	'Card 3 must match card 1':
+		'第3张牌须与第1张牌相同',
 };

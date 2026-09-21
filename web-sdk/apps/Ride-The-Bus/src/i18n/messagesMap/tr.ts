@@ -55,9 +55,13 @@ export default {
 	Classic: 'Klasik',
 	'Second Chance': 'İkinci Şans',
 	'High Stakes': 'Yüksek Bahis',
-	'Every mode costs %c× your bet and returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
-		'Her mod bahsinizin %c katıdır ve çok sayıda turda aynı %s oranını döndürür. Değişen, bir turun ne sıklıkta ve ne kadar ödediğidir.',
+	'This mode costs %c× your bet. Every mode returns the same %s over many rounds; what changes is how often a round pays and how much it can pay.':
+		'Bu mod bahsinizin %c× katına mal olur. Her mod birçok tur boyunca aynı %s oranını geri verir; değişen, bir turun ne sıklıkla ve ne kadar ödediğidir.',
 	Forgiven: 'Affedildi',
+	// The intro's tagline and the first line of How to Play's Game modes.
+	'%n ways to play': 'Oynamanın %n yolu',
+	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
+		'Tahmin modundaki her seçim kombinasyonu, kendi oranlarına göre fiyatlanan ayrı bir bahistir.',
 	'Game modes': 'Oyun modları',
 	'Max win': 'Maksimum kazanç',
 	// Confirmation before a bet mode is activated - required by the approval
@@ -67,8 +71,8 @@ export default {
 	Cancel: 'İptal',
 	Switch: 'Değiştir',
 	'Volatility %s of %t': 'Oynaklık %t üzerinden %s',
-	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on High Stakes.':
-		'Oyuncuya dönüş (RTP) her oyun modunda %s olarak aynıdır. Bu oyunun ödeyebileceği en yüksek tutar, Yüksek Bahis modunda bahsinizin %m katıdır.',
+	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.':
+		'Oyuncuya dönüş (RTP) her oyun modunda %s olarak aynıdır. Bu oyunun ödeyebileceği en yüksek tutar, %f modunda bahsinizin %m katıdır.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		"İlk kartı bilememek turu bitirir. Sonraki hatalar biriktirdiğinizin %30'unu tutar.",
 	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
@@ -82,8 +86,8 @@ export default {
 		'Tahmin kombinasyonlarının yalnızca bazıları bir modun en yüksek değerine ulaşır. Dördü seçildiğinde kendi üst sınırı yukarıda gösterilir.',
 	Playing: 'Oynanıyor',
 	'Card 2, 3 or 4': 'Kart 2, 3 veya 4',
-	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
-		'İlk kartı bilememek turu bitirir. Sonraki hatalar yalnızca %20 tutar, bu yüzden her doğru tahmin daha değerlidir.',
+	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
+		'İlk kartı bilememek turu bitirir. Sonraki hatalar yalnızca %16 tutar, bu yüzden her doğru tahmin daha değerlidir.',
 
 	'How to Play': 'Nasıl oynanır',
 	'Guess your way through four cards:': 'Dört kartı sırayla tahmin edin:',
@@ -239,4 +243,30 @@ export default {
 		'Tur sona erer ve biriktirdiğinizin yaklaşık %s% kadarını korursunuz.',
 	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
 		'2. karttan itibaren bu hata affedilir: biriktirdiğinizin %s% kadarını korur ve tur devam eder.',
+
+	// Three of a Kind.
+	'Three of a Kind':
+		'Üçlü',
+	'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.':
+		'As, papaz ve kızlardan oluşan 12 kartlık desteden üç kart. 2. ve 3. kartlar 1. kartla eşleşmeli; daha azı hiçbir şey ödemez.',
+	'Costs %c× your bet':
+		'Bahsinizin %c× katına mal olur',
+	'Any':
+		'Herhangi',
+	'Any card':
+		'Herhangi bir kart',
+	'Any wrong guess':
+		'Herhangi bir yanlış tahmin',
+	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
+		'12 kartlık desteyle oynanır: her renkten as, papaz ve kız. 1. kart dağıtılır; 2. ve 3. kartlar onun değerini tutturmalıdır. Üç kart, tek kazanç.',
+	'Three of a kind pays %m your bet, about one round in %n.':
+		'Üçlü, bahsinizin %m katını öder; yaklaşık her %n turda bir.',
+	'%c× your base bet of %b':
+		'%b temel bahsinizin %c× katı',
+	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
+		'*%f modunda. Her oyun modunun kendi maksimum kazancı vardır; mod seçiminde ve Nasıl Oynanır\'da gösterilir.',
+	'Card 2 must match card 1':
+		'2. kart 1. kartla eşleşmeli',
+	'Card 3 must match card 1':
+		'3. kart 1. kartla eşleşmeli',
 };

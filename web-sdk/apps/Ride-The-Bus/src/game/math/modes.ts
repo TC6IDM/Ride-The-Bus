@@ -27,16 +27,40 @@
  */
 
 import { MODE_CEILINGS } from './modeCeilings.ts';
+import type { Card } from '../round/roundContract.ts';
 
 export const COLOR_CHOICES = ['red', 'black'] as const;
 export const HIGHER_LOWER_CHOICES = ['higher', 'lower', 'equal'] as const;
 export const INSIDE_OUTSIDE_CHOICES = ['inside', 'outside', 'equal'] as const;
 export const SUIT_CHOICES = ['heart', 'diamond', 'club', 'spade'] as const;
 
+/**
+ * A stage with no guess at all: the card is dealt and shown, it is always
+ * "correct", and it pays exactly 1.00x. Only a family with `fixedChoices` uses
+ * it, and only at the stages that family says. Mirrors FREE_CHOICE in
+ * game_calculations.py.
+ */
+export const FREE_CHOICE = 'any';
+
 export type ColorChoice = (typeof COLOR_CHOICES)[number];
 export type HigherLowerChoice = (typeof HIGHER_LOWER_CHOICES)[number];
 export type InsideOutsideChoice = (typeof INSIDE_OUTSIDE_CHOICES)[number];
 export type SuitChoice = (typeof SUIT_CHOICES)[number];
+/** The four tokens of a mode slug - a guess, or the free card. */
+export type StageChoice =
+  | ColorChoice
+  | HigherLowerChoice
+  | InsideOutsideChoice
+  | SuitChoice
+  | typeof FREE_CHOICE;
+/**
+ * One token per stage. Four on the four-guess families, three on Three of a
+ * Kind - the tuple's length IS the family's stage count, on both sides of the
+ * wire (gamestate.py deals `len(choices)` cards).
+ */
+export type ChoiceTuple =
+  | readonly [StageChoice, StageChoice, StageChoice, StageChoice]
+  | readonly [StageChoice, StageChoice, StageChoice];
 
 /**
  * False only for the one impossible pairing. Takes nulls so it can be called
@@ -62,8 +86,16 @@ export function isCombinationPlayable(
  * priced against; if they drift from the Python the game shows a player one
  * number while the RGS credits another. payoutTable.test.ts pins them.
  */
-export const MODE_FAMILIES = ['base', 'sc', 'hs'] as const;
+export const MODE_FAMILIES = ['base', 'sc', 'hs', 'tr'] as const;
 export type ModeFamily = (typeof MODE_FAMILIES)[number];
+
+/** A family's deck: the standard 52 unless it names its own ranks and copies. */
+export type DeckSpec = {
+  /** Ranks in the deck, in roundContract's `ranks` order. */
+  ranks: readonly Card['rank'][];
+  /** How many of each card. */
+  copies: number;
+};
 
 export type FamilyRules = {
   /** Prepended to the mode name. Empty for base, whose names are published. */
@@ -71,21 +103,42 @@ export type FamilyRules = {
   /**
    * Cost multiplier. The base mode is 1.0 and must stay the cheapest.
    *
-   * All three are 1.0 today, and that is forced rather than chosen: etl40b is
-   * an absolute sum against a fixed limit and is not divided by cost, so a 2x
-   * mode's figure doubles for the same shape and only a low-volatility family
-   * survives it. See MODE_FAMILIES in game_calculations.py for the table.
-   * The multiplied-bet display in Game.svelte is kept and simply goes quiet.
+   * The three four-guess families are 1.0, and that is forced rather than
+   * chosen: etl40b is an absolute sum against a fixed limit and is not divided
+   * by cost, so a 2x mode's figure doubles for the same shape and only a
+   * low-volatility family survives it. Three of a Kind can be 250x precisely
+   * because it escapes that sum - its payout never reaches 40x its cost - and
+   * it is no MORE than that because Stake's tail rules are written in base-bet
+   * multiples and cap a binary win under 5,000x. See THE ALL-OR-NOTHING BOUND
+   * in game_calculations.py. The multiplied-bet readout in the control bar,
+   * quiet while every cost was 1.0, is live again.
    */
   cost: number;
-  /** Fraction of the running multiplier kept on a miss, per stage. */
-  retention: readonly [number, number, number, number];
+  /** Fraction of the running multiplier kept on a miss, per stage - one entry per stage the family deals. */
+  retention: readonly number[];
   /** Fraction kept by a FORGIVEN miss, or null when the family forgives none. */
   forgive: number | null;
   /** First stage forgiveness can apply to. Card 1 is never forgiven. */
   forgiveFrom: number;
+  /**
+   * The pricing target decay**4 is solved from - payout.ts:TARGET_RTP unless
+   * the family overrides it. Three of a Kind prices at exactly 1.0 so its two
+   * free card pays 1.00x rather than 0.9975, which the 0.1x display floor
+   * would show as 0.9x on a card that was never a guess.
+   */
+  targetRtp: number;
+  /** The deck this family deals from. Null is the standard 52. */
+  deck: DeckSpec | null;
+  /**
+   * The slug tokens, for a family that has no guesses at all. Null on the
+   * families where the player picks. When set, the board is a preset built
+   * from these and `guesses` in betState is ignored - not cleared, so a
+   * player's picks survive a round trip through the family. Its length is
+   * the family's stage count: Three of a Kind deals three cards, not four.
+   */
+  fixedChoices: ChoiceTuple | null;
   /** English label, which is also the i18n key. */
-  label: 'Classic' | 'Second Chance' | 'High Stakes';
+  label: 'Classic' | 'Second Chance' | 'High Stakes' | 'Three of a Kind';
   /**
    * The most this family can pay, as a multiple of the BET.
    *
@@ -128,6 +181,19 @@ export type FamilyRules = {
 
 const BASE_RETENTION = [0, 0.3, 0.3, 0.3] as const;
 
+/** The four-guess families' pricing target - payout.ts owns the constant. */
+const FOUR_GUESS_TARGET_RTP = 0.99;
+
+/**
+ * Three of a Kind's deck: the Ace, King and Queen of each suit, one of each.
+ * Twelve cards. Card 2 matches card 1's rank 3 times in 11, card 3 matches 2
+ * in 10 - fair odds 1 x 11/3 x 5 = 18.333x, a physical 1 in 18.3. Mirrors
+ * TRIPS_DECK in game_calculations.py, whose comment carries the derivation.
+ */
+export const TRIPS_DECK: DeckSpec = { ranks: ['Q', 'K', 'A'], copies: 1 };
+/** Its one combination: card 1 dealt, cards 2 and 3 must match. Three stages. */
+export const TRIPS_COMBO: ChoiceTuple = [FREE_CHOICE, 'equal', 'equal'];
+
 export const FAMILY_RULES: Record<ModeFamily, FamilyRules> = {
   base: {
     prefix: '',
@@ -135,6 +201,9 @@ export const FAMILY_RULES: Record<ModeFamily, FamilyRules> = {
     retention: BASE_RETENTION,
     forgive: null,
     forgiveFrom: 0,
+    targetRtp: FOUR_GUESS_TARGET_RTP,
+    deck: null,
+    fixedChoices: null,
     label: 'Classic',
     maxWin: 1354.2,
     celebrateEveryFullWin: true,
@@ -148,6 +217,9 @@ export const FAMILY_RULES: Record<ModeFamily, FamilyRules> = {
     // zero, which pushed the mode's win-conditional mean below its reweight
     // target and made the table unbuildable - see the Python for the full note.
     forgiveFrom: 1,
+    targetRtp: FOUR_GUESS_TARGET_RTP,
+    deck: null,
+    fixedChoices: null,
     label: 'Second Chance',
     maxWin: 585.2,
     celebrateEveryFullWin: true,
@@ -155,14 +227,47 @@ export const FAMILY_RULES: Record<ModeFamily, FamilyRules> = {
   hs: {
     prefix: 'hs_',
     cost: 1,
-    retention: [0, 0.2, 0.2, 0.2],
+    // 0.16, down from 0.20: the last step that clears Stake's CVaR limit
+    // (~692 measured against 700; 0.15 is 722). A card-2 bust still shows 0.3x
+    // - 1.995 x 0.16 x 0.995 floors to it - so only card-3/4 busts pay less.
+    retention: [0, 0.16, 0.16, 0.16],
     forgive: null,
     forgiveFrom: 0,
+    targetRtp: FOUR_GUESS_TARGET_RTP,
+    deck: null,
+    fixedChoices: null,
     label: 'High Stakes',
-    maxWin: 1910.2,
+    maxWin: 2169.2,
+    celebrateEveryFullWin: true,
+  },
+  /**
+   * The all-or-nothing mode, and the only family that is not the four-guess
+   * ride: three cards, nothing back on any miss, one outcome, 4,583.3x the base
+   * bet at cost 250x (18.333x what was paid, fair odds on its deck). Everything
+   * unusual about it - the deck, the free card, the cost, why the win must sit
+   * under 5,000x - is argued in THE ALL-OR-NOTHING BOUND in
+   * game_calculations.py; this record only mirrors it.
+   */
+  tr: {
+    prefix: 'tr_',
+    cost: 250,
+    // Three stages, so three entries. Indexed by stage everywhere it is read.
+    retention: [0, 0, 0],
+    forgive: null,
+    forgiveFrom: 0,
+    targetRtp: 1,
+    deck: TRIPS_DECK,
+    fixedChoices: TRIPS_COMBO,
+    label: 'Three of a Kind',
+    maxWin: 4583.3,
     celebrateEveryFullWin: true,
   },
 };
+
+/** How many cards a family deals - the length of its combination. */
+export function stageCount(rules: Pick<FamilyRules, 'fixedChoices'>): number {
+  return rules.fixedChoices ? rules.fixedChoices.length : 4;
+}
 
 /**
  * One line per family, for the mode picker and the rules screen.
@@ -174,11 +279,13 @@ export const FAMILY_RULES: Record<ModeFamily, FamilyRules> = {
 export const FAMILY_BLURB: Record<ModeFamily, string> & {
   base: 'A wrong first card ends the round. Later misses keep 30% of what you had built.';
   sc: 'A wrong first card ends the round. After that your first miss is forgiven and play continues.';
-  hs: 'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.';
+  hs: 'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.';
+  tr: 'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.';
 } = {
   base: 'A wrong first card ends the round. Later misses keep 30% of what you had built.',
   sc: 'A wrong first card ends the round. After that your first miss is forgiven and play continues.',
-  hs: 'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.',
+  hs: 'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.',
+  tr: 'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.',
 };
 
 /** Longest prefix first, so "sc_" is tested before base's empty one. */
@@ -216,24 +323,68 @@ export function familyOf(mode: string): ModeFamily {
   return 'base';
 }
 
-/** Bet mode name. Must match math-sdk game_calculations.py:mode_name exactly. */
-export function modeName(
-  color: ColorChoice,
-  higherLower: HigherLowerChoice,
-  insideOutside: InsideOutsideChoice,
-  suit: SuitChoice,
-  family: ModeFamily = 'base',
-): string {
-  return `${FAMILY_RULES[family].prefix}${color}_${higherLower}_${insideOutside}_${suit}`;
+/**
+ * Bet mode name: the family prefix and one token per stage. Must match
+ * math-sdk game_calculations.py:mode_name exactly.
+ */
+export function modeName(choices: ChoiceTuple, family: ModeFamily = 'base'): string {
+  return `${FAMILY_RULES[family].prefix}${choices.join('_')}`;
 }
 
-/** A published mode name taken apart. Null when the string is not one. */
+/**
+ * The slug tokens a family actually plays: its fixed combination when it has
+ * one, the player's four guesses otherwise. Every caller that builds a slug
+ * from `guesses` goes through this, so a fixed family can never be sent with
+ * the guesses left on the board from the last four-guess mode.
+ */
+export function modeChoices(
+  family: ModeFamily,
+  guesses: {
+    color: ColorChoice | null;
+    hl: HigherLowerChoice | null;
+    io: InsideOutsideChoice | null;
+    suit: SuitChoice | null;
+  },
+): ChoiceTuple | null {
+  const fixed = FAMILY_RULES[family].fixedChoices;
+  if (fixed) return fixed;
+  if (!guesses.color || !guesses.hl || !guesses.io || !guesses.suit) return null;
+  return [guesses.color, guesses.hl, guesses.io, guesses.suit];
+}
+
+/**
+ * Every combination a family publishes: its fixed one, or the 64. Mirrors
+ * all_mode_combinations(family) in game_calculations.py.
+ */
+export function combosFor(family: ModeFamily): ChoiceTuple[] {
+  const fixed = FAMILY_RULES[family].fixedChoices;
+  if (fixed) return [fixed];
+  const combos: ChoiceTuple[] = [];
+  for (const color of COLOR_CHOICES) {
+    for (const higherLower of HIGHER_LOWER_CHOICES) {
+      for (const insideOutside of INSIDE_OUTSIDE_CHOICES) {
+        if (!isCombinationPlayable(higherLower, insideOutside)) continue;
+        for (const suit of SUIT_CHOICES) combos.push([color, higherLower, insideOutside, suit]);
+      }
+    }
+  }
+  return combos;
+}
+
+/**
+ * A published mode name taken apart. Null when the string is not one.
+ *
+ * `choices` is the whole tuple, one token per stage; the four named fields
+ * are the four-guess reading of it, with `suit` null on a family that deals
+ * no fourth card.
+ */
 export type ParsedMode = {
   family: ModeFamily;
-  color: ColorChoice;
+  choices: ChoiceTuple;
+  color: ColorChoice | typeof FREE_CHOICE;
   higherLower: HigherLowerChoice;
   insideOutside: InsideOutsideChoice;
-  suit: SuitChoice;
+  suit: SuitChoice | typeof FREE_CHOICE | null;
 };
 
 /**
@@ -251,22 +402,22 @@ export function parseModeName(mode: string): ParsedMode | null {
   const family = familyOf(mode);
   const body = mode.slice(FAMILY_RULES[family].prefix.length);
   const parts = body.split('_');
-  if (parts.length !== 4) return null;
-  const [color, higherLower, insideOutside, suit] = parts as [string, string, string, string];
-  if (
-    !(COLOR_CHOICES as readonly string[]).includes(color) ||
-    !(HIGHER_LOWER_CHOICES as readonly string[]).includes(higherLower) ||
-    !(INSIDE_OUTSIDE_CHOICES as readonly string[]).includes(insideOutside) ||
-    !(SUIT_CHOICES as readonly string[]).includes(suit)
-  ) {
-    return null;
-  }
+  // Validated against what the family PUBLISHES, not against the four choice
+  // lists or a part count: that is what keeps `any` out of every four-guess
+  // family, equal+inside out of all of them, and a three-token slug out of a
+  // four-stage family, in one check.
+  const published = combosFor(family).find(
+    (combo) => combo.length === parts.length && combo.every((token, i) => token === parts[i]),
+  );
+  if (!published) return null;
+  const [color, higherLower, insideOutside, suit] = published;
   return {
     family,
-    color: color as ColorChoice,
+    choices: published,
+    color: color as ParsedMode['color'],
     higherLower: higherLower as HigherLowerChoice,
     insideOutside: insideOutside as InsideOutsideChoice,
-    suit: suit as SuitChoice,
+    suit: (suit ?? null) as ParsedMode['suit'],
   };
 }
 
@@ -301,21 +452,12 @@ export function ceilingFor(mode: string): number | null {
 
 /**
  * Every playable mode name, across all families. Mirrors all_published_modes()
- * on the math side - 3 x 64 = 192.
+ * on the math side - 3 x 64 + 1 = 193.
  */
 export function allPlayableModes(): string[] {
   const names: string[] = [];
   for (const family of MODE_FAMILIES) {
-    for (const color of COLOR_CHOICES) {
-      for (const higherLower of HIGHER_LOWER_CHOICES) {
-        for (const insideOutside of INSIDE_OUTSIDE_CHOICES) {
-          if (!isCombinationPlayable(higherLower, insideOutside)) continue;
-          for (const suit of SUIT_CHOICES) {
-            names.push(modeName(color, higherLower, insideOutside, suit, family));
-          }
-        }
-      }
-    }
+    for (const combo of combosFor(family)) names.push(modeName(combo, family));
   }
   return names;
 }

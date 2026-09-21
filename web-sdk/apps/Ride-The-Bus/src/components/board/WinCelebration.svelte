@@ -46,7 +46,8 @@
 	import { t } from '../../i18n/i18nDerived';
 	import { sound } from '../../game/audio/sound';
 	import { CEILING_PAUSE_MS, countUpSegments, type WinTier } from '../../game/math/winTiers';
-	import { BURST, FAN } from '../../game/celebration/celebrationScene';
+	import { FAMILY_RULES, stageCount, type ModeFamily } from '../../game/math/modes';
+	import { BURST, fanFor } from '../../game/celebration/celebrationScene';
 	import {
 		hopFan,
 		pop,
@@ -68,6 +69,13 @@
 		 * earned tier stops climbing.
 		 */
 		tiers: readonly WinTier[];
+		/**
+		 * The family the round was played on - for how many cards it dealt.
+		 * `cards` is always four wide (roundState keeps one shape); a three-card
+		 * family fans three, and an empty fourth slot would read as a card that
+		 * never turned.
+		 */
+		family: ModeFamily;
 		/**
 		 * The four card slots of the round being celebrated, in deal order, with
 		 * null for any the player never reached.
@@ -118,6 +126,9 @@
 
 	/** Name and colours currently displayed. */
 	const activeTier = $derived<WinTier>(segments[segmentIndex]?.tier ?? props.tier);
+
+	/** The fan, sized to the cards the round dealt - see `family` in Props. */
+	const fan = $derived(fanFor(stageCount(FAMILY_RULES[props.family])));
 
 	/** Multiplier matching what is on screen, so it never runs ahead of the title. */
 	const shownMultiplier = $derived(perX > 0 ? shown / perX : props.multiplier);
@@ -484,7 +495,7 @@
 		     promotion would re-deal the hand four times during one count-up. It
 		     widens instead, off --wc-fan-spread. -->
 		<div class="wc-fan" bind:this={fanEl} aria-hidden="true">
-			{#each FAN as slot}
+			{#each fan as slot}
 				{@const card = props.cards[slot.index] ?? null}
 				<!-- is-face carries NO styling and is not meant to: scripts/shoot.mjs
 				     reads it to report which slots came back face-up, which is the

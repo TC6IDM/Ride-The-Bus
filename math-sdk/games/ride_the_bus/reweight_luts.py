@@ -25,7 +25,11 @@ chosen so that
 
 Losses here are exactly the stage-1 (colour) misses, which bust to 0 because
 STAGE_RETENTION[0] == 0 - roughly half of all rounds, so there is always
-plenty of zero-weight to tune with. w0 comes out relative to K: a mode whose
+plenty of zero-weight to tune with. (On Three of a Kind every miss is a loss -
+95% of rounds - and it is priced at fair odds with a target of 1.0, so this
+step UP-weights its losses slightly, from a physical 1 in 18.3 to a recorded
+1 in 19.1. See THE ALL-OR-NOTHING BOUND in game_calculations.py.)
+w0 comes out relative to K: a mode whose
 raw RTP is ABOVE target gets w0 > K (up-weight losses to pull RTP down, e.g.
 the "equal" jackpot modes), and a mode BELOW target gets w0 < K (down-weight
 losses to lift RTP up, e.g. the structurally-low "inside" modes). w0 stays

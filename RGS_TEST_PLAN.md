@@ -1,6 +1,6 @@
 # RGS verification test plan
 
-95 checks to run against the **uploaded** build on a Developer-page session,
+97 checks to run against the **uploaded** build on a Developer-page session,
 not against localhost.
 
 That distinction is the whole reason this document exists. Locally the game
@@ -223,6 +223,24 @@ so this section is genuinely untested until upload.
   with one click"). **Also check the spacebar-hold path**, which does not go
   through the panel: holding Space runs rounds only while the key is physically
   held and stops the moment it is released or focus is lost.
+
+- [ ] **BET-14 · A 250× mode keeps the base bet the RGS allows** — *Blocker*
+  Switch to **Three of a Kind**, set the base bet to the session's `maxBet`, and
+  play one round.
+  **Expect:** `/wallet/play` is sent with `amount = maxBet` and `mode =
+  tr_any_equal_equal`, the RGS accepts it, and the balance moves by 250 × the
+  base bet. The docs in this repo and the template's own 100× / 200× bonus buys
+  say the limits are on the BASE amount and the cost is applied on top; this has
+  never been observed live. If the RGS rejects it, the mode's bet ladder needs
+  its own cap (`maxBet / cost`) and this plan needs a check for that instead.
+
+- [ ] **BET-15 · The 250× mode's caps match the tier** — *Major*
+  Read the Developer page's risk summary for the uploaded build.
+  **Expect:** max bet cost for `tr_any_equal_equal` sits under the tier's
+  $50,000 (a $200 base × 250) and max exposure under $5,000,000 (4,583.3 × the
+  base bet); no tail row (P ≥ 5,000× / 10,000× / 25,000×, CVaR absolute, ETL
+  above 10,000×) is flagged. The first build of this mode - 1000× paying 25,000×
+  - failed every one of them, which is why the mode is the size it is.
 
 ---
 

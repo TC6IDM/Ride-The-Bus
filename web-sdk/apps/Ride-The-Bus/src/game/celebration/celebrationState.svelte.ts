@@ -11,6 +11,7 @@
  * Nothing reads it back, so it is a leaf.
  */
 import { autoHoldMs, type WinTier } from '../math/winTiers';
+import type { ModeFamily } from '../math/modes';
 import type { Card } from '../round/roundContract';
 
 import { auto, stops } from '../round/autoplaySettings.svelte';
@@ -30,6 +31,12 @@ export type Celebration = {
   /** Which card ended the round, and which one a Second Chance let off. */
   bustedIndex: number | null;
   forgivenIndex: number | null;
+  /**
+   * The family the round was played on. The takeover's tier palettes are the
+   * bolt colours in ladder order, and a one-rung family (Three of a Kind) has
+   * no ladder to climb - its single tier wears the FAMILY's colour instead.
+   */
+  family: ModeFamily;
 };
 
 /**
@@ -59,6 +66,7 @@ export function showWinCelebration(
   amount: number,
   multiplier: number,
   tiers: readonly WinTier[],
+  family: ModeFamily,
 ): Promise<void> {
   // round.revealedCards is COPIED, not referenced. The takeover draws the round's
   // own cards, and every reset of round.revealedCards happens at the START of a
@@ -73,6 +81,7 @@ export function showWinCelebration(
     cards: [...round.revealedCards],
     bustedIndex: round.bustedIndex,
     forgivenIndex: round.forgivenIndex,
+    family,
   };
   return new Promise((resolve) => {
     celebrationResolve = resolve;

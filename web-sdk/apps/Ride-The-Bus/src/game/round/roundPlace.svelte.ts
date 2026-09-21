@@ -26,7 +26,7 @@ import { API_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
 import { requestBet, requestEndRound } from 'rgs-requests';
 import { jurisdiction } from '../jurisdiction/jurisdiction.svelte';
 import { pacedPlay, pacedRequest } from './rgsPacing';
-import { modeName } from '../math/modes';
+import { modeChoices, modeName } from '../math/modes';
 import { auto } from './autoplaySettings.svelte';
 import {
   allChoicesMade,
@@ -150,11 +150,16 @@ export async function startGameEngineFlow(roundSeedData: { seed: string; source:
     // without all four, but that guard is several branches back, and the
     // failure if it ever stopped holding is a mode string containing "null"
     // - rejected by the RGS with an error naming nothing useful.
-    if (!guesses.color || !guesses.hl || !guesses.io || !guesses.suit) {
+    //
+    // modeChoices, not the four guesses: a family with fixed tokens (Three of
+    // a Kind) ignores the board, and reading `guesses` here would send the
+    // picks left over from the last four-guess mode under the wrong prefix.
+    const choices = modeChoices(bet.family, guesses);
+    if (!choices) {
       round.error = true;
       return false;
     }
-    const mode = modeName(guesses.color, guesses.hl, guesses.io, guesses.suit, bet.family);
+    const mode = modeName(choices, bet.family);
     // Keep the shared bet state's active mode in sync with what we actually
     // play, so any framework helper that reads activeBetModeKey agrees.
     stateBet.activeBetModeKey = mode;
@@ -351,13 +356,14 @@ export async function playRound(): Promise<boolean> {
     import('./roundShuffler'),
     import('./localRound'),
   ]);
-  const contract = createRoundContract(`${roundSeedData.seed}:${round.sequence}`);
+  // The family's own deck - Three of a Kind deals sixteen cards, not 52.
+  const contract = createRoundContract(`${roundSeedData.seed}:${round.sequence}`, familyRules().deck);
   round.sequence += 1;
   round.lastRoundId = contract.roundId;
   round.source = roundSeedData.source;
   round.revealEvents = buildLocalRevealEvents(
     contract.deck,
-    [guesses.color as string, guesses.hl as string, guesses.io as string, guesses.suit as string],
+    [...(modeChoices(bet.family, guesses) ?? [])],
     familyRules(),
   );
   round.engineFinalMultiplier = null; // local round computes its own payout

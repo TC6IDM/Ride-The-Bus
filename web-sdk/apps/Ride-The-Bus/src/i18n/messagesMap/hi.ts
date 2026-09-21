@@ -55,9 +55,13 @@ export default {
 	Classic: 'क्लासिक',
 	'Second Chance': 'दूसरा मौका',
 	'High Stakes': 'हाई स्टेक्स',
-	'Every mode costs %c× your bet and returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
-		'हर मोड की लागत आपके दांव का %c× है और हर मोड कई राउंड में वही %s लौटाता है। बदलता सिर्फ यह है कि राउंड कितनी बार और कितना भुगतान करता है।',
+	'This mode costs %c× your bet. Every mode returns the same %s over many rounds; what changes is how often a round pays and how much it can pay.':
+		'इस मोड की लागत %c× आपकी बेट है। हर मोड कई राउंड में वही %s लौटाता है; फर्क सिर्फ़ इतना है कि राउंड कितनी बार और कितना देता है।',
 	Forgiven: 'माफ किया',
+	// The intro's tagline and the first line of How to Play's Game modes.
+	'%n ways to play': 'खेलने के %n तरीके',
+	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
+		'अनुमान मोड में चुनावों का हर संयोजन अपने आप में एक अलग दांव है, जिसकी कीमत उसकी अपनी संभावनाओं पर तय होती है।',
 	'Game modes': 'गेम मोड',
 	'Max win': 'अधिकतम जीत',
 	// Confirmation before a bet mode is activated - required by the approval
@@ -67,8 +71,8 @@ export default {
 	Cancel: 'रद्द करें',
 	Switch: 'बदलें',
 	'Volatility %s of %t': 'अस्थिरता: %t में से %s',
-	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on High Stakes.':
-		'हर गेम मोड में रिटर्न टू प्लेयर (RTP) %s है। यह गेम अधिकतम %m आपके दांव दे सकता है, हाई स्टेक्स पर।',
+	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.':
+		'हर गेम मोड में रिटर्न टू प्लेयर (RTP) %s है। यह गेम अधिकतम %m आपके दांव दे सकता है, %f पर।',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'पहला कार्ड गलत होने पर राउंड खत्म। बाद की गलतियाँ जमा राशि का 30% रखती हैं।',
 	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
@@ -82,8 +86,8 @@ export default {
 		'अनुमानों के केवल कुछ संयोजन ही किसी मोड के अधिकतम तक पहुँचते हैं। आपके चारों चुनने के बाद उनकी अपनी सीमा ऊपर दिखाई जाती है।',
 	Playing: 'खेल रहे हैं',
 	'Card 2, 3 or 4': 'कार्ड 2, 3 या 4',
-	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
-		'पहला कार्ड गलत होने पर राउंड खत्म। बाद की गलतियाँ केवल 20% रखती हैं, इसलिए हर सही अनुमान ज्यादा कीमती है।',
+	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
+		'पहला कार्ड गलत होने पर राउंड खत्म। बाद की गलतियाँ केवल 16% रखती हैं, इसलिए हर सही अनुमान ज्यादा कीमती है।',
 
 	'How to Play': 'कैसे खेलें',
 	'Guess your way through four cards:': 'चार कार्ड का क्रम से अनुमान लगाएं:',
@@ -237,4 +241,30 @@ export default {
 		'राउंड समाप्त होता है और आपने जो बनाया था उसका लगभग %s% बचा रहता है।',
 	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
 		'कार्ड 2 से आगे इसे माफ़ किया जाता है: आपने जो बनाया था उसका %s% बचता है और राउंड जारी रहता है।',
+
+	// Three of a Kind.
+	'Three of a Kind':
+		'तीन एक जैसे',
+	'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.':
+		'इक्के, बादशाह और बेगम की 12 पत्तों की गड्डी से तीन पत्ते। पत्ते 2 और 3 को पत्ते 1 से मेल खाना चाहिए; इससे कम पर कुछ नहीं मिलता।',
+	'Costs %c× your bet':
+		'लागत %c× आपकी बेट',
+	'Any':
+		'कोई भी',
+	'Any card':
+		'कोई भी पत्ता',
+	'Any wrong guess':
+		'कोई भी गलत अनुमान',
+	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
+		'12 पत्तों की गड्डी से खेला जाता है: हर सूट का इक्का, बादशाह और बेगम। पत्ता 1 बांटा जाता है; पत्तों 2 और 3 का रैंक उससे मेल खाना चाहिए। तीन पत्ते, एक जीत।',
+	'Three of a kind pays %m your bet, about one round in %n.':
+		'तीन एक जैसे पत्ते आपकी बेट का %m देते हैं, लगभग हर %n राउंड में एक बार।',
+	'%c× your base bet of %b':
+		'आपकी %b की बेस बेट का %c×',
+	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
+		'*%f पर। हर गेम मोड की अपनी अधिकतम जीत है, जो मोड चयन और कैसे खेलें में दिखाई गई है।',
+	'Card 2 must match card 1':
+		'पत्ता 2 को पत्ते 1 से मेल खाना चाहिए',
+	'Card 3 must match card 1':
+		'पत्ता 3 को पत्ते 1 से मेल खाना चाहिए',
 };

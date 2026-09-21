@@ -22,7 +22,10 @@ import {
 	localSuitPayouts,
 } from '../../round/localRound.ts';
 import { createDeck, rankValue, ranks } from '../../round/roundContract.ts';
-import { FAMILY_RULES, MODE_FAMILIES } from '../modes.ts';
+import { FAMILY_RULES, MODE_FAMILIES, type ModeFamily } from '../modes.ts';
+
+/** The families whose four guesses are the player's - every table row swings there. */
+const LADDER_FAMILIES: readonly ModeFamily[] = MODE_FAMILIES.filter((f) => FAMILY_RULES[f].fixedChoices === null);
 // The bust rules are i18n KEYS now, not sentences, so the assertions below
 // render them the way HowToPlayPopup does. That makes this test strictly
 // stronger than it was: it checks the English catalogue copy as well as the
@@ -156,8 +159,8 @@ describe('paytable is complete and self-consistent', () => {
 		);
 	});
 
-	test('every family says what a wrong guess costs, starting with card 1', () => {
-		for (const family of MODE_FAMILIES) {
+	test('every four-guess family says what a wrong guess costs, starting with card 1', () => {
+		for (const family of LADDER_FAMILIES) {
 			const rows = bustRowsFor(FAMILY_RULES[family]);
 			assert.ok(rows.length >= 2, `${family} should state at least two outcomes`);
 			assert.equal(rows[0]!.label, 'Card 1', `${family} must start with card 1`);
@@ -165,6 +168,35 @@ describe('paytable is complete and self-consistent', () => {
 				assert.ok(render(row).trim().length > 0, `${family}: empty detail`);
 			}
 		}
+	});
+
+	test('Three of a Kind has one bust rule, and it is nothing', () => {
+		// A family that keeps nothing has one rule; three rows would be the same
+		// sentence three times, and a percentage would be a number for a rule
+		// that has none.
+		const rows = bustRowsFor(FAMILY_RULES.tr);
+		assert.equal(rows.length, 1);
+		assert.equal(rows[0]!.label, 'Any wrong guess');
+		assert.equal(rows[0]!.percent, null);
+		assert.match(render(rows[0]!), /pays nothing/);
+	});
+
+	test('the Three of a Kind table says what the chips will say', () => {
+		// Three single-value rows from the 12-card deck: card 1 dealt, card 2
+		// matching 3 of 11, card 3 matching 2 of 10. Every figure is min === max
+		// because the deck is symmetric.
+		const rows = payoutRowsFor(FAMILY_RULES.tr);
+		assert.deepEqual(
+			rows.map((r) => [r.stage, r.label, r.min, r.max]),
+			[
+				[1, 'Any card', 1, 1],
+				[2, 'Equal', 3.67, 3.67],
+				[3, 'Equal', 5, 5],
+			],
+		);
+		// And they multiply to the sweep the family advertises, per cost - at
+		// full precision, since the table rounds 11/3 for display.
+		assert.equal(Math.round((11 / 3) * 5 * FAMILY_RULES.tr.cost * 10) / 10, FAMILY_RULES.tr.maxWin);
 	});
 
 	test('a retention is never quoted in two units in the same list', () => {
@@ -187,7 +219,7 @@ describe('paytable is complete and self-consistent', () => {
 
 	test('each family quotes its own retention', () => {
 		assert.match(render(bustRowsFor(FAMILY_RULES.base)[1]!), /30%/);
-		assert.match(render(bustRowsFor(FAMILY_RULES.hs)[1]!), /20%/);
+		assert.match(render(bustRowsFor(FAMILY_RULES.hs)[1]!), /16%/);
 	});
 
 	test('the forgiving family describes forgiveness, not a card-2 payout', () => {
@@ -237,7 +269,7 @@ describe('the worked example in How to Play', () => {
 		'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.';
 
 	test('every family quotes its own odds, solved against its own retention', () => {
-		for (const f of MODE_FAMILIES) {
+		for (const f of LADDER_FAMILIES) {
 			const rules = FAMILY_RULES[f];
 			const r = stageRetention(rules, 1, false);
 			const o = oddsExampleFor(rules);
@@ -259,7 +291,9 @@ describe('the worked example in How to Play', () => {
 	});
 
 	test('the example figures sit inside the stage-2 rows of the same table', () => {
-		for (const f of MODE_FAMILIES) {
+		// The four-guess families only: Three of a Kind has no Higher or Lower
+		// to work an example on, and the popup does not show one there.
+		for (const f of LADDER_FAMILIES) {
 			const rows = payoutRowsFor(FAMILY_RULES[f]);
 			const o = oddsExampleFor(FAMILY_RULES[f]);
 			const row = (label: string) => rows.find((r) => r.stage === 2 && r.label === label)!;

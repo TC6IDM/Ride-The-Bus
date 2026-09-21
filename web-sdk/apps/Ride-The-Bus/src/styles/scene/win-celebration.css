@@ -206,11 +206,17 @@
    before they ever reach a takeover, so the win ladder gets to borrow a reading
    they already have rather than asking them to learn a second one.
 
-   It does put purple in two places - --vol-overflow means "this bet passed its
-   family's volatility ceiling", and now also "Epic Win". Worth knowing, and the
-   reason this file used to refuse purple. The call here is that both readings
-   are the same idea (near the top of a scale) rather than two unrelated
-   meanings competing for one hue, which is what the old objection was about.
+   It does put purple in two places - purple is Three of a Kind's own colour on
+   the bolt meter (the family whose zero-rate is off the scale the other three
+   span), and also "Epic Win". Worth knowing, and the reason this file used to
+   refuse purple. The call here is that both readings are the same idea (past
+   the top of the family scale) rather than two unrelated meanings competing
+   for one hue, which is what the old objection was about.
+
+   Three of a Kind's ladder is a single rung, and it is MAX: its only win is
+   its ceiling, so the inverted palette below is what every trips gets - the
+   game's own moment, 1 in 19, rather than a step on a ladder that mode is
+   not on. Nothing here is family-specific; the ladder decides.
 
    Hot colours are taken from the --vol-* triplets BY REFERENCE so the two
    ladders cannot drift; the cool falloffs are this screen's own, under the
@@ -236,7 +242,7 @@
 	--wc-beam-op: 0.54;
 	--wc-throw: 1.32;
 }
-/* The overflow purple, and the last stop before Max steps off the scale. */
+/* The purple, and the last stop before Max steps off the scale. */
 .tier-epic {
 	--wc-hot-rgb: var(--vol-overflow-ink-rgb);
 	--wc-cool: #4c1d78;

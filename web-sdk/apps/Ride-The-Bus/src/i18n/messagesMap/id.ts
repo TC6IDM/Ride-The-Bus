@@ -55,9 +55,13 @@ export default {
 	Classic: 'Klasik',
 	'Second Chance': 'Kesempatan Kedua',
 	'High Stakes': 'Taruhan Tinggi',
-	'Every mode costs %c× your bet and returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
-		'Setiap mode berbiaya %c× taruhan Anda dan mengembalikan %s yang sama selama banyak ronde. Yang berubah adalah seberapa sering ronde membayar dan seberapa besar.',
+	'This mode costs %c× your bet. Every mode returns the same %s over many rounds; what changes is how often a round pays and how much it can pay.':
+		'Mode ini berbiaya %c× taruhan Anda. Setiap mode mengembalikan %s yang sama selama banyak ronde; yang berbeda adalah seberapa sering sebuah ronde membayar dan seberapa besar.',
 	Forgiven: 'Dimaafkan',
+	// The intro's tagline and the first line of How to Play's Game modes.
+	'%n ways to play': '%n cara bermain',
+	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
+		'Setiap kombinasi pilihan pada mode tebakan adalah taruhan tersendiri, dihargai berdasarkan peluangnya sendiri.',
 	'Game modes': 'Mode permainan',
 	'Max win': 'Kemenangan maks',
 	// Confirmation before a bet mode is activated - required by the approval
@@ -67,8 +71,8 @@ export default {
 	Cancel: 'Batal',
 	Switch: 'Ganti',
 	'Volatility %s of %t': 'Volatilitas %s dari %t',
-	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on High Stakes.':
-		'Return to player (RTP) adalah %s di setiap mode. Maksimum yang dapat dibayar game ini adalah %m taruhan Anda, di Taruhan Tinggi.',
+	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.':
+		'Return to player (RTP) adalah %s di setiap mode. Maksimum yang dapat dibayar game ini adalah %m taruhan Anda, di %f.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'Kartu pertama yang salah mengakhiri ronde. Kesalahan berikutnya menyimpan 30% dari yang terkumpul.',
 	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
@@ -82,8 +86,8 @@ export default {
 		'Hanya sebagian kombinasi tebakan yang mencapai maksimum suatu mode. Setelah keempatnya dipilih, batas atasnya sendiri ditampilkan di atas.',
 	Playing: 'Sedang dimainkan',
 	'Card 2, 3 or 4': 'Kartu 2, 3 atau 4',
-	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
-		'Kartu pertama yang salah mengakhiri ronde. Kesalahan berikutnya hanya menyimpan 20%, jadi setiap tebakan benar bernilai lebih.',
+	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
+		'Kartu pertama yang salah mengakhiri ronde. Kesalahan berikutnya hanya menyimpan 16%, jadi setiap tebakan benar bernilai lebih.',
 
 	'How to Play': 'Cara bermain',
 	'Guess your way through four cards:': 'Tebak empat kartu secara berurutan:',
@@ -240,4 +244,30 @@ export default {
 		'Ronde berakhir dan Anda menyimpan sekitar %s% dari yang telah terkumpul.',
 	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
 		'Mulai kartu 2 kesalahan ini dimaafkan: Anda menyimpan %s% dari yang terkumpul dan ronde berlanjut.',
+
+	// Three of a Kind.
+	'Three of a Kind':
+		'Tiga Sejenis',
+	'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.':
+		'Tiga kartu dari dek 12 kartu berisi As, King, dan Queen. Kartu 2 dan 3 harus sama dengan kartu 1; selain itu tidak membayar apa pun.',
+	'Costs %c× your bet':
+		'Biaya %c× taruhan Anda',
+	'Any':
+		'Apa saja',
+	'Any card':
+		'Kartu apa saja',
+	'Any wrong guess':
+		'Tebakan salah apa pun',
+	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
+		'Dimainkan dengan dek 12 kartu: As, King, dan Queen dari setiap jenis. Kartu 1 dibagikan; kartu 2 dan 3 harus sama nilainya. Tiga kartu, satu kemenangan.',
+	'Three of a kind pays %m your bet, about one round in %n.':
+		'Tiga sejenis membayar %m taruhan Anda, sekitar satu ronde dari %n.',
+	'%c× your base bet of %b':
+		'%c× taruhan dasar Anda sebesar %b',
+	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
+		'*Pada %f. Setiap mode permainan memiliki kemenangan maksimum sendiri, ditampilkan di pemilih mode dan di Cara Bermain.',
+	'Card 2 must match card 1':
+		'Kartu 2 harus sama dengan kartu 1',
+	'Card 3 must match card 1':
+		'Kartu 3 harus sama dengan kartu 1',
 };

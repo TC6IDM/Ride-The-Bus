@@ -48,7 +48,6 @@
   import { sound } from '../../game/audio/sound';
   import { allSilent } from '../../game/audio/soundSettings.svelte';
   import {
-    FAMILY_BOLT_CEILING,
     VOLATILITY_BOLTS,
     volatilityColorRgbVar,
     volatilityColorVar,
@@ -602,7 +601,6 @@ $effect(() => {
         <BoltMeter
           lit={liveBolts()}
           total={VOLATILITY_BOLTS}
-          overflowAfter={FAMILY_BOLT_CEILING}
           label={volatilityLabel(liveBolts())}
         />
         {t(familyRules().label)}

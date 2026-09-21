@@ -24,6 +24,15 @@ import {
 } from '../winTiers.ts';
 import { FAMILY_RULES, MODE_FAMILIES, isCleanSweep, type ModeFamily } from '../modes.ts';
 
+/** The families that climb a ladder - every family whose guesses are the player's. */
+const LADDER_FAMILIES: readonly ModeFamily[] = MODE_FAMILIES.filter(
+  (family) => FAMILY_RULES[family].fixedChoices === null,
+);
+/** The families with a single rung - one outcome, one tier. */
+const ONE_RUNG_FAMILIES: readonly ModeFamily[] = MODE_FAMILIES.filter(
+  (family) => FAMILY_RULES[family].fixedChoices !== null,
+);
+
 const idAt = (multiplier: number): WinTierId | null => winTierFor(multiplier)?.id ?? null;
 
 describe('winTierFor', () => {
@@ -338,8 +347,8 @@ describe('the Max Win tier follows the family ceiling', () => {
   // both directions at once.
   const tiersFor = (family: ModeFamily) => winTiersFor(family);
 
-  test('each family tops out on its own ceiling', () => {
-    for (const family of MODE_FAMILIES) {
+  test('each ladder family tops out on its own ceiling', () => {
+    for (const family of LADDER_FAMILIES) {
       const top = tiersFor(family).at(-1)!;
       assert.equal(top.id, 'max');
       assert.equal(
@@ -350,19 +359,44 @@ describe('the Max Win tier follows the family ceiling', () => {
     }
   });
 
-  test('every family can actually reach its Max Win', () => {
+  test('every ladder family can actually reach its Max Win', () => {
     // Second Chance stops at 585.2x. Against Classic's 1354.2x threshold its
     // real ceiling - the rarest outcome in the mode - could only earn "Epic".
-    for (const family of MODE_FAMILIES) {
+    for (const family of LADDER_FAMILIES) {
       const maxWin = FAMILY_RULES[family].maxWin;
       const tier = winTierFor(maxWin, true, tiersFor(family));
       assert.equal(tier?.id, 'max', `${family} cannot reach its own Max Win`);
     }
   });
 
+  test('a one-rung family celebrates its only win as Max - it IS the most the mode pays', () => {
+    // Three of a Kind's only win IS its ceiling, 4,583.3x, about 1 in 19. A
+    // five-band ladder would invent four thresholds nothing ever lands
+    // between, so the ladder is one rung, and the rung is Max: the label says
+    // what the win is, not how rare it is.
+    for (const family of ONE_RUNG_FAMILIES) {
+      const tiers = tiersFor(family);
+      assert.equal(tiers.length, 1, `${family} should have exactly one tier`);
+      assert.equal(tiers[0]!.id, 'max');
+      assert.equal(tiers[0]!.minMultiplier, FAMILY_RULES[family].maxWin);
+      const tier = winTierFor(FAMILY_RULES[family].maxWin, true, tiers);
+      assert.equal(tier?.id, 'max', `${family} should celebrate its win as Max`);
+      // The count-up is a single leg from zero to the win.
+      const segments = countUpSegments(FAMILY_RULES[family].maxWin, tier!, tiers);
+      assert.equal(segments.length, 1);
+      assert.equal(segments[0]!.fromMultiplier, 0);
+      assert.equal(segments[0]!.toMultiplier, FAMILY_RULES[family].maxWin);
+      assert.equal(segments[0]!.isHold, false);
+      // Nothing below the rung celebrates on size - there is nothing below
+      // the rung to celebrate; the full-game floor lands on the same tier.
+      assert.equal(winTierFor(FAMILY_RULES[family].maxWin / 2, false, tiers), null);
+      assert.equal(winTierFor(FAMILY_RULES[family].maxWin / 2, true, tiers)?.id, 'max');
+    }
+  });
+
   test('High Stakes does not call a non-maximum win a Max Win', () => {
     // 1354.2x is Classic's ceiling and an ordinary large win on High Stakes,
-    // which pays up to 1910.2x. It must not be announced as a max win.
+    // which pays up to 2169.2x. It must not be announced as a max win.
     const tier = winTierFor(FAMILY_RULES.base.maxWin, false, tiersFor('hs'));
     assert.equal(tier?.id, 'epic');
   });
@@ -398,7 +432,7 @@ describe('the Max Win tier follows the family ceiling', () => {
   // is not a bigger max win - it is a number the ladder cannot explain, and
   // "MAX WIN" is the one label in the game that must never be a guess.
   test('a payout ABOVE the ceiling is not called a Max Win', () => {
-    for (const family of MODE_FAMILIES) {
+    for (const family of LADDER_FAMILIES) {
       const tiers = tiersFor(family);
       const over = FAMILY_RULES[family].maxWin * 1.05;
       const tier = winTierFor(over, true, tiers);
@@ -422,14 +456,16 @@ describe('the Max Win tier follows the family ceiling', () => {
   test('a true Max Win still lands through display rounding', () => {
     // wonAmount / initialBet is a division of two already-rounded numbers, so
     // the rarest outcome in the game arrives as 1354.1999999999998. The
-    // equality match keeps its epsilon.
+    // equality match keeps its epsilon - on the one-rung family too, whose
+    // single tier is matched the same way.
     for (const family of MODE_FAMILIES) {
       const maxWin = FAMILY_RULES[family].maxWin;
+      const want = tiersFor(family).at(-1)!.id;
       for (const nudge of [-1e-9, 0, 1e-9]) {
         assert.equal(
           winTierFor(maxWin + nudge, true, tiersFor(family))?.id,
-          'max',
-          `${family} lost its Max Win to floating point at ${nudge}`,
+          want,
+          `${family} lost its top tier to floating point at ${nudge}`,
         );
       }
     }
@@ -445,11 +481,14 @@ describe('the full-game-win floor is about a clean sweep, not about the family',
 
   test('every family celebrates a clean sweep, however small it pays', () => {
     for (const family of MODE_FAMILIES) {
-      const tier = winTierFor(SMALL_FULL_WIN, floors(family, null, null), winTiersFor(family));
+      const tiers = winTiersFor(family);
+      const tier = winTierFor(SMALL_FULL_WIN, floors(family, null, null), tiers);
+      // The bottom rung: Big on a ladder family, Max on the one-rung family
+      // (whose only tier is both).
       assert.equal(
         tier?.id,
-        'big',
-        `${family} should celebrate four correct guesses even at ${SMALL_FULL_WIN}x`,
+        tiers[0]!.id,
+        `${family} should celebrate a clean sweep even at ${SMALL_FULL_WIN}x`,
       );
     }
   });
@@ -520,7 +559,7 @@ describe('every band is per family, not just the top one', () => {
     // Classic's originals are the target: a tier is a claim about how often it
     // happens, so "Epic" must be about as rare in one mode as in another.
     const TARGET = [70, 305, 3093, 15561];
-    for (const family of MODE_FAMILIES) {
+    for (const family of LADDER_FAMILIES) {
       const tiers = winTiersFor(family).filter((t) => t.id !== 'max');
       tiers.forEach((tier, i) => {
         const ratio = tier.oneIn / TARGET[i]!;
@@ -532,11 +571,11 @@ describe('every band is per family, not just the top one', () => {
     }
   });
 
-  test('Max is the rarest band in every family, by a clear margin', () => {
+  test('Max is the rarest band in every ladder family, by a clear margin', () => {
     // Classic's Epic sits at 300x rather than 400x precisely because a band
     // inside a payout gap ends up rarer than the Max above it, which makes the
     // ladder read backwards. This asserts that never happens again.
-    for (const family of MODE_FAMILIES) {
+    for (const family of LADDER_FAMILIES) {
       const tiers = winTiersFor(family);
       const max = tiers.at(-1)!;
       const epic = tiers.at(-2)!;

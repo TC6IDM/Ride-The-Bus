@@ -55,9 +55,13 @@ export default {
 	Classic: 'Классический',
 	'Second Chance': 'Второй шанс',
 	'High Stakes': 'Высокие ставки',
-	'Every mode costs %c× your bet and returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
-		'Каждый режим стоит %c× вашей ставки и возвращает одни и те же %s на дистанции. Меняется лишь то, как часто и сколько платит раунд.',
+	'This mode costs %c× your bet. Every mode returns the same %s over many rounds; what changes is how often a round pays and how much it can pay.':
+		'Этот режим стоит %c× вашей ставки. Каждый режим возвращает те же %s за множество раундов; меняется лишь то, как часто раунд платит и сколько он может заплатить.',
 	Forgiven: 'Прощено',
+	// The intro's tagline and the first line of How to Play's Game modes.
+	'%n ways to play': '%n способов играть',
+	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
+		'Каждая комбинация выборов в режиме угадывания — отдельная ставка, оценённая по своим собственным шансам.',
 	'Game modes': 'Режимы игры',
 	'Max win': 'Макс. выигрыш',
 	// Confirmation before a bet mode is activated - required by the approval
@@ -67,8 +71,8 @@ export default {
 	Cancel: 'Отмена',
 	Switch: 'Сменить',
 	'Volatility %s of %t': 'Волатильность %s из %t',
-	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on High Stakes.':
-		'Возврат игроку (RTP) составляет %s в каждом режиме. Максимум, который может выплатить игра, равен %m вашей ставки в режиме Высокие ставки.',
+	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.':
+		'Возврат игроку (RTP) составляет %s в каждом режиме. Максимум, который может выплатить игра, равен %m вашей ставки в режиме %f.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'Ошибка на первой карте завершает раунд. Последующие промахи сохраняют 30% накопленного.',
 	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
@@ -82,8 +86,8 @@ export default {
 		'Лишь некоторые сочетания прогнозов достигают максимума режима. Когда все четыре выбраны, их собственный потолок показывается выше.',
 	Playing: 'В игре',
 	'Card 2, 3 or 4': 'Карта 2, 3 или 4',
-	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
-		'Ошибка на первой карте завершает раунд. Последующие промахи сохраняют лишь 20%, поэтому каждая верная догадка стоит дороже.',
+	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
+		'Ошибка на первой карте завершает раунд. Последующие промахи сохраняют лишь 16%, поэтому каждая верная догадка стоит дороже.',
 
 	'How to Play': 'Как играть',
 	'Guess your way through four cards:': 'Угадайте четыре карты подряд:',
@@ -237,4 +241,30 @@ export default {
 		'Раунд заканчивается, сохраняя около %s% накопленного.',
 	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
 		'Начиная со второй карты промах прощается: вы сохраняете %s% накопленного, и раунд продолжается.',
+
+	// Three of a Kind.
+	'Three of a Kind':
+		'Тройка',
+	'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.':
+		'Три карты из колоды в 12 карт: тузы, короли и дамы. Карты 2 и 3 должны совпасть с картой 1; всё остальное не платит ничего.',
+	'Costs %c× your bet':
+		'Стоимость %c× вашей ставки',
+	'Any':
+		'Любая',
+	'Any card':
+		'Любая карта',
+	'Any wrong guess':
+		'Любая ошибка',
+	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
+		'Игра идёт колодой из 12 карт: туз, король и дама каждой масти. Карта 1 сдаётся; карты 2 и 3 должны совпасть с ней по достоинству. Три карты, один выигрыш.',
+	'Three of a kind pays %m your bet, about one round in %n.':
+		'Тройка платит %m вашей ставки, примерно один раунд из %n.',
+	'%c× your base bet of %b':
+		'%c× вашей базовой ставки %b',
+	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
+		'*В режиме %f. У каждого режима свой максимальный выигрыш, он показан в выборе режима и в разделе «Как играть».',
+	'Card 2 must match card 1':
+		'Карта 2 должна совпасть с картой 1',
+	'Card 3 must match card 1':
+		'Карта 3 должна совпасть с картой 1',
 };

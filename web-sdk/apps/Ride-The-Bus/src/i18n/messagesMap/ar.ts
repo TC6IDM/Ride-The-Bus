@@ -56,9 +56,13 @@ export default {
 	Classic: 'كلاسيكي',
 	'Second Chance': 'فرصة ثانية',
 	'High Stakes': 'رهانات عالية',
-	'Every mode costs %c× your bet and returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
-		'كل وضع يكلّف %c× من رهانك ويعيد النسبة نفسها %s على مدى جولات كثيرة. ما يتغير هو عدد مرات الربح ومقداره.',
+	'This mode costs %c× your bet. Every mode returns the same %s over many rounds; what changes is how often a round pays and how much it can pay.':
+		'هذا الوضع يكلّف %c× رهانك. كل الأوضاع تعيد نفس %s على مدى جولات كثيرة؛ ما يتغيّر هو كم مرة تدفع الجولة وكم يمكن أن تدفع.',
 	Forgiven: 'مُتسامَح عنها',
+	// The intro's tagline and the first line of How to Play's Game modes.
+	'%n ways to play': '%n طريقة للعب',
+	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
+		'كل مجموعة اختيارات في وضع التخمين هي رهان مستقل بذاته، يُسعَّر وفق احتمالاته الخاصة.',
 	'Game modes': 'أوضاع اللعبة',
 	'Max win': 'أقصى ربح',
 	// Confirmation before a bet mode is activated - required by the approval
@@ -68,8 +72,8 @@ export default {
 	Cancel: 'إلغاء',
 	Switch: 'تغيير',
 	'Volatility %s of %t': 'التقلب %s من %t',
-	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on High Stakes.':
-		'نسبة العائد للاعب (RTP) هي %s في كل أوضاع اللعبة. وأقصى ما يمكن أن تدفعه هذه اللعبة هو %m من رهانك، في وضع الرهانات العالية.',
+	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.':
+		'نسبة العائد للاعب (RTP) هي %s في كل أوضاع اللعبة. وأقصى ما يمكن أن تدفعه هذه اللعبة هو %m من رهانك، في وضع %f.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'خطأ في البطاقة الأولى ينهي الجولة. الأخطاء اللاحقة تحتفظ بنسبة 30% مما جمعته.',
 	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
@@ -83,8 +87,8 @@ export default {
 		'بعض تركيبات التخمينات فقط تبلغ الحد الأقصى للوضع. بعد اختيار تخميناتك الأربع، يُعرض سقفها الخاص أعلاه.',
 	Playing: 'قيد اللعب',
 	'Card 2, 3 or 4': 'البطاقة 2 أو 3 أو 4',
-	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
-		'خطأ في البطاقة الأولى ينهي الجولة. والأخطاء اللاحقة تحتفظ بنسبة 20% فقط، لذا تصبح كل تخمينة صحيحة أثمن.',
+	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
+		'خطأ في البطاقة الأولى ينهي الجولة. والأخطاء اللاحقة تحتفظ بنسبة 16% فقط، لذا تصبح كل تخمينة صحيحة أثمن.',
 
 	'How to Play': 'كيفية اللعب',
 	'Guess your way through four cards:': 'خمّن البطاقات الأربع بالترتيب:',
@@ -239,4 +243,30 @@ export default {
 		'تنتهي الجولة مع الاحتفاظ بنحو %s% مما جمعته.',
 	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
 		'من الورقة 2 فصاعدًا يُتجاوز عنه: تحتفظ بـ %s% مما جمعته وتستمر الجولة.',
+
+	// Three of a Kind.
+	'Three of a Kind':
+		'ثلاث متشابهة',
+	'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.':
+		'ثلاث أوراق من مجموعة من 12 ورقة تضم الآسات والملوك والملكات. يجب أن تطابق الورقتان 2 و3 الورقة 1؛ وأي شيء أقل لا يدفع شيئًا.',
+	'Costs %c× your bet':
+		'التكلفة %c× رهانك',
+	'Any':
+		'أي',
+	'Any card':
+		'أي ورقة',
+	'Any wrong guess':
+		'أي تخمين خاطئ',
+	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
+		'يُلعب بمجموعة من 12 ورقة: الآس والملك والملكة من كل نوع. تُوزَّع الورقة 1؛ ويجب أن تطابق الورقتان 2 و3 رتبتها. ثلاث أوراق وفوز واحد.',
+	'Three of a kind pays %m your bet, about one round in %n.':
+		'الثلاث المتشابهة تدفع %m من رهانك، أي نحو جولة واحدة من كل %n.',
+	'%c× your base bet of %b':
+		'%c× من رهانك الأساسي البالغ %b',
+	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
+		'*في وضع %f. لكل وضع لعب حده الأقصى للفوز، ويظهر في اختيار الوضع وفي طريقة اللعب.',
+	'Card 2 must match card 1':
+		'يجب أن تطابق الورقة 2 الورقة 1',
+	'Card 3 must match card 1':
+		'يجب أن تطابق الورقة 3 الورقة 1',
 };

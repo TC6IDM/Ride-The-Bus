@@ -19,7 +19,6 @@
   import {
     FAMILIES_BY_VOLATILITY,
     FAMILY_BOLTS,
-    FAMILY_BOLT_CEILING,
     VOLATILITY_BOLTS,
     volatilityColorRgbVar,
     volatilityColorVar,
@@ -27,6 +26,13 @@
   import { bet, selectedCeiling, volatilityLabel } from '../../game/bet/betState.svelte';
 
   let { onclose }: { onclose: () => void } = $props();
+
+  // The panel opens on its LIST, always. `bet.pending` survives a close - it
+  // is bet state, not panel state, and the panel is destroyed and remade on
+  // every open - so a mode confirmed, or a confirmation abandoned by closing
+  // the panel, came back as that same confirmation the next time. Cleared on
+  // mount rather than on close so every way of leaving is covered.
+  bet.pending = null;
 </script>
 
   <!-- Wears the family's own colour, the same one the MODE button that
@@ -66,12 +72,18 @@
             <BoltMeter
               lit={FAMILY_BOLTS[bet.pending]}
               total={VOLATILITY_BOLTS}
-              overflowAfter={FAMILY_BOLT_CEILING}
               label={volatilityLabel(FAMILY_BOLTS[bet.pending])}
             />
           </span>
         </span>
         <p class="mode-confirm-blurb">{t(FAMILY_BLURB[bet.pending])}</p>
+        <!-- The cost, when it is not the base 1x. Stake's checklist wants a
+             high-cost mode to state its cost before it is activated, and this
+             confirmation IS that step. Formatted through the same %c the
+             foot note uses so the two figures cannot disagree. -->
+        {#if target.cost !== 1}
+          <p class="mode-confirm-cost">{t('Costs %c× your bet').replace('%c', String(target.cost))}</p>
+        {/if}
         <p class="mode-confirm-max">{t('Max win')} {target.maxWin}× {t('Bet')}</p>
         <!-- The family's ceiling is the headline above; this is what the four
              guesses already on the board would top out at if the switch goes
@@ -83,18 +95,20 @@
              max-reaching combinations were not told the same number twice -
              but from the player's side that read as the line simply failing to
              appear for their pick, and the two figures agreeing IS the
-             information. -->
-        {#if picked !== null}
+             information.
+             Not on a family with no guesses: "your four guesses" would be
+             naming picks the player did not make, and its one figure IS the
+             headline above. -->
+        {#if picked !== null && !target.fixedChoices}
           <p class="mode-confirm-picked">
             {t('Your four guesses top out at %s your bet.').replace('%s', `${picked}×`)}
           </p>
         {/if}
-        <!-- No cost line here any more. All three families cost the same, so
-             a "costs 1x your bet" line on the confirmation restated what the
-             bet readout already shows and read as though the switch carried
-             a price. The cost is still stated, once, in the note at the foot
-             of this panel and again in How to Play, which is where Stake's
-             checklist looks for it. -->
+        <!-- No "costs 1x" line on the three four-guess families: it restated
+             what the bet readout already shows and read as though the switch
+             carried a price. The cost line above appears only where the cost
+             is real; the note at the foot of this panel and How to Play state
+             it for every mode, which is where Stake's checklist looks. -->
         <div class="mode-confirm-actions">
           <button type="button" class="mode-confirm-cancel" onclick={() => (bet.pending = null)}>
             {t('Cancel')}
@@ -102,7 +116,7 @@
           <button
             type="button"
             class="action-button mode-confirm-go"
-            onclick={() => { bet.family = bet.pending!; onclose(); }}
+            onclick={() => { bet.family = bet.pending!; bet.pending = null; onclose(); }}
           >
             {t('Switch')}
           </button>
@@ -149,8 +163,7 @@
               <BoltMeter
                 lit={FAMILY_BOLTS[family]}
                 total={VOLATILITY_BOLTS}
-                overflowAfter={FAMILY_BOLT_CEILING}
-                label={volatilityLabel(FAMILY_BOLTS[family])}
+                  label={volatilityLabel(FAMILY_BOLTS[family])}
               />
             </span>
           </span>
@@ -159,6 +172,12 @@
                FAMILY_RULES rather than written into the blurb, so the figure
                exists once and a test can pin it to the payout maths. -->
           <span class="mode-option-max">{t('Max win')} {rules.maxWin}× {t('Bet')}</span>
+          <!-- And the cost, on the one family where it is not 1x. Approval
+               wants "description and cost information" per mode; the other
+               three carry it in the foot note, which says every mode. -->
+          {#if rules.cost !== 1}
+            <span class="mode-option-cost">{t('Costs %c× your bet').replace('%c', String(rules.cost))}</span>
+          {/if}
         </button>
       {/each}
     </div>
@@ -167,12 +186,16 @@
          and game/config.ts - rather than written into the string. They used
          to be baked into all 17 locale files, where nothing could compare
          them to the cost a round is priced at or the RTP the math is
-         reweighted to. The word "Every" is the half a placeholder cannot fix;
-         if the families ever stop sharing a cost, this sentence needs
-         rewriting, not just re-interpolating. -->
+         reweighted to. "This mode", not "Every mode": the families stopped
+         sharing a cost when Three of a Kind arrived at 250x, which is the
+         rewrite the old comment here said the word "Every" would need.
+         The mode it names is the one BEING CONFIRMED when the confirmation is
+         up, and the live one otherwise - it read the live family only, so a
+         player confirming High Stakes from Three of a Kind was told "this mode
+         costs 250x" about the mode they were leaving. -->
     <p class="mode-note">
-      {t('Every mode costs %c× your bet and returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.')
-        .replace('%c', String(FAMILY_RULES[bet.family].cost))
+      {t('This mode costs %c× your bet. Every mode returns the same %s over many rounds; what changes is how often a round pays and how much it can pay.')
+        .replace('%c', String(FAMILY_RULES[bet.pending ?? bet.family].cost))
         .replace('%s', `${(gameConfig.rtp * 100).toFixed(2)}%`)}
     </p>
   </div>

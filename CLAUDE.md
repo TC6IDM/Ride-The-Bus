@@ -85,20 +85,45 @@ Guess four cards: **colour → higher/lower/equal → inside/outside/equal → s
 All four guesses are picked *before* the round, so **each guess combination is
 its own RGS bet mode**.
 
-**192 published modes = 3 families × 64 playable combinations.**
+**193 published modes = 3 families × 64 playable combinations, plus one.**
 (`equal` then `inside` is impossible — nothing falls strictly between two cards
 of the same rank — so 64, not the 72 the four lists multiply out to. A mode that
 loses 100% of the time also has zero variance, which the RGS rejects outright.)
 
-| Family | Prefix | Retention on a miss | Max win | Forgiveness |
-|---|---|---|---|---|
-| Classic | *(none)* | card 1 nothing, then 30% | 1354.2× | none |
-| Second Chance | `sc_` | card 1 nothing, then 30% | 585.2× | first miss from card 2 keeps 50%, play continues |
-| High Stakes | `hs_` | card 1 nothing, then 20% | 1910.2× | none |
+| Family | Prefix | Cost | Retention on a miss | Max win | Forgiveness |
+|---|---|---|---|---|---|
+| Classic | *(none)* | 1× | card 1 nothing, then 30% | 1354.2× | none |
+| Second Chance | `sc_` | 1× | card 1 nothing, then 30% | 585.2× | first miss from card 2 keeps 50%, play continues |
+| High Stakes | `hs_` | 1× | card 1 nothing, then 16% | 2169.2× | none |
+| Three of a Kind | `tr_` | **250×** | nothing, ever | 4,583.3× base bet | none |
 
-**All three cost 1.0×.** That is forced, not chosen: `etl40b` is an absolute sum
-against a fixed 0.9 limit and is *not* divided by cost, so a 2× mode's figure
-doubles for the same shape. Even Classic's shape fails at 2×.
+**Three of a Kind is a different game on the same table**: a 12-card deck (A K
+Q of each suit), **three cards**, no guesses — card 1 is dealt, cards 2 and 3
+must match its rank — one mode (`tr_any_equal_equal`, three tokens: a slug's
+length is its stage count on both sides of the wire), one outcome, fair odds
+(1 × 11/3 × 5 = 18.333× cost, physical 1 in 18.3, recorded 1 in 19.1). It is
+**purely binary and 95% non-paying** — past the "90,000 of 100,000" example in
+Stake's guidelines though inside the 1-in-20 line; the submission's softest
+point, accepted. The whole derivation — why no all-or-nothing can exist on the
+four-guess ride (pay × chance = 0.96 caps a binary payout at 19.2× cost; a
+single outcome ≥ 40× cost puts 100% of the RTP in the tail), **why a binary
+win must stay under 5,000× the base bet** (Stake's tail-probability rows are
+written in base-bet multiples and never scale with cost; the first build, A K
+Q J at 1000× paying 25,000×, failed every one of them), why 250× and not more,
+the Graffiti Ways precedent and what its paytable actually showed — is THE
+ALL-OR-NOTHING BOUND in `game_calculations.py`. Read it before proposing a
+trips variant, a bigger prize or a token consolation.
+
+**The four-guess families cost 1.0×.** That is forced, not chosen: `etl40b` is
+an absolute sum against a fixed limit and is *not* divided by cost, so a 2× mode's
+figure doubles for the same shape. Even Classic's shape fails at 2×. Three of a
+Kind escapes it because its payout never reaches 40× its cost. The cost also
+sizes the bet ladder: bet cost is capped at $50,000 a round on the 2-star
+template, so 250× leaves the base bet at $200 where 1000× pushed it to $50.
+
+**Cost is per mode now and must be shown**: the picker row, the confirmation
+and the How to Play sentence all read `FAMILY_RULES[f].cost`, and the control
+bar's multiplied-bet readout is live again.
 
 ---
 
@@ -200,12 +225,32 @@ reading before proposing it again.
 - **Anything restoring a mode from a slug must apply `parsed.family`**, not just
   the four guesses. `modes.test.ts` greps both call sites; this has failed twice.
 - The volatility rating is a **ranking of published figures, not a marketing
-  claim**, re-derived from `stats_summary.json` by `volatility.test.ts`.
+  claim**, re-derived from `stats_summary.json` by `volatility.test.ts` — and it
+  reads **two columns**. The four-guess families rank by std (1 / 3 / 5, per
+  combination); Three of a Kind is drawn **full and purple** by its zero-rate
+  (1 in 19 pays anything, against 1 in 2 everywhere else), because by std alone
+  it is calmer than most Classic modes and the comment beside the rating says
+  so. The test pins both columns.
 - **One ruler.** Every meter draws `VOLATILITY_BOLTS` (7) stops.
-- **The bar is coloured by the rating, not the accent — and by *two* ratings.**
-  `--mode-ink`/`--mode-rgb` is the live rating (family + one stop per Equal, going
-  purple past `FAMILY_BOLT_CEILING`); `--vol-color`/`--vol-rgb` is the family's
-  own and is **never purple**. All four are published on the `<footer>`.
+- **Purple is a family's colour, not an overflow.** `--vol-tr` is the purple;
+  High Stakes with two Equals draws **seven red bolts**. `FAMILY_BOLT_CEILING`
+  and `BoltMeter`'s `overflowAfter` are gone. `--vol-overflow*` survives only
+  as the win takeover's Epic tier, which is the same reading (past the top of
+  the family bands). The bar's `--mode-ink`/`--mode-rgb` and `--vol-color`/
+  `--vol-rgb` are the family's own colour and now always agree.
+- **The one-rung ladder, and the rung is Max.** `winTiersFor` returns a single
+  `max` tier sitting on Three of a Kind's ceiling: its only win IS the most the
+  mode pays, so it is called that, at 1 in 19 — the label says what the win is,
+  not how rare it is; rarity semantics are the ladder families'. The takeover
+  fans the cards the round dealt (`fanFor(stageCount)`), three there.
+- **A family with `fixedChoices` has no guesses, and its slug length is its
+  stage count.** `modeChoices()` is the only way a slug is built from the board;
+  `guesses` is neither read nor cleared on such a family, so a player's picks
+  survive the round trip; `restoreGuesses` skips them on the way back in;
+  `parseModeName` validates a slug against what the family publishes (length
+  included), so `any` exists only where a fixed combination puts it. The board
+  renders `stageCount()` slots and, on a fixed family, two read-only Equal
+  squares instead of the guess columns; `roundState` stays four wide.
 
 ### Colour, menus and chips — `references/colour-and-menus.md`
 
@@ -728,18 +773,37 @@ between a one-row bar and a two-row one.
 
 ## Current state and outstanding work
 
-719/719 tests, 0 type errors, 0 CSS warnings, lint clean, and the client
-reproduces all 76,800 published books exactly. The published math build
-(192 modes, RTP 96.0000% everywhere, spread 0.000000%, zero volatility
-violations) is generated but **NOT committed** — `math-sdk/.gitignore` line 9 is
-`**/library/**`, so the 1.6 GB of books and `stats_summary.json` exist only on
-the machine that built them. Every test that reads the math tree therefore
-*skips* rather than fails elsewhere, which is deliberate but only safe while it
-is written down.
+759/759 tests (none skipped), 0 type errors, 0 CSS warnings, lint clean, and
+the client reproduces the published books of all **193** modes exactly — the
+parity test replays a 400-book slice of every mode off `index.json`, three-card
+trips books included. The build on disk is the **2026-09-20 23:15** one: High
+Stakes at 16%, Three of a Kind as `tr_any_equal_equal` (three cards, 250×,
+4,583.3×), and `modeCeilings.ts` is what its generator wrote. It is **NOT
+committed** — `math-sdk/.gitignore` line 9 is `**/library/**`, so the books and
+`stats_summary.json` exist only on the machine that built them, and the tests
+that read them skip on an absent or stale build (`game/mathBuild.testlib.ts`).
 
-The math clears the **2-star** risk limits, not merely the 3-star ones: worst
-std 32.938 (limit 0.6–50.0), worst ETL 0.695 (limit 0.8), worst CVaR 568.8
-(limit 700), worst non-zero hit rate 1 in 2.03 (limit 1 in 20), P(≥5000×) zero.
+**What that build measured.** The four-guess families clear the **2-star**
+limits: worst std 36.58 (limit 0.6–50.0), worst etl40b 0.725 (limit 0.8), worst
+CVaR 624.6 on `hs_red_equal_equal_heart` (limit 700), worst non-zero hit rate
+1 in 2.03 (limit 1 in 20), P(≥5,000×) zero. Three of a Kind: RTP 96.0000%,
+non-zero hit rate 1 in 19.10 (94.8% pay nothing), max 458330 raw, P(≥5,000×) 0,
+etl40b 0, etl10k 0, CVaR 4,583.3 absolute = 18.3 per stake — as predicted.
+
+**The local verifier prints one warning on it, and the warning is the
+verifier's, not the mode's.** `utils/rgs_verification.py:verify_mode_volatility`
+checks every mode against one flat table — the **3-star** figures, with `cvar`
+compared to 800 — and `conditional_value_at_risk` never divides by cost, so a
+250× mode's 4,583.3 base-bet CVaR is held against a limit written for 1× modes.
+Stake's own rule considers **both** the normalised figure (4,583.3 / 250 =
+18.3, limit 700) and the un-normalised one (4,583.3, limit 20,000 — the row the
+first trips build failed at 25,000), and its console reports the build's
+statistics as valid. Nothing to fix; do not tune the mode to silence it.
+
+**`run.py` does not sweep `publish_files/`.** A superseded build's books and
+LUT (`*_tr_any_equal_equal_any_*`, 19:13) sat beside the current ones, which is
+why the parity test reads the mode list off `index.json` rather than listing
+the directory. Delete leftovers before uploading the folder to Stake.
 
 **Not yet submitted to Stake** — math, bet modes and mechanics are all still
 changeable until the user says otherwise.
@@ -750,7 +814,7 @@ Read it when planning work. It also carries the local dev tooling: the replay
 RGS, `npm run dev`, the six scenario aliases, and the headless CDP driver
 (`npm run shots`) that every visual judgement in this repo has been made with.
 
-The single biggest open item: **`RGS_TEST_PLAN.md` holds 95 live-session checks
+The single biggest open item: **`RGS_TEST_PLAN.md` holds 97 live-session checks
 and none has been run.** They need a real Stake session and cannot be done
 locally.
 

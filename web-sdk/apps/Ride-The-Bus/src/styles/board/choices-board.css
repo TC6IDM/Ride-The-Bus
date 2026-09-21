@@ -22,6 +22,63 @@
    a round is revealing or an auto run is live. */
 .choice-row.locked { pointer-events: none; opacity: 0.5; }
 
+/* Three of a Kind's row: two Equal squares and their labels, nothing else.
+   The four-guess families' controls do not appear on this mode at all -
+   GameBoard renders a different row - rather than sitting greyed with a
+   caption, which read as a broken control. Each "square" is the Equal badge
+   the four-guess squares carry at their seam - in its selected state, and
+   nothing but that badge, upscaled - so the mode is recognisably "the Equal
+   pick, twice, made", and it is read-only: the round is one bet mode, so
+   nothing a press could do.
+
+   Half a choice square across, and placed under the GAPS between the three
+   cards rather than under cards 2 and 3: the two sit at +/-(card + gap)/2
+   from the row's centre, which is where those gaps are, so the row's gap is
+   that distance less one badge. */
+/* Compound, because the plain .choice-row rule below this one sets the gap
+   too and would win on order at the same specificity. */
+.choice-row.trips-row {
+  gap: calc(var(--card-w) + var(--gap) - var(--choice-size) * 0.5);
+}
+
+.trips-row .choice-column {
+  width: calc(var(--choice-size) * 0.5);
+}
+
+.equal-slot {
+  position: relative;
+  width: calc(var(--choice-size) * 0.5);
+  height: calc(var(--choice-size) * 0.5);
+}
+
+/* THE BADGE, UPSCALED - nothing else. This is the seam badge the other modes
+   draw between Higher and Lower, in its SELECTED state (choices.css:
+   .equal-btn.selected - the 3px white ring, the brightness lift), at four
+   times its size. Every dimension of that badge is a ratio of --equal-size,
+   so setting the one property scales the face, the edge, the radius and the
+   ring together; the "=" is scaled to the same ratio it holds on the small
+   badge (0.61 x 0.3 of the badge) through the properties ChoiceIcon reads.
+   It is not wrapped in a .choice-square: the square's own ring and clip made
+   it read as an unselected control with a badge inside, which is exactly
+   what it is not. Static rather than absolute because there is no seam to
+   centre on, and the select-state scale is dropped - the size is the size. */
+.equal-btn.equal-full {
+  --equal-size: calc(var(--choice-size) * 0.5);
+  --eq-icon-w: calc(var(--choice-size) * 0.305);
+  --eq-icon-h: calc(var(--choice-size) * 0.15);
+  position: static;
+  transform: none;
+  cursor: default;
+}
+
+/* Inert under a pointer as well: choices.css lifts a badge on hover as a
+   preview of picking it, and there is nothing to pick here. */
+@media (any-hover: hover) {
+  .equal-btn.equal-full:hover {
+    transform: none;
+  }
+}
+
 /* Choice squares */
 .choice-row {
   display: flex;

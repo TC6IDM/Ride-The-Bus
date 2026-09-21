@@ -55,9 +55,13 @@ export default {
 	Classic: 'Clássico',
 	'Second Chance': 'Segunda Oportunidade',
 	'High Stakes': 'Apostas Altas',
-	'Every mode costs %c× your bet and returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
-		'Todos os modos custam %c× sua aposta e devolvem o mesmo %s ao longo de muitas rodadas. O que muda é a frequência e o tamanho dos pagamentos.',
+	'This mode costs %c× your bet. Every mode returns the same %s over many rounds; what changes is how often a round pays and how much it can pay.':
+		'Este modo custa %c× a sua aposta. Todos os modos devolvem o mesmo %s ao longo de muitas rodadas; o que muda é a frequência com que uma rodada paga e quanto pode pagar.',
 	Forgiven: 'Perdoado',
+	// The intro's tagline and the first line of How to Play's Game modes.
+	'%n ways to play': '%n formas de jogar',
+	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
+		'Cada combinação de escolhas num modo de palpite é uma aposta própria, precificada pelas suas próprias probabilidades.',
 	'Game modes': 'Modos de jogo',
 	'Max win': 'Ganho máximo',
 	// Confirmation before a bet mode is activated - required by the approval
@@ -67,8 +71,8 @@ export default {
 	Cancel: 'Cancelar',
 	Switch: 'Mudar',
 	'Volatility %s of %t': 'Volatilidade %s de %t',
-	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on High Stakes.':
-		'O retorno ao jogador (RTP) é de %s em todos os modos. O máximo que este jogo pode pagar é %m sua aposta, em Apostas Altas.',
+	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.':
+		'O retorno ao jogador (RTP) é de %s em todos os modos. O máximo que este jogo pode pagar é %m sua aposta, em %f.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'Errar a primeira carta termina a rodada. Erros seguintes mantêm 30% do acumulado.',
 	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
@@ -82,8 +86,8 @@ export default {
 		'Só algumas combinações de palpites atingem o máximo de um modo. Depois de escolher seus quatro, o limite próprio deles é mostrado acima.',
 	Playing: 'Em jogo',
 	'Card 2, 3 or 4': 'Carta 2, 3 ou 4',
-	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
-		'Errar a primeira carta termina a rodada. Erros seguintes mantêm apenas 20%, por isso cada acerto vale mais.',
+	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
+		'Errar a primeira carta termina a rodada. Erros seguintes mantêm apenas 16%, por isso cada acerto vale mais.',
 
 	'How to Play': 'Como jogar',
 	'Guess your way through four cards:': 'Adivinhe as quatro cartas, uma a uma:',
@@ -238,4 +242,30 @@ export default {
 		'A rodada termina e você mantém cerca de %s% do acumulado.',
 	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
 		'A partir da carta 2 ele é perdoado: você mantém %s% do acumulado e a rodada continua.',
+
+	// Three of a Kind.
+	'Three of a Kind':
+		'Trinca',
+	'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.':
+		'Três cartas de um baralho de 12 cartas com ases, reis e damas. As cartas 2 e 3 têm de coincidir com a carta 1; qualquer outra coisa não paga nada.',
+	'Costs %c× your bet':
+		'Custa %c× a sua aposta',
+	'Any':
+		'Qualquer',
+	'Any card':
+		'Qualquer carta',
+	'Any wrong guess':
+		'Qualquer palpite errado',
+	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
+		'Jogado com um baralho de 12 cartas: o ás, o rei e a dama de cada naipe. A carta 1 é distribuída; as cartas 2 e 3 têm de igualar o seu valor. Três cartas, um prémio.',
+	'Three of a kind pays %m your bet, about one round in %n.':
+		'A trinca paga %m a sua aposta, cerca de uma rodada em cada %n.',
+	'%c× your base bet of %b':
+		'%c× a sua aposta base de %b',
+	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
+		'*Em %f. Cada modo de jogo tem o seu próprio prémio máximo, indicado no seletor de modo e em Como jogar.',
+	'Card 2 must match card 1':
+		'A carta 2 tem de coincidir com a carta 1',
+	'Card 3 must match card 1':
+		'A carta 3 tem de coincidir com a carta 1',
 };

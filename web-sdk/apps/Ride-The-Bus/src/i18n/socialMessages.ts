@@ -100,12 +100,12 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 		'Guess all four right and the winnings depend on how hard your picks were. Equal is the rarest guess, so rounds built on it win the most; two Equal picks together is the most this mode can win, at %m your play amount.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'A wrong first card ends the round. Later misses keep 30% of what you had built.',
-	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on High Stakes.':
-		'Return to player (RTP) is %s on every game mode. The most this game can win is %m your play amount, on High Risk.',
+	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.':
+		'Return to player (RTP) is %s on every game mode. The most this game can win is %m your play amount, on %f.',
 	// "costs" is not on the list, but "bet" is, and "can be played for" is the
 	// wording the old stand-alone cost line already used here.
-	'Every mode costs %c× your bet and returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
-		'Every mode can be played for %c× your play amount and returns the same %s over many rounds. What changes is how often a round wins and how much it can win.',
+	'This mode costs %c× your bet. Every mode returns the same %s over many rounds; what changes is how often a round pays and how much it can pay.':
+		'This mode can be played for %c× your play amount. Every mode returns the same %s over many rounds; what changes is how often a round wins and how much it can win.',
 
 	// Paytable. "Payout" and "Pays" are both on the prohibited list, so the
 	// heading and the amount column need social wording. "Card", "Pick", "Red or
@@ -145,6 +145,18 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 	// raw rather than through t(), so the social map could not reach it at all.
 	'The round ends and pays nothing.':
 		'The round ends and wins nothing.',
+	// Three of a Kind. "Costs ... bet" and "pays ... bet" carry restricted
+	// terms; the blurb, the deck sentence and the captions do not.
+	'Costs %c× your bet': 'Can be played for %c× your play amount',
+	// The How to Play tagline's second sentence. "bet" is restricted.
+	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
+		'Every combination of picks on a guess mode is its own play, priced on its own odds.',
+	'Three of a kind pays %m your bet, about one round in %n.':
+		'Three of a kind wins %m your play amount, about one round in %n.',
+	// "pays nothing" and "base bet" carry restricted terms.
+	'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.':
+		'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less wins nothing.',
+	'%c× your base bet of %b': '%c× your base play amount of %b',
 };
 
 export default socialMessages;

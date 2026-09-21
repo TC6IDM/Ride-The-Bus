@@ -55,9 +55,13 @@ export default {
 	Classic: 'Klassinen',
 	'Second Chance': 'Toinen mahdollisuus',
 	'High Stakes': 'Suuret panokset',
-	'Every mode costs %c× your bet and returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
-		'Jokainen tila maksaa %c× panoksesi ja palauttaa saman %s monen kierroksen aikana. Vaihtelee vain se, kuinka usein kierros maksaa ja kuinka paljon.',
+	'This mode costs %c× your bet. Every mode returns the same %s over many rounds; what changes is how often a round pays and how much it can pay.':
+		'Tämä tila maksaa %c× panoksesi. Jokainen tila palauttaa saman %s monen kierroksen aikana; vain se muuttuu, kuinka usein kierros maksaa ja kuinka paljon.',
 	Forgiven: 'Annettu anteeksi',
+	// The intro's tagline and the first line of How to Play's Game modes.
+	'%n ways to play': '%n tapaa pelata',
+	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
+		'Jokainen arvausyhdistelmä arvaustilassa on oma vetonsa, hinnoiteltu omien kertoimiensa mukaan.',
 	'Game modes': 'Pelitilat',
 	'Max win': 'Enimmäisvoitto',
 	// Confirmation before a bet mode is activated - required by the approval
@@ -67,8 +71,8 @@ export default {
 	Cancel: 'Peruuta',
 	Switch: 'Vaihda',
 	'Volatility %s of %t': 'Volatiliteetti %s / %t',
-	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on High Stakes.':
-		'Palautusprosentti (RTP) on %s jokaisessa pelitilassa. Eniten tämä peli voi maksaa %m panoksestasi, Suuret panokset -tilassa.',
+	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.':
+		'Palautusprosentti (RTP) on %s jokaisessa pelitilassa. Eniten tämä peli voi maksaa %m panoksestasi, %f -tilassa.',
 	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
 		'Väärä ensimmäinen kortti päättää kierroksen. Myöhemmät virheet säilyttävät 30% kertyneestä.',
 	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
@@ -82,8 +86,8 @@ export default {
 		'Vain osa arvausyhdistelmistä yltää tilan enimmäisvoittoon. Kun neljä arvaustasi on valittu, niiden oma yläraja näytetään yllä.',
 	Playing: 'Pelissä',
 	'Card 2, 3 or 4': 'Kortti 2, 3 tai 4',
-	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
-		'Väärä ensimmäinen kortti päättää kierroksen. Myöhemmät virheet säilyttävät vain 20%, joten jokainen oikea arvaus on arvokkaampi.',
+	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
+		'Väärä ensimmäinen kortti päättää kierroksen. Myöhemmät virheet säilyttävät vain 16%, joten jokainen oikea arvaus on arvokkaampi.',
 
 	'How to Play': 'Näin pelaat',
 	'Guess your way through four cards:': 'Arvaa neljä korttia järjestyksessä:',
@@ -239,4 +243,30 @@ export default {
 		'Kierros päättyy ja säilytät noin %s% kertyneestä.',
 	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
 		'Kortista 2 alkaen se annetaan anteeksi: säilytät %s% kertyneestä ja kierros jatkuu.',
+
+	// Three of a Kind.
+	'Three of a Kind':
+		'Kolmoset',
+	'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.':
+		'Kolme korttia 12 kortin pakasta, jossa on ässät, kuninkaat ja kuningattaret. Korttien 2 ja 3 on vastattava korttia 1; mikään vähempi ei maksa mitään.',
+	'Costs %c× your bet':
+		'Maksaa %c× panoksesi',
+	'Any':
+		'Mikä tahansa',
+	'Any card':
+		'Mikä tahansa kortti',
+	'Any wrong guess':
+		'Mikä tahansa väärä arvaus',
+	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
+		'Pelataan 12 kortin pakalla: jokaisen maan ässä, kuningas ja kuningatar. Kortti 1 jaetaan; korttien 2 ja 3 on oltava samaa arvoa. Kolme korttia, yksi voitto.',
+	'Three of a kind pays %m your bet, about one round in %n.':
+		'Kolmoset maksaa %m panoksesi, noin yhdellä kierroksella %n:stä.',
+	'%c× your base bet of %b':
+		'%c× peruspanoksesi %b',
+	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
+		'*Tilassa %f. Jokaisella pelitilalla on oma maksimivoittonsa, joka näkyy tilavalinnassa ja Pelin ohjeissa.',
+	'Card 2 must match card 1':
+		'Kortin 2 on vastattava korttia 1',
+	'Card 3 must match card 1':
+		'Kortin 3 on vastattava korttia 1',
 };
