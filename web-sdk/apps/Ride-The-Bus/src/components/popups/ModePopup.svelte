@@ -15,7 +15,8 @@
   import MarkIcon from '../icons/MarkIcon.svelte';
   import gameConfig from '../../game/platform/config';
   import { t } from '../../i18n/i18nDerived';
-  import { FAMILY_BLURB, FAMILY_RULES } from '../../game/math/modes';
+  import { FAMILY_BLURB, FAMILY_RULES, stageCount } from '../../game/math/modes';
+  import { clearBoard } from '../../game/round/roundState.svelte';
   import {
     FAMILIES_BY_VOLATILITY,
     FAMILY_BOLTS,
@@ -116,7 +117,15 @@
           <button
             type="button"
             class="action-button mode-confirm-go"
-            onclick={() => { bet.family = bet.pending!; bet.pending = null; onclose(); }}
+            onclick={() => {
+              const to = bet.pending!;
+              // A switch that changes the number of cards dealt turns the
+              // last round's cards back over - see clearBoard.
+              if (stageCount(FAMILY_RULES[to]) !== stageCount(FAMILY_RULES[bet.family])) clearBoard();
+              bet.family = to;
+              bet.pending = null;
+              onclose();
+            }}
           >
             {t('Switch')}
           </button>

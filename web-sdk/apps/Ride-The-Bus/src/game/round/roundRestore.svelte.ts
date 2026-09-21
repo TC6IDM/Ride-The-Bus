@@ -27,7 +27,7 @@ import { animateRoundFromEvents, waitForLoaderGone } from './roundReveal.svelte'
 
 /**
  * Put a parsed mode's four guesses back on the board - unless the family has
- * no guesses. Three of a Kind's slug carries `any` for cards 1 and 4, which is
+ * no guesses. Three of a Kind's slug carries `any` for card 1, which is
  * not a pick a player can make: its board is a preset drawn from
  * FAMILY_RULES.fixedChoices, and the guesses left from the last four-guess
  * mode are deliberately kept so they are still there on the way back.

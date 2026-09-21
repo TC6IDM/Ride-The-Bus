@@ -781,9 +781,13 @@
    the figure's weight so it cannot be missed; the sentence under the stats is
    set in the caption's voice - a qualification, not a headline. */
 .ss-stat-note {
-	font-size: 0.75em;
-	vertical-align: super;
-	margin-inline-start: 0.06em;
+	/* The figure's own size, not a superscript's 0.75em: an asterisk glyph is
+	   already a third the height of a digit, so shrinking it as well made it
+	   a speck that was not seen. Raised by hand rather than `super`, which
+	   also shrinks in some engines. */
+	font-size: 1.05em;
+	vertical-align: 0.28em;
+	margin-inline-start: 0.08em;
 }
 
 .ss-stat-foot {

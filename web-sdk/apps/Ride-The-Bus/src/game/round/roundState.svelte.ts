@@ -192,6 +192,31 @@ export function resetForNewRound() {
   round.state = 'playing';
 }
 
+/**
+ * Turn every card back over and take the readout down, as if nothing had
+ * been dealt yet. Last Win in the bar is untouched - it is the session's,
+ * not the board's.
+ *
+ * For a mode switch that changes how many cards the table deals: a settled
+ * four-card round left on the board while Three of a Kind's three slots draw
+ * would show three of the last round's faces under this mode's chips, and
+ * the other way round a fourth, face-down slot beside three turned cards. A
+ * switch between the four-guess families leaves the board alone, because the
+ * cards on it were dealt the same way. Only meaningful between rounds; a
+ * round in flight locks the mode (roundInProgress), so this never runs on
+ * one.
+ */
+export function clearBoard() {
+  round.revealedCards = [null, null, null, null];
+  round.stageMultipliers = [null, null, null, null];
+  round.runningWin = 0;
+  round.bustedIndex = null;
+  round.forgivenIndex = null;
+  round.wonAmount = 0;
+  round.state = 'start';
+  round.hasPlayed = false;
+}
+
 /** The session timer, formatted. h:mm:ss once there is an hour to show. */
 export const sessionClock = () => {
   const h = Math.floor(round.sessionSeconds / 3600);

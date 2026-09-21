@@ -5,7 +5,7 @@
 import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
 
-import { GAME_SOURCES } from '../../sources.testlib.ts';
+import { GAME_ALL, GAME_SOURCES } from '../../sources.testlib.ts';
 import {
   betDecimals,
   betWithinRange,
@@ -329,6 +329,22 @@ describe('the bet menu only offers levels the operator will accept', () => {
     // onto a level past maxBet, and the opening-bet effect could seed one.
     for (const marker of ['const sorted = betLevels();', 'const levels = betLevels();']) {
       assert.ok(GAME.includes(marker), `Game.svelte no longer has: ${marker}`);
+    }
+  });
+
+  test('the +/- buttons are grey at the ends of the ladder', () => {
+    // A + with no level above it used to look pressable and do nothing. The
+    // press and the disabled state now read one function, nextBetLevel, so
+    // they cannot disagree about whether there is somewhere to go.
+    const at = GAME.indexOf('export function nextBetLevel(');
+    assert.ok(at > 0, 'nextBetLevel() is gone');
+    assert.ok(GAME.includes('const next = nextBetLevel(direction);'), 'stepBet() no longer steps through nextBetLevel()');
+    assert.ok(GAME.includes('betLockedReason() === null && nextBetLevel(direction) !== null'), 'canStepBet() no longer folds the lock and the ladder end');
+    for (const dir of ['1', '-1']) {
+      assert.ok(
+        GAME_ALL.includes(`onclick={() => stepBet(${dir})} disabled={!canStepBet(${dir})}`),
+        `the ${dir === '1' ? '+' : '-'} button is not disabled by canStepBet(${dir})`,
+      );
     }
   });
 

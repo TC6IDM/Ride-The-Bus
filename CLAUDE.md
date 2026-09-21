@@ -250,7 +250,13 @@ reading before proposing it again.
   `parseModeName` validates a slug against what the family publishes (length
   included), so `any` exists only where a fixed combination puts it. The board
   renders `stageCount()` slots and, on a fixed family, two read-only Equal
-  squares instead of the guess columns; `roundState` stays four wide.
+  badges instead of the guess columns; `roundState` stays four wide.
+- **A switch that changes the card count turns the cards back over.** The
+  picker's Switch compares `stageCount()` before and after and calls
+  `clearBoard()` — three of a settled four-card round's faces under trips'
+  chips, or a fourth face-down slot beside three turned cards, both read as a
+  round that never happened. Between the four-guess families the board is
+  left alone. Last Win is the session's and is never cleared.
 
 ### Colour, menus and chips — `references/colour-and-menus.md`
 
@@ -317,6 +323,9 @@ reading before proposing it again.
   is the common path. COP is **not** a Stake currency.
 - **The bet is locked while autoplay runs, and the control says so rather than
   going grey.** `setBetLevel` and `formatBetInput` check `betLockedReason()` too.
+- **The +/- buttons ARE grey at the ends of the ladder.** `nextBetLevel()` is
+  what a press lands on and what `canStepBet()` disables on, so the two cannot
+  disagree; a + with no level above it used to look pressable and do nothing.
 - **A typed bet clamps DOWN to the maximum and never UP to the minimum**, and the
   step snap is guarded — anything under one step would floor to zero.
 - **One reason per failure, not one boolean** (`betBlockedReason()`), with

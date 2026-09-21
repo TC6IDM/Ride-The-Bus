@@ -189,7 +189,7 @@ function scenariosFor(mode) {
 /**
  * Every mode's four scenarios, and which mode carries each FAMILY's ceiling.
  *
- * Lazy, and cached after the first call. The scan reads all 192 lookup tables
+ * Lazy, and cached after the first call. The scan reads all 193 lookup tables
  * and takes about ten seconds; only the landing page needs it, and replaying a
  * round by ID does not, so paying for it at boot would delay the server coming
  * up for the common case.
@@ -291,7 +291,7 @@ const json = (res, status, body) => {
 };
 
 /* ---- The link builder ----------------------------------------------------
-   Modelled on the game's own guess row rather than on a dropdown of 192 slugs:
+   Modelled on the game's own guess row rather than on a dropdown of 193 slugs:
    pick a family, then a colour, a higher/lower, an inside/outside and a suit,
    exactly as a player does. The mode name is assembled from the picks, which is
    what modeName() does on the client and mode_name does in the math.
@@ -946,7 +946,7 @@ createServer(async (req, res) => {
   console.log(`Local replay RGS   http://localhost:${PORT}`);
   console.log(`Game expected on   http://localhost:${GAME_PORT}   (npm run dev)`);
   console.log("");
-  console.log("Open the replay RGS in a browser to build links for any of the 192");
+  console.log("Open the replay RGS in a browser to build links for any of the 193");
   console.log("modes. If the game is on a different port, change it in the Game");
   console.log("port field on that page - it is remembered per browser. This");
   console.log("server does not need restarting for that.");

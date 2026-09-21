@@ -154,8 +154,9 @@ describe('family rules match the math', () => {
 
   test('no cost multiplier exceeds the 2-star tier ceiling of 1,000x', () => {
     // The tier table in stake-approval/references/approval-guidelines.md:
-    // 1,000x at 2-star, 1,500x at 3-star. Three of a Kind sits exactly on the
-    // 2-star figure, and its payout sits exactly on that tier's 25,000x cap.
+    // 1,000x at 2-star, 1,500x at 3-star. Three of a Kind is 250x, well under
+    // both; its 4,583.3x sits under the 5,000x the tail rows cap a binary win
+    // at, let alone the tier's 25,000x payout cap.
     for (const family of MODE_FAMILIES) {
       assert.ok(FAMILY_RULES[family].cost <= 1000, `${family} cost is too high`);
       assert.ok(FAMILY_RULES[family].maxWin <= 25000, `${family} pays above the 2-star payout cap`);
@@ -366,7 +367,7 @@ describe('parseModeName', () => {
       );
       // The four guesses go through ONE helper, restoreGuesses, which is what
       // skips them on a family that has none (Three of a Kind's slug carries
-      // `any` for cards 1 and 4, which is not a pick). Both sites must call it.
+      // `any` for card 1, which is not a pick). Both sites must call it.
       assert.ok(
         /\brestoreGuesses\(parsed\)/.test(block),
         'a mode-restore block does not put the guesses back through restoreGuesses',
@@ -459,3 +460,35 @@ describe('parseModeName', () => {
     );
   });
 });
+
+/**
+ * Switching between a three-card family and a four-card one turns the last
+ * round's cards back over. A settled four-card round left under Three of a
+ * Kind's three slots shows three of its faces beneath this mode's chips; the
+ * other way round, a fourth face-down slot appears beside three turned
+ * cards. Between the four-guess families the board is left alone.
+ */
+describe('a mode switch that changes the card count clears the board', () => {
+  test('the Switch button compares stage counts and calls clearBoard()', () => {
+    const at = GAME_ALL.indexOf("t('Switch')");
+    assert.ok(at > 0, 'the Switch button is gone');
+    const handler = GAME_ALL.slice(Math.max(0, at - 700), at);
+    assert.ok(
+      handler.includes('if (stageCount(FAMILY_RULES[to]) !== stageCount(FAMILY_RULES[bet.family])) clearBoard();'),
+      'the switch no longer clears the board on a stage-count change',
+    );
+    assert.ok(handler.indexOf('clearBoard()') < handler.indexOf('bet.family = to'), 'the count is read after the family has already changed');
+  });
+
+  test('clearBoard() turns the cards over and takes the readout down, and nothing else', () => {
+    const at = GAME_SOURCES.indexOf('export function clearBoard()');
+    assert.ok(at > 0, 'clearBoard() is gone');
+    // Up to the function's closing brace, the first one at column 0 after it.
+    const body = GAME_SOURCES.slice(at, GAME_SOURCES.indexOf('\n}', at));
+    for (const line of ['round.revealedCards = [null, null, null, null];', 'round.bustedIndex = null;', 'round.forgivenIndex = null;', "round.state = 'start';", 'round.hasPlayed = false;']) {
+      assert.ok(body.includes(line), `clearBoard() lost: ${line}`);
+    }
+    assert.ok(!body.includes('lastWin'), "clearBoard() must not touch Last Win - it is the session's, not the board's");
+  });
+});
+

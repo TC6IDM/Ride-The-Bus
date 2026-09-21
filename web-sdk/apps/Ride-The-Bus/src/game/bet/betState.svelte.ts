@@ -345,20 +345,33 @@ export function normalizeBet(value: number): number {
 // rack the chips draw, so it cannot step onto a level the operator's own
 // maxBet forbids and leave the spin button refusing a figure the + button
 // just produced.
-export function stepBet(direction: 1 | -1) {
-  if (betLockedReason()) return;
+/**
+ * The level a +/- press would land on, or null when there is none that way.
+ *
+ * One function for the press AND for the button's disabled state: a + at the
+ * top of the ladder used to do nothing while looking pressable, which reads
+ * as a broken control. Now the button is grey exactly when this is null.
+ */
+export function nextBetLevel(direction: 1 | -1): number | null {
   const shown = Number(bet.input);
   const current = !isNaN(shown) && shown > 0 ? shown : stateBet.betAmount;
   const sorted = betLevels();
-  if (sorted.length) {
-    const next =
-      direction > 0
-        ? sorted.find((l) => l > current + 1e-9)
-        : [...sorted].reverse().find((l) => l < current - 1e-9);
-    if (next !== undefined) bet.input = String(next);
-  } else {
-    bet.input = String(Math.max(1, current + direction));
-  }
+  if (!sorted.length) return Math.max(1, current + direction);
+  const next =
+    direction > 0
+      ? sorted.find((l) => l > current + 1e-9)
+      : [...sorted].reverse().find((l) => l < current - 1e-9);
+  return next ?? null;
+}
+
+/** Whether a +/- press would change the bet: locked, or nothing that way. */
+export const canStepBet = (direction: 1 | -1) =>
+  betLockedReason() === null && nextBetLevel(direction) !== null;
+
+export function stepBet(direction: 1 | -1) {
+  if (betLockedReason()) return;
+  const next = nextBetLevel(direction);
+  if (next !== null) bet.input = String(next);
 }
 
 /**

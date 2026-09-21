@@ -119,7 +119,7 @@ export async function playRevealSequence() {
     const event = round.revealEvents[i];
     if (!busted && event.correct) {
       running *= event.payout;
-      // A free card (Three of a Kind's cards 1 and 4) is dealt, not won: it
+      // A free card (Three of a Kind's card 1) is dealt, not won: it
       // gets the flip and nothing else. A stage-win cue on a 1.00x would tell
       // the player they had just got something right.
       if (event.choice !== FREE_CHOICE) sound.playStageWin(i, cueLead(i));

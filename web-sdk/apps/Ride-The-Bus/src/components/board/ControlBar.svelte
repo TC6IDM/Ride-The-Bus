@@ -35,6 +35,7 @@
     modeRgb,
     roundCost,
     stepBet,
+    canStepBet,
     volatilityLabel,
   } from '../../game/bet/betState.svelte';
   import { celebration } from '../../game/celebration/celebrationState.svelte';
@@ -610,8 +611,11 @@ $effect(() => {
       <!-- Same condition as the display beside them, so the whole bet group
            locks and unlocks together. They were on auto.running || replay
            only, which left them live while a round was in flight. -->
-      <button class="cb-step" onclick={() => stepBet(1)} disabled={betLockedReason() !== null} aria-label={t('Increase bet')}>{@render iconPlus()}</button>
-      <button class="cb-step" onclick={() => stepBet(-1)} disabled={betLockedReason() !== null} aria-label={t('Decrease bet')}>{@render iconMinus()}</button>
+      <!-- Grey at the end of the ladder as well as when the bet is locked:
+           a + with no level above it would otherwise look pressable and do
+           nothing. canStepBet folds both reasons into one. -->
+      <button class="cb-step" onclick={() => stepBet(1)} disabled={!canStepBet(1)} aria-label={t('Increase bet')}>{@render iconPlus()}</button>
+      <button class="cb-step" onclick={() => stepBet(-1)} disabled={!canStepBet(-1)} aria-label={t('Decrease bet')}>{@render iconMinus()}</button>
     </div>
     {#if betLockedReason()}
       <span class="cb-bet-tip" class:is-shown={betTipVisible} role="tooltip" aria-live="polite">
