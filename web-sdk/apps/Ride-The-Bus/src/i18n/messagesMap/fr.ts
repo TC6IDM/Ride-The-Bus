@@ -65,7 +65,7 @@ export default {
 	'Game modes': 'Modes de jeu',
 	'Max win': 'Gain maximum',
 	// Confirmation before a bet mode is activated - required by the approval
-	// checklist, and worth having anyway: the three families cost the same but
+	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
 	'Switch mode?': 'Changer de mode ?',
 	Cancel: 'Annuler',
@@ -112,6 +112,8 @@ export default {
 	Card: 'Carte',
 	Pick: 'Choix',
 	Pays: 'Rapporte',
+	'Total':
+		'Cumul',
 	'Red or Black': 'Rouge ou noir',
 	'Any suit': 'N’importe quelle enseigne',
 	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
@@ -196,6 +198,8 @@ export default {
 	Mode: 'Mode',
 	'Game mode': 'Mode de jeu',
 	Guesses: 'Pronostics',
+	Cards: 'Cartes',
+	'Round cost': 'Coût de la manche',
 	Event: 'Événement',
 	Payout: 'Paiement',
 	Play: 'Lire',
@@ -209,16 +213,16 @@ export default {
 	'The i button opens this screen.': 'Le bouton i ouvre cet écran.',
 	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
 		'Le bouton éclair est le Turbo : la vitesse à laquelle les cartes se retournent, de Normale à Instantanée.',
-	'The circular arrows open autoplay, which repeats your four guesses for a set number of rounds or unlimited. The counter sits on the button while it runs.':
-		'Les flèches circulaires ouvrent le jeu automatique, qui répète vos quatre pronostics pour un nombre défini de manches ou sans limite. Le compteur s’affiche sur le bouton pendant l’exécution.',
+	'The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.':
+		'Les flèches circulaires ouvrent le jeu automatique, qui rejoue la même mise pour un nombre défini de manches ou sans limite. Le compteur s’affiche sur le bouton pendant l’exécution.',
 	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
 		'Le bouton des curseurs regroupe deux options du jeu automatique : arrêter sur partie complète et ignorer les animations de gain.',
 	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
 		'Le grand bouton rond distribue la manche. La barre d’espace aussi : appuyez pour une manche, maintenez pour continuer à distribuer. Pendant le jeu automatique, le bouton devient Arrêter et la manche en cours se termine d’abord.',
 	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
 		'Mode ouvre le sélecteur de mode de jeu. Changer demande une confirmation avant de s’appliquer.',
-	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'Ce jeu ne comporte ni tours gratuits, ni tours bonus, ni jackpots, ni fonctions de relance. Chaque manche est un tirage unique et indépendant de quatre cartes.',
+	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
+		'Ce jeu ne comporte ni tours gratuits, ni tours bonus, ni jackpots, ni fonctions de relance. Chaque manche est une donne unique et indépendante : quatre cartes dans les modes à pronostics, trois en Brelan.',
 	'Big Win': 'Gros Gain',
 	'Huge Win': 'Gain Énorme',
 	'Mega Win': 'Méga Gain',
@@ -257,16 +261,22 @@ export default {
 		'N’importe',
 	'Any card':
 		'N’importe quelle carte',
-	'Any wrong guess':
-		'Toute erreur',
-	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
-		'Joué avec un jeu de 12 cartes : l’as, le roi et la dame de chaque couleur. La carte 1 est distribuée ; les cartes 2 et 3 doivent avoir sa valeur. Trois cartes, un gain.',
+	'A card that does not match':
+		'Une carte qui ne correspond pas',
+	'If a card does not match':
+		'Si une carte ne correspond pas',
+	'Card 1 is dealt, not guessed. The deck holds one Ace, King and Queen of each suit, so card 2 matches 3 times in 11 and card 3 twice in 10.':
+		'La carte 1 est distribuée, pas devinée. Le paquet contient un as, un roi et une dame de chaque enseigne : la carte 2 correspond 3 fois sur 11 et la carte 3, 2 fois sur 10.',
+	'Each figure is the running total after that card, in multiples of your bet, exactly as the board shows it beside the cards. Only the last card pays.':
+		"Chaque chiffre est le cumul après cette carte, en multiples de votre mise, exactement tel que la table l'affiche à côté des cartes. Seule la dernière carte rapporte.",
 	'Three of a kind pays %m your bet, about one round in %n.':
 		'Le brelan paie %m votre mise, environ une manche sur %n.',
 	'%c× your base bet of %b':
 		'%c× votre mise de base de %b',
 	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
 		'*Sur %f. Chaque mode de jeu a son propre gain maximum, indiqué dans le sélecteur de mode et dans Comment jouer.',
+	'That mode costs %c× your bet.':
+		'Ce mode coûte %c× votre mise.',
 	'Card 2 must match card 1':
 		'La carte 2 doit correspondre à la carte 1',
 	'Card 3 must match card 1':

@@ -356,7 +356,7 @@ export async function playRound(): Promise<boolean> {
     import('./roundShuffler'),
     import('./localRound'),
   ]);
-  // The family's own deck - Three of a Kind deals sixteen cards, not 52.
+  // The family's own deck - Three of a Kind deals twelve cards, not 52.
   const contract = createRoundContract(`${roundSeedData.seed}:${round.sequence}`, familyRules().deck);
   round.sequence += 1;
   round.lastRoundId = contract.roundId;

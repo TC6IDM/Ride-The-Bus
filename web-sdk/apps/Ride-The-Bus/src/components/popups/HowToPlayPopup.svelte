@@ -21,7 +21,7 @@
 	import { ranks } from '../../game/round/roundContract';
 	// Derived from payout.ts rather than written out, so the paytable a player
 	// reads cannot drift from what the RGS credits - see payoutTable.ts.
-	import { bustRowsFor, oddsExampleFor, payoutRowsFor } from '../../game/math/payoutTable';
+	import { bustRowsFor, oddsExampleFor, payoutColumnFor, payoutRowsFor } from '../../game/math/payoutTable';
 	import { winTiersFor } from '../../game/math/winTiers';
 	import { FAMILY_BLURB, FAMILY_RULES, MODE_FAMILIES, allPlayableModes, type ModeFamily } from '../../game/math/modes';
 	import { FAMILIES_BY_VOLATILITY } from '../../game/math/volatility';
@@ -107,9 +107,10 @@
         <li>{t('Suit: the suit of card 4.')}</li>
       </ol>
       <!-- What a miss costs is deliberately NOT stated here: it is different in
-           all three families (nothing at card 1; 30% or 20% after; forgiven
-           once on Second Chance), and a one-line summary that fits one of them
-           is wrong for the other two. The mode panel below says it per family. -->
+           every family (nothing at card 1; 30% or 16% after; forgiven once on
+           Second Chance; nothing at all on Three of a Kind), and a one-line
+           summary that fits one of them is wrong for the others. The mode panel
+           below says it per family. -->
       <p>{t('Pick all four, set your bet and deal. Each right guess multiplies your win; get all four for a full game win. What a wrong guess costs you depends on the game mode, explained below.')}</p>
 
       <h4 class="info-h">{t('Card order')}</h4>
@@ -158,15 +159,13 @@
       </p>
       <!-- The cost and the RTP in ONE sentence. Stake's checklist wants the
            cost of every mode stated in the rules ("Game modes include
-           description and cost information"), so it cannot simply go - but as
-           a line of its own above this one it read as a rule in its own right,
-           when all it says is that the three modes are priced the same.
-           Both figures are interpolated rather than written into the string:
-           they used to be typed into all 17 locale files, where nothing could
-           compare them to the cost the round is priced at or the RTP the math
-           is reweighted to. The word "Every" is the half a placeholder cannot
-           fix; if the families ever stop sharing a cost, this sentence needs
-           rewriting, not just re-interpolating. -->
+           description and cost information"). Both figures are interpolated
+           rather than written into the string: they used to be typed into all
+           17 locale files, where nothing could compare them to the cost the
+           round is priced at or the RTP the math is reweighted to. "This
+           mode", because the families stopped sharing a cost when Three of a
+           Kind arrived at 250x - the sentence follows the tab, so the cost it
+           states is always the one for the rules on screen. -->
       <p>
         {t('This mode costs %c× your bet. Every mode returns the same %s over many rounds; what changes is how often a round pays and how much it can pay.')
           .replace('%c', String(viewingRules.cost))
@@ -176,7 +175,7 @@
       <div class="mode-tabs" role="tablist" aria-label={t('Game modes')}>
         <!-- Volatility order, matching the mode picker's rows. These tabs draw
              no bolt meter of their own, so the ordering is not load-bearing
-             here the way it is there - but the same three modes listed in two
+             here the way it is there - but the same four modes listed in two
              different orders on two screens a player moves between is its own
              small confusion, and the picker's is the order that means
              something. See FAMILIES_BY_VOLATILITY. -->
@@ -199,10 +198,12 @@
 
       <div class="mode-panel">
         <p class="mode-panel-blurb">{t(FAMILY_BLURB[viewing])}</p>
-        <!-- The deck, on the family that does not deal the standard 52. Stated
-             before any figure, because every figure below follows from it. -->
+        <!-- The odds, on the family that does not deal the standard 52. Only
+             what the blurb above does not already say - it used to restate the
+             deck and the match rule a second time - and stated before any
+             figure, because every figure below follows from it. -->
         {#if viewingFixed}
-          <p class="mode-panel-blurb">{t('Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.')}</p>
+          <p class="mode-panel-blurb">{t('Card 1 is dealt, not guessed. The deck holds one Ace, King and Queen of each suit, so card 2 matches 3 times in 11 and card 3 twice in 10.')}</p>
         {/if}
         <p class="mode-panel-max">
           {t('Max win')} <strong>{viewingRules.maxWin}×</strong> {t('Bet')}
@@ -211,7 +212,7 @@
              headline for a mode a player is choosing between: some combination
              in it really does pay that. It is not what the bet in front of them
              pays. Every four-guess combination is its own published bet mode -
-             192 of them - and only 8 of each family's 64 reach the family
+             192 of the 193 - and only 8 of each family's 64 reach the family
              ceiling; the median Classic mode stops at 268.8x against a stated
              1354.2x. Stake asks for the maximum win to be stated per bet mode
              and to be realistically obtainable, so both numbers belong here,
@@ -248,7 +249,9 @@
             <tr>
               <th scope="col">{t('Card')}</th>
               <th scope="col">{t('Pick')}</th>
-              <th scope="col" class="num">{t('Pays')}</th>
+              <!-- "Pays" over per-pick factors; "Total" over the fixed family's
+                   running totals - see PayoutRow.kind for why they differ. -->
+              <th scope="col" class="num">{t(payoutColumnFor(viewingRules))}</th>
             </tr>
           </thead>
           <tbody>
@@ -279,13 +282,22 @@
              The figures in the table are the true factors and must stay at 2dp:
              rounding them to 1.9x would make the table WRONG, because two 1.99x
              stages compound to 3.96x, not 3.61x. -->
-        <p>{t('Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.')}</p>
+        {#if viewingFixed}
+          <!-- The fixed family's rows ARE the running totals, so the
+               reconciliation the paragraph below does for factors is not
+               needed; what is worth saying is that these are the board's own
+               numbers and that only the last one pays. -->
+          <p>{t('Each figure is the running total after that card, in multiples of your bet, exactly as the board shows it beside the cards. Only the last card pays.')}</p>
+        {:else}
+          <p>{t('Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.')}</p>
+        {/if}
 
         <!-- Computed per mode. This was once a single fixed list saying both
              "Card 2 - you get 0.5x your bet back" AND "you keep 30%", which
              reads as a contradiction: both are true of Classic (30% of the
              running total at card 2 IS 0.5x the bet) and only of Classic. -->
-        <h5 class="info-sub">{t('If you guess wrong')}</h5>
+        <!-- No guesses on the fixed family, so no "guess wrong" there either. -->
+        <h5 class="info-sub">{viewingFixed ? t('If a card does not match') : t('If you guess wrong')}</h5>
         <ul>
           {#each bustRules as row}
             <!-- Through t(), like every other string here. It was rendered raw for
@@ -328,7 +340,7 @@
         <li>{t('Mode opens the game-mode picker. Switching asks you to confirm before it applies.')}</li>
         <li>{t('Plus and minus set your bet. Tap the amount for the quick-bet menu.')}</li>
         <li>{t('The lightning button is Turbo: how fast the cards flip, from Normal to Instant.')}</li>
-        <li>{t('The circular arrows open autoplay, which repeats your four guesses for a set number of rounds or unlimited. The counter sits on the button while it runs.')}</li>
+        <li>{t('The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.')}</li>
         <li>{t('The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.')}</li>
         <li>{t('The speaker opens the sound settings. Music and game sounds mute separately.')}</li>
         <li>{t('The i button opens this screen.')}</li>
@@ -336,7 +348,9 @@
       </ul>
 
       <h4 class="info-h">{t('Game information')}</h4>
-      <p>{t('This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.')}</p>
+      <!-- "The cards it deals", not "four cards": Three of a Kind deals three,
+           and this sentence is the one a reviewer checks the rules against. -->
+      <p>{t('This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.')}</p>
       <!-- Required for approval, and required HERE specifically: the rules /
            information popup must state the RTP and must carry the legal
            disclaimer, and this popup is what the `i` button opens, so it is

@@ -65,7 +65,7 @@ export default {
 	'Game modes': 'Modos de jogo',
 	'Max win': 'Ganho máximo',
 	// Confirmation before a bet mode is activated - required by the approval
-	// checklist, and worth having anyway: the three families cost the same but
+	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
 	'Switch mode?': 'Mudar de modo?',
 	Cancel: 'Cancelar',
@@ -111,6 +111,8 @@ export default {
 	Card: 'Carta',
 	Pick: 'Escolha',
 	Pays: 'Paga',
+	'Total':
+		'Acumulado',
 	'Red or Black': 'Vermelho ou preto',
 	'Any suit': 'Qualquer naipe',
 	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
@@ -194,6 +196,8 @@ export default {
 	Mode: 'Modo',
 	'Game mode': 'Modo de jogo',
 	Guesses: 'Palpites',
+	Cards: 'Cartas',
+	'Round cost': 'Custo da rodada',
 	Event: 'Evento',
 	Payout: 'Pagamento',
 	Play: 'Reproduzir',
@@ -207,16 +211,16 @@ export default {
 	'The i button opens this screen.': 'O botão i abre esta tela.',
 	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
 		'O botão do raio é o Turbo: a rapidez com que as cartas viram, de Normal a Instantâneo.',
-	'The circular arrows open autoplay, which repeats your four guesses for a set number of rounds or unlimited. The counter sits on the button while it runs.':
-		'As setas circulares abrem o jogo automático, que repete seus quatro palpites por um número definido de rodadas ou sem limite. O contador fica no botão enquanto ele roda.',
+	'The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.':
+		'As setas circulares abrem o jogo automático, que repete a mesma aposta por um número definido de rodadas ou sem limite. O contador fica no botão enquanto ele roda.',
 	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
 		'O botão dos controles deslizantes reúne duas opções do jogo automático: parar ao vencer o jogo completo e pular as animações de ganho.',
 	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
 		'O botão redondo grande distribui a rodada. A barra de espaço também: toque para uma rodada, mantenha pressionada para continuar distribuindo. Enquanto o jogo automático roda, o botão vira Parar e a rodada em andamento termina primeiro.',
 	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
 		'Modo abre o seletor de modo de jogo. Mudar pede confirmação antes de se aplicar.',
-	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'Este jogo não tem rodadas grátis, rodadas de bônus, jackpots ou funções de reativação. Cada rodada é um único sorteio independente de quatro cartas.',
+	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
+		'Este jogo não tem rodadas grátis, rodadas de bônus, jackpots ou funções de reativação. Cada rodada é uma única distribuição independente: quatro cartas nos modos de palpite, três em Trinca.',
 	'Big Win': 'Grande Ganho',
 	'Huge Win': 'Ganho Enorme',
 	'Mega Win': 'Mega Ganho',
@@ -254,16 +258,22 @@ export default {
 		'Qualquer',
 	'Any card':
 		'Qualquer carta',
-	'Any wrong guess':
-		'Qualquer palpite errado',
-	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
-		'Jogado com um baralho de 12 cartas: o ás, o rei e a dama de cada naipe. A carta 1 é distribuída; as cartas 2 e 3 têm de igualar o seu valor. Três cartas, um prémio.',
+	'A card that does not match':
+		'Uma carta que não coincide',
+	'If a card does not match':
+		'Se uma carta não coincidir',
+	'Card 1 is dealt, not guessed. The deck holds one Ace, King and Queen of each suit, so card 2 matches 3 times in 11 and card 3 twice in 10.':
+		'A carta 1 é distribuída, não adivinhada. O baralho tem um ás, um rei e uma dama de cada naipe, por isso a carta 2 coincide 3 vezes em 11 e a carta 3, 2 vezes em 10.',
+	'Each figure is the running total after that card, in multiples of your bet, exactly as the board shows it beside the cards. Only the last card pays.':
+		'Cada valor é o total acumulado após essa carta, em múltiplos da sua aposta, exatamente como a mesa o mostra ao lado das cartas. Só a última carta paga.',
 	'Three of a kind pays %m your bet, about one round in %n.':
 		'A trinca paga %m a sua aposta, cerca de uma rodada em cada %n.',
 	'%c× your base bet of %b':
 		'%c× a sua aposta base de %b',
 	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
 		'*Em %f. Cada modo de jogo tem o seu próprio prémio máximo, indicado no seletor de modo e em Como jogar.',
+	'That mode costs %c× your bet.':
+		'Esse modo custa %c× a sua aposta.',
 	'Card 2 must match card 1':
 		'A carta 2 tem de coincidir com a carta 1',
 	'Card 3 must match card 1':

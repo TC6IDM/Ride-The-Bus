@@ -11,6 +11,11 @@
  *   npm run shots -- --popups     -- all eight panels, opened and tabbed through
  *   npm run shots -- --errors     -- the error dialog, one round refused per code
  *   npm run shots -- --sizes --lang pl   -- any scenario in another locale
+ *   npm run shots -- --board --family tr -- the board/panels on another family
+ *                                           (opens the picker, confirms the row)
+ *   npm run shots -- --tag trips ...      -- prefix every file of this run
+ *   npm run shots -- --board --cur TZS --bet 200000 --balance 1e9
+ *                                        -- the plain game in another currency
  *
  * Shots land in scripts/.shots/ (git-ignored).
  *
@@ -90,6 +95,20 @@ const opts = {
   popups: flag('popups'),
   errors: flag('errors'),
   lang: value('lang', 'en'),
+  /* The plain game's family. `--board` and `--popups` open the game with no
+     round to replay, so nothing in the URL can pick a mode; the only way onto
+     Second Chance, High Stakes or Three of a Kind is the way a player takes -
+     the MODE button, a row, Switch. See switchFamily. */
+  family: value('family', null),
+  /* A prefix for every file this run writes, so two runs of the same scenario
+     on different families or currencies do not overwrite each other. */
+  tag: value('tag', ''),
+  /* The plain game's currency, opening bet, balance and cap - the dev-session
+     URL parameters game/dev/devSession.ts reads. Display units. */
+  cur: value('cur', 'USD'),
+  bet: value('bet', null),
+  balance: value('balance', null),
+  maxbet: value('maxbet', null),
   tiers:
     flag('tiers') ||
     (!flag('sizes') && !flag('reduced') && !flag('intro') && !flag('board') && !flag('popups') && !flag('errors')),
@@ -249,7 +268,7 @@ async function launch() {
     async shot(name) {
       mkdirSync(OUT, { recursive: true });
       const { data } = await send('Page.captureScreenshot', { format: 'png' });
-      const file = path.join(OUT, `${name}.png`);
+      const file = path.join(OUT, `${prefix()}${name}.png`);
       writeFileSync(file, Buffer.from(data, 'base64'));
       console.log(`  ${path.relative(ROOT, file)}`);
       return file;
@@ -330,6 +349,38 @@ async function startRound(page, mode, event) {
 }
 
 /**
+ * Put the plain game on another family, the way a player does.
+ *
+ * MODE button -> the row -> Switch. The rows are picked by the family's own
+ * colour variable (`--vol-<family>` on the row's inline style) rather than by
+ * their label, which is translated, or their position, which is volatility
+ * order and not publication order. Returns false if any step did not happen,
+ * so a caller can say so instead of shooting Classic under a trips filename.
+ */
+async function switchFamily(page, family) {
+  if (!(await page.click('.cb-mode-btn'))) return false;
+  if (!(await page.waitFor('.popup-mode', 4000))) return false;
+  await sleep(300);
+  const picked = await page.evaluate(
+    `const rows = [...document.querySelectorAll('.mode-option')];
+     const row = rows.find((r) => (r.getAttribute('style') || '').indexOf('--vol-${family})') >= 0);
+     if (!row) return 'no row';
+     if (row.classList.contains('selected')) { row.click(); return 'already'; }
+     row.click(); return 'picked';`,
+  );
+  if (picked === 'no row') return false;
+  if (picked === 'already') {
+    await sleep(300);
+    return true;
+  }
+  if (!(await page.waitFor('.mode-confirm-go', 3000))) return false;
+  await sleep(200);
+  await page.click('.mode-confirm-go');
+  await sleep(500);
+  return !(await page.evaluate("return !!document.querySelector('.popup-mode');"));
+}
+
+/**
  * Shoot every tier the count-up climbs through.
  *
  * A max win passes big -> huge -> mega -> epic -> max on its way up, so one
@@ -377,10 +428,30 @@ async function shootSize(page, tag) {
       console.log(`  ${tag}: ${state.title} ${state.amount}  [${state.titleFace}]`);
       return;
     }
+    // A round that never takes the screen over - a loss, or a win under the
+    // entry tier - settles on the BOARD, and that board is worth a shot too:
+    // it is the only place the bust cross, the "Busted" bar and the settled
+    // Last Win readout can be seen together.
+    if (!state) {
+      const board = await page.evaluate(BOARD_SETTLED);
+      if (board) {
+        await sleep(900);
+        await page.shot(`size-${tag}-board`);
+        console.log(`  ${tag}: settled on the board - ${board}`);
+        return;
+      }
+    }
     await sleep(160);
   }
   console.log(`  ${tag}: timed out`);
 }
+
+/** The running-win bar once a round has settled without a takeover. */
+const BOARD_SETTLED = [
+  "const bar = document.querySelector('.running-win.is-loss, .running-win.is-win');",
+  'if (!bar) return null;',
+  "return bar.textContent.trim().replace(/\\s+/g, ' ');",
+].join('');
 
 /**
  * The two screens before the board: the intro's four dealt panels, and the
@@ -461,7 +532,14 @@ const BOARD_STATE = [
 
 /** The plain game - no replay, so the board sits idle with the bar live. */
 const plainUrl = (extra = '') =>
-  `http://localhost:${GAME_PORT}/?currency=USD&lang=${opts.lang}${extra}`;
+  `http://localhost:${GAME_PORT}/?currency=${opts.cur}&lang=${opts.lang}` +
+  (opts.bet ? `&bet=${opts.bet}` : '') +
+  (opts.balance ? `&balance=${opts.balance}` : '') +
+  (opts.maxbet ? `&maxbet=${opts.maxbet}` : '') +
+  extra;
+
+/** `<tag>-` when a run was given one, so its files do not overwrite another's. */
+const prefix = () => (opts.tag ? `${opts.tag}-` : '');
 
 /**
  * The board and the bar at rest, which no other mode captures.
@@ -482,8 +560,12 @@ async function shootBoard(page, tag, rg) {
     console.log(`  ${tag}: never reached the board`);
     return;
   }
+  if (opts.family && !(await switchFamily(page, opts.family))) {
+    console.log(`  ${tag}: could not switch to ${opts.family}`);
+    return;
+  }
   await sleep(500);
-  await page.shot(`board-${tag}`);
+  await page.shot(`board-${opts.family ? opts.family + '-' : ''}${tag}`);
   const b = await page.evaluate(BOARD_STATE);
   if (!b) {
     console.log(`  ${tag}: no bar`);
@@ -651,8 +733,45 @@ async function shootPopups(page, tag) {
     console.log('  ' + tag + ': never reached the board');
     return;
   }
+  if (opts.family && !(await switchFamily(page, opts.family))) {
+    console.log('  ' + tag + ': could not switch to ' + opts.family);
+    return;
+  }
+  const fam = opts.family ? opts.family + '-' : '';
   for (const [name, opener, panelSel] of PANELS) {
-    await shootPanel(page, tag, name, opener, panelSel);
+    await shootPanel(page, fam + tag, name, opener, panelSel);
+    await sleep(250);
+    // The picker has a second screen the tab walk never reaches: the
+    // confirmation a different row opens. Stake's checklist is about exactly
+    // that screen (cost stated before a mode is activated), so it is shot on
+    // its own - the first row that is not the live family, then Cancel.
+    if (name === 'mode') await shootModeConfirm(page, fam + tag);
+  }
+}
+
+async function shootModeConfirm(page, tag) {
+  if (!(await page.click('.cb-mode-btn'))) return;
+  if (!(await page.waitFor('.popup-mode', 4000))) return;
+  await sleep(300);
+  const row = await page.evaluate(
+    "const r = document.querySelector('.mode-option:not(.selected)');" +
+      "if (!r) return null; r.click(); return r.querySelector('.mode-option-name')?.textContent.trim();",
+  );
+  if (!row || !(await page.waitFor('.mode-confirm', 3000))) {
+    console.log('  mode-confirm: no confirmation appeared');
+  } else {
+    await sleep(420);
+    await page.shot('popup-mode-confirm-' + tag);
+    const lines = await page.evaluate(
+      "return [...document.querySelectorAll('.mode-confirm p, .mode-confirm-name')]" +
+        ".map((n) => n.textContent.trim().replace(/\\s+/g, ' '));",
+    );
+    console.log('  mode-confirm (' + row + '): ' + lines.join('  |  '));
+  }
+  await page.key('Escape', 'Escape', 27);
+  await sleep(250);
+  if (await page.evaluate("return !!document.querySelector('.popup-mode');")) {
+    await page.click('.popup-close');
     await sleep(250);
   }
 }
@@ -858,7 +977,7 @@ Intro + details  ${opts.mode} #${opts.event}`);
 
   if (opts.board) {
     console.log(`
-Board + bar  plain game, idle`);
+Board + bar  plain game, idle${opts.family ? ' on ' + opts.family : ''}  ${opts.cur}`);
     for (const [tag, w, h, mobile] of SIZES) {
       await page.viewport(w, h, mobile);
       await shootBoard(page, tag, tag === 'desktop');

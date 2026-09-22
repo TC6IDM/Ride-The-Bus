@@ -782,7 +782,7 @@ between a one-row bar and a two-row one.
 
 ## Current state and outstanding work
 
-759/759 tests (none skipped), 0 type errors, 0 CSS warnings, lint clean, and
+769/769 tests (none skipped), 0 type errors, 0 CSS warnings, lint clean, and
 the client reproduces the published books of all **193** modes exactly — the
 parity test replays a 400-book slice of every mode off `index.json`, three-card
 trips books included. The build on disk is the **2026-09-20 23:15** one: High
@@ -795,7 +795,7 @@ that read them skip on an absent or stale build (`game/mathBuild.testlib.ts`).
 **What that build measured.** The four-guess families clear the **2-star**
 limits: worst std 36.58 (limit 0.6–50.0), worst etl40b 0.725 (limit 0.8), worst
 CVaR 624.6 on `hs_red_equal_equal_heart` (limit 700), worst non-zero hit rate
-1 in 2.03 (limit 1 in 20), P(≥5,000×) zero. Three of a Kind: RTP 96.0000%,
+1 in 2.11 (limit 1 in 20), P(≥5,000×) zero. Three of a Kind: RTP 96.0000%,
 non-zero hit rate 1 in 19.10 (94.8% pay nothing), max 458330 raw, P(≥5,000×) 0,
 etl40b 0, etl10k 0, CVaR 4,583.3 absolute = 18.3 per stake — as predicted.
 
@@ -823,7 +823,7 @@ Read it when planning work. It also carries the local dev tooling: the replay
 RGS, `npm run dev`, the six scenario aliases, and the headless CDP driver
 (`npm run shots`) that every visual judgement in this repo has been made with.
 
-The single biggest open item: **`RGS_TEST_PLAN.md` holds 97 live-session checks
+The single biggest open item: **`RGS_TEST_PLAN.md` holds 101 live-session checks
 and none has been run.** They need a real Stake session and cannot be done
 locally.
 

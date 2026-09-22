@@ -65,7 +65,7 @@ export default {
 	'Game modes': 'Chế độ chơi',
 	'Max win': 'Thắng tối đa',
 	// Confirmation before a bet mode is activated - required by the approval
-	// checklist, and worth having anyway: the three families cost the same but
+	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
 	'Switch mode?': 'Đổi chế độ?',
 	Cancel: 'Hủy',
@@ -112,6 +112,8 @@ export default {
 	Card: 'Lá bài',
 	Pick: 'Lựa chọn',
 	Pays: 'Trả',
+	'Total':
+		'Tổng',
 	'Red or Black': 'Đỏ hoặc đen',
 	'Any suit': 'Bất kỳ chất nào',
 	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
@@ -196,6 +198,8 @@ export default {
 	Mode: 'Chế độ',
 	'Game mode': 'Chế độ chơi',
 	Guesses: 'Dự đoán',
+	Cards: 'Lá bài',
+	'Round cost': 'Chi phí ván',
 	Event: 'Sự kiện',
 	Payout: 'Tiền thưởng',
 	Play: 'Phát',
@@ -209,16 +213,16 @@ export default {
 	'The i button opens this screen.': 'Nút i mở màn hình này.',
 	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
 		'Nút tia chớp là Turbo: tốc độ lật bài, từ Bình thường đến Tức thì.',
-	'The circular arrows open autoplay, which repeats your four guesses for a set number of rounds or unlimited. The counter sits on the button while it runs.':
-		'Mũi tên vòng tròn mở tự động chơi, lặp lại bốn dự đoán của bạn trong số vòng đã đặt hoặc không giới hạn. Bộ đếm hiển thị trên nút khi đang chạy.',
+	'The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.':
+		'Mũi tên vòng tròn mở tự động chơi, lặp lại cùng một mức cược trong số vòng đã đặt hoặc không giới hạn. Bộ đếm hiển thị trên nút khi đang chạy.',
 	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
 		'Nút thanh trượt chứa hai tùy chọn tự động chơi: dừng khi thắng toàn ván, và bỏ qua hiệu ứng thắng.',
 	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
 		'Nút tròn lớn chia bài cho một vòng. Phím cách cũng vậy: nhấn để chơi một vòng, giữ để chia tiếp. Khi tự động chơi đang chạy, nút này trở thành Dừng và vòng đang chơi sẽ kết thúc trước.',
 	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
 		'Chế độ mở bảng chọn chế độ chơi. Việc chuyển đổi sẽ yêu cầu xác nhận trước khi áp dụng.',
-	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'Trò chơi này không có vòng quay miễn phí, vòng thưởng, jackpot hay tính năng kích hoạt lại. Mỗi vòng là một lượt rút bốn lá bài độc lập.',
+	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
+		'Trò chơi này không có vòng quay miễn phí, vòng thưởng, jackpot hay tính năng kích hoạt lại. Mỗi vòng là một lần chia bài độc lập: bốn lá ở các chế độ dự đoán, ba lá ở Bộ ba.',
 	'Big Win': 'Thắng Lớn',
 	'Huge Win': 'Thắng Khổng Lồ',
 	'Mega Win': 'Siêu Thắng',
@@ -256,16 +260,22 @@ export default {
 		'Bất kỳ',
 	'Any card':
 		'Lá bài bất kỳ',
-	'Any wrong guess':
-		'Bất kỳ lần đoán sai nào',
-	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
-		'Chơi với bộ bài 12 lá: Át, Già và Đầm của mỗi chất. Lá 1 được chia; lá 2 và lá 3 phải cùng hạng với nó. Ba lá bài, một lần thắng.',
+	'A card that does not match':
+		'Một lá bài không khớp',
+	'If a card does not match':
+		'Nếu một lá bài không khớp',
+	'Card 1 is dealt, not guessed. The deck holds one Ace, King and Queen of each suit, so card 2 matches 3 times in 11 and card 3 twice in 10.':
+		'Lá 1 được chia, không phải đoán. Bộ bài có một Át, một K và một Q của mỗi chất, nên lá 2 khớp 3 lần trong 11 và lá 3 khớp 2 lần trong 10.',
+	'Each figure is the running total after that card, in multiples of your bet, exactly as the board shows it beside the cards. Only the last card pays.':
+		'Mỗi con số là tổng cộng dồn sau lá bài đó, tính theo bội số tiền cược của bạn, đúng như bàn chơi hiển thị cạnh các lá bài. Chỉ lá bài cuối cùng mới trả thưởng.',
 	'Three of a kind pays %m your bet, about one round in %n.':
 		'Bộ ba trả %m tiền cược của bạn, khoảng một ván trong %n ván.',
 	'%c× your base bet of %b':
 		'%c× tiền cược cơ bản %b của bạn',
 	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
 		'*Ở chế độ %f. Mỗi chế độ chơi có mức thắng tối đa riêng, hiển thị trong phần chọn chế độ và Cách chơi.',
+	'That mode costs %c× your bet.':
+		'Chế độ đó tốn %c× tiền cược của bạn.',
 	'Card 2 must match card 1':
 		'Lá 2 phải trùng với lá 1',
 	'Card 3 must match card 1':

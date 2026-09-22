@@ -65,7 +65,7 @@ export default {
 	'Game modes': 'Режимы игры',
 	'Max win': 'Макс. выигрыш',
 	// Confirmation before a bet mode is activated - required by the approval
-	// checklist, and worth having anyway: the three families cost the same but
+	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
 	'Switch mode?': 'Сменить режим?',
 	Cancel: 'Отмена',
@@ -111,6 +111,8 @@ export default {
 	Card: 'Карта',
 	Pick: 'Выбор',
 	Pays: 'Выплата',
+	'Total':
+		'Итого',
 	'Red or Black': 'Красная или чёрная',
 	'Any suit': 'Любая масть',
 	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
@@ -192,6 +194,8 @@ export default {
 	Mode: 'Режим',
 	'Game mode': 'Режим игры',
 	Guesses: 'Прогнозы',
+	Cards: 'Карты',
+	'Round cost': 'Стоимость раунда',
 	Event: 'Событие',
 	Payout: 'Выплата',
 	Play: 'Воспроизвести',
@@ -205,16 +209,16 @@ export default {
 	'The i button opens this screen.': 'Кнопка i открывает этот экран.',
 	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
 		'Кнопка с молнией включает Турбо: скорость переворота карт, от Обычной до Мгновенной.',
-	'The circular arrows open autoplay, which repeats your four guesses for a set number of rounds or unlimited. The counter sits on the button while it runs.':
-		'Круговые стрелки открывают автоигру, которая повторяет ваши четыре прогноза заданное число раундов или без ограничения. Счётчик отображается на кнопке во время работы.',
+	'The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.':
+		'Круговые стрелки открывают автоигру, которая повторяет ту же ставку заданное число раундов или без ограничения. Счётчик отображается на кнопке во время работы.',
 	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
 		'Кнопка с ползунками содержит две настройки автоигры: остановка при полной победе и пропуск анимаций выигрыша.',
 	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
 		'Большая круглая кнопка сдаёт раунд. Пробел делает то же самое: нажмите для одного раунда, удерживайте, чтобы сдавать дальше. Во время автоигры кнопка становится «Стоп», а текущий раунд сначала доигрывается.',
 	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
 		'Режим открывает выбор режима игры. Смена требует подтверждения, прежде чем вступит в силу.',
-	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'В этой игре нет бесплатных вращений, бонусных раундов, джекпотов и функций повторного запуска. Каждый раунд представляет собой одну независимую раздачу из четырёх карт.',
+	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
+		'В этой игре нет бесплатных вращений, бонусных раундов, джекпотов и функций повторного запуска. Каждый раунд — одна независимая раздача: четыре карты в режимах с прогнозами, три в режиме «Тройка».',
 	'Big Win': 'Крупный выигрыш',
 	'Huge Win': 'Огромный выигрыш',
 	'Mega Win': 'Мега-выигрыш',
@@ -253,16 +257,22 @@ export default {
 		'Любая',
 	'Any card':
 		'Любая карта',
-	'Any wrong guess':
-		'Любая ошибка',
-	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
-		'Игра идёт колодой из 12 карт: туз, король и дама каждой масти. Карта 1 сдаётся; карты 2 и 3 должны совпасть с ней по достоинству. Три карты, один выигрыш.',
+	'A card that does not match':
+		'Карта, которая не совпала',
+	'If a card does not match':
+		'Если карта не совпала',
+	'Card 1 is dealt, not guessed. The deck holds one Ace, King and Queen of each suit, so card 2 matches 3 times in 11 and card 3 twice in 10.':
+		'Карта 1 сдаётся, её не угадывают. В колоде по одному тузу, королю и даме каждой масти, поэтому карта 2 совпадает в 3 случаях из 11, а карта 3 — в 2 из 10.',
+	'Each figure is the running total after that card, in multiples of your bet, exactly as the board shows it beside the cards. Only the last card pays.':
+		'Каждое число — это накопленный итог после этой карты, в кратных вашей ставке, ровно так, как стол показывает его рядом с картами. Выплачивает только последняя карта.',
 	'Three of a kind pays %m your bet, about one round in %n.':
 		'Тройка платит %m вашей ставки, примерно один раунд из %n.',
 	'%c× your base bet of %b':
 		'%c× вашей базовой ставки %b',
 	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
 		'*В режиме %f. У каждого режима свой максимальный выигрыш, он показан в выборе режима и в разделе «Как играть».',
+	'That mode costs %c× your bet.':
+		'Этот режим стоит %c× вашей ставки.',
 	'Card 2 must match card 1':
 		'Карта 2 должна совпасть с картой 1',
 	'Card 3 must match card 1':

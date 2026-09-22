@@ -66,7 +66,7 @@ export default {
 	'Game modes': 'أوضاع اللعبة',
 	'Max win': 'أقصى ربح',
 	// Confirmation before a bet mode is activated - required by the approval
-	// checklist, and worth having anyway: the three families cost the same but
+	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
 	'Switch mode?': 'تغيير الوضع؟',
 	Cancel: 'إلغاء',
@@ -113,6 +113,8 @@ export default {
 	Card: 'البطاقة',
 	Pick: 'الاختيار',
 	Pays: 'يدفع',
+	'Total':
+		'الإجمالي',
 	'Red or Black': 'أحمر أو أسود',
 	'Any suit': 'أي نوع',
 	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
@@ -195,6 +197,8 @@ export default {
 	Mode: 'الوضع',
 	'Game mode': 'وضع اللعبة',
 	Guesses: 'التخمينات',
+	Cards: 'الأوراق',
+	'Round cost': 'تكلفة الجولة',
 	Event: 'الحدث',
 	Payout: 'العائد',
 	Play: 'تشغيل',
@@ -208,16 +212,16 @@ export default {
 	'The i button opens this screen.': 'زر i يفتح هذه الشاشة.',
 	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
 		'زر البرق هو التيربو: مدى سرعة قلب البطاقات، من عادي إلى فوري.',
-	'The circular arrows open autoplay, which repeats your four guesses for a set number of rounds or unlimited. The counter sits on the button while it runs.':
-		'السهمان الدائريان يفتحان اللعب التلقائي، الذي يكرر تخميناتك الأربعة لعدد محدد من الجولات أو بلا حد. يظهر العدّاد على الزر أثناء التشغيل.',
+	'The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.':
+		'السهمان الدائريان يفتحان اللعب التلقائي، الذي يكرر الرهان نفسه لعدد محدد من الجولات أو بلا حد. يظهر العدّاد على الزر أثناء التشغيل.',
 	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
 		'زر المنزلقات يضم خيارين للعب التلقائي: التوقف عند الفوز الكامل، وتخطي مؤثرات الفوز.',
 	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
 		'الزر الدائري الكبير يوزّع الجولة. ومفتاح المسافة كذلك: اضغطه لجولة واحدة أو اضغطه باستمرار لمواصلة التوزيع. أثناء اللعب التلقائي يتحول الزر إلى إيقاف، وتُكمَل الجولة الجارية أولًا.',
 	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
 		'زر الوضع يفتح قائمة أوضاع اللعبة. يطلب التبديل تأكيدك قبل تطبيقه.',
-	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'لا تحتوي هذه اللعبة على لفات مجانية أو جولات مكافأة أو جوائز كبرى أو ميزات إعادة التفعيل. كل جولة هي سحب مستقل واحد لأربع بطاقات.',
+	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
+		'لا تحتوي هذه اللعبة على لفات مجانية أو جولات مكافأة أو جوائز كبرى أو ميزات إعادة التفعيل. كل جولة هي توزيع مستقل واحد: أربع أوراق في أوضاع التخمين، وثلاث في ثلاث متشابهة.',
 	'Big Win': 'فوز كبير',
 	'Huge Win': 'فوز ضخم',
 	'Mega Win': 'فوز هائل',
@@ -255,16 +259,22 @@ export default {
 		'أي',
 	'Any card':
 		'أي ورقة',
-	'Any wrong guess':
-		'أي تخمين خاطئ',
-	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
-		'يُلعب بمجموعة من 12 ورقة: الآس والملك والملكة من كل نوع. تُوزَّع الورقة 1؛ ويجب أن تطابق الورقتان 2 و3 رتبتها. ثلاث أوراق وفوز واحد.',
+	'A card that does not match':
+		'ورقة لا تطابق',
+	'If a card does not match':
+		'إذا لم تطابق ورقة',
+	'Card 1 is dealt, not guessed. The deck holds one Ace, King and Queen of each suit, so card 2 matches 3 times in 11 and card 3 twice in 10.':
+		'تُوزَّع الورقة 1 ولا تُخمَّن. تضم المجموعة آسًا وملكًا وملكة من كل نوع، لذا تطابق الورقة 2 في 3 من 11 مرة، والورقة 3 في 2 من 10.',
+	'Each figure is the running total after that card, in multiples of your bet, exactly as the board shows it beside the cards. Only the last card pays.':
+		'كل رقم هو الإجمالي المتراكم بعد تلك الورقة، بمضاعفات رهانك، تمامًا كما تعرضه الطاولة بجانب الأوراق. الورقة الأخيرة وحدها هي التي تدفع.',
 	'Three of a kind pays %m your bet, about one round in %n.':
 		'الثلاث المتشابهة تدفع %m من رهانك، أي نحو جولة واحدة من كل %n.',
 	'%c× your base bet of %b':
 		'%c× من رهانك الأساسي البالغ %b',
 	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
 		'*في وضع %f. لكل وضع لعب حده الأقصى للفوز، ويظهر في اختيار الوضع وفي طريقة اللعب.',
+	'That mode costs %c× your bet.':
+		'تكلفة هذا الوضع %c× رهانك.',
 	'Card 2 must match card 1':
 		'يجب أن تطابق الورقة 2 الورقة 1',
 	'Card 3 must match card 1':

@@ -123,7 +123,7 @@ describe('volatility ruler', () => {
 
   test('the family ruler is used end to end', () => {
     // 1/2/3 drawn on a wider meter would say nothing is ever very volatile,
-    // which is false of a mode that can pay 2169x - or 25,000x.
+    // which is false of a mode that can pay 2169x - or 4,583x.
     const counts = MODE_FAMILIES.map((family) => FAMILY_BOLTS[family]);
     assert.equal(Math.min(...counts), 1);
     assert.equal(Math.max(...counts), VOLATILITY_BOLTS);

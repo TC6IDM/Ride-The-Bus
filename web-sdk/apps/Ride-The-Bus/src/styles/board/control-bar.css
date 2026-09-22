@@ -749,11 +749,12 @@
  * The one control in the bar that changes what a round IS rather than how it
  * looks, and it now says WHICH one: it wears the selected family's own
  * volatility colour - green on Second Chance, yellow on Classic, red on High
- * Stakes - the same three the picker's rows, the bolts and the bet display are
- * already burning. --vol-color / --vol-rgb are the FAMILY's rating, published
- * on the whole .control-bar (see Game.svelte). Deliberately not the live one:
- * the Equal picks that can push a rating past a family ceiling are a property
- * of the bet, not of the mode, so this button is never purple.
+ * Stakes, purple on Three of a Kind - the same four the picker's rows, the
+ * bolts and the bet display are already burning. --vol-color / --vol-rgb are
+ * the FAMILY's rating, published on the whole .control-bar (see Game.svelte).
+ * Deliberately not the live one: the Equal picks that push a four-guess rating
+ * up the ruler are a property of the bet, not of the mode. Purple here means
+ * one thing only - the fourth family is in play.
  *
  * That replaces a gold identity, and the trade is worth naming. Gold said
  * "this is the mode control" and nothing else; the bar has five controls that
@@ -895,7 +896,7 @@
 
    Shown on every family now, Classic included. It was hidden there while the
    line was only a name, which was right - but it carries the volatility meter
-   as well now, and that is the one thing distinguishing three modes that all
+   as well now, and that is the one thing distinguishing the three guess modes, which all
    cost the same. It also means the bar no longer changes height when the mode
    changes.
 

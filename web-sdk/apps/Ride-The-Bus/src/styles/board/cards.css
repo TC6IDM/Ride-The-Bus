@@ -101,6 +101,15 @@
   transform: translateY(0);
 }
 
+/* A chip that reads 0.00x is a bust that kept nothing - Three of a Kind's
+   only kind, and a card-1 miss on every family. The dim ink, not the win
+   green: the figure is a loss, and the red cross on the card beside it is
+   already saying so. Colour is the one property, so the scrim and shadow
+   that hold the figure against the felt are untouched. */
+.card-mult.is-zero {
+  color: var(--ink-dim);
+}
+
 /* ---- Hidden while the win takeover counts -------------------------------
    These are the only two things on the board that print a FIGURE, and both
    print the finished one: .running-win reads "Full Game Win! $1,354.20" and the

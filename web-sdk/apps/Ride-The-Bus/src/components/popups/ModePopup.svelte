@@ -134,9 +134,9 @@
     {:else}
     <div class="mode-list">
       <!-- Volatility order, not publication order. MODE_FAMILIES is
-           ['base','sc','hs'] because that is what the math publishes, so these
-           rows used to draw 3, 1, 5 bolts down the column - a ruler beside
-           three values in no order. See FAMILIES_BY_VOLATILITY. -->
+           ['base','sc','hs','tr'] because that is what the math publishes, so
+           these rows used to draw 3, 1, 5 bolts down the column - a ruler
+           beside values in no order. See FAMILIES_BY_VOLATILITY. -->
       {#each FAMILIES_BY_VOLATILITY as family}
         {@const rules = FAMILY_RULES[family]}
         <button

@@ -65,7 +65,7 @@ export default {
 	'Game modes': 'ゲームモード',
 	'Max win': '最大配当',
 	// Confirmation before a bet mode is activated - required by the approval
-	// checklist, and worth having anyway: the three families cost the same but
+	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
 	'Switch mode?': 'モードを変更しますか？',
 	Cancel: 'キャンセル',
@@ -111,6 +111,8 @@ export default {
 	Card: 'カード',
 	Pick: '予想',
 	Pays: '配当',
+	'Total':
+		'合計',
 	'Red or Black': '赤か黒',
 	'Any suit': '任意のスート',
 	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
@@ -194,6 +196,8 @@ export default {
 	Mode: 'モード',
 	'Game mode': 'ゲームモード',
 	Guesses: '予想',
+	Cards: 'カード',
+	'Round cost': 'ラウンドのコスト',
 	Event: 'イベント',
 	Payout: '配当',
 	Play: '再生',
@@ -207,16 +211,16 @@ export default {
 	'The i button opens this screen.': 'i ボタンでこの画面を開きます。',
 	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
 		'稲妻ボタンはターボです。カードがめくられる速さを通常から瞬時まで調整します。',
-	'The circular arrows open autoplay, which repeats your four guesses for a set number of rounds or unlimited. The counter sits on the button while it runs.':
-		'円形の矢印でオートプレイを開きます。4つの予想を指定ラウンド数または無制限に繰り返し、実行中はボタンにカウンターが表示されます。',
+	'The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.':
+		'円形の矢印でオートプレイを開きます。同じベットを指定ラウンド数または無制限に繰り返し、実行中はボタンにカウンターが表示されます。',
 	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
 		'スライダーボタンにはオートプレイの設定が2つあります。フルゲーム達成で停止と、勝利演出のスキップです。',
 	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
 		'大きな丸いボタンでラウンドを配ります。スペースキーでも同様で、押すと1ラウンド、押し続けると配り続けます。オートプレイ中はボタンが停止に変わり、進行中のラウンドが先に終了します。',
 	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
 		'モードでゲームモードの選択画面を開きます。切り替えは適用前に確認を求めます。',
-	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'このゲームにはフリースピン、ボーナスラウンド、ジャックポット、再トリガー機能はありません。各ラウンドは独立した1回の4枚カードドローです。',
+	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
+		'このゲームにはフリースピン、ボーナスラウンド、ジャックポット、再トリガー機能はありません。各ラウンドは独立した1回の配札です：予想モードでは4枚、スリーカードでは3枚。',
 	'Big Win': '大当たり',
 	'Huge Win': '特大当たり',
 	'Mega Win': 'メガウィン',
@@ -253,16 +257,22 @@ export default {
 		'任意',
 	'Any card':
 		'任意のカード',
-	'Any wrong guess':
-		'外れたとき',
-	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
-		'12枚のデッキで遊びます：各スートのエース、キング、クイーン。カード1が配られ、カード2と3はその数字と一致する必要があります。3枚のカード、1つの勝ち。',
+	'A card that does not match':
+		'一致しないカード',
+	'If a card does not match':
+		'カードが一致しない場合',
+	'Card 1 is dealt, not guessed. The deck holds one Ace, King and Queen of each suit, so card 2 matches 3 times in 11 and card 3 twice in 10.':
+		'カード1は配られるだけで、予想はしません。デッキには各スートのエース、キング、クイーンが1枚ずつあるため、カード2は11回中3回、カード3は10回中2回一致します。',
+	'Each figure is the running total after that card, in multiples of your bet, exactly as the board shows it beside the cards. Only the last card pays.':
+		'各数値はそのカードまでの累計で、ベット額の倍率としてボードのカード横に表示されるものと同じです。配当があるのは最後のカードだけです。',
 	'Three of a kind pays %m your bet, about one round in %n.':
 		'スリーカードは賭け金の%mを支払います。およそ%nラウンドに1回です。',
 	'%c× your base bet of %b':
 		'基本賭け金%bの%c倍',
 	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
 		'*%fでの値です。ゲームモードごとに最大配当が異なり、モード選択と遊び方に表示されています。',
+	'That mode costs %c× your bet.':
+		'そのモードはベット額の%c倍かかります。',
 	'Card 2 must match card 1':
 		'カード2はカード1と同じ数字',
 	'Card 3 must match card 1':

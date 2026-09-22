@@ -65,7 +65,7 @@ export default {
 	'Game modes': 'गेम मोड',
 	'Max win': 'अधिकतम जीत',
 	// Confirmation before a bet mode is activated - required by the approval
-	// checklist, and worth having anyway: the three families cost the same but
+	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
 	'Switch mode?': 'मोड बदलें?',
 	Cancel: 'रद्द करें',
@@ -111,6 +111,8 @@ export default {
 	Card: 'कार्ड',
 	Pick: 'चुनाव',
 	Pays: 'भुगतान',
+	'Total':
+		'कुल',
 	'Red or Black': 'लाल या काला',
 	'Any suit': 'कोई भी सूट',
 	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
@@ -193,6 +195,8 @@ export default {
 	Mode: 'मोड',
 	'Game mode': 'गेम मोड',
 	Guesses: 'अनुमान',
+	Cards: 'कार्ड',
+	'Round cost': 'राउंड की लागत',
 	Event: 'इवेंट',
 	Payout: 'भुगतान',
 	Play: 'चलाएं',
@@ -206,16 +210,16 @@ export default {
 	'The i button opens this screen.': 'i बटन यह स्क्रीन खोलता है।',
 	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
 		'बिजली वाला बटन टर्बो है: कार्ड कितनी तेज़ी से पलटते हैं, सामान्य से तत्काल तक।',
-	'The circular arrows open autoplay, which repeats your four guesses for a set number of rounds or unlimited. The counter sits on the button while it runs.':
-		'गोल तीर ऑटोप्ले खोलते हैं, जो आपके चारों अनुमानों को तय संख्या के राउंड तक या असीमित दोहराता है। चलते समय गिनती बटन पर दिखती है।',
+	'The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.':
+		'गोल तीर ऑटोप्ले खोलते हैं, जो वही दांव तय संख्या के राउंड तक या असीमित दोबारा लगाता है। चलते समय गिनती बटन पर दिखती है।',
 	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
 		'स्लाइडर बटन में ऑटोप्ले के दो विकल्प हैं: पूरी जीत पर रोकें, और जीत एनिमेशन छोड़ें।',
 	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
 		'बड़ा गोल बटन राउंड बाँटता है। स्पेसबार भी: एक राउंड के लिए दबाएँ, बाँटते रहने के लिए दबाए रखें। ऑटोप्ले चलते समय यह बटन रोकें बन जाता है, और चल रहा राउंड पहले पूरा होता है।',
 	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
 		'मोड गेम-मोड चयनकर्ता खोलता है। बदलने से पहले पुष्टि माँगी जाती है।',
-	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'इस गेम में कोई फ्री स्पिन, बोनस राउंड, जैकपॉट या री-ट्रिगर फीचर नहीं है। हर राउंड चार कार्ड का एक अकेला, स्वतंत्र ड्रॉ है।',
+	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
+		'इस गेम में कोई फ्री स्पिन, बोनस राउंड, जैकपॉट या री-ट्रिगर फीचर नहीं है। हर राउंड एक अकेली, स्वतंत्र डील है: अनुमान वाले मोड में चार कार्ड, तीन एक जैसे में तीन।',
 	'Big Win': 'बड़ी जीत',
 	'Huge Win': 'विशाल जीत',
 	'Mega Win': 'मेगा जीत',
@@ -253,16 +257,22 @@ export default {
 		'कोई भी',
 	'Any card':
 		'कोई भी पत्ता',
-	'Any wrong guess':
-		'कोई भी गलत अनुमान',
-	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
-		'12 पत्तों की गड्डी से खेला जाता है: हर सूट का इक्का, बादशाह और बेगम। पत्ता 1 बांटा जाता है; पत्तों 2 और 3 का रैंक उससे मेल खाना चाहिए। तीन पत्ते, एक जीत।',
+	'A card that does not match':
+		'ऐसा कार्ड जो मेल न खाए',
+	'If a card does not match':
+		'अगर कोई कार्ड मेल न खाए',
+	'Card 1 is dealt, not guessed. The deck holds one Ace, King and Queen of each suit, so card 2 matches 3 times in 11 and card 3 twice in 10.':
+		'कार्ड 1 बाँटा जाता है, अनुमान नहीं लगाया जाता। डेक में हर सूट का एक इक्का, एक बादशाह और एक रानी है, इसलिए कार्ड 2 11 में से 3 बार और कार्ड 3 10 में से 2 बार मेल खाता है।',
+	'Each figure is the running total after that card, in multiples of your bet, exactly as the board shows it beside the cards. Only the last card pays.':
+		'हर आँकड़ा उस कार्ड के बाद का चालू योग है, आपके दांव के गुणकों में, ठीक वैसा ही जैसा बोर्ड कार्डों के पास दिखाता है। केवल आखिरी कार्ड भुगतान करता है।',
 	'Three of a kind pays %m your bet, about one round in %n.':
 		'तीन एक जैसे पत्ते आपकी बेट का %m देते हैं, लगभग हर %n राउंड में एक बार।',
 	'%c× your base bet of %b':
 		'आपकी %b की बेस बेट का %c×',
 	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
 		'*%f पर। हर गेम मोड की अपनी अधिकतम जीत है, जो मोड चयन और कैसे खेलें में दिखाई गई है।',
+	'That mode costs %c× your bet.':
+		'उस मोड की कीमत आपके दांव का %c× है।',
 	'Card 2 must match card 1':
 		'पत्ता 2 को पत्ते 1 से मेल खाना चाहिए',
 	'Card 3 must match card 1':

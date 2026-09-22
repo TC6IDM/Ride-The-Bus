@@ -29,14 +29,20 @@
 		onplay: () => void;
 	} = $props();
 
-	/** Turn a mode name like "red_higher_inside_heart" into a list of {label, cssClass} badges. */
 	/**
-	 * The four guesses a replayed round was placed on, as badges.
+	 * The tokens a replayed round was placed on, as badges - one per stage.
 	 *
 	 * Parsed through parseModeName so the family prefix comes off first. The old
 	 * version split on "_" and bailed unless it found exactly four parts, which
 	 * every Second Chance and High Stakes mode fails - "sc_red_higher_equal_spade"
 	 * has five - so those rounds printed the raw slug instead of their picks.
+	 *
+	 * Walks `parsed.choices`, the whole tuple, rather than the four named fields:
+	 * Three of a Kind deals three cards, so its slug has three tokens and its
+	 * `suit` is null. Reading the four fields drew a fourth, empty badge on every
+	 * trips replay. The stage decides the colour class - a colour badge, a pick
+	 * badge, a suit badge - because the same token ("equal") means a different
+	 * control at stages 2 and 3, and the class is what the stylesheet keys on.
 	 *
 	 * Labels are title-cased English, which is also the i18n key: the choice
 	 * words are already translated for the board's own controls, so they are
@@ -48,26 +54,26 @@
 		higher: 'Higher', lower: 'Lower',
 		inside: 'Inside', outside: 'Outside', equal: 'Equal',
 		heart: 'Heart', diamond: 'Diamond', club: 'Club', spade: 'Spade',
-		// Three of a Kind's dealt cards: no guess was made, and the badge says so.
+		// Three of a Kind's dealt card: no guess was made, and the badge says so.
 		any: 'Any',
 	} as const;
+
+	/** The class family for each stage of the slug: colour, pick, pick, suit. */
+	const STAGE_CLASS = ['color', 'choice', 'choice', 'suit'] as const;
 
 	function modeBadges(mode: string): { label: string; cssClass: string }[] {
 		const parsed = parseModeName(mode);
 		if (!parsed) return [{ label: mode, cssClass: '' }];
-		const { color, higherLower, insideOutside, suit } = parsed;
-		return [
-			{ label: t(CHOICE_LABEL[color]), cssClass: `color-${color}` },
-			{ label: t(CHOICE_LABEL[higherLower]), cssClass: `choice-${higherLower}` },
-			{ label: t(CHOICE_LABEL[insideOutside]), cssClass: `choice-${insideOutside}` },
-			{ label: t(CHOICE_LABEL[suit]), cssClass: `suit-${suit}` },
-		];
+		return parsed.choices.map((token, stage) => ({
+			label: t(CHOICE_LABEL[token]),
+			cssClass: `${STAGE_CLASS[stage]}-${token}`,
+		}));
 	}
 
-	/** Which of the three modes the replayed round was played on. */
-	function modeFamilyLabel(mode: string): string {
-		return t(FAMILY_RULES[parseModeName(mode)?.family ?? familyOf(mode)].label);
-	}
+	/** The family the replayed round was played on - its rules, for the rows below. */
+	const family = $derived(parseModeName(mode)?.family ?? familyOf(mode));
+	const rules = $derived(FAMILY_RULES[family]);
+
 </script>
 
 		<!-- ---- Replay info popup (over the start screen) ----
@@ -100,13 +106,30 @@
 					</span>
 				</div>
 
-				<div class="ss-detail-row">
-					<span class="ss-detail-cap">{t('Game mode')}</span>
-					<span class="ss-detail-val">{modeFamilyLabel(mode)}</span>
-				</div>
+				<!-- What the round actually cost, on a mode that multiplies the bet.
+				     Stake's replay checklist asks for "bet cost and applied multiplier"
+				     to be clearly displayed, and the play amount above is the BASE
+				     bet - on Three of a Kind the round took 250 times that. Read from
+				     FAMILY_RULES, the same figure the bar's second line and the mode
+				     confirmation print, so the three cannot disagree. -->
+				{#if rules.cost !== 1}
+					<div class="ss-detail-row">
+						<span class="ss-detail-cap">{t('Round cost')}</span>
+						<span class="ss-detail-val">
+							{betAmount > 0 ? numberToCurrencyString(betAmount * rules.cost) : '–'} (×{rules.cost})
+						</span>
+					</div>
+				{/if}
 
 				<div class="ss-detail-row">
-					<span class="ss-detail-cap">{t('Guesses')}</span>
+					<span class="ss-detail-cap">{t('Game mode')}</span>
+					<span class="ss-detail-val">{t(rules.label)}</span>
+				</div>
+
+				<!-- "Cards", not "Guesses", on a family with no guesses: Three of a
+				     Kind's tokens say what each card had to be, and nobody picked them. -->
+				<div class="ss-detail-row">
+					<span class="ss-detail-cap">{rules.fixedChoices ? t('Cards') : t('Guesses')}</span>
 					<span class="ss-choices">
 						{#each modeBadges(mode) as badge}
 							<span class="ss-choice-badge {badge.cssClass}">{badge.label}</span>

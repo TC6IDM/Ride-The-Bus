@@ -13,7 +13,7 @@
 import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
 
-import { PAYOUT_ROWS, bustRowsFor, oddsExampleFor, payoutRowsFor } from '../payoutTable.ts';
+import { PAYOUT_ROWS, bustRowsFor, oddsExampleFor, payoutColumnFor, payoutRowsFor } from '../payoutTable.ts';
 import { partialMultiplier, stageRetention } from '../payout.ts';
 import {
 	localColorPayouts,
@@ -173,30 +173,43 @@ describe('paytable is complete and self-consistent', () => {
 	test('Three of a Kind has one bust rule, and it is nothing', () => {
 		// A family that keeps nothing has one rule; three rows would be the same
 		// sentence three times, and a percentage would be a number for a rule
-		// that has none.
+		// that has none. And it is not called a "guess": nothing on this family
+		// is guessed, a card matches or it does not.
 		const rows = bustRowsFor(FAMILY_RULES.tr);
 		assert.equal(rows.length, 1);
-		assert.equal(rows[0]!.label, 'Any wrong guess');
+		assert.equal(rows[0]!.label, 'A card that does not match');
 		assert.equal(rows[0]!.percent, null);
 		assert.match(render(rows[0]!), /pays nothing/);
 	});
 
 	test('the Three of a Kind table says what the chips will say', () => {
-		// Three single-value rows from the 12-card deck: card 1 dealt, card 2
-		// matching 3 of 11, card 3 matching 2 of 10. Every figure is min === max
-		// because the deck is symmetric.
+		// RUNNING TOTALS in multiples of the bet, cost included - the same
+		// digits the board's chips print (250.00x / 916.60x / 4583.30x), and
+		// the last row IS the family's stated ceiling. This used to be the
+		// three per-stage factors (1.00 / 3.67 / 5.00), which sat under a
+		// "Max win 4583.3x" line and beside those chips: one rule in two units.
 		const rows = payoutRowsFor(FAMILY_RULES.tr);
 		assert.deepEqual(
-			rows.map((r) => [r.stage, r.label, r.min, r.max]),
+			rows.map((r) => [r.stage, r.label, r.kind, r.min, r.max]),
 			[
-				[1, 'Any card', 1, 1],
-				[2, 'Equal', 3.67, 3.67],
-				[3, 'Equal', 5, 5],
+				[1, 'Any card', 'total', 250, 250],
+				[2, 'Equal', 'total', 916.6, 916.6],
+				[3, 'Equal', 'total', 4583.3, 4583.3],
 			],
 		);
-		// And they multiply to the sweep the family advertises, per cost - at
-		// full precision, since the table rounds 11/3 for display.
+		assert.equal(rows[rows.length - 1]!.max, FAMILY_RULES.tr.maxWin);
+		// Card 1's total is exactly the cost - the stake, nothing won yet.
+		assert.equal(rows[0]!.min, FAMILY_RULES.tr.cost);
+		// The factors those totals compound from, at full precision.
 		assert.equal(Math.round((11 / 3) * 5 * FAMILY_RULES.tr.cost * 10) / 10, FAMILY_RULES.tr.maxWin);
+	});
+
+	test('the column is headed by what the figures are', () => {
+		assert.equal(payoutColumnFor(FAMILY_RULES.tr), 'Total');
+		for (const family of LADDER_FAMILIES) {
+			assert.equal(payoutColumnFor(FAMILY_RULES[family]), 'Pays');
+			for (const r of payoutRowsFor(FAMILY_RULES[family])) assert.equal(r.kind, 'factor');
+		}
 	});
 
 	test('a retention is never quoted in two units in the same list', () => {

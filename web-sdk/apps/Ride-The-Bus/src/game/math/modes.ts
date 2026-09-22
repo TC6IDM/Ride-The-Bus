@@ -1,5 +1,6 @@
 /**
- * Which four-stage choice combinations are actually playable.
+ * Which choice combinations are actually playable - the 64 four-stage ones on
+ * the guess families, and Three of a Kind's single three-stage one.
  *
  * Every bet in this game is one bet mode encoding the player's whole set of
  * guesses - see math-sdk games/ride_the_bus/game_calculations.py:mode_name - so
@@ -46,7 +47,7 @@ export type ColorChoice = (typeof COLOR_CHOICES)[number];
 export type HigherLowerChoice = (typeof HIGHER_LOWER_CHOICES)[number];
 export type InsideOutsideChoice = (typeof INSIDE_OUTSIDE_CHOICES)[number];
 export type SuitChoice = (typeof SUIT_CHOICES)[number];
-/** The four tokens of a mode slug - a guess, or the free card. */
+/** One token of a mode slug - a guess, or the free card. */
 export type StageChoice =
   | ColorChoice
   | HigherLowerChoice
@@ -76,8 +77,9 @@ export function isCombinationPlayable(
 
 /* ---- Mode families --------------------------------------------------------
  *
- * The same four guesses can be bought three ways. What differs is only what a
- * MISS keeps, and because the math reweights every mode onto the same RTP, a
+ * The same four guesses can be bought three ways, and a fourth family plays a
+ * different game on the same table. Among the three, what differs is only what
+ * a MISS keeps, and because the math reweights every mode onto the same RTP, a
  * family that forgives more cannot also pay more - the two are one dial seen
  * from opposite ends.
  *
@@ -122,7 +124,7 @@ export type FamilyRules = {
   forgiveFrom: number;
   /**
    * The pricing target decay**4 is solved from - payout.ts:TARGET_RTP unless
-   * the family overrides it. Three of a Kind prices at exactly 1.0 so its two
+   * the family overrides it. Three of a Kind prices at exactly 1.0 so its
    * free card pays 1.00x rather than 0.9975, which the 0.1x display floor
    * would show as 0.9x on a card that was never a guess.
    */

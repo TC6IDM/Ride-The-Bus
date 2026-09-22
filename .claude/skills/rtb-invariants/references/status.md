@@ -10,7 +10,7 @@ rather than on every turn. Nothing here is reworded.
 
 ## Current state
 
-759/759 tests (none skipped), 0 type errors, 0 CSS warnings, lint clean. **A fourth family shipped in the client and the math on 2026-09-20:
+769/769 tests (none skipped), 0 type errors, 0 CSS warnings, lint clean. **A fourth family shipped in the client and the math on 2026-09-20:
 Three of a Kind** — a 12-card A K Q deck, three cards, no guesses, nothing on a
 miss, cost 250×, one outcome of 4,583.3× the base bet at a recorded 1 in 19. High
 Stakes went from 20% to 16% retention in the same pass (ceiling 1910.2× →
@@ -40,9 +40,10 @@ the next reader does not re-tune a mode that is inside every real limit.
 **`run.py` leaves the previous build's files in `publish_files/`.** The
 superseded `books_tr_any_equal_equal_any.jsonl.zst` and its LUT (19:13) were
 still there beside the 23:15 build and the parity test replayed them against
-the client until it was made to read the mode list off `index.json`. They are
-not in the index, so the RGS would ignore them, but the folder is what gets
-uploaded: delete them (or any `*_any_*` leftover) before the next upload.
+the client until it was made to read the mode list off `index.json`. They have
+since been deleted (the folder is 387 files: 193 + 193 + `index.json`, checked
+2026-09-22), but the folder is what gets uploaded, so re-count it before the
+next upload after any rebuild.
 
 The remaining soft point is the trips mode's non-paying share: 94.8% of its
 rounds pay nothing, past the "90,000 of 100,000 may be grounds for rejection"
@@ -66,7 +67,8 @@ ignores the `.eslintrc.cjs` every app in the vendored SDK still ships. The old
 The four-guess families clear the **2-star** risk limits, not merely the 3-star
 ones. Last measured (2026-09-20 build, High Stakes at 16%): worst std 36.58
 (limit 0.6–50.0), worst etl40b 0.725 (limit 0.8), worst CVaR 624.6 (limit 700),
-worst non-zero hit rate 1 in 2.03 (limit 1 in 20), P(≥5000×) zero.
+worst non-zero hit rate 1 in 2.11 (limit 1 in 20; an earlier note here said 2.03,
+the figure is stats_summary.json's), P(≥5000×) zero.
 
 ### Seeing the game, rather than reasoning about it
 
@@ -396,9 +398,12 @@ look.**
     - `logo.png` is now the WebP's fallback rather than the file the game
       loads, so it stays at 710×710 and byte-identical to the tile asset.
       README's older 4-layer Tile Editor description has been corrected.
-  - **The live-session checks in `RGS_TEST_PLAN.md` remain unrun — now 97, not
-    52.** Two are new with Three of a Kind (BET-14, BET-15): whether the RGS
-    applies `maxBet` to the base amount under a 250× cost, and the tier caps. The plan was strong on this project's own regression history and thin
+  - **The live-session checks in `RGS_TEST_PLAN.md` remain unrun — now 101, not
+    52.** Six are Three of a Kind's (BET-14, BET-15, RND-07, REP-09, LNG-06,
+    DEV-06): whether the RGS applies `maxBet` to the base amount under a 250×
+    cost, the tier caps, a three-card settlement, the replay panel's cost row and
+    three badges, the translated trips tab, and the trips board on the small
+    sizes. The plan was strong on this project's own regression history and thin
     on the criteria Stake publishes; 33 were added covering the spacebar binding,
     the mute control, autoplay confirmation, an invalid `rgs_url`, a malformed
     `?lang=`, min/max bet selectability, the paytable and UI guide, double-tap

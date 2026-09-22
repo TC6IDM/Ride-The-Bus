@@ -1,7 +1,7 @@
 /**
  * The decks the families deal from.
  *
- * createDeck grew a spec when Three of a Kind arrived with sixteen cards. The
+ * createDeck grew a spec when Three of a Kind arrived with its own deck. The
  * four-guess families still deal the standard 52, and the odds every one of
  * their stages is priced on assume it - so the default has to stay exactly
  * what it was, and the trips deck has to be exactly what game_calculations.py

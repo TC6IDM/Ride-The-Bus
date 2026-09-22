@@ -52,12 +52,12 @@ if (typeof cmd !== 'string' || !cmd.trim()) process.exit(0);
 
 // --- Builds: hard deny -----------------------------------------------------
 
-// The math build. run.py regenerates 192 modes and takes 40+ minutes.
+// The math build. run.py regenerates 193 modes and takes 40+ minutes.
 if (/\b(?:python3?|py)\b[^|;&]*\brun\.py\b/.test(cmd)) {
 	decide(
 		'deny',
 		'Math build blocked (CLAUDE.md standing rule 2). run.py regenerates all ' +
-			'192 modes and takes 40+ minutes. The user runs this and pastes the ' +
+			'193 modes and takes 40+ minutes. The user runs this and pastes the ' +
 			'output back — ask them rather than starting it.',
 	);
 }

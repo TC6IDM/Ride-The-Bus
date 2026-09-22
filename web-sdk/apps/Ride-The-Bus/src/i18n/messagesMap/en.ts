@@ -68,14 +68,15 @@ export default {
 	Autoplay: 'Autoplay',
 	'Number of Plays': 'Number of Plays',
 
-	// Bet mode picker. The three ways to buy the same four guesses; only what a
-	// miss keeps differs. Blurbs quote the measured ceilings so the copy cannot
-	// drift from the maths.
+	// Bet mode picker. The three ways to buy the same four guesses - only what a
+	// miss keeps differs - plus Three of a Kind, a different game at 250x the bet.
+	// Blurbs quote the measured ceilings so the copy cannot drift from the maths.
 	'Game Mode': 'Game Mode',
 	'Max win': 'Max win',
 	// Confirmation before a bet mode is activated - required by the approval
-	// checklist, and worth having anyway: the three families cost the same but
-	// differ in what a miss keeps and how high they reach.
+	// checklist ("high cost bet modes require confirmation": Three of a Kind is
+	// 250x), and worth having anyway: the guess families cost the same but differ
+	// in what a miss keeps and how high they reach.
 	'Switch mode?': 'Switch mode?',
 	Cancel: 'Cancel',
 	Switch: 'Switch',
@@ -142,6 +143,8 @@ export default {
 	Card: 'Card',
 	Pick: 'Pick',
 	Pays: 'Pays',
+	'Total':
+		'Total',
 	'Red or Black': 'Red or Black',
 	'Any suit': 'Any suit',
 	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
@@ -237,13 +240,18 @@ export default {
 	Mode: 'Mode',
 	'Game mode': 'Game mode',
 	Guesses: 'Guesses',
+	// The replay panel's caption on a family with no guesses (Three of a Kind:
+	// the tokens say what each card had to be), and the round's cost on a mode
+	// that multiplies the bet.
+	Cards: 'Cards',
+	'Round cost': 'Round cost',
 	Event: 'Event',
 	Payout: 'Payout',
 	Play: 'Play',
 
 	// Rule additions (new)
-	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.',
+	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
+		'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.',
 
 	// User interaction guide (new)
 	Controls: 'Controls',
@@ -254,8 +262,8 @@ export default {
 	'The i button opens this screen.': 'The i button opens this screen.',
 	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
 		'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.',
-	'The circular arrows open autoplay, which repeats your four guesses for a set number of rounds or unlimited. The counter sits on the button while it runs.':
-		'The circular arrows open autoplay, which repeats your four guesses for a set number of rounds or unlimited. The counter sits on the button while it runs.',
+	'The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.':
+		'The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.',
 	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
 		'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.',
 	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
@@ -307,16 +315,22 @@ export default {
 		'Any',
 	'Any card':
 		'Any card',
-	'Any wrong guess':
-		'Any wrong guess',
-	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
-		'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.',
+	'A card that does not match':
+		'A card that does not match',
+	'If a card does not match':
+		'If a card does not match',
+	'Card 1 is dealt, not guessed. The deck holds one Ace, King and Queen of each suit, so card 2 matches 3 times in 11 and card 3 twice in 10.':
+		'Card 1 is dealt, not guessed. The deck holds one Ace, King and Queen of each suit, so card 2 matches 3 times in 11 and card 3 twice in 10.',
+	'Each figure is the running total after that card, in multiples of your bet, exactly as the board shows it beside the cards. Only the last card pays.':
+		'Each figure is the running total after that card, in multiples of your bet, exactly as the board shows it beside the cards. Only the last card pays.',
 	'Three of a kind pays %m your bet, about one round in %n.':
 		'Three of a kind pays %m your bet, about one round in %n.',
 	'%c× your base bet of %b':
 		'%c× your base bet of %b',
 	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
 		'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.',
+	'That mode costs %c× your bet.':
+		'That mode costs %c× your bet.',
 	'Card 2 must match card 1':
 		'Card 2 must match card 1',
 	'Card 3 must match card 1':

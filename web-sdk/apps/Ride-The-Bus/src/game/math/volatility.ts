@@ -1,7 +1,7 @@
 /**
  * How wild a mode is, as a rating out of five.
  *
- * Every one of the 192 published modes returns the same 96.00%, so RTP tells a
+ * Every one of the 193 published modes returns the same 96.00%, so RTP tells a
  * player nothing about which one to buy. What actually separates them is
  * SPREAD, and until now the picker never said so - it stated a ceiling and left
  * the player to infer the rest.
@@ -9,7 +9,7 @@
  * WHERE THE ORDERING COMES FROM
  *
  * math-sdk games/ride_the_bus/library/stats_summary.json carries `std` - the
- * standard deviation of the payout, in bet multiples - for all 192 published
+ * standard deviation of the payout, in bet multiples - for all 193 published
  * modes, and it reproduces exactly from the published lookup tables. Taken per
  * family it says:
  *
@@ -20,7 +20,7 @@
  *
  * and, far more strongly than the medians suggest, sc < base < hs holds for
  * every one of the 64 guess combinations INDIVIDUALLY, with no exceptions. That
- * is what makes a single ordering of the three families honest: it is not an
+ * is what makes a single ordering of the three guess families honest: it is not an
  * average that happens to come out that way, it is true of every bet a player
  * can actually place. volatility.test.ts pins it against the published figures.
  *
@@ -28,7 +28,7 @@
  *
  * The ruler has five stops because the guess combination moves volatility far
  * more than the family does - Classic alone spans 3.31 to 23.63, a 7x range,
- * against the 2x that separates the family medians. Sitting the three families
+ * against the 2x that separates the family medians. Sitting the three guess families
  * at 1, 3 and 5 leaves the even stops free for the per-guess rating to fill in
  * later without renumbering anything a player has already learned.
  *
@@ -129,7 +129,7 @@ export function equalGuessCount(
  * Lit bolts for an actual bet: the family's own rating, plus one per Equal pick.
  *
  * ONE PER EQUAL IS NOT A GUESS - it is what the published figures do.
- * Grouping all 192 modes by how many Equal picks they carry gives three bands
+ * Grouping the 192 four-guess modes by how many Equal picks they carry gives three bands
  * that do not overlap AT ALL, in any family:
  *
  *            0 Equal          1 Equal          2 Equal

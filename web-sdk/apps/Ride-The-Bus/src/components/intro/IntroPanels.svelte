@@ -28,13 +28,16 @@
 
 	let { oncontinue }: { oncontinue: () => void } = $props();
 
-	/** The biggest figure any mode can pay - High Stakes', at the time of
-	 *  writing. Derived so it cannot drift from the maths. */
-	/** The biggest figure ANY mode can reach, and which mode - for the asterisk. */
+	/** The biggest figure ANY mode can reach, and which mode - for the asterisk.
+	 *  Derived so it cannot drift from the maths: it was High Stakes' until
+	 *  Three of a Kind arrived. */
 	const maxWinFamily = MODE_FAMILIES.reduce((best, f) =>
 		FAMILY_RULES[f].maxWin > FAMILY_RULES[best].maxWin ? f : best,
 	);
 	const maxWinOverall = FAMILY_RULES[maxWinFamily].maxWin;
+	/** That mode's cost, for the asterisk - the headline figure is only honest
+	 *  with its price beside it when the price is not the plain bet. */
+	const maxWinCost = FAMILY_RULES[maxWinFamily].cost;
 	// The tagline's number is the published mode count, counted rather than
 	// typed: every guess combination on every family is its own bet mode, so
 	// this is 3 x 64 + 1 and moves the day a family or a combination does.
@@ -333,7 +336,12 @@
 					     screen shown before a mode is chosen, so it understated the
 					     game by the whole of High Stakes. -->
 					<span class="ss-stat-cap">{t('Max Win')}</span>
-					<span class="ss-stat-val">{maxWinOverall.toLocaleString()}×<span class="ss-stat-note" aria-hidden="true">*</span></span>
+					<!-- The bare figure, as the picker, the confirmation and How to
+					     Play print it - "4583.3x" - not toLocaleString()'s "4,583.3x",
+					     which put a grouped and an ungrouped spelling of the same
+					     ceiling on screens a player moves between in seconds, and
+					     grouped it by the BROWSER's locale rather than the game's. -->
+					<span class="ss-stat-val">{maxWinOverall}×<span class="ss-stat-note" aria-hidden="true">*</span></span>
 				</div>
 			</div>
 			<!-- The asterisk's sentence. The figure above is the game's ceiling,
@@ -341,9 +349,16 @@
 			     this" and then plays Classic has been told a number that mode
 			     cannot reach. Named through the family label rather than typed,
 			     so it follows whichever mode holds the ceiling. -->
+			<!-- And its price, when the mode that holds the ceiling is not the
+			     plain 1x: a 4583.3x headline on a screen shown before any mode
+			     is chosen reads as the game's, and that mode costs 250 times the
+			     bet the figure is measured against. -->
 			<p class="ss-stat-foot" style="--d: 9">
 				{t('*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.')
 					.replace('%f', t(FAMILY_RULES[maxWinFamily].label))}
+				{#if maxWinCost !== 1}
+					{t('That mode costs %c× your bet.').replace('%c', String(maxWinCost))}
+				{/if}
 			</p>
 
 			<button class="ss-continue" style="--d: 10" onclick={oncontinue}>

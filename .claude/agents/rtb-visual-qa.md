@@ -29,7 +29,7 @@ npm run dev          # reclaims ports 3001 + 3010, starts vite AND the replay
                      # RGS, opens the link builder. --no-open skips the tab.
 ```
 
-The replay server serves any of the **192 published modes** out of the real
+The replay server serves any of the **193 published modes** out of the real
 books. A player session is not required for replay.
 
 Then either drive it yourself over the chrome-devtools tools, or use the
@@ -41,7 +41,16 @@ npm run shots -- --sizes                         # a max win at all seven sizes
 npm run shots -- --intro                         # intro fan + replay details
 npm run shots -- --reduced                       # prefers-reduced-motion
 npm run shots -- --mode sc_red_equal_equal_heart --event forgiven
+npm run shots -- --board --family tr --tag trips   # the plain board on another family
+npm run shots -- --popups --family tr --tag trips  # every panel, plus the picker's confirmation
+npm run shots -- --board --cur TZS --bet 540000 --maxbet 100000000 --balance 1e12
 ```
+
+`--family` drives the picker the way a player does (MODE, the row, Switch),
+because the plain game has no URL parameter for a mode. `--tag` prefixes every
+file of a run so two families' shots do not overwrite each other. A replay
+`--sizes` run that never takes the screen over (a loss) now settles on the
+board and is shot as `size-<tag>-board`.
 
 Six scenario aliases resolve out of `REPLAY_EVENTS.md`: `max`, `big`, `win`,
 `loss`, `bustwin` (busted and still paid enough to celebrate) and `forgiven`
@@ -97,10 +106,18 @@ Look for these specifically — each one shipped at least once:
   surfaces. The stress cases are high-denomination currencies: worst three are
   **TZS, UGX and XOF** at 24 characters (`TZS 2,578,770,000,000.00`).
 - **The control bar breaking onto an extra row** at landscape widths 660–1100.
-- **Anything not drawing in Poppins.** A `<button>` does not inherit
-  `font-family`; the UA stylesheet's `font: 400 13.333px Arial` beats
-  inheritance. This is only visible in the *computed* style of a running page.
-  Walk the live DOM for it — do not read CSS.
+- **Anything not drawing in Geist** (the body face since 2026-09; it was
+  Poppins). A `<button>` does not inherit `font-family`; the UA stylesheet's
+  `font: 400 13.333px Arial` beats inheritance, and the SIZE half of that
+  declaration bites too: a block wrapper inside a button gets a 13.333px line
+  box that never scales, which is how the mode picker's bolt meter dropped
+  under the row name at Popout S. This is only visible in the *computed* style
+  of a running page. Walk the live DOM for it - do not read CSS.
+- **Three of a Kind's board is a different shape** - three slots, two
+  read-only Equal badges under the gaps, the dealt first card with no chip,
+  the bar's blue cost figure with the base bet under it. Shoot it at every
+  size with `--family tr`; the takeover fans three cards; the replay details
+  panel shows three badges and a Round cost row.
 
 Also check the console and network panels: no errors, no game information being
 logged. That is an explicit Stake criterion.

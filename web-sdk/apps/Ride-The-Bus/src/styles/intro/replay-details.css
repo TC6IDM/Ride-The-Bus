@@ -372,9 +372,10 @@
 
 /* A dealt card - Three of a Kind's card 1, where no guess was made.
    The suit ground with no pip colour: nothing was chosen, so no choice colour
-   is the right colour. Both the colour slot and the suit slot use it. */
-.ss-choice-badge.color-any,
-.ss-choice-badge.suit-any {
+   is the right colour. Only the colour slot can carry it: the trips slug is
+   three tokens and has no suit slot at all (a `.suit-any` rule used to sit
+   here for a four-token design that never shipped). */
+.ss-choice-badge.color-any {
 	background: var(--choice-black);
 	box-shadow: inset 0 0 0 1px rgba(var(--ink-rgb), 0.28);
 	color: var(--ink-dim);

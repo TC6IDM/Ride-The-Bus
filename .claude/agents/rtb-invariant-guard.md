@@ -21,7 +21,7 @@ You audit invariants for Ride The Bus, a Stake Engine casino game. You are
 
 ## What you are looking for
 
-The test suite (680 tests) already pins a great deal. Your job is the residue —
+The test suite (769 tests) already pins a great deal. Your job is the residue —
 invariants recorded in `CLAUDE.md` prose that no test enforces.
 
 ### 1. The math↔client mirror
@@ -36,17 +36,29 @@ another. Check:
   edits it by hand without a math build behind it, that is a finding.
 - `FAMILY_RULES[f].maxWin` and `MODE_CEILINGS[mode]` are **different numbers**
   and both are needed. Family figure = most that family can reach (Classic
-  1354.2, Second Chance 585.2, High Stakes 1910.2). Mode ceiling = what that
-  one published bet mode can actually pay. Only 8 of each family's 64 modes
-  reach the family figure. Flag any code that conflates them.
+  1354.2, Second Chance 585.2, High Stakes 2169.2, Three of a Kind 4583.3).
+  Mode ceiling = what that one published bet mode can actually pay. Only 8 of
+  each four-guess family's 64 modes reach the family figure; Three of a Kind
+  has one mode and its ceiling IS the family figure. Flag any code that
+  conflates them.
+- **Three of a Kind is the one family whose cost is not 1.** Every payout
+  figure on screen is a multiple of the BASE bet (Stake's convention - the
+  chips, Last Win, the takeover, the replay panel, the rules), and its
+  running-total paytable rows include the 250× cost so they print the chips'
+  digits. Anything printing 18.33× (the multiple of the cost) beside those is
+  the two-units bug. The bar's headline "Bet" figure is the round's COST, by
+  decision (2026-09-22), with the base bet on the line beneath it.
 - `game/modeCeilings.ts` is **generated** by `scripts/mode-ceilings.js` from the
   build. If it was hand-edited, that is a finding.
 
 ### 2. Single-family assumptions (recurring bug class)
 
 Anything hardcoding `1354.2`, `0.3`, or `"30%"` is probably Classic leaking
-into all three families. Grep for those literals outside `modes.ts` and the
-tests. This has already caused the win-tier bug and the replay slug bug.
+into all four families - and anything assuming four cards, four tokens, four
+guesses or `parsed.suit !== null` is a four-guess family leaking into Three of
+a Kind, which deals three. Grep for those literals outside `modes.ts` and the
+tests. This has already caused the win-tier bug, the replay slug bug and an
+empty fourth badge on every trips replay.
 
 Related and specific: `parseModeName` returns **five** fields. Anything
 restoring a mode from a slug must apply `parsed.family`, not just the four
@@ -72,9 +84,10 @@ Every meter draws `VOLATILITY_BOLTS` (7) stops. The mode picker lights the
 family rating (1/3/5); the bet display adds one per Equal pick. A second meter
 counting to a different maximum is a bug.
 
-Two ratings that must not be collapsed: `--mode-ink`/`--mode-rgb` (live rating,
-can go purple past `FAMILY_BOLT_CEILING`) vs `--vol-color`/`--vol-rgb` (the
-family's own rating, **never** purple).
+Two pairs that must always agree: `--mode-ink`/`--mode-rgb` and
+`--vol-color`/`--vol-rgb` are both the family's own colour now. Purple is Three
+of a Kind's colour, not an overflow - `FAMILY_BOLT_CEILING` and `BoltMeter`'s
+`overflowAfter` are gone, and High Stakes with two Equals draws seven red bolts.
 
 ### 5. Colour tokens
 

@@ -104,16 +104,17 @@
 
 @media (any-hover: hover) {
   /* ---- The picker rows wear their own mode's colour ------------------------
-   * Yellow for Classic, green for Second Chance, red for High Stakes - the same
-   * three the bolts on each row are already burning, and the same three the bet
-   * display writes the live mode name in. The accent blue said only "this row is
-   * selectable", which every row is.
+   * Yellow for Classic, green for Second Chance, red for High Stakes, purple for
+   * Three of a Kind - the same four the bolts on each row are already burning,
+   * and the same four the bet display writes the live mode name in. The accent
+   * blue said only "this row is selectable", which every row is.
    *
    * --vol-color and --vol-rgb are set inline per row from the family (see
-   * Game.svelte). They are the FAMILY's colour, deliberately not the live one:
-   * the picker rates the mode, and the Equal picks that can push the rating past
-   * a family ceiling are a property of the bet, not of the mode being chosen. So
-   * no row is ever purple.
+   * ModePopup.svelte). They are the FAMILY's colour, deliberately not the live
+   * one: the picker rates the mode, and the Equal picks that push a four-guess
+   * rating up the ruler are a property of the bet, not of the mode being
+   * chosen. Purple is Three of a Kind's own colour, not an overflow - see
+   * tokens.css.
    *
    * The washes are 0.08 and 0.14. Red is what caps them: .mode-option-name is
    * ~15px bold, which WCAG still counts as small text, and the name sits ON its
@@ -165,8 +166,18 @@
    space-between - so it needs no positioning of its own, only alignment.
    align-self overrides the row's baseline alignment: the bolts are an image,
    not text, and baseline-aligning them hangs them off the name's descender
-   line. */
+   line.
+
+   display: flex, NOT block. The meter inside is inline-flex, and inside a
+   block wrapper it sits in an anonymous line box whose height comes from the
+   wrapper's font - and .mode-option is a <button>, whose font-size is the
+   UA's 13.333px, which nothing here scales. At desktop the 20px name hid
+   that; at Popout S the name is 7px, the line box was still 17px, and the
+   meter dropped under the name on every row - Popout S stopped being Popout
+   L at half size. A flex wrapper has no line box, so the meter is exactly
+   as tall as its bolts. */
 .mode-option-vol {
+  display: flex;
   align-self: center;
   flex: 0 0 auto;
   --bolt-size: calc(var(--ui-bar) * 1.27);
@@ -184,8 +195,8 @@
 
 /* The ceiling, which approval requires stated per mode. Quiet like the blurb -
    it is reference, not the thing being chosen - but the figure itself carries
-   weight, because with every mode at the same cost this is what actually
-   separates them. */
+   weight: on the three four-guess families, priced the same, this is what
+   actually separates them, and on the fourth it sits beside the cost. */
 .mode-option-max {
   font-size: calc(var(--ui-bar) * 1.02);
   font-weight: 700;

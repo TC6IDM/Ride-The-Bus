@@ -65,7 +65,7 @@ export default {
 	'Game modes': '游戏模式',
 	'Max win': '最高赔付',
 	// Confirmation before a bet mode is activated - required by the approval
-	// checklist, and worth having anyway: the three families cost the same but
+	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
 	'Switch mode?': '切换模式？',
 	Cancel: '取消',
@@ -111,6 +111,8 @@ export default {
 	Card: '牌',
 	Pick: '选择',
 	Pays: '赔付',
+	'Total':
+		'合计',
 	'Red or Black': '红色或黑色',
 	'Any suit': '任意花色',
 	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
@@ -190,6 +192,8 @@ export default {
 	Mode: '模式',
 	'Game mode': '游戏模式',
 	Guesses: '猜测',
+	Cards: '牌',
+	'Round cost': '本局费用',
 	Event: '事件',
 	Payout: '派彩',
 	Play: '播放',
@@ -202,16 +206,16 @@ export default {
 	'The i button opens this screen.': 'i 按钮打开此界面。',
 	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
 		'闪电按钮是加速：控制翻牌快慢，从正常到瞬间。',
-	'The circular arrows open autoplay, which repeats your four guesses for a set number of rounds or unlimited. The counter sits on the button while it runs.':
-		'环形箭头打开自动游戏，按设定局数或无限次重复你的四项猜测。运行时计数显示在按钮上。',
+	'The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.':
+		'环形箭头打开自动游戏，按设定局数或无限次重复同一投注。运行时计数显示在按钮上。',
 	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
 		'滑块按钮包含两个自动游戏选项：全中时停止，以及跳过中奖动画。',
 	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
 		'大圆形按钮发牌开始一局。空格键同样可以：轻按发一局，按住则持续发牌。自动游戏进行时，该按钮变为停止，进行中的一局会先结束。',
 	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
 		'模式打开游戏模式选择器。切换前会要求确认。',
-	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'本游戏没有免费旋转、奖励回合、累积奖池或重新触发功能。每一局都是独立的一次四张牌抽取。',
+	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
+		'本游戏没有免费旋转、奖励回合、累积奖池或重新触发功能。每一局都是独立的一次发牌：猜测模式为四张牌，三条为三张牌。',
 	'Big Win': '大奖',
 	'Huge Win': '巨额大奖',
 	'Mega Win': '超级大奖',
@@ -247,16 +251,22 @@ export default {
 		'任意',
 	'Any card':
 		'任意牌',
-	'Any wrong guess':
-		'任何猜错',
-	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
-		'使用12张牌的牌组：每种花色的A、K、Q。发出第1张牌；第2、3张牌的点数必须与之相同。三张牌，一次赢取。',
+	'A card that does not match':
+		'不匹配的牌',
+	'If a card does not match':
+		'如果牌不匹配',
+	'Card 1 is dealt, not guessed. The deck holds one Ace, King and Queen of each suit, so card 2 matches 3 times in 11 and card 3 twice in 10.':
+		'第1张牌是发出来的，无需猜测。牌组每种花色各有一张A、K、Q，因此第2张牌有11分之3的概率匹配，第3张牌有10分之2的概率匹配。',
+	'Each figure is the running total after that card, in multiples of your bet, exactly as the board shows it beside the cards. Only the last card pays.':
+		'每个数字都是到该牌为止的累计总额，以投注额的倍数表示，与牌桌上牌旁显示的一致。只有最后一张牌才派彩。',
 	'Three of a kind pays %m your bet, about one round in %n.':
 		'三条赔付您投注的%m，大约每%n局出现一次。',
 	'%c× your base bet of %b':
 		'基础投注%b的%c倍',
 	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
 		'*为%f的数值。每种游戏模式各有不同的最高赢取，见模式选择和游戏说明。',
+	'That mode costs %c× your bet.':
+		'该模式的费用为投注额的%c倍。',
 	'Card 2 must match card 1':
 		'第2张牌须与第1张牌相同',
 	'Card 3 must match card 1':

@@ -67,7 +67,7 @@ Moved out of CLAUDE.md so it is loaded on demand rather than on every turn.
   call sites, because the failure is silent and has now happened twice. Since
   Three of a Kind, both sites put the four guesses back through ONE helper,
   `restoreGuesses`, which does nothing on a family with `fixedChoices` — its
-  slug carries `any` for cards 1 and 4, which is not a pick, and the guesses
+  slug carries `any` for card 1, which is not a pick, and the guesses
   parked from the last four-guess mode are deliberately kept.
 - The volatility rating (`game/volatility.ts`) is a **ranking of published
   figures, not a marketing claim**. `volatility.test.ts` re-derives it from

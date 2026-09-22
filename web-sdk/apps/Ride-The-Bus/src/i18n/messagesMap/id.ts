@@ -65,7 +65,7 @@ export default {
 	'Game modes': 'Mode permainan',
 	'Max win': 'Kemenangan maks',
 	// Confirmation before a bet mode is activated - required by the approval
-	// checklist, and worth having anyway: the three families cost the same but
+	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
 	'Switch mode?': 'Ganti mode?',
 	Cancel: 'Batal',
@@ -112,6 +112,8 @@ export default {
 	Card: 'Kartu',
 	Pick: 'Pilihan',
 	Pays: 'Membayar',
+	'Total':
+		'Jumlah',
 	'Red or Black': 'Merah atau Hitam',
 	'Any suit': 'Semua jenis',
 	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
@@ -196,6 +198,8 @@ export default {
 	Mode: 'Mode',
 	'Game mode': 'Mode permainan',
 	Guesses: 'Tebakan',
+	Cards: 'Kartu',
+	'Round cost': 'Biaya ronde',
 	Event: 'Peristiwa',
 	Payout: 'Pembayaran',
 	Play: 'Putar',
@@ -209,16 +213,16 @@ export default {
 	'The i button opens this screen.': 'Tombol i membuka layar ini.',
 	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
 		'Tombol kilat adalah Turbo: seberapa cepat kartu dibalik, dari Normal hingga Instan.',
-	'The circular arrows open autoplay, which repeats your four guesses for a set number of rounds or unlimited. The counter sits on the button while it runs.':
-		'Panah melingkar membuka main otomatis, yang mengulang keempat tebakan Anda untuk sejumlah ronde tertentu atau tanpa batas. Penghitungnya tampil di tombol selama berjalan.',
+	'The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.':
+		'Panah melingkar membuka main otomatis, yang memasang taruhan yang sama lagi untuk sejumlah ronde tertentu atau tanpa batas. Penghitungnya tampil di tombol selama berjalan.',
 	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
 		'Tombol penggeser berisi dua opsi main otomatis: berhenti saat menang penuh, dan lewati animasi kemenangan.',
 	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
 		'Tombol bulat besar membagikan ronde. Begitu juga tombol spasi: ketuk untuk satu ronde, tahan untuk terus membagikan. Saat main otomatis berjalan, tombol ini menjadi Berhenti, dan ronde yang sedang berjalan diselesaikan dulu.',
 	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
 		'Mode membuka pemilih mode permainan. Berganti mode meminta konfirmasi sebelum diterapkan.',
-	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'Permainan ini tidak memiliki putaran gratis, ronde bonus, jackpot, atau fitur pemicu ulang. Setiap ronde adalah satu penarikan empat kartu yang berdiri sendiri.',
+	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
+		'Permainan ini tidak memiliki putaran gratis, ronde bonus, jackpot, atau fitur pemicu ulang. Setiap ronde adalah satu pembagian kartu yang berdiri sendiri: empat kartu di mode tebakan, tiga di Tiga Sejenis.',
 	'Big Win': 'Kemenangan Besar',
 	'Huge Win': 'Kemenangan Luar Biasa',
 	'Mega Win': 'Kemenangan Mega',
@@ -256,16 +260,22 @@ export default {
 		'Apa saja',
 	'Any card':
 		'Kartu apa saja',
-	'Any wrong guess':
-		'Tebakan salah apa pun',
-	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
-		'Dimainkan dengan dek 12 kartu: As, King, dan Queen dari setiap jenis. Kartu 1 dibagikan; kartu 2 dan 3 harus sama nilainya. Tiga kartu, satu kemenangan.',
+	'A card that does not match':
+		'Kartu yang tidak cocok',
+	'If a card does not match':
+		'Jika kartu tidak cocok',
+	'Card 1 is dealt, not guessed. The deck holds one Ace, King and Queen of each suit, so card 2 matches 3 times in 11 and card 3 twice in 10.':
+		'Kartu 1 dibagikan, bukan ditebak. Dek berisi satu As, King, dan Queen dari tiap jenis, jadi kartu 2 cocok 3 dari 11 kali dan kartu 3 cocok 2 dari 10 kali.',
+	'Each figure is the running total after that card, in multiples of your bet, exactly as the board shows it beside the cards. Only the last card pays.':
+		'Setiap angka adalah total berjalan setelah kartu itu, dalam kelipatan taruhanmu, persis seperti yang ditampilkan papan di samping kartu. Hanya kartu terakhir yang membayar.',
 	'Three of a kind pays %m your bet, about one round in %n.':
 		'Tiga sejenis membayar %m taruhan Anda, sekitar satu ronde dari %n.',
 	'%c× your base bet of %b':
 		'%c× taruhan dasar Anda sebesar %b',
 	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
 		'*Pada %f. Setiap mode permainan memiliki kemenangan maksimum sendiri, ditampilkan di pemilih mode dan di Cara Bermain.',
+	'That mode costs %c× your bet.':
+		'Mode itu berbiaya %c× taruhanmu.',
 	'Card 2 must match card 1':
 		'Kartu 2 harus sama dengan kartu 1',
 	'Card 3 must match card 1':

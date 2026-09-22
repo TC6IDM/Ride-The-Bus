@@ -9,7 +9,7 @@ rather than on every turn. Nothing here is reworded.
 ---
 
 - **The Max band is matched on equality; every band below it on `>=`.** "Max Win"
-  is a claim about hitting a single reachable figure (1354.2 / 585.2 / 1910.2),
+  is a claim about hitting a single reachable figure (1354.2 / 585.2 / 2169.2 / 4583.3),
   not about clearing the bottom of an open range — so a payout *above* a family's
   ceiling falls to Epic rather than claiming the rarest screen in the game. The
   published `max_win` bound is 1400 against a true Classic ceiling of 1354.2, so

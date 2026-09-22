@@ -306,6 +306,8 @@ const json = (res, status, body) => {
 function landingPage() {
   const { byMode, familyCeiling } = scenarios();
 
+  // The four-guess families only: Three of a Kind has one mode, and its
+  // ceiling is the family figure by definition, so it has nothing to list here.
   const ceilings = ['base', 'sc', 'hs']
     .map((f) => {
       const c = familyCeiling[f];
@@ -361,10 +363,10 @@ function landingPage() {
        box-shadow:0 0 0 1px var(--pick-c) inset}
   button.pick[aria-pressed=true][data-c] .mult{color:#ffe08a;opacity:.9}
 
-  /* The three families take their own volatility rating's colour - the same
-     --vol-base / --vol-sc / --vol-hs the MODE button and the mode picker wear
-     in the game, and the same ramp the bolt meters spend. Classic yellow,
-     Second Chance green, High Stakes red. */
+  /* The four families take their own volatility rating's colour - the same
+     --vol-base / --vol-sc / --vol-hs / --vol-tr the MODE button and the mode
+     picker wear in the game, and the same ramp the bolt meters spend. Classic
+     yellow, Second Chance green, High Stakes red, Three of a Kind purple. */
   button.pick.fam-base{--pick-c:#ffc93c}
   button.pick.fam-sc{--pick-c:#3ddc84}
   button.pick.fam-hs{--pick-c:#ff5c5c}
@@ -403,7 +405,8 @@ function landingPage() {
   h2{font-size:1.15rem;margin:0 0 .2rem}
 </style>
 <h1>Ride The Bus &mdash; local replay</h1>
-<p>Build a replay link the way the game builds a bet: pick a mode, then four guesses.
+<p>Build a replay link the way the game builds a bet: pick a mode, then its guesses
+   (none on Three of a Kind, whose one combination is filled in for you).
    For the ordinary game with no round to replay, skip to
    <a href="#plain" style="color:#7cffb2">Regular game</a> at the bottom.</p>
 
@@ -543,8 +546,8 @@ const modeName = () =>
 // cards of the same rank.
 const insideBlocked = () => state.hl === 'equal';
 
-// Only Second Chance can produce a forgiven round - the other two families bust
-// on the first miss. Disabled rather than merely labelled, for the same reason
+// Only Second Chance can produce a forgiven round - the other families bust on
+// the first miss. Disabled rather than merely labelled, for the same reason
 // Inside is: a pick that cannot be honoured must not be buildable into a link.
 // Leaving it selectable produced a URL the server answers with a 404, which is
 // a worse way to learn this than a greyed-out button.
@@ -592,7 +595,7 @@ function render() {
   // Repair an impossible pick rather than let it build an unpublished mode -
   // the same guard the game applies when Equal takes Inside away.
   if (insideBlocked() && state.io === 'inside') state.io = 'equal';
-  // Three of a Kind carries its own four tokens; park the player's picks on
+  // Three of a Kind carries its own three tokens; park the player's picks on
   // the way in and put them back on the way out.
   if (guessesFixed()) {
     if (!parked) parked = { color: state.color, hl: state.hl, io: state.io, suit: state.suit };

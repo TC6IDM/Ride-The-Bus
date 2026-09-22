@@ -1,6 +1,6 @@
 # RGS verification test plan
 
-97 checks to run against the **uploaded** build on a Developer-page session,
+101 checks to run against the **uploaded** build on a Developer-page session,
 not against localhost.
 
 That distinction is the whole reason this document exists. Locally the game
@@ -115,10 +115,14 @@ inherits the mistake, usually silently.
   reload.
 
 - [ ] **SES-04 · Reload mid-round restores cleanly** — *Major*
-  Spin, then hard-reload while the cards are revealing.
+  Spin, then hard-reload while the cards are revealing. Do it once on a guess
+  mode and once on Three of a Kind.
   **Expect:** correct balance on return. Either the interrupted round replays
   onto the board or it settles silently, but the balance must be right either
-  way and no error modal appears.
+  way and no error modal appears. A resumed round comes back on its OWN family
+  - three slots, the purple MODE button and the 250x readout for Three of a
+  Kind - not on whichever mode was last chosen; the resume path has dropped the
+  family twice before.
 
 - [ ] **SES-05 · An invalid `rgs_url` fails cleanly** — *Blocker*
   Launch with `rgs_url` pointed at a host that does not answer, and again at one
@@ -157,8 +161,9 @@ so this section is genuinely untested until upload.
   **Expect:** Inside is struck through and dimmed, hovering explains why, and it
   cannot be selected by click, keyboard or tap. Tying the rank leaves nothing
   strictly between the two cards, so the math publishes no such mode -
-  2 x (3x3 - 1) x 4 = **64** per mode family, not 72, and 192 published in
-  total across the three families. Sending the missing mode earns `ERR_VAL`.
+  2 x (3x3 - 1) x 4 = **64** per guess family, not 72, and 193 published in
+  total - three families of 64 plus Three of a Kind's one. Sending the missing
+  mode earns `ERR_VAL`.
 
 - [ ] **BET-04 · Sample the mode space** — *Major*
   Play at least one round in each guess family, checking the mode string sent in
@@ -168,16 +173,18 @@ so this section is genuinely untested until upload.
   matches the four buttons lit on screen.
 
 - [ ] **BET-06 · Every bet mode is accepted** — *Blocker*
-  Play at least one round in each of the three modes — Classic, Second Chance,
-  High Stakes — and check the mode string sent in `/wallet/play`.
-  **Expect:** Classic sends an unprefixed name, the others `sc_`/`hs_`. All
-  accepted. There are 192 published modes; a rejection here means the math
-  version live on the site predates the three-family build.
+  Play at least one round in each of the four modes — Classic, Second Chance,
+  High Stakes, Three of a Kind — and check the mode string sent in
+  `/wallet/play`.
+  **Expect:** Classic sends an unprefixed name, the others `sc_`/`hs_`, and
+  Three of a Kind sends exactly `tr_any_equal_equal` - three tokens, no suit.
+  All accepted. There are 193 published modes; a rejection here means the math
+  version live on the site predates the four-family build.
 
-- [ ] **BET-07 · Every mode debits exactly the bet** — *Blocker*
-  Note the balance, place one round in each mode, and check what was taken.
-  **Expect:** exactly the bet shown, in all three. Every mode costs 1.0×, so no
-  mode should ever debit a multiple — and the bet display should show a single
+- [ ] **BET-07 · Every guess mode debits exactly the bet** — *Blocker*
+  Note the balance, place one round in each guess mode, and check what was taken.
+  **Expect:** exactly the bet shown, in all three. The guess modes cost 1.0×, so
+  none should ever debit a multiple — and the bet display should show a single
   plain figure with no multiplier line. If a multiplied amount appears, a cost
   has drifted away from 1.0 in `FAMILY_RULES` or `MODE_FAMILIES`.
 
@@ -291,6 +298,17 @@ one.
   and never showing a figure the round did not pay. Verbatim ("If an outcome
   contains multiple winning actions, the payout must incrementally update to the
   final multiplier"). In this game the stages ARE those actions.
+
+- [ ] **RND-07 · A Three of a Kind round settles on three cards** — *Blocker*
+  Switch to Three of a Kind and play until one round busts and one pays.
+  **Expect:** exactly three cards turn, never a fourth. The bust (card 2 or 3
+  not matching card 1) sends one `/wallet/play` and **no** `end-round`, and the
+  balance moves by 250 x the base bet. The win sends `end-round` and credits
+  4583.3 x the base bet - the chips read 916.60x then 4583.30x, the dealt first
+  card carries no chip, and Last Win reads 4583.30x. The client rejects a book
+  with the wrong number of reveal events ("Round did not contain all 3 reveal
+  stages"), so a settled round that shows an error here means the live math
+  version predates the three-card build.
 
 ---
 
@@ -447,18 +465,20 @@ a full-game win is floored into the bottom tier, because the smallest possible
 one pays 6.6x and would otherwise pass in silence.
 
 **Every band is per mode.** A tier is a claim about how RARE something is, and
-the three families spread their payouts differently, so one shared set of
+the guess families spread their payouts differently, so one shared set of
 thresholds made the same word mean different things. Each ladder is solved to
 land on the same rarities - Classic's originals - with Max Win being exactly
-that mode's ceiling:
+that mode's ceiling. Three of a Kind has one rung: its only win IS its ceiling,
+so it is called Max Win, at 1 in 19 - the label says what the win is, not how
+rare it is.
 
-| Tier | Classic | Second Chance | High Stakes | Roughly |
-| --- | ---: | ---: | ---: | ---: |
-| Big Win | 10x | 11x | 12x | 1 in 70 |
-| Huge Win | 40x | 28x | 50x | 1 in 300 |
-| Mega Win | 120x | 60x | 130x | 1 in 3,100 |
-| Epic Win | 300x | 130x | 440x | 1 in 15,800 |
-| Max Win | 1354.2x | 585.2x | 1910.2x | 1 in 36,400 |
+| Tier | Classic | Second Chance | High Stakes | Three of a Kind | Roughly |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Big Win | 10x | 11x | 12x | — | 1 in 70 |
+| Huge Win | 40x | 28x | 55x | — | 1 in 300 |
+| Mega Win | 120x | 60x | 145x | — | 1 in 3,100 |
+| Epic Win | 300x | 130x | 500x | — | 1 in 15,800 |
+| Max Win | 1354.2x | 585.2x | 2169.2x | 4583.3x (1 in 19) | 1 in 36,400 |
 
 At the old shared thresholds, "Epic" was 1 in 16,198 on Classic but 1 in 26,768
 on Second Chance - nearly as rare as that mode's Max Win, squashing the top of
@@ -495,9 +515,10 @@ on nearly every round. It still celebrates on size.
 
 - [ ] **WIN-09 · Max Win is announced on each mode's own ceiling** — *Major*
   Use a max-win replay ID for each family (see REPLAY_EVENTS.md).
-  **Expect:** "Max Win" on 1354.2x in Classic, on 585.2x in Second Chance and on
-  1910.2x in High Stakes. Two specific failures to watch for: a High Stakes win
-  of 1354.2x - which is NOT its maximum - announcing "Max Win", and a Second
+  **Expect:** "Max Win" on 1354.2x in Classic, on 585.2x in Second Chance, on
+  2169.2x in High Stakes and on 4583.3x in Three of a Kind, where the takeover
+  fans THREE cards. Two specific failures to watch for: a High Stakes win of
+  1354.2x - which is NOT its maximum - announcing "Max Win", and a Second
   Chance ceiling of 585.2x announcing only "Epic Win".
 
 - [ ] **WIN-10 · The lower bands differ per mode too** — *Minor*
@@ -546,7 +567,7 @@ on nearly every round. It still celebrates on size.
   68.2x) and the cap round of one that does not (`red_equal_equal_heart`).
   **Expect:** only the second announces MAX WIN. A mode reaching its own ceiling
   is not a max win - the claim is about a single reachable figure per family
-  (1354.2 / 585.2 / 1910.2), and softening it to "the best this bet can do"
+  (1354.2 / 585.2 / 2169.2 / 4583.3), and softening it to "the best this bet can do"
   would make the rarest screen in the game routine.
 
 - [ ] **WIN-13 · Turbo and skip keep the figures legible** — *Minor*
@@ -644,6 +665,16 @@ being logged, so this must not become a production-visible flag.
   ("Supports all optional parameters like currency, language, amount");
   `REP-04` covers currency and `REP-02` the amount, so this closes the set.
 
+- [ ] **REP-09 · A Three of a Kind replay shows its cost and three cards** — *Blocker*
+  Open a replay for `tr_any_equal_equal` (IDs in REPLAY_EVENTS.md), at desktop
+  and at 400 x 225.
+  **Expect:** the details panel reads Game mode "Three of a Kind", a **Round
+  cost** row of 250 x the play amount, a "Cards" row of exactly THREE badges
+  (Any, Equal, Equal - no empty fourth pill) and the payout; the round deals
+  three cards and the takeover fans three. Verbatim ("UI clearly displays bet
+  cost and applied multiplier") - the play amount alone is the base bet, and on
+  this mode the round took 250 of them.
+
 ---
 
 ## 09 · Localisation
@@ -687,6 +718,15 @@ English is required for approval; the rest are shipped.
   underscore emptied the board. `?lang=` is now resolved against the shipped
   locales before activation; this confirms it on the uploaded build.
 
+- [ ] **LNG-06 · The Three of a Kind copy reads in every language** — *Minor*
+  In `pl`, `ar` and `ja`, open the mode picker, confirm a switch to Three of a
+  Kind, and read its tab in How to Play.
+  **Expect:** the blurb, "Costs 250x your bet", the running-total table headed
+  "Total", the one bust rule and the "about one round in 19" line are all
+  translated, and the Arabic table mirrors without overflowing. These strings
+  arrived with the mode and were translated in one pass; `locales.test.ts`
+  proves they exist and differ from English, not that they read well.
+
 ---
 
 ## 10 · Compliance surface
@@ -728,11 +768,13 @@ live in the How to Play panel behind the `i` button.
   function the game pays out with.
 
 - [ ] **CMP-07 · Every mode states its description and its cost** — *Blocker*
-  **Expect:** all three families are reachable from the tabs in How to Play,
-  each with its blurb, its ceiling and its retention rule, and the line under
-  the Game modes heading reads "Every mode costs 1x your bet and returns the
-  same 96.00%...". The cost is stated once, in that sentence - not as a line of
-  its own. Verbatim ("Game modes include description and cost information").
+  **Expect:** all four families are reachable from the tabs in How to Play,
+  each with its blurb, its ceiling and its bust rule, and the line under the
+  Game modes heading follows the tab: "This mode costs 1x your bet..." on the
+  three guess modes and "This mode costs 250x your bet..." on Three of a Kind,
+  which also states the cost on its picker row and in the switch confirmation.
+  Verbatim ("Game modes include description and cost information" and "High
+  cost bet modes require confirmation before activation").
 
 - [ ] **CMP-08 · The UI guide is present** - *Blocker*
   **Expect:** the Controls section in How to Play names every button on the
@@ -791,12 +833,14 @@ live in the How to Play panel behind the `i` button.
   under-specified, that is why - do not add them back.
 
 - [ ] **CMP-13 · Five wins per mode agree with the rules** — *Major*
-  Play or replay five winning rounds in each of the three families, checking
-  each payout against the stage figures in that family's payout table.
+  Play or replay five winning rounds in each of the three guess families,
+  checking each payout against the stage figures in that family's payout table,
+  and five Three of a Kind rounds against its running-total table (250.00x /
+  916.60x / 4583.30x - the chips print the same digits).
   **Expect:** every figure reconciles. Verbatim ("Check 5 wins for each game
-  mode against the Game Rules"). Scoped to the three families a player sees
-  rather than to the 192 published bet modes; `REPLAY_EVENTS.md` carries a
-  win-cap, big-win, normal-win and loss ID for every one of the 192 if a
+  mode against the Game Rules"). Scoped to the four families a player sees
+  rather than to the 193 published bet modes; `REPLAY_EVENTS.md` carries a
+  win-cap, big-win, normal-win and loss ID for every one of the 193 if a
   reviewer wants to go wider.
 
 - [ ] **CMP-14 · Title, assets and imagery clear the compliance checks** — *Major*
@@ -945,6 +989,14 @@ badge taking a bite out of their inner edge.
   Play on a real mobile connection, not office wifi.
   **Expect:** slow responses delay the reveal but never double-charge, never
   desync the balance and never strand the spin button disabled.
+
+- [ ] **DEV-06 · The Three of a Kind board holds at Popout S and Mobile S** — *Major*
+  Switch to Three of a Kind at 400 x 225 and at 320 x 568, then play a round.
+  **Expect:** three card slots and two read-only Equal badges under the gaps
+  between them, the bar on one row at Popout S with the blue cost figure and
+  the "1.00 x 250" line under it, the mode picker's four rows scrolling inside
+  the panel rather than the frame, and no horizontal scroll. Switching back to
+  a guess family turns the cards over and restores the four squares.
 
 ---
 

@@ -23,7 +23,7 @@
  * allowImportingTsExtensions for exactly this reason, and Vite resolves them
  * unchanged. Drop an extension here and the whole test file fails to load.
  */
-import { decayFor, partialMultiplier, stageRetention } from './payout.ts';
+import { decayFor, partialMultiplier, quantizeMultiplier, stageRetention } from './payout.ts';
 import { createDeck, ranks, rankValue } from '../round/roundContract.ts';
 import { FAMILY_RULES, FREE_CHOICE, type FamilyRules } from './modes.ts';
 
@@ -41,11 +41,28 @@ export type PayoutRow = {
 	 * not assignable to it, so the popup would not compile.
 	 */
 	label: 'Red or Black' | 'Higher' | 'Lower' | 'Equal' | 'Inside' | 'Outside' | 'Any suit' | 'Any card';
-	/** Lowest this pick can pay, as a multiple of the running total. */
+	/**
+	 * What the figure IS. A `factor` multiplies the running total - the four-guess
+	 * tables, where every pick has its own odds and the player compounds them. A
+	 * `total` is the running total itself after this card, in multiples of the
+	 * bet and including the mode's cost - the fixed family, where there is one
+	 * path and the board's chips already show exactly these numbers. Two kinds
+	 * rather than one because a table of factors on Three of a Kind read
+	 * 1.00 / 3.67 / 5.00 under a "Max win 4583.3x" line and beside chips
+	 * reading 250.00 / 916.60 / 4583.30: the same rule in two units, which is
+	 * the bug class this game keeps shipping. payoutColumnFor() names the column.
+	 */
+	kind: 'factor' | 'total';
+	/** Lowest this pick can pay (a factor), or the running total (a total). */
 	min: number;
 	/** Highest it can pay. Equal to `min` when the odds never move. */
 	max: number;
 };
+
+/** The heading over the figures - "Pays" for factors, "Total" for running totals. */
+export function payoutColumnFor(rules: Pick<FamilyRules, 'fixedChoices'>): 'Pays' | 'Total' {
+	return rules.fixedChoices ? 'Total' : 'Pays';
+}
 
 const values = ranks.map((rank) => rankValue[rank]);
 
@@ -62,7 +79,7 @@ const range = (multipliers: number[]) => ({
  * Build the table for one mode family.
  *
  * A function of the family, not a constant, because retention is what every
- * stage's multiplier is solved against - High Stakes keeps 20% on a miss
+ * stage's multiplier is solved against - High Stakes keeps 16% on a miss
  * instead of 30%, so every figure below moves. Showing Classic's odds to a
  * player on another mode would be the same class of mistake as pricing a stage
  * one way and paying it another.
@@ -128,26 +145,38 @@ export function payoutRowsFor(rules: FamilyRules = FAMILY_RULES.base): PayoutRow
 		s4.push(partialMultiplier(left / 49, 3, retentionAt(3)));
 	}
 
+	const kind = 'factor' as const;
 	return [
-		{ stage: 1, label: 'Red or Black', min: round2(colour), max: round2(colour) },
-		{ stage: 2, label: 'Higher', ...range(s2.higher) },
-		{ stage: 2, label: 'Lower', ...range(s2.lower) },
-		{ stage: 2, label: 'Equal', ...range(s2.equal) },
-		{ stage: 3, label: 'Inside', ...range(s3.inside) },
-		{ stage: 3, label: 'Outside', ...range(s3.outside) },
-		{ stage: 3, label: 'Equal', ...range(s3.equal) },
-		{ stage: 4, label: 'Any suit', ...range(s4) },
+		{ stage: 1, label: 'Red or Black', kind, min: round2(colour), max: round2(colour) },
+		{ stage: 2, label: 'Higher', kind, ...range(s2.higher) },
+		{ stage: 2, label: 'Lower', kind, ...range(s2.lower) },
+		{ stage: 2, label: 'Equal', kind, ...range(s2.equal) },
+		{ stage: 3, label: 'Inside', kind, ...range(s3.inside) },
+		{ stage: 3, label: 'Outside', kind, ...range(s3.outside) },
+		{ stage: 3, label: 'Equal', kind, ...range(s3.equal) },
+		{ stage: 4, label: 'Any suit', kind, ...range(s4) },
 	];
 }
 
 /**
- * The table for a family with no guesses - Three of a Kind. Its deck is
- * symmetric (every rank has the same number of cards), so every figure is a
- * single value: card 1 dealt at 1.00x, card 2 matching 3 of 11 at 3.67x, card
- * 3 matching 2 of 10 at 5.00x. Computed from the deck and the same functions
- * the round is priced with, like the four-guess table above, and for the same
- * reason: a typed-in 5.00x is the slow-motion version of the worst bug this
- * game can have. One row per stage the family deals - three here.
+ * The table for a family with no guesses - Three of a Kind.
+ *
+ * RUNNING TOTALS, not factors, and that is the whole point of the row `kind`.
+ * The deck is symmetric (every rank has the same number of cards) so each
+ * stage's factor is a single value - card 1 dealt at 1.00x, card 2 matching 3
+ * of 11 at 3.67x, card 3 matching 2 of 10 at 5.00x - but a table of those
+ * three sat under "Max win 4583.3x" and beside board chips reading 250.00x,
+ * 916.60x and 4583.30x, because the chips are the running total times the
+ * 250x cost, in multiples of the BASE bet, which is Stake's unit for every
+ * payout figure. Card 1 read 1.00x in the rules and 250.00x on the table. One
+ * path means the running total is the natural figure, so that is what each
+ * row states: quantized the way the chip is (0.1x floor), so the two print
+ * the same digits, and the last row IS the family's maxWin.
+ *
+ * Computed from the deck and the same functions the round is priced with,
+ * like the four-guess table above, and for the same reason: a typed-in
+ * 4583.3x is the slow-motion version of the worst bug this game can have.
+ * One row per stage the family deals - three here.
  */
 function fixedPayoutRows(rules: FamilyRules): PayoutRow[] {
 	const choices = rules.fixedChoices!;
@@ -160,11 +189,13 @@ function fixedPayoutRows(rules: FamilyRules): PayoutRow[] {
 	// in the deck over the cards left. A free card is p = 1.
 	const probability = (stage: number) =>
 		choices[stage] === FREE_CHOICE ? 1 : (perRank - stage) / (deck.length - stage);
+	// Compounded at full precision and scaled by the cost BEFORE quantizing,
+	// exactly as roundReveal.svelte.ts builds the chip for each card.
+	let running = 1;
 	return choices.map((_, stage) => {
-		const value = round2(
-			partialMultiplier(probability(stage), stage, stageRetention(rules, stage, false), decay),
-		);
-		return { stage: stage + 1, label: label(stage), min: value, max: value };
+		running *= partialMultiplier(probability(stage), stage, stageRetention(rules, stage, false), decay);
+		const total = quantizeMultiplier(running * rules.cost);
+		return { stage: stage + 1, label: label(stage), kind: 'total', min: total, max: total };
 	});
 }
 
@@ -213,7 +244,7 @@ export function oddsExampleFor(rules: FamilyRules = FAMILY_RULES.base): OddsExam
    renders it any more - How to Play states each family's ceiling from
    FAMILY_RULES.maxWin - and as BASE-ONLY figures sitting next to a per-family
    panel it was a trap: the obvious way to use it would have shown Classic's
-   numbers on all three modes, which is the same bug winTiersFor exists to fix.
+   numbers on every mode, which is the same bug winTiersFor exists to fix.
    Recover it from git history if the breakdown is ever wanted back, per family. */
 
 /**
@@ -223,8 +254,8 @@ export function oddsExampleFor(rules: FamilyRules = FAMILY_RULES.base): OddsExam
  * stated as though it did not. The old fixed list said "Card 2 - you get 0.5x
  * your bet back" AND "you keep 30%", which reads as a contradiction: both are
  * true of Classic (30% of the running total at card 2 happens to be 0.5x the
- * bet) but only of Classic. High Stakes keeps 20%, and Second Chance forgives
- * the first miss entirely.
+ * bet) but only of Classic. High Stakes keeps 16%, Second Chance forgives the
+ * first miss, and Three of a Kind keeps nothing at all.
  *
  * The card-2 figure is derived rather than typed. The running multiplier
  * entering stage 1 is always the colour pick, which is always 26 of 52, so the
@@ -232,7 +263,7 @@ export function oddsExampleFor(rules: FamilyRules = FAMILY_RULES.base): OddsExam
  */
 export type BustRow = {
 	/** English text, which is also the i18n key. */
-	label: 'Card 1' | 'Card 2, 3 or 4' | 'Your first wrong guess' | 'Your second wrong guess' | 'Any wrong guess';
+	label: 'Card 1' | 'Card 2, 3 or 4' | 'Your first wrong guess' | 'Your second wrong guess' | 'A card that does not match';
 	/**
 	 * The i18n KEY for the sentence, not the sentence.
 	 *
@@ -264,7 +295,7 @@ export type BustRow = {
  * different quantity, and listing "Card 2 - 0.5x your bet" beside "Card 3 or 4
  * - keep 30%" put both in one list and read as two rules when it is one rule
  * seen twice: 30% of the colour pick's 1.99x IS 0.5x the bet. On High Stakes it
- * was worse, because "0.3x" sits close enough to "20%" to be read as a third
+ * was worse, because "0.3x" sits close enough to "16%" to be read as a third
  * number. Do not reintroduce a bet multiple here - payoutTable.test.ts fails if
  * one appears.
  */
@@ -287,8 +318,10 @@ export function bustRowsFor(rules: FamilyRules = FAMILY_RULES.base): BustRow[] {
 
 	// Nothing on any miss, in one row: the family that keeps nothing has one
 	// rule, and listing it per card would be the same sentence three times.
+	// Not "a wrong guess" - nothing on this family is guessed; a card either
+	// matches card 1 or the round is over.
 	if (rules.fixedChoices) {
-		return [{ label: 'Any wrong guess', key: 'The round ends and pays nothing.', percent: null }];
+		return [{ label: 'A card that does not match', key: 'The round ends and pays nothing.', percent: null }];
 	}
 
 	if (rules.forgive !== null) {

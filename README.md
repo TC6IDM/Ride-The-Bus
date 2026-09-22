@@ -11,65 +11,79 @@ independent, stateless outcome, so the four choices are encoded in the bet
 mode instead. Everything after the bet is
 animation of an already-determined result.
 
+A fourth mode, **Three of a Kind**, is a different game on the same table:
+three cards from a twelve-card deck of Aces, Kings and Queens, no guesses,
+cards 2 and 3 must match card 1, nothing on a miss. It costs 250× the bet and
+pays 4583.3× the bet about one round in nineteen.
+
 ## Bet modes
 
 The same four guesses can be bought three ways. Only what a **miss** keeps
 differs, and because every mode is reweighted onto the same 96.00% RTP, a mode
 that forgives more cannot also pay more — the two are one dial seen from
-opposite ends.
+opposite ends. The fourth row is the all-or-nothing mode, priced at fair odds
+on its own deck.
 
-| Mode | Cost | A miss keeps | Max win | Pays something |
+| Mode | Cost | A miss keeps | Max win (× base bet) | Pays something |
 |---|---|---|---|---|
 | Classic | 1.0× | nothing on card 1, 30% after | 1354.2× | ~1 in 2 |
 | Second Chance | 1.0× | card 1 still ends it; after that the first miss keeps 50% and **play continues** | 585.2× | ~1 in 2 |
-| High Stakes | 1.0× | nothing on card 1, 20% after | 1910.2× | ~1 in 2 |
+| High Stakes | 1.0× | nothing on card 1, 16% after | 2169.2× | ~1 in 2 |
+| Three of a Kind | **250×** | nothing, ever | 4583.3× | 1 in 19.1 |
 
-A volatility ladder at one price, rather than paid feature modes. That is
-forced, not chosen: `etl40b` — the expected payout from wins of at least 40× the
-cost — is summed as an **absolute** figure against a fixed 0.9 limit and is not
-divided by cost. A 2× mode must average 1.92× to return 96%, so it pays twice as
-much for the same shape and its `etl40b` doubles. Even Classic's own shape fails
-at 2× (1.120); only a low-volatility family survives the doubling, which is the
-opposite of what High Stakes is for.
+The three guess modes are a volatility ladder at one price, rather than paid
+feature modes. That is forced, not chosen: `etl40b` — the expected payout from
+wins of at least 40× the cost — is summed as an **absolute** figure against a
+fixed limit and is not divided by cost. A 2× mode must average 1.92× to return
+96%, so it pays twice as much for the same shape and its `etl40b` doubles. Even
+Classic's own shape fails at 2× (1.120); only a low-volatility family survives
+the doubling, which is the opposite of what High Stakes is for. Three of a Kind
+escapes that sum because its payout never reaches 40× its cost — and is capped
+from the other side, because Stake's tail rows are written in base-bet
+multiples and never scale with cost, so a binary win must stay under 5,000×
+the base bet. THE ALL-OR-NOTHING BOUND in `game_calculations.py` is the
+derivation, including the first build (A K Q J at 1000× paying 25,000×) that
+failed every tail row.
 
-That is 3 families × 64 guess combinations = **192 published modes**. The
-Classic family keeps its original unprefixed names, so replay event IDs
-recorded against it stay valid; the others are prefixed `sc_` and `hs_`.
+That is 3 families × 64 guess combinations, plus one = **193 published modes**.
+The Classic family keeps its original unprefixed names, so replay event IDs
+recorded against it stay valid; the others are prefixed `sc_`, `hs_` and `tr_`.
 
 Two numbers here are not free choices:
 
-- **High Stakes retention is 0.20.** Stake reads CVaR and Expected Tail
+- **High Stakes retention is 0.16.** Stake reads CVaR and Expected Tail
   Liability as the worst value across all modes, and a failed class shrinks the
   game's bet-level template. The binding metric is `etl40b`, not CVaR, and the
-  build measures 0.695 and 568.8 against them.
+  2026-09-20 build measures 0.725 and 624.6 against them.
 
   **The limits are per star tier**, and the binding pair for a new submission is
   the 2-star one — ETL 0.8 and CVaR 700, not the 0.9 / 800 of the 3-star tier.
-  Retention could go lower than 0.20 — but not much, and the margin is what
+  Retention could go lower than 0.16 — but not much, and the margin is what
   runs out first. Exact enumeration of all 64 combinations at each retention,
   reweighted the way `reweight_luts.py` does, gives:
 
   | Retention | etl40b (2★ 0.8 / 3★ 0.9) | CVaR (2★ 700 / 3★ 800) | Max win |
   | --- | --- | --- | --- |
   | 0.30 (Classic) | 0.553 | 429 | 1354.2× |
-  | **0.20 (shipped)** | **0.689** | **551** | **1910.2×** |
+  | 0.20 (shipped until 2026-09-20) | 0.689 | 551 | 1910.2× |
+  | **0.16 (shipped) — measured, not enumerated** | **0.725** | **624.6** | **2169.2×** |
   | 0.15 | 0.764 | 618 | 2237.3× |
   | 0.10 | **0.842 ✗ (2★)** | 689 | 2599.5× |
   | 0.05 | **0.880 ✗ (2★)** | **763 ✗ (2★)** | 2998.5× |
   | 0.025 | **0.898 ✗ (2★)** | **802 ✗** | 3212.3× |
   | 0.00 | **0.960 ✗** | 329 | 3436.1× |
 
-  The published build reads 1–3% above these (it samples its tail where this
-  enumerates it). Against the 2-star limits that makes **0.15 the practical
-  floor**, not 0.10 — 0.10 enumerates at 0.842 and is already over 0.8 before
-  the build's own margin is added. 0.20 keeps 14% of headroom under ETL 0.8,
-  which is what a metric read as a worst-case across 64 modes needs.
+  The published build reads a few percent off these (it samples its tail where
+  this enumerates it; the enumeration at 0.16 said CVaR 682, the build measured
+  624.6). Against the 2-star limits that makes **0.15 the practical floor**, not
+  0.10 — 0.10 enumerates at 0.842 and is already over 0.8 before the build's own
+  margin is added. 0.16 keeps 9% of headroom under ETL 0.8 and 11% under CVaR
+  700, which is what a metric read as a worst-case across 64 modes needs.
 
   Zero is not the end of a gradient, it is a cliff: with nothing kept, the only
   rounds that pay are the 4-for-4 ones, so the reweighter has to make wins rare
   enough to hit 96% RTP and the hit rate collapses from ~1 in 2 to **1 in 3,530**.
-  Anything below 0.20 also breaks the family's 2000× wincap, which would have to
-  be raised with it.
+  The family's wincap is 2200; anything below 0.16 would have to raise it.
 - **Card 1 is never forgiven.** Forgiving it left almost no round paying zero,
   which pushed Second Chance's win-conditional mean below its reweight target —
   and `reweight_luts.py` can only move RTP by re-weighting losses, so with
@@ -130,7 +144,7 @@ python -m venv .venv
 .venv\Scripts\python.exe games\ride_the_bus\run.py
 ```
 
-This is a long run - simulations across all 192 bet modes, on 8 worker
+This is a long run - simulations across all 193 bet modes, on 8 worker
 processes - and it writes everything under
 `math-sdk\games\ride_the_bus\library\`.
 
@@ -148,8 +162,10 @@ already produced valid files.
 
 **Upload the contents of `math-sdk\games\ride_the_bus\library\publish_files\`**
 to Stake Engine's Files page, under the Math/RGS section for this game. That is
-385 files: one `books_<mode>.jsonl.zst` and one `lookUpTable_<mode>_0.csv` per
-bet mode (192 of each), plus a single `index.json`. Around 1.6 GB in total -
+387 files: one `books_<mode>.jsonl.zst` and one `lookUpTable_<mode>_0.csv` per
+bet mode (193 of each), plus a single `index.json`. The build does not sweep
+the folder, so a superseded build's files can sit beside the current ones -
+the count is the check that none did. Around 1.6 GB in total -
 well inside Stake's limits, which cap a single events file at 4.2 GB and a
 single mode at 10,000,000 events (the largest book here is ~15 MB, and the
 biggest mode simulates 800,000 rounds).
@@ -211,7 +227,7 @@ cd web-sdk\apps\Ride-The-Bus
 pnpm test
 ```
 
-680 tests (`node --test "src/**/*.test.ts"`). One of them, `parity with the
+769 tests (`node --test "src/**/*.test.ts"`). One of them, `parity with the
 published books`, reads the math build out of
 `math-sdk\games\ride_the_bus\library\publish_files\` and replays real books
 through the client's payout arithmetic. It skips itself if that directory is
@@ -243,18 +259,22 @@ fallback.
 
 ## Submitting for approval
 
-### Read this first: three modes, 192 bet modes
+### Read this first: four modes, 193 bet modes
 
-A reviewer opening the dashboard sees **192 bet modes** and should know why
+A reviewer opening the dashboard sees **193 bet modes** and should know why
 before counting them.
 
-A player sees **three**: Classic, Second Chance and High Stakes. But all four
-guesses are committed before the round is bought, so the guesses are part of the
-wager rather than decisions taken during it - which is what keeps every round a
-single, independent, stateless bet with no continuation and no cash-out. Each
-distinct set of guesses is therefore its own bet mode:
+A player sees **four**: Classic, Second Chance, High Stakes and Three of a
+Kind. On the first three, all four guesses are committed before the round is
+bought, so the guesses are part of the wager rather than decisions taken during
+it - which is what keeps every round a single, independent, stateless bet with
+no continuation and no cash-out. Each distinct set of guesses is therefore its
+own bet mode:
 
 > 3 families x 2 colours x (3 x 3 - 1) higher/lower x inside/outside pairs x 4 suits = **192**
+
+plus Three of a Kind, which has no guesses and is one mode
+(`tr_any_equal_equal`) - **193**.
 
 The `- 1` is Equal-then-Inside, which is impossible rather than merely unlikely:
 nothing falls strictly between two cards of the same rank, so that mode would
@@ -263,16 +283,19 @@ The client bars the same combination in the UI.
 
 Consequences worth knowing:
 
-- **All 192 cost 1.0x.** No mode is a purchase or a premium.
-- **All 192 return 96.00%**, with a spread of 0.000000%.
-- **Each has its own maximum win**, from 39.5x to 1910.2x. The three headline
-  ceilings (1354.2x / 585.2x / 1910.2x) are the most each *family* can reach,
-  and exactly 8 of each family's 64 combinations reach them. How to Play states
-  the family ceiling **and** what the four guesses currently picked top out at,
-  because Stake asks for the maximum win per bet mode and every combination is
-  one.
+- **192 cost 1.0x; Three of a Kind costs 250x.** No four-guess mode is a
+  purchase or a premium. The 250x mode states its cost in the picker, in the
+  confirmation that precedes activating it, and in the rules.
+- **All 193 return 96.00%**, with a spread of 0.000000%.
+- **Each has its own maximum win**, from 39.5x to 2169.2x on the four-guess
+  modes. The three headline ceilings (1354.2x / 585.2x / 2169.2x) are the most
+  each *family* can reach, and exactly 8 of each family's 64 combinations reach
+  them. How to Play states the family ceiling **and** what the four guesses
+  currently picked top out at, because Stake asks for the maximum win per bet
+  mode and every combination is one. Three of a Kind's ceiling, 4583.3x the
+  base bet, is its only win and the game's overall maximum.
 - **[REPLAY_EVENTS.md](REPLAY_EVENTS.md) is the index.** It carries a loss, a
-  normal win, a big win and a win-cap simulation ID for all 192, plus two
+  normal win, a big win and a win-cap simulation ID for all 193, plus two
   round-shape scenarios, so any mode can be replayed without hunting for an ID.
 
 ### What has been checked, and what has not
@@ -281,11 +304,12 @@ Verified against Stake's math, RGS and frontend approval criteria:
 
 | | |
 | --- | --- |
-| RTP 90-96.70%, all modes within 0.5% | 96.00% on every one of the 192 modes, spread 0.000000% |
+| RTP 90-96.70%, all modes within 0.5% | 96.00% on every one of the 193 modes, spread 0.000000% |
 | Simulations per bet mode | 100k minimum, asserted in `run.py` |
-| Non-zero win hit rate, target better than 1 in 20 | 1 in 1.45 to 1 in 2.03 across all modes |
-| Max win obtainable, target better than 1 in 10,000,000 | 1354.2x / 585.2x / 1910.2x per family, worst case 1 in 193,283 |
-| Max win stated per BET MODE | each of the 192 has its own ceiling; How to Play names the one for the guesses on the board |
+| Non-zero win hit rate, target better than 1 in 20 | 1 in 1.45 to 1 in 2.11 across the four-guess modes; 1 in 19.1 on Three of a Kind (94.8% of its rounds pay nothing - past the "90,000 of 100,000" example in the guidelines, accepted as the submission's softest point) |
+| Max win obtainable, target better than 1 in 10,000,000 | 1354.2x / 585.2x / 2169.2x per four-guess family, worst case 1 in 197,062; 4583.3x on Three of a Kind at 1 in 19.1 |
+| Max win stated per BET MODE | each of the 193 has its own ceiling; How to Play names the one for the guesses on the board |
+| 2-star risk limits (ETL 0.8, CVaR 700, std 0.6-50, P(>=5,000x) 1%) | worst etl40b 0.725, CVaR 624.6, std 36.58, P(>=5,000x) zero. Three of a Kind: etl40b 0, CVaR 4,583.3 absolute = 18.3 per stake. The local `rgs_verification.py` warning on that CVaR compares an un-normalised 250x-mode figure to a 1x limit; Stake's console passes it |
 | No jackpot, gamble or cash-out | none - the single-bet design rules them out |
 | Static files only, no external requests | the only network call is the RGS itself |
 | Bet levels, `stepBet`, min/max from `authenticate` | honoured; nothing hardcoded |
@@ -304,7 +328,7 @@ guesses that stayed editable across the two round trips of placing a bet, and a
 replay that started animating behind the loading screen. Play real rounds
 through a Developer-page session before submitting, replay included.
 
-[RGS_TEST_PLAN.md](RGS_TEST_PLAN.md) is that pass, written out: 95 checks
+[RGS_TEST_PLAN.md](RGS_TEST_PLAN.md) is that pass, written out: over a hundred checks
 covering settlement, autoplay endurance, the jurisdiction flags, currency
 display, replay and the compliance surface, each with the reason it exists. It
 is weighted towards the paths the local fallback never executes, because that is
@@ -327,7 +351,7 @@ the verbatim criteria in [CLAUDE.md](CLAUDE.md#game-quality-rankings).
 ### Replay event IDs
 
 Approval requires replay event IDs **per bet mode**, covering normal win, big
-win, win cap and loss. With 192 bet modes that is 768 IDs, so they are derived
+win, win cap and loss. With 193 bet modes that is 772 IDs, so they are derived
 from the published lookup tables rather than collected by hand, into
 [REPLAY_EVENTS.md](REPLAY_EVENTS.md) - the full table, with the payout
 multiplier beside each ID so a reviewer can see what the round is meant to

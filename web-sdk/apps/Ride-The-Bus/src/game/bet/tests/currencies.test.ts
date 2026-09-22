@@ -108,15 +108,15 @@ describe('every currency formats', () => {
  * up here rather than on a phone.
  *
  * THE STRESS FIGURE IS A STRESS FIGURE. It was built as "a $500,000 bet at
- * High Stakes' 1910.2x cap", and stays at that shape even though the game's
- * ceiling is now 25,000x (Three of a Kind, at cost 1000x on a base the 2-star
- * tier caps at $100) and High Stakes reaches 2169.2x: Stake's 2-star maximum
- * exposure is $10,000,000 per bet, so no settled figure can be wider than that
- * in any currency, and the $955M this models is already a hundred times past
- * it. Multiplying by 25,000 instead would grow the figure by three digits the
- * layout will never be asked to draw, and fail the width the CSS was solved
- * for - for a number that cannot occur. Kept as the original bound, named
- * for what it is.
+ * High Stakes' 1910.2x cap", and stays at that shape even though High Stakes
+ * now reaches 2169.2x and the game's ceiling is 4583.3x (Three of a Kind, at
+ * cost 250x on a base bet the 2-star caps hold to $200, so its biggest settled
+ * figure is $916,660): Stake's 2-star maximum exposure is $5,000,000 per bet,
+ * so no settled figure can be wider than that in any currency, and the $955M
+ * this models is already far past it. Multiplying by 4,583.3 instead would
+ * grow the figure by a digit the layout will never be asked to draw, and fail
+ * the width the CSS was solved for - for a number that cannot occur. Kept as
+ * the original bound, named for what it is.
  */
 describe('the widest figure each currency can settle on', () => {
   /** A $500k bet at the old High Stakes ceiling - see the note above. */

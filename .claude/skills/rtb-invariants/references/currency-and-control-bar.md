@@ -102,8 +102,8 @@ rather than on every turn. Nothing here is reworded.
     figure in small type is a figure where a rounded one is not.
 - **High-denomination currencies are the stress case, and they are not exotic.**
   The RGS supports units worth a thousandth of a dollar, and an operator sets
-  `maxBet` in those units. High Stakes' 1910.2x cap on a 2,000,000 NGN maximum
-  settles at `NGN 3,820,400,000.00`. The worst three across the supported set are
+  `maxBet` in those units. High Stakes' 2169.2x cap on a 2,000,000 NGN maximum
+  settles at `NGN 4,338,400,000.00`. The worst three across the supported set are
   **TZS, UGX and XOF**, tied at 24 characters - `TZS 2,578,770,000,000.00`, and
   XOF with a five-character `F CFA ` prefix. NGN is fourth; VND and IDR have
   weaker units still but no minor unit, which saves them three characters.
@@ -118,6 +118,21 @@ rather than on every turn. Nothing here is reworded.
   walks it - **31 of 46 render as a bare code** in an English locale, so the
   chip's two-line "CODE over number" layout is the common path, not the
   exception.
+- **On a multiplied mode the bar's headline "Bet" figure is the round's COST,
+  by decision (2026-09-22), and every × figure is a multiple of the BASE bet.**
+  On Three of a Kind the bar therefore reads `Bet $250.00 · $1.00 × 250` beside
+  `Last Win $4,583.30 · 4583.30×`, and the chips read 916.60× and 4583.30×: the
+  × figures reconcile against the $1.00 on the second line, not the headline.
+  This was audited as a two-units case and the alternatives were shot
+  (base bet as the headline with the cost beneath; the cost kept big under a
+  "Per round" caption) and declined - the headline stays the amount that
+  leaves the balance, because that is what the running-win bar counts up
+  from. Do not re-open it as a finding; the chips cannot move to cost units
+  (they are the RGS's `payoutMultiplier`, the figure the replay panel prints).
+  What DID change: the dealt first card on Three of a Kind carries no chip (its
+  250.00× was the stake shown as a win), a chip reading 0.00× draws in the dim
+  ink, and the rules' trips table prints the chips' running totals rather than
+  per-stage factors.
 - **The bet is locked while autoplay runs, and the control says so rather than
   going grey.** Autoplay stakes the same amount every round - that is the
   contract the player confirmed - so the chips, the entry field and the steppers

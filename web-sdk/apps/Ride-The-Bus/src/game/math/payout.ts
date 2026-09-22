@@ -53,7 +53,7 @@ export const STAGE_RETENTION = [0, 0.3, 0.3, 0.3];
  *
  * i.e. the expected multiplicative change to the running multiplier is a fixed
  * constant regardless of how likely the guess was. That martingale property is
- * what pulls all 192 modes' raw RTP toward decay**4, despite their
+ * what pulls every mode's raw RTP toward decay**4, despite their
  * wildly different stage probabilities.
  *
  * Returns 0 for an impossible guess (p <= 0): the "correct" branch can never

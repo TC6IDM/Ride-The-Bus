@@ -84,7 +84,7 @@ export function restoreReplay() {
   // Must go through parseModeName, which strips the family prefix BEFORE
   // splitting: "sc_red_higher_equal_spade" has five underscore-separated
   // parts, not four. Splitting first and counting second reads every Second
-  // Chance and High Stakes mode as malformed - 128 of the 192 - and silently
+  // Chance and High Stakes mode as malformed - 128 of the 193 - and silently
   // left the board showing guesses that did not match the round being
   // replayed. See the note atop parseModeName in game/math/modes.ts.
   // The FAMILY has to come across too, not just the four guesses. It is the

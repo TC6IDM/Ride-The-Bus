@@ -65,7 +65,7 @@ export default {
 	'Game modes': '게임 모드',
 	'Max win': '최대 배당',
 	// Confirmation before a bet mode is activated - required by the approval
-	// checklist, and worth having anyway: the three families cost the same but
+	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
 	'Switch mode?': '모드를 변경할까요?',
 	Cancel: '취소',
@@ -111,6 +111,8 @@ export default {
 	Card: '카드',
 	Pick: '선택',
 	Pays: '배당',
+	'Total':
+		'합계',
 	'Red or Black': '빨강 또는 검정',
 	'Any suit': '모든 무늬',
 	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
@@ -193,6 +195,8 @@ export default {
 	Mode: '모드',
 	'Game mode': '게임 모드',
 	Guesses: '예측',
+	Cards: '카드',
+	'Round cost': '라운드 비용',
 	Event: '이벤트',
 	Payout: '지급액',
 	Play: '재생',
@@ -206,16 +210,16 @@ export default {
 	'The i button opens this screen.': 'i 버튼은 이 화면을 엽니다.',
 	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
 		'번개 버튼은 터보입니다. 카드가 뒤집히는 속도를 보통부터 즉시까지 조절합니다.',
-	'The circular arrows open autoplay, which repeats your four guesses for a set number of rounds or unlimited. The counter sits on the button while it runs.':
-		'원형 화살표는 자동 플레이를 엽니다. 네 가지 예측을 정해진 라운드 수 또는 무제한으로 반복하며, 실행 중에는 버튼에 카운터가 표시됩니다.',
+	'The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.':
+		'원형 화살표는 자동 플레이를 엽니다. 같은 베팅을 정해진 라운드 수 또는 무제한으로 반복하며, 실행 중에는 버튼에 카운터가 표시됩니다.',
 	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
 		'슬라이더 버튼에는 자동 플레이 옵션이 두 가지 있습니다. 풀 게임 성공 시 중지와 승리 연출 건너뛰기입니다.',
 	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
 		'큰 원형 버튼이 라운드를 진행합니다. 스페이스바도 마찬가지로, 한 번 누르면 한 라운드, 누르고 있으면 계속 진행됩니다. 자동 플레이 중에는 버튼이 중지로 바뀌며, 진행 중인 라운드가 먼저 끝납니다.',
 	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
 		'모드는 게임 모드 선택창을 엽니다. 전환 시 적용 전에 확인을 요청합니다.',
-	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'이 게임에는 무료 스핀, 보너스 라운드, 잭팟 또는 재발동 기능이 없습니다. 각 라운드는 독립적인 단일 4장 카드 드로우입니다.',
+	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
+		'이 게임에는 무료 스핀, 보너스 라운드, 잭팟 또는 재발동 기능이 없습니다. 각 라운드는 독립적인 한 번의 딜입니다: 예측 모드에서는 4장, 트리플에서는 3장.',
 	'Big Win': '빅 윈',
 	'Huge Win': '슈퍼 윈',
 	'Mega Win': '메가 윈',
@@ -253,16 +257,22 @@ export default {
 		'아무거나',
 	'Any card':
 		'아무 카드나',
-	'Any wrong guess':
-		'틀린 예측',
-	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
-		'12장 덱으로 진행됩니다: 각 무늬의 에이스, 킹, 퀸. 카드 1이 공개되고, 카드 2와 3은 그 숫자와 같아야 합니다. 세 장의 카드, 한 번의 승리.',
+	'A card that does not match':
+		'일치하지 않는 카드',
+	'If a card does not match':
+		'카드가 일치하지 않으면',
+	'Card 1 is dealt, not guessed. The deck holds one Ace, King and Queen of each suit, so card 2 matches 3 times in 11 and card 3 twice in 10.':
+		'카드 1은 추측하지 않고 그냥 받습니다. 덱에는 무늬별로 에이스, 킹, 퀸이 한 장씩 있으므로 카드 2는 11번 중 3번, 카드 3은 10번 중 2번 일치합니다.',
+	'Each figure is the running total after that card, in multiples of your bet, exactly as the board shows it beside the cards. Only the last card pays.':
+		'각 숫자는 해당 카드까지의 누적 합계로, 베팅 금액의 배수이며 보드의 카드 옆에 표시되는 것과 같습니다. 마지막 카드만 지급됩니다.',
 	'Three of a kind pays %m your bet, about one round in %n.':
 		'트리플은 베팅의 %m를 지급하며, 약 %n라운드에 한 번입니다.',
 	'%c× your base bet of %b':
 		'기본 베팅 %b의 %c배',
 	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
 		'*%f 기준입니다. 게임 모드마다 최대 당첨금이 다르며, 모드 선택과 게임 방법에 표시됩니다.',
+	'That mode costs %c× your bet.':
+		'해당 모드는 베팅 금액의 %c배가 듭니다.',
 	'Card 2 must match card 1':
 		'카드 2는 카드 1과 같아야 합니다',
 	'Card 3 must match card 1':

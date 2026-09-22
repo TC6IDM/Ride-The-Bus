@@ -65,7 +65,7 @@ export default {
 	'Game modes': 'Pelitilat',
 	'Max win': 'Enimmäisvoitto',
 	// Confirmation before a bet mode is activated - required by the approval
-	// checklist, and worth having anyway: the three families cost the same but
+	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
 	'Switch mode?': 'Vaihdetaanko tila?',
 	Cancel: 'Peruuta',
@@ -112,6 +112,8 @@ export default {
 	Card: 'Kortti',
 	Pick: 'Valinta',
 	Pays: 'Maksaa',
+	'Total':
+		'Yhteensä',
 	'Red or Black': 'Punainen tai musta',
 	'Any suit': 'Mikä tahansa maa',
 	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
@@ -194,6 +196,8 @@ export default {
 	Mode: 'Tila',
 	'Game mode': 'Pelitila',
 	Guesses: 'Arvaukset',
+	Cards: 'Kortit',
+	'Round cost': 'Kierroksen hinta',
 	Event: 'Tapahtuma',
 	Payout: 'Maksu',
 	Play: 'Toista',
@@ -207,16 +211,16 @@ export default {
 	'The i button opens this screen.': 'i-painike avaa tämän näytön.',
 	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
 		'Salamapainike on Turbo: kuinka nopeasti kortit kääntyvät, Normaalista Välittömään.',
-	'The circular arrows open autoplay, which repeats your four guesses for a set number of rounds or unlimited. The counter sits on the button while it runs.':
-		'Kiertävät nuolet avaavat automaattipelin, joka toistaa neljä arvaustasi asetetun määrän kierroksia tai rajattomasti. Laskuri näkyy painikkeessa pelin ajan.',
+	'The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.':
+		'Kiertävät nuolet avaavat automaattipelin, joka pelaa saman panoksen uudelleen asetetun määrän kierroksia tai rajattomasti. Laskuri näkyy painikkeessa pelin ajan.',
 	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
 		'Säädinpainike sisältää automaattipelin kaksi valintaa: pysäytä täydellä voitolla ja ohita voittoanimaatiot.',
 	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
 		'Suuri pyöreä painike jakaa kierroksen. Niin myös välilyönti: napauta yhtä kierrosta varten, pidä pohjassa jakaaksesi lisää. Automaattipelin aikana painikkeesta tulee Pysäytä, ja käynnissä oleva kierros pelataan ensin loppuun.',
 	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
 		'Tila avaa pelitilan valinnan. Vaihto pyytää vahvistuksen ennen kuin se tulee voimaan.',
-	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'Tässä pelissä ei ole ilmaiskierroksia, bonuskierroksia, jättipotteja eikä uudelleenlaukaisuominaisuuksia. Jokainen kierros on yksittäinen, itsenäinen neljän kortin nosto.',
+	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
+		'Tässä pelissä ei ole ilmaiskierroksia, bonuskierroksia, jättipotteja eikä uudelleenlaukaisuominaisuuksia. Jokainen kierros on yksittäinen, itsenäinen jako: neljä korttia arvaustiloissa, kolme Kolmoset-tilassa.',
 	'Big Win': 'Iso voitto',
 	'Huge Win': 'Valtava voitto',
 	'Mega Win': 'Megavoitto',
@@ -255,16 +259,22 @@ export default {
 		'Mikä tahansa',
 	'Any card':
 		'Mikä tahansa kortti',
-	'Any wrong guess':
-		'Mikä tahansa väärä arvaus',
-	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
-		'Pelataan 12 kortin pakalla: jokaisen maan ässä, kuningas ja kuningatar. Kortti 1 jaetaan; korttien 2 ja 3 on oltava samaa arvoa. Kolme korttia, yksi voitto.',
+	'A card that does not match':
+		'Kortti, joka ei täsmää',
+	'If a card does not match':
+		'Jos kortti ei täsmää',
+	'Card 1 is dealt, not guessed. The deck holds one Ace, King and Queen of each suit, so card 2 matches 3 times in 11 and card 3 twice in 10.':
+		'Kortti 1 jaetaan, sitä ei arvata. Pakassa on jokaista maata yksi ässä, kuningas ja rouva, joten kortti 2 täsmää 3 kertaa 11:stä ja kortti 3 kahdesti 10:stä.',
+	'Each figure is the running total after that card, in multiples of your bet, exactly as the board shows it beside the cards. Only the last card pays.':
+		'Jokainen luku on juokseva summa kyseisen kortin jälkeen panoksesi kerrannaisina, täsmälleen kuten pöytä näyttää sen korttien vieressä. Vain viimeinen kortti maksaa.',
 	'Three of a kind pays %m your bet, about one round in %n.':
 		'Kolmoset maksaa %m panoksesi, noin yhdellä kierroksella %n:stä.',
 	'%c× your base bet of %b':
 		'%c× peruspanoksesi %b',
 	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
 		'*Tilassa %f. Jokaisella pelitilalla on oma maksimivoittonsa, joka näkyy tilavalinnassa ja Pelin ohjeissa.',
+	'That mode costs %c× your bet.':
+		'Se tila maksaa %c× panoksesi.',
 	'Card 2 must match card 1':
 		'Kortin 2 on vastattava korttia 1',
 	'Card 3 must match card 1':

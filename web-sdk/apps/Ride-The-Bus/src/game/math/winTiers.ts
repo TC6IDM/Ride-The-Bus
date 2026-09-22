@@ -2,7 +2,7 @@
  * How big a win has to be before the game stops to celebrate it.
  *
  * EVERY BAND IS PER FAMILY, because a tier is a statement about RARITY and the
- * three families spread their payouts differently. Sharing one set of
+ * guess families spread their payouts differently. Sharing one set of
  * thresholds made the same word mean different things: at a flat 300x, "Epic"
  * was 1 in 16,198 on Classic but 1 in 26,768 on Second Chance - nearly as rare
  * as that mode's Max Win, so the top of its ladder was squashed into a single

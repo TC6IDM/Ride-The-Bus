@@ -75,8 +75,8 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 	'Game information': 'Game information',
 
 	// No free games statement (new key - also added to en.ts)
-	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'This game has no free rounds, bonus features, jackpots, or re-trigger features. Every round is a single, independent four-card draw.',
+	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
+		'This game has no free rounds, bonus features, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.',
 
 	// Error dialog. "bet" and "gambling" are both on the prohibited list, and
 	// these are the only restricted terms that reach the player through a
@@ -124,8 +124,8 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 		'Plus and minus set your play amount. Tap the amount for the quick-play menu.',
 	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
 		'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While auto play runs the button becomes Stop, and the round in play finishes first.',
-	'The circular arrows open autoplay, which repeats your four guesses for a set number of rounds or unlimited. The counter sits on the button while it runs.':
-		'The circular arrows open auto play, which repeats your four guesses for a set number of rounds or unlimited. The counter sits on the button while it runs.',
+	'The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.':
+		'The circular arrows open auto play, which deals the same play again for a set number of rounds or unlimited. The counter sits on the button while it runs.',
 	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
 		'The sliders button holds two auto play options: stop on a full game win, and skip the win animations.',
 	'Speed and skip settings change only what you see, never the cards, the odds or the payout.':
@@ -153,6 +153,10 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 		'Every combination of picks on a guess mode is its own play, priced on its own odds.',
 	'Three of a kind pays %m your bet, about one round in %n.':
 		'Three of a kind wins %m your play amount, about one round in %n.',
+	'Each figure is the running total after that card, in multiples of your bet, exactly as the board shows it beside the cards. Only the last card pays.':
+		'Each figure is the running total after that card, in multiples of your play amount, exactly as the board shows it beside the cards. Only the last card wins.',
+	'That mode costs %c× your bet.':
+		'That mode costs %c× your play amount.',
 	// "pays nothing" and "base bet" carry restricted terms.
 	'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.':
 		'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less wins nothing.',

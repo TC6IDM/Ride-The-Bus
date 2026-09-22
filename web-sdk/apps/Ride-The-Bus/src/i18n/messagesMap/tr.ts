@@ -65,7 +65,7 @@ export default {
 	'Game modes': 'Oyun modları',
 	'Max win': 'Maksimum kazanç',
 	// Confirmation before a bet mode is activated - required by the approval
-	// checklist, and worth having anyway: the three families cost the same but
+	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
 	'Switch mode?': 'Mod değiştirilsin mi?',
 	Cancel: 'İptal',
@@ -112,6 +112,8 @@ export default {
 	Card: 'Kart',
 	Pick: 'Seçim',
 	Pays: 'Öder',
+	'Total':
+		'Toplam',
 	'Red or Black': 'Kırmızı veya siyah',
 	'Any suit': 'Herhangi bir sembol',
 	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
@@ -194,6 +196,8 @@ export default {
 	Mode: 'Mod',
 	'Game mode': 'Oyun modu',
 	Guesses: 'Tahminler',
+	Cards: 'Kartlar',
+	'Round cost': 'Tur maliyeti',
 	Event: 'Olay',
 	Payout: 'Ödeme',
 	Play: 'Oynat',
@@ -207,16 +211,16 @@ export default {
 	'The i button opens this screen.': 'i düğmesi bu ekranı açar.',
 	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
 		'Şimşek düğmesi Turbodur: kartların ne hızla çevrileceği, Normal ile Anında arasında.',
-	'The circular arrows open autoplay, which repeats your four guesses for a set number of rounds or unlimited. The counter sits on the button while it runs.':
-		'Dairesel oklar otomatik oyunu açar; dört tahmininizi belirli sayıda tur boyunca veya sınırsız tekrarlar. Çalışırken sayaç düğmenin üzerinde durur.',
+	'The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.':
+		'Dairesel oklar otomatik oyunu açar; aynı bahsi belirli sayıda tur boyunca veya sınırsız tekrarlar. Çalışırken sayaç düğmenin üzerinde durur.',
 	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
 		'Kaydırıcı düğmesi iki otomatik oyun seçeneği barındırır: tam oyun kazancında durdur ve kazanç animasyonlarını atla.',
 	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
 		'Büyük yuvarlak düğme turu dağıtır. Boşluk tuşu da öyle: bir tur için dokunun, dağıtmaya devam etmek için basılı tutun. Otomatik oyun sürerken düğme Durdur olur ve oynanan tur önce tamamlanır.',
 	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
 		'Mod, oyun modu seçicisini açar. Değiştirmek, uygulanmadan önce onay ister.',
-	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'Bu oyunda ücretsiz dönüş, bonus turu, ikramiye veya yeniden tetikleme özelliği yoktur. Her tur, tek ve bağımsız bir dört kart çekilişidir.',
+	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
+		'Bu oyunda ücretsiz dönüş, bonus turu, ikramiye veya yeniden tetikleme özelliği yoktur. Her tur tek ve bağımsız bir dağıtımdır: tahmin modlarında dört kart, Üçlü modunda üç kart.',
 	'Big Win': 'Büyük Kazanç',
 	'Huge Win': 'Muazzam Kazanç',
 	'Mega Win': 'Mega Kazanç',
@@ -255,16 +259,22 @@ export default {
 		'Herhangi',
 	'Any card':
 		'Herhangi bir kart',
-	'Any wrong guess':
-		'Herhangi bir yanlış tahmin',
-	'Played from a 12-card deck: the Ace, King and Queen of each suit. Card 1 is dealt; cards 2 and 3 must match its rank. Three cards, one win.':
-		'12 kartlık desteyle oynanır: her renkten as, papaz ve kız. 1. kart dağıtılır; 2. ve 3. kartlar onun değerini tutturmalıdır. Üç kart, tek kazanç.',
+	'A card that does not match':
+		'Eşleşmeyen bir kart',
+	'If a card does not match':
+		'Bir kart eşleşmezse',
+	'Card 1 is dealt, not guessed. The deck holds one Ace, King and Queen of each suit, so card 2 matches 3 times in 11 and card 3 twice in 10.':
+		"Kart 1 dağıtılır, tahmin edilmez. Destede her renkten birer As, Papaz ve Kız vardır; bu yüzden kart 2, 11'de 3 kez, kart 3 ise 10'da 2 kez eşleşir.",
+	'Each figure is the running total after that card, in multiples of your bet, exactly as the board shows it beside the cards. Only the last card pays.':
+		'Her rakam, o karttan sonraki toplam tutardır; bahsinin katı olarak, masanın kartların yanında gösterdiği gibi. Yalnızca son kart öder.',
 	'Three of a kind pays %m your bet, about one round in %n.':
 		'Üçlü, bahsinizin %m katını öder; yaklaşık her %n turda bir.',
 	'%c× your base bet of %b':
 		'%b temel bahsinizin %c× katı',
 	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
 		'*%f modunda. Her oyun modunun kendi maksimum kazancı vardır; mod seçiminde ve Nasıl Oynanır\'da gösterilir.',
+	'That mode costs %c× your bet.':
+		'Bu mod bahsinin %c katına mal olur.',
 	'Card 2 must match card 1':
 		'2. kart 1. kartla eşleşmeli',
 	'Card 3 must match card 1':

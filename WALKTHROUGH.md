@@ -17,7 +17,7 @@ after it makes sense without it.
 1. [The one idea](#1-the-one-idea-the-bet-mode-is-the-guesses)
 2. [The game, as a player sees it](#2-the-game-as-a-player-sees-it)
 3. [The maths](#3-the-maths-why-a-multiplier-is-what-it-is)
-4. [The three families](#4-the-three-families)
+4. [The four families](#4-the-four-families)
 5. [What the math build actually produces](#5-what-the-math-build-actually-produces)
 6. [The RGS: four endpoints](#6-the-rgs-four-endpoints)
 7. [The client: one round, three files](#7-the-client-one-round-three-files)
@@ -49,7 +49,7 @@ colour → higher/lower/equal → inside/outside/equal → suit
 ```
 
 …minus the eight impossible ones (see below) = **64 playable combinations**,
-times three families = **192 published bet modes**.
+times three families, plus Three of a Kind's one = **193 published bet modes**.
 
 A mode is named by joining the guesses:
 
@@ -234,20 +234,30 @@ A mode whose raw RTP is too high gets its losses *up*-weighted; too low, and
 they're *down*-weighted. Because ~half of all rounds are stage-1 busts, there
 is always plenty of zero-weight to tune with.
 
-Result: **192 modes, all at RTP 96.0000%, spread 0.000000%.**
+Result: **193 modes, all at RTP 96.0000%, spread 0.000000%.**
 
 ---
 
-## 4. The three families
+## 4. The four families
 
-Same four guesses, same deck. The only thing that differs is **what a miss
-keeps** — and that alone reshapes the entire payout curve.
+Three of them are the same four guesses on the same deck; the only thing that
+differs is **what a miss keeps** — and that alone reshapes the entire payout
+curve. The fourth is a different game on the same table.
 
-| Family | Prefix | Retention on a miss | Max win | Forgiveness |
-|---|---|---|---|---|
-| Classic | *(none)* | card 1 nothing, then 30% | 1354.2× | none |
-| Second Chance | `sc_` | card 1 nothing, then 30% | 585.2× | first miss from card 2 keeps 50%, **play continues** |
-| High Stakes | `hs_` | card 1 nothing, then 20% | 1910.2× | none |
+| Family | Prefix | Cost | Retention on a miss | Max win (× base bet) | Forgiveness |
+|---|---|---|---|---|---|
+| Classic | *(none)* | 1× | card 1 nothing, then 30% | 1354.2× | none |
+| Second Chance | `sc_` | 1× | card 1 nothing, then 30% | 585.2× | first miss from card 2 keeps 50%, **play continues** |
+| High Stakes | `hs_` | 1× | card 1 nothing, then 16% | 2169.2× | none |
+| Three of a Kind | `tr_` | **250×** | nothing, ever | 4583.3× | none |
+
+**Three of a Kind** deals three cards from a 12-card deck (A K Q of each suit),
+asks no questions, and pays only when cards 2 and 3 match card 1: fair odds
+1 × 11/3 × 5 = 18.333× its cost, recorded 1 in 19.1. Its slug has three tokens
+(`tr_any_equal_equal`) — a slug's length is its stage count on both sides of
+the wire — and everything unusual about it, from the 250× cost to why its win
+must stay under 5,000× the base bet, is derived in THE ALL-OR-NOTHING BOUND in
+`game_calculations.py`.
 
 Defined once, in `MODE_FAMILIES` in
 [`game_calculations.py`](math-sdk/games/ride_the_bus/game_calculations.py#L83),
@@ -262,12 +272,12 @@ every published book.
 
 Because every family is reweighted to the same 0.96, generosity in one place
 has to be paid for in another. Second Chance forgives a miss, so its wins are
-smaller — 585.2× against Classic's 1354.2×. High Stakes keeps only 20% on a
-miss, so each correct guess is priced higher, and it reaches 1910.2×.
+smaller — 585.2× against Classic's 1354.2×. High Stakes keeps only 16% on a
+miss, so each correct guess is priced higher, and it reaches 2169.2×.
 
 **They are the same dial seen from opposite ends.**
 
-### All three cost 1.0×, and that is forced
+### The three guess families cost 1.0×, and that is forced
 
 Second Chance and High Stakes used to cost 2.0×. Both had to come down.
 
@@ -279,14 +289,18 @@ shape and its `etl40b` doubles automatically:
 | design | cost 1 | cost 2 |
 |---|---|---|
 | Classic, retention 0.3 | 0.560 | 1.120 ✗ |
-| High Stakes, retention 0.2 | 0.678 | 1.356 ✗ |
+| High Stakes, retention 0.2 (0.16 since 2026-09-20) | 0.678 | 1.356 ✗ |
 | Second Chance, forgive 0.5 | 0.325 | 0.650 |
 
 Even Classic's shape fails at 2×. Only a *low*-volatility mode survives the
-doubling, which is the opposite of what High Stakes exists for.
+doubling, which is the opposite of what High Stakes exists for. Three of a Kind
+can be 250× precisely because it escapes the sum — its payout never reaches
+40× its cost — and is capped from the other side by Stake's tail rows, which
+are written in base-bet multiples and never scale with cost.
 
 **If you see `3820.5×` anywhere, it is High Stakes' ceiling from the 2×-cost
-era** — every payout was doubled then. The current figure is 1910.2×.
+era** — every payout was doubled then. `1910.2×` is the 20%-retention figure
+that shipped until 2026-09-20. The current figure is 2169.2×.
 
 ### Two different ceilings, both needed
 
@@ -306,7 +320,7 @@ published tables are sampled, and 24 of 48 groups disagree with theory.
 cd math-sdk && .venv/Scripts/python.exe games/ride_the_bus/run.py
 ```
 
-**Never run this casually — it is ~43 million simulations across 192 modes and
+**Never run this casually — it is ~43 million simulations across 193 modes and
 takes 40+ minutes.**
 
 [`run.py`](math-sdk/games/ride_the_bus/run.py) runs six steps in order:
@@ -626,7 +640,7 @@ cd web-sdk/apps/Ride-The-Bus
 npm run dev:replay      # game on :3001, local replay RGS on :3010
 ```
 
-Open **http://localhost:3010** to build links for any of the 192 modes, or use
+Open **http://localhost:3010** to build links for any of the 193 modes, or use
 the "Regular game" link at the bottom for a plain session with no replay.
 
 `scripts/replay-server.mjs` stands in for the real RGS. `game/dev/devSession.ts`
@@ -693,7 +707,7 @@ Popout S is Popout L at exactly half size, and is laid out that way.
 
 ## What is not done
 
-**`RGS_TEST_PLAN.md` holds 95 live-session checks and none has been run.** They
+**`RGS_TEST_PLAN.md` holds over a hundred live-session checks and none has been run.** They
 need a real Stake session and cannot be done locally. That is the single
 biggest open item.
 

@@ -24,7 +24,7 @@
     setIoChoice,
     setSuitChoice,
   } from '../../game/bet/betState.svelte';
-  import { isCleanSweep, stageCount } from '../../game/math/modes';
+  import { FREE_CHOICE, isCleanSweep, stageCount } from '../../game/math/modes';
   import { round } from '../../game/round/roundState.svelte';
   import { t } from '../../i18n/i18nDerived';
   import { numberToCurrencyString } from 'utils-shared/amount';
@@ -80,6 +80,15 @@
   const fixed = $derived(familyRules().fixedChoices !== null);
   /** How many card slots this family deals - four, or three on trips. */
   const slots = $derived(stageCount(familyRules()));
+  /**
+   * Is this slot a FREE card - dealt, not guessed? Three of a Kind's card 1.
+   * Its chip is not drawn: the running total after it is 1.00x times the
+   * cost, i.e. the stake itself, and a green "250.00x" over a card nobody
+   * guessed reads as a 250x win for doing nothing. The cue book already
+   * treats the card this way ("the flip and nothing else"); the chip now
+   * matches. Cards 2 and 3 keep theirs - those ARE won.
+   */
+  const isFreeSlot = (index: number) => familyRules().fixedChoices?.[index] === FREE_CHOICE;
 
   /**
    * Every guess press goes through here, because the row is LOCKED by opacity
@@ -122,7 +131,14 @@
   <div class="card-row">
     {#each round.revealedCards.slice(0, slots) as card, index}
       <div class="card-slot">
-        <div class="card-mult" class:show={round.stageMultipliers[index] !== null}>
+        <!-- is-zero: a bust that kept nothing (Three of a Kind, or any card-1
+             miss) prints 0.00x, and printing it in win-green was the one
+             place the board coloured a loss like a win. -->
+        <div
+          class="card-mult"
+          class:show={round.stageMultipliers[index] !== null && !isFreeSlot(index)}
+          class:is-zero={round.stageMultipliers[index] === 0}
+        >
           {(round.stageMultipliers[index] ?? 0).toFixed(2)}×
         </div>
         <div class="card-block">

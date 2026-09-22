@@ -139,7 +139,7 @@
 
   const IS_PROD = Boolean((import.meta as any).env?.PROD);
 
-  /** Dev-only ?bet= seed, applied below and consumed by bet.input's initialiser. */
+  /** Dev-only ?bet= seed, applied to bet.input below. */
   let devStartBet: number | null = null;
 
   // Local dev stands in for /wallet/authenticate - the currency, balance,
@@ -151,21 +151,33 @@
   // and a real session can only be configured by the RGS.
   if (import.meta.env.DEV) {
     devStartBet = applyDevSession().startBet;
+    // Written straight into the bet state. This used to say "consumed by
+    // bet.input's initialiser", which was true while bet.input lived in this
+    // file; when it moved to betState.svelte.ts nothing read devStartBet
+    // any more and ?bet= silently did nothing - the only way to put a large
+    // bet on the board in dev was to type it. The defaulting effect below
+    // returns early without a sessionID, so this value is what the bar opens on.
+    if (devStartBet !== null) bet.input = String(devStartBet);
   }
 
-  // This game has no "BASE" bet mode - every one of its 192 modes encodes a
-  // full guess combination in one of three families (see math-sdk mode_name:
-  // 64 combinations x base / sc_ / hs_). The shared bet state
-  // defaults activeBetModeKey to 'BASE', and the framework's bet-cost
-  // helpers (stateBetDerived.betCostMultiplier -> activeBetMode().type)
-  // dereference the looked-up mode without a null guard - so once the RGS
-  // loads our modes, 'BASE' resolves to null and Set Bet / any cost check
-  // throws "Cannot read properties of null (reading 'type')". Keep the active
-  // key pointed at a mode that actually exists in betModeMeta. Every one of the
-  // 192 costs 1.0x, so any of them is fine for cost purposes - and that is not
-  // an accident, it is why this guard can stay this simple. The real per-round
-  // mode, family prefix and all, is sent explicitly to /wallet/play in
-  // startGameEngineFlow.
+  // This game has no "BASE" bet mode - every one of its 193 modes encodes a
+  // full combination in one of four families (see math-sdk mode_name: 64
+  // combinations x base / sc_ / hs_, plus tr_any_equal_equal). The shared bet
+  // state defaults activeBetModeKey to 'BASE', and the framework's bet-cost
+  // helpers (stateBetDerived.betCost -> activeBetMode().type) dereference the
+  // looked-up mode without a null guard - so once the RGS loads our modes,
+  // 'BASE' resolves to null and any SDK cost check throws "Cannot read
+  // properties of null (reading 'type')". Keep the active key pointed at a
+  // mode that actually exists in betModeMeta.
+  //
+  // Which mode does not matter, and not because every mode costs the same any
+  // more - Three of a Kind is 250x. It does not matter because this game never
+  // CALLS the SDK's cost helpers: every debit, affordability check and readout
+  // goes through betState's roundCost(), which reads FAMILY_RULES[family].cost
+  // (grep stateBetDerived.betCost - the only hit is this comment). The guard
+  // exists so the SDK's own derived state does not throw on the way past. The
+  // real per-round mode, family prefix and all, is sent explicitly to
+  // /wallet/play in startGameEngineFlow.
   $effect(() => {
     const meta = stateMeta.betModeMeta ?? {};
     const key = stateBet.activeBetModeKey ?? '';

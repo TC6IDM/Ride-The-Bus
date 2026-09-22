@@ -122,7 +122,8 @@ export const betLevels = () => {
 // the Start button only enables when the amount is actually playable.
 export const betValue = () => Number(bet.input);
 /* ---- Bet mode family ---------------------------------------------------
-   Which of the three ways to buy the same four guesses. See FAMILY_RULES.
+   Which family the bet is on - one of the three ways to buy the same four
+   guesses, or Three of a Kind. See FAMILY_RULES.
    Only the family's COST touches the money: a 2x mode debits twice the bet
    shown, and the payout multiplier is expressed against the bet, not the
    cost - so everything below that spends money uses roundCost(), and
@@ -165,7 +166,7 @@ export const volatilityLabel = (lit: number) =>
     .replace('%t', String(VOLATILITY_BOLTS));
 
 // The celebration ladder for the mode in play. EVERY band is per family, not
-// just the top one: a tier is a claim about rarity, and the three families
+// just the top one: a tier is a claim about rarity, and the guess families
 // spread their payouts differently enough that one shared set of thresholds
 // made the same word mean different things - see winTiers.ts for the measured
 // table. The Max band sits on this family's own ceiling.
@@ -258,8 +259,8 @@ export function formatBetInput() {
 
 /**
  * Is there a complete bet to send? Four picks on a four-guess family; always,
- * on a family whose four tokens are fixed (Three of a Kind has nothing to
- * pick, so its Start button is never waiting on the board).
+ * on a family whose tokens are fixed (Three of a Kind's three - it has nothing
+ * to pick, so its Start button is never waiting on the board).
  */
 export const allChoicesMade = () => modeChoices(bet.family, guesses) !== null;
 
