@@ -14,8 +14,8 @@ export default {
 	// four families). Kept only so this config keeps the template's shape.
 	//
 	// Do not treat the figures below as the game's. Each family declares its own
-	// wincap in math-sdk game_calculations.py:MODE_FAMILIES (1400 / 700 / 2200 /
-	// 4700) against true ceilings of 1354.2x / 585.2x / 2169.2x / 4583.3x, and
+	// wincap in math-sdk game_calculations.py:MODE_FAMILIES (1400 / 700 / 2300 /
+	// 4700) against true ceilings of 1354.2x / 585.2x / 2237.3x / 4583.3x, and
 	// the frontend's copy of those lives in game/math/modes.ts:FAMILY_RULES.
 	betModes: {
 		base: {

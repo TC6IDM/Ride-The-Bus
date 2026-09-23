@@ -86,8 +86,8 @@ export default {
 		'Лишь некоторые сочетания прогнозов достигают максимума режима. Когда все четыре выбраны, их собственный потолок показывается выше.',
 	Playing: 'В игре',
 	'Card 2, 3 or 4': 'Карта 2, 3 или 4',
-	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
-		'Ошибка на первой карте завершает раунд. Последующие промахи сохраняют лишь 16%, поэтому каждая верная догадка стоит дороже.',
+	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
+		'Ошибка на первой карте завершает раунд. Последующие промахи сохраняют лишь 15%, поэтому каждая верная догадка стоит дороже.',
 
 	'How to Play': 'Как играть',
 	'Guess your way through four cards:': 'Угадайте четыре карты подряд:',

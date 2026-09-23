@@ -36,7 +36,7 @@ another. Check:
   edits it by hand without a math build behind it, that is a finding.
 - `FAMILY_RULES[f].maxWin` and `MODE_CEILINGS[mode]` are **different numbers**
   and both are needed. Family figure = most that family can reach (Classic
-  1354.2, Second Chance 585.2, High Stakes 2169.2, Three of a Kind 4583.3).
+  1354.2, Second Chance 585.2, High Stakes 2237.3, Three of a Kind 4583.3).
   Mode ceiling = what that one published bet mode can actually pay. Only 8 of
   each four-guess family's 64 modes reach the family figure; Three of a Kind
   has one mode and its ceiling IS the family figure. Flag any code that

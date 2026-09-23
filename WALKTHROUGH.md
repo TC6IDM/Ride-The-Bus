@@ -248,7 +248,7 @@ curve. The fourth is a different game on the same table.
 |---|---|---|---|---|---|
 | Classic | *(none)* | 1× | card 1 nothing, then 30% | 1354.2× | none |
 | Second Chance | `sc_` | 1× | card 1 nothing, then 30% | 585.2× | first miss from card 2 keeps 50%, **play continues** |
-| High Stakes | `hs_` | 1× | card 1 nothing, then 16% | 2169.2× | none |
+| High Stakes | `hs_` | 1× | card 1 nothing, then 15% | 2237.3× | none |
 | Three of a Kind | `tr_` | **250×** | nothing, ever | 4583.3× | none |
 
 **Three of a Kind** deals three cards from a 12-card deck (A K Q of each suit),
@@ -272,8 +272,8 @@ every published book.
 
 Because every family is reweighted to the same 0.96, generosity in one place
 has to be paid for in another. Second Chance forgives a miss, so its wins are
-smaller — 585.2× against Classic's 1354.2×. High Stakes keeps only 16% on a
-miss, so each correct guess is priced higher, and it reaches 2169.2×.
+smaller — 585.2× against Classic's 1354.2×. High Stakes keeps only 15% on a
+miss, so each correct guess is priced higher, and it reaches 2237.3×.
 
 **They are the same dial seen from opposite ends.**
 
@@ -289,7 +289,7 @@ shape and its `etl40b` doubles automatically:
 | design | cost 1 | cost 2 |
 |---|---|---|
 | Classic, retention 0.3 | 0.560 | 1.120 ✗ |
-| High Stakes, retention 0.2 (0.16 since 2026-09-20) | 0.678 | 1.356 ✗ |
+| High Stakes, retention 0.2 (0.16 from 2026-09-20, 0.15 from 2026-09-22) | 0.678 | 1.356 ✗ |
 | Second Chance, forgive 0.5 | 0.325 | 0.650 |
 
 Even Classic's shape fails at 2×. Only a *low*-volatility mode survives the
@@ -300,7 +300,8 @@ are written in base-bet multiples and never scale with cost.
 
 **If you see `3820.5×` anywhere, it is High Stakes' ceiling from the 2×-cost
 era** — every payout was doubled then. `1910.2×` is the 20%-retention figure
-that shipped until 2026-09-20. The current figure is 2169.2×.
+that shipped until 2026-09-20, and `2169.2×` the 16% figure that shipped until
+2026-09-22. The current figure is 2237.3×.
 
 ### Two different ceilings, both needed
 

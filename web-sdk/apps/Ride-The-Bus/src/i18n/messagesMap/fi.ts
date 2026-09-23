@@ -86,8 +86,8 @@ export default {
 		'Vain osa arvausyhdistelmistä yltää tilan enimmäisvoittoon. Kun neljä arvaustasi on valittu, niiden oma yläraja näytetään yllä.',
 	Playing: 'Pelissä',
 	'Card 2, 3 or 4': 'Kortti 2, 3 tai 4',
-	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
-		'Väärä ensimmäinen kortti päättää kierroksen. Myöhemmät virheet säilyttävät vain 16%, joten jokainen oikea arvaus on arvokkaampi.',
+	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
+		'Väärä ensimmäinen kortti päättää kierroksen. Myöhemmät virheet säilyttävät vain 15%, joten jokainen oikea arvaus on arvokkaampi.',
 
 	'How to Play': 'Näin pelaat',
 	'Guess your way through four cards:': 'Arvaa neljä korttia järjestyksessä:',

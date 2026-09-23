@@ -66,6 +66,13 @@ describe('the generated ceilings table', () => {
 });
 
 describe('ceilings against their family', () => {
+  // The table is written from the build, so a build that predates the client's
+  // family rules leaves a table that predates them too: the two equality
+  // checks below skip on a stale build, with the same message the parity
+  // tests print. The upper-bound check stays live - a ceiling ABOVE the family
+  // figure is wrong whichever of the two is older.
+  const haveMath = mathBuildIsCurrent();
+
   test('no mode can pay more than its family says it can', () => {
     // The family figure is the headline and has to remain an upper bound, or
     // the two numbers on screen contradict each other.
@@ -78,7 +85,7 @@ describe('ceilings against their family', () => {
     }
   });
 
-  test('each family ceiling is reached by exactly the 8 equal-equal modes', () => {
+  test('each family ceiling is reached by exactly the 8 equal-equal modes', { skip: !haveMath }, () => {
     // This is what makes FAMILY_RULES.maxWin an honest headline rather than a
     // number nothing reaches: two Equal picks is the hardest round in the game,
     // and the four suits x two colours that make it are the eight that top out.
@@ -106,7 +113,7 @@ describe('ceilings against their family', () => {
     }
   });
 
-  test('most modes fall well short of their family figure - the reason this exists', () => {
+  test('most modes fall well short of their family figure - the reason this exists', { skip: !haveMath }, () => {
     // Stated as a property rather than a comment so the motivation cannot be
     // quietly lost. If a future build made every mode reach its family ceiling,
     // this table would be redundant and this test says so.

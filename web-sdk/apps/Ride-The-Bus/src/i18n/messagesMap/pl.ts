@@ -86,8 +86,8 @@ export default {
 		'Tylko niektóre kombinacje typów osiągają maksimum trybu. Po wybraniu czterech ich własny limit jest pokazywany powyżej.',
 	Playing: 'W grze',
 	'Card 2, 3 or 4': 'Karta 2, 3 lub 4',
-	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
-		'Błąd przy pierwszej karcie kończy rundę. Późniejsze pomyłki zachowują tylko 16%, więc każde trafienie jest warte więcej.',
+	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
+		'Błąd przy pierwszej karcie kończy rundę. Późniejsze pomyłki zachowują tylko 15%, więc każde trafienie jest warte więcej.',
 
 	'How to Play': 'Jak grać',
 	'Guess your way through four cards:': 'Odgadnij kolejno cztery karty:',

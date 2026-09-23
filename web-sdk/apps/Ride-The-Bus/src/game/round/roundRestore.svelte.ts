@@ -94,7 +94,7 @@ export function restoreReplay() {
   // getting this wrong was not merely cosmetic. A High Stakes replay left on
   // the Classic ladder measures a 1400x win against Classic's 1354.2 ceiling
   // and announces MAX WIN over a round that paid well under High Stakes'
-  // real 2169.2 max. parseModeName has always returned the family; both this
+  // real 2237.3 max. parseModeName has always returned the family; both this
   // path and the resume path below simply dropped it.
   const parsed = parseModeName(String(resume.mode ?? stateUrlDerived.mode() ?? ''));
   if (parsed) {

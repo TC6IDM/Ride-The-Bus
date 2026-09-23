@@ -1,7 +1,7 @@
 import os
 from collections import defaultdict
 
-from src.config.paths import PATH_TO_GAMES
+from src.config.paths import PATH_TO_GAMES, library_dirname
 
 
 class OutputFiles:
@@ -22,7 +22,7 @@ class OutputFiles:
 
     def setup_output_directories(self):
         """Entrypoint for saving all output files."""
-        self.library_path = os.path.join(PATH_TO_GAMES, str(self.game_config.game_id), "library")
+        self.library_path = os.path.join(PATH_TO_GAMES, str(self.game_config.game_id), library_dirname())
         self.temp_path = os.path.join(self.library_path, "temp_multi_threaded_files")
         self.config_path = os.path.join(self.library_path, "configs")
         self.force_path = os.path.join(self.library_path, "forces")

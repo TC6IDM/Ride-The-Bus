@@ -86,8 +86,8 @@ export default {
 		'Só algumas combinações de palpites atingem o máximo de um modo. Depois de escolher seus quatro, o limite próprio deles é mostrado acima.',
 	Playing: 'Em jogo',
 	'Card 2, 3 or 4': 'Carta 2, 3 ou 4',
-	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
-		'Errar a primeira carta termina a rodada. Erros seguintes mantêm apenas 16%, por isso cada acerto vale mais.',
+	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
+		'Errar a primeira carta termina a rodada. Erros seguintes mantêm apenas 15%, por isso cada acerto vale mais.',
 
 	'How to Play': 'Como jogar',
 	'Guess your way through four cards:': 'Adivinhe as quatro cartas, uma a uma:',

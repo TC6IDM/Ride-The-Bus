@@ -86,8 +86,8 @@ export default {
 		'Seules certaines combinaisons de pronostics atteignent le maximum d’un mode. Une fois vos quatre choisis, leur propre plafond s’affiche ci-dessus.',
 	Playing: 'En cours',
 	'Card 2, 3 or 4': 'Carte 2, 3 ou 4',
-	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
-		'Une première carte manquée met fin à la manche. Les erreurs suivantes ne conservent que 16%, chaque bonne réponse vaut donc davantage.',
+	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
+		'Une première carte manquée met fin à la manche. Les erreurs suivantes ne conservent que 15%, chaque bonne réponse vaut donc davantage.',
 
 	'How to Play': 'Comment jouer',
 	'Guess your way through four cards:': 'Devinez au fil de quatre cartes :',

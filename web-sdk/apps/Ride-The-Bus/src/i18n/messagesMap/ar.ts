@@ -87,8 +87,8 @@ export default {
 		'بعض تركيبات التخمينات فقط تبلغ الحد الأقصى للوضع. بعد اختيار تخميناتك الأربع، يُعرض سقفها الخاص أعلاه.',
 	Playing: 'قيد اللعب',
 	'Card 2, 3 or 4': 'البطاقة 2 أو 3 أو 4',
-	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
-		'خطأ في البطاقة الأولى ينهي الجولة. والأخطاء اللاحقة تحتفظ بنسبة 16% فقط، لذا تصبح كل تخمينة صحيحة أثمن.',
+	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
+		'خطأ في البطاقة الأولى ينهي الجولة. والأخطاء اللاحقة تحتفظ بنسبة 15% فقط، لذا تصبح كل تخمينة صحيحة أثمن.',
 
 	'How to Play': 'كيفية اللعب',
 	'Guess your way through four cards:': 'خمّن البطاقات الأربع بالترتيب:',

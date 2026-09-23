@@ -63,12 +63,19 @@ SUIT_NAME_TO_SYMBOL = {"heart": "♥", "diamond": "♦", "club": "♣", "spade":
 #
 # The retention numbers are not free choices. Stake measures CVaR and Expected
 # Tail Liability as the worst value across all modes, and a failed class shrinks
-# the game's bet-level template. High Stakes at 0.20 gave CVaR 648 against a
-# 700 limit; at 0.16 the exhaustive model says 682 (~692 once sampled - the
-# build has run about 1.5% above the model), 0.15 is 722 and over, and 0.10
-# fails on ETL whatever cap is put on it. 0.16 is the last step that passes;
-# note that a card-2 bust still shows 0.3x there (1.995 x 0.16 x 0.995 = 0.318,
-# floored), so only card-3/4 busts actually pay less.
+# the game's bet-level template. The two enumerations this repo has run
+# disagree about the step below 0.16: the exhaustive model said 682 at 0.16
+# where the build then MEASURED 624.6 (the model runs hot on the tail), and
+# put 0.15 at 722; the README's enumeration (which ran cold - 551 at 0.20
+# against a measured 568.8) put 0.15 at CVaR 618 / ETL 0.764. Extrapolating
+# the measured builds (CVaR ~0.29x the family ceiling at both 0.20 and 0.16)
+# lands 0.15 near 650-660 / 0.77 - and that is the estimate that held: the
+# 2026-09-22 build MEASURES CVaR 639.0, etl40b 0.769 and std 38.401, inside
+# 700 / 0.8 / 50 on roughly half the margin 0.16 had. ETL is the binding one
+# at 4% of headroom, so read etl40b first in stats_summary.json after any
+# change here; a rebuild that pushes it past 0.8 goes back to 0.16 (wincap
+# 2200, ceiling 2169.2x). 0.10 fails on ETL whatever cap is put on it. Note that at 0.15 a card-2 bust shows 0.2x (1.995 x 0.15 x 0.995 =
+# 0.298, floored) where 0.16 still showed 0.3x.
 #
 # THE FOUR-GUESS FAMILIES COST 1.0x, AND THAT IS A CONSTRAINT, NOT A DEFAULT
 #
@@ -202,15 +209,16 @@ MODE_FAMILIES = {
     "hs": {
         "prefix": "hs_",
         "cost": 1.0,
-        "retention": (0.0, 0.16, 0.16, 0.16),
+        "retention": (0.0, 0.15, 0.15, 0.15),
         "forgive": None,
         "forgive_from": 0,
-        # Reaches 2169.2x - still above Classic's 1354.2x, because a miss keeps
+        # Reaches 2237.3x - still above Classic's 1354.2x, because a miss keeps
         # less here and so every correct guess is priced higher. The shared 1400
         # cap CLIPPED this family, which the frontend's book-parity test caught
-        # as "client 3820.5 vs book 1400" back when it cost 2x. 2200 clears the
-        # real ceiling (it was 2000 over a 1910.2x ceiling at retention 0.20).
-        "wincap": 2200,
+        # as "client 3820.5 vs book 1400" back when it cost 2x. 2300 clears the
+        # real ceiling (it was 2200 over 2169.2x at 0.16, and 2000 over 1910.2x
+        # at 0.20) - it must sit ABOVE the ceiling, see the note on base.
+        "wincap": 2300,
     },
     "tr": {
         "prefix": "tr_",
@@ -299,16 +307,57 @@ def parse_mode_name(name: str) -> tuple:
     return (family, *body.split("_"))
 
 
+# The order the build works through the families - and so the order of every
+# list it writes: the simulation, the reweight, the verification, the book
+# scan, publish_files/index.json and stats_summary.json, and the mode boxes in
+# build_monitor.py's page.
+#
+# Volatility order, calmest first, which is how the families are listed
+# everywhere they are read: Second Chance keeps half of a first miss, Classic
+# keeps 30%, High Stakes 15%, and Three of a Kind is its own game. It is a
+# READING ORDER ONLY - no family's cost, retention or payout depends on where
+# it sits here, and a simulation's outcome is a function of its global index
+# (reset_seed(sim)), never of when its mode was run.
+FAMILY_BUILD_ORDER = ("sc", "base", "hs", "tr")
+
+
+def ordered_families() -> list:
+    """MODE_FAMILIES' keys in FAMILY_BUILD_ORDER, all of them, checked.
+
+    A family added to MODE_FAMILIES and forgotten here would simply stop being
+    published - 193 modes would quietly become 129 - so this refuses rather
+    than dropping it.
+    """
+    missing = [family for family in MODE_FAMILIES if family not in FAMILY_BUILD_ORDER]
+    if missing:
+        raise RuntimeError(
+            f"FAMILY_BUILD_ORDER does not list {missing}. Every family in MODE_FAMILIES "
+            "must appear in it, or its modes are never published."
+        )
+    return [family for family in FAMILY_BUILD_ORDER if family in MODE_FAMILIES]
+
+
 def all_published_modes():
     """Every (family, combo) pair the game publishes - 3 x 64 + 1 = 193."""
-    for family in MODE_FAMILIES:
+    for family in ordered_families():
         for combo in all_mode_combinations(family):
             yield family, combo
 
 
+# Ace-low rank values, built once from RANKS.
+#
+# This is the hottest line in the whole build. rank_value() is called for every
+# remaining card at two of the four stages - about 240 times per simulation,
+# 10.5 BILLION times across a 44M-simulation build - and it used to be
+# RANKS.index(rank) + 1, a linear scan of a 13-element list. A profile of one
+# mode put it and the list.index under it at 25% of the entire simulation pass.
+# The map holds exactly the same values; nothing about an outcome changes.
+_RANK_VALUES = {rank: index + 1 for index, rank in enumerate(RANKS)}
+
+
 def rank_value(rank: str) -> int:
     """Ace-low rank value, matching the frontend's rankValue map."""
-    return RANKS.index(rank) + 1
+    return _RANK_VALUES[rank]
 
 
 def build_deck(family: str = "base") -> list:
@@ -434,9 +483,20 @@ class GameCalculations(Executables):
         }
 
     def higher_lower_payouts(self, remaining: list, ref_value: int, retention: float = None, decay: float = None) -> dict:
+        # ONE pass, and one rank lookup per card. This used to be two sum()
+        # generators over the same ~50 cards, each calling rank_value on every
+        # one of them; the counts are identical, there is just half as much of
+        # it. Same for inside_outside_payouts below, which managed three passes
+        # and looked a card's rank up twice in one of them.
         total = len(remaining)
-        higher = sum(1 for rank, _ in remaining if rank_value(rank) > ref_value)
-        lower = sum(1 for rank, _ in remaining if rank_value(rank) < ref_value)
+        higher = 0
+        lower = 0
+        for rank, _suit in remaining:
+            value = _RANK_VALUES[rank]
+            if value > ref_value:
+                higher += 1
+            elif value < ref_value:
+                lower += 1
         equal = total - higher - lower
         return {
             "higher": self.partial_multiplier(higher / total, 1, retention, decay),
@@ -447,10 +507,14 @@ class GameCalculations(Executables):
     def inside_outside_payouts(self, remaining: list, val_a: int, val_b: int, retention: float = None, decay: float = None) -> dict:
         total = len(remaining)
         min_val, max_val = min(val_a, val_b), max(val_a, val_b)
-        inside = sum(1 for rank, _ in remaining if min_val < rank_value(rank) < max_val)
-        outside = sum(
-            1 for rank, _ in remaining if rank_value(rank) < min_val or rank_value(rank) > max_val
-        )
+        inside = 0
+        outside = 0
+        for rank, _suit in remaining:
+            value = _RANK_VALUES[rank]
+            if min_val < value < max_val:
+                inside += 1
+            elif value < min_val or value > max_val:
+                outside += 1
         equal = total - inside - outside
         return {
             "inside": self.partial_multiplier(inside / total, 2, retention, decay),

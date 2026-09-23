@@ -86,8 +86,8 @@ export default {
 		'예측 조합 중 일부만 모드의 최대치에 도달합니다. 네 가지를 모두 고르면 그 조합의 상한이 위에 표시됩니다.',
 	Playing: '플레이 중',
 	'Card 2, 3 or 4': '카드 2, 3 또는 4',
-	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
-		'첫 카드를 틀리면 라운드가 끝납니다. 이후 실수는 16%만 남기므로 정답 하나하나의 가치가 커집니다.',
+	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
+		'첫 카드를 틀리면 라운드가 끝납니다. 이후 실수는 15%만 남기므로 정답 하나하나의 가치가 커집니다.',
 
 	'How to Play': '게임 방법',
 	'Guess your way through four cards:': '네 장의 카드를 차례로 예측하세요:',

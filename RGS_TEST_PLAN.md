@@ -478,7 +478,12 @@ rare it is.
 | Huge Win | 40x | 28x | 55x | — | 1 in 300 |
 | Mega Win | 120x | 60x | 145x | — | 1 in 3,100 |
 | Epic Win | 300x | 130x | 500x | — | 1 in 15,800 |
-| Max Win | 1354.2x | 585.2x | 2169.2x | 4583.3x (1 in 19) | 1 in 36,400 |
+| Max Win | 1354.2x | 585.2x | 2237.3x | 4583.3x (1 in 19) | 1 in 36,400 |
+
+(High Stakes' bands survived its move to 15% unchanged: re-measured against the
+0.15 build's lookup tables, 12 / 55 / 145 / 500 are still the round thresholds
+closest to the target rarities. What moved is how often they land - 1 in 68 /
+295 / 2,818 / 15,444 - and the ceiling.)
 
 At the old shared thresholds, "Epic" was 1 in 16,198 on Classic but 1 in 26,768
 on Second Chance - nearly as rare as that mode's Max Win, squashing the top of
@@ -516,7 +521,7 @@ on nearly every round. It still celebrates on size.
 - [ ] **WIN-09 · Max Win is announced on each mode's own ceiling** — *Major*
   Use a max-win replay ID for each family (see REPLAY_EVENTS.md).
   **Expect:** "Max Win" on 1354.2x in Classic, on 585.2x in Second Chance, on
-  2169.2x in High Stakes and on 4583.3x in Three of a Kind, where the takeover
+  2237.3x in High Stakes and on 4583.3x in Three of a Kind, where the takeover
   fans THREE cards. Two specific failures to watch for: a High Stakes win of
   1354.2x - which is NOT its maximum - announcing "Max Win", and a Second
   Chance ceiling of 585.2x announcing only "Epic Win".
@@ -567,7 +572,7 @@ on nearly every round. It still celebrates on size.
   68.2x) and the cap round of one that does not (`red_equal_equal_heart`).
   **Expect:** only the second announces MAX WIN. A mode reaching its own ceiling
   is not a max win - the claim is about a single reachable figure per family
-  (1354.2 / 585.2 / 2169.2 / 4583.3), and softening it to "the best this bet can do"
+  (1354.2 / 585.2 / 2237.3 / 4583.3), and softening it to "the best this bet can do"
   would make the rarest screen in the game routine.
 
 - [ ] **WIN-13 · Turbo and skip keep the figures legible** — *Minor*

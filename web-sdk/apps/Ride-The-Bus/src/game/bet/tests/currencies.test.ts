@@ -109,7 +109,7 @@ describe('every currency formats', () => {
  *
  * THE STRESS FIGURE IS A STRESS FIGURE. It was built as "a $500,000 bet at
  * High Stakes' 1910.2x cap", and stays at that shape even though High Stakes
- * now reaches 2169.2x and the game's ceiling is 4583.3x (Three of a Kind, at
+ * now reaches 2237.3x and the game's ceiling is 4583.3x (Three of a Kind, at
  * cost 250x on a base bet the 2-star caps hold to $200, so its biggest settled
  * figure is $916,660): Stake's 2-star maximum exposure is $5,000,000 per bet,
  * so no settled figure can be wider than that in any currency, and the $955M

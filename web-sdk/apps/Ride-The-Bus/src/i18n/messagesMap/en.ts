@@ -115,8 +115,8 @@ export default {
 		'Only some guess combinations reach a mode’s maximum. Once your four are picked, their own ceiling is shown above.',
 	Playing: 'Playing',
 	'Card 2, 3 or 4': 'Card 2, 3 or 4',
-	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
-		'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.',
+	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
+		'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.',
 
 	// How to play
 	'How to Play': 'How to Play',

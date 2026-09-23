@@ -8,6 +8,9 @@ import os
 import warnings
 import argparse
 import importlib
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from contextlib import redirect_stderr, redirect_stdout
+from io import StringIO
 from itertools import combinations
 from io import TextIOWrapper
 import numpy as np
@@ -174,20 +177,51 @@ def get_num_non_zero_payouts(book_int_payouts) -> None:
     return len([p for p in book_int_payouts if p > 0])
 
 
-def verify_mode_volatility(name: str, MathStats: object) -> dict:
-    """Check math betlevel volatility limits. Returns dict of violated attributes."""
+def verify_mode_volatility(name: str, MathStats: object, bet_cost: float = 1.0) -> dict:
+    """Check math betlevel volatility limits. Returns dict of violated attributes.
+
+    Every limit in the table below is read PER STAKE except `cvar`, which
+    `conditional_value_at_risk` returns in raw base-bet multiples - it is the
+    one statistic in this file that is never divided by the bet cost. On a 1x
+    mode the two readings are the same number and the difference never shows;
+    on a mode that costs 250x they differ by a factor of 250, and a limit
+    written for a 1x mode fires on a mode nowhere near it.
+
+    Ride The Bus's `tr_any_equal_equal` is that mode: it costs 250x and pays
+    4583.3x the BASE bet, which is 18.3x its own stake. It was reported here as
+    "VIOLATED: cvar VALUE:4583.3 --- LIMIT: 800" on every build while Stake's
+    own console passed the same file, because the RGS reads BOTH rows - the
+    per-stake figure against this limit, and the raw one against an absolute
+    ceiling (20,000 at 2 star, 50,000 at 3 star) that bounds operator
+    liability so a high-cost mode cannot hide a large tail behind its stake.
+    Both are checked now, each against the limit written for it; the warning
+    was the verifier's, not the mode's, and silencing it by tuning the mode
+    would have been the wrong repair (see THE ALL-OR-NOTHING BOUND in
+    games/ride_the_bus/game_calculations.py).
+    """
     mode_limits = {"prob5k": 1e-2, "prob10k": 0.5e-2, "etl40b": 0.9, "etl10k": 0.8, "cvar": 800, "rtp": 0.967}
+    # Figures the RGS also reads un-normalised, with the ceiling for that read.
+    absolute_limits = {"cvar": 50000}
+    cost = bet_cost if bet_cost else 1.0
     violated_attributes = {}
+    reported_limits = {}
 
     for key, limit in mode_limits.items():
         val = getattr(MathStats, key, None)
-        if val is not None and val > limit:
-            violated_attributes[key] = val
+        if val is None:
+            continue
+        if key in absolute_limits:
+            if val > absolute_limits[key]:
+                violated_attributes[key], reported_limits[key] = val, absolute_limits[key]
+            elif val / cost > limit:
+                violated_attributes[key], reported_limits[key] = val / cost, limit
+        elif val > limit:
+            violated_attributes[key], reported_limits[key] = val, limit
 
     if violated_attributes:
         warnings.warn(f"\nMode [{name}] fails 3-star volatility limits:\n")
         for key, val in violated_attributes.items():
-            print(f"\tVIOLATED: {key}  VALUE:{round(val, 4)} --- LIMIT: {mode_limits[key]}")
+            print(f"\tVIOLATED: {key}  VALUE:{round(val, 4)} --- LIMIT: {reported_limits[key]}")
         print("\n\n")
     return violated_attributes
 
@@ -234,62 +268,124 @@ def get_lut_statistics(
     else:
         MathStats.m2m = 0
 
-    verify_mode_volatility(name, MathStats)
+    verify_mode_volatility(name, MathStats, bet_cost)
     return MathStats
 
 
-def execute_all_tests(config, excluded_modes=[]):
-    """Run all tests for a given game"""
+def verify_one_mode(job: dict) -> object:
+    """
+    Verify ONE published mode and return its statistics.
+
+    Split out of execute_all_tests so it can run in a process pool: a mode's
+    books, lookup table and sidecar are its own files, and the expensive parts
+    - a SHA-256 over the whole compressed book and a pass over an 800k-row
+    table - are pure CPU with nothing shared. The work and the assertions are
+    unchanged; only where they run is.
+    """
+    name, cost = job["name"], job["cost"]
+    book_file = os.path.join(job["publish_path"], f"books_{name}.jsonl.zst")
+    lut_file = os.path.join(job["publish_path"], f"lookUpTable_{name}_0.csv")
+
+    if not (os.path.exists(book_file)) or not (os.path.exists(lut_file)):
+        raise RuntimeError(f"Books/Lookup file does not exist for {name}.")
+
+    win_dist, lut_payouts, weights_range, min_win, max_win = verify_lookup_format(lut_file)
+    # Fast path: use verification.json sidecar if available
+    verification_file = os.path.join(os.path.join(job["library_path"], "configs"), f"books_{name}.verification.json")
+    if os.path.exists(verification_file):
+        print(f"[FAST PATH] Using verification sidecar for {name}")
+        with open(verification_file, "r", encoding="UTF-8") as vf:
+            verification = json.load(vf)
+
+        actual_hash = get_sha_256(book_file)
+        assert actual_hash == verification["file_hash"], f"Book file SHA-256 mismatch for {name}! File may be corrupted."
+
+        lut_payout_hash = hashlib.md5(pickle.dumps(lut_payouts)).hexdigest()
+        assert (
+            lut_payout_hash == verification["payout_hash"]
+        ), f"Payout hash mismatch for {name}! Book payouts != LUT payouts."
+
+        assert verification["num_entries"] == len(
+            lut_payouts
+        ), f"Entry count mismatch for {name}: sidecar={verification['num_entries']} vs LUT={len(lut_payouts)}"
+
+        num_events = 0
+        print(f"[FAST PATH] {name}: SHA-256 OK, payout hash OK, entries={verification['num_entries']}")
+    else:
+        print(f"[FALLBACK] No verification sidecar for {name}, reading books...")
+        book_payouts, num_events = verify_books_and_payout_mults(book_file)
+        compare_payout_values(book_payouts, lut_payouts)
+
+    StatsObject = get_lut_statistics(name, win_dist, cost, lut_payouts, weights_range, min_win, max_win, num_events)
+    setattr(StatsObject, "name", name)
+    return StatsObject
+
+
+def _verify_one_mode_captured(job: dict):
+    """
+    verify_one_mode with its output collected rather than printed.
+
+    Workers share one stdout, and two processes printing a line each at the
+    same moment interleave them. The parent prints what comes back, whole, so
+    a "[FAST PATH] ..." line still arrives as a line - which the build monitor
+    depends on to fill in each mode's box. Warnings go through the same buffer
+    IN ORDER, because "Mode [x] fails" and the "VIOLATED:" line under it are
+    read as a pair.
+    """
+    buffer = StringIO()
+
+    def _show(message, category, filename, lineno, file=None, line=None):
+        print(f"{os.path.basename(filename)}:{lineno}: {category.__name__}: {message}")
+
+    previous = warnings.showwarning
+    warnings.showwarning = _show
+    try:
+        with redirect_stdout(buffer), redirect_stderr(buffer):
+            stats = verify_one_mode(job)
+    finally:
+        warnings.showwarning = previous
+    return job["name"], stats, buffer.getvalue()
+
+
+def execute_all_tests(config, excluded_modes=[], workers: int = 1):
+    """Run all tests for a given game.
+
+    `workers` > 1 verifies the modes across that many processes. The order of
+    the statistics written at the end is the mode order either way, so the
+    stats_summary.json a parallel run produces is byte-identical to a serial
+    one's.
+    """
+    jobs = [
+        {
+            "name": bet_mode.get_name(),
+            "cost": bet_mode.get_cost(),
+            "publish_path": config.publish_path,
+            "library_path": config.library_path,
+        }
+        for bet_mode in config.bet_modes
+        if bet_mode.get_name() not in excluded_modes
+    ]
+    order = {job["name"]: index for index, job in enumerate(jobs)}
     mode_stats = []
     mode_rtps = []
-    for bet_mode in config.bet_modes:
-        name = bet_mode.get_name()
-        cost = bet_mode.get_cost()
-        if name not in excluded_modes:
-            book_name = f"books_{name}.jsonl.zst"
-            lookup_name = f"lookUpTable_{name}_0.csv"
-            book_file = os.path.join(config.publish_path, book_name)
-            lut_file = os.path.join(config.publish_path, lookup_name)
 
-            if not (os.path.exists(book_file)) or not (os.path.exists(lut_file)):
-                raise RuntimeError("Books/Lookup file does not exist.")
-
-            win_dist, lut_payouts, weights_range, min_win, max_win = verify_lookup_format(lut_file)
-            # Fast path: use verification.json sidecar if available
-            verification_file = os.path.join(
-                os.path.join(config.library_path, "configs"), f"books_{name}.verification.json"
-            )
-            if os.path.exists(verification_file):
-                print(f"[FAST PATH] Using verification sidecar for {name}")
-                with open(verification_file, "r", encoding="UTF-8") as vf:
-                    verification = json.load(vf)
-
-                actual_hash = get_sha_256(book_file)
-                assert (
-                    actual_hash == verification["file_hash"]
-                ), f"Book file SHA-256 mismatch for {name}! File may be corrupted."
-
-                lut_payout_hash = hashlib.md5(pickle.dumps(lut_payouts)).hexdigest()
-                assert (
-                    lut_payout_hash == verification["payout_hash"]
-                ), f"Payout hash mismatch for {name}! Book payouts != LUT payouts."
-
-                assert verification["num_entries"] == len(
-                    lut_payouts
-                ), f"Entry count mismatch for {name}: sidecar={verification['num_entries']} vs LUT={len(lut_payouts)}"
-
-                num_events = 0
-                print(f"[FAST PATH] {name}: SHA-256 OK, payout hash OK, entries={verification['num_entries']}")
-            else:
-                print(f"[FALLBACK] No verification sidecar for {name}, reading books...")
-                book_payouts, num_events = verify_books_and_payout_mults(book_file)
-                compare_payout_values(book_payouts, lut_payouts)
-
-            StatsObject = get_lut_statistics(
-                name, win_dist, cost, lut_payouts, weights_range, min_win, max_win, num_events
-            )
+    if workers and workers > 1 and len(jobs) > 1:
+        print(f"Verifying {len(jobs)} modes across {workers} workers...")
+        with ProcessPoolExecutor(max_workers=workers) as pool:
+            futures = [pool.submit(_verify_one_mode_captured, job) for job in jobs]
+            for done, future in enumerate(as_completed(futures), start=1):
+                _name, StatsObject, output = future.result()
+                if output:
+                    print(output, end="", flush=True)
+                mode_rtps.append(StatsObject.rtp)
+                mode_stats.append(StatsObject)
+                if done % 25 == 0 or done == len(jobs):
+                    print(f"  verified {done}/{len(jobs)} modes", flush=True)
+        mode_stats.sort(key=lambda stats: order[stats.name])
+    else:
+        for job in jobs:
+            StatsObject = verify_one_mode(job)
             mode_rtps.append(StatsObject.rtp)
-            setattr(StatsObject, "name", name)
             mode_stats.append(StatsObject)
 
     if len(mode_rtps) > 1:

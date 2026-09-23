@@ -396,7 +396,7 @@ describe('the Max Win tier follows the family ceiling', () => {
 
   test('High Stakes does not call a non-maximum win a Max Win', () => {
     // 1354.2x is Classic's ceiling and an ordinary large win on High Stakes,
-    // which pays up to 2169.2x. It must not be announced as a max win.
+    // which pays up to 2237.3x. It must not be announced as a max win.
     const tier = winTierFor(FAMILY_RULES.base.maxWin, false, tiersFor('hs'));
     assert.equal(tier?.id, 'epic');
   });

@@ -86,8 +86,8 @@ export default {
 		'Nur manche Tipp-Kombinationen erreichen das Maximum eines Modus. Sobald deine vier gewählt sind, wird ihre eigene Obergrenze oben angezeigt.',
 	Playing: 'Aktiv',
 	'Card 2, 3 or 4': 'Karte 2, 3 oder 4',
-	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
-		'Eine falsche erste Karte beendet die Runde. Spätere Fehler behalten nur 16%, dadurch ist jeder richtige Tipp mehr wert.',
+	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
+		'Eine falsche erste Karte beendet die Runde. Spätere Fehler behalten nur 15%, dadurch ist jeder richtige Tipp mehr wert.',
 
 	'How to Play': 'Spielanleitung',
 	'Guess your way through four cards:': 'Tippe dich durch vier Karten:',

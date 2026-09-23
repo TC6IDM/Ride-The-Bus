@@ -79,7 +79,7 @@ const range = (multipliers: number[]) => ({
  * Build the table for one mode family.
  *
  * A function of the family, not a constant, because retention is what every
- * stage's multiplier is solved against - High Stakes keeps 16% on a miss
+ * stage's multiplier is solved against - High Stakes keeps 15% on a miss
  * instead of 30%, so every figure below moves. Showing Classic's odds to a
  * player on another mode would be the same class of mistake as pricing a stage
  * one way and paying it another.
@@ -254,7 +254,7 @@ export function oddsExampleFor(rules: FamilyRules = FAMILY_RULES.base): OddsExam
  * stated as though it did not. The old fixed list said "Card 2 - you get 0.5x
  * your bet back" AND "you keep 30%", which reads as a contradiction: both are
  * true of Classic (30% of the running total at card 2 happens to be 0.5x the
- * bet) but only of Classic. High Stakes keeps 16%, Second Chance forgives the
+ * bet) but only of Classic. High Stakes keeps 15%, Second Chance forgives the
  * first miss, and Three of a Kind keeps nothing at all.
  *
  * The card-2 figure is derived rather than typed. The running multiplier
@@ -295,7 +295,7 @@ export type BustRow = {
  * different quantity, and listing "Card 2 - 0.5x your bet" beside "Card 3 or 4
  * - keep 30%" put both in one list and read as two rules when it is one rule
  * seen twice: 30% of the colour pick's 1.99x IS 0.5x the bet. On High Stakes it
- * was worse, because "0.3x" sits close enough to "16%" to be read as a third
+ * was worse, because "0.3x" sits close enough to "15%" to be read as a third
  * number. Do not reintroduce a bet multiple here - payoutTable.test.ts fails if
  * one appears.
  */

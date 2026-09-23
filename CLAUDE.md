@@ -94,7 +94,7 @@ loses 100% of the time also has zero variance, which the RGS rejects outright.)
 |---|---|---|---|---|---|
 | Classic | *(none)* | 1× | card 1 nothing, then 30% | 1354.2× | none |
 | Second Chance | `sc_` | 1× | card 1 nothing, then 30% | 585.2× | first miss from card 2 keeps 50%, play continues |
-| High Stakes | `hs_` | 1× | card 1 nothing, then 16% | 2169.2× | none |
+| High Stakes | `hs_` | 1× | card 1 nothing, then 15% | 2237.3× | none |
 | Three of a Kind | `tr_` | **250×** | nothing, ever | 4,583.3× base bet | none |
 
 **Three of a Kind is a different game on the same table**: a 12-card deck (A K
@@ -785,29 +785,132 @@ between a one-row bar and a two-row one.
 769/769 tests (none skipped), 0 type errors, 0 CSS warnings, lint clean, and
 the client reproduces the published books of all **193** modes exactly — the
 parity test replays a 400-book slice of every mode off `index.json`, three-card
-trips books included. The build on disk is the **2026-09-20 23:15** one: High
-Stakes at 16%, Three of a Kind as `tr_any_equal_equal` (three cards, 250×,
-4,583.3×), and `modeCeilings.ts` is what its generator wrote. It is **NOT
+trips books included. The build on disk is the **2026-09-22 02:30** one: High
+Stakes at 15% (ceiling 2237.3×, wincap 2300), Three of a Kind as
+`tr_any_equal_equal` (three cards, 250×, 4,583.3×), and `modeCeilings.ts` is
+what its generator wrote. `library/build_rules.json` records the family rules a
+build was made with, so a client whose `FAMILY_RULES` have moved since reads it
+as **stale** - the parity tests skip and say what differs - rather than as
+hundreds of failed assertions about arithmetic that did not change. It is **NOT
 committed** — `math-sdk/.gitignore` line 9 is `**/library/**`, so the books and
 `stats_summary.json` exist only on the machine that built them, and the tests
 that read them skip on an absent or stale build (`game/mathBuild.testlib.ts`).
 
 **What that build measured.** The four-guess families clear the **2-star**
-limits: worst std 36.58 (limit 0.6–50.0), worst etl40b 0.725 (limit 0.8), worst
-CVaR 624.6 on `hs_red_equal_equal_heart` (limit 700), worst non-zero hit rate
-1 in 2.11 (limit 1 in 20), P(≥5,000×) zero. Three of a Kind: RTP 96.0000%,
+limits: worst std 38.401 (limit 0.6–50.0), worst etl40b 0.769 on
+`hs_red_equal_outside_club` (limit 0.8), worst CVaR 639.0 on
+`hs_red_equal_equal_heart` (limit 700), worst non-zero hit rate 1 in 2.039
+(limit 1 in 20), worst max-win hit rate 1 in 193,283, P(≥5,000×) zero. Every
+one of those worst cases is a High Stakes mode, and ETL is the binding metric -
+0.769 against 0.8 is 4% of headroom, where 0.16 had 9%. Three of a Kind: RTP 96.0000%,
 non-zero hit rate 1 in 19.10 (94.8% pay nothing), max 458330 raw, P(≥5,000×) 0,
 etl40b 0, etl10k 0, CVaR 4,583.3 absolute = 18.3 per stake — as predicted.
 
-**The local verifier prints one warning on it, and the warning is the
+**The local verifier used to print one warning on it, and the warning was the
 verifier's, not the mode's.** `utils/rgs_verification.py:verify_mode_volatility`
-checks every mode against one flat table — the **3-star** figures, with `cvar`
+checked every mode against one flat table — the **3-star** figures, with `cvar`
 compared to 800 — and `conditional_value_at_risk` never divides by cost, so a
-250× mode's 4,583.3 base-bet CVaR is held against a limit written for 1× modes.
-Stake's own rule considers **both** the normalised figure (4,583.3 / 250 =
-18.3, limit 700) and the un-normalised one (4,583.3, limit 20,000 — the row the
-first trips build failed at 25,000), and its console reports the build's
-statistics as valid. Nothing to fix; do not tune the mode to silence it.
+250× mode's 4,583.3 base-bet CVaR was held against a limit written for 1×
+modes: `Mode [tr_any_equal_equal] fails 3-star volatility limits: VIOLATED:
+cvar VALUE:4583.3 --- LIMIT: 800`, on a build Stake's own console passed. Stake
+reads **both** rows — the normalised figure (4,583.3 / 250 = 18.3, against 700)
+and the un-normalised one (4,583.3, against 20,000 at 2 star / 50,000 at 3
+star, the row the first trips build failed at 25,000). The verifier now reads
+both too: it takes the mode's cost, divides for the per-stake check and holds
+the raw figure against the absolute ceiling. All 193 modes pass it silently.
+**The mode was never the thing to change** — do not tune it to satisfy a
+limit, and do not restore the un-normalised comparison.
+
+**A build watches itself.** `run.py` re-executes itself under
+`games/ride_the_bus/build_monitor.py`, which serves
+**http://127.0.0.1:8765** for the life of the run: 193 mode boxes by family,
+four pass bars, the eight workers with their RTPs, an ETA, and the whole
+transcript. The terminal still gets every line. `RTB_BUILD_MONITOR=0` turns it
+off, a broken monitor cannot fail a build, and `build_monitor.py --demo`
+replays a synthetic build in ~45 seconds - which is how the page is changed
+without spending 40 minutes. Structured facts reach it as `##RTB {json}` lines
+(`emit()`); everything else is parsed off the SDK's own prints, so **a reworded
+print in `src/state/run_sims.py` or `utils/rgs_verification.py` silently stops
+a parser** - the demo transcript is the copy of those lines to fix first.
+
+**The build works through the families in `FAMILY_BUILD_ORDER`** (
+`game_calculations.py`): Second Chance, Classic, High Stakes, Three of a Kind -
+volatility order, calmest first. It sets the order of the simulation, the
+reweight, the verification, the scan, `index.json`, `stats_summary.json` and
+the monitor's boxes, so those generated files reorder on the first build after
+this landed. Nothing reads a mode by position, and `ordered_families()` refuses
+to run if a family in `MODE_FAMILIES` is missing from it rather than quietly
+publishing 129 modes. The client's picker order is separate and still lists
+Classic first.
+
+**The three passes after the simulation run in parallel, and `num_threads`
+sizes all of them** — the reweight and the verification over a
+`ProcessPoolExecutor`, `replay-events.js` over `worker_threads` (it gets
+`REPLAY_SCAN_WORKERS`). Measured 8-against-1 on the 2026-09-22 build: reweight
+60.6s → 13.3s, verify 59.0s → 12.2s, scan 61.0s → 17.8s. **All three are
+idempotent and were proved byte-identical** — the reweighter reads the
+segmented tables and writes the published ones (193/193 md5s unchanged on a
+re-run), the verifier only reads, and both `stats_summary.json` and
+`REPLAY_EVENTS.md` came back identical. So any of the three can be re-run on
+its own against an existing build, which is also how they are tested without
+spending 40 minutes.
+
+**The books are no longer simulated through the SDK: `direct_books.py` scores
+every mode straight off one shared deal, and the published files are
+byte-identical.** All 192 four-guess modes deal the same cards for a given
+simulation index (`run_spin` seeds on it), and what a round pays is a pure
+function of those cards and the mode's rules. So `run.py` deals the 800,000
+shuffles once (`library/deals_standard52.bin`, ~2s), then each mode is scored
+against them through `GameState.score_round` - **the same function `run_spin`
+calls, so the rules exist once** - and its book, both lookup tables, force
+record, verification sidecar and event config are written in one pass, with no
+temp files and no decompress-and-recompress merge (zstd's output does not
+depend on how its input is chunked; checked). What CANNOT be shared is the
+output: every mode's book carries its own choices, flags and payouts, so all
+44M lines are still written.
+
+- **Proved in full against the 2026-09-22 build: all 193 modes, 1,352 files,
+  every byte identical**, `force.json` included. `RTB_DIRECT_BOOKS=0` goes back
+  to `create_books` (so does `profiling`).
+- **Time: the simulate stage went from 1,980s to ~68s** (65.5s writing + ~2s
+  dealing), across `os.cpu_count()` workers - 12 on this 6-core/12-thread
+  machine, where 12 beat 8 (83.4s) and 6 (94.1s). `RTB_BOOK_WORKERS`
+  overrides; `num_threads` (8) still defines create_books' split and must
+  divide every sim count (12 and 5 silently drop simulations there).
+- **Inside a mode**: every stage but the last is memoised by the cards turned
+  so far (`score_stage`: 52 / 2,652 / 132,600 prefixes against 800,000
+  rounds); a reveal's JSON and everything that depends only on the payout are
+  rendered once per distinct value by the same encoder the SDK uses.
+- **It checks itself on every build**: the first 2,000 rounds of each mode are
+  re-scored through plain `score_round` and re-rendered from a full book dict,
+  and every distinct payout's tail is re-rendered too; a mismatch fails the
+  build.
+- **The event config is `event_config_<mode>.json`'s one example per event
+  type.** create_books let every worker write it, so the LAST worker's first
+  round won - in practice always the first round of the mode's final slice
+  (87,500 / 175,000 / 750,000 at 8 threads). direct_books writes that round
+  deliberately; it depends on `num_threads`, not on the pool size.
+
+The SDK path is still there and still faster than it was (one process pool,
+arithmetic pricing, the shared deal, overlapped output with line-atomic stdout,
+`copy_event`, a reused JSON encoder) - it is the fallback, and the test
+reference. **`make_be_config` runs across the workers (31.8s -> 6.6s) and the
+configs are now written AFTER the reweight**: before, `config.json` hashed the
+tables and THEN the reweight rewrote them, so the first build after a rule
+change recorded the previous build's hashes. It is not an uploaded file.
+
+**Guarding it**: `games/ride_the_bus/tests/` (13, `.venv/Scripts/python.exe -m
+pytest games/ride_the_bus/tests -q` from `math-sdk/`) - direct_books against
+create_books-with-no-cache on a mode per family (every file), run_spin's events
+against score_round, pricing against the full tables, the shuffle against
+`random.shuffle`, the deal cache against a cold deal and its loader refusing
+bad caches. Sabotages were caught every time. **Those tests compare the two
+current paths with each other; a change to `score_stage` moves both.** The
+guard against that is the published build: `payout.test.ts` on the client, and
+rebuilding modes into a scratch library and byte-comparing them with
+`library/` - which is how every change here was checked. `RTB_ONLY_MODES=<mode>`
+builds just those modes into `library_test/` and stops before publish
+(`MATH_LIBRARY_DIR` picks the folder; it never writes into `library/`).
 
 **`run.py` does not sweep `publish_files/`.** A superseded build's books and
 LUT (`*_tr_any_equal_equal_any_*`, 19:13) sat beside the current ones, which is

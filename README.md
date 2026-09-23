@@ -28,7 +28,7 @@ on its own deck.
 |---|---|---|---|---|
 | Classic | 1.0× | nothing on card 1, 30% after | 1354.2× | ~1 in 2 |
 | Second Chance | 1.0× | card 1 still ends it; after that the first miss keeps 50% and **play continues** | 585.2× | ~1 in 2 |
-| High Stakes | 1.0× | nothing on card 1, 16% after | 2169.2× | ~1 in 2 |
+| High Stakes | 1.0× | nothing on card 1, 15% after | 2237.3× | ~1 in 2 |
 | Three of a Kind | **250×** | nothing, ever | 4583.3× | 1 in 19.1 |
 
 The three guess modes are a volatility ladder at one price, rather than paid
@@ -51,10 +51,13 @@ recorded against it stay valid; the others are prefixed `sc_`, `hs_` and `tr_`.
 
 Two numbers here are not free choices:
 
-- **High Stakes retention is 0.16.** Stake reads CVaR and Expected Tail
-  Liability as the worst value across all modes, and a failed class shrinks the
-  game's bet-level template. The binding metric is `etl40b`, not CVaR, and the
-  2026-09-20 build measures 0.725 and 624.6 against them.
+- **High Stakes retention is 0.15** (since 2026-09-22; 0.16 before that, 0.20
+  before that). Stake reads CVaR and Expected Tail Liability as the worst value
+  across all modes, and a failed class shrinks the game's bet-level template.
+  The binding metric is `etl40b`, not CVaR: the 2026-09-22 build at 0.15
+  measures **0.769** against 0.8 and **639.0** against 700, where the
+  2026-09-20 build at 0.16 measured 0.725 and 624.6. Both pass; ETL is the one
+  with little left, at 4% of headroom.
 
   **The limits are per star tier**, and the binding pair for a new submission is
   the 2-star one — ETL 0.8 and CVaR 700, not the 0.9 / 800 of the 3-star tier.
@@ -66,8 +69,8 @@ Two numbers here are not free choices:
   | --- | --- | --- | --- |
   | 0.30 (Classic) | 0.553 | 429 | 1354.2× |
   | 0.20 (shipped until 2026-09-20) | 0.689 | 551 | 1910.2× |
-  | **0.16 (shipped) — measured, not enumerated** | **0.725** | **624.6** | **2169.2×** |
-  | 0.15 | 0.764 | 618 | 2237.3× |
+  | 0.16 (shipped until 2026-09-22) — measured, not enumerated | 0.725 | 624.6 | 2169.2× |
+  | **0.15 (shipped) — measured, not enumerated** | **0.769** | **639.0** | **2237.3×** |
   | 0.10 | **0.842 ✗ (2★)** | 689 | 2599.5× |
   | 0.05 | **0.880 ✗ (2★)** | **763 ✗ (2★)** | 2998.5× |
   | 0.025 | **0.898 ✗ (2★)** | **802 ✗** | 3212.3× |
@@ -77,13 +80,18 @@ Two numbers here are not free choices:
   this enumerates it; the enumeration at 0.16 said CVaR 682, the build measured
   624.6). Against the 2-star limits that makes **0.15 the practical floor**, not
   0.10 — 0.10 enumerates at 0.842 and is already over 0.8 before the build's own
-  margin is added. 0.16 keeps 9% of headroom under ETL 0.8 and 11% under CVaR
-  700, which is what a metric read as a worst-case across 64 modes needs.
+  margin is added. 0.16 kept 9% of headroom under ETL 0.8 and 11% under CVaR
+  700; 0.15 measured 4% and 9%, about half of it, which is what a metric read
+  as a worst-case across 64 modes now lives on. (The enumeration that predicted
+  the move disagreed with itself about this step — one model said CVaR 722, the
+  other 618, and the build came in at 639.0. Extrapolating the measured builds,
+  CVaR ~0.29× the family ceiling, was the estimate that held.)
 
   Zero is not the end of a gradient, it is a cliff: with nothing kept, the only
   rounds that pay are the 4-for-4 ones, so the reweighter has to make wins rare
   enough to hit 96% RTP and the hit rate collapses from ~1 in 2 to **1 in 3,530**.
-  The family's wincap is 2200; anything below 0.16 would have to raise it.
+  The family's wincap is 2300 (raised from 2200 with the move to 0.15, whose
+  ceiling is 2237.3×); anything lower still would have to raise it again.
 - **Card 1 is never forgiven.** Forgiving it left almost no round paying zero,
   which pushed Second Chance's win-conditional mean below its reweight target —
   and `reweight_luts.py` can only move RTP by re-weighting losses, so with
@@ -287,8 +295,8 @@ Consequences worth knowing:
   purchase or a premium. The 250x mode states its cost in the picker, in the
   confirmation that precedes activating it, and in the rules.
 - **All 193 return 96.00%**, with a spread of 0.000000%.
-- **Each has its own maximum win**, from 39.5x to 2169.2x on the four-guess
-  modes. The three headline ceilings (1354.2x / 585.2x / 2169.2x) are the most
+- **Each has its own maximum win**, from 39.5x to 2237.3x on the four-guess
+  modes. The three headline ceilings (1354.2x / 585.2x / 2237.3x) are the most
   each *family* can reach, and exactly 8 of each family's 64 combinations reach
   them. How to Play states the family ceiling **and** what the four guesses
   currently picked top out at, because Stake asks for the maximum win per bet
@@ -306,10 +314,10 @@ Verified against Stake's math, RGS and frontend approval criteria:
 | --- | --- |
 | RTP 90-96.70%, all modes within 0.5% | 96.00% on every one of the 193 modes, spread 0.000000% |
 | Simulations per bet mode | 100k minimum, asserted in `run.py` |
-| Non-zero win hit rate, target better than 1 in 20 | 1 in 1.45 to 1 in 2.11 across the four-guess modes; 1 in 19.1 on Three of a Kind (94.8% of its rounds pay nothing - past the "90,000 of 100,000" example in the guidelines, accepted as the submission's softest point) |
-| Max win obtainable, target better than 1 in 10,000,000 | 1354.2x / 585.2x / 2169.2x per four-guess family, worst case 1 in 197,062; 4583.3x on Three of a Kind at 1 in 19.1 |
+| Non-zero win hit rate, target better than 1 in 20 | 1 in 1.40 to 1 in 2.04 across the four-guess modes; 1 in 19.1 on Three of a Kind (94.8% of its rounds pay nothing - past the "90,000 of 100,000" example in the guidelines, accepted as the submission's softest point) |
+| Max win obtainable, target better than 1 in 10,000,000 | 1354.2x / 585.2x / 2237.3x per four-guess family, worst case 1 in 193,283 (`sc_red_lower_equal_spade`); 4583.3x on Three of a Kind at 1 in 19.1 |
 | Max win stated per BET MODE | each of the 193 has its own ceiling; How to Play names the one for the guesses on the board |
-| 2-star risk limits (ETL 0.8, CVaR 700, std 0.6-50, P(>=5,000x) 1%) | worst etl40b 0.725, CVaR 624.6, std 36.58, P(>=5,000x) zero. Three of a Kind: etl40b 0, CVaR 4,583.3 absolute = 18.3 per stake. The local `rgs_verification.py` warning on that CVaR compares an un-normalised 250x-mode figure to a 1x limit; Stake's console passes it |
+| 2-star risk limits (ETL 0.8, CVaR 700, std 0.6-50, P(>=5,000x) 1%) | worst etl40b 0.769, CVaR 639.0, std 38.401, P(>=5,000x) zero - all three on High Stakes at 15%. Three of a Kind: etl40b 0, CVaR 4,583.3 absolute = 18.3 per stake, which `rgs_verification.py` now checks against the limit written for each read (per-stake and absolute) instead of holding the raw figure to a 1x limit |
 | No jackpot, gamble or cash-out | none - the single-bet design rules them out |
 | Static files only, no external requests | the only network call is the RGS itself |
 | Bet levels, `stepBet`, min/max from `authenticate` | honoured; nothing hardcoded |

@@ -12,10 +12,17 @@
  * IDs. The table is only meaningful against the build currently in
  * math-sdk/games/ride_the_bus/library/publish_files/.
  */
+/* The scan below decompresses 193 book files. zstd runs on libuv's thread
+   pool, so several books really do scan at once - but only as wide as that
+   pool, which defaults to 4. Set before the first async call, which is the
+   only time libuv reads it. */
+process.env.UV_THREADPOOL_SIZE = process.env.UV_THREADPOOL_SIZE || '16';
+
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 const zlib = require('zlib');
+const { Worker, isMainThread, parentPort, workerData } = require('worker_threads');
 
 const ROOT = path.resolve(__dirname, '..');
 const LIBRARY = path.join(ROOT, 'math-sdk/games/ride_the_bus/library');
@@ -70,14 +77,18 @@ const familyOf = (name) =>
 
 const rows = [];
 
-async function main() {
-  const modes = ONLY.length ? idx.modes.filter((m) => ONLY.includes(m.name)) : idx.modes;
-  if (ONLY.length) {
-    console.log(`REPLAY_EVENTS_MODES set - ${modes.length} of ${idx.modes.length} modes.`);
-    console.log('Writing REPLAY_EVENTS.partial.md; the real table is untouched.');
-  }
-
-  for (const mode of modes) {
+/**
+ * One mode's lookup table, reduced to the four replay scenarios.
+ *
+ * Reading and parsing these is the expensive half of this script - 193 tables
+ * of up to 800,000 rows, each row split and turned into a BigInt - and it is
+ * pure CPU on whatever thread calls it. That is why it is a function: it runs
+ * in a worker thread, one mode at a time, several modes at once.
+ *
+ * Returns null for a mode with no winning row (nothing to demonstrate), and
+ * otherwise the row for the table plus the `eligible` set the book scan needs.
+ */
+function analyseTable(mode) {
     const txt = fs.readFileSync(path.join(PUBLISH, mode.weights), 'utf8');
 
     // Keep only rows the RGS can actually draw. A zero-weight row exists in the
@@ -95,9 +106,15 @@ async function main() {
       weightByPayout.set(payout, (weightByPayout.get(payout) || 0n) + weight);
     }
 
+    // The scan below needs the drawable rows large enough to celebrate. That
+    // is this same file, parsed again - 193 tables of up to 800k rows - so it
+    // is collected here instead, while the lines are already in hand.
+    const floor = CELEBRATION_FLOOR[familyOf(mode.name)];
+    const eligible = new Set(drawable.filter((r) => r.payout >= floor).map((r) => r.id));
+
     const losses = drawable.filter((r) => r.payout === 0);
     const wins = drawable.filter((r) => r.payout > 0).sort((a, b) => a.payout - b.payout);
-    if (!wins.length) continue;
+    if (!wins.length) return null;
 
     const capPayout = wins[wins.length - 1].payout;
 
@@ -125,32 +142,86 @@ async function main() {
 
     const pick = (payout) => wins.find((r) => r.payout === payout) || null;
 
-    rows.push({
-      mode: mode.name,
-      family: familyOf(mode.name),
-      cost: mode.cost,
-      loss: losses[0] ? losses[0].id : null,
-      normal: pick(normalPayout),
-      big: pick(bigPayout),
-      cap: pick(capPayout),
-    });
+    return {
+      eligible,
+      row: {
+        mode: mode.name,
+        family: familyOf(mode.name),
+        cost: mode.cost,
+        loss: losses[0] ? losses[0].id : null,
+        normal: pick(normalPayout),
+        big: pick(bigPayout),
+        cap: pick(capPayout),
+      },
+    };
+}
+
+/** The whole per-mode job: the table, then its book. What a worker runs. */
+async function analyseMode(mode) {
+  const analysed = analyseTable(mode);
+  if (!analysed) return null;
+  const shapes = await scanShapes(mode, analysed.eligible);
+  return { ...analysed.row, bustwin: shapes.bustwin, forgiven: shapes.forgiven };
+}
+
+async function main() {
+  const modes = ONLY.length ? idx.modes.filter((m) => ONLY.includes(m.name)) : idx.modes;
+  if (ONLY.length) {
+    console.log(`REPLAY_EVENTS_MODES set - ${modes.length} of ${idx.modes.length} modes.`);
+    console.log('Writing REPLAY_EVENTS.partial.md; the real table is untouched.');
   }
 
-  /* The two SHAPE scenarios, resolved from the books.
-     Done here, in the generator, so the local replay tool never has to: it used
-     to stream a 215k-round book file on demand the first time either was asked
-     for, which made two buttons behave unlike the other four and put minutes of
-     work into a dev server start. This runs once, in the build that produced
-     the books, and the answer lands in the table below like everything else. */
+  /* WORKER THREADS, because both halves of the per-mode job are CPU on this
+     thread: parsing a lookup table of up to 800k rows, and JSON-parsing the
+     eligible lines of a book. Running the scans concurrently on ONE thread
+     bought 10% (the zstd decompression already overlapped on libuv's pool);
+     running the whole job on N threads is the rest of it.
+
+     The two SHAPE scenarios are resolved here, in the generator, so the local
+     replay tool never has to: it used to stream a 215k-round book file on
+     demand the first time either was asked for, which made two buttons behave
+     unlike the other four and put minutes of work into a dev server start.
+
+     The per-mode line is also what the build monitor reads, to fill in each
+     mode's box as it is finished rather than all 193 at the end. */
+  const WORKERS = Math.max(1, Math.min(Number(process.env.REPLAY_SCAN_WORKERS || 8), modes.length));
   console.log('');
-  console.log(`Scanning ${rows.length} books for bust-win and second-chance rounds...`);
+  console.log(`Scanning ${modes.length} books for bust-win and second-chance rounds, ${WORKERS} threads...`);
+  const byMode = new Map();
   let done = 0;
-  for (const r of rows) {
-    const shapes = await scanShapes(idx.modes.find((m) => m.name === r.mode));
-    r.bustwin = shapes.bustwin;
-    r.forgiven = shapes.forgiven;
-    done += 1;
-    if (done % 24 === 0) console.log(`  ${done}/${rows.length}`);
+  await new Promise((resolve, reject) => {
+    let live = 0;
+    for (let w = 0; w < WORKERS; w += 1) {
+      // Round-robin rather than contiguous slices: the 800k-simulation modes
+      // are grouped together in index.json, and a contiguous split hands one
+      // worker all of them.
+      const slice = modes.filter((_mode, index) => index % WORKERS === w);
+      if (!slice.length) continue;
+      live += 1;
+      const worker = new Worker(__filename, { workerData: { modes: slice } });
+      worker.on('message', (message) => {
+        if (!message.ok) {
+          reject(new Error(`${message.mode}: ${message.error}`));
+          return;
+        }
+        if (message.row) byMode.set(message.mode, message.row);
+        done += 1;
+        console.log(`  scanned ${message.mode} (${done}/${modes.length})`);
+      });
+      worker.on('error', reject);
+      worker.on('exit', () => {
+        live -= 1;
+        if (live === 0) resolve();
+      });
+    }
+    if (live === 0) resolve();
+  });
+
+  // Back into index.json's order: the table is read by a person, and worker
+  // completion order is not an order.
+  for (const mode of modes) {
+    const row = byMode.get(mode.name);
+    if (row) rows.push(row);
   }
 
   const x = (r) => (r ? (r.payout / 100).toFixed(2) + 'x' : '-');
@@ -353,19 +424,24 @@ function shapeOf(book, family) {
   return { busted, forgivenessSpent };
 }
 
-async function scanShapes(mode) {
+async function scanShapes(mode, precomputed) {
   const family = familyOf(mode.name);
   const floor = CELEBRATION_FLOOR[family];
 
-  // Only rows the RGS can draw, and only ones large enough to celebrate.
-  const eligible = new Set();
-  const csv = fs.readFileSync(path.join(PUBLISH, mode.weights), 'utf8');
-  for (const line of csv.split(/\r?\n/)) {
-    if (!line) continue;
-    const [id, weight, payout] = line.split(',');
-    if (BigInt(weight) === 0n) continue;
-    if (Number(payout) < floor) continue;
-    eligible.add(Number(id));
+  // Only rows the RGS can draw, and only ones large enough to celebrate. main()
+  // already has these from its own pass over the same table and passes them in;
+  // the fallback keeps this function callable on its own.
+  let eligible = precomputed;
+  if (!eligible) {
+    eligible = new Set();
+    const csv = fs.readFileSync(path.join(PUBLISH, mode.weights), 'utf8');
+    for (const line of csv.split(/\r?\n/)) {
+      if (!line) continue;
+      const [id, weight, payout] = line.split(',');
+      if (BigInt(weight) === 0n) continue;
+      if (Number(payout) < floor) continue;
+      eligible.add(Number(id));
+    }
   }
 
   const want = family === 'sc' ? ['bustwin', 'forgiven'] : ['bustwin'];
@@ -409,7 +485,24 @@ async function scanShapes(mode) {
   };
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+/* A worker runs the same file. Bootstrapped at the BOTTOM so every const
+   above - CELEBRATION_FLOOR, ID_HEAD - is initialised before the first job
+   touches it. */
+if (isMainThread) {
+  main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+} else {
+  (async () => {
+    for (const mode of workerData.modes) {
+      try {
+        const row = await analyseMode(mode);
+        parentPort.postMessage({ ok: true, mode: mode.name, row });
+      } catch (error) {
+        parentPort.postMessage({ ok: false, mode: mode.name, error: String((error && error.stack) || error) });
+        return;
+      }
+    }
+  })();
+}

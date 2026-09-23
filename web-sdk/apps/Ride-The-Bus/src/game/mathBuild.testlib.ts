@@ -27,7 +27,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { allPlayableModes } from './math/modes.ts';
+import { FAMILY_RULES, MODE_FAMILIES, allPlayableModes } from './math/modes.ts';
 
 export const LIBRARY = resolve(
   import.meta.dirname,
@@ -36,6 +36,13 @@ export const LIBRARY = resolve(
 export const STATS = resolve(LIBRARY, 'stats_summary.json');
 export const PUBLISH_DIR = resolve(LIBRARY, 'publish_files');
 export const INDEX = resolve(PUBLISH_DIR, 'index.json');
+/**
+ * The family rules the build was made with - written by run.py beside the
+ * stats since 2026-09-22 (backfilled by hand for the 2026-09-20 build it
+ * describes). Absent on older builds, in which case only the mode list can
+ * say whether the build is stale.
+ */
+export const RULES = resolve(LIBRARY, 'build_rules.json');
 
 export type MathBuildState = 'absent' | 'stale' | 'current';
 
@@ -70,6 +77,38 @@ export function mathBuild(): { state: MathBuildState; detail: string } {
         '. Rebuild the math before trusting any parity result.',
     };
     return cached;
+  }
+  // Same modes - but the same RULES? A retention or cost change keeps the
+  // mode list identical, so without this the 0.16 -> 0.15 High Stakes
+  // rebuild window read as a drift in the client's arithmetic: hundreds of
+  // parity assertions red for a reason that was not a bug. The build says
+  // what it was made with; if that is not what the client says now, the
+  // build is older than the code, which is what "stale" means.
+  if (existsSync(RULES)) {
+    const built = JSON.parse(readFileSync(RULES, 'utf8')) as {
+      families?: Record<string, { cost: number; retention: number[]; forgive: number | null; forgive_from: number }>;
+    };
+    for (const family of MODE_FAMILIES) {
+      const rules = FAMILY_RULES[family];
+      const was = built.families?.[family];
+      const differs =
+        !was ||
+        was.cost !== rules.cost ||
+        was.forgive !== rules.forgive ||
+        was.forgive_from !== rules.forgiveFrom ||
+        was.retention.length !== rules.retention.length ||
+        was.retention.some((r, i) => Math.abs(r - rules.retention[i]!) > 1e-9);
+      if (differs) {
+        cached = {
+          state: 'stale',
+          detail:
+            `the math build on disk was made with ${family} = ${JSON.stringify(was ?? null)} and the client now says ` +
+            `cost ${rules.cost}, retention [${rules.retention.join(', ')}], forgive ${rules.forgive} from ${rules.forgiveFrom}. ` +
+            'Rebuild the math before trusting any parity result.',
+        };
+        return cached;
+      }
+    }
   }
   cached = { state: 'current', detail: '' };
   return cached;

@@ -232,7 +232,7 @@ describe('paytable is complete and self-consistent', () => {
 
 	test('each family quotes its own retention', () => {
 		assert.match(render(bustRowsFor(FAMILY_RULES.base)[1]!), /30%/);
-		assert.match(render(bustRowsFor(FAMILY_RULES.hs)[1]!), /16%/);
+		assert.match(render(bustRowsFor(FAMILY_RULES.hs)[1]!), /15%/);
 	});
 
 	test('the forgiving family describes forgiveness, not a card-2 payout', () => {

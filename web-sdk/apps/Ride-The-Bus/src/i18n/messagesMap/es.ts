@@ -86,8 +86,8 @@ export default {
 		'Solo algunas combinaciones de predicciones alcanzan el máximo de un modo. Una vez elegidas tus cuatro, su propio tope se muestra arriba.',
 	Playing: 'En juego',
 	'Card 2, 3 or 4': 'Carta 2, 3 o 4',
-	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
-		'Fallar la primera carta termina la ronda. Los fallos posteriores conservan solo el 16%, así que cada acierto vale más.',
+	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
+		'Fallar la primera carta termina la ronda. Los fallos posteriores conservan solo el 15%, así que cada acierto vale más.',
 
 	'How to Play': 'Cómo jugar',
 	'Guess your way through four cards:': 'Adivina las cuatro cartas, una a una:',

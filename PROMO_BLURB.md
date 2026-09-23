@@ -8,7 +8,7 @@ one is the default to submit; the **long** one is there if a longer slot needs
 filling. They say the same thing at three sizes — pick one, don't mix.
 
 Every claim in them is checkable against the build: 96.00% RTP on every mode,
-2169.2× ceiling on High Stakes, all four guesses committed before the bet, one
+2237.3× ceiling on High Stakes, all four guesses committed before the bet, one
 price for the three guess modes, and Three of a Kind at 250× the bet paying
 4583.3× it about one round in nineteen (recorded hit rate 1 in 19.1).
 
@@ -33,11 +33,11 @@ price for the three guess modes, and Three of a Kind at 250× the bet paying
 > deck, so in Classic calling Lower on a 3 pays about 4.75× while Higher pays
 > 1.19×, and the odds shift under you as the run builds. Three guess modes
 > change only what a miss leaves behind: Classic keeps 30%, High Stakes keeps
-> 16% and pays further, and Second Chance keeps half of what you had built on
+> 15% and pays further, and Second Chance keeps half of what you had built on
 > your first wrong call from card two on and plays through it. All three cost
 > the same and return the same 96.00%.
 >
-> Four correct calls is the whole game. The longest of them pays 2169.2×.
+> Four correct calls is the whole game. The longest of them pays 2237.3×.
 >
 > Or skip the guessing. **Three of a Kind** deals three cards from a twelve-card
 > deck of Aces, Kings and Queens: cards two and three must match card one, and
@@ -64,9 +64,9 @@ price for the three guess modes, and Three of a Kind at 250× the bet paying
 > calls, and the odds move under you the whole way down.
 >
 > Three ways to back the same four calls, at the same price. **Classic** keeps
-> 30% of what you had built when a call misses. **High Stakes** keeps only 16%,
+> 30% of what you had built when a call misses. **High Stakes** keeps only 15%,
 > and pays every correct call more for the shortfall — the steepest climb, and
-> the 2169.2× ceiling. **Second Chance** keeps half of what you had built on
+> the 2237.3× ceiling. **Second Chance** keeps half of what you had built on
 > your first wrong call from card two onward and plays on through it, trading
 > the ceiling for the odds of finishing. Every mode returns the same 96.00%;
 > what changes is the shape of the ride.
@@ -91,11 +91,11 @@ price for the three guess modes, and Three of a Kind at 250× the bet paying
   "wins" and "costs 250× your bet" must become "can be played for 250× your
   play amount". The versions above are the standard-market wording.
 - **The 4.75× / 1.19× / 12× examples are Classic's.** High Stakes prices the
-  same calls at 5.50× / 1.23× / 14.40× and Second Chance at 3.67× / 1.13× /
+  same calls at 5.55× / 1.23× / 14.56× and Second Chance at 3.67× / 1.13× /
   8.96× (`oddsExampleFor` in `payoutTable.ts`, re-derived after High Stakes
-  went to 16%). The blurbs say "in Classic" for that reason; keep the
+  went to 15%). The blurbs say "in Classic" for that reason; keep the
   qualifier if the sentence is reworded.
-- **Two max-win figures, and they are different claims.** 2169.2× is the most
+- **Two max-win figures, and they are different claims.** 2237.3× is the most
   the four-guess ride pays (High Stakes; Classic tops out at 1354.2× and Second
   Chance at 585.2×). 4583.3× is the game's overall maximum, on Three of a Kind,
   and is a multiple of the BASE bet on a mode that costs 250 of them — Stake's

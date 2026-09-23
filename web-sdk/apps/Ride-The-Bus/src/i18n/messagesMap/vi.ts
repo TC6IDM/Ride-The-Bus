@@ -86,8 +86,8 @@ export default {
 		'Chỉ một số tổ hợp dự đoán đạt tới mức tối đa của chế độ. Sau khi chọn đủ bốn, mức trần riêng của chúng sẽ hiện ở trên.',
 	Playing: 'Đang chơi',
 	'Card 2, 3 or 4': 'Lá 2, 3 hoặc 4',
-	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
-		'Sai lá bài đầu tiên là kết thúc vòng. Các lần sai sau chỉ giữ lại 16%, nên mỗi lần đoán đúng có giá trị hơn.',
+	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
+		'Sai lá bài đầu tiên là kết thúc vòng. Các lần sai sau chỉ giữ lại 15%, nên mỗi lần đoán đúng có giá trị hơn.',
 
 	'How to Play': 'Cách chơi',
 	'Guess your way through four cards:': 'Dự đoán lần lượt bốn lá bài:',

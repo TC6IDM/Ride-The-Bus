@@ -86,8 +86,8 @@ export default {
 		'只有部分猜测组合能达到某模式的最高赔付。选好四步后，其自身上限会显示在上方。',
 	Playing: '游戏中',
 	'Card 2, 3 or 4': '第二、三或四张牌',
-	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
-		'第一张牌猜错即结束本局。之后猜错仅保留16%，因此每一次猜对都更有价值。',
+	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
+		'第一张牌猜错即结束本局。之后猜错仅保留15%，因此每一次猜对都更有价值。',
 
 	'How to Play': '玩法说明',
 	'Guess your way through four cards:': '依次预测四张牌：',

@@ -259,7 +259,7 @@ describe('mode families', () => {
   test('each family reaches the ceiling its design was chosen for', () => {
     assert.equal(maxWinFor('base'), 1354.2);
     assert.equal(maxWinFor('sc'), 585.2);
-    assert.equal(maxWinFor('hs'), 2169.2);
+    assert.equal(maxWinFor('hs'), 2237.3);
     assert.equal(maxWinFor('tr'), 4583.3);
   });
 

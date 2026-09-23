@@ -26,6 +26,7 @@
   } from '../../game/bet/betState.svelte';
   import { FREE_CHOICE, isCleanSweep, stageCount } from '../../game/math/modes';
   import { round } from '../../game/round/roundState.svelte';
+  import type { Card } from '../../game/platform/typesBookEvent';
   import { t } from '../../i18n/i18nDerived';
   import { numberToCurrencyString } from 'utils-shared/amount';
 
@@ -91,6 +92,58 @@
   const isFreeSlot = (index: number) => familyRules().fixedChoices?.[index] === FREE_CHOICE;
 
   /**
+   * What the board is SHOWING, which is not always what the round holds.
+   *
+   * Everything on this row LEAVES over time - a chip fades out over 0.2s
+   * (cards.css) and a card turns back over `--flip-dur`, half a second by
+   * default - while `resetForNewRound()` empties the round the instant the
+   * next one is bought. Anything drawn straight off the live state therefore
+   * changes in the middle of its own exit animation:
+   *
+   *   - a busted 0.00x chip lost `.is-zero` and flicked from the dim ink back
+   *     to win green on its way out, which is a loss recoloured as a win for
+   *     the length of the fade (reported);
+   *   - a winning chip's figure snapped to 0.00x behind the same fade;
+   *   - the card face and the bust cross vanished on the frame the flip
+   *     started, so what turned back over was a blank white front.
+   *
+   * So the exit is given what it was already drawing: the settled board stays
+   * here until the next round deals over it. Only the LIVE round decides
+   * whether a card is face up (`flipped`) or a chip is on screen (`.show`) -
+   * those must happen on cue; it is what they show that must not change as
+   * they go.
+   *
+   * Held in a plain object rather than `$state` + `$effect` on purpose: an
+   * effect runs after the DOM is patched, so the frame where a new card lands
+   * would draw the previous round's.
+   */
+  type ShownBoard = {
+    cards: (Card | null)[];
+    multipliers: (number | null)[];
+    busted: number | null;
+    forgiven: number | null;
+  };
+  let heldBoard: ShownBoard = {
+    cards: [null, null, null, null],
+    multipliers: [null, null, null, null],
+    busted: null,
+    forgiven: null,
+  };
+  const shown = $derived.by(() => {
+    // One condition for the whole row: a chip only ever exists under a card
+    // that has turned, so "anything dealt" is the same question for both.
+    if (round.revealedCards.some((c) => c !== null)) {
+      heldBoard = {
+        cards: round.revealedCards.slice(),
+        multipliers: round.stageMultipliers.slice(),
+        busted: round.bustedIndex,
+        forgiven: round.forgivenIndex,
+      };
+    }
+    return heldBoard;
+  });
+
+  /**
    * Every guess press goes through here, because the row is LOCKED by opacity
    * and pointer-events rather than by the `disabled` attribute - and
    * pointer-events does not stop the keyboard. Tab + Enter during a reveal
@@ -130,6 +183,11 @@
        show a card that never turns. -->
   <div class="card-row">
     {#each round.revealedCards.slice(0, slots) as card, index}
+      <!-- `card` is the LIVE round - it decides whether this slot is face up.
+           `face` is what the slot draws, which outlives the round by one
+           animation so the card turns back over with its face still on it.
+           See the note on the latch. -->
+      {@const face = shown.cards[index]}
       <div class="card-slot">
         <!-- is-zero: a bust that kept nothing (Three of a Kind, or any card-1
              miss) prints 0.00x, and printing it in win-green was the one
@@ -137,30 +195,30 @@
         <div
           class="card-mult"
           class:show={round.stageMultipliers[index] !== null && !isFreeSlot(index)}
-          class:is-zero={round.stageMultipliers[index] === 0}
+          class:is-zero={shown.multipliers[index] === 0}
         >
-          {(round.stageMultipliers[index] ?? 0).toFixed(2)}×
+          {(shown.multipliers[index] ?? 0).toFixed(2)}×
         </div>
         <div class="card-block">
           <div class="card-inner" class:flipped={card}>
             <div class="card-back" aria-hidden="true"></div>
             <div class="card-front">
-              {#if card}
-                <div class="card-face" class:red-card={card.suit === '♥' || card.suit === '♦'} class:black-card={card.suit === '♠' || card.suit === '♣'}>
+              {#if face}
+                <div class="card-face" class:red-card={face.suit === '♥' || face.suit === '♦'} class:black-card={face.suit === '♠' || face.suit === '♣'}>
                   <div class="index top">
-                    <span class="index-rank">{card.rank}</span>
-                    <SuitIcon suit={card.suit} scale={0.66} />
+                    <span class="index-rank">{face.rank}</span>
+                    <SuitIcon suit={face.suit} scale={0.66} />
                   </div>
-                  <div class="suit center"><SuitIcon suit={card.suit} /></div>
+                  <div class="suit center"><SuitIcon suit={face.suit} /></div>
                   <div class="index bottom">
-                    <span class="index-rank">{card.rank}</span>
-                    <SuitIcon suit={card.suit} scale={0.66} />
+                    <span class="index-rank">{face.rank}</span>
+                    <SuitIcon suit={face.suit} scale={0.66} />
                   </div>
                 </div>
               {/if}
-              {#if index === round.bustedIndex}
+              {#if index === shown.busted}
                 <div class="bust-x" aria-hidden="true"><MarkIcon name="cross" /></div>
-              {:else if index === round.forgivenIndex}
+              {:else if index === shown.forgiven}
                 <!-- A Second Chance round survived this one. Marked
                      differently from a bust on purpose: the same cross
                      would say the round ended, when it carried on. -->

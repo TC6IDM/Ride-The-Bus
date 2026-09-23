@@ -107,7 +107,7 @@
         <li>{t('Suit: the suit of card 4.')}</li>
       </ol>
       <!-- What a miss costs is deliberately NOT stated here: it is different in
-           every family (nothing at card 1; 30% or 16% after; forgiven once on
+           every family (nothing at card 1; 30% or 15% after; forgiven once on
            Second Chance; nothing at all on Three of a Kind), and a one-line
            summary that fits one of them is wrong for the others. The mode panel
            below says it per family. -->

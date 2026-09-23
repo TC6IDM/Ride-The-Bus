@@ -229,17 +229,20 @@ export const FAMILY_RULES: Record<ModeFamily, FamilyRules> = {
   hs: {
     prefix: 'hs_',
     cost: 1,
-    // 0.16, down from 0.20: the last step that clears Stake's CVaR limit
-    // (~692 measured against 700; 0.15 is 722). A card-2 bust still shows 0.3x
-    // - 1.995 x 0.16 x 0.995 floors to it - so only card-3/4 busts pay less.
-    retention: [0, 0.16, 0.16, 0.16],
+    // 0.15, down from 0.16 (and 0.20 before that), measured on the 2026-09-22
+    // build: CVaR 639.0 against 700, etl40b 0.769 against 0.8, std 38.401
+    // against 50 - inside the 2-star limits on about half the margin 0.16 had,
+    // with ETL the binding one. game_calculations.py has the full note. A
+    // card-2 bust now shows 0.2x (1.995 x 0.15 x 0.995 floors to it) where
+    // 0.16 still showed 0.3x.
+    retention: [0, 0.15, 0.15, 0.15],
     forgive: null,
     forgiveFrom: 0,
     targetRtp: FOUR_GUESS_TARGET_RTP,
     deck: null,
     fixedChoices: null,
     label: 'High Stakes',
-    maxWin: 2169.2,
+    maxWin: 2237.3,
     celebrateEveryFullWin: true,
   },
   /**
@@ -281,12 +284,12 @@ export function stageCount(rules: Pick<FamilyRules, 'fixedChoices'>): number {
 export const FAMILY_BLURB: Record<ModeFamily, string> & {
   base: 'A wrong first card ends the round. Later misses keep 30% of what you had built.';
   sc: 'A wrong first card ends the round. After that your first miss is forgiven and play continues.';
-  hs: 'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.';
+  hs: 'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.';
   tr: 'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.';
 } = {
   base: 'A wrong first card ends the round. Later misses keep 30% of what you had built.',
   sc: 'A wrong first card ends the round. After that your first miss is forgiven and play continues.',
-  hs: 'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.',
+  hs: 'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.',
   tr: 'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.',
 };
 

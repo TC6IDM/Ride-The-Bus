@@ -14,29 +14,34 @@
  * Classic's originals: roughly 1 in 70, 1 in 305, 1 in 3,093 and 1 in 15,561,
  * with Max Win being exactly that family's ceiling (~1 in 36,400 in all three).
  *
- * The figures come from exhaustive enumeration of the payout model - every
+ * The bands were SOLVED by exhaustive enumeration of the payout model - every
  * ordered four-card draw against all 64 combinations, reweighted the way
- * reweight_luts.py reweights the published tables, and averaged over the
- * combinations with equal weight because every mode costs the same and a player
- * picks exactly one per round. That reproduces the Classic frequencies this
- * ladder originally shipped with (70 / 304 / 3,083 / 16,198 measured against
- * 70 / 305 / 3,093 / 15,561 documented), which is what makes the other two
- * families' numbers trustworthy.
+ * reweight_luts.py reweights the published tables. The rarities printed beside
+ * them are MEASURED, off the published lookup tables of the build that ships:
+ * each family's 64 tables, averaged with equal weight because every mode costs
+ * the same and a player picks exactly one per round. That is the same
+ * distribution the RGS pays from, and it reproduces the frequencies this
+ * ladder was originally documented with (Classic 70 / 305 / 3,093 / 15,561) to
+ * the digit, which is what makes the other two families' numbers trustworthy.
  *
  *                    Big        Huge        Mega         Epic          Max
- *   Classic        10x  1:70   40x 1:304  120x 1:3083  300x 1:16198  1354.2x 1:36380
- *   Second Chance  11x  1:70   28x 1:290   60x 1:3048  130x 1:15730   585.2x 1:36435
- *   High Stakes    12x  1:71   55x 1:305  145x 1:3502  500x 1:16691  2169.2x 1:37766
+ *   Classic        10x  1:70   40x 1:305  120x 1:3092  300x 1:15561  1354.2x 1:36384
+ *   Second Chance  11x  1:70   28x 1:290   60x 1:3063  130x 1:15469   585.2x 1:36542
+ *   High Stakes    12x  1:68   55x 1:295  145x 1:2818  500x 1:15444  2237.3x 1:36248
  *
- * High Stakes' row was re-solved when its retention went from 20% to 16% (the
- * old row - 12 / 50 / 130 / 440, max 1910.2x - reproduced from the same
- * enumeration before the change, which is what makes the new one trustworthy).
+ * High Stakes' row was re-solved when its retention went from 20% to 16% (from
+ * 12 / 50 / 130 / 440, max 1910.2x) and re-measured when it went to 15% on
+ * 2026-09-22. The four bands did not move that second time: on the 0.15
+ * distribution 12 / 55 / 145 / 500 are still the round thresholds closest to
+ * the target rarities (at Big, 13x is exactly as close - 1 in 72 against 1 in
+ * 68 - and the shipped 12x is kept). Only the frequencies and the ceiling
+ * changed, which is why this table moved and the one below it did not.
  *
  * Each family's Epic sits below a gap in its own distribution, for the reason
  * Classic's sits at 300x rather than a rounder 400x: nothing pays between 381.9x
  * and 1260x there, so a threshold inside the gap would be RARER than the Max Win
  * above it and the ladder would read backwards. The gaps are at 381.9x->1260x
- * (Classic), 172.2x->549.1x (Second Chance) and 600.5x->2009.7x (High Stakes).
+ * (Classic), 172.2x->549.1x (Second Chance) and 618.7x->2072.4x (High Stakes).
  *
  * THREE OF A KIND HAS ONE RUNG, AND IT IS MAX. Its only win IS its ceiling -
  * 4,583.3x the base bet, about 1 in 19 - so a five-band ladder would invent four
@@ -61,7 +66,7 @@ import { FAMILY_RULES, type ModeFamily } from './modes.ts';
  * declared bound that never binds, so it is NOT the right number to celebrate.
  *
  * This is the BASE family's ceiling, not the game's. Second Chance stops at
- * 585.2x and High Stakes reaches 2169.2x - use winTiersFor to get a family's
+ * 585.2x and High Stakes reaches 2237.3x - use winTiersFor to get a family's
  * own ladder. Kept as the default so callers with no family behave as before. */
 export const MAX_WIN_MULTIPLIER = FAMILY_RULES.base.maxWin;
 
@@ -111,12 +116,13 @@ const FAMILY_BANDS: Record<LadderFamily, readonly [number, number, number, numbe
   hs: [12, 55, 145, 500],
 };
 
-/** Measured frequency of each band or better, including Max. For the rules
- *  screen and the test plan - nothing branches on these. */
+/** Measured frequency of each band or better, including Max - read off the
+ *  published lookup tables of the shipping build, 64 per family at equal
+ *  weight. For the rules screen and the test plan; nothing branches on these. */
 const FAMILY_ONE_IN: Record<LadderFamily, readonly [number, number, number, number, number]> = {
-  base: [70, 304, 3083, 16198, 36380],
-  sc: [70, 290, 3048, 15730, 36435],
-  hs: [71, 305, 3502, 16691, 37766],
+  base: [70, 305, 3092, 15561, 36384],
+  sc: [70, 290, 3063, 15469, 36542],
+  hs: [68, 295, 2818, 15444, 36248],
 };
 
 /**
@@ -211,7 +217,7 @@ export function winTierFor(
 
   // The Max band is matched on EQUALITY, not on ">= its floor" like every band
   // below it. "Max Win" is a claim about hitting the ceiling exactly, and the
-  // ceiling is a single reachable multiplier (1354.2 / 585.2 / 2169.2) rather
+  // ceiling is a single reachable multiplier (1354.2 / 585.2 / 2237.3) rather
   // than the bottom of an open-ended range - so a payout ABOVE it is not a max
   // win, it is a number this ladder cannot explain, and announcing the rarest
   // screen in the game over it would be a lie about what the player just did.

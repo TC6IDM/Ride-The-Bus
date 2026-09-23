@@ -62,7 +62,7 @@ Moved out of CLAUDE.md so it is loaded on demand rather than on every turn.
   effects in `Game.svelte` consumed four and dropped the family, which left a
   High Stakes round on Classic's ladder — measuring a 1400× win against
   Classic's 1354.2 ceiling and announcing MAX WIN over a round nowhere near High
-  Stakes' real 2169.2 max. The family also drives the MODE button, the bolts,
+  Stakes' real 2237.3 max. The family also drives the MODE button, the bolts,
   the rules popup and the printed retention rule. `modes.test.ts` greps both
   call sites, because the failure is silent and has now happened twice. Since
   Three of a Kind, both sites put the four guesses back through ONE helper,
@@ -208,10 +208,17 @@ stays purely binary; if review objects to 95% non-paying, the first fix is a
 token pair payout (retention ~2e-3 on the card-3 miss returns 1× base on a
 pair: hit rate 1 in 5, RTP cost ~0.06%, trips unchanged).
 
-**High Stakes went 20% → 16% in the same pass.** The rebuild measured CVaR
-624.6 and std 36.58, both clear (the exhaustive model had said 682 / 36.3 — it
-runs a few percent hot on the tail). A card-2 bust still shows 0.3× (1.995 ×
-0.16 × 0.995 floors to it); only card-3/4 busts pay less. Classic stays at 30%:
+**High Stakes went 20% → 16% in the same pass, and to 15% on 2026-09-22.** The
+16% rebuild measured CVaR 624.6 and std 36.58, both clear (the exhaustive model
+had said 682 / 36.3 — it runs a few percent hot on the tail). The two
+enumerations in this repo then disagreed about the step below it — 722 from the
+model that runs hot, 618 from the one that runs cold — and the estimate that
+held was the trend through the MEASURED builds, CVaR ~0.29× the family ceiling,
+which put 0.15 near 650-660. The 0.15 build came in at **CVaR 639.0, etl40b
+0.769, std 38.401**: inside 700 / 0.8 / 50 on about half of 0.16's margin, with
+ETL the binding one at 4% of headroom. A card-2 bust shows **0.2×** there
+(1.995 × 0.15 × 0.995 = 0.298, floored) where 0.16 still showed 0.3×; only
+card-3/4 busts pay less than the card-2 floor. Classic stays at 30%:
 with High Stakes at 16% it is already the arithmetic middle on std medians
 (3.6 / 5.7 / 7.9); 35% would have evened the ceiling ladder (585 / 1122 / 2169,
 ×1.9 twice) and was declined.

@@ -44,14 +44,17 @@ blocks a submission.
 ## Facts you must not get wrong
 
 - **The binding risk tier is 2-star, not 3-star**: ETL 0.8 and CVaR 700. The
-  0.9 / 800 figures are the 3-star tier. The 2026-09-20 build clears 2-star on
-  the four-guess families — worst std 36.58, worst ETL 0.725, worst CVaR 624.6
-  (`hs_red_equal_equal_heart`), worst non-zero hit rate 1 in 2.11, P(≥5000×)
+  0.9 / 800 figures are the 3-star tier. The 2026-09-22 build (High Stakes at
+  15%) clears 2-star on the four-guess families — worst std 38.401, worst ETL
+  0.769 (`hs_red_equal_outside_club`), worst CVaR 639.0
+  (`hs_red_equal_equal_heart`), worst non-zero hit rate 1 in 2.039, P(≥5000×)
   zero. Three of a Kind: ETL 0, CVaR 4,583.3 absolute = 18.3 per stake, hit
   rate 1 in 19.1 with 94.8% of rounds paying nothing (the submission's softest
-  point, accepted). The local `rgs_verification.py` warning on that CVaR
-  compares an un-normalised 250× figure to a 1× limit; Stake's console passes
-  it. Do not re-tune the mode to silence it.
+  point, accepted). `rgs_verification.py` used to warn on that CVaR because it
+  held the un-normalised 250× figure to a 1× limit; it now checks the per-stake
+  figure against 800 and the raw one against the absolute ceiling, as Stake's
+  console does, and passes. Do not re-tune the mode, and do not read a silent
+  verifier as a weaker one.
 - **One star is not a publication.** A 1-star game is returned to the developer
   to resubmit. Any claim that it ships at the bottom of New Releases is wrong.
 - **RTP must be 90.0%–96.70%**, and across modes within 0.5% variation. This
@@ -66,7 +69,7 @@ blocks a submission.
   is a multiple of the BASE bet, never of the cost - 4,583.3×, not 18.33×.
 - **Max win must be realistically obtainable** and stated **per bet mode**.
   Family figure ≠ mode ceiling; only 8 of each family's 64 modes reach the
-  family figure (1354.2 / 585.2 / 2169.2), and Classic's median mode is 268.8×
+  family figure (1354.2 / 585.2 / 2237.3), and Classic's median mode is 268.8×
   against a 1354.2× headline. Three of a Kind's only win IS its ceiling.
 - The published math build is **not committed** — `math-sdk/.gitignore` line 9 is
   `**/library/**`. Tests that read the math tree skip rather than fail when it is

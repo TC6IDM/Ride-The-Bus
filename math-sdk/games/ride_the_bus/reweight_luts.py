@@ -45,6 +45,8 @@ before). Run automatically at the end of run.py.
 
 import csv
 import os
+import time
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from game_calculations import MODE_FAMILIES, all_published_modes, mode_name
 
@@ -62,7 +64,13 @@ def _publish_path(game_dir: str, mode: str) -> str:
 
 
 def reweight_mode(game_dir: str, mode: str, target_rtp: float) -> dict:
-    """Rewrite one mode's published _0 lookup table to hit target_rtp exactly."""
+    """Rewrite one mode's published _0 lookup table to hit target_rtp exactly.
+
+    Reads the SEGMENTED table and writes the PUBLISHED one, so it is idempotent
+    and independent of every other mode - which is what makes reweight_all
+    safe to run across a process pool, and safe to re-run on a finished build.
+    """
+    started = time.perf_counter()
     seg = _segmented_path(game_dir, mode)
     rows = []  # (sim_id, payout_float)
     win_payout_sum = 0.0
@@ -114,10 +122,18 @@ def reweight_mode(game_dir: str, mode: str, target_rtp: float) -> dict:
         "num_losses": num_losses,
         "loss_weight": loss_weight,
         "hit_rate_1_in": total_weight / (WEIGHT_SCALE * num_wins),
+        "rows": num_wins + num_losses,
+        "seconds": time.perf_counter() - started,
     }
 
 
-def reweight_all(game_dir: str, target_rtp: float) -> list:
+def _reweight_job(args):
+    """Pool entry point: (game_dir, mode, target) -> result dict."""
+    game_dir, mode, target = args
+    return reweight_mode(game_dir, mode, target)
+
+
+def reweight_all(game_dir: str, target_rtp: float, on_mode=None, workers: int = 1) -> list:
     """
     Reweight every published mode's lookup table onto the common target.
 
@@ -128,12 +144,40 @@ def reweight_all(game_dir: str, target_rtp: float) -> list:
     matching half, and without it the 2x families would be reweighted down to
     48% RTP and fail the RTP band outright.
     """
-    results = []
+    jobs = []
     for family, combo in all_published_modes():
         cost = MODE_FAMILIES[family]["cost"]
-        result = reweight_mode(game_dir, mode_name(*combo, family=family), target_rtp * cost)
+        jobs.append(((game_dir, mode_name(*combo, family=family), target_rtp * cost), cost))
+
+    results = []
+    # on_mode is called after each table is rewritten, with (index, result).
+    # This loop is minutes of silence otherwise - 193 tables of up to 800k rows
+    # each - so the build monitor uses it for per-mode progress. It stays
+    # optional: nothing here depends on anyone watching.
+    if workers and workers > 1 and len(jobs) > 1:
+        # Every mode reads its own segmented table and writes its own published
+        # one, so there is nothing shared to serialise on. Results come back in
+        # completion order and are sorted afterwards, because the caller's
+        # summary and the on_mode index should not depend on which worker won.
+        costs = {args[1]: cost for args, cost in jobs}
+        with ProcessPoolExecutor(max_workers=workers) as pool:
+            futures = [pool.submit(_reweight_job, args) for args, _cost in jobs]
+            for index, future in enumerate(as_completed(futures), start=1):
+                result = future.result()
+                result["cost"] = costs[result["mode"]]
+                results.append(result)
+                if on_mode is not None:
+                    on_mode(index, result)
+        order = {args[1]: i for i, (args, _cost) in enumerate(jobs)}
+        results.sort(key=lambda r: order[r["mode"]])
+        return results
+
+    for index, (args, cost) in enumerate(jobs, start=1):
+        result = reweight_mode(*args)
         result["cost"] = cost
         results.append(result)
+        if on_mode is not None:
+            on_mode(index, result)
     return results
 
 

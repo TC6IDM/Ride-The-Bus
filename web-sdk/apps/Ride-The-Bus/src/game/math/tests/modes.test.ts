@@ -332,7 +332,7 @@ describe('parseModeName', () => {
   // the volatility bolts, the MODE button, the rules popup and winTiers() - so
   // a High Stakes replay left on Classic's ladder measures the round against
   // Classic's 1354.2x ceiling and announces MAX WIN over a 1400x win that is
-  // nowhere near High Stakes' real 1910.2x max.
+  // nowhere near High Stakes' real 2237.3x max.
   //
   // Grepping the source because the assignment lives in a .svelte effect that
   // `node --test` cannot mount. Crude, but the failure it guards is silent, has

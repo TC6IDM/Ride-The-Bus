@@ -10,32 +10,63 @@ rather than on every turn. Nothing here is reworded.
 
 ## Current state
 
-769/769 tests (none skipped), 0 type errors, 0 CSS warnings, lint clean. **A fourth family shipped in the client and the math on 2026-09-20:
+**2026-09-22: High Stakes retention is 0.15** (ceiling 2237.3×, wincap 2300),
+rebuilt and measured the same day: worst etl40b 0.769 / CVaR 639.0 / std 38.401,
+all inside the 2-star limits with ETL the tight one at 4% of headroom. The
+win-tier bands were re-measured against the new lookup tables and did not move
+(12 / 55 / 145 / 500, now 1 in 68 / 295 / 2,818 / 15,444); `modeCeilings.ts` and
+`REPLAY_EVENTS.md` are the build's own output again. `run.py` now writes
+`library/build_rules.json`, so a client whose `FAMILY_RULES` have moved past the
+build on disk reads it as stale instead of failing parity. 769 pass / 0 fail /
+0 skipped, 0 type errors, 0 CSS warnings, lint clean. **A fourth family shipped in the client and the math on 2026-09-20:
 Three of a Kind** — a 12-card A K Q deck, three cards, no guesses, nothing on a
 miss, cost 250×, one outcome of 4,583.3× the base bet at a recorded 1 in 19. High
 Stakes went from 20% to 16% retention in the same pass (ceiling 1910.2× →
-2169.2×). CLAUDE.md's "The game" section and THE ALL-OR-NOTHING BOUND in
+2169.2×), and to 15% two days later (2237.3×). CLAUDE.md's "The game" section and THE ALL-OR-NOTHING BOUND in
 `game_calculations.py` carry the design; `modes-and-volatility.md` beside this
 file carries the whole analysis, including the build that failed.
 
-**The math build on disk is current (2026-09-20 23:15) and measured as
+**The math build on disk is current (2026-09-22 02:30) and measured as
 predicted.** The build before it, of the first trips design — four cards, cost
 1000×, 25,000× — had failed Stake's verifier on every tail row (P ≥ 5,000×
 0.0384 vs 0.01, P ≥ 10,000× vs 0.005, P ≥ 25,000× vs 0.002, CVaR absolute
 25,000 vs 20,000, ETL above 10,000× 0.96 vs 0.6); the rebuild of the 250× /
 4,583.3× design reads: trips RTP 96.0000%, non-zero hit rate 1 in 19.10, max
 458330 raw, P(≥5,000×) 0, etl40b 0, etl10k 0, cvar 4,583.3 (18.3 per stake);
-High Stakes worst CVaR 624.6 (`hs_red_equal_equal_heart`), std 36.58, max
-216920 raw. Stake's console reports the statistics valid. `modeCeilings.ts` is
+High Stakes at 15% worst CVaR 639.0 (`hs_red_equal_equal_heart`), etl40b 0.769
+(`hs_red_equal_outside_club`), std 38.401, max 223730 raw. Stake's console reports the statistics valid. `modeCeilings.ts` is
 the generator's output again, 193 entries, no placeholder.
 
-**The local verifier's `fails 3-star volatility limits: cvar 4583.3 > 800` is
-a false alarm and stays.** `math-sdk/utils/rgs_verification.py` applies one
-flat 3-star table to every mode and compares the un-normalised CVaR (the SDK's
-`conditional_value_at_risk` never divides by cost) to a limit meant for 1×
-modes. Stake considers both figures — 18.3 normalised against 700, 4,583.3
-un-normalised against 20,000 — and passes both. The warning is recorded here so
-the next reader does not re-tune a mode that is inside every real limit.
+**The local verifier's `fails 3-star volatility limits: cvar 4583.3 > 800` was
+a false alarm, and the verifier was what got fixed.**
+`math-sdk/utils/rgs_verification.py` applied one flat 3-star table to every mode
+and compared the un-normalised CVaR (the SDK's `conditional_value_at_risk` never
+divides by cost) to a limit meant for 1× modes, on a build Stake's own console
+passed. Stake considers both figures — 18.3 normalised against 700, 4,583.3
+un-normalised against 20,000 (50,000 at 3 star) — and passes both;
+`verify_mode_volatility` now takes the mode's cost and does the same, so the
+2026-09-22 build prints no warning and a real violation is no longer buried
+under an expected one. The mode was never the thing to change.
+
+**The build has a live view of itself.** `run.py` runs under
+`games/ride_the_bus/build_monitor.py` (a re-exec, so the simulation workers'
+output is captured too) and serves http://127.0.0.1:8765 while it runs: 193
+mode boxes by family, the four passes, the eight workers, an ETA and the full
+transcript. `RTB_BUILD_MONITOR=0` disables it; `build_monitor.py --demo`
+replays a build in ~45s for working on the page. Its parsers read the vendored
+SDK's prints, so the demo transcript is where a reworded print gets fixed.
+`library/build_timings.json` (last run's stage durations, weights the next
+ETA) and `library/build_progress.jsonl` are both gitignored with the rest of
+`library/`.
+
+**The build writes its books directly off one shared deal (2026-09-22).**
+`direct_books.py` scores every mode through `GameState.score_round` and writes
+its files in one pass; all 193 modes' 1,352 files were byte-compared with the
+16:02 build and are identical. Simulate stage 1,980s -> ~68s; whole build 34.4
+minutes -> about 2 (tail stages measured separately, not yet in one real run -
+record the next build's `build_timings.json` here). Also: configs written in
+parallel after the reweight (fixes `config.json` hashing the previous build's
+tables after a rule change). `games/ride_the_bus/tests/` (13) guards it.
 
 **`run.py` leaves the previous build's files in `publish_files/`.** The
 superseded `books_tr_any_equal_equal_any.jsonl.zst` and its LUT (19:13) were
@@ -65,10 +96,11 @@ ignores the `.eslintrc.cjs` every app in the vendored SDK still ships. The old
 `.eslintrc.cjs` is now dead and only kept so the app still matches its siblings.
 
 The four-guess families clear the **2-star** risk limits, not merely the 3-star
-ones. Last measured (2026-09-20 build, High Stakes at 16%): worst std 36.58
-(limit 0.6–50.0), worst etl40b 0.725 (limit 0.8), worst CVaR 624.6 (limit 700),
-worst non-zero hit rate 1 in 2.11 (limit 1 in 20; an earlier note here said 2.03,
-the figure is stats_summary.json's), P(≥5000×) zero.
+ones. Last measured (2026-09-22 build, High Stakes at 15%): worst std 38.401
+(limit 0.6–50.0), worst etl40b 0.769 (limit 0.8), worst CVaR 639.0 (limit 700),
+worst non-zero hit rate 1 in 2.039 (limit 1 in 20; an earlier note here said
+2.03, the figure is stats_summary.json's), P(≥5000×) zero. All four worst cases
+are High Stakes modes.
 
 ### Seeing the game, rather than reasoning about it
 

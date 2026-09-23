@@ -86,8 +86,8 @@ export default {
 		'Tahmin kombinasyonlarının yalnızca bazıları bir modun en yüksek değerine ulaşır. Dördü seçildiğinde kendi üst sınırı yukarıda gösterilir.',
 	Playing: 'Oynanıyor',
 	'Card 2, 3 or 4': 'Kart 2, 3 veya 4',
-	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
-		'İlk kartı bilememek turu bitirir. Sonraki hatalar yalnızca %16 tutar, bu yüzden her doğru tahmin daha değerlidir.',
+	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
+		'İlk kartı bilememek turu bitirir. Sonraki hatalar yalnızca %15 tutar, bu yüzden her doğru tahmin daha değerlidir.',
 
 	'How to Play': 'Nasıl oynanır',
 	'Guess your way through four cards:': 'Dört kartı sırayla tahmin edin:',

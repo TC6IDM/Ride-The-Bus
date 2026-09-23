@@ -86,8 +86,8 @@ export default {
 		'अनुमानों के केवल कुछ संयोजन ही किसी मोड के अधिकतम तक पहुँचते हैं। आपके चारों चुनने के बाद उनकी अपनी सीमा ऊपर दिखाई जाती है।',
 	Playing: 'खेल रहे हैं',
 	'Card 2, 3 or 4': 'कार्ड 2, 3 या 4',
-	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
-		'पहला कार्ड गलत होने पर राउंड खत्म। बाद की गलतियाँ केवल 16% रखती हैं, इसलिए हर सही अनुमान ज्यादा कीमती है।',
+	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
+		'पहला कार्ड गलत होने पर राउंड खत्म। बाद की गलतियाँ केवल 15% रखती हैं, इसलिए हर सही अनुमान ज्यादा कीमती है।',
 
 	'How to Play': 'कैसे खेलें',
 	'Guess your way through four cards:': 'चार कार्ड का क्रम से अनुमान लगाएं:',

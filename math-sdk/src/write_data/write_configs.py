@@ -5,6 +5,7 @@ import os
 import shutil
 import warnings
 from collections import defaultdict
+from concurrent.futures import ProcessPoolExecutor
 from utils.get_file_hash import get_hash
 from utils.analysis.distribution_functions import (
     make_win_distribution,
@@ -299,8 +300,61 @@ def make_fe_config(gamestate, json_padding=True, assign_properties=True, **kwarg
     fe_json.close()
 
 
-def make_be_config(gamestate):
-    """ "Generate config.json for RGS to retrieve game details and hash-values."""
+def _bookshelf_entry(job: dict) -> dict:
+    """
+    One bet mode's bookShelfConfig entry, exactly as make_be_config built it
+    inline: the table's SHA-256, its standard deviation (from a pass over
+    every row), its length, and the book's and force record's hashes.
+
+    A module-level function so a process pool can run it. It was the whole
+    cost of make_be_config - 31.8s of the 2026-09-22 build, almost all of it
+    make_win_distribution parsing 44M rows in Python - and every mode's files
+    are its own. Same functions, same order within a mode, so the same floats.
+    """
+    lut_table = job["lut_table"]
+    if not (os.path.exists(lut_table)):
+        print(f"File does not exist: {lut_table}, \n Generating lut_0 file.")
+        copy_and_rename_csv(job["base_table"])
+
+    cost = job["cost"]
+    lut_sha_value = get_hash(lut_table)
+    dist = make_win_distribution(lut_table)
+    _, std_val, _, _ = get_distribution_moments(dist, cost)
+    std_val = round(std_val / cost, 2)
+    booklength = get_lookup_length(lut_table)
+
+    _, lut_nme = os.path.split(lut_table)
+    dic = {
+        "name": job["name"],
+        "tables": [{"file": lut_nme, "sha256": lut_sha_value}],
+        "cost": cost,
+        "rtp": job["rtp"],
+        "std": std_val,
+        "bookLength": booklength,
+        "feature": job["feature"],
+        "autoEndRoundDisabled": job["auto_close_disabled"],
+        "buyBonus": job["buybonus"],
+        "maxWin": job["wincap"],
+    }
+    try:
+        data_sha = get_hash(job["books_path"])
+    except FileNotFoundError:
+        data_sha = ""
+        warnings.warn("Compressed books file not found. Hash is empty.")
+    force_sha = get_hash(job["force_path"])
+
+    dic["booksFile"] = {"file": job["books_name"], "sha256": data_sha}
+    dic["forceFile"] = {"file": job["force_name"], "sha256": force_sha}
+    return dic
+
+
+def make_be_config(gamestate, workers: int = 1):
+    """ "Generate config.json for RGS to retrieve game details and hash-values.
+
+    `workers` > 1 builds the per-mode entries across that many processes. They
+    are gathered back in bet-mode order, so config.json is byte-identical to a
+    serial run's.
+    """
     config = gamestate.config
 
     fe_config_sha = get_hash(gamestate.output_files.configs["paths"]["fe_config"])
@@ -328,52 +382,32 @@ def make_be_config(gamestate):
     }
 
     # Betmode specific data
-    be_info["bookShelfConfig"] = []
+    jobs = []
     for bet in available_bm:
-        lut_table = gamestate.output_files.lookups[bet.get_name()]["paths"]["optimized_lookup"]
-        if not (os.path.exists(lut_table)):
-            print(f"File does not exist: {lut_table}, \n Generating lut_0 file.")
-            base_table = gamestate.output_files.lookups[bet.get_name()]["paths"]["base_lookup"]
-            copy_and_rename_csv(base_table)
-
-        lut_sha_value = get_hash(lut_table)
-        dist = make_win_distribution(lut_table)
-        _, std_val, _, _ = get_distribution_moments(dist, bet.get_cost())
-        std_val = round(std_val / bet.get_cost(), 2)
-        booklength = get_lookup_length(lut_table)
-
-        _, lut_nme = os.path.split(lut_table)
-        dic = {
-            "name": bet.get_name(),
-            "tables": [{"file": lut_nme, "sha256": lut_sha_value}],
-            "cost": bet.get_cost(),
-            "rtp": bet.get_rtp(),
-            "std": std_val,
-            "bookLength": booklength,
-            "feature": bet.get_feature(),
-            "autoEndRoundDisabled": bet.get_auto_close_disabled(),
-            "buyBonus": bet.get_buybonus(),
-            "maxWin": bet.get_wincap(),
-        }
-        data_loc = gamestate.output_files.books[bet.get_name()]["paths"]["books_compressed"]
-        try:
-            data_sha = get_hash(data_loc)
-        except FileNotFoundError:
-            data_sha = ""
-            warnings.warn("Compressed books file not found. Hash is empty.")
-
-        force_loc = gamestate.output_files.force[bet.get_name()]["paths"]["force_record"]
-        force_sha = get_hash(force_loc)
-
-        dic["booksFile"] = {
-            "file": gamestate.output_files.books[bet.get_name()]["names"]["books_compressed"],
-            "sha256": data_sha,
-        }
-        dic["forceFile"] = {
-            "file": gamestate.output_files.force[bet.get_name()]["names"]["force_record"],
-            "sha256": force_sha,
-        }
-        be_info["bookShelfConfig"].append(dic)
+        name = bet.get_name()
+        jobs.append(
+            {
+                "name": name,
+                "lut_table": gamestate.output_files.lookups[name]["paths"]["optimized_lookup"],
+                "base_table": gamestate.output_files.lookups[name]["paths"]["base_lookup"],
+                "cost": bet.get_cost(),
+                "rtp": bet.get_rtp(),
+                "feature": bet.get_feature(),
+                "auto_close_disabled": bet.get_auto_close_disabled(),
+                "buybonus": bet.get_buybonus(),
+                "wincap": bet.get_wincap(),
+                "books_path": gamestate.output_files.books[name]["paths"]["books_compressed"],
+                "books_name": gamestate.output_files.books[name]["names"]["books_compressed"],
+                "force_path": gamestate.output_files.force[name]["paths"]["force_record"],
+                "force_name": gamestate.output_files.force[name]["names"]["force_record"],
+            }
+        )
+    if workers and workers > 1 and len(jobs) > 1:
+        # map() returns in job order, which is bet-mode order.
+        with ProcessPoolExecutor(max_workers=workers) as pool:
+            be_info["bookShelfConfig"] = list(pool.map(_bookshelf_entry, jobs))
+    else:
+        be_info["bookShelfConfig"] = [_bookshelf_entry(job) for job in jobs]
 
     file = open(gamestate.output_files.configs["paths"]["be_config"], "w", encoding="UTF-8")
     file.write(json.dumps(be_info, indent=4))

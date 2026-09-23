@@ -86,8 +86,8 @@ export default {
 		'予想の組み合わせのうち、モードの最大配当に届くのは一部だけです。4つを選ぶと、その組み合わせ自体の上限が上に表示されます。',
 	Playing: 'プレイ中',
 	'Card 2, 3 or 4': 'カード2・3・4',
-	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
-		'1枚目を外すとラウンド終了です。以降のミスは16%しか残らないぶん、的中1つ1つの価値が高くなります。',
+	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
+		'1枚目を外すとラウンド終了です。以降のミスは15%しか残らないぶん、的中1つ1つの価値が高くなります。',
 
 	'How to Play': '遊び方',
 	'Guess your way through four cards:': '4枚のカードを順に予想します：',

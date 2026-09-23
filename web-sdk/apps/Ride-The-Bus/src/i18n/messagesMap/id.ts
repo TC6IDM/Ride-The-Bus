@@ -86,8 +86,8 @@ export default {
 		'Hanya sebagian kombinasi tebakan yang mencapai maksimum suatu mode. Setelah keempatnya dipilih, batas atasnya sendiri ditampilkan di atas.',
 	Playing: 'Sedang dimainkan',
 	'Card 2, 3 or 4': 'Kartu 2, 3 atau 4',
-	'A wrong first card ends the round. Later misses keep only 16%, so every correct guess is worth more.':
-		'Kartu pertama yang salah mengakhiri ronde. Kesalahan berikutnya hanya menyimpan 16%, jadi setiap tebakan benar bernilai lebih.',
+	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
+		'Kartu pertama yang salah mengakhiri ronde. Kesalahan berikutnya hanya menyimpan 15%, jadi setiap tebakan benar bernilai lebih.',
 
 	'How to Play': 'Cara bermain',
 	'Guess your way through four cards:': 'Tebak empat kartu secara berurutan:',

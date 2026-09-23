@@ -102,8 +102,8 @@ rather than on every turn. Nothing here is reworded.
     figure in small type is a figure where a rounded one is not.
 - **High-denomination currencies are the stress case, and they are not exotic.**
   The RGS supports units worth a thousandth of a dollar, and an operator sets
-  `maxBet` in those units. High Stakes' 2169.2x cap on a 2,000,000 NGN maximum
-  settles at `NGN 4,338,400,000.00`. The worst three across the supported set are
+  `maxBet` in those units. High Stakes' 2237.3x cap on a 2,000,000 NGN maximum
+  settles at `NGN 4,474,600,000.00`. The worst three across the supported set are
   **TZS, UGX and XOF**, tied at 24 characters - `TZS 2,578,770,000,000.00`, and
   XOF with a five-character `F CFA ` prefix. NGN is fourth; VND and IDR have
   weaker units still but no minor unit, which saves them three characters.
