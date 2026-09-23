@@ -901,13 +901,25 @@
 /* Percentages of the table's box. Chips and the cup are placed by where they
    TOUCH the wood, not by their centre; the deck by its centre.
  *
- * Six props, in four groups, on a diagonal: deck top left, chips top right,
+ * Six props, in four groups: deck and cup down the left rim, chips top right,
  * cup on the right, chips bottom left. Everything sits in pairs or stacks the
  * way things actually end up on a table people are playing at, and the whole
- * middle - cards at roughly x 24-76% / y 25-49%, the win readout, and the guess
- * squares at x 27-75% / y 56-72% - stays empty wood. */
+ * play column stays empty wood - cards at x 24-76% / y 20-44% with their
+ * multiplier chips from y 16%, the win readout at y 48-61%, and the guess
+ * squares at x 26-74% / y 64-84%.
+ *
+ * Those figures are the board AFTER a deal, which is the board a player sees
+ * all session. The props were once placed against the pre-deal board, and the
+ * win readout then arrived with the first card and moved everything: card 1's
+ * multiplier chip landed on the deck and the bottom chips slid under the Color
+ * square. The readout now holds its space from the start (GameBoard.svelte), so
+ * there is one layout, and it is this one. Measured 2026-09-22 by testing every
+ * prop's box against every card, chip, readout and square at the seven sizes. */
 
-.p-deck { left: 30%; top: 15%; } /* top left */
+/* Between the wood's left rim and card 1 - the only part of the table the
+   play column does not reach. It used to sit above card 1, where the card's
+   multiplier chip covered it; this is where Popout S already had it. */
+.p-deck { left: 19%; top: 26%; }
 
 /* Both clusters sit ON AN ARC that follows the rim rather than in rows: each
    contact point is 82% of the way out from the table's centre, stepped round in
@@ -923,15 +935,16 @@
 /* Staggered rather than mirrored: two cups at the same height either side read
    as a symmetrical decoration, two at different heights read as two people. */
 .p-cup-1 { left: 88%; top: 66%; } /* right, low */
-.p-cup-2 { left: 12%; top: 46%; } /* left, high */
+.p-cup-2 { left: 12%; top: 58%; } /* left, higher - under the deck */
 
-/* Bottom left, on the matching arc round the near edge. It stops short of the
-   bottom of the wood: below about 85% the near rim is behind the control bar in
-   a short popout, and a chip half-ghosted through the bar looks like a bug. */
-.p-chip-5 { left: 15.5%; top: 71%; } /* white, four high */
-.p-chip-6 { left: 19.5%; top: 77%; } /* black, three */
-.p-chip-7 { left: 24.5%; top: 81.5%; } /* red, two */
-.p-chip-8 { left: 30.5%; top: 84%; } /* green, one */
+/* Bottom left, on the matching arc round the near edge, and kept left of the
+   Color square (x 26%). It stops short of the bottom of the wood: on a phone
+   held sideways the control bar starts 85.7% of the way down, and a chip
+   half-ghosted through the bar looks like a bug. */
+.p-chip-5 { left: 10.5%; top: 67.5%; } /* white, four high */
+.p-chip-6 { left: 14%; top: 73.5%; } /* black, three */
+.p-chip-7 { left: 18%; top: 78.5%; } /* red, two */
+.p-chip-8 { left: 22.5%; top: 82.7%; } /* green, one */
 
 /* Short landscape popouts (~400x225). The control bar takes over a third of the
    height and the cards start barely a sixth of the way down the wood, so both
@@ -939,7 +952,8 @@
    the cards and the bottom pair ghosts behind the translucent bar.
    Same query as responsive.css uses for this window. */
 @media (orientation: landscape) and (max-height: 320px) {
-  /* The bottom-left cluster, and the left cup - the deck takes that strip. */
+  /* The bottom-left cluster, and the left cup. The deck needs no move: the
+     base placement already puts it beside card 1, where this block used to. */
   .p-chip-5,
   .p-chip-6,
   .p-chip-7,
@@ -947,10 +961,6 @@
   .p-cup-2 {
     display: none;
   }
-
-  /* Out of the top band and into the gap between the wood's left rim and the
-     first card - the only part of the table the play column does not reach. */
-  .p-deck { left: 19%; top: 26%; }
 }
 
 /* Portrait: the wide ellipse is far too short for a tall screen and the cards
@@ -987,23 +997,36 @@
      parked at x 10% or x 90% is squeezed against the cards AND sliced in half
      by the bezel. Both groups move into the top and bottom bands, and the
      landscape pairs stay pairs. */
-  .p-deck { left: 28%; top: 17%; }
+  /* Two bands, because between them the play column is full width: the wood
+     above the cards' multiplier chips, and the wood below the guess squares.
+     The play column is laid out in the SCREEN and the props in the TABLE, so
+     where the bands fall moves with the phone's shape - measured on the
+     post-deal board from 16:9 to 20:9 and on a portrait iPad, the chips start
+     at 21.8-23.1% and the squares end at 81-84%. Everything here keeps above
+     21.3% or below 84.5%, which holds for all of them. */
+  .p-deck { left: 28%; top: 15.8%; }
   /* Further left than in landscape, to leave the top-right arc a clear run. */
-  .p-cup-1 { left: 66%; top: 26%; }
+  .p-cup-1 { left: 66%; top: 20.5%; }
   /* No room beside the deck in the top band, so the left cup goes to the near
-     edge instead - still the left half of the table. */
-  .p-cup-2 { left: 26%; top: 90%; }
+     edge instead - near the middle, where the rim runs lowest. */
+  .p-cup-2 { left: 42%; top: 97%; }
 
   /* The same two arcs, pulled in: on a phone the table is wider than the screen
      and the play column reaches further out, so the far ends of both arcs would
      otherwise sit against the bezel. The bottom one runs right of the cup. */
-  .p-chip-1 { left: 76%; top: 17.5%; }
-  .p-chip-2 { left: 79.5%; top: 20.5%; }
-  .p-chip-3 { left: 83%; top: 24%; }
-  .p-chip-4 { left: 86%; top: 27.5%; }
+  /* Squeezed between the rim and card 4's multiplier chip, so the arc is
+     shallow: the top band narrows fast toward the right, and a steeper arc put
+     the first stacks over the edge of the wood. Three stacks, not four - the
+     single chip had nowhere to go that was neither on the multiplier chip nor
+     off the table. */
+  .p-chip-1 { left: 76%; top: 17.9%; }
+  .p-chip-2 { left: 79.5%; top: 18.7%; }
+  .p-chip-3 { left: 83%; top: 19.2%; }
+  .p-chip-4 { display: none; }
 
-  .p-chip-5 { left: 38%; top: 87%; }
-  .p-chip-6 { left: 43%; top: 89%; }
-  .p-chip-7 { left: 48%; top: 90.5%; }
-  .p-chip-8 { left: 53%; top: 91.5%; }
+  /* The near-edge arc, right of the cup, rising with the rim. */
+  .p-chip-5 { left: 51.5%; top: 88.8%; }
+  .p-chip-6 { left: 56.5%; top: 89.5%; }
+  .p-chip-7 { left: 61.5%; top: 90.3%; }
+  .p-chip-8 { left: 66.5%; top: 90.8%; }
 }

@@ -76,6 +76,8 @@
            cancelling, not confirming, so a typed amount felt unsafe. -->
       <input
         class="bet-entry-input"
+        name="bet-amount"
+        autocomplete="off"
         type="text"
         inputmode="decimal"
         bind:value={bet.input}

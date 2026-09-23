@@ -206,10 +206,10 @@
     if (stateModal.modal?.name === 'error') stateModal.modal = null;
   });
 
-  // Intro / start-screen state. On every page load the loader clears first,
-  // then the start screen appears. In normal play, clicking "Tap to Continue"
-  // dismisses it and the game begins. In replay mode, the same click advances
-  // to the replay-info popup; clicking "Play" starts the reveal.
+  // Intro / start-screen state. On every page load the loader clears first.
+  // In normal play the intro follows, and "Tap to Continue" dismisses it. A
+  // replay skips the intro and opens straight on the replay-info panel, whose
+  // "Play" starts the reveal - see the intro-loaded handoff below.
   let introPhase = $state<'loading' | 'start' | 'replay-info' | 'playing'>('loading');
   let introDismissed = $state(false);
   // Replay data arrives before the intro sequence finishes — park it here.
@@ -443,16 +443,11 @@
   $effect(() => restoreResume());
 
   // --- Intro / start-screen transitions ------------------------------------
-  // Called when the player clicks "Tap to Continue" on the start screen.
-  // In normal play this dismisses the overlay and the game begins. In replay
-  // mode it advances to the replay-info popup instead.
+  // Called when the player clicks "Tap to Continue" on the start screen, which
+  // only normal play shows: a replay never reaches the intro.
   function onStartContinue() {
-    if (stateUrlDerived.replay()) {
-      introPhase = 'replay-info';
-    } else {
-      introPhase = 'playing';
-      introDismissed = true;
-    }
+    introPhase = 'playing';
+    introDismissed = true;
   }
 
   // Called when the player clicks "Play" on the replay-info popup.
@@ -492,10 +487,16 @@
   $effect(() => {
     if (introPhase !== 'loading') return;
     // The replay data might arrive before the loader clears, and the normal
-    // flow needs neither. Only flip to 'start' once the loader is actually
-    // gone — everything else is handled by onStartContinue / onReplayPlay.
+    // flow needs neither. Only move on once the loader is actually gone -
+    // everything after that is handled by onStartContinue / onReplayPlay.
     if (!loaderGone.value) return;
-    introPhase = 'start';
+    // A replay opens on its round details, not the intro. Stake's replay spec
+    // is "auto-load the event data without interaction, then show a Play
+    // button"; the intro put a second tap in front of that Play, and a
+    // reviewer checking a range of event IDs paid it on every one. The data is
+    // already here: Authenticate.svelte mounts this component only after the
+    // replay request has settled, so the panel never shows an empty round.
+    introPhase = stateUrlDerived.replay() ? 'replay-info' : 'start';
   });
 
   // The bar's own behaviour - the spin button, the popup toggles and the bet
@@ -668,9 +669,9 @@
 
 </script>
 
-<!-- Start / intro screen overlay. Shown on every page load after the loader
-     clears. In normal play a single "Tap to Continue" dismisses it. In replay
-     mode the same tap opens a replay-info popup, and tapping "Play" starts the
+<!-- Start / intro screen overlay. Shown after the loader clears. In normal play
+     it is the intro, and a single "Tap to Continue" dismisses it. In replay
+     mode it is the replay-info panel instead, and tapping "Play" starts the
      reveal. The game board builds behind it the whole time. -->
 {#if introPhase === 'start' || introPhase === 'replay-info'}
   <StartScreen

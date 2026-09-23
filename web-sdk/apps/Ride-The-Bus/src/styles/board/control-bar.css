@@ -33,7 +33,12 @@
   gap: calc(var(--ui-bar) * 0.91);
   padding: calc(var(--ui-bar) * 0.64) calc(var(--ui-bar) * 1.09);
   border-radius: calc(var(--ui-bar) * 1.45);
-  backdrop-filter: blur(6px);
+  /* No backdrop-filter. It was blur(6px) - frosted glass, which design.md's
+     genre refuses - and the bar sits over the table's dark apron and the
+     night beyond it, where the blur had nothing to soften: the pill looked the
+     same without it and the phone still re-rendered its backdrop every frame.
+     The 0.82 fill is unchanged, so the composited colour is too. Same for the
+     floating discs below and the RG plate (session-readouts.css). */
   /* The panel material at the bar's height (tokens.css). This was a single
      0 6px 20px blob - the popups had been rebuilt on the table's two-part
      shadow with a lit top edge, and the bar, the surface a player looks at for
@@ -91,8 +96,7 @@
   border-radius: 50%;
   border: 1px solid rgba(var(--ink-rgb), 0.14);
   background: var(--panel-float);
-  backdrop-filter: blur(6px);
-  /* Same material as .cb-panel, for the same reason. */
+  /* Same material as .cb-panel, for the same reason - and, like it, no blur. */
   box-shadow: var(--panel-elevation-low);
   color: var(--ink-body);
   cursor: pointer;

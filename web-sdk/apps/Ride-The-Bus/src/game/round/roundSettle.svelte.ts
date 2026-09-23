@@ -26,7 +26,7 @@ import { pacedRequest } from './rgsPacing';
 import { sound } from '../audio/sound';
 import { computeFinalMultiplier } from '../math/payout';
 import { isCleanSweep } from '../math/modes';
-import { winTierFor } from '../math/winTiers';
+import { isNetWin, winTierFor } from '../math/winTiers';
 
 import { bet, familyRules, roundCost, winTiers } from '../bet/betState.svelte';
 import { showWinCelebration } from '../celebration/celebrationState.svelte';
@@ -121,6 +121,9 @@ export async function settleRound() {
   // Record the settled result for the "Last Win" readout on the control bar.
   round.lastWinAmount = round.wonAmount;
   round.lastWinMultiplier = round.initialBet > 0 ? round.wonAmount / round.initialBet : 0;
+  // Decided here, once, against the round's own family: a view recomputing it
+  // later would price the round at whatever family is selected by then.
+  round.lastWinNet = isNetWin(round.lastWinMultiplier, familyRules().cost);
   // Net position for this session: payout minus the stake actually placed.
   // Against the round's COST, not the bet - a 2x mode takes twice the bet,
   // and a net position that ignored that would read as a steady profit.
@@ -158,8 +161,13 @@ export async function settleRound() {
     // Clean sweep, not "did not bust" - a forgiven Second Chance round got
     // three of four and must not sound like the game's best outcome.
     sound.playFullWin();
-  } else {
+  } else if (round.lastWinNet) {
     sound.playRoundWin();
+  } else {
+    // Paid, but less than it cost - a bust that kept its share. The card that
+    // ended it has already sounded playBust; a win sting on top of that would
+    // dress a net loss as a win, on up to two rounds in three.
+    sound.playRoundLoss();
   }
 
   // Blocks here until dismissed (or auto-skipped). runRound awaits this, and

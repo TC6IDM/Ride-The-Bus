@@ -95,6 +95,13 @@ export const round = $state({
    */
   lastWinAmount: 0,
   lastWinMultiplier: 0,
+  /**
+   * Whether that round paid at least what it cost - isNetWin, decided once at
+   * settle with the round's own family. The running-win bar, the Last Win
+   * readout and the settle cue all read this rather than `amount > 0`, which
+   * dressed every partial return as a win.
+   */
+  lastWinNet: false,
 
   /**
    * Responsible-gambling session tracking, shown only when the jurisdiction

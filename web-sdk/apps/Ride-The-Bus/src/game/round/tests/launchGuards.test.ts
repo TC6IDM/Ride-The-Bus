@@ -6,6 +6,10 @@
  *
  * Found in the pre-submission audit (2026-09-13); neither had a test because
  * neither had ever failed loudly.
+ *
+ * The third block guards how a replay OPENS, for the same reason: an extra
+ * screen in front of Play breaks nothing and fails no check here, it just
+ * stops matching Stake's replay spec (2026-09-22 audit).
  */
 import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
@@ -14,6 +18,7 @@ import { source } from '../../sources.testlib.ts';
 
 const CONTROL_BAR = source('../components/board/ControlBar.svelte');
 const ROUND_PLACE = source('./round/roundPlace.svelte.ts');
+const GAME = source('../components/Game.svelte');
 
 /** The body of one function, from its `function name(` to the next top-level `}`. */
 const body = (text: string, name: string) => {
@@ -52,5 +57,18 @@ describe('replay never becomes a live round', () => {
     const guard = play.indexOf('if (stateUrlDerived.replay()) return false;');
     assert.ok(guard >= 0, 'playRound has no replay guard');
     assert.ok(play.indexOf('if (!betIsValid()') > guard, 'the replay guard must come first');
+  });
+});
+
+describe('a replay opens on its round details, not the intro', () => {
+  // Stake's replay spec: "auto-load the event data without interaction, then
+  // show a Play button". The intro used to sit in front of that Play, so every
+  // replay cost two taps, and a reviewer checking a range of event IDs paid
+  // the extra one on each.
+  test('the loader hands a replay to replay-info and normal play to the intro', () => {
+    const start = GAME.indexOf("if (introPhase !== 'loading') return;");
+    assert.ok(start >= 0, 'no intro-loaded handoff in Game.svelte');
+    const handoff = GAME.slice(start, GAME.indexOf('});', start));
+    assert.match(handoff, /introPhase = stateUrlDerived\.replay\(\) \? 'replay-info' : 'start';/);
   });
 });

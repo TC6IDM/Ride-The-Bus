@@ -27,21 +27,24 @@ const base = config();
 base.plugins = [...(base.plugins ?? []), styleImportHmr];
 
 /**
- * The bundle is ~980 kB raw / ~305 kB gzipped, over Rollup's 500 kB default.
+ * The bundle is ~980 kB raw / ~330 kB gzipped, over Rollup's 500 kB default.
  *
  * Raised rather than split, because the default's advice does not apply here.
- * The weight is Pixi's WebGL renderer, which the first frame needs - splitting
- * it out would trade one request for two before anything can be drawn, on a
- * game that must be playable the moment it loads. There is no route to
- * lazy-load behind and no second page to defer to; this game is one screen.
+ * There is no Pixi in it any more - the board is HTML and CSS. Measured on the
+ * 2026-09-22 build: ~640 kB of JS (~205 kB gzipped), about half of it the 17
+ * locale catalogues, and ~290 kB of CSS (~125 kB gzipped), of which ~130 kB is
+ * the six self-hosted font subsets as base64. bundleStrategy is 'inline', so
+ * every byte is in index.html and a split would buy nothing but a second
+ * request; there is no route to lazy-load behind and no second page to defer
+ * to. This game is one screen.
  *
  * What IS split is the part that should be: the seeded card shuffler
- * (game/roundShuffler.ts), behind an import.meta.env.DEV branch so a
+ * (game/round/roundShuffler.ts), behind an import.meta.env.DEV branch so a
  * real-money build carries no card generator at all.
  *
- * 305 kB gzipped is in normal range for a Pixi title. The limit is raised to
- * 1000 rather than switched off, so the warning still fires if the bundle grows
- * materially - silencing it entirely would give up the signal with the noise.
+ * The limit is raised to 1000 rather than switched off, so the warning still
+ * fires if the bundle grows materially - silencing it entirely would give up
+ * the signal with the noise.
  */
 base.build = { ...(base.build ?? {}), chunkSizeWarningLimit: 1000 };
 

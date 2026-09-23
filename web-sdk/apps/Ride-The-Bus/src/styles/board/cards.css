@@ -101,12 +101,13 @@
   transform: translateY(0);
 }
 
-/* A chip that reads 0.00x is a bust that kept nothing - Three of a Kind's
-   only kind, and a card-1 miss on every family. The dim ink, not the win
-   green: the figure is a loss, and the red cross on the card beside it is
-   already saying so. Colour is the one property, so the scrim and shadow
+/* A bust card's chip that prints less than the round cost: 0.00x on a bust
+   that kept nothing - Three of a Kind's only kind, and a card-1 miss on every
+   family - or the share a later bust banked, 0.70x on a 1x round. The dim ink,
+   not the win green: the figure is a loss, and the red cross on the card beside
+   it is already saying so. Colour is the one property, so the scrim and shadow
    that hold the figure against the felt are untouched. */
-.card-mult.is-zero {
+.card-mult.is-short {
   color: var(--ink-dim);
 }
 
@@ -177,6 +178,10 @@
   gap: calc(var(--ui) * 0.18);
 }
 
+/* Before the first deal there is nothing to show, but the space is kept: the
+   readout used to arrive with the first card and move the whole board. */
+.running-win.is-idle { visibility: hidden; }
+
 .running-win-label {
   font-size: calc(var(--ui) * 1.02); /* 11.2px */
   letter-spacing: var(--track-label);
@@ -208,14 +213,23 @@
 
 .running-win.is-win .running-win-label { color: var(--gold-bright); }
 
+/* Paid, but less than the round cost: a bust that kept its share. That is a
+   net loss, so it takes the loss's ink and its settle below rather than the
+   win's green - 40-64% of all four-guess rounds end this way, and they used
+   to look and sound exactly like a win (see isNetWin). The label keeps its
+   neutral ink and still says Banked, which is true. */
+.running-win.is-partial .running-win-amount { color: var(--ink-spent); }
+
 /* ---- The bust, acknowledged ------------------------------------------------
    Not a celebration and not an apology - one beat so the round has an ending.
 
    Wins had a five-tier full-screen production and a bust had nothing at all,
    which read as unfinished rather than as restraint. The direction is the whole
    message: the win beat scales UP and the figure settles DOWN, so the two are
-   never mistaken for each other even at a glance, and neither needs a word. */
-.running-win.is-loss .running-win-amount {
+   never mistaken for each other even at a glance, and neither needs a word.
+   A partial return settles the same way: it is the same news, smaller. */
+.running-win.is-loss .running-win-amount,
+.running-win.is-partial .running-win-amount {
   animation: rw-settle 520ms var(--ease-out) both;
 }
 
@@ -231,7 +245,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .running-win.is-loss .running-win-amount {
+  .running-win.is-loss .running-win-amount,
+  .running-win.is-partial .running-win-amount {
     animation: none;
   }
 }

@@ -239,6 +239,29 @@ export function winTierFor(
 }
 
 /**
+ * Whether a settled round is a win in the sense a player means it: the payout
+ * covers what the round cost.
+ *
+ * Every guess family keeps a share of the built multiplier on a miss (30% on
+ * Classic, 15% on High Stakes, half on a forgiven Second Chance card), so most
+ * paying rounds pay LESS than they cost - 40-50% of all Classic rounds and up
+ * to 64% on High Stakes, against 3-14% that pay the bet or more
+ * (stats_summary.json, 2026-09-22 build). Those rounds used to get the green
+ * amount and the win sting like any other payout: a loss presented as a win.
+ * This is the line between the two. At or above the cost the round won; below
+ * it the round returned part of the stake, and the board says so without
+ * celebrating.
+ *
+ * Both arguments are multiples of the BET, the convention every payout figure
+ * in the game uses - so Three of a Kind's cost is 250 and its only win 4583.3.
+ * Break-even counts as a win: the player lost nothing.
+ */
+export function isNetWin(multiplier: number, costMultiplier: number): boolean {
+  if (!Number.isFinite(multiplier) || multiplier <= 0) return false;
+  return multiplier >= costMultiplier - EPSILON;
+}
+
+/**
  * How long the amount spends climbing THROUGH one tier's band, in milliseconds.
  *
  * The count-up is segmented, one segment per tier the win passes through - see

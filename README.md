@@ -354,7 +354,8 @@ Two of the named causes of a 1-star rating land directly on this build:
 "over-reliance on generic AI-generated assets - standard fonts, gradients, emoji
 icons and border effects are not sufficient for a quality release", and
 "missing engaging features". The art pass is therefore a gate, not polish. See
-the verbatim criteria in [CLAUDE.md](CLAUDE.md#game-quality-rankings).
+the verbatim criteria in
+[approval-guidelines.md](.claude/skills/stake-approval/references/approval-guidelines.md#game-quality-rankings).
 
 ### Replay event IDs
 
@@ -387,14 +388,15 @@ with fixed naming, and **background + foreground must not exceed 3 MB combined**
 
 | Asset | Requirement | Filename |
 |---|---|---|
-| Background | Environmental background showing the world of the game. High-res PNG or JPG. | `RideTheBus-BG.png` |
+| Background | Environmental background showing the world of the game. High-res PNG or JPG. | `RideTheBus-BG.jpg` |
 | Foreground | A feature character or key item representing the game. High-res PNG, transparent background. | `RideTheBus-FG.png` |
 | Provider logo | The studio logo. High-res PNG, transparent background, legible at small sizes. | `TakeoverCasino-Logo.png` |
 
 Stake's guidance is that low-quality or visually unappealing artwork "often
 results in lower player trust, lower interest and ultimately lower game
 engagement" - the tile is judged, not just accepted. The full requirement is
-reproduced in [CLAUDE.md](CLAUDE.md#game-tile-visual-assets).
+reproduced in
+[approval-guidelines.md](.claude/skills/stake-approval/references/approval-guidelines.md#game-tile-visual-assets).
 
 ## Project structure notes
 

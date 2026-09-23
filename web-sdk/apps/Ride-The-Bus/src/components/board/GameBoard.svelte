@@ -25,6 +25,7 @@
     setSuitChoice,
   } from '../../game/bet/betState.svelte';
   import { FREE_CHOICE, isCleanSweep, stageCount } from '../../game/math/modes';
+  import { isNetWin } from '../../game/math/winTiers';
   import { round } from '../../game/round/roundState.svelte';
   import type { Card } from '../../game/platform/typesBookEvent';
   import { t } from '../../i18n/i18nDerived';
@@ -100,9 +101,9 @@
    * next one is bought. Anything drawn straight off the live state therefore
    * changes in the middle of its own exit animation:
    *
-   *   - a busted 0.00x chip lost `.is-zero` and flicked from the dim ink back
-   *     to win green on its way out, which is a loss recoloured as a win for
-   *     the length of the fade (reported);
+   *   - a busted 0.00x chip lost its dim class (then `.is-zero`, now
+   *     `.is-short`) and flicked back to win green on its way out, which is a
+   *     loss recoloured as a win for the length of the fade (reported);
    *   - a winning chip's figure snapped to 0.00x behind the same fade;
    *   - the card face and the bust cross vanished on the frame the flip
    *     started, so what turned back over was a blank white front.
@@ -142,6 +143,19 @@
     }
     return heldBoard;
   });
+
+  /**
+   * Whether a card's chip prints a LOSS: 0.00x on a bust that kept nothing, or
+   * the share a later bust banked when it is under the round's cost - 0.70x on
+   * a 1x round is 30 cents down, and it used to print in win green. Only the
+   * bust card's chip is a result; the ones before it are the streak climbing
+   * and stay green. Read off `shown`, never live state, for the reason above.
+   */
+  const chipIsShort = (index: number) => {
+    const multiplier = shown.multipliers[index];
+    if (multiplier === 0) return true;
+    return index === shown.busted && multiplier !== null && !isNetWin(multiplier, familyRules().cost);
+  };
 
   /**
    * Every guess press goes through here, because the row is LOCKED by opacity
@@ -189,13 +203,14 @@
            See the note on the latch. -->
       {@const face = shown.cards[index]}
       <div class="card-slot">
-        <!-- is-zero: a bust that kept nothing (Three of a Kind, or any card-1
-             miss) prints 0.00x, and printing it in win-green was the one
-             place the board coloured a loss like a win. -->
+        <!-- is-short: a bust that kept nothing (Three of a Kind, or any card-1
+             miss) prints 0.00x, and a later bust can bank less than the round
+             cost; printing either in win green colours a loss like a win.
+             See chipIsShort. -->
         <div
           class="card-mult"
           class:show={round.stageMultipliers[index] !== null && !isFreeSlot(index)}
-          class:is-zero={shown.multipliers[index] === 0}
+          class:is-short={chipIsShort(index)}
         >
           {(shown.multipliers[index] ?? 0).toFixed(2)}×
         </div>
@@ -240,7 +255,10 @@
 {#snippet runningWinBar()}
   <div
     class="running-win"
-    class:is-win={round.state === 'won' && round.wonAmount > 0}
+    class:is-idle={!round.hasPlayed}
+    aria-hidden={!round.hasPlayed}
+    class:is-win={round.state === 'won' && round.lastWinNet}
+    class:is-partial={round.state === 'won' && !round.lastWinNet}
     class:is-loss={round.state === 'lost'}
   >
     <span class="running-win-label">
@@ -255,7 +273,13 @@
 {/snippet}
 
 {@render cardRow()}
-{#if round.hasPlayed}{@render runningWinBar()}{/if}
+<!-- Always in the layout, and only SHOWN once the player has dealt. It used to
+     mount on the first deal, which pushed the cards up and the guess squares
+     down by its height just as the first card turned - and the table props had
+     been placed against the pre-deal board, so on a phone the deck, a cup and
+     a chip stack then sat on the cards and the squares for the rest of the
+     session. One layout, before and after, is what table.css places against. -->
+{@render runningWinBar()}
 
 {#if fixed}
   <!-- Three of a Kind: no guesses to make. Two Equal squares under the gaps

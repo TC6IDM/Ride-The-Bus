@@ -10,6 +10,50 @@ rather than on every turn. Nothing here is reworded.
 
 ## Current state
 
+**2026-09-22, later: a full pre-submission audit (including a Hallmark pass).**
+Every gate green; the math clears every 2-star limit and so every 3-star one;
+every Stake checklist item was traced to code and the game driven in Chrome.
+What it changed, all client-side, no math:
+
+- **Replay opens on its round details.** The intro used to sit in front of the
+  replay panel, so a replay cost two taps where Stake's spec asks for one
+  ("auto-load ... then show a Play button"). `launchGuards.test.ts` pins it.
+- **A partial return no longer looks or sounds like a win.** `isNetWin`
+  (`winTiers.ts`), decided once at settle into `round.lastWinNet`. Measured on
+  this build: P(0 < payout < bet) is 40-50% of all Classic rounds, 46-64% on
+  High Stakes, 31-44% on Second Chance, against P(payout >= bet) of 3-14% /
+  3-7% / 9-22%. Every one of those partial returns got the green amount, the
+  green Last Win and `playRoundWin`. Now: neutral ink, the loss settle, and
+  `playRoundLoss` after the bust cue it follows.
+- **The board no longer jumps on the first deal, and the props were re-placed
+  against the board a player actually sees.** The win readout mounted with the
+  first card and moved the cards up / the squares down by its height; the props
+  had been placed against the pre-deal board, so after one round card 1's
+  multiplier chip sat on the deck (all 16:9 sizes), the bottom-left chips slid
+  under the Color square, and on phones a cup sat on card 3, the chip arc on
+  card 4 and the left cup under the Color square. The readout now holds its
+  space from the start (`.running-win.is-idle`), and every prop was re-placed
+  by testing its box against every card, multiplier chip, readout and square at
+  the seven sizes plus 19.5:9 / 20:9 phones, iPads, 16:10, 4:3, ultrawide and
+  sideways phones: all clear. Portrait drops the single top-right chip - there
+  was no spot neither on the multiplier chip nor off the wood.
+- The bar's frosted glass (`backdrop-filter: blur(6px)`) is gone; names on the
+  two text inputs; the 53 third-party asset URLs in `state-shared`'s default
+  meta blanked (`sdkDefaults.test.ts`); docs drift fixed.
+
+**Found and NOT changed - owner's calls, all recorded in the audit plan:** the
+guess squares' fills are the stock Flat UI / Material palette (`#2ecc71`,
+`#c0392b`, `#f1c40f`, `#00bcd4`, a neon magenta) - the one surface that is not
+the sampled warm system, and design.md exempts it as "data"; the Popout S bar
+text renders at 3.35px captions / 5.9px figures (`--ui-bar` floors at 3px); the
+tile FG carries cut-out debris (a cleaned copy was produced, the original was
+not replaced) and both tile images read as AI-generated; "Ride the Bus" is
+also the casino mini-game in *Schedule I*, same four stages; the red Solo cups
+and backyard-party tile read as a college drinking game; the GitHub repo is
+public and indexed. The honest rating read was ~1.5-2 stars as built -
+gameplay is the weak dimension (no decisions after the deal, ~2.5s uniform
+reveal, no feature) - with the ranked levers written up in the plan.
+
 **2026-09-22: High Stakes retention is 0.15** (ceiling 2237.3×, wincap 2300),
 rebuilt and measured the same day: worst etl40b 0.769 / CVaR 639.0 / std 38.401,
 all inside the 2-star limits with ETL the tight one at 4% of headroom. The

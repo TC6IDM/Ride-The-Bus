@@ -88,7 +88,7 @@
           {#if auto.infinite}
             <span class="rounds-infinite">{@render iconInfinity()}</span>
           {:else}
-            <input class="rounds-input" type="text" inputmode="numeric" bind:value={auto.roundsInput} onblur={formatAutoRounds} aria-label={t('Number of plays')} />
+            <input class="rounds-input" name="autoplay-rounds" autocomplete="off" type="text" inputmode="numeric" bind:value={auto.roundsInput} onblur={formatAutoRounds} aria-label={t('Number of plays')} />
           {/if}
         </div>
         <!-- Plus and minus, matching the bet steppers on the control bar. The

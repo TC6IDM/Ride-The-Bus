@@ -18,6 +18,7 @@ import {
   CEILING_PAUSE_MS,
   autoHoldMs,
   countUpSegments,
+  isNetWin,
   segmentDurationMs,
   winTierFor,
   type WinTierId,
@@ -608,5 +609,46 @@ describe('every band is per family, not just the top one', () => {
         );
       }
     }
+  });
+});
+
+/**
+ * The line between a win and a partial return. Below the round's cost the
+ * board and the settle cue must not celebrate: on the guess families that is
+ * 31-64% of all rounds, which used to get the green amount and the win sting.
+ */
+describe('isNetWin', () => {
+  test('a payout that covers the cost is a win; one below it is not', () => {
+    assert.equal(isNetWin(1, 1), true, 'break-even lost nothing');
+    assert.equal(isNetWin(1.9, 1), true);
+    assert.equal(isNetWin(0.7, 1), false, "a card-3 bust keeping 30% of 2.5x");
+    assert.equal(isNetWin(0.1, 1), false, 'the smallest return the floor allows');
+  });
+
+  test('a multiplier a display rounding left a hair under the cost still counts', () => {
+    // wonAmount / initialBet divides two already-rounded figures - the same
+    // slack winTierFor allows on the Max band.
+    assert.equal(isNetWin(0.9999999999999998, 1), true);
+  });
+
+  test('nothing paid, or nothing readable, is never a win', () => {
+    for (const bad of [0, -1, Number.NaN, Number.POSITIVE_INFINITY]) {
+      assert.equal(isNetWin(bad, 1), false, `${bad}`);
+    }
+    assert.equal(isNetWin(0, 0), false, 'a zero payout is not a win even at zero cost');
+  });
+
+  test("each family's ceiling is a win against that family's own cost", () => {
+    for (const family of MODE_FAMILIES) {
+      const { maxWin, cost } = FAMILY_RULES[family];
+      assert.equal(isNetWin(maxWin, cost), true, `${family}: ${maxWin}x against ${cost}x`);
+    }
+  });
+
+  test('the cost is the one that decides, not the bet', () => {
+    // Three of a Kind is 250x the bet: 100x the BET is still a loss there.
+    // No such payout exists in its books; this pins what the cost argument
+    // means rather than a round that can happen.
+    assert.equal(isNetWin(100, FAMILY_RULES.tr.cost), false);
   });
 });

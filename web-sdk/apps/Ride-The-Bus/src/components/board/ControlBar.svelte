@@ -534,7 +534,7 @@ $effect(() => {
       {/if}
       <!-- Always rendered (even before the first spin) so it can't pop into
            existence mid-session and shove the rest of the bar sideways. -->
-      <div class="cb-lastwin" class:won={round.lastWinAmount > 0}>
+      <div class="cb-lastwin" class:won={round.lastWinNet}>
         <span class="cb-cap">{t('Last Win')}</span>
         <!-- The multiplier chip is INSIDE the fitted box on purpose: the two
              shrink together, so the pair either both fit or both scale, and

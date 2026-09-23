@@ -70,11 +70,13 @@ If the client's arithmetic drifts from the Python, the game shows a player one
 number while the RGS credits another. That is the worst bug this project can
 have, and `payout.test.ts` guards it by replaying every published book.
 
-Everything below is on **`main`** as of the `ui-art-pass` merge — the three
-bet families, the 192-mode math build and the UI pass all landed together.
-Note that local `main` tracks `origin/monorepo-restructure`, not `origin/main`,
-so a bare `git push` from it goes somewhere unexpected; push `main:main`
-explicitly or re-point the upstream.
+**`main` is behind.** It stops at the `ui-art-pass` merge; everything since -
+Three of a Kind, High Stakes at 15%, the direct book writer, the readability
+passes and the 2026-09-22 audit fixes - is on `refactor/readability-passes`,
+23+ commits ahead, until that branch is merged. Merge it before building
+anything for submission. Note that local `main` tracks
+`origin/monorepo-restructure`, not `origin/main`, so a bare `git push` from it
+goes somewhere unexpected; push `main:main` explicitly or re-point the upstream.
 
 ---
 
@@ -782,7 +784,7 @@ between a one-row bar and a two-row one.
 
 ## Current state and outstanding work
 
-769/769 tests (none skipped), 0 type errors, 0 CSS warnings, lint clean, and
+777/777 tests (none skipped), 0 type errors, 0 CSS warnings, lint clean, and
 the client reproduces the published books of all **193** modes exactly — the
 parity test replays a 400-book slice of every mode off `index.json`, three-card
 trips books included. The build on disk is the **2026-09-22 02:30** one: High

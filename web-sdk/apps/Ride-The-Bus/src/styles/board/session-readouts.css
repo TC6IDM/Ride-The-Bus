@@ -40,7 +40,7 @@
      elevation as the bar it echoes (tokens.css). */
   background: var(--panel-light);
   border: 1px solid rgba(var(--ink-rgb), 0.1);
-  backdrop-filter: blur(6px);
+  /* No blur, like the bar it echoes - see .cb-panel in control-bar.css. */
   box-shadow: var(--panel-elevation-low);
   pointer-events: none;
 }
