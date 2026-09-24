@@ -364,6 +364,38 @@
   --ctl-sound: rgb(var(--ctl-sound-rgb));
   --ctl-sound-ink: var(--ink);
 
+  /* The deal button's own palette: resting blue, the stop red while autoplay
+     ends, the slam amber mid-reveal, and the well its ring sits in. Lived on
+     .cb-spin as a closed set for one control until How to Play's controls
+     guide drew the same button (ControlGlyph.svelte) - two readers make it a
+     token. Values unchanged. */
+  --spin-lit: #2a4d74;
+  --spin-deep: #12233a;
+  --spin-stop-lit: #5a1f27;
+  --spin-stop-deep: #2a0d11;
+  --spin-slam-lit: #4a3a12;
+  --spin-slam-deep: #221a06;
+  --spin-well: #0d0d10;
+
+  /* ==== Stacking ===========================================================
+     The page's layers, bottom to top, named so a new overlay is placed by
+     what it is rather than by reaching for a bigger number. Every value is the
+     literal it replaced, so nothing restacks. Stacking INSIDE a component - the
+     fan's cards, a square's badge, the table's rim - stays local and numeric:
+     those never meet anything across a component boundary. */
+  --z-title: 5; /* the wordmark over the table */
+  --z-rg-panel: 6; /* the responsible-gaming plate, just above the title */
+  --z-popup-backdrop: 40;
+  --z-popup: 50;
+  --z-bar-caption: 55; /* "Play Again" under the deal button */
+  --z-bar-tip: 60; /* the bar's tooltips, over an open panel's edge */
+  --z-error-backdrop: 90;
+  --z-error: 91;
+  --z-loader: 998; /* under Stake's own loader (999), over the game */
+  --z-intro: 1000; /* the intro, and the replay's round details */
+  --z-intro-popup: 1001; /* the round-details dimmer over the intro's table */
+  --z-takeover: 1200; /* the win takeover, over everything */
+
   /* ==== Translucency =====================================================
      Three colours the app paints at many different alphas: white hairlines and
      washes, black shadows and scrims, and the accent glow. They are triplets

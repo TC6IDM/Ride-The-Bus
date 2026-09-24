@@ -63,7 +63,6 @@ export default {
 	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
 		'Каждая комбинация выборов в режиме угадывания — отдельная ставка, оценённая по своим собственным шансам.',
 	'Game modes': 'Режимы игры',
-	'Max win': 'Макс. выигрыш',
 	// Confirmation before a bet mode is activated - required by the approval
 	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
@@ -277,4 +276,16 @@ export default {
 		'Карта 2 должна совпасть с картой 1',
 	'Card 3 must match card 1':
 		'Карта 3 должна совпасть с картой 1',
+	'Needs %s':
+		'Нужно: %s',
+	'%n of %t':
+		'%n из %t',
+	'Last card':
+		'Последняя карта',
+	'Example round':
+		'Пример раунда',
+	'Tap the amount for the quick-bet menu.':
+		'Нажмите на сумму, чтобы открыть меню быстрых ставок.',
+	'Max win %s your bet':
+		'Макс. выигрыш %s от вашей ставки',
 };

@@ -139,14 +139,15 @@ rather than on every turn. Nothing here is reworded.
     Chance, the same 1-in-70 event that takes the screen over in Classic, which
     paid in silence below 11×. Classic and High Stakes have no forgiveness, so
     `forgivenIndex` is structurally always null there and they are untouched.
-  - **FOUR decisions ask it, not one, and three of them were missed for a
+  - **FIVE decisions ask it, not one, and three of them were missed for a
     while.** "A full game win" is one rule, and `Game.svelte` puts the question
-    in four places: the takeover floor above, the **autoplay "Stop on full game
-    win"** condition, the **`playFullWin()` sting**, and the **running-win bar's
-    own "Full Game Win!" label**. (Since the 2026-09 split those four live in
-    three files — `GameBoard.svelte`, `roundSettle.svelte.ts` and
-    `autoplayLoop.svelte.ts` — which is why the grep reads the manifest in
-    `game/sources.testlib.ts` rather than a path.) Only the first was converted when
+    in five places: the takeover floor above, the **autoplay "Stop on full game
+    win"** condition, the **`playFullWin()` sting**, the **running-win bar's
+    own "Full Game Win!" label**, and (added 2026-09-23) the **last-card hold's
+    floor** in `roundReveal.svelte.ts`. (Since the 2026-09 split those five live
+    in four files — `GameBoard.svelte`, `roundSettle.svelte.ts`,
+    `autoplayLoop.svelte.ts` and `roundReveal.svelte.ts` — which is why the grep
+    reads the manifest in `game/sources.testlib.ts` rather than a path.) Only the first was converted when
     `isCleanSweep` was introduced; the other three kept spelling it
     `bustedIndex === null` by hand. So a Second Chance round that spent its
     forgiveness — three of four guesses right — ended an autoplay run set to

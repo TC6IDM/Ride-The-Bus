@@ -63,7 +63,6 @@ export default {
 	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
 		'Mỗi tổ hợp lựa chọn trong chế độ đoán là một cược riêng, được định giá theo tỷ lệ cược của riêng nó.',
 	'Game modes': 'Chế độ chơi',
-	'Max win': 'Thắng tối đa',
 	// Confirmation before a bet mode is activated - required by the approval
 	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
@@ -280,4 +279,16 @@ export default {
 		'Lá 2 phải trùng với lá 1',
 	'Card 3 must match card 1':
 		'Lá 3 phải trùng với lá 1',
+	'Needs %s':
+		'Cần %s',
+	'%n of %t':
+		'%n trên %t',
+	'Last card':
+		'Lá cuối',
+	'Example round':
+		'Ví dụ một ván',
+	'Tap the amount for the quick-bet menu.':
+		'Chạm vào số tiền để mở menu cược nhanh.',
+	'Max win %s your bet':
+		'Thắng tối đa %s tiền cược',
 };

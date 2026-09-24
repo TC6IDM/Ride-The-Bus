@@ -63,7 +63,6 @@ export default {
 	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
 		'猜测模式中的每一种选择组合都是一注独立的投注，按其自身赔率定价。',
 	'Game modes': '游戏模式',
-	'Max win': '最高赔付',
 	// Confirmation before a bet mode is activated - required by the approval
 	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
@@ -271,4 +270,16 @@ export default {
 		'第2张牌须与第1张牌相同',
 	'Card 3 must match card 1':
 		'第3张牌须与第1张牌相同',
+	'Needs %s':
+		'需要 %s',
+	'%n of %t':
+		'%t张中%n张',
+	'Last card':
+		'最后一张',
+	'Example round':
+		'示例回合',
+	'Tap the amount for the quick-bet menu.':
+		'点击金额可打开快速投注菜单。',
+	'Max win %s your bet':
+		'最高赔付 投注额的 %s',
 };

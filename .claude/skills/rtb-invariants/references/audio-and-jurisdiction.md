@@ -105,14 +105,18 @@ rewritten as the audio changed.
     carries only its own cross-fade. Collapsed into one param, a scene change
     landing mid-seam cancels the fade holding two passes in balance and the seam
     jumps.
-  - **THE SCENE LADDER IS A DIP, NOT A CLIMB.** Five scenes — `loading`, `lobby`,
-    `idle`, `round`, `celebration` — and one file, so the only thing a scene can
-    change is level. The bed is loudest at `idle`, the one moment it has the room
-    to itself; it ducks for `round`, which is the busiest the cue book ever gets
-    (four flips, three stage wins, the bust); and it ducks hardest and fastest for
-    `celebration`, because the bed and the fanfares share one limiter and a bed
-    mixed to sit on top of a win would duck the WIN. `music.test.ts` pins the
-    ranking, not the values.
+  - **THE SCENE LADDER IS A DIP, NOT A CLIMB.** Six scenes — `loading`, `lobby`,
+    `idle`, `round`, `hold`, `celebration` — and one file, so the only thing a
+    scene can change is level. The bed is loudest at `idle`, the one moment it
+    has the room to itself; it ducks for `round`, which is the busiest the cue
+    book ever gets (four flips, three stage wins, the bust); further for `hold`
+    (added 2026-09-23), while a last card held for its stake has the cue book's
+    riser climbing under the wait - the room falling away is the suspense, and a
+    pitched sweep over a tune in another key would clash - kept until the round
+    settles so a held win drops straight on into the takeover; and it ducks
+    hardest and fastest for `celebration`, because the bed and the fanfares
+    share one limiter and a bed mixed to sit on top of a win would duck the WIN.
+    `music.test.ts` pins the ranking, not the values.
     - **The fade time belongs to the DESTINATION**, which makes ducks asymmetric
       without a second table: down fast into `celebration`'s 0.35 s, back up slow
       over `idle`'s 1.5 s.

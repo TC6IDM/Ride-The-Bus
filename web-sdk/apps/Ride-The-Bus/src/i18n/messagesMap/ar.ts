@@ -64,7 +64,6 @@ export default {
 	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
 		'كل مجموعة اختيارات في وضع التخمين هي رهان مستقل بذاته، يُسعَّر وفق احتمالاته الخاصة.',
 	'Game modes': 'أوضاع اللعبة',
-	'Max win': 'أقصى ربح',
 	// Confirmation before a bet mode is activated - required by the approval
 	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
@@ -279,4 +278,16 @@ export default {
 		'يجب أن تطابق الورقة 2 الورقة 1',
 	'Card 3 must match card 1':
 		'يجب أن تطابق الورقة 3 الورقة 1',
+	'Needs %s':
+		'المطلوب: %s',
+	'%n of %t':
+		'%n من %t',
+	'Last card':
+		'البطاقة الأخيرة',
+	'Example round':
+		'مثال على جولة',
+	'Tap the amount for the quick-bet menu.':
+		'اضغط على المبلغ لفتح قائمة الرهانات السريعة.',
+	'Max win %s your bet':
+		'أقصى ربح %s من رهانك',
 };

@@ -589,6 +589,10 @@
     if (introPhase === 'loading') return 'loading';
     if (introPhase !== 'playing') return 'lobby';
     if (celebration.active) return 'celebration';
+    // A held last card keeps the bed down from the hold until the round
+    // settles - lastCardHeld is set with the hold and cleared only by the
+    // next deal - so a win drops straight on into 'celebration'.
+    if (roundInProgress() && round.lastCardHeld) return 'hold';
     if (roundInProgress()) return 'round';
     return 'idle';
   };

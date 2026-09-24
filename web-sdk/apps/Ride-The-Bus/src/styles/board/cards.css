@@ -205,6 +205,49 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* What the next card needs, in the same third line during a reveal
+   ("Needs 8–K · 24 of 51"). Same element, same size, so the board does not
+   move when it swaps; only the voice changes - body ink, the token picked out
+   in the figure's gold, the count a step dimmer. The count is the one the
+   stage is priced on (stageOdds.ts), so this line is the paytable, live. */
+.running-win-mult.is-need {
+  /* Plain inline text on its baseline, spaced by the non-breaking spaces the
+     markup writes into it (GameBoard.svelte: needParts). It was a flex row
+     spaced by `gap`, which left the words with no spaces of their own. */
+  color: var(--ink-body);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.rw-need-token {
+  color: var(--gold-bright);
+  font-weight: 800;
+}
+
+/* SuitIcon draws itself display:block, which inside a line of text is a line
+   break either side of the suit. Inline here, and dropped a little below the
+   baseline so the pip centres on the capitals beside it instead of standing
+   on the line like one. */
+.rw-need-token :global(.suit-icon) {
+  display: inline-block;
+  vertical-align: -0.1em;
+}
+
+/* A rank run reads as CARDS, not as a count: "Needs 2" beside "3 of 51" was
+   one number too many. A thin chip edge, the rank strip's own device in the
+   rules (.rank-chip), says these are ranks. Left inline, so the edge is drawn
+   round the glyphs without adding to the line's height - the board must not
+   move when this line swaps in. */
+.rw-need-token.is-ranks {
+  padding: 0 0.32em;
+  border: 1px solid rgba(var(--gold-rgb), 0.55);
+  border-radius: 0.28em;
+}
+
+.rw-need-odds {
+  color: var(--ink-dim);
+}
+
 /* Was a fourth pale red of its own. --loss-soft is the same colour doing the
    same job, the way the golds and the dims were collapsed. */
 .running-win.is-loss .running-win-label { color: var(--loss-soft); }
@@ -271,6 +314,127 @@
 
 .card-inner.flipped {
   transform: rotateY(180deg);
+}
+
+/* ---- The last card, held ------------------------------------------------
+   When a lot rides on the last card it waits before it turns (lastCardHoldMs
+   in winTiers.ts), and it rises off the table while it does: ONE straight-line
+   slide up from where it lies, for exactly as long as its hum climbs
+   (--hold-climb, set from holdClimbMs), then it sits at the top with the hum,
+   and when it turns it SLAMS back down. Its shadow lengthens with it - the
+   table's two-part shadow, stretched - and snaps back on the landing. Lit, not
+   haloed: no coloured bloom (design.md).
+
+   It used to jump up in a quarter of a second and then bob, and turn slowly
+   at the end. By ear and by eye that read as two moves and a let-down; the
+   owner asked for the card to slide up from its spot with the sound, sit at
+   the top, and slam. */
+
+/* The slam: the transition a held card takes when it lets go - fast, and
+   accelerating into the table rather than easing onto it. Nothing else moves
+   the block by transition (the bust's knock is an animation). */
+.card-slot .card-block {
+  transition: transform 130ms cubic-bezier(0.55, 0, 1, 0.45);
+}
+
+.card-slot.is-held .card-block {
+  transform: translateY(calc(var(--ui) * -1.5)) rotate(-1deg);
+  transition: transform var(--hold-climb, 1s) linear;
+}
+
+.card-slot.is-held .card-back {
+  box-shadow:
+    inset 0 0 0 calc(var(--ui) * 0.32) var(--brand-paper),
+    inset 0 0 0 calc(var(--ui) * 0.45) var(--brand-chrome),
+    inset 0 calc(var(--ui) * 0.1) calc(var(--ui) * 0.3) rgba(var(--ink-rgb), 0.16),
+    0 calc(var(--ui) * 0.35) calc(var(--ui) * 0.6) rgba(var(--shadow-rgb), 0.34),
+    0 calc(var(--ui) * 1.3) calc(var(--ui) * 2) rgba(var(--shadow-rgb), 0.5);
+  transition:
+    box-shadow var(--hold-climb, 1s) linear,
+    opacity 320ms var(--ease-out),
+    filter 320ms var(--ease-out);
+}
+
+/* ---- Tunnel vision --------------------------------------------------------
+   While the last card is held, everything else goes dark and closes in on it:
+   one radial vignette centred on the card (--tv-x / --tv-y, measured as the
+   hold begins), shrinking from wide open to tight over exactly the climb and
+   darkening as it comes, holding at the top, then opening outward and away on
+   the strike. The card itself is lifted OVER it (.is-lit), so the dark falls on
+   the table, the other cards and the readout, never on the card.
+
+   The close is a transform, not a changing gradient: the vignette is drawn
+   once at its tightest and scaled down onto the card, which the compositor
+   does without repainting a full-screen gradient every frame. It is shadow,
+   not a coloured bloom - "lit, not haloed" (design.md).
+
+   Stacking is local to the board, as design.md allows inside one component:
+   above the Equal badges (2), under the held card. The play area is its own
+   stacking context below the control bar, so the bar - the balance, and the
+   skip a player may reach for mid-hold - stays lit. */
+.card-slot.is-lit {
+  position: relative;
+  z-index: 4;
+}
+
+.tunnel {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse calc(var(--card-w) * 2.3) calc(var(--card-h) * 1.6) at var(--tv-x, 50%) var(--tv-y, 40%),
+    rgba(var(--shadow-rgb), 0) 34%,
+    rgba(var(--shadow-rgb), 0.72) 100%
+  );
+  transform-origin: var(--tv-x, 50%) var(--tv-y, 40%);
+  opacity: 0;
+  transform: scale(2.4);
+  /* The strike: open outward and gone, fast. */
+  transition:
+    opacity 170ms var(--ease-out),
+    transform 170ms var(--ease-out);
+}
+
+.tunnel.is-closing {
+  opacity: 1;
+  transform: scale(1);
+  /* The close: the dark arrives over the first part of the climb and the
+     tunnel narrows over all of it, in a straight line like the rise. */
+  transition:
+    opacity calc(var(--hold-climb, 1s) * 0.4) linear,
+    transform var(--hold-climb, 1s) linear;
+}
+
+/* ---- The bust, unmistakable ---------------------------------------------
+   Three things say the round ended here. The cards it never reached step back
+   - a row of bright backs after a bust read as a round still to play. The card
+   that ended it knocks once as its cross lands, after the turn, so the impact
+   lands on the face. And the guess that failed takes a ring (choices-board.css).
+   The dimming is on the back face, not the slot: a filter on an ancestor of the
+   preserve-3d flip would flatten it. */
+.card-back {
+  transition: opacity 320ms var(--ease-out), filter 320ms var(--ease-out);
+}
+
+.card-slot.is-dead .card-back {
+  opacity: 0.5;
+  filter: saturate(0.3) brightness(0.72);
+  /* After the bust card has turned, not during - see the ring's note in
+     choices-board.css. Entering rule only, so the backs relight at once. */
+  transition-delay: calc(var(--flip-dur, 0.5s) * 0.9);
+}
+
+.card-slot.is-bust .card-block {
+  animation: bust-knock 360ms var(--ease-out) calc(var(--flip-dur, 0.5s) * 0.9) both;
+}
+
+@keyframes bust-knock {
+  0%,
+  100% { transform: translateX(0) rotate(0deg); }
+  18% { transform: translateX(calc(var(--ui) * -0.6)) rotate(-1.6deg); }
+  42% { transform: translateX(calc(var(--ui) * 0.5)) rotate(1.1deg); }
+  68% { transform: translateX(calc(var(--ui) * -0.25)) rotate(-0.4deg); }
 }
 
 /* Both faces occupy the frame back-to-back; only the forward-facing one shows
@@ -447,6 +611,13 @@
   --mark-shadow: drop-shadow(0 0 calc(var(--ui) * 0.9) rgba(var(--shadow-rgb), 0.85));
   color: var(--loss);
   background: rgba(var(--shadow-rgb), 0.35);
+  /* Lands near the end of the turn rather than riding round with it. */
+  animation: bust-mark 240ms var(--ease-out) calc(var(--flip-dur, 0.5s) * 0.8) both;
+}
+
+@keyframes bust-mark {
+  from { opacity: 0; transform: scale(1.45); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 /* A miss a Second Chance round forgave.
@@ -485,6 +656,27 @@
 
   .card-mult {
     transition: none;
+    transform: none;
+  }
+
+  /* The hold still holds and the bust still dims - those are information.
+     The rise, the slam, the knock and the pop are motion, and go. */
+  .card-slot .card-block,
+  .card-slot.is-held .card-block,
+  .card-slot.is-bust .card-block {
+    transition: none;
+    animation: none;
+    transform: none;
+  }
+
+  .bust-x {
+    animation: none;
+  }
+
+  /* The tunnel still darkens - the focus is the information - but it does
+     not close in: no scale, only the fade. */
+  .tunnel,
+  .tunnel.is-closing {
     transform: none;
   }
 }

@@ -345,7 +345,7 @@
   bottom: calc(100% + var(--ui-bar) * 1.2);
   left: 50%;
   transform: translateX(-50%) translateY(calc(var(--ui-bar) * 0.36));
-  z-index: 60;
+  z-index: var(--z-bar-tip);
   padding: calc(var(--ui-bar) * 0.6) calc(var(--ui-bar) * 1);
   border-radius: calc(var(--ui-bar) * 0.64);
   border: 1px solid rgba(var(--ink-rgb), 0.14);
@@ -402,7 +402,7 @@
   bottom: calc(100% + var(--ui-bar) * 0.8);
   left: 50%;
   transform: translateX(-50%) translateY(calc(var(--ui-bar) * 0.36));
-  z-index: 60;
+  z-index: var(--z-bar-tip);
   padding: calc(var(--ui-bar) * 0.6) calc(var(--ui-bar) * 1);
   border-radius: calc(var(--ui-bar) * 0.64);
   border: 1px solid rgba(var(--ink-rgb), 0.14);
@@ -474,7 +474,7 @@
   top: calc(100% + var(--ui-bar) * 0.3);
   left: 50%;
   transform: translateX(-50%);
-  z-index: 55;
+  z-index: var(--z-bar-caption);
   color: var(--gold-bright);
   font-size: calc(var(--ui-bar) * 0.95);
   font-weight: 800;
@@ -530,18 +530,12 @@
  * THE SPIN BUTTON'S OWN PALETTE. Four radial gradients and three glows were raw
  * hex on the one control the whole game exists to press - including a fourth
  * blue with no relation to --accent, and a third red matching neither --loss nor
- * the #ff5d5d on the line beside it. A closed set for one control, so it is
- * declared here rather than in tokens.css, which is the shape that file asks
- * for. The three pairs keep their shipped values; only the red border and the
- * amber border now name the tokens they were already equal to. */
+ * the #ff5d5d on the line beside it. The seven --spin-* colours are tokens now
+ * (tokens.css): they were declared here as a closed set for one control until
+ * How to Play's controls guide drew the same button. The three pairs keep their
+ * shipped values; the red border and the amber border name the tokens they were
+ * already equal to. */
 .cb-spin {
-  --spin-lit: #2a4d74;
-  --spin-deep: #12233a;
-  --spin-stop-lit: #5a1f27;
-  --spin-stop-deep: #2a0d11;
-  --spin-slam-lit: #4a3a12;
-  --spin-slam-deep: #221a06;
-  --spin-well: #0d0d10;
   width: calc(var(--ui-bar) * 5.82) /* 64px */;
   height: calc(var(--ui-bar) * 5.82);
   flex: 0 0 auto;
@@ -1080,7 +1074,7 @@
   bottom: calc(100% + var(--ui-bar) * 0.8);
   left: 50%;
   transform: translateX(-50%) translateY(calc(var(--ui-bar) * 0.36));
-  z-index: 60;
+  z-index: var(--z-bar-tip);
   padding: calc(var(--ui-bar) * 0.6) calc(var(--ui-bar) * 1);
   border-radius: calc(var(--ui-bar) * 0.64);
   border: 1px solid rgba(var(--ink-rgb), 0.14);

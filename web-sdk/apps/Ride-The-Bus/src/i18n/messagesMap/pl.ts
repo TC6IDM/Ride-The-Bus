@@ -63,7 +63,6 @@ export default {
 	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
 		'Każda kombinacja wyborów w trybie zgadywania to osobny zakład, wyceniony według własnych szans.',
 	'Game modes': 'Tryby gry',
-	'Max win': 'Maks. wygrana',
 	// Confirmation before a bet mode is activated - required by the approval
 	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
@@ -278,4 +277,16 @@ export default {
 		'Karta 2 musi odpowiadać karcie 1',
 	'Card 3 must match card 1':
 		'Karta 3 musi odpowiadać karcie 1',
+	'Needs %s':
+		'Potrzeba: %s',
+	'%n of %t':
+		'%n z %t',
+	'Last card':
+		'Ostatnia karta',
+	'Example round':
+		'Przykładowa runda',
+	'Tap the amount for the quick-bet menu.':
+		'Dotknij kwoty, by otworzyć menu szybkich zakładów.',
+	'Max win %s your bet':
+		'Maks. wygrana %s twojej stawki',
 };

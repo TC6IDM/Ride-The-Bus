@@ -26,6 +26,7 @@
   } from '../../game/bet/betState.svelte';
   import { FREE_CHOICE, isCleanSweep, stageCount } from '../../game/math/modes';
   import { isNetWin } from '../../game/math/winTiers';
+  import { formatRankRuns } from '../../game/math/stageOdds';
   import { round } from '../../game/round/roundState.svelte';
   import type { Card } from '../../game/platform/typesBookEvent';
   import { t } from '../../i18n/i18nDerived';
@@ -158,6 +159,50 @@
   };
 
   /**
+   * What the card about to turn has to be, while the reveal waits on it.
+   * Printed in the readout's third line, which is empty during a reveal - so
+   * the board neither grows nor moves. The words come from the catalogue with
+   * the token between them, so no locale has to agree with English about
+   * where it goes.
+   *
+   * THE SPACES ARE IN THE TEXT, and they are non-breaking. The line used to be
+   * spaced by a flex gap, with every word trimmed, so it depended on one
+   * stylesheet rule to be readable at all: without it the line printed
+   * "Needs2·3 of 51" and, on a suit, broke into three lines around the
+   * block-level SVG. Now it reads right under any sheet and a screen reader
+   * gets real word breaks. `nowrap` in cards.css keeps it on one line; the
+   * non-breaking spaces mean that even without it no word can come apart from
+   * the token it belongs to. The catalogue's own spacing is kept, not trimmed,
+   * so a locale that writes none ("必要：%s") gets none.
+   */
+  const NBSP = '\u00a0';
+  const unbreakable = (text: string) => text.replace(/ /g, NBSP);
+  const needParts = $derived(t('Needs %s').split('%s').map(unbreakable));
+  const need = $derived(round.state === 'playing' ? round.nextNeed : null);
+  const needOdds = $derived(
+    need ? unbreakable(t('%n of %t').replace('%n', String(need.hits)).replace('%t', String(need.total))) : '',
+  );
+
+  /** A card the round will never reach, once it has busted before it. */
+  const isDead = (index: number) => round.bustedIndex !== null && index > round.bustedIndex;
+
+  /**
+   * Tunnel vision on the held last card: where the card is, so the dark can
+   * close in on it. Measured once as the hold begins, with the card still at
+   * rest, and kept after it so the tunnel opens from the same place it closed.
+   */
+  const slotEls: HTMLElement[] = $state([]);
+  let tunnelAt = $state<{ x: number; y: number } | null>(null);
+  $effect(() => {
+    const index = round.holdIndex;
+    if (index === null) return;
+    const block = slotEls[index]?.querySelector('.card-block');
+    if (!block) return;
+    const box = block.getBoundingClientRect();
+    tunnelAt = { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+  });
+
+  /**
    * Every guess press goes through here, because the row is LOCKED by opacity
    * and pointer-events rather than by the `disabled` attribute - and
    * pointer-events does not stop the keyboard. Tab + Enter during a reveal
@@ -202,7 +247,21 @@
            animation so the card turns back over with its face still on it.
            See the note on the latch. -->
       {@const face = shown.cards[index]}
-      <div class="card-slot">
+      <!-- is-held: the last card, rising while it waits because a lot rides on
+           it, for --hold-climb (the same climb its hum takes). is-lit: that
+           card, lifted over the tunnel until the next deal, so the dark never
+           touches it - not while closing in, not while opening again.
+           is-dead: a card the round busted before reaching. is-bust: the card
+           that ended it, which knocks once as its cross lands. -->
+      <div
+        class="card-slot"
+        bind:this={slotEls[index]}
+        class:is-held={round.holdIndex === index}
+        class:is-lit={round.lastCardHeld && index === slots - 1}
+        style:--hold-climb={round.holdIndex === index ? `${round.holdClimbMs}ms` : undefined}
+        class:is-dead={isDead(index)}
+        class:is-bust={round.bustedIndex === index}
+      >
         <!-- is-short: a bust that kept nothing (Three of a Kind, or any card-1
              miss) prints 0.00x, and a later bust can bank less than the round
              cost; printing either in win green colours a loss like a win.
@@ -262,13 +321,17 @@
     class:is-loss={round.state === 'lost'}
   >
     <span class="running-win-label">
-      {#if round.state === 'won'}{isCleanSweep(round.bustedIndex, round.forgivenIndex) ? t('Full Game Win!') : t('Banked')}{:else if round.state === 'lost'}{t('Busted')}{:else if round.state === 'playing'}{t('Revealing…')}{:else}{t('Winning')}{/if}
+      {#if round.state === 'won'}{isCleanSweep(round.bustedIndex, round.forgivenIndex) ? t('Full Game Win!') : t('Banked')}{:else if round.state === 'lost'}{t('Busted')}{:else if round.state === 'playing'}{round.holdIndex !== null ? t('Last card') : t('Revealing…')}{:else}{t('Winning')}{/if}
     </span>
     <span class="running-win-amount">{numberToCurrencyString(round.runningWin)}</span>
     <!-- Always rendered (a non-breaking space when there's no result yet) so
          the multiplier appearing at the end of a round doesn't grow the bar
-         and shove the cards / choices around. -->
-    <span class="running-win-mult">{(round.state === 'won' || round.state === 'lost') && round.initialBet > 0 ? `${(round.wonAmount / round.initialBet).toFixed(2)}×` : ' '}</span>
+         and shove the cards / choices around. During a reveal it carries what
+         the next card needs instead - the same line, so nothing moves. The
+         token is <bdi> so a rank run like "A–3, 8–K" keeps its order inside
+         right-to-left text, and every space in the line is a non-breaking one
+         in the text itself (see needParts). -->
+    <span class="running-win-mult" class:is-need={need !== null}>{#if need}{needParts[0]}<bdi class="rw-need-token" class:is-ranks={need.kind === 'ranks'}>{#if need.kind === 'suit'}<SuitIcon suit={need.suit} scale={0.92} />{:else if need.kind === 'color'}{t(need.color === 'red' ? 'Red' : 'Black')}{:else if need.kind === 'ranks'}{unbreakable(formatRankRuns(need.ranks))}{/if}</bdi>{needParts[1]}<span class="rw-need-odds">{NBSP}<span aria-hidden="true">·</span>{NBSP}{needOdds}</span>{:else}{(round.state === 'won' || round.state === 'lost') && round.initialBet > 0 ? `${(round.wonAmount / round.initialBet).toFixed(2)}×` : ' '}{/if}</span>
   </div>
 {/snippet}
 
@@ -288,13 +351,13 @@
        the way the four-guess columns are. The squares are read-only - the
        round is one bet mode, so there is nothing a press could change. -->
   <div class="choice-row trips-row" class:locked={choicesLocked()} aria-busy={choicesLocked()}>
-    <div class="choice-column">
+    <div class="choice-column" class:is-missed={round.bustedIndex === 1} class:is-forgiven={round.forgivenIndex === 1}>
       <span class="choice-label"><span>{t('Equal')}</span></span>
       <div class="equal-slot" role="img" aria-label={t('Card 2 must match card 1')}>
         <span class="equal-btn equal-full selected">{@render iconEquals()}</span>
       </div>
     </div>
-    <div class="choice-column">
+    <div class="choice-column" class:is-missed={round.bustedIndex === 2} class:is-forgiven={round.forgivenIndex === 2}>
       <span class="choice-label"><span>{t('Equal')}</span></span>
       <div class="equal-slot" role="img" aria-label={t('Card 3 must match card 1')}>
         <span class="equal-btn equal-full selected">{@render iconEquals()}</span>
@@ -303,7 +366,7 @@
   </div>
 {:else}
 <div class="choice-row" class:locked={choicesLocked()} aria-busy={choicesLocked()}>
-  <div class="choice-column">
+  <div class="choice-column" class:is-missed={round.bustedIndex === 0} class:is-forgiven={round.forgivenIndex === 0}>
     <!-- The label's text sits in an inner span so the outer box can centre it:
          the two-word labels beside this one run to two lines, and a one-line
          label left at the top of the same box reads as sitting a line too
@@ -315,7 +378,7 @@
     </div>
   </div>
 
-  <div class="choice-column">
+  <div class="choice-column" class:is-missed={round.bustedIndex === 1} class:is-forgiven={round.forgivenIndex === 1}>
     <span class="choice-label"><span>{t('Higher')}<br />{t('Lower')}</span></span>
     <div class="choice-square hl-square" role="group" aria-label={t('Higher, lower, or equal')}>
       <button type="button" class="third-btn higher-third" class:selected={guesses.hl === 'higher'} onclick={() => pick(setHlChoice, 'higher')} aria-disabled={choicesLocked()} aria-label={t('Higher')}>{@render iconTriangleUp()}</button>
@@ -324,7 +387,7 @@
     </div>
   </div>
 
-  <div class="choice-column">
+  <div class="choice-column" class:is-missed={round.bustedIndex === 2} class:is-forgiven={round.forgivenIndex === 2}>
     <span class="choice-label"><span>{t('Inside')}<br />{t('Outside')}</span></span>
     <div class="choice-square io-square" role="group" aria-label={t('Inside, outside, or equal')}>
       <button
@@ -353,7 +416,7 @@
     {/if}
   </div>
 
-  <div class="choice-column">
+  <div class="choice-column" class:is-missed={round.bustedIndex === 3} class:is-forgiven={round.forgivenIndex === 3}>
     <span class="choice-label"><span>{t('Suit')}</span></span>
     <div class="choice-square suit-square" role="group" aria-label={t('Pick a suit')}>
       <button type="button" class="quad-btn red-suit" class:selected={guesses.suit === 'heart'} onclick={() => pick(setSuitChoice, 'heart')} aria-disabled={choicesLocked()} aria-label={t('Heart')}><SuitIcon suit="heart" /></button>
@@ -364,6 +427,22 @@
   </div>
 </div>
 {/if}
+
+<!-- Tunnel vision: while the last card is held - and only when it could land a
+     Huge win or bigger (round.holdTunnel, lastCardTunnels in winTiers.ts) - the
+     room darkens and closes in on it, on the same clock as its rise and its hum
+     (--hold-climb), and opens again on the strike. Last in the board so it lies
+     over everything here but the held card, which .card-slot.is-lit lifts above
+     it. Inside the play area, so the control bar, the title and the RG panel
+     stay lit. -->
+<div
+  class="tunnel"
+  class:is-closing={round.holdIndex !== null && round.holdTunnel}
+  style:--tv-x={tunnelAt ? `${tunnelAt.x}px` : undefined}
+  style:--tv-y={tunnelAt ? `${tunnelAt.y}px` : undefined}
+  style:--hold-climb={`${round.holdClimbMs}ms`}
+  aria-hidden="true"
+></div>
 
 <style>
   @import '../../styles/board/cards.css';

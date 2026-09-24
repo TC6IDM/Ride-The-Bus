@@ -93,7 +93,7 @@
 	inset: 0;
 	/* Above the start screen (1000/1001) and everything under it. The takeover
 	   carries a settled payout, so nothing in the game may paint over it. */
-	z-index: 1200;
+	z-index: var(--z-takeover);
 	display: flex;
 	align-items: center;
 	justify-content: center;

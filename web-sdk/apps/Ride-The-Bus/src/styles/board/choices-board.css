@@ -45,25 +45,29 @@
   width: calc(var(--choice-size) * 0.5);
 }
 
+/* --equal-size lives on the slot, not the badge, so the slot and the badge
+   inside it are one size read from one place - the missed-guess ring below
+   draws round the SLOT and has to follow the badge's corners exactly. */
 .equal-slot {
+  --equal-size: calc(var(--choice-size) * 0.5);
   position: relative;
-  width: calc(var(--choice-size) * 0.5);
-  height: calc(var(--choice-size) * 0.5);
+  width: var(--equal-size);
+  height: var(--equal-size);
 }
 
 /* THE BADGE, UPSCALED - nothing else. This is the seam badge the other modes
    draw between Higher and Lower, in its SELECTED state (choices.css:
    .equal-btn.selected - the 3px white ring, the brightness lift), at four
    times its size. Every dimension of that badge is a ratio of --equal-size,
-   so setting the one property scales the face, the edge, the radius and the
-   ring together; the "=" is scaled to the same ratio it holds on the small
-   badge (0.61 x 0.3 of the badge) through the properties ChoiceIcon reads.
+   so the one property (set on .equal-slot above, and inherited) scales the
+   face, the edge, the radius and the ring together; the "=" is scaled to the
+   same ratio it holds on the small badge (0.61 x 0.3 of the badge) through
+   the properties ChoiceIcon reads.
    It is not wrapped in a .choice-square: the square's own ring and clip made
    it read as an unselected control with a badge inside, which is exactly
    what it is not. Static rather than absolute because there is no seam to
    centre on, and the select-state scale is dropped - the size is the size. */
 .equal-btn.equal-full {
-  --equal-size: calc(var(--choice-size) * 0.5);
   --eq-icon-w: calc(var(--choice-size) * 0.305);
   --eq-icon-h: calc(var(--choice-size) * 0.15);
   position: static;
@@ -158,3 +162,48 @@
   box-shadow: 0 calc(var(--ui) * 0.6) calc(var(--ui) * 1.4) rgba(var(--shadow-rgb), 0.55);
   pointer-events: none;
 }
+
+/* ---- The guess that missed ------------------------------------------------
+   After a bust, the square of the guess that failed takes a ring in the loss
+   red; a guess Second Chance forgave takes one in the forgiven amber - the same
+   pair as the card marks (.bust-x / .forgiven-mark in cards.css). The card says
+   the round ended; the ring says which call ended it. An outline, not a
+   box-shadow, so it cannot fight the square's own lit material, and it clears
+   the moment the next round deals (round.bustedIndex resets). */
+.choice-column .choice-square,
+.choice-column .equal-slot {
+  outline: calc(var(--ui) * 0.28) solid transparent;
+  outline-offset: calc(var(--ui) * 0.3);
+}
+
+/* Three of a Kind's badge takes the same ring, fitted to the badge rather
+   than to the box it sits in. An outline follows its element's border-radius,
+   and the slot had none: the ring came out a square-cornered box round a
+   rounded badge. It also has to clear more than a square does - the badge's
+   selected state is a 3px white ring outside its edge (.equal-btn.selected in
+   choices.css; keep the two figures together), and at the squares' offset the
+   red landed on top of the white. So: the badge's own corner, and the
+   squares' gap measured from the white ring rather than from the face. */
+.choice-column .equal-slot {
+  border-radius: calc(var(--equal-size) * 0.22);
+  outline-offset: calc(3px + var(--ui) * 0.3);
+}
+
+/* The ring arrives once the card that decided it has turned, not the instant
+   the book says so - a ring during the flip calls the miss before the player
+   has seen the card. The delay sits on the ENTERING rule only, so it clears
+   at once when the next round deals. */
+.choice-column.is-missed .choice-square,
+.choice-column.is-missed .equal-slot {
+  outline-color: var(--loss);
+  transition: outline-color 200ms var(--ease-out) calc(var(--flip-dur, 0.5s) * 0.9);
+}
+
+.choice-column.is-forgiven .choice-square,
+.choice-column.is-forgiven .equal-slot {
+  outline-color: var(--forgiven);
+  transition: outline-color 200ms var(--ease-out) calc(var(--flip-dur, 0.5s) * 0.9);
+}
+
+.choice-column.is-missed .choice-label { color: var(--loss-soft); }
+.choice-column.is-forgiven .choice-label { color: var(--forgiven); }

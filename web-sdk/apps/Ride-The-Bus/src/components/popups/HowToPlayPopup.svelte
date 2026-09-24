@@ -21,13 +21,15 @@
 	import { ranks } from '../../game/round/roundContract';
 	// Derived from payout.ts rather than written out, so the paytable a player
 	// reads cannot drift from what the RGS credits - see payoutTable.ts.
-	import { bustRowsFor, oddsExampleFor, payoutColumnFor, payoutRowsFor } from '../../game/math/payoutTable';
+	import { bustRowsFor, exampleRoundFor, oddsExampleFor, payoutColumnFor, payoutRowsFor } from '../../game/math/payoutTable';
 	import { winTiersFor } from '../../game/math/winTiers';
 	import { FAMILY_BLURB, FAMILY_RULES, MODE_FAMILIES, allPlayableModes, type ModeFamily } from '../../game/math/modes';
 	import { FAMILIES_BY_VOLATILITY } from '../../game/math/volatility';
 	import gameConfig from '../../game/platform/config';
 	import { t } from '../../i18n/i18nDerived';
 	import MarkIcon from '../icons/MarkIcon.svelte';
+	import SuitIcon from '../icons/SuitIcon.svelte';
+	import ControlGlyph from '../icons/ControlGlyph.svelte';
 
 	/** The biggest figure any mode can pay, and WHICH mode, for the RTP
 	 *  statement below. The mode is derived rather than written into the
@@ -94,6 +96,40 @@
 	// the start screen, where no guesses exist yet) or when the guesses are
 	// incomplete. Either way the family figure stands alone.
 	const pickedCeiling = $derived(props.ceilingFor?.(viewing) ?? null);
+
+	/** "Max win 1354.2× your bet", with the figure picked out. */
+	const maxWinParts = $derived(t('Max win %s your bet').split('%s'));
+
+	/** The dealt example for the tab on screen - see exampleRoundFor. */
+	const example = $derived(viewingFixed ? [] : exampleRoundFor(viewingRules));
+	const PICK_LABEL: Record<string, string> = {
+		red: 'Red',
+		black: 'Black',
+		higher: 'Higher',
+		lower: 'Lower',
+		equal: 'Equal',
+		inside: 'Inside',
+		outside: 'Outside',
+		heart: 'Heart',
+		diamond: 'Diamond',
+		club: 'Club',
+		spade: 'Spade',
+	};
+	const pickLabel = (choice: string) => t((PICK_LABEL[choice] ?? 'Equal') as Parameters<typeof t>[0]);
+
+	/**
+	 * A phone's bar has no plus and minus - they are hidden at this query in
+	 * responsive-bar.css - so the guide's bet line says what that bar actually
+	 * offers. Read live, because a phone can be turned while the panel is open.
+	 */
+	const PHONE_BAR = '(max-width: 400px) and (orientation: portrait)';
+	let phoneBar = $state(typeof window !== 'undefined' && window.matchMedia(PHONE_BAR).matches);
+	$effect(() => {
+		const query = window.matchMedia(PHONE_BAR);
+		const sync = () => (phoneBar = query.matches);
+		query.addEventListener('change', sync);
+		return () => query.removeEventListener('change', sync);
+	});
 </script>
 
   <div class="popup popup-info" role="dialog" aria-modal="true" tabindex="-1" aria-label={t('How to play')}>
@@ -206,7 +242,7 @@
           <p class="mode-panel-blurb">{t('Card 1 is dealt, not guessed. The deck holds one Ace, King and Queen of each suit, so card 2 matches 3 times in 11 and card 3 twice in 10.')}</p>
         {/if}
         <p class="mode-panel-max">
-          {t('Max win')} <strong>{viewingRules.maxWin}×</strong> {t('Bet')}
+          {maxWinParts[0]}<strong>{viewingRules.maxWin}×</strong>{maxWinParts[1] ?? ''}
         </p>
         <!-- The figure above is the most this MODE can reach, which is the right
              headline for a mode a player is choosing between: some combination
@@ -243,6 +279,29 @@
              remaining deck - so what is stated is the range each pick can pay,
              generated from the same function the game pays out with. Retention
              differs per mode, so every figure here moves with the tab. -->
+        <!-- One dealt round on THIS tab's family: the card, the pick it met,
+             how many cards could have met it, and the running total after it,
+             rounded the way the board's chips are. Built by exampleRoundFor
+             from the same pricing the books are held to, so it cannot show a
+             figure the game would not pay. Not on Three of a Kind, whose
+             table below already is its one round. -->
+        {#if example.length}
+          <h5 class="info-sub">{t('Example round')}</h5>
+          <ol class="example-round">
+            {#each example as step, i}
+              <li class="ex-step" class:is-last={i === example.length - 1}>
+                <span class="ex-card" class:red={step.card.suit === '♥' || step.card.suit === '♦'}>
+                  <span class="ex-rank">{step.card.rank}</span>
+                  <SuitIcon suit={step.card.suit} />
+                </span>
+                <span class="ex-pick">{pickLabel(step.choice)}<span class="ex-tick"><MarkIcon name="check" /></span></span>
+                <span class="ex-odds">{t('%n of %t').replace('%n', String(step.hits)).replace('%t', String(step.total))}</span>
+                <span class="ex-total">{step.runningTotal.toFixed(2)}×</span>
+              </li>
+            {/each}
+          </ol>
+        {/if}
+
         <h5 class="info-sub">{t('Payout table')}</h5>
         <table class="pay-table">
           <thead>
@@ -335,17 +394,25 @@
            is folded into the button's own line here, and the reassurance is
            said once, at the end. -->
       <h4 class="info-h">{t('Controls')}</h4>
-      <ul>
-        <li>{t('The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.')}</li>
-        <li>{t('Mode opens the game-mode picker. Switching asks you to confirm before it applies.')}</li>
-        <li>{t('Plus and minus set your bet. Tap the amount for the quick-bet menu.')}</li>
-        <li>{t('The lightning button is Turbo: how fast the cards flip, from Normal to Instant.')}</li>
-        <li>{t('The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.')}</li>
-        <li>{t('The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.')}</li>
-        <li>{t('The speaker opens the sound settings. Music and game sounds mute separately.')}</li>
-        <li>{t('The i button opens this screen.')}</li>
-        <li>{t('Speed and skip settings change only what you see, never the cards, the odds or the payout.')}</li>
+      <!-- Each line led by the control it describes, drawn the way the bar
+           draws it (ControlGlyph), so "the circular arrows" is a picture of
+           the circular arrows. On a phone the bar has no plus and minus, so
+           that line shows the chip and says what the bar there offers. -->
+      <ul class="control-guide">
+        <li><ControlGlyph name="deal" /><span>{t('The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.')}</span></li>
+        <li><ControlGlyph name="mode" label={t('Mode')} /><span>{t('Mode opens the game-mode picker. Switching asks you to confirm before it applies.')}</span></li>
+        {#if phoneBar}
+          <li><ControlGlyph name="chip" /><span>{t('Tap the amount for the quick-bet menu.')}</span></li>
+        {:else}
+          <li><ControlGlyph name="bet" /><span>{t('Plus and minus set your bet. Tap the amount for the quick-bet menu.')}</span></li>
+        {/if}
+        <li><ControlGlyph name="turbo" /><span>{t('The lightning button is Turbo: how fast the cards flip, from Normal to Instant.')}</span></li>
+        <li><ControlGlyph name="autoplay" /><span>{t('The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.')}</span></li>
+        <li><ControlGlyph name="advanced" /><span>{t('The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.')}</span></li>
+        <li><ControlGlyph name="sound" /><span>{t('The speaker opens the sound settings. Music and game sounds mute separately.')}</span></li>
+        <li><ControlGlyph name="info" /><span>{t('The i button opens this screen.')}</span></li>
       </ul>
+      <p>{t('Speed and skip settings change only what you see, never the cards, the odds or the payout.')}</p>
 
       <h4 class="info-h">{t('Game information')}</h4>
       <!-- "The cards it deals", not "four cards": Three of a Kind deals three,

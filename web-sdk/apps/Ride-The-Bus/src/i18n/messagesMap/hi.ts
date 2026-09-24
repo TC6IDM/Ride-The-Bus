@@ -63,7 +63,6 @@ export default {
 	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
 		'अनुमान मोड में चुनावों का हर संयोजन अपने आप में एक अलग दांव है, जिसकी कीमत उसकी अपनी संभावनाओं पर तय होती है।',
 	'Game modes': 'गेम मोड',
-	'Max win': 'अधिकतम जीत',
 	// Confirmation before a bet mode is activated - required by the approval
 	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
@@ -277,4 +276,16 @@ export default {
 		'पत्ता 2 को पत्ते 1 से मेल खाना चाहिए',
 	'Card 3 must match card 1':
 		'पत्ता 3 को पत्ते 1 से मेल खाना चाहिए',
+	'Needs %s':
+		'%s चाहिए',
+	'%n of %t':
+		'%t में से %n',
+	'Last card':
+		'आखिरी कार्ड',
+	'Example round':
+		'उदाहरण राउंड',
+	'Tap the amount for the quick-bet menu.':
+		'त्वरित दांव मेनू के लिए राशि पर टैप करें।',
+	'Max win %s your bet':
+		'अधिकतम जीत आपकी दांव राशि का %s',
 };

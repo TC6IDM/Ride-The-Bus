@@ -63,7 +63,6 @@ export default {
 	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
 		'추측 모드의 모든 선택 조합은 각각 별도의 베팅이며, 각자의 확률에 따라 가격이 매겨집니다.',
 	'Game modes': '게임 모드',
-	'Max win': '최대 배당',
 	// Confirmation before a bet mode is activated - required by the approval
 	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
@@ -277,4 +276,16 @@ export default {
 		'카드 2는 카드 1과 같아야 합니다',
 	'Card 3 must match card 1':
 		'카드 3은 카드 1과 같아야 합니다',
+	'Needs %s':
+		'필요: %s',
+	'%n of %t':
+		'%t장 중 %n장',
+	'Last card':
+		'마지막 카드',
+	'Example round':
+		'라운드 예시',
+	'Tap the amount for the quick-bet menu.':
+		'금액을 누르면 빠른 베팅 메뉴가 열립니다.',
+	'Max win %s your bet':
+		'최대 배당 베팅액의 %s',
 };

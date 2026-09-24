@@ -40,10 +40,10 @@ import { loop, type LoopHandle } from './audioLoop.ts';
 /**
  * Where the game is.
  *
- * Five places, not two, because the bed's job changes at each of them and the
+ * Six places, not two, because the bed's job changes at each of them and the
  * only thing one file can change is its level. 'none' releases the track.
  */
-export type MusicScene = 'none' | 'loading' | 'lobby' | 'idle' | 'round' | 'celebration';
+export type MusicScene = 'none' | 'loading' | 'lobby' | 'idle' | 'round' | 'hold' | 'celebration';
 
 /** Everything a scene says about the bed: how loud, and how long to get there. */
 type SceneMix = { gain: number; fade: number };
@@ -68,6 +68,13 @@ type SceneMix = { gain: number; fade: number };
  *                cue all land here - the busiest the cue book ever gets is
  *                exactly when the bed must be least in the way. A bed that rose
  *                here would fight every cue the round is made of.
+ *   hold         DOWN again, quickly: the last card is being held because a
+ *                lot rides on it, and the cue book's riser (playLastCardHold)
+ *                is climbing under the wait. The room falling away IS the
+ *                suspense, and a pitched sweep over a tune in some other key
+ *                would be a clash. Held until the round settles, so a win goes
+ *                straight on down into 'celebration' rather than bobbing back
+ *                up between the two.
  *   celebration  DOWN hard, and fast. The fanfare is the payoff and it is the
  *                loudest thing in the game; a bed mixed to sit on top of it
  *                would duck the WIN rather than the other way round.
@@ -91,6 +98,7 @@ const SCENE_MIX: Record<Exclude<MusicScene, 'none'>, SceneMix> = {
 	lobby: { gain: 0.19, fade: 1.6 },
 	idle: { gain: 0.26, fade: 1.5 },
 	round: { gain: 0.17, fade: 0.7 },
+	hold: { gain: 0.08, fade: 0.45 },
 	celebration: { gain: 0.07, fade: 0.35 },
 };
 

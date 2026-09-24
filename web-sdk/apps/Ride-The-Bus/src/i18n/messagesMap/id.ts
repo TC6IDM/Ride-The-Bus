@@ -63,7 +63,6 @@ export default {
 	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
 		'Setiap kombinasi pilihan pada mode tebakan adalah taruhan tersendiri, dihargai berdasarkan peluangnya sendiri.',
 	'Game modes': 'Mode permainan',
-	'Max win': 'Kemenangan maks',
 	// Confirmation before a bet mode is activated - required by the approval
 	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
@@ -280,4 +279,16 @@ export default {
 		'Kartu 2 harus sama dengan kartu 1',
 	'Card 3 must match card 1':
 		'Kartu 3 harus sama dengan kartu 1',
+	'Needs %s':
+		'Perlu %s',
+	'%n of %t':
+		'%n dari %t',
+	'Last card':
+		'Kartu terakhir',
+	'Example round':
+		'Contoh ronde',
+	'Tap the amount for the quick-bet menu.':
+		'Ketuk jumlahnya untuk membuka menu taruhan cepat.',
+	'Max win %s your bet':
+		'Kemenangan maks %s dari taruhan Anda',
 };

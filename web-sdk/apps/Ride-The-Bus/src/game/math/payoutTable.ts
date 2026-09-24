@@ -24,8 +24,9 @@
  * unchanged. Drop an extension here and the whole test file fails to load.
  */
 import { decayFor, partialMultiplier, quantizeMultiplier, stageRetention } from './payout.ts';
-import { createDeck, ranks, rankValue } from '../round/roundContract.ts';
+import { createDeck, ranks, rankValue, type Card } from '../round/roundContract.ts';
 import { FAMILY_RULES, FREE_CHOICE, type FamilyRules } from './modes.ts';
+import { stageNeed, stagePrice } from './stageOdds.ts';
 
 /** Cards of each rank in a full deck. */
 const PER_RANK = 4;
@@ -236,6 +237,45 @@ export function oddsExampleFor(rules: FamilyRules = FAMILY_RULES.base): OddsExam
 		higherOn8: at(20),
 		equal: at(3),
 	};
+}
+
+/**
+ * One dealt round, for How to Play's example: each card, the pick it met, how
+ * many cards could have met it, and the running total after it - the figures
+ * the board itself would show for this deal on this family.
+ *
+ * Priced through stageNeed / stagePrice, which stageOdds.test.ts holds to the
+ * published books, so the example cannot quote a figure the game would not
+ * pay. The deal is fixed - 7♥, J♠, 2♣, 9♥ called Red, Higher, Outside, Heart -
+ * chosen so every stage reads at a glance and the round lands; the figures move with
+ * the family, which is the point of drawing it on every tab. The guess
+ * families only: Three of a Kind's table already IS its one round.
+ */
+export type ExampleStep = {
+	card: Card;
+	choice: string;
+	hits: number;
+	total: number;
+	/** Rounded down to 0.1x at each step, exactly as the board's chips are. */
+	runningTotal: number;
+};
+
+export const EXAMPLE_DEAL: readonly { card: Card; choice: string }[] = [
+	{ card: { rank: '7', suit: '♥' }, choice: 'red' },
+	{ card: { rank: 'J', suit: '♠' }, choice: 'higher' },
+	{ card: { rank: '2', suit: '♣' }, choice: 'outside' },
+	{ card: { rank: '9', suit: '♥' }, choice: 'heart' },
+];
+
+export function exampleRoundFor(rules: FamilyRules = FAMILY_RULES.base): ExampleStep[] {
+	let running = 1;
+	const dealt: Card[] = [];
+	return EXAMPLE_DEAL.map(({ card, choice }, stage) => {
+		const need = stageNeed(rules, stage, choice, dealt);
+		running *= stagePrice(rules, stage, need, false);
+		dealt.push(card);
+		return { card, choice, hits: need.hits, total: need.total, runningTotal: quantizeMultiplier(running * rules.cost) };
+	});
 }
 
 /* FULL_WIN_ROWS used to live here: a three-row breakdown of what a full win

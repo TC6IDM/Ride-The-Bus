@@ -239,6 +239,92 @@ export function winTierFor(
 }
 
 /**
+ * How long the last card is held before it turns, in milliseconds at normal
+ * speed. Scales with the tier it would land; turbo and a slam shrink it like
+ * every other reveal pause (revealWait).
+ */
+export const LAST_CARD_HOLD_MS: Readonly<Record<WinTierId, number>> = {
+  big: 450,
+  huge: 650,
+  mega: 850,
+  epic: 1050,
+  max: 1400,
+};
+
+/**
+ * The hold before the last card, or 0.
+ *
+ * A lot riding on one card is the moment this game is about, and it used to
+ * turn on the same 650ms beat as every other card - a 1-in-190,000 Max Win
+ * resolved in 2.7 seconds flat. The card now waits, longer the more it would
+ * pay: nothing below the entry tier, longest for Max.
+ *
+ * Decided ONLY from what is riding on it - the multiplier the round pays if
+ * the card lands, which is known before it turns. Never from whether it does:
+ * a hold that fired on winners alone would announce the result before the card
+ * did, which is the near-miss theatre regulators object to. There is no
+ * `correct` among the inputs, and winTiers.test.ts holds a winner and a loser
+ * with the same stake to the same hold.
+ *
+ * `fullGameWin` floors it at the entry tier exactly as winTierFor floors the
+ * takeover: if the card lands, the round is a clean sweep and will celebrate.
+ */
+export function lastCardHoldMs(
+  landingMultiplier: number,
+  fullGameWin: boolean,
+  tiers: readonly WinTier[] = WIN_TIERS,
+): number {
+  const tier = winTierFor(landingMultiplier, fullGameWin, tiers);
+  return tier ? LAST_CARD_HOLD_MS[tier.id] : 0;
+}
+
+/** The part of a held card's wait spent AT the top, at most - and at most this
+ *  share of the wait, so a short hold (a Big win's 1.1s, or turbo) is still
+ *  mostly climb. */
+export const HOLD_TOP_MS = 400;
+export const HOLD_TOP_SHARE = 0.35;
+
+/**
+ * How much of a held card's wait is the climb, in milliseconds.
+ *
+ * `waitMs` is the whole wait as it will actually run - the hold plus the
+ * ordinary beat before a turn, turbo-scaled. The card and its hum rise
+ * together, in a straight line, for this long; then both sit at the top for
+ * the rest; then the card slams down. ONE number for both, so the card cannot
+ * finish rising before the sound does or the other way round. The shape is
+ * the owner's, by ear: up in a straight line, stay at the top, slam down.
+ */
+export function holdClimbMs(waitMs: number): number {
+  return waitMs - Math.min(HOLD_TOP_MS, waitMs * HOLD_TOP_SHARE);
+}
+
+/** The tiers from the bottom up - the order every ladder is written in. */
+const TIER_ORDER: readonly WinTierId[] = ['big', 'huge', 'mega', 'epic', 'max'];
+
+/**
+ * The lowest tier a held last card must be able to land before the room
+ * closes in on it (tunnel vision). Below it - a Big win - the card still
+ * rises and its hum still climbs and strikes, but the room stays lit: the
+ * tunnel is kept for the bigger stakes so it stays an event. The owner's call.
+ */
+export const TUNNEL_FROM: WinTierId = 'huge';
+
+/**
+ * Whether the held last card gets tunnel vision: the tier it would land is
+ * TUNNEL_FROM or above. Like lastCardHoldMs, decided from the stake alone and
+ * never from whether the card lands - there is no `correct` among the inputs.
+ * Three of a Kind's one-rung ladder is Max, so its held card always tunnels.
+ */
+export function lastCardTunnels(
+  landingMultiplier: number,
+  fullGameWin: boolean,
+  tiers: readonly WinTier[] = WIN_TIERS,
+): boolean {
+  const tier = winTierFor(landingMultiplier, fullGameWin, tiers);
+  return tier !== null && TIER_ORDER.indexOf(tier.id) >= TIER_ORDER.indexOf(TUNNEL_FROM);
+}
+
+/**
  * Whether a settled round is a win in the sense a player means it: the payout
  * covers what the round cost.
  *

@@ -63,7 +63,6 @@ export default {
 	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
 		'Cada combinação de escolhas num modo de palpite é uma aposta própria, precificada pelas suas próprias probabilidades.',
 	'Game modes': 'Modos de jogo',
-	'Max win': 'Ganho máximo',
 	// Confirmation before a bet mode is activated - required by the approval
 	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
@@ -278,4 +277,16 @@ export default {
 		'A carta 2 tem de coincidir com a carta 1',
 	'Card 3 must match card 1':
 		'A carta 3 tem de coincidir com a carta 1',
+	'Needs %s':
+		'Precisa de %s',
+	'%n of %t':
+		'%n de %t',
+	'Last card':
+		'Última carta',
+	'Example round':
+		'Rodada de exemplo',
+	'Tap the amount for the quick-bet menu.':
+		'Toque no valor para abrir o menu de apostas rápidas.',
+	'Max win %s your bet':
+		'Ganho máximo %s da sua aposta',
 };

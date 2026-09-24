@@ -420,7 +420,9 @@
   filter: brightness(1.18);
   /* The 3px white ring IS the state - the same ring the halves draw inset.
      A 14px white halo used to sit outside it, and on a badge this small the
-     halo was wider than the badge: a glow, not a selection. */
+     halo was wider than the badge: a glow, not a selection. The missed-guess
+     ring round Three of a Kind's badge clears these 3px (choices-board.css,
+     .choice-column .equal-slot) - change one, change both. */
   box-shadow:
     0 4px 12px rgba(var(--shadow-rgb), 0.5),
     0 0 0 3px var(--ink),

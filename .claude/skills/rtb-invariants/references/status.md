@@ -10,6 +10,94 @@ rather than on every turn. Nothing here is reworded.
 
 ## Current state
 
+**2026-09-23: the reveal got tension, the rules got pictures.** Client only;
+no math changed.
+- **Every card says what it needs before it turns** ("Needs 8–K · 24 of 51"),
+  in the readout's third line so nothing moves. `game/math/stageOdds.ts` counts
+  the deck left; `stageOdds.test.ts` replays 30,840 stage prices from the
+  published books through it and every one matches, so the line IS the price.
+- **The last card is held when a lot rides on it** - it rises off the table,
+  "Last card" over the total - for 450ms (Big) to 1400ms (Max) at normal speed,
+  scaled by turbo, cut by a slam. `lastCardHoldMs` decides it from the stake
+  only; a test slices the reveal loop and fails if the hold ever reads
+  `.correct`. It is the fifth `isCleanSweep` site (modes.test.ts counts five).
+- **The bust is unmistakable**: the unreached cards step back, the bust card
+  knocks as its cross lands, the guess that failed takes a red ring (a forgiven
+  one amber) - all after the card has turned.
+- **How to Play**: an example round per family built by `exampleRoundFor`
+  from the same pricing, and a controls guide that shows each bar glyph
+  (`components/icons/ControlGlyph.svelte`); on phones the bet line says what a
+  phone's bar offers. "Max win X× your bet" replaced "Max win X× Bet".
+- `--spin-*` and a named `--z-*` stacking scale are tokens; the Popout S
+  replay slivers are gone; ten Suno generation pages captured into
+  `licence-evidence/private/`, and `audio-masters/SHA256SUMS` plus the masters'
+  hashes in ASSET_LICENCES.md make a backup verifiable - the copy itself is
+  still the owner's to make. 796 tests.
+- **Later the same day, from the owner's first look:** the held last card got
+  a riser that climbs over exactly the hold and is released as the card turns
+  (`swell()`, `playLastCardHold`), with the bed ducking to a new `hold` scene
+  under it. Up linearly (plain Hz and plain gain): an octave from G2, a 20 dB
+  crescendo, a lowpass opening to 1.8 kHz, a pulse quickening to ~7/s; then
+  ~0.4 s held at the top; then a SLAM as the card turns - the pitch dives two
+  octaves in 0.26 s through `detune` over a low hit. Four listens: a steady G2
+  pedal sounded like it was standing still, a climb that sped up into the turn
+  was the wrong shape, and an even climb that faded out did not land.
+  `sound.test.ts` fails unless the climb is one straight line covering an
+  octave, tops out at least 0.3 s before the turn, and the release dives two
+  octaves over one low hit. Captured with `npm run audio -- --play --mode
+  red_equal_equal_heart --event max` and pitch-tracked: +6-7 Hz per 100 ms from
+  107 to 197 Hz, 0.4 s flat, then 130 and 81 Hz on the way down.
+  **2026-09-24, the fifth listen:** "more ohhhh than mmmm", "the drop is too
+  subtle - a crash, like a lightning strike", and the card "jumping, then going
+  up". So the voice is a crowd singing "oh" - six detuned sawtooths (four on
+  G2, two an octave up) through F1 450 / F2 800 / F3 2800 formants, pink breath
+  through the same bank, a vibrato widening as it climbs - and it ends on
+  `strike()`: a crack that rips (three bright bursts in 45 ms), its body,
+  thunder, a sub hit, with the voices dropping an octave under it. Measured: the
+  600-1000 Hz share doubled (9% to 20%) and the buzzy 1-2 kHz share fell from
+  12% to 3%; the strike peaks ~-8 dBFS, a few dB over the fanfare (its first cut
+  was -6.2 and came down 3 dB). The card now slides up from rest in a straight
+  line for exactly the climb (`--hold-climb` from `holdClimbMs`, which the hum
+  also runs on), sits for the top, then drops back in 130 ms, accelerating -
+  sampled per frame: 0 to -15.4 px evenly over 1.65 s, flat 0.4 s, down in
+  ~130 ms. The slow flip and the breathing bob are gone; `lastCardHeld` replaced
+  `slowFlipIndex` for the music scene. Then **tunnel vision**, on request: a
+  fixed radial vignette (`.tunnel` in GameBoard, z 3 inside the play area's
+  stacking context) centred on the held card, scaling from 2.4 to 1 over the
+  climb and opening outward in 170 ms on the strike; the held card is lifted
+  over it (`.card-slot.is-lit`, z 4, kept until the next deal so the dark never
+  crosses it on the way out). The play area sits under the control bar, so the
+  bar, the title and the RG panel stay lit. Measured at its tightest: the two
+  far cards at 27% brightness, the near one ~70%, the held card untouched, at
+  desktop and phone. A transform on a gradient drawn once, not a repainted
+  gradient, so it costs the compositor, not the main thread. By the owner's
+  call it only closes when the card could land **Huge or bigger**
+  (`lastCardTunnels`, `TUNNEL_FROM = 'huge'`, decided in the same slice as the
+  hold and from the same stake, never the result); a Big-win hold still rises,
+  hums and strikes, with the room lit. Three of a Kind's one rung is Max, so its
+  held card always tunnels. Checked on replays: 17.20x Big held, no tunnel;
+  Max held and tunnelled. **Found in the review pass:** near the top of the
+  turbo range the climb shrinks below the hum's own 0.25 s floor and the hum
+  stayed quiet - but `lastCardHeld` was still set, so the bed ducked (and the
+  tunnel would dim) on every held card of a fast autoplay run: a pump and a
+  flicker with nothing behind them. The duck, the tunnel and the hum now share
+  one gate, `HOLD_MIN_CLIMB` (sound.ts), and `sound.test.ts` fails if any of the
+  three moves outside it; under it the card just hops. The
+  "Needs" line carries its spaces in the text (non-breaking) instead of a flex
+  gap - without that one rule it printed "Needs2·3 of 51" and broke round the
+  suit's block-level SVG - and Three of a Kind's missed-guess ring follows the
+  badge's corners and clears its white ring. The audio lab's `--play` presses a
+  replay's Round-details Play as its first gesture again (it had been stopping
+  at NO TAP since replays stopped opening on the intro). 809 tests.
+- **Open, owner's call:** whether the "Needs" line stays. It stays for now. At
+  650ms a card it flashes by faster than it can be read, and the eye is on the
+  card, not the readout. Keeping it only on the held last card was proposed;
+  the owner's objection is that on the last card it only names the suit they
+  picked. The one thing the last card's line could say that the player does
+  not already know is what the card is worth if it lands.
+- **Open, by design:** the end-of-game multiplier - discussed, not built.
+  Anything that touches the math has to land before submission.
+
 **2026-09-22, later: a full pre-submission audit (including a Hallmark pass).**
 Every gate green; the math clears every 2-star limit and so every 3-star one;
 every Stake checklist item was traced to code and the game driven in Chrome.

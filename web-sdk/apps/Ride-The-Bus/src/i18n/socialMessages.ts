@@ -161,6 +161,10 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 	'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.':
 		'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less wins nothing.',
 	'%c× your base bet of %b': '%c× your base play amount of %b',
+	'Tap the amount for the quick-bet menu.':
+		'Tap the amount for the quick-play menu.',
+	'Max win %s your bet':
+		'Max win %s your play amount',
 };
 
 export default socialMessages;

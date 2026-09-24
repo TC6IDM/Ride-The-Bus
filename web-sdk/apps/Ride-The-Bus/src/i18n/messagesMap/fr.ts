@@ -63,7 +63,6 @@ export default {
 	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
 		'Chaque combinaison de choix dans un mode de devinette est une mise à part entière, tarifée selon ses propres cotes.',
 	'Game modes': 'Modes de jeu',
-	'Max win': 'Gain maximum',
 	// Confirmation before a bet mode is activated - required by the approval
 	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
@@ -281,4 +280,16 @@ export default {
 		'La carte 2 doit correspondre à la carte 1',
 	'Card 3 must match card 1':
 		'La carte 3 doit correspondre à la carte 1',
+	'Needs %s':
+		'Il faut %s',
+	'%n of %t':
+		'%n sur %t',
+	'Last card':
+		'Dernière carte',
+	'Example round':
+		'Exemple de manche',
+	'Tap the amount for the quick-bet menu.':
+		'Touchez le montant pour ouvrir le menu des mises rapides.',
+	'Max win %s your bet':
+		'Gain maximum %s de votre mise',
 };

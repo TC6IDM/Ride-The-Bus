@@ -22,7 +22,7 @@
 
 import { busVolume, isBusMuted, isBusSilent, isMuted, setBusMuted, setBusVolume, setMuted, toggleBusMuted, toggleMuted } from './audioMixer.ts';
 import { rand, shuffler } from './audioVariation.ts';
-import { noise, thud, tone } from './audioVoices.ts';
+import { noise, swell, thud, tone } from './audioVoices.ts';
 
 export type { AudioBusName } from './audioMixer.ts';
 
@@ -123,6 +123,67 @@ const FANFARE: Record<
 		swell: true,
 	},
 };
+
+/**
+ * The shortest climb the last-card hum will sing, in seconds. Below this the
+ * turbo slider has shortened the hold to where the voices could not rise
+ * before they were cut - a blip, not suspense - so the wait is left silent.
+ *
+ * Exported because it is also the line the reveal draws for the rest of the
+ * hold's drama (roundReveal.svelte.ts): under it, no duck of the music and no
+ * tunnel either, which would otherwise pump the bed and dim the room for a
+ * blink on every held card of a fast autoplay run.
+ */
+export const HOLD_MIN_CLIMB = 0.25;
+
+/**
+ * The vowel "oh", as formants [Hz, Q, level]: the first two resonances of an
+ * open "o" (F1 ~450, F2 ~800) and a trace of the third for presence. Wider
+ * than one singer's (Q ~6-10), because a crowd's formants smear - every
+ * throat is a slightly different size - and wider is also what keeps a
+ * sawtooth through band-passes from whistling.
+ */
+const OH = [
+	[450, 3.5, 1],
+	[800, 5, 0.6],
+	[2800, 7, 0.14],
+] as const;
+
+/**
+ * The crowd: four voices a few cents either side of the pitch, and two an
+ * octave up, quieter - the high voices in a crowd's "ohhh".
+ */
+const CROWD = [
+	[0.985, 1],
+	[0.996, 1],
+	[1.004, 1],
+	[1.014, 1],
+	[1.993, 0.4],
+	[2.009, 0.4],
+] as const;
+
+/**
+ * Lightning: what the last-card hum ends on as the card turns. A crack that
+ * RIPS - three bright bursts inside 45ms, each quieter, because a real strike
+ * is a tearing, not a single click - then the crack's body, then thunder
+ * rolling under it, and a sub hit for the weight. Every part is fresh noise,
+ * so no two strikes are the same.
+ *
+ * The one sound allowed a little over the win fanfare: the owner asked for "a
+ * crash, like a lightning strike" after a dive and a hit came out too subtle.
+ * Measured, the first cut peaked at -6.2 dBFS against the fanfare's -11.4 -
+ * 5 dB over, on a sound that also plays when the card busts - so everything
+ * here came down 3 dB. Noise carries its loudness in density, not in peak; it
+ * does not need the headroom to read as a crash.
+ */
+function strike() {
+	[0, 0.018, 0.043].forEach((delay, i) => {
+		noise({ duration: 0.16, gain: 0.21 - i * 0.05, from: rand(5200, 7600), to: rand(2200, 3000), q: 0.45, curve: 3.2, delay, space: 0.55 }); // prettier-ignore
+	});
+	noise({ duration: 0.6, gain: 0.16, from: 1700, to: 380, q: 0.55, curve: 2.1, space: 0.65 });
+	noise({ duration: 1.6, gain: 0.3, from: 190, to: 50, q: 0.8, pink: true, curve: 1.2, space: 0.45, delay: 0.02 }); // prettier-ignore
+	thud({ from: rand(100, 115), to: 34, duration: 0.6, gain: 0.1, attack: 0.001 });
+}
 
 // Fixed pitch sets per control kind, cycled without immediate repeats. Two
 // presses in a row are therefore never the same note AND never the same detune,
@@ -331,6 +392,59 @@ export const sound = {
 
 		tone({ from: freq, duration: 0.16, type: 'sine', gain: 0.2, attack: 0.006, space: 0.7, jitter: 0, bus: 'music' }); // prettier-ignore
 		tone({ from: freq * 2, duration: 0.1, type: 'sine', gain: 0.07, delay: 0.012, attack: 0.004, space: 0.6, jitter: 0, bus: 'music' }); // prettier-ignore
+	},
+
+	/**
+	 * The last card, held: a crowd's "ohhhh" that climbs under the wait, holds
+	 * at the top, and ends on a lightning strike as the card turns.
+	 *
+	 * The hold (lastCardHoldMs) was silent - the card lifted, the label read
+	 * LAST CARD, and the room said nothing. This is the sound of the wait
+	 * itself, in three parts, on the same clock as the card's own rise:
+	 *   1. UP, in straight lines, for `climb` seconds: the voices slide an
+	 *      octave, G2 to G3 (with two an octave above), a 20 dB crescendo from a
+	 *      tenth of the top, the vibrato quickening and widening.
+	 *   2. AT THE TOP for what is left of the wait (holdClimbMs decides the
+	 *      split) - the held breath before the reveal.
+	 *   3. The STRIKE as the card turns: the voices drop an octave and are gone
+	 *      under a crack, its body and the thunder - see strike().
+	 *
+	 * An open vowel, not a tone. Six detuned sawtooths sung through the "oh"
+	 * formants (OH), with breath through the same bank, are a crowd going
+	 * "ohhhh"; the same sawtooths through a closing lowpass were a buzzy
+	 * "mmmm", which is what the owner heard in the version before this. Five
+	 * listens to get here: a steady pedal that barely rose stood still, a climb
+	 * that sped up into the turn was the wrong shape, an even climb that faded
+	 * out did not land, and a dive over a thud was too subtle an ending.
+	 *
+	 * RELEASED, NOT ENDED. The reveal calls the returned release the moment the
+	 * card turns, however the wait ended - on time, slammed, or cut short by the
+	 * turbo slider - so the strike always lands on the turn and the voices can
+	 * never outlast the card.
+	 */
+	playLastCardHold(climb: number): () => void {
+		if (!(climb >= HOLD_MIN_CLIMB)) return () => {};
+		const release = swell({
+			from: 98,
+			to: 196,
+			climb,
+			voices: CROWD,
+			type: 'sawtooth',
+			gain: 0.2,
+			floor: 0.1,
+			formants: OH,
+			body: 0.35,
+			breath: 1.2,
+			vibrato: { rate: [rand(4.4, 4.8), rand(6, 6.6)], depth: [6, 20] },
+			space: 0.5,
+		});
+		let struck = false;
+		return () => {
+			if (struck) return;
+			struck = true;
+			release({ seconds: 0.18, cents: -1200 });
+			strike();
+		};
 	},
 
 	/**

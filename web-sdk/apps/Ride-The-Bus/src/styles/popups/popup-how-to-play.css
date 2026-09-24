@@ -305,3 +305,103 @@
     min-height: 36px;
   }
 }
+
+/* ---- The controls guide ---------------------------------------------------
+   Each line led by the button it describes (ControlGlyph), in a fixed-width
+   column so the words start on one edge however wide a glyph is - the MODE
+   pill and the plus-minus pair are wider than the discs. */
+.info-body .control-guide {
+  list-style: none;
+  padding-inline-start: 0;
+  --ctl-glyph-size: calc(var(--ui-bar) * 2.5);
+}
+
+.control-guide li {
+  display: grid;
+  grid-template-columns: calc(var(--ui-bar) * 4.4) minmax(0, 1fr);
+  align-items: center;
+  gap: calc(var(--ui-bar) * 0.8);
+  margin: calc(var(--ui-bar) * 0.55) 0;
+}
+
+.control-guide li > :global(.ctl-glyph) {
+  justify-self: center;
+}
+
+/* ---- The example round ----------------------------------------------------
+   Four dealt cards, each over the pick it met, how many cards could have met
+   it, and the running total after it. The cards are the board's own paper and
+   inks, like the intro's minis, so the example shows the card the game deals.
+   The last total is the payout and is picked out in the figure gold. */
+.info-body .example-round {
+  list-style: none;
+  padding-inline-start: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: calc(var(--ui-bar) * 0.6);
+  margin: calc(var(--ui-bar) * 0.7) 0 calc(var(--ui-bar) * 0.9);
+}
+
+.ex-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--ui-bar) * 0.28);
+  margin: 0;
+  min-width: 0;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.ex-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--ui-bar) * 0.1);
+  width: calc(var(--ui-bar) * 3.3);
+  height: calc(var(--ui-bar) * 4.6);
+  border-radius: calc(var(--ui-bar) * 0.45);
+  background: var(--card-paper);
+  color: var(--card-ink);
+  box-shadow:
+    0 1px 2px rgba(var(--shadow-rgb), 0.5),
+    0 calc(var(--ui-bar) * 0.3) calc(var(--ui-bar) * 0.7) rgba(var(--shadow-rgb), 0.35);
+  font-size: calc(var(--ui-bar) * 1.35);
+  font-weight: 800;
+}
+
+.ex-card.red { color: var(--card-red); }
+
+.ex-rank {
+  font-family: var(--font-display);
+  line-height: 1;
+}
+
+.ex-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--ui-bar) * 0.25);
+  font-size: calc(var(--ui-bar) * 1.02);
+  font-weight: 700;
+  color: var(--ink-strong);
+  --mark-size: calc(var(--ui-bar) * 0.95);
+}
+
+.ex-tick { color: var(--win-soft); display: inline-flex; }
+
+.ex-odds {
+  font-size: calc(var(--ui-bar) * 0.92);
+  color: var(--ink-dim);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ex-total {
+  font-size: calc(var(--ui-bar) * 1.12);
+  font-weight: 800;
+  color: var(--ink-body);
+  font-variant-numeric: tabular-nums;
+}
+
+.ex-step.is-last .ex-total { color: var(--gold-bright); }

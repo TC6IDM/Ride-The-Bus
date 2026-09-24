@@ -1,5 +1,7 @@
 /**
- * The three voices every cue in the book is built from: tone, noise, thud.
+ * The voices every cue in the book is built from: tone, noise and thud, which
+ * are fire-and-forget, and swell, the one held voice, which hands back a
+ * release because the moment it scores can end early.
  *
  * openVoice is the gate they all pass through, and it asks BOTH halves of the
  * split: audioContext for the graph, audioMixer for whether this bus would
@@ -10,7 +12,7 @@
  * ONE OF FIVE. audioGraph.ts was 1,197 lines; it is now audioMixer.ts (what the
  * player has set), audioContext.ts (the one graph, and when it may open),
  * audioVariation.ts (the randomness every cue borrows), audioVoices.ts (tone,
- * noise, thud) and audioLoop.ts (the produced bed's overlapping passes). The
+ * noise, thud, swell) and audioLoop.ts (the produced bed's overlapping passes). The
  * whole-graph argument - why ONE context, one limiter, one room - is at the top
  * of audioContext.ts.
  */
@@ -300,3 +302,251 @@ export function thud({
 	tone({ from, to, duration, type: 'sine', gain, delay, attack, space: 0.1, jitter: 30, bus });
 }
 
+type SwellOptions = {
+	/** Pitch at the start and at the top of the climb, in Hz. */
+	from: number;
+	to?: number;
+	/** Seconds to climb from `from` to `to`. The top is held after that, until
+	 *  the release. */
+	climb: number;
+	/** The singers, as [ratio to the pitch, level]. A handful a few cents apart
+	 *  is what turns one tone into a crowd. */
+	voices?: readonly (readonly [number, number])[];
+	type?: OscillatorType;
+	/** Peak gain 0..1, before the bus gain. */
+	gain?: number;
+	/** Where the level starts, as a fraction of `gain`. The crescendo is the
+	 *  distance from here to the top. */
+	floor?: number;
+	/** The vowel, as formants [Hz, Q, level]: every singer is heard through all
+	 *  of them at once. None, and the singers are heard as they are. */
+	formants?: readonly (readonly [number, number, number])[];
+	/** A lowpassed path beside the formants, for weight: a formant bank takes
+	 *  the fundamental away with everything else between its peaks. */
+	body?: number;
+	/** Breath: pink noise through the same formants, at this level beside the
+	 *  singers. */
+	breath?: number;
+	/** Vibrato, [at the start, at the top] for its rate in Hz and its depth in
+	 *  cents. */
+	vibrato?: { rate: readonly [number, number]; depth: readonly [number, number] };
+	space?: number;
+	/** Maximum random detune of the whole crowd, in cents. */
+	jitter?: number;
+	bus?: AudioBusName;
+};
+
+/** Seconds a swell may go on sounding past the top when nothing releases it. */
+const SWELL_CEILING = 4;
+
+/** Seconds of breath, looped. Longer than any hold, so the loop is never heard. */
+const BREATH_SECONDS = 2.5;
+
+/**
+ * How a swell ends: over `seconds`, falling `cents` in pitch as it goes. The
+ * defaults are a plain 90ms fade; a large negative `cents` is a dive.
+ */
+export type SwellRelease = (end?: { seconds?: number; cents?: number }) => void;
+
+/**
+ * Seconds of pink noise in a fresh buffer, for a voice that has to BREATHE for
+ * as long as it is held - noise()'s bursts are shaped to die away. Paul
+ * Kellet's filter and normalisation, the same as noise() uses.
+ */
+function pinkBuffer(audio: BaseAudioContext, seconds: number): AudioBuffer {
+	const frames = Math.max(1, Math.floor(audio.sampleRate * seconds));
+	const buffer = audio.createBuffer(1, frames, audio.sampleRate);
+	const data = buffer.getChannelData(0);
+	let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0; // prettier-ignore
+	for (let i = 0; i < frames; i++) {
+		const w = Math.random() * 2 - 1;
+		b0 = 0.99886 * b0 + w * 0.0555179;
+		b1 = 0.99332 * b1 + w * 0.0750759;
+		b2 = 0.969 * b2 + w * 0.153852;
+		b3 = 0.8665 * b3 + w * 0.3104856;
+		b4 = 0.55 * b4 + w * 0.5329522;
+		b5 = -0.7616 * b5 - w * 0.016898;
+		data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.11;
+		b6 = w * 0.115926;
+	}
+	return buffer;
+}
+
+/**
+ * A HELD voice - the one voice here that is not told how long it lasts.
+ *
+ * tone(), noise() and thud() are fire-and-forget: each knows its length and
+ * schedules its own end. The last card's hold cannot work that way. The wait it
+ * sits under can end early - a tap collapses the reveal to instant, and the
+ * turbo slider can move mid-round - and a voice that outlived the card it was
+ * building towards would be the one sound in the game that lied about what is
+ * happening. So this climbs for `climb`, holds the top if nothing stops it, and
+ * hands back a release.
+ *
+ * The release goes through a gain stage of its OWN, not the swell's envelope.
+ * Cutting an envelope mid-ramp means knowing where the ramp had got to, and
+ * `AudioParam.value` does not report that reliably across browsers
+ * (cancelAndHoldAtTime, which would, is missing in Firefox) - guess wrong and
+ * the level steps, which is a click. A second stage sitting at 1.0 has nothing
+ * to cancel: it only ever falls from where it already is. The release can also
+ * DIVE, through `detune`, which the climb never writes - so nothing scheduled is
+ * cancelled there either, even when the wait was cut short mid-climb.
+ *
+ * WHAT IT SINGS. With `formants` it is a vowel rather than a tone: every
+ * singer through a bank of band-passes at the vowel's resonances, which stay
+ * put while the pitch moves - exactly what a mouth does, and why a voice
+ * sliding up still sounds like the same word. Breath through the same bank and
+ * a vibrato that widens as it climbs make the handful of detuned singers a
+ * crowd. Without formants a sawtooth is a closed-mouth buzz, which is what the
+ * last-card hum was until the owner asked for "more ohhhh, less mmmm".
+ *
+ * EVERYTHING CLIMBS IN A STRAIGHT LINE - pitch, level, vibrato - one
+ * linearRampToValueAtTime each, in plain Hz and plain gain, and then holds the
+ * top until released. The caller sets both times, so whatever lies between the
+ * top and the release is the plateau.
+ *
+ * Nothing sounds past SWELL_CEILING after the top whatever the caller does, so
+ * a release that never arrives - a reveal that threw, a closed game - still ends.
+ */
+export function swell({
+	from,
+	to = from,
+	climb,
+	voices = [[1, 1]],
+	type = 'sawtooth',
+	gain = 0.1,
+	floor = 0.3,
+	formants = [],
+	body = 0,
+	breath = 0,
+	vibrato,
+	space = 0.3,
+	jitter = 8,
+	bus = 'sfx',
+}: SwellOptions): SwellRelease {
+	const voice = openVoice(bus);
+	if (!voice) return () => {};
+	const { audio, out, room } = voice;
+
+	const wobble = drift(jitter);
+	// Same lead as tone(): a start inside the block being rendered is a click.
+	const start = audio.currentTime + 0.005;
+	const top = start + Math.max(climb, 0.05);
+
+	/** Take `param` from `a` to `b` between two times, in a straight line. */
+	const line = (param: AudioParam, a: number, b: number, begin: number, end: number) => {
+		param.setValueAtTime(a, begin);
+		param.linearRampToValueAtTime(b, end);
+	};
+
+	// Everything the singers make meets here, then goes out through the vowel.
+	const mix = audio.createGain();
+
+	// The swell: in quickly at `floor` of the top so it is there from the first
+	// beat of the wait, then the rest of the way in a straight line.
+	const attack = Math.min(0.12, climb / 4);
+	const env = audio.createGain();
+	env.gain.setValueAtTime(0.0001, start);
+	env.gain.exponentialRampToValueAtTime(gain * floor, start + attack);
+	line(env.gain, gain * floor, gain, start + attack, top);
+
+	const gate = audio.createGain();
+	gate.gain.value = 1;
+
+	if (formants.length === 0) mix.connect(env);
+	for (const [frequency, q, level] of formants) {
+		const band = audio.createBiquadFilter();
+		band.type = 'bandpass';
+		band.frequency.value = frequency;
+		band.Q.value = q;
+		const weight = audio.createGain();
+		weight.gain.value = level;
+		mix.connect(band);
+		band.connect(weight);
+		weight.connect(env);
+	}
+	if (body > 0) {
+		const low = audio.createBiquadFilter();
+		low.type = 'lowpass';
+		low.frequency.value = 320;
+		low.Q.value = 0.7;
+		const weight = audio.createGain();
+		weight.gain.value = body;
+		mix.connect(low);
+		low.connect(weight);
+		weight.connect(env);
+	}
+
+	const singers = voices.map(([ratio, level]) => {
+		const osc = audio.createOscillator();
+		osc.type = type;
+		line(osc.frequency, from * ratio * wobble, to * ratio * wobble, start, top);
+		const weight = audio.createGain();
+		weight.gain.value = level;
+		osc.connect(weight);
+		weight.connect(mix);
+		return osc;
+	});
+
+	const held: AudioScheduledSourceNode[] = [...singers];
+
+	if (vibrato) {
+		const lfo = audio.createOscillator();
+		lfo.type = 'sine';
+		line(lfo.frequency, vibrato.rate[0], vibrato.rate[1], start, top);
+		const depth = audio.createGain();
+		line(depth.gain, vibrato.depth[0], vibrato.depth[1], start, top);
+		lfo.connect(depth);
+		for (const osc of singers) depth.connect(osc.detune);
+		held.push(lfo);
+	}
+
+	if (breath > 0) {
+		const air = audio.createBufferSource();
+		air.buffer = pinkBuffer(audio, BREATH_SECONDS);
+		air.loop = true;
+		const weight = audio.createGain();
+		weight.gain.value = breath;
+		air.connect(weight);
+		weight.connect(mix);
+		held.push(air);
+	}
+
+	env.connect(gate);
+	gate.connect(out);
+	if (space > 0 && room) {
+		const tap = audio.createGain();
+		tap.gain.value = space;
+		gate.connect(tap);
+		tap.connect(room);
+	}
+
+	for (const node of held) {
+		node.start(start);
+		node.stop(top + SWELL_CEILING);
+	}
+
+	let released = false;
+	return ({ seconds = 0.09, cents = 0 } = {}) => {
+		if (released) return;
+		released = true;
+		// The same lead as the start: a change scheduled at currentTime can land
+		// inside the block already being rendered.
+		const now = audio.currentTime + 0.005;
+		const end = now + seconds;
+		// A dive holds full level for its first quarter - a fall has to be HEARD -
+		// and a plain fade goes at once.
+		let hold = 0;
+		if (cents !== 0) {
+			hold = seconds * 0.25;
+			for (const osc of singers) {
+				osc.detune.setValueAtTime(0, now);
+				osc.detune.linearRampToValueAtTime(cents, end);
+			}
+		}
+		gate.gain.setValueAtTime(1, now + hold);
+		// Five time constants in what is left: under 1% remains when the voices stop.
+		gate.gain.setTargetAtTime(0, now + hold, (seconds - hold) / 5);
+		for (const node of held) node.stop(end + 0.02);
+	};
+}

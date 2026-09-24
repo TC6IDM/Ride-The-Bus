@@ -4,7 +4,7 @@
 .err-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 90;
+  z-index: var(--z-error-backdrop);
   background: rgba(var(--shadow-rgb), 0.66);
 }
 
@@ -46,7 +46,7 @@
   --tint-rgb: var(--gold-rgb);
   --tint-ink: var(--on-gold-ink);
   position: fixed;
-  z-index: 91;
+  z-index: var(--z-error);
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);

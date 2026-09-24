@@ -141,7 +141,7 @@
 .ss-popup-backdrop {
 	position: fixed;
 	inset: 0;
-	z-index: 1001;
+	z-index: var(--z-intro-popup);
 	background: rgba(var(--shadow-rgb), 0.65);
 	display: flex;
 	align-items: center;
@@ -298,6 +298,11 @@
 @media (max-height: 320px) {.ss-card {
 		gap: calc(var(--ui) * 1.2);
 		padding: calc(var(--ui) * 1.5) calc(var(--ui) * 2);
+		/* Hidden, not just dimmed. At every larger size the round-details panel
+		   covers the lockup whole; here the title runs a few pixels wider than
+		   the 126px panel, and its first and last letters showed through the
+		   dimmer as two slivers either side of it (2026-09-22 audit). */
+		visibility: hidden;
 	}
 .ss-logo {
 		width: calc(var(--ui) * 9);

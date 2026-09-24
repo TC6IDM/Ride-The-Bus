@@ -428,15 +428,19 @@ describe('parseModeName', () => {
   // .svelte component that `node --test` cannot mount, and the failure is
   // silent for two of the three families.
   test('every full-game-win decision in Game.svelte asks isCleanSweep', () => {
-    // The four sites are spread across the component (the running-win label)
+    // The five sites are spread across the component (the running-win label)
     // and the round modules (the takeover floor, the win sting, the autoplay
-    // stop), so this counts against EVERY source Game.svelte was split into.
-    // The negative below needs the same net to mean "nowhere".
+    // stop, the last-card hold), so this counts against EVERY source
+    // Game.svelte was split into. The negative below needs the same net to
+    // mean "nowhere".
     const source = GAME_ALL;
 
-    // Four decisions: the takeover floor, the autoplay stop, the win sting and
-    // the running-win label. If a fifth is added it should be here too - raising
-    // this number is the intended way to add one, not an obstacle to it.
+    // Five decisions: the takeover floor, the autoplay stop, the win sting,
+    // the running-win label, and the last-card hold's floor (roundReveal - a
+    // card that would complete a clean sweep is held at least the entry tier's
+    // length, because landing it celebrates). If a sixth is added it should be
+    // here too - raising this number is the intended way to add one, not an
+    // obstacle to it.
     // The two fields now live on the `round` state object, so the accessor is
     // optional here - but the ARGUMENTS are still pinned to those two names.
     // Loosening this to `isCleanSweep\(` would accept a call passing anything.
@@ -446,8 +450,8 @@ describe('parseModeName', () => {
       ) ?? [];
     assert.equal(
       sweeps.length,
-      4,
-      `expected 4 isCleanSweep call sites in Game.svelte, found ${sweeps.length}`,
+      5,
+      `expected 5 isCleanSweep call sites in Game.svelte, found ${sweeps.length}`,
     );
 
     // The wrong spelling, gone and staying gone. A forgiven round has no bust

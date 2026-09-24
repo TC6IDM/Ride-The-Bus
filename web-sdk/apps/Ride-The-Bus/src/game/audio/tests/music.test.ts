@@ -590,7 +590,7 @@ describe('the loop seam', () => {
  */
 describe('the scene ladder', () => {
 	test('the bed is loudest with nothing happening and quietest under the fanfare', () => {
-		const level = (s: 'loading' | 'lobby' | 'idle' | 'round' | 'celebration') => {
+		const level = (s: 'loading' | 'lobby' | 'idle' | 'round' | 'hold' | 'celebration') => {
 			music.setScene(s);
 			return music.level();
 		};
@@ -599,6 +599,7 @@ describe('the scene ladder', () => {
 		const lobby = level('lobby');
 		const idle = level('idle');
 		const round = level('round');
+		const hold = level('hold');
 		const celebration = level('celebration');
 
 		// The board with no round on it is the only moment the music has the room.
@@ -610,6 +611,12 @@ describe('the scene ladder', () => {
 		// bed DOWN; a bed that rose here would fight the thing it is behind.
 		assert.ok(round < idle, 'the bed did not duck for the round');
 		assert.ok(celebration < round, 'the bed did not duck further for the celebration');
+
+		// The held last card: the room falls away under the hum that scores the
+		// wait. Still above the celebration, which a held win drops straight on
+		// into - the fanfare stays the moment the bed is quietest.
+		assert.ok(hold < round, 'the bed did not step back for the held last card');
+		assert.ok(celebration < hold, 'the held card ducked the bed below the fanfare');
 
 		// The takeover is the loudest moment in the game and the bed has to be the
 		// quietest it ever is, below even the loading screen.

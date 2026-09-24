@@ -63,7 +63,6 @@ export default {
 	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
 		'推測モードでの選択の組み合わせはそれぞれ独立したベットで、それぞれのオッズで価格が決まります。',
 	'Game modes': 'ゲームモード',
-	'Max win': '最大配当',
 	// Confirmation before a bet mode is activated - required by the approval
 	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
@@ -277,4 +276,16 @@ export default {
 		'カード2はカード1と同じ数字',
 	'Card 3 must match card 1':
 		'カード3はカード1と同じ数字',
+	'Needs %s':
+		'必要：%s',
+	'%n of %t':
+		'%t枚中%n枚',
+	'Last card':
+		'最後の1枚',
+	'Example round':
+		'ラウンドの例',
+	'Tap the amount for the quick-bet menu.':
+		'金額をタップするとクイックベットのメニューが開きます。',
+	'Max win %s your bet':
+		'最大配当 ベット額の%s',
 };

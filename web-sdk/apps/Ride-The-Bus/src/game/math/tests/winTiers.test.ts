@@ -19,11 +19,18 @@ import {
   autoHoldMs,
   countUpSegments,
   isNetWin,
+  HOLD_TOP_MS,
+  HOLD_TOP_SHARE,
+  holdClimbMs,
+  LAST_CARD_HOLD_MS,
+  lastCardHoldMs,
+  lastCardTunnels,
   segmentDurationMs,
   winTierFor,
   type WinTierId,
 } from '../winTiers.ts';
 import { FAMILY_RULES, MODE_FAMILIES, isCleanSweep, type ModeFamily } from '../modes.ts';
+import { source } from '../../sources.testlib.ts';
 
 /** The families that climb a ladder - every family whose guesses are the player's. */
 const LADDER_FAMILIES: readonly ModeFamily[] = MODE_FAMILIES.filter(
@@ -650,5 +657,105 @@ describe('isNetWin', () => {
     // No such payout exists in its books; this pins what the cost argument
     // means rather than a round that can happen.
     assert.equal(isNetWin(100, FAMILY_RULES.tr.cost), false);
+  });
+});
+
+/**
+ * The last card waits longer when a lot rides on it - and only on what rides
+ * on it. A hold keyed to whether the card LANDS would call the result before
+ * the card did.
+ */
+describe('lastCardHoldMs', () => {
+  test('no hold for a card that would not reach a celebration', () => {
+    assert.equal(lastCardHoldMs(5, false), 0);
+    assert.equal(lastCardHoldMs(0, true), 0, 'nothing riding, nothing held');
+  });
+
+  test('a card that would complete a clean sweep is held at least the entry length', () => {
+    // The takeover floors a full game win at Big, so the card that would
+    // complete one is worth a hold even when its figure is small.
+    assert.equal(lastCardHoldMs(MIN_FULL_GAME_WIN_MULTIPLIER, true), LAST_CARD_HOLD_MS.big);
+  });
+
+  test('the hold grows with the tier, and Max is the longest', () => {
+    const order: WinTierId[] = ['big', 'huge', 'mega', 'epic', 'max'];
+    for (let i = 1; i < order.length; i++) {
+      assert.ok(LAST_CARD_HOLD_MS[order[i]!] > LAST_CARD_HOLD_MS[order[i - 1]!], `${order[i]} is not held longer than ${order[i - 1]}`);
+    }
+    assert.equal(lastCardHoldMs(MAX_WIN_MULTIPLIER, true), LAST_CARD_HOLD_MS.max);
+  });
+
+  test("Three of a Kind's last card is held the longest", () => {
+    assert.equal(lastCardHoldMs(FAMILY_RULES.tr.maxWin, true, winTiersFor('tr')), LAST_CARD_HOLD_MS.max);
+  });
+
+  test('the reveal decides the hold without reading whether the card lands', () => {
+    const reveal = source('./round/roundReveal.svelte.ts');
+    const start = reveal.indexOf('if (i === last && !busted)');
+    const end = reveal.indexOf('await revealWait(650, 0);', start);
+    assert.ok(start >= 0 && end > start, 'the last-card hold block moved; re-anchor this test');
+    const block = reveal.slice(start, end).replace(/\/\/.*$/gm, '');
+    assert.doesNotMatch(block, /\.correct\b/, 'the hold reads event.correct - it would announce the result');
+    assert.match(block, /lastCardHoldMs\(/);
+  });
+});
+
+describe('holdClimbMs', () => {
+  // The held card and its hum rise together, sit at the top together, then
+  // the card slams down. One split of the wait for both - the shape the owner
+  // asked for by ear: up in a straight line, stay at the top, slam down.
+  test('every hold climbs for most of its wait and keeps the rest for the top', () => {
+    for (const hold of Object.values(LAST_CARD_HOLD_MS)) {
+      const wait = hold + 650;
+      const climb = holdClimbMs(wait);
+      const top = wait - climb;
+      assert.ok(top > 0, `a ${wait}ms wait has no time at the top`);
+      assert.ok(top <= HOLD_TOP_MS, `a ${wait}ms wait sits at the top for ${top}ms`);
+      assert.ok(top <= wait * HOLD_TOP_SHARE + 1e-9, `a ${wait}ms wait spends over a third at the top`);
+      assert.ok(climb >= wait * 0.6, `a ${wait}ms wait climbs for only ${climb}ms`);
+    }
+  });
+
+  test('a long wait sits at the top for the full plateau; a short one for its share', () => {
+    assert.equal(holdClimbMs(2050), 1650); // Max: 1400 + 650
+    assert.equal(holdClimbMs(1100), 1100 - 1100 * HOLD_TOP_SHARE); // Big: 450 + 650
+    assert.equal(holdClimbMs(0), 0);
+  });
+
+  test('only a card that could land Huge or bigger gets tunnel vision - by the stake, never the result', () => {
+    // The owner's call: a Big-win hold still rises and hums, the room stays
+    // lit; the tunnel is kept for the bigger stakes.
+    for (const family of ['base', 'sc', 'hs'] as const) {
+      const ladder = winTiersFor(family);
+      const at = (id: WinTierId) => ladder.find((tier) => tier.id === id)!.minMultiplier;
+      assert.equal(lastCardTunnels(1, false, ladder), false, `${family}: a card below every tier tunnels`);
+      assert.equal(lastCardTunnels(at('big'), false, ladder), false, `${family}: a Big-win card tunnels`);
+      assert.equal(lastCardTunnels(1, true, ladder), false, `${family}: a small clean sweep (floored to Big) tunnels`);
+      for (const id of ['huge', 'mega', 'epic', 'max'] as const) {
+        assert.equal(lastCardTunnels(at(id), false, ladder), true, `${family}: a ${id}-win card does not tunnel`);
+      }
+    }
+    // Three of a Kind's one rung is Max, so its held card always tunnels.
+    assert.equal(lastCardTunnels(FAMILY_RULES.tr.maxWin, true, winTiersFor('tr')), true);
+
+    // Decided in the same slice of the reveal as the hold, with no .correct in it.
+    const reveal = source('./round/roundReveal.svelte.ts');
+    const start = reveal.indexOf('if (i === last && !busted)');
+    const block = reveal.slice(start, reveal.indexOf('await revealWait(650, 0);', start)).replace(/\/\/.*$/gm, '');
+    assert.match(block, /lastCardTunnels\(/, 'the tunnel is not decided where the hold is');
+    assert.doesNotMatch(block, /\.correct\b/, 'the tunnel reads whether the card lands');
+  });
+
+  test('the card rises, and the tunnel closes, on that same clock - and the dark never falls on the card', () => {
+    // Grep, because the three live in a stylesheet no test can mount. The card
+    // and the tunnel both read --hold-climb (set from holdClimbMs); the held
+    // card is lifted over the tunnel, or tunnel vision would dim the one thing
+    // it exists to show.
+    const css = source('../styles/board/cards.css');
+    const zIndex = (selector: string) =>
+      Number(new RegExp(`${selector.replace(/\./g, '\\.')}\\s*\\{[^}]*z-index:\\s*(\\d+)`).exec(css)?.[1]);
+    assert.ok(zIndex('.card-slot.is-lit') > zIndex('.tunnel'), 'the held card is not lifted over the tunnel');
+    assert.match(css, /\.card-slot\.is-held \.card-block\s*\{[^}]*transition:\s*transform var\(--hold-climb/, 'the card does not rise on the climb clock');
+    assert.match(css, /\.tunnel\.is-closing\s*\{[^}]*transform var\(--hold-climb/, 'the tunnel does not close on the climb clock');
   });
 });

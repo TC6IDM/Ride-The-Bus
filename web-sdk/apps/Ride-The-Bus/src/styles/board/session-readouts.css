@@ -27,7 +27,7 @@
   position: absolute;
   top: calc(var(--ui) * 0.9);
   right: calc(var(--ui) * 0.9);
-  z-index: 6; /* above the title plate, below popups */
+  z-index: var(--z-rg-panel); /* above the title plate, below popups */
   display: flex;
   align-items: flex-start;
   gap: calc(var(--ui-bar) * 1.45);

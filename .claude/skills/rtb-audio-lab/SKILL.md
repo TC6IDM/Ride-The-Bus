@@ -24,7 +24,17 @@ npm run audio -- --seconds 30 --out bed-long
 npm run audio -- --params "dev_music=<id>"       # a benched take, once copied in
 npm run audio -- --params "dev_loop=40,70,4" --seconds 40 # make the seam happen
 npm run audio -- --scene loading --autoplay --seconds 8   # the loader, untouched
+npm run audio -- --play --mode red_equal_equal_heart --event max --seconds 12 --out hold-max
+                                                 # a held last card: the hum, the duck, the win
 ```
+
+`--play` builds a replay link, and a replay opens straight on its Round details,
+so the Play on that panel is both the first gesture and the deal: the lab starts
+recording just before pressing it, so the deal is in the capture. `--event`
+takes the replay server's aliases (`max`, `big`, `win`, `loss`, `bustwin`,
+`forgiven`) as well as a number; `max` and `big` are the longest and shortest
+holds. Run the lab against a non-default dev pair with `GAME_PORT=` and
+`REPLAY_PORT=`.
 
 Writes to the repo-root `scripts/.shots/audio/`:
 
@@ -210,7 +220,7 @@ energy under 250 Hz will be nearly inaudible on them however good it sounds on
 headphones.
 
 
-## Measuring a click: two ways to get it wrong
+## Measuring a click: three ways to get it wrong
 
 Both apply to any source, and a produced track with a bad loop seam is exactly
 the case to reach for them.
@@ -223,6 +233,17 @@ the case to reach for them.
    of a 65 Hz tone is 15.4 ms, so a 5 ms window sees a third of it and its RMS
    swings with **waveform phase** — which reports steady low tones as the
    clickiest thing in the capture.
+
+3. **A jump exactly on a 4096-sample boundary is the RECORDER, not the game.**
+   The tap is a ScriptProcessorNode, which runs on the main thread in
+   4096-frame blocks, and when the page is busy (a round starting, a card
+   turning, a hold beginning) it can drop or misalign a block. The capture then
+   jumps between two phases of perfectly smooth signal - identical slope on
+   either side, one sample of step. Check `index % 4096` before believing a
+   click: the last-card hum's release measured two such jumps (samples 114688
+   and 188416, both multiples of 4096) that an isolated OfflineAudioContext
+   render of the same voice showed were not there - it fell -29 to -74 dB in
+   100 ms and its stop moved the output by 0.00003.
 
 **High-pass first.** Clicks are broadband and fast; low content is neither, so
 filtering above ~2 kHz before looking removes the artefact entirely. Then

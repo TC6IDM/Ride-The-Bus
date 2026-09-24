@@ -329,14 +329,36 @@ is the only proof the subscription was paid before the tracks were generated.
 1. ~~**Drop the four PDFs into `licence-evidence/`.**~~ **Done.** Both Terms
    PDFs are in `terms/` (committed) and the invoice and receipt are in
    `private/` (ignored), as the evidence table above records.
-2. **Archive the page behind each generation URL** — screenshot or
-   print-to-PDF — **while the subscription is live.** The URLs and song ids are
-   recorded and verified, but a URL is only evidence for as long as it resolves,
-   and account access is not guaranteed after a lapse.
+2. ~~**Archive the page behind each generation URL**~~ **Done 2026-09-23.** All
+   ten song pages were captured while the subscription is live, into
+   `licence-evidence/private/generation-pages/` (ignored - each shows the
+   account handle). They are the public, logged-out view, and each records the
+   title, the handle, the style summary, the generation date and time, the model
+   (v5.5) and the length - the facts the tables above state, now held
+   independently of the URL resolving.
 3. **Back up `audio-masters/` off this machine.** Those WAVs are the permitted
    Downloads the commercial licence attaches to, and they are gitignored, so no
    clone, fork or remote holds a copy. A later re-download on a lapsed account
-   would carry the free-tier licence instead.
+   would carry the free-tier licence instead. **Still the owner's to do** - the
+   copy has to land somewhere this machine is not (an external drive, or a
+   cloud folder), which nothing in the repo can do. Made ready on 2026-09-23:
+   `audio-masters/SHA256SUMS` lists all nineteen files and travels with the
+   folder, so a copy verifies with `sha256sum -c SHA256SUMS`, and the ten WAV
+   masters' full hashes are below, in a tracked file, so a backup can be proven
+   to be the original downloads even if this machine is gone.
+
+   | Master | SHA-256 |
+   |---|---|
+   | `A.wav` (ships as `static/music/A.mp3`) | `087d34cf49ab3d4673895928a86e568da400785bc6e0ad0d4690d5d91ce6d4c2` |
+   | `A (1).wav` | `12dfbb243d2182a72327089d02858ba27d423f0495b25f820a1758e78b092985` |
+   | `B.wav` | `0cc6b31553e2763ab0fe023dd660dbbebac97281b4cebb853847bfb066717e46` |
+   | `B (1).wav` | `a2dd11e7993c1eaf52de77c99eb89d94d4bee41128afa48a0dfe32a778791cef` |
+   | `C.wav` | `9eab113cf52d1a3106f03698790a8f9d7afa3119eeeea3baec15b9320b1f5426` |
+   | `C (1).wav` | `1274d8eb26df49d95381b5543cf169ab761e21f22e8fd7a992c6caab1bedb15f` |
+   | `D.wav` | `aa5b65b3e02283b86c39a97d371f38b3ade10b65be01cac21b1021f620b4447b` |
+   | `D (1).wav` | `b2175d2cf309b333b03de8894e4c5cb5dc69dd4e34724db40d10befa28fa3f0e` |
+   | `E.wav` | `285f3f448a7543c989ebdbc975c9353c752e5006061e5b02851f7611a8dea8b0` |
+   | `E (1).wav` | `4f753c747bc9d1fa395fcf363d8676a000147e9d50f9a014dfad6f94e20cb117` |
 4. ~~**Prune to one track.**~~ **Done 2026-09-06.** The nine unused MP3s were
    moved to `audio-masters/` rather than deleted, their rows moved to the benched
    table above rather than dropped, and the `musicTracks.test.ts` directory

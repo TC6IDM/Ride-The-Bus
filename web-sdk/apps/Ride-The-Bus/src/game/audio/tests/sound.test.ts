@@ -33,16 +33,35 @@ import { PRESS_CUES_SOURCE, REVEAL_LOOP_SOURCE } from '../../sources.testlib.ts'
 
 /* ---- the fake ------------------------------------------------------------ */
 
-type OscRecord = { type: string; frequency: number };
+/** `end` is where the frequency was headed when the voice started - equal to
+ *  `frequency` for a steady voice, higher for one that climbs - `path` is every
+ *  ramp target on the way there and `kinds` how each ramp runs, `peakAt` is
+ *  when the last ramp lands (0 for a voice that never ramps), and `detune` is
+ *  the live param, because a release writes to it AFTER the voice has started. */
+type OscRecord = {
+	type: string;
+	frequency: number;
+	end: number;
+	path: number[];
+	kinds: RampKind[];
+	peakAt: number;
+	detune: ReturnType<typeof param> | null;
+};
 
 /** Every gain node ever built, so the standing mix can be asserted. */
-const gainNodes: { gain: { value: number } }[] = [];
+const gainNodes: { gain: ReturnType<typeof param> }[] = [];
 
 const created = {
 	oscillators: [] as OscRecord[],
+	/** Every stop() call on an oscillator - the held voice's release is one per voice. */
+	stops: 0,
 	bufferSources: 0,
+	/** Every stop() on a buffer source - only a HELD one (the hum's breath) calls it. */
+	sourceStops: 0,
 	gains: 0,
 	filters: 0,
+	/** Every filter built, so a vowel's formants and a strike's bands can be read. */
+	filterNodes: [] as { type: string; frequency: ReturnType<typeof param> }[],
 	compressors: 0,
 	convolvers: 0,
 	buffers: 0,
@@ -50,9 +69,12 @@ const created = {
 
 function resetCreated() {
 	created.oscillators = [];
+	created.stops = 0;
 	created.bufferSources = 0;
+	created.sourceStops = 0;
 	created.gains = 0;
 	created.filters = 0;
+	created.filterNodes = [];
 	created.compressors = 0;
 	created.convolvers = 0;
 	created.buffers = 0;
@@ -67,11 +89,18 @@ function resetCreated() {
  * columns then all read as the same note and the climb looked broken when it
  * was not.
  */
+type RampKind = 'linear' | 'exponential';
+
 function param(initial = 0) {
 	return {
 		value: initial,
 		start: initial,
 		started: false,
+		/** Every ramp target, in order, when each lands and how it runs - the
+		 *  shape of a climb, and where it stops climbing. */
+		ramps: [] as number[],
+		rampTimes: [] as number[],
+		rampKinds: [] as RampKind[],
 		setValueAtTime(v: number) {
 			this.value = v;
 			if (!this.started) {
@@ -80,11 +109,22 @@ function param(initial = 0) {
 			}
 			return this;
 		},
-		exponentialRampToValueAtTime(v: number) {
+		exponentialRampToValueAtTime(v: number, at = 0) {
 			this.value = v;
+			this.ramps.push(v);
+			this.rampTimes.push(at);
+			this.rampKinds.push('exponential');
 			return this;
 		},
-		linearRampToValueAtTime(v: number) {
+		linearRampToValueAtTime(v: number, at = 0) {
+			this.value = v;
+			this.ramps.push(v);
+			this.rampTimes.push(at);
+			this.rampKinds.push('linear');
+			return this;
+		},
+		// swell()'s release: its gate falls toward zero from wherever it is.
+		setTargetAtTime(v: number) {
 			this.value = v;
 			return this;
 		},
@@ -106,24 +146,40 @@ class FakeAudioContext {
 		// The frequency is read at start() rather than at creation, because tone()
 		// sets it after building the node - and it is the START pitch that is read,
 		// not the ramp target. See param() above.
-		const record: OscRecord = { type: 'sine', frequency: 0 };
+		const record: OscRecord = { type: 'sine', frequency: 0, end: 0, path: [], kinds: [], peakAt: 0, detune: null };
 		created.oscillators.push(record);
 		const node = {
 			type: 'sine',
 			frequency: param(),
+			detune: param(),
 			connect() {},
 			start() {
 				record.frequency = node.frequency.start;
+				record.end = node.frequency.value;
+				record.path = node.frequency.ramps.slice();
+				record.kinds = node.frequency.rampKinds.slice();
+				record.peakAt = node.frequency.rampTimes.at(-1) ?? 0;
+				record.detune = node.detune;
 				record.type = node.type;
 			},
-			stop() {},
+			stop() {
+				created.stops++;
+			},
 		};
 		return node;
 	}
 
 	createBufferSource() {
 		created.bufferSources++;
-		return { buffer: null, connect() {}, start() {} };
+		return {
+			buffer: null,
+			loop: false,
+			connect() {},
+			start() {},
+			stop() {
+				created.sourceStops++;
+			},
+		};
 	}
 
 	createGain() {
@@ -138,7 +194,9 @@ class FakeAudioContext {
 		// gain is a real AudioParam on a BiquadFilterNode - the shelf and
 		// peaking types use it, and the music bus's air shelf does. Absent
 		// here, building the graph threw "Cannot set properties of undefined".
-		return { type: 'lowpass', frequency: param(350), Q: param(1), gain: param(0), connect() {} };
+		const node = { type: 'lowpass', frequency: param(350), Q: param(1), gain: param(0), connect() {} };
+		created.filterNodes.push(node);
+		return node;
 	}
 
 	createDynamicsCompressor() {
@@ -421,6 +479,7 @@ describe('every cue actually makes a sound', () => {
 		['playBlocked', () => sound.playBlocked()],
 		['playAutoStart', () => sound.playAutoStart()],
 		['playAutoStop', () => sound.playAutoStop()],
+		['playLastCardHold', () => sound.playLastCardHold(1.2)()],
 	];
 
 	for (const [name, fire] of cues) {
@@ -588,6 +647,111 @@ describe('forgiveness does not sound like a bust', () => {
 	});
 });
 
+describe('the held last card', () => {
+	// The one cue that is not fire-and-forget: the wait it scores can be cut
+	// short, so it hands back a release, and the reveal calls it as the card
+	// turns. The shape took five listens and every miss is pinned below: a
+	// steady pedal that barely rose stood still; a climb that sped up into the
+	// turn was the wrong shape; an even climb that faded out did not land; a
+	// dive over a thud was too subtle; and a buzz through a lowpass was "mmmm"
+	// where "ohhhh" was asked for. Up in a straight line, hold the top, strike.
+	test('sings under a real climb and hands back a release that stops every voice', () => {
+		resetCreated();
+		const release = sound.playLastCardHold(0.8);
+		const oscillators = created.oscillators.length;
+		assert.ok(oscillators > 0 && created.bufferSources > 0, 'a held last card scheduled nothing');
+
+		const stopsBefore = created.stops;
+		const sourceStopsBefore = created.sourceStops;
+		release();
+		// Every singer and the vibrato stop, and so does the breath - the one
+		// held buffer. The strike adds noise and one sub hit, which stops itself.
+		const hits = created.oscillators.length - oscillators;
+		assert.equal(created.stops - stopsBefore, oscillators + hits, 'the release did not stop every voice the hum started');
+		assert.equal(created.sourceStops - sourceStopsBefore, 1, 'the breath was not stopped');
+
+		const after = [created.oscillators.length, created.bufferSources, created.stops];
+		release();
+		assert.deepEqual([created.oscillators.length, created.bufferSources, created.stops], after, 'a second release struck again');
+	});
+
+	test('a climb too short to sing plays nothing - not even the strike', () => {
+		// Turbo shortens the hold; under HOLD_MIN_CLIMB the voices would be a blip.
+		const release = sound.playLastCardHold(0.15);
+		release();
+		assert.equal(created.oscillators.length + created.bufferSources, 0, 'a blip-length hold got a hum or a strike');
+	});
+
+	test('is silent when muted, and its release is still safe to call', () => {
+		sound.setMuted(true);
+		const release = sound.playLastCardHold(0.8);
+		assert.doesNotThrow(() => release());
+		assert.equal(created.oscillators.length + created.bufferSources, 0, 'a muted game scheduled the hum or the strike');
+	});
+
+	test('it climbs in straight lines for exactly the climb, then holds the top', () => {
+		// The card's rise runs on the same number (holdClimbMs), so the voices
+		// must top out on it exactly - not before, not after.
+		const climb = 0.8;
+		resetCreated();
+		const before = gainNodes.length;
+		sound.playLastCardHold(climb);
+		const singers = created.oscillators.filter((o) => o.type === 'sawtooth');
+
+		assert.ok(singers.length >= 4, `${singers.length} singers is not a crowd`);
+		for (const voice of singers) {
+			assert.deepEqual(voice.kinds, ['linear'], 'a voice does not climb in one straight line');
+			assert.ok(voice.end / voice.frequency > 1.9, 'a voice climbs less than an octave');
+			assert.ok(Math.abs(voice.peakAt - (0.005 + climb)) < 1e-9, `a voice tops out at ${voice.peakAt}s, off the ${climb}s climb`);
+		}
+		// A crowd on ONE note: at least four voices within 40 cents of G2.
+		const low = singers.filter((voice) => voice.frequency < 150);
+		assert.ok(low.length >= 4, 'fewer than four voices on the pitch');
+		for (const voice of low) {
+			assert.ok(Math.abs(1200 * Math.log2(voice.frequency / 98)) < 40, `a voice starts at ${voice.frequency}Hz, off G2`);
+		}
+
+		// The level: the one gain the cue built that ramps upward at every step.
+		const env = gainNodes
+			.slice(before)
+			.map((node) => node.gain)
+			.find(({ ramps }) => ramps.length >= 2 && ramps.every((v, i) => i === 0 || v > ramps[i - 1]!));
+		assert.ok(env, 'no gain in the hum climbs to the top');
+		assert.equal(env.rampKinds.at(-1), 'linear', 'the crescendo is not a straight line');
+		assert.ok(20 * Math.log10(env.ramps.at(-1)! / env.ramps[0]!) >= 18, 'the crescendo is under 18 dB');
+		assert.ok(Math.abs(env.rampTimes.at(-1)! - (0.005 + climb)) < 1e-9, 'the level tops out off the climb');
+	});
+
+	test("it is an open 'ohhh', not a closed 'mmmm' - sung through the 'oh' formants", () => {
+		resetCreated();
+		sound.playLastCardHold(0.8);
+		const bands = created.filterNodes.filter((f) => f.type === 'bandpass').map((f) => f.frequency.value);
+		assert.ok(bands.some((f) => f >= 380 && f <= 520), 'no first formant near 450Hz');
+		assert.ok(bands.some((f) => f >= 700 && f <= 900), 'no second formant near 800Hz');
+
+		const vibrato = created.oscillators.filter((o) => o.type === 'sine');
+		assert.equal(vibrato.length, 1, 'no vibrato');
+		assert.ok(vibrato[0]!.end > vibrato[0]!.frequency, 'the vibrato does not quicken');
+	});
+
+	test('then it strikes like lightning as the card turns - a ripping crack, thunder, the voices dropping away', () => {
+		resetCreated();
+		const release = sound.playLastCardHold(0.8);
+		const singers = created.oscillators.filter((o) => o.type === 'sawtooth');
+		const filtersBefore = created.filterNodes.length;
+		const sourcesBefore = created.bufferSources;
+		release();
+
+		for (const voice of singers) {
+			assert.ok((voice.detune!.ramps.at(-1) ?? 0) <= -1200, 'the voices do not drop away under the strike');
+		}
+		const bands = created.filterNodes.slice(filtersBefore).map((f) => f.frequency.start);
+		assert.ok(bands.filter((f) => f >= 4000).length >= 3, 'the crack does not rip - fewer than three bright bursts');
+		assert.ok(bands.some((f) => f <= 250), 'no thunder under the crack');
+		assert.ok(created.bufferSources - sourcesBefore >= 5, 'the strike is not made of noise');
+	});
+});
+
 /* ---- the grep guard ------------------------------------------------------ */
 
 describe('the reveal loop is wired to the right cues', () => {
@@ -664,6 +828,39 @@ describe('the reveal loop is wired to the right cues', () => {
 
 	test('the deal is NOT staggered - it is the cadence the rest falls in behind', () => {
 		assert.match(loop, /sound\.playDeal\(\)/, 'the deal now takes an argument it should not');
+	});
+
+	test('the hold only ducks the music, closes the tunnel and sings when it is long enough to be felt', () => {
+		// Near the top of the turbo range the climb is a blink. Without the gate
+		// every held card of a fast autoplay run pumped the bed down and back and
+		// dimmed the room for an instant - the hum alone knew to stay quiet.
+		const gate = loop.indexOf('HOLD_MIN_CLIMB');
+		assert.ok(gate > loop.indexOf('holdIndex = i'), 'the hold is not gated on how long it will run');
+		const felt = loop.slice(gate, loop.indexOf('await revealWait(hold, 0)', gate));
+		for (const effect of ['lastCardHeld = true', 'holdTunnel =', 'sound.playLastCardHold(']) {
+			assert.ok(felt.includes(effect), `${effect} is not inside the felt-hold gate`);
+		}
+	});
+
+	test('the held last card is scored, and its hum is released as the card turns', () => {
+		// Not cueLead'd, and it needs no stagger: an instant reveal has no wait to
+		// score, and the cue plays nothing for one. What it needs instead is the
+		// right END. Released after the flip, it drones over the result; released
+		// before the waits have run, it is cut off before it builds.
+		const call = /(\w+)\s*=\s*sound\.playLastCardHold\(/.exec(loop);
+		assert.ok(call, 'the held last card no longer plays its hum');
+		assert.ok(call.index > loop.indexOf('holdIndex = i'), 'the hum starts outside the hold');
+
+		const release = loop.indexOf(`${call[1]}()`, call.index);
+		assert.ok(release > call.index, 'the hum is never released');
+		assert.ok(
+			loop.indexOf('await revealWait(650, 0)', call.index) < release,
+			'the hum is released before the wait it scores has run',
+		);
+		assert.ok(
+			release < loop.indexOf('revealedCards[i] = event.card'),
+			'the hum is released after the card has turned, so it drones over the result',
+		);
 	});
 });
 

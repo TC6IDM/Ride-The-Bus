@@ -63,7 +63,6 @@ export default {
 	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
 		'Jede Kombination von Tipps in einem Ratemodus ist ein eigener Einsatz, bepreist nach ihren eigenen Quoten.',
 	'Game modes': 'Spielmodi',
-	'Max win': 'Maximalgewinn',
 	// Confirmation before a bet mode is activated - required by the approval
 	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
@@ -281,4 +280,16 @@ export default {
 		'Karte 2 muss Karte 1 entsprechen',
 	'Card 3 must match card 1':
 		'Karte 3 muss Karte 1 entsprechen',
+	'Needs %s':
+		'Nötig: %s',
+	'%n of %t':
+		'%n von %t',
+	'Last card':
+		'Letzte Karte',
+	'Example round':
+		'Beispielrunde',
+	'Tap the amount for the quick-bet menu.':
+		'Tippe auf den Betrag für das Schnelleinsatz-Menü.',
+	'Max win %s your bet':
+		'Maximalgewinn %s deines Einsatzes',
 };

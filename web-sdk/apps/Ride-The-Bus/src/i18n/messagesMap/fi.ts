@@ -63,7 +63,6 @@ export default {
 	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
 		'Jokainen arvausyhdistelmä arvaustilassa on oma vetonsa, hinnoiteltu omien kertoimiensa mukaan.',
 	'Game modes': 'Pelitilat',
-	'Max win': 'Enimmäisvoitto',
 	// Confirmation before a bet mode is activated - required by the approval
 	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
@@ -279,4 +278,16 @@ export default {
 		'Kortin 2 on vastattava korttia 1',
 	'Card 3 must match card 1':
 		'Kortin 3 on vastattava korttia 1',
+	'Needs %s':
+		'Tarvitaan %s',
+	'%n of %t':
+		'%n/%t',
+	'Last card':
+		'Viimeinen kortti',
+	'Example round':
+		'Esimerkkikierros',
+	'Tap the amount for the quick-bet menu.':
+		'Napauta summaa avataksesi pikapanosvalikon.',
+	'Max win %s your bet':
+		'Enimmäisvoitto %s panoksestasi',
 };

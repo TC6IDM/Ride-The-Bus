@@ -391,6 +391,29 @@ async function main() {
   }
   await sleep(SCENE === 'loading' ? 300 : 3000);
 
+  // A replay opens straight on its Round details now (Game.svelte), so there is
+  // no .ss-continue to press and nothing above opened the graph: the panel's
+  // Play is the first gesture, and pressing it also deals. Without this, --play
+  // stopped at NO TAP unless --autoplay had opened the graph on mount. So record
+  // from BEFORE that press - the tap installs itself on the first cue's connect
+  // and already knows it is recording - and do not deal a second time below.
+  let dealt = false;
+  if (PLAY && SCENE !== 'loading' && !(await ev(`return !!window.__rtb.ready;`))) {
+    await ev(`window.__rtb.chunks.length = 0; window.__rtb.frames = 0; window.__rtb.recording = true; return true;`);
+    const box = await ev(`
+      const el = document.querySelector('.ss-play-btn');
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2), cls: el.className };`);
+    if (box) {
+      await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: box.x, y: box.y, button: 'left', clickCount: 1 });
+      await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: box.x, y: box.y, button: 'left', clickCount: 1 });
+      dealt = true;
+      for (let i = 0; i < 30 && !(await ev(`return !!window.__rtb.ready;`)); i++) await sleep(100);
+    }
+    console.log('dealt, as the first gesture:', box ? box.cls : 'NO PLAY BUTTON FOUND');
+  }
+
   const st = await ev(`return { ready: window.__rtb.ready, err: window.__rtb.err||null, state: window.__rtbCtx?window.__rtbCtx.state:null, sr: window.__rtbCtx?window.__rtbCtx.sampleRate:null };`);
   console.log('tap:', JSON.stringify(st));
   if (!st.ready) {
@@ -417,10 +440,11 @@ async function main() {
     console.log('resume:', resumed);
   }
 
-  await ev(`window.__rtb.chunks.length = 0; window.__rtb.frames = 0; window.__rtb.recording = true; return true;`);
+  // Already recording, from before the press, when the press was the deal.
+  if (!dealt) await ev(`window.__rtb.chunks.length = 0; window.__rtb.frames = 0; window.__rtb.recording = true; return true;`);
 
   // Deal, once recording is live, so the round lands inside the capture.
-  if (PLAY) {
+  if (PLAY && !dealt) {
     const box = await ev(`
       const el = document.querySelector('.ss-play-btn') || document.querySelector('.cb-spin');
       if (!el) return null;

@@ -72,7 +72,6 @@ export default {
 	// miss keeps differs - plus Three of a Kind, a different game at 250x the bet.
 	// Blurbs quote the measured ceilings so the copy cannot drift from the maths.
 	'Game Mode': 'Game Mode',
-	'Max win': 'Max win',
 	// Confirmation before a bet mode is activated - required by the approval
 	// checklist ("high cost bet modes require confirmation": Three of a Kind is
 	// 250x), and worth having anyway: the guess families cost the same but differ
@@ -335,4 +334,25 @@ export default {
 		'Card 2 must match card 1',
 	'Card 3 must match card 1':
 		'Card 3 must match card 1',
+
+	// Added 2026-09-23: the reveal's tension pass, How to Play's example round and
+	// controls guide, and the per-mode ceiling wording.
+	// The reveal's third line, before each card turns: what it has to be. %s is a rank run (8–K), a suit or a colour.
+	'Needs %s':
+		'Needs %s',
+	// How many cards left land the guess: %n of the %t still in the deck.
+	'%n of %t':
+		'%n of %t',
+	// The readout label while the last card is held because a lot rides on it.
+	'Last card':
+		'Last card',
+	// How to Play: the heading over the dealt example, whose figures are the mode's own.
+	'Example round':
+		'Example round',
+	// The controls guide on a phone, where the bar has no plus and minus - the other line's second sentence alone.
+	'Tap the amount for the quick-bet menu.':
+		'Tap the amount for the quick-bet menu.',
+	// A mode's ceiling as a multiple of the bet, in the picker, its confirmation and How to Play. It read "Max win 1354.2× Bet".
+	'Max win %s your bet':
+		'Max win %s your bet',
 };

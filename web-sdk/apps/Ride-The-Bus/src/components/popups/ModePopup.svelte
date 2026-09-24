@@ -85,7 +85,7 @@
         {#if target.cost !== 1}
           <p class="mode-confirm-cost">{t('Costs %c× your bet').replace('%c', String(target.cost))}</p>
         {/if}
-        <p class="mode-confirm-max">{t('Max win')} {target.maxWin}× {t('Bet')}</p>
+        <p class="mode-confirm-max">{t('Max win %s your bet').replace('%s', `${target.maxWin}×`)}</p>
         <!-- The family's ceiling is the headline above; this is what the four
              guesses already on the board would top out at if the switch goes
              through. Only 8 of a family's 64 combinations reach the headline,
@@ -180,7 +180,7 @@
           <!-- Approval requires the maximum win per mode. Read from
                FAMILY_RULES rather than written into the blurb, so the figure
                exists once and a test can pin it to the payout maths. -->
-          <span class="mode-option-max">{t('Max win')} {rules.maxWin}× {t('Bet')}</span>
+          <span class="mode-option-max">{t('Max win %s your bet').replace('%s', `${rules.maxWin}×`)}</span>
           <!-- And the cost, on the one family where it is not 1x. Approval
                wants "description and cost information" per mode; the other
                three carry it in the foot note, which says every mode. -->

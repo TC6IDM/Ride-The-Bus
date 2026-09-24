@@ -199,18 +199,20 @@ reading before proposing it again.
   alone is off the scale and keeps its cream-on-crimson inversion. The hand hops
   through `element.animate()` with `composite: 'add'`; both halves matter.
 - **"A full game win" is `isCleanSweep(bustedIndex, forgivenIndex)`, never
-  "did not bust", and FOUR decisions ask it.** A clean sweep is floored onto the
+  "did not bust", and FIVE decisions ask it.** A clean sweep is floored onto the
   takeover ladder however little it pays; the same question also gates the
-  autoplay **Stop on full game win**, the `playFullWin()` sting and the
-  running-win bar's **"Full Game Win!"** label. Only the takeover was converted
+  autoplay **Stop on full game win**, the `playFullWin()` sting, the
+  running-win bar's **"Full Game Win!"** label, and (since 2026-09-23) the
+  **last-card hold's floor** - a card that would complete a clean sweep is held
+  at least the entry tier's length. Only the takeover was converted
   when `isCleanSweep` landed, so a forgiven Second Chance round — three of four
   right, no bust marker — stopped autoplay runs and called itself a full game
-  win for months. `modes.test.ts` greps all four sites and fails if
-  `bustedIndex === null` reappears anywhere in the game's own sources. The four
-  now live in three files — the running-win label in `GameBoard.svelte`, the
+  win for months. `modes.test.ts` greps all five sites and fails if
+  `bustedIndex === null` reappears anywhere in the game's own sources. The five
+  now live in four files — the running-win label in `GameBoard.svelte`, the
   takeover floor and the win sting in `roundSettle.svelte.ts`, the autoplay stop
-  in `autoplayLoop.svelte.ts` — which is why the grep reads a MANIFEST rather
-  than a path. All three names have already changed once under a split, and the
+  in `autoplayLoop.svelte.ts`, the hold in `roundReveal.svelte.ts` — which is
+  why the grep reads a MANIFEST rather than a path. All three names have already changed once under a split, and the
   manifest is what kept the grep finding them. See `game/sources.testlib.ts`.
 
 ### Bet modes, ceilings and volatility — `references/modes-and-volatility.md`
@@ -407,13 +409,26 @@ reading before proposing it again.
   either way — measured through CDP with `Log.enable` to confirm a constructed and
   closed context logs nothing. A cold load in a strict embed is still silent
   until the first touch; that is a browser rule.
-- **The scene ladder is a DIP, not a climb.** Five scenes, one file, so level is
+- **The scene ladder is a DIP, not a climb.** Six scenes, one file, so level is
   the only thing a scene can change: loudest at `idle`, ducked for `round` (the
-  busiest the cue book gets), ducked hardest and fastest for `celebration` —
-  the bed and the fanfares share one limiter, so a bed sitting on top of a win
-  would duck the win. The fade time belongs to the **destination**, which makes
-  ducks fast and recoveries slow for free. A celebration outranks a round in the
-  derivation, because the round is still in flight underneath the takeover.
+  busiest the cue book gets), further for `hold` (a held last card, under the
+  cue book's rising hum, until the round settles), and hardest and fastest
+  for `celebration` — the bed and the fanfares share one limiter, so a bed
+  sitting on top of a win would duck the win. The fade time belongs to the
+  **destination**, which makes ducks fast and recoveries slow for free. A
+  celebration outranks a round in the derivation, because the round is still in
+  flight underneath the takeover.
+- **The last card's hum is the one HELD voice** (`swell()` in `audioVoices.ts`,
+  `playLastCardHold` in `sound.ts`): it hands back a release, and the reveal
+  calls it as the card turns however the wait ended - on time, slammed or cut
+  by turbo. Its shape is the owner's, after five listens: **up linearly, stay
+  at the top, then a crash** - a crowd's "ohhhh" (six detuned sawtooths through
+  "oh" formants, with breath), a lightning strike on the turn - and the card
+  rises, sits and slams on the same clock (`holdClimbMs`), under a tunnel-vision
+  vignette - only when it could land Huge or bigger (`lastCardTunnels`) - that
+  stops at the play area, so the control bar stays lit. The release rides a
+  gain stage of its own, never the swell's envelope; `sound.test.ts` fails if
+  the shape, the vowel or the strike drifts, or the release moves after the flip.
 - **The jurisdiction block is the operator's, and every read must survive it
   being absent.** Every read goes through `readFlag`, and **the fallback is
   always the permissive value**. Social mode is read from BOTH `?social=true`
@@ -784,7 +799,7 @@ between a one-row bar and a two-row one.
 
 ## Current state and outstanding work
 
-777/777 tests (none skipped), 0 type errors, 0 CSS warnings, lint clean, and
+809/809 tests (none skipped), 0 type errors, 0 CSS warnings, lint clean, and
 the client reproduces the published books of all **193** modes exactly — the
 parity test replays a 400-book slice of every mode off `index.json`, three-card
 trips books included. The build on disk is the **2026-09-22 02:30** one: High
