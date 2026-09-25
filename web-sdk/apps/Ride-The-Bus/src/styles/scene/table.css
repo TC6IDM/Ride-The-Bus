@@ -881,20 +881,41 @@
   box-shadow: inset 0 0 0 calc(var(--deck-w) * 0.036) #a99b8b;
 }
 
-/* Takeover Casino chip mark, centred and held well back - it is there so the
-   deck is recognisably from the same pack, not to be read. It is also squashed
-   to --flat, because it is printed on a card lying on the table. */
+/* The pack's printed mark (tokens.css, --brand-wordmark) - the same house
+   name the card backs carry, so the deck is recognisably from the same pack,
+   and not there to be read.
+
+   IT TAKES THE DECK'S LIGHT AND ANGLE. The face's shade is a scrim painted in
+   its BACKGROUND, and this label is content on top of it - so at first it sat
+   at full brightness on a card sunk to 60%, a bright sticker in the corner of
+   the table. The same --deck-dim now darkens it (a black scrim at 0.4 is a
+   brightness of 0.6), and it is squashed by --flat exactly as anything printed
+   on a card lying on the table is; the -5deg it turns with the deck comes from
+   .deck. Opacity would have been the wrong tool - it lets the crosshatch run
+   back through the letters. */
 .deck-face::after {
-  content: '';
+  content: var(--brand-wordmark);
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 54%;
-  height: calc(54% * var(--flat) / 0.95);
-  opacity: 0.5;
-  transform: translate(-50%, -50%);
-  background: var(--logo-url) center / contain no-repeat;
-  filter: drop-shadow(0 0 calc(var(--deck-w) * 0.035) rgba(0, 0, 0, 0.7));
+  white-space: pre;
+  text-align: center;
+  font-family: var(--font-body);
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: 0.24em;
+  /* On a plain label, so the crosshatch never runs through the letters
+     (tokens.css). Tracking pads the END of each line, so the start is padded
+     by the same 0.24em more to keep the two words optically centred. */
+  padding: 0.45em 0.75em 0.45em calc(0.75em + 0.24em);
+  background: var(--brand-wordmark-ground);
+  border: 1px solid var(--brand-wordmark-edge);
+  border-radius: 0.3em;
+  color: var(--brand-wordmark-ink);
+  pointer-events: none;
+  font-size: calc(var(--deck-w) * 0.078);
+  transform: translate(-50%, -50%) scaleY(var(--flat));
+  filter: brightness(calc(1 - var(--deck-dim)));
 }
 
 /* ---- placement ---------------------------------------------------------- */
@@ -1001,12 +1022,24 @@
      above the cards' multiplier chips, and the wood below the guess squares.
      The play column is laid out in the SCREEN and the props in the TABLE, so
      where the bands fall moves with the phone's shape - measured on the
-     post-deal board from 16:9 to 20:9 and on a portrait iPad, the chips start
-     at 21.8-23.1% and the squares end at 81-84%. Everything here keeps above
-     21.3% or below 84.5%, which holds for all of them. */
-  .p-deck { left: 28%; top: 15.8%; }
-  /* Further left than in landscape, to leave the top-right arc a clear run. */
-  .p-cup-1 { left: 66%; top: 20.5%; }
+     post-deal board, the multiplier chips' INK starts at 17.9% of the table on
+     Mobile S (320x568), 19.4-20.7% on the other phones, 29-32% on a portrait
+     iPad; the squares end at 80-84%.
+
+     The top band is measured by each prop's BODY, not its anchor. `left` and
+     `top` place a prop's centre-ish point (translate -50%), and a cup's body
+     runs 12.5% of the table above its anchor while a chip stack hangs 1.6%
+     below its own - so an earlier pass that kept every anchor above 21.3% left
+     the deck, the cup and all three stacks sitting ON the multiplier chips of
+     cards 1, 3 and 4 on every phone (found 2026-09-25, by measuring the chips'
+     ink against the props' bodies after a max win). Every body in the top band
+     now ends at 17.0%, clear of Mobile S by 0.9% and of the rest by more, and
+     starts at least a point below the rim where it stands. */
+  .p-deck { left: 30%; top: 12.4%; }
+  /* Toward the middle, where the rim is highest and the band deepest: a cup is
+     the tallest thing on the table and only fits here once it has to clear the
+     chips. */
+  .p-cup-1 { left: 57%; top: 17%; }
   /* No room beside the deck in the top band, so the left cup goes to the near
      edge instead - near the middle, where the rim runs lowest. */
   .p-cup-2 { left: 42%; top: 97%; }
@@ -1014,14 +1047,15 @@
   /* The same two arcs, pulled in: on a phone the table is wider than the screen
      and the play column reaches further out, so the far ends of both arcs would
      otherwise sit against the bezel. The bottom one runs right of the cup. */
-  /* Squeezed between the rim and card 4's multiplier chip, so the arc is
-     shallow: the top band narrows fast toward the right, and a steeper arc put
-     the first stacks over the edge of the wood. Three stacks, not four - the
+  /* Squeezed between the rim and card 4's multiplier chip, so the stacks stand
+     level rather than on an arc, and further left than they were: the top band
+     narrows fast toward the right, where the rim drops to 14.8% by x 85% and a
+     stack ending at 17% has nowhere to stand. Three stacks, not four - the
      single chip had nowhere to go that was neither on the multiplier chip nor
      off the table. */
-  .p-chip-1 { left: 76%; top: 17.9%; }
-  .p-chip-2 { left: 79.5%; top: 18.7%; }
-  .p-chip-3 { left: 83%; top: 19.2%; }
+  .p-chip-1 { left: 72%; top: 15.4%; }
+  .p-chip-2 { left: 75.5%; top: 15.4%; }
+  .p-chip-3 { left: 79%; top: 15.4%; }
   .p-chip-4 { display: none; }
 
   /* The near-edge arc, right of the cup, rising with the rim. */

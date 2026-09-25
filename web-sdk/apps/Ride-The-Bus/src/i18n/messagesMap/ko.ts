@@ -276,8 +276,6 @@ export default {
 		'카드 2는 카드 1과 같아야 합니다',
 	'Card 3 must match card 1':
 		'카드 3은 카드 1과 같아야 합니다',
-	'Needs %s':
-		'필요: %s',
 	'%n of %t':
 		'%t장 중 %n장',
 	'Last card':

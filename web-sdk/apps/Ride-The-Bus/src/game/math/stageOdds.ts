@@ -2,12 +2,18 @@
  * What a card has to be for its guess to land, and how many of the cards still
  * in the deck are that.
  *
- * The reveal prints this under the running total before each card turns
- * ("Needs 8-K · 24 of 51"), and the rules screen's example round is built from
- * it. It is the SAME count the stage was priced on: every stage pays true odds
- * against the cards left in the deck (partialMultiplier), so a line that
- * disagreed with the price would be the display drifting from the maths. The
- * test replays published books through stagePrice() to prove it cannot.
+ * How to Play's example round is built from this. It is the SAME count the
+ * stage was priced on: every stage pays true odds against the cards left in the
+ * deck (partialMultiplier), so an example that disagreed with the price would be
+ * the display drifting from the maths. The test replays published books through
+ * stagePrice() to prove it cannot.
+ *
+ * A PRICE, NOT A FREQUENCY. The reveal used to print this count before each
+ * card ("Needs 8-K · 24 of 51"), and it was taken out on 2026-09-25: the RGS
+ * deals a mode's reweighted lookup table, not a deck, so how often a guess
+ * actually lands is not the deck's count - on the Inside modes paying rounds
+ * come up a third more often. Any frequency shown to a player has to be read
+ * off the published tables, not counted off a deck.
  *
  * Nothing here decides a payout - the book does - it only explains one. Pure,
  * so node --test can load it, and deliberately separate from the DEV-only
@@ -119,27 +125,4 @@ export function stagePrice(
 ): number {
   const probability = need.total > 0 ? need.hits / need.total : 0;
   return partialMultiplier(probability, stageIndex, stageRetention(rules, stageIndex, forgivenessSpent), decayFor(rules));
-}
-
-/**
- * A rank list as runs: "8–K", "A–3, 8–K", "4, 7", "5, 6". A run of three or
- * more is a range; two adjacent ranks read better named. An empty list - a
- * guess nothing left can land - is a dash.
- *
- * Ranks are ASCII and language-free (typography-and-assets.md), so this needs
- * no translation; the words around it do.
- */
-export function formatRankRuns(list: readonly Card['rank'][]): string {
-  if (!list.length) return '—';
-  const values = [...new Set(list.map((rank) => rankValue[rank]))].sort((a, b) => a - b);
-  const runs: [number, number][] = [];
-  for (const value of values) {
-    const last = runs[runs.length - 1];
-    if (last && value === last[1] + 1) last[1] = value;
-    else runs.push([value, value]);
-  }
-  const name = (value: number) => RANK_ORDER[value - 1]!;
-  return runs
-    .map(([lo, hi]) => (lo === hi ? name(lo) : hi === lo + 1 ? `${name(lo)}, ${name(hi)}` : `${name(lo)}–${name(hi)}`))
-    .join(', ');
 }

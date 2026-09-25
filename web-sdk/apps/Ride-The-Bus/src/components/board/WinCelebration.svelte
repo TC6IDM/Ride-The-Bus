@@ -35,7 +35,6 @@
 	 * index.html, and "optimised bundle size" is an explicit 3-star criterion -
 	 * so a sprite sheet for one screen would be a bad trade.
 	 */
-	import { logoAsset } from '../../game/ui/logoAsset.svelte';
 	import { numberToCurrencyString } from 'utils-shared/amount';
 	import { labelEms } from '../../game/ui/typeFit';
 	import { titleFaceFor } from '../../game/ui/displayFace';
@@ -449,7 +448,6 @@
 	role="button"
 	tabindex="0"
 	aria-label={ariaLabel()}
-	style={`--logo-url: url(${logoAsset.url})`}
 	onclick={onTap}
 	onkeydown={onKey}
 >
@@ -520,6 +518,9 @@
 							</span>
 							<span class="wc-fan-pip"><SuitIcon suit={card.suit} scale={1} /></span>
 						</span>
+					{:else}
+						<!-- Face down: the pack's printed mark, drawn by the sheet. -->
+						<span class="wc-fan-brand"></span>
 					{/if}
 					<!-- The board's own marks, not new ones. See the note at the top. -->
 					{#if slot.index === props.bustedIndex}

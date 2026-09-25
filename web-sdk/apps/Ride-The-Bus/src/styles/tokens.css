@@ -128,6 +128,22 @@
   /* The double edge a card carries: white outside, chrome inside. */
   --brand-paper: #f8f8f8;
   --brand-chrome: #c8c8c8;
+  /* The pack's printed mark: the house name, small and light, on every card
+     back and on the deck - where the full-colour Takeover Casino chip sat until
+     2026-09-25. Five chips were on the board before the first deal (four backs
+     and the deck), each the highest-contrast thing on the table, and the one
+     the tunnel spotlit during a held card; the owner asked for the name, quiet.
+     One string, so every back in the game prints the same thing. The logo
+     itself still leads the loader and the start screen, where it is a logo. */
+  --brand-wordmark: 'TAKEOVER\A CASINO';
+  --brand-wordmark-ink: rgba(var(--ink-rgb), 0.58);
+  /* It sits on a plain label of the card's own red, edged with a hairline -
+     the way a real deck prints its maker's name in a cartouche - because set
+     straight on the back, the crosshatch ran through the letters and the name
+     was hard to read. The label is the SAME red, so it reads as printed on the
+     card, not stuck to it. */
+  --brand-wordmark-ground: var(--brand-red);
+  --brand-wordmark-edge: rgba(var(--ink-rgb), 0.16);
 
   /* ==== Gold =============================================================
      Two roles, not three. #f5d78c (titles, the MODE button, the intro stats),

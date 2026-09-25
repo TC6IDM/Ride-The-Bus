@@ -276,8 +276,6 @@ export default {
 		'カード2はカード1と同じ数字',
 	'Card 3 must match card 1':
 		'カード3はカード1と同じ数字',
-	'Needs %s':
-		'必要：%s',
 	'%n of %t':
 		'%t枚中%n枚',
 	'Last card':

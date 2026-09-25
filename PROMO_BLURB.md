@@ -104,8 +104,9 @@ price for the three guess modes, and Three of a Kind at 250× the bet paying
   "18.33×" (its multiple of the cost) anywhere a player could read it against
   the other figures.
 - **The three guess modes cost the same; Three of a Kind does not.** Classic,
-  Second Chance and High Stakes are all 1.0× the bet — the naming is a known
-  wart, "High Stakes" implies a premium it does not charge. Three of a Kind is
+  Second Chance and High Stakes are all 1.0× the bet. "High Stakes" names what
+  a miss keeps (15% against Classic's 30%), not a price - the owner's call,
+  2026-09-25 - so never write that it costs more. Three of a Kind is
   250× the bet, and its cost is stated in the mode picker, the confirmation
   before it is activated, and the rules.
 - **"About one round in nineteen" is the recorded figure**, 1 in 19.1 after

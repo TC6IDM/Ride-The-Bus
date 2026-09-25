@@ -137,52 +137,134 @@ const FANFARE: Record<
 export const HOLD_MIN_CLIMB = 0.25;
 
 /**
+ * The root of the stage-win chime at a stage: C5, a whole tone higher per
+ * stage (playStageWin). Shared with the held last card, whose hum is tuned to
+ * the chime that card would play if it lands - see playLastCardHold.
+ */
+export const stageWinRoot = (stageIndex: number) => 523.25 * Math.pow(2, (stageIndex * 2) / 12);
+
+/**
  * The vowel "oh", as formants [Hz, Q, level]: the first two resonances of an
  * open "o" (F1 ~450, F2 ~800) and a trace of the third for presence. Wider
  * than one singer's (Q ~6-10), because a crowd's formants smear - every
  * throat is a slightly different size - and wider is also what keeps a
  * sawtooth through band-passes from whistling.
+ *
+ * The third formant is up from 0.14 to 0.2 for the phone: most of the crowd's
+ * pitch sits under 200 Hz, below what a phone speaker plays at all, so what
+ * carries it there is the upper formants' share of each voice's harmonics.
  */
 const OH = [
 	[450, 3.5, 1],
 	[800, 5, 0.6],
-	[2800, 7, 0.14],
+	[2800, 7, 0.2],
 ] as const;
 
 /**
  * The crowd: four voices a few cents either side of the pitch, and two an
- * octave up, quieter - the high voices in a crowd's "ohhh".
+ * octave up - the high voices in a crowd's "ohhh". Those two are at 0.65, up
+ * from 0.4: they are the half of the crowd a phone speaker can actually play.
  */
 const CROWD = [
 	[0.985, 1],
 	[0.996, 1],
 	[1.004, 1],
 	[1.014, 1],
-	[1.993, 0.4],
-	[2.009, 0.4],
+	[1.993, 0.65],
+	[2.009, 0.65],
 ] as const;
+
+/** A few voices rather than a crowd - the Big-win hold. */
+const SMALL_CROWD = [
+	[0.992, 1],
+	[1.008, 1],
+	[2.0, 0.65],
+] as const;
+
+/**
+ * How big the strike is, from the tier the held card could land:
+ *   crack  the ripping crack and its body only - a Big win's
+ *   storm  and thunder rolling under it - Huge to Epic
+ *   full   and a sub hit for the weight - Max
+ */
+type StrikeWeight = 'crack' | 'storm' | 'full';
+
+type HoldShape = {
+	voices: readonly (readonly [number, number])[];
+	gain: number;
+	breath: number;
+	strike: StrikeWeight;
+	buzz: number[];
+};
+
+/**
+ * Everything about a hold that scales with what rides on the card.
+ *
+ * WHY IT SCALES. A Big-win hold is the common one, and it used to be the whole
+ * performance every time - six voices, the full strike - on a card that misses
+ * three times in four. The biggest sound in a Big-win round was the strike, 4.5
+ * dB over the Big fanfare it announced. A moment that is always at full size
+ * stops being one; so Big gets a few voices and the crack, and the crowd, the
+ * thunder and the sub hit are kept for the stakes that earn them.
+ *
+ * `buzz` is the haptic pattern that rides the strike - see haptic().
+ */
+const HOLD_SHAPE: Record<WinTierSound, HoldShape> = {
+	big: { voices: SMALL_CROWD, gain: 0.15, breath: 0.8, strike: 'crack', buzz: [25] },
+	huge: { voices: CROWD, gain: 0.2, breath: 1.2, strike: 'storm', buzz: [40] },
+	mega: { voices: CROWD, gain: 0.2, breath: 1.2, strike: 'storm', buzz: [45] },
+	epic: { voices: CROWD, gain: 0.2, breath: 1.2, strike: 'storm', buzz: [50] },
+	max: { voices: CROWD, gain: 0.2, breath: 1.2, strike: 'full', buzz: [60, 40, 90] },
+};
 
 /**
  * Lightning: what the last-card hum ends on as the card turns. A crack that
  * RIPS - three bright bursts inside 45ms, each quieter, because a real strike
- * is a tearing, not a single click - then the crack's body, then thunder
- * rolling under it, and a sub hit for the weight. Every part is fresh noise,
- * so no two strikes are the same.
+ * is a tearing, not a single click - then the crack's body; then, above a Big
+ * win, thunder rolling under it, and on Max a sub hit for the weight. Every
+ * part is fresh noise, so no two strikes are the same.
  *
- * The one sound allowed a little over the win fanfare: the owner asked for "a
- * crash, like a lightning strike" after a dive and a hit came out too subtle.
- * Measured, the first cut peaked at -6.2 dBFS against the fanfare's -11.4 -
- * 5 dB over, on a sound that also plays when the card busts - so everything
- * here came down 3 dB. Noise carries its loudness in density, not in peak; it
- * does not need the headroom to read as a crash.
+ * THE THUNDER HAS TWO BANDS. The low roll (190 Hz down to 50) is the weight on
+ * full-range speakers and is gone entirely on a phone, which plays almost
+ * nothing under ~200 Hz; the band from 420 down to 170 is the same roll where a
+ * phone can reproduce it.
+ *
+ * LEVEL. The first cut peaked at -6.2 dBFS against a fanfare of -11.4 and came
+ * down 3 dB; measured again on 2026-09-25 it still sat 4.5 dB over the Big
+ * fanfare and 1.3 dB over the Max one. The strike announces the win, it must
+ * not outshout it: every weight is now scaled so the fanfare after it is the
+ * louder of the two (checked with npm run audio at Big and at Max).
  */
-function strike() {
+function strike(weight: StrikeWeight) {
+	const level = weight === 'crack' ? 0.5 : 0.72;
 	[0, 0.018, 0.043].forEach((delay, i) => {
-		noise({ duration: 0.16, gain: 0.21 - i * 0.05, from: rand(5200, 7600), to: rand(2200, 3000), q: 0.45, curve: 3.2, delay, space: 0.55 }); // prettier-ignore
+		noise({ duration: 0.16, gain: (0.21 - i * 0.05) * level, from: rand(5200, 7600), to: rand(2200, 3000), q: 0.45, curve: 3.2, delay, space: 0.55 }); // prettier-ignore
 	});
-	noise({ duration: 0.6, gain: 0.16, from: 1700, to: 380, q: 0.55, curve: 2.1, space: 0.65 });
-	noise({ duration: 1.6, gain: 0.3, from: 190, to: 50, q: 0.8, pink: true, curve: 1.2, space: 0.45, delay: 0.02 }); // prettier-ignore
-	thud({ from: rand(100, 115), to: 34, duration: 0.6, gain: 0.1, attack: 0.001 });
+	noise({ duration: 0.6, gain: 0.16 * level, from: 1700, to: 380, q: 0.55, curve: 2.1, space: 0.65 });
+	if (weight === 'crack') return;
+	noise({ duration: 1.6, gain: 0.3 * level, from: 190, to: 50, q: 0.8, pink: true, curve: 1.2, space: 0.45, delay: 0.02 }); // prettier-ignore
+	noise({ duration: 1.1, gain: 0.2 * level, from: 420, to: 170, q: 0.7, pink: true, curve: 1.5, space: 0.5, delay: 0.03 }); // prettier-ignore
+	if (weight === 'full') thud({ from: rand(100, 115), to: 34, duration: 0.6, gain: 0.1, attack: 0.001 });
+}
+
+/**
+ * A short buzz under the strike, on the devices that have one.
+ *
+ * Only where it can be felt and was not declined: nothing when game sounds are
+ * off (a player who silenced the game did not ask to be buzzed instead), and
+ * nothing before the player has touched the page - Chrome logs an intervention
+ * warning for a vibrate() without a user gesture, and the console is part of
+ * what Stake inspects. iOS has no Vibration API; there this is a no-op.
+ */
+function haptic(pattern: number[]) {
+	if (isBusSilent('sfx')) return;
+	try {
+		if (typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') return;
+		if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return;
+		navigator.vibrate(pattern);
+	} catch {
+		// A frame that forbids it throws in some browsers; a missing buzz is not an error.
+	}
 }
 
 // Fixed pitch sets per control kind, cycled without immediate repeats. Two
@@ -402,14 +484,24 @@ export const sound = {
 	 * LAST CARD, and the room said nothing. This is the sound of the wait
 	 * itself, in three parts, on the same clock as the card's own rise:
 	 *   1. UP, in straight lines, for `climb` seconds: the voices slide an
-	 *      octave, G2 to G3 (with two an octave above), a 20 dB crescendo from a
-	 *      tenth of the top, the vibrato quickening and widening.
+	 *      octave, a 20 dB crescendo from a tenth of the top, the vibrato
+	 *      quickening and widening.
 	 *   2. AT THE TOP for what is left of the wait (holdClimbMs decides the
 	 *      split) - the held breath before the reveal.
 	 *   3. The STRIKE as the card turns: the voices drop an octave and are gone
-	 *      under a crack, its body and the thunder - see strike().
+	 *      under a crack - and, above a Big win, its thunder. See strike().
 	 *
-	 * An open vowel, not a tone. Six detuned sawtooths sung through the "oh"
+	 * TUNED TO THE CARD. The top of the climb is two octaves under the chime
+	 * this card plays if it lands (stageWinRoot of its stage - F#5 for card 4,
+	 * E5 for Three of a Kind's card 3), so a landing resolves the hum: the
+	 * chime arrives on the note the crowd was reaching for. It topped out on G3
+	 * before, a semitone off the card-4 chime's F#.
+	 *
+	 * SCALED BY THE STAKE. `tier` is the tier the card could land, from the
+	 * stake alone (never whether it lands) - see HOLD_SHAPE: a few voices and a
+	 * crack for a Big win, the whole crowd and the thunder above it.
+	 *
+	 * An open vowel, not a tone. Detuned sawtooths sung through the "oh"
 	 * formants (OH), with breath through the same bank, are a crowd going
 	 * "ohhhh"; the same sawtooths through a closing lowpass were a buzzy
 	 * "mmmm", which is what the owner heard in the version before this. Five
@@ -422,19 +514,23 @@ export const sound = {
 	 * turbo slider - so the strike always lands on the turn and the voices can
 	 * never outlast the card.
 	 */
-	playLastCardHold(climb: number): () => void {
+	playLastCardHold(climb: number, tier: WinTierSound = 'max', stage = 3): () => void {
 		if (!(climb >= HOLD_MIN_CLIMB)) return () => {};
+		const shape = HOLD_SHAPE[tier];
+		const top = stageWinRoot(stage) / 4;
 		const release = swell({
-			from: 98,
-			to: 196,
+			from: top / 2,
+			to: top,
 			climb,
-			voices: CROWD,
+			voices: shape.voices,
 			type: 'sawtooth',
-			gain: 0.2,
+			gain: shape.gain,
 			floor: 0.1,
 			formants: OH,
-			body: 0.35,
-			breath: 1.2,
+			// Weight under the vowel, down from 0.35: this lowpassed path is almost
+			// all under 200 Hz, which a phone throws away.
+			body: 0.22,
+			breath: shape.breath,
 			vibrato: { rate: [rand(4.4, 4.8), rand(6, 6.6)], depth: [6, 20] },
 			space: 0.5,
 		});
@@ -443,7 +539,8 @@ export const sound = {
 			if (struck) return;
 			struck = true;
 			release({ seconds: 0.18, cents: -1200 });
-			strike();
+			strike(shape.strike);
+			haptic(shape.buzz);
 		};
 	},
 
@@ -494,7 +591,7 @@ export const sound = {
 	 * to a fifth plus octave, which brightens without just getting louder.
 	 */
 	playStageWin(stageIndex: number, lead = 0) {
-		const root = 523.25 * Math.pow(2, (stageIndex * 2) / 12);
+		const root = stageWinRoot(stageIndex);
 		tone({ from: root, duration: 0.16, type: 'triangle', gain: 0.3, space: 0.45, attack: 0.008, delay: lead }); // prettier-ignore
 		tone({ from: root * 1.5, duration: 0.19, type: 'sine', gain: 0.2, delay: lead + 0.035, space: 0.5 });
 		if (stageIndex >= 2) {

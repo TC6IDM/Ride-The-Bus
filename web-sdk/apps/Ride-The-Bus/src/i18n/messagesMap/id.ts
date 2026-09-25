@@ -279,8 +279,6 @@ export default {
 		'Kartu 2 harus sama dengan kartu 1',
 	'Card 3 must match card 1':
 		'Kartu 3 harus sama dengan kartu 1',
-	'Needs %s':
-		'Perlu %s',
 	'%n of %t':
 		'%n dari %t',
 	'Last card':

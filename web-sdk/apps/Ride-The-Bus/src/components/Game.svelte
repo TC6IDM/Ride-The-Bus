@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { logoAsset } from '../game/ui/logoAsset.svelte';
   import './app.css';
   // TYPE ONLY, deliberately - this line erases at build time.
   //
@@ -721,7 +720,7 @@
 <div
   class="game-layout"
   class:takeover-open={celebration.active !== null}
-  style={`--flip-dur: ${flipDurSec()}s; --logo-url: url(${logoAsset.url})`}
+  style={`--flip-dur: ${flipDurSec()}s`}
 >
 
   <!-- The table and its props. Decorative only - see TableScene.svelte. -->

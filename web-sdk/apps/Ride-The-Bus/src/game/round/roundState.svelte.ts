@@ -17,7 +17,6 @@
  * only ever read by it.
  */
 import type { Card } from './roundContract';
-import type { StageNeed } from '../math/stageOdds';
 import { stateUrlDerived } from 'state-shared';
 import { auto } from './autoplaySettings.svelte';
 
@@ -60,13 +59,6 @@ export const round = $state({
    * would stop the remaining cards being turned.
    */
   forgivenIndex: null as number | null,
-  /**
-   * What the next card has to be, and how many cards left can be it - shown
-   * under the running total while the reveal waits on that card. Set by the
-   * reveal loop from stageOdds.ts, which prices the stage off the same count;
-   * null between rounds, on a dealt card and once the last card has turned.
-   */
-  nextNeed: null as StageNeed | null,
   /**
    * The card being held before it turns because a lot is riding on it, or
    * null. Decided from the stake alone - never from whether it lands - see
@@ -218,7 +210,6 @@ export function resetForNewRound() {
   round.runningWin = 0;
   round.bustedIndex = null;
   round.forgivenIndex = null;
-  round.nextNeed = null;
   round.holdIndex = null;
   round.holdClimbMs = 0;
   round.lastCardHeld = false;
@@ -247,7 +238,6 @@ export function clearBoard() {
   round.runningWin = 0;
   round.bustedIndex = null;
   round.forgivenIndex = null;
-  round.nextNeed = null;
   round.holdIndex = null;
   round.holdClimbMs = 0;
   round.lastCardHeld = false;

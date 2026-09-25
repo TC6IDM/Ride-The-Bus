@@ -10,6 +10,51 @@ rather than on every turn. Nothing here is reworded.
 
 ## Current state
 
+**2026-09-25: the phone props, the Equal-only hold, the card backs and a
+sound pass.** Client and tooling only; no math changed, no build run.
+- **The phone props sat on the multiplier chips.** Measured on a settled
+  max-win board (the chips' INK against each prop's BODY, not its anchor), the
+  deck, the top cup and all three top-right stacks overlapped the multiplier
+  chips of cards 1, 3 and 4 at Mobile S/M/L and every tall phone, in both
+  directions of text. The 09-22 placement kept each prop's CENTRE above 21.3% of
+  the table, but a cup's body runs 12.5% above its anchor and a stack hangs
+  1.6% below its own. Every top-band body now ends at 17.0% (Mobile S's chips
+  start at 17.9%); the cup moved toward the middle where the rim is highest,
+  the stacks 3.5-4% left and level. Clear on 7 portrait shapes, en and ar.
+- **"Needs" is gone, and so is its replacement.** "Full ride: 1 in N" showed
+  before a round for most of the day and was then taken out too (owner's call);
+  `scripts/mode-odds.js`, `modeOdds.ts` and their test went with it. The
+  method is recorded here because it is the right one if a frequency is ever
+  shown again:
+  count each mode's weighted full-ride frequency in its published LUT against
+  the shared deal cache (the removed generator did all 193 in ~18 s). It is NOT
+  the deck's count: the reweight deals paying rounds 1.02-1.35x as often as the
+  deck (red/higher/inside/heart: deck 1 in 59, dealt 1 in 48). A LUT's
+  simulation number indexes `deals_standard52.bin`; the generator proved it on
+  every row (a zero payout must coincide with a card-1 colour miss). Classic
+  runs 1 in 26.3 to 1 in 3,485, Three of a Kind 1 in 19.1. A sanity bound
+  for any such table: each figure sits between the mode's non-zero hit rate and
+  its max-win rate in stats_summary.json.
+- **The last card is held only on a round with an Equal pick** (see CLAUDE.md
+  for the rates). The tunnel now rises with the card (`--hold-rise`), centred
+  on it at the top of the hold (it sat 12-15px low).
+- **How to Play:** the example round follows the payout table and the rounding
+  note, so its 1.90x after a correct Red reads as the note's point rather than
+  a contradiction of the table's 1.99x.
+- **Sound:** the hold tuned to its card's chime and sized by its tier, the strike
+  sized with it and a two-band thunder, a bed that muffles under the hold, a
+  haptic buzz - see audio-and-jurisdiction.md. A crowd answering the card (a
+  cheer / an "awww") was added and removed the same day.
+- **Later the same day:** the board jumped at the fourth pick and at every
+  settle - the odds line's empty state had been retyped as a plain space,
+  which collapses; it is a `'\u00a0'` again, with `min-height: 1lh`, and a
+  frame-by-frame sweep measures 0.0 px of movement. And the card backs, the
+  deck, the loader's cards and the takeover fan print "TAKEOVER / CASINO"
+  small instead of the full-colour chip - on a plain label of the card's red,
+  after the first cut (light text straight on the back) was hard to read
+  through the crosshatch. 825 tests.
+- **Resolved:** the "Needs" line (removed, above).
+
 **2026-09-23: the reveal got tension, the rules got pictures.** Client only;
 no math changed.
 - **Every card says what it needs before it turns** ("Needs 8–K · 24 of 51"),
@@ -89,14 +134,15 @@ no math changed.
   badge's corners and clears its white ring. The audio lab's `--play` presses a
   replay's Round-details Play as its first gesture again (it had been stopping
   at NO TAP since replays stopped opening on the intro). 809 tests.
-- **Open, owner's call:** whether the "Needs" line stays. It stays for now. At
+- **Resolved 2026-09-25 - removed.** Was open: whether the "Needs" line stays. It stayed then. At
   650ms a card it flashes by faster than it can be read, and the eye is on the
   card, not the readout. Keeping it only on the held last card was proposed;
   the owner's objection is that on the last card it only names the suit they
   picked. The one thing the last card's line could say that the player does
   not already know is what the card is worth if it lands.
-- **Open, by design:** the end-of-game multiplier - discussed, not built.
-  Anything that touches the math has to land before submission.
+- **Parked 2026-09-25:** the end-of-game multiplier ("Last Stop") is out of
+  v1 by the owner's call. The modelled figures are under Outstanding,
+  "Parked for a later update".
 
 **2026-09-22, later: a full pre-submission audit (including a Hallmark pass).**
 Every gate green; the math clears every 2-star limit and so every 3-star one;
@@ -508,8 +554,51 @@ look.**
   mode picker and on the bet display only.
 - B3–B8 optional polish: round history strip, session stats, quick-bet ½/2×,
   round ID surface, keyboard shortcuts for guesses, near-miss reveal.
-- Open naming question: "High Stakes" implies a cost premium it no longer
-  charges.
+- **Parked for a later update: Last Stop (`ls_`), a ticket at the end of the
+  ride.** Out of v1 by the owner's call, 2026-09-25, and if it comes it is a
+  FOURTH four-guess family beside the three, never a replacement for High
+  Stakes. Modelled, not built: an exact enumerator (every ordered deal of the
+  first three cards, suits counted analytically, reweighted to 0.96) matched
+  the 2026-09-22 build's maximum wins exactly and its std, etl40b and CVaR to
+  within 1-3.5%, the sampled build running hotter. Confirm with an
+  `RTB_ONLY_MODES` scratch build before quoting any figure as measured.
+  - **Shape.** The four usual guesses; on a clean sweep only, a ticket is drawn
+    from a visible stack of 20 - ten 2×, five 3×, three 5×, two 10× (mean
+    3.5×). The ride is priced to pay for it, decay d = (0.99/3.5)^¼, so the
+    chips on the way up read about 25% lower (a right first card shows 1.4×,
+    not 1.9×) and the ticket pays it back. Players have to be told that.
+  - **A miss keeps a FLAT share, with no decay term, and that is what makes
+    it pass.** The same shape with Classic's decayed bust fails (std 50.2
+    against 50, etl40b 0.79), and so does a flat 2-10× ticket (etl40b 0.85).
+  - **Cost 1×, forced**, like every four-guess family: etl40b is not divided
+    by cost, so at 2× it doubles to 1.07-1.40 against the 0.8 limit.
+  - **Recommended: a miss keeps 50%** (45% if 50% reads too much like Second
+    Chance - it also ranks between the two). Between Classic and High Stakes
+    on all 64 combinations, so the free 4-bolt stop. std 4.3-28.9, worst
+    etl40b 0.54, CVaR 408, maximum about 4,056×. The ticket shows about 1
+    round in 72 (1 in 27 on the easiest picks), a 10× ticket about 1 in 717.
+    Draft tiers: Big 7.5 / Huge 41 / Mega 163 / Epic 340 / Max = its ceiling.
+  - **Wild version: a miss keeps 30%.** Above High Stakes on all 64 (std
+    5.4-42.7), etl40b 0.70, CVaR 563, maximum about 5,989× - the biggest in
+    the game. The meter would need an eighth stop.
+  - **Ideas kept.** A face-down ticket slot on the board all round; its own
+    short, uniform flip after card 4; an orange family colour between
+    Classic's yellow and High Stakes' red; How to Play shows the stack of 20.
+    It would give the no-Equal picks a held beat (they never hold card 4 now),
+    and card 4's hold would be judged on what the round could pay, `landing`
+    × 10. **Never show the ticket a bust would have won** - that is near-miss
+    staging.
+  - **What building it takes.** A `MODE_FAMILIES` entry and a ticket event in
+    the books, mirrored in `FAMILY_RULES` and `payout.ts`; a fifth reveal in
+    `roundReveal`; the slot; its own tier ladder and bolt count; 16 locales
+    plus social; rows in `REPLAY_EVENTS` and `RGS_TEST_PLAN.md`; 257 modes, a
+    build and library about a third bigger. After launch it ships as an
+    update, and every live check that touches modes runs again.
+- ~~Open naming question~~ **Settled 2026-09-25: "High Stakes" keeps its
+  name** (owner's call). It names what rides on a miss, not the price - a miss
+  keeps 15% of the running total where Classic keeps 30%. All three
+  four-guess families cost 1×, and the picker and the rules say so. Do not
+  re-raise it as a defect.
 - **Approval-checklist gaps still open** (all from the verbatim criteria below):
   - ~~Replay "Play Again" button~~ — **closed.** The spin button already
     re-ran the round; it now says so. `replayFinished()` drives both the
@@ -555,8 +644,9 @@ look.**
       `static/` is 726 KB now — just `logo.png`, the only one the game loads.
       **Do not move them back**; they go up through the Tile Editor.
     - `TakeoverCasino-Logo.png` is byte-identical to `logo.png`, which is
-      correct rather than sloppy: the chip on the card backs, the loader and the
-      table's deck prop *is* the Takeover Casino mark. Kept as two files because
+      correct rather than sloppy: the chip the loader and the start screen show
+      *is* the Takeover Casino mark (the card backs and the deck prop carried it
+      too until 2026-09-25, and now print the house name instead). Kept as two files because
       they have different owners — one is resolved through `${base}/logo.png`,
       the other's filename is dictated by Stake.
     - `logo.png` is now the WebP's fallback rather than the file the game

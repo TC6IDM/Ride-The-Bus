@@ -278,8 +278,6 @@ export default {
 		'Kortin 2 on vastattava korttia 1',
 	'Card 3 must match card 1':
 		'Kortin 3 on vastattava korttia 1',
-	'Needs %s':
-		'Tarvitaan %s',
 	'%n of %t':
 		'%n/%t',
 	'Last card':

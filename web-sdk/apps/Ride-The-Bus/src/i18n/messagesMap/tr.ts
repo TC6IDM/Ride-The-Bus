@@ -278,8 +278,6 @@ export default {
 		'2. kart 1. kartla eşleşmeli',
 	'Card 3 must match card 1':
 		'3. kart 1. kartla eşleşmeli',
-	'Needs %s':
-		'Gereken: %s',
 	'%n of %t':
 		'%t kartta %n',
 	'Last card':

@@ -98,8 +98,9 @@ category each unticked check falls into.
 - Volatility rates Inside and Outside identically; splitting it needs an eighth
   stop. `volatility.test.ts` asserts the current behaviour so the choice is on
   the record.
-- "High Stakes" implies a cost premium it no longer charges. Open naming
-  question.
+- "High Stakes" keeps its name (owner's call, 2026-09-25): it names what a
+  miss keeps - 15% against Classic's 30% - not a price. All three four-guess
+  families cost 1×. Not a finding.
 
 ## How to report
 

@@ -35,7 +35,7 @@
  */
 import { contextTime, decode } from './audioContext.ts';
 import { isBusSilent, onMixerChange } from './audioMixer.ts';
-import { loop, type LoopHandle } from './audioLoop.ts';
+import { loop, OPEN_CUTOFF, type LoopHandle } from './audioLoop.ts';
 
 /**
  * Where the game is.
@@ -46,7 +46,12 @@ import { loop, type LoopHandle } from './audioLoop.ts';
 export type MusicScene = 'none' | 'loading' | 'lobby' | 'idle' | 'round' | 'hold' | 'celebration';
 
 /** Everything a scene says about the bed: how loud, and how long to get there. */
-type SceneMix = { gain: number; fade: number };
+type SceneMix = {
+	gain: number;
+	fade: number;
+	/** The bed's lowpass, in Hz. Omitted, it stands open. */
+	cutoff?: number;
+};
 
 /**
  * How loud the track sits, and how quickly it moves, per moment of the game.
@@ -75,6 +80,12 @@ type SceneMix = { gain: number; fade: number };
  *                would be a clash. Held until the round settles, so a win goes
  *                straight on down into 'celebration' rather than bobbing back
  *                up between the two.
+ *                And MUFFLED, not only quieter: the bed's lowpass closes to
+ *                700 Hz, so the band plays on as if through a wall while the
+ *                crowd climbs in front of it. A level alone only turned the
+ *                tune down; losing its top is what reads as the room going
+ *                away. Every other scene stands the filter open again, over
+ *                its own fade.
  *   celebration  DOWN hard, and fast. The fanfare is the payoff and it is the
  *                loudest thing in the game; a bed mixed to sit on top of it
  *                would duck the WIN rather than the other way round.
@@ -98,7 +109,7 @@ const SCENE_MIX: Record<Exclude<MusicScene, 'none'>, SceneMix> = {
 	lobby: { gain: 0.19, fade: 1.6 },
 	idle: { gain: 0.26, fade: 1.5 },
 	round: { gain: 0.17, fade: 0.7 },
-	hold: { gain: 0.08, fade: 0.45 },
+	hold: { gain: 0.08, fade: 0.45, cutoff: 700 },
 	celebration: { gain: 0.07, fade: 0.35 },
 };
 
@@ -132,6 +143,11 @@ let bedHandle: LoopHandle | null = null;
 /** The level for a scene, after the track's own level match. */
 function levelFor(at: Exclude<MusicScene, 'none'>): number {
 	return SCENE_MIX[at].gain * (bed?.trim ?? 1);
+}
+
+/** The bed's lowpass for a scene: open, except where the scene closes it. */
+function cutoffFor(at: Exclude<MusicScene, 'none'>): number {
+	return SCENE_MIX[at].cutoff ?? OPEN_CUTOFF;
 }
 
 /**
@@ -190,8 +206,10 @@ function settleBed() {
 	// Re-level rather than restart: every scene is the same file at a different
 	// level, so a scene change is a cross-fade. The ramp takes the DESTINATION's
 	// time, which is what makes a duck fast and its recovery slow.
-	if (bedHandle) bedHandle.setGain(levelFor(at), mix.fade);
-	else if (bedBuffer)
+	if (bedHandle) {
+		bedHandle.setGain(levelFor(at), mix.fade);
+		bedHandle.setTone(cutoffFor(at), mix.fade);
+	} else if (bedBuffer)
 		bedHandle = loop({
 			buffer: bedBuffer,
 			gain: levelFor(at),
@@ -202,6 +220,7 @@ function settleBed() {
 			crossfade: bed?.crossfade ?? 0,
 			loopStart: bed?.loopStart ?? 0,
 			loopEnd: bed?.loopEnd,
+			cutoff: cutoffFor(at),
 		});
 }
 
@@ -255,6 +274,9 @@ export const music = {
 	 * It is the TARGET, not a measurement - use `npm run audio` for that.
 	 */
 	level: () => (scene === 'none' ? 0 : levelFor(scene)),
+
+	/** The bed's lowpass the current scene asks for, in Hz - for the test, like level. */
+	cutoff: () => (scene === 'none' ? OPEN_CUTOFF : cutoffFor(scene)),
 
 	/**
 	 * Whether the track is sounding.

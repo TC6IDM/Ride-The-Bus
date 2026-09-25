@@ -431,14 +431,10 @@
 
 	/* The deck's crimson crosshatch, the same 45deg/-45deg pair the card backs,
 	   the table's deck prop and the loader cards all use, so the fan is
-	   unmistakably out of THIS deck, with the Takeover Casino chip over it the
-	   way cards.css marks a back.
-	   The chip is a background LAYER rather than a pseudo-element because both
-	   pseudos are spoken for here - ::before is the keyline, ::after is the
-	   glint - and a card has only two. .wc-fan-face paints over all of it, so a
-	   face never shows the chip behind its own rank and pip. */
+	   unmistakably out of THIS deck. A face-down card's printed mark is its own
+	   element (.wc-fan-brand) because both pseudos are spoken for here -
+	   ::before is the keyline, ::after is the glint. */
 	background:
-		var(--logo-url) center / 54% no-repeat,
 		repeating-linear-gradient(
 			45deg,
 			rgba(var(--ink-rgb), 0.12) 0 calc(var(--ui) * 0.2),
@@ -529,6 +525,33 @@
    would render as three specks, so this is the same face reduced to the two
    marks that survive - which is also how a real card reads when it is fanned
    and half-covered. */
+/* A face-down card's printed mark - the house name, as cards.css prints it on
+   the board's backs (tokens.css, --brand-wordmark). Only a back draws it; a face
+   has its rank and pip instead. */
+.wc-fan-brand::before {
+	content: var(--brand-wordmark);
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	white-space: pre;
+	text-align: center;
+	font-family: var(--font-body);
+	font-weight: 400;
+	line-height: 1.35;
+	letter-spacing: 0.24em;
+	/* On a plain label, so the crosshatch never runs through the letters
+	   (tokens.css). Tracking pads the END of each line, so the start is padded
+	   by the same 0.24em more to keep the two words optically centred. */
+	padding: 0.45em 0.75em 0.45em calc(0.75em + 0.24em);
+	background: var(--brand-wordmark-ground);
+	border: 1px solid var(--brand-wordmark-edge);
+	border-radius: 0.3em;
+	color: var(--brand-wordmark-ink);
+	pointer-events: none;
+	font-size: calc(var(--ui) * 7.4 * 0.078);
+	transform: translate(-50%, -50%);
+}
+
 .wc-fan-face {
 	position: absolute;
 	inset: 0;

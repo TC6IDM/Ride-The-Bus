@@ -13,7 +13,7 @@ import { join } from 'node:path';
 import { createInterface } from 'node:readline';
 import { createZstdDecompress } from 'node:zlib';
 
-import { formatRankRuns, stageNeed, stagePrice } from '../stageOdds.ts';
+import { stageNeed, stagePrice } from '../stageOdds.ts';
 import { DECAY, forgivenessAvailable, partialMultiplier } from '../payout.ts';
 import { FAMILY_RULES, familyOf } from '../modes.ts';
 import type { Card } from '../../round/roundContract.ts';
@@ -90,19 +90,8 @@ describe('stageNeed counts the deck the stage is priced on', () => {
   });
 });
 
-describe('formatRankRuns', () => {
-  test('runs of three or more are ranges; pairs and singles are named', () => {
-    assert.equal(formatRankRuns(['8', '9', '10', 'J', 'Q', 'K']), '8–K');
-    assert.equal(formatRankRuns(['A', '2', '3', '8', '9', '10', 'J', 'Q', 'K']), 'A–3, 8–K');
-    assert.equal(formatRankRuns(['4', '7']), '4, 7');
-    assert.equal(formatRankRuns(['5', '6']), '5, 6');
-    assert.equal(formatRankRuns(['7']), '7');
-    assert.equal(formatRankRuns([]), '—');
-  });
-});
-
 // ---------------------------------------------------------------------------
-// Parity with the published books - the reason the line can be trusted.
+// Parity with the published books - the reason the example can be trusted.
 // ---------------------------------------------------------------------------
 
 type Book = { id: number; events: any[] };

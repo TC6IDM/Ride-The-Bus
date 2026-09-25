@@ -276,8 +276,6 @@ export default {
 		'पत्ता 2 को पत्ते 1 से मेल खाना चाहिए',
 	'Card 3 must match card 1':
 		'पत्ता 3 को पत्ते 1 से मेल खाना चाहिए',
-	'Needs %s':
-		'%s चाहिए',
 	'%n of %t':
 		'%t में से %n',
 	'Last card':

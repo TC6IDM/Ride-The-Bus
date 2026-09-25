@@ -270,8 +270,6 @@ export default {
 		'第2张牌须与第1张牌相同',
 	'Card 3 must match card 1':
 		'第3张牌须与第1张牌相同',
-	'Needs %s':
-		'需要 %s',
 	'%n of %t':
 		'%t张中%n张',
 	'Last card':

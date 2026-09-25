@@ -101,17 +101,17 @@ opacity and keeps every state change. A focus ring is never transitioned.
 **Lit, not haloed:** a coloured bloom around a coloured control is the one
 effect this system refuses by name.
 
-The reveal has three beats of its own. Before each card turns, the readout's
-third line says what it needs ("Needs 8–K · 24 of 51" - the count the stage
-is priced on). When a lot rides on the last card it is **held** - for longer
-the more it would land, decided from the stake and never from the outcome. The
-card slides up off the table in a straight line, its shadow lengthening, while
-the music steps back, a crowd's "ohhhh" climbs with it and - when the card
-could land a Huge win or bigger - the room closes in on it: tunnel vision, a
-vignette of the table's own shadow narrowing onto the card, which is lifted
-clear of it; all of it sits at the top for a breath; then
-the card slams down as it turns, on a lightning strike, and the room opens
-again. Card, voices and tunnel run on one clock (`holdClimbMs`). The control
+The reveal has two beats of its own. When a lot rides on the last card of a
+round with an Equal pick it is **held** - for longer the more it would land, decided from
+the stake and never from the outcome. The card slides up off the table in a
+straight line, its shadow lengthening, while the music steps back and muffles,
+a crowd's "ohhhh" climbs with it - a few voices for a Big win, the whole crowd
+above - and, when the card could land a Huge win or bigger, the room closes in
+on it: tunnel vision, a vignette of the table's own shadow narrowing onto the
+card and rising with it, the card lifted clear of it; all of it sits at the
+top for a breath; then the card slams down as it turns, on a lightning strike
+sized to the stake, and the room opens again. Card, voices and tunnel run on
+one clock (`holdClimbMs`). The control
 bar is outside the tunnel on purpose: the balance and the skip stay lit.
 A bust **knocks** once
 as its cross lands, the cards it never reached step back, and the guess that

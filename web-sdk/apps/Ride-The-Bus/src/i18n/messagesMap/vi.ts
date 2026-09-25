@@ -279,8 +279,6 @@ export default {
 		'Lá 2 phải trùng với lá 1',
 	'Card 3 must match card 1':
 		'Lá 3 phải trùng với lá 1',
-	'Needs %s':
-		'Cần %s',
 	'%n of %t':
 		'%n trên %t',
 	'Last card':

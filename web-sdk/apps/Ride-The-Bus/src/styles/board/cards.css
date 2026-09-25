@@ -203,49 +203,13 @@
   font-weight: 800;
   color: var(--gold-bright);
   font-variant-numeric: tabular-nums;
-}
-
-/* What the next card needs, in the same third line during a reveal
-   ("Needs 8–K · 24 of 51"). Same element, same size, so the board does not
-   move when it swaps; only the voice changes - body ink, the token picked out
-   in the figure's gold, the count a step dimmer. The count is the one the
-   stage is priced on (stageOdds.ts), so this line is the paytable, live. */
-.running-win-mult.is-need {
-  /* Plain inline text on its baseline, spaced by the non-breaking spaces the
-     markup writes into it (GameBoard.svelte: needParts). It was a flex row
-     spaced by `gap`, which left the words with no spaces of their own. */
-  color: var(--ink-body);
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.rw-need-token {
-  color: var(--gold-bright);
-  font-weight: 800;
-}
-
-/* SuitIcon draws itself display:block, which inside a line of text is a line
-   break either side of the suit. Inline here, and dropped a little below the
-   baseline so the pip centres on the capitals beside it instead of standing
-   on the line like one. */
-.rw-need-token :global(.suit-icon) {
-  display: inline-block;
-  vertical-align: -0.1em;
-}
-
-/* A rank run reads as CARDS, not as a count: "Needs 2" beside "3 of 51" was
-   one number too many. A thin chip edge, the rank strip's own device in the
-   rules (.rank-chip), says these are ranks. Left inline, so the edge is drawn
-   round the glyphs without adding to the line's height - the board must not
-   move when this line swaps in. */
-.rw-need-token.is-ranks {
-  padding: 0 0.32em;
-  border: 1px solid rgba(var(--gold-rgb), 0.55);
-  border-radius: 0.28em;
-}
-
-.rw-need-odds {
-  color: var(--ink-dim);
+  /* One line box, always - the same height the line has when it carries
+     text, so this moves nothing. It is the second guard on the board holding
+     still: the markup's non-breaking space is the first, and the line once lost
+     it (see GameBoard.svelte), which collapsed the line and moved the cards
+     and the squares every time it filled or emptied. Browsers without `lh`
+     drop this and keep the space. */
+  min-height: 1lh;
 }
 
 /* Was a fourth pale red of its own. --loss-soft is the same colour doing the
@@ -330,6 +294,14 @@
    owner asked for the card to slide up from its spot with the sound, sit at
    the top, and slam. */
 
+/* How far a held card rises. ONE figure for the card and the tunnel that
+   closes in on it, so the dark stays centred on the card all the way up
+   rather than on the spot it left. */
+.card-slot,
+.tunnel {
+  --hold-rise: calc(var(--ui) * -1.5);
+}
+
 /* The slam: the transition a held card takes when it lets go - fast, and
    accelerating into the table rather than easing onto it. Nothing else moves
    the block by transition (the bust's knock is an animation). */
@@ -338,7 +310,7 @@
 }
 
 .card-slot.is-held .card-block {
-  transform: translateY(calc(var(--ui) * -1.5)) rotate(-1deg);
+  transform: translateY(var(--hold-rise)) rotate(-1deg);
   transition: transform var(--hold-climb, 1s) linear;
 }
 
@@ -371,7 +343,13 @@
    Stacking is local to the board, as design.md allows inside one component:
    above the Equal badges (2), under the held card. The play area is its own
    stacking context below the control bar, so the bar - the balance, and the
-   skip a player may reach for mid-hold - stays lit. */
+   skip a player may reach for mid-hold - stays lit.
+
+   It FOLLOWS the card up. The centre is measured with the card at rest, and the
+   vignette rises by the card's own --hold-rise on the card's own clock, so at
+   the top of the hold the clear patch is still on the card - it used to stay
+   where the card had been, 12-15px low. Its box runs past the bottom of the
+   screen by more than the rise, so lifting it never uncovers a strip. */
 .card-slot.is-lit {
   position: relative;
   z-index: 4;
@@ -379,7 +357,7 @@
 
 .tunnel {
   position: fixed;
-  inset: 0;
+  inset: 0 0 calc(var(--ui) * -3) 0;
   z-index: 3;
   pointer-events: none;
   background: radial-gradient(
@@ -389,8 +367,10 @@
   );
   transform-origin: var(--tv-x, 50%) var(--tv-y, 40%);
   opacity: 0;
-  transform: scale(2.4);
-  /* The strike: open outward and gone, fast. */
+  /* The same two functions in both states, so the rise and the close
+     interpolate on their own rather than through a matrix. */
+  transform: translateY(0) scale(2.4);
+  /* The strike: open outward and gone, fast - and back down with the card. */
   transition:
     opacity 170ms var(--ease-out),
     transform 170ms var(--ease-out);
@@ -398,9 +378,10 @@
 
 .tunnel.is-closing {
   opacity: 1;
-  transform: scale(1);
+  transform: translateY(var(--hold-rise)) scale(1);
   /* The close: the dark arrives over the first part of the climb and the
-     tunnel narrows over all of it, in a straight line like the rise. */
+     tunnel narrows - and rises with the card - over all of it, in a straight
+     line like the rise. */
   transition:
     opacity calc(var(--hold-climb, 1s) * 0.4) linear,
     transform var(--hold-climb, 1s) linear;
@@ -489,20 +470,34 @@
   pointer-events: none;
 }
 
-/* Takeover Casino chip mark, centred. The logo's own rim is the same red as
-   the card, so it needs the dark halo to separate - without it the chip's
-   outer ring dissolves into the crosshatch. */
+/* The house name, printed small and light in the middle of the back - the
+   pack's mark (tokens.css, --brand-wordmark). It replaced the full-colour chip
+   logo, which needed a dark halo to part its red rim from the red back and was
+   the loudest thing on the table. Sized off the card, so it is the same mark at
+   every size. The loader's cards, the deck prop and the takeover's fan print
+   the same one. */
 .card-back::after {
-  content: '';
+  content: var(--brand-wordmark);
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 58%;
-  aspect-ratio: 1;
-  transform: translate(-50%, -50%);
-  background: var(--logo-url) center / contain no-repeat;
-  filter: drop-shadow(0 0 calc(var(--ui) * 0.32) rgba(var(--shadow-rgb), 0.85));
+  white-space: pre;
+  text-align: center;
+  font-family: var(--font-body);
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: 0.24em;
+  /* On a plain label, so the crosshatch never runs through the letters
+     (tokens.css). Tracking pads the END of each line, so the start is padded
+     by the same 0.24em more to keep the two words optically centred. */
+  padding: 0.45em 0.75em 0.45em calc(0.75em + 0.24em);
+  background: var(--brand-wordmark-ground);
+  border: 1px solid var(--brand-wordmark-edge);
+  border-radius: 0.3em;
+  color: var(--brand-wordmark-ink);
   pointer-events: none;
+  font-size: calc(var(--card-w) * 0.078);
+  transform: translate(-50%, -50%);
 }
 
 /* Revealed front - pre-rotated so it faces the viewer once .card-inner flips.

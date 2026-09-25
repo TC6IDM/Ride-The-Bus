@@ -26,7 +26,6 @@
   } from '../../game/bet/betState.svelte';
   import { FREE_CHOICE, isCleanSweep, stageCount } from '../../game/math/modes';
   import { isNetWin } from '../../game/math/winTiers';
-  import { formatRankRuns } from '../../game/math/stageOdds';
   import { round } from '../../game/round/roundState.svelte';
   import type { Card } from '../../game/platform/typesBookEvent';
   import { t } from '../../i18n/i18nDerived';
@@ -157,31 +156,6 @@
     if (multiplier === 0) return true;
     return index === shown.busted && multiplier !== null && !isNetWin(multiplier, familyRules().cost);
   };
-
-  /**
-   * What the card about to turn has to be, while the reveal waits on it.
-   * Printed in the readout's third line, which is empty during a reveal - so
-   * the board neither grows nor moves. The words come from the catalogue with
-   * the token between them, so no locale has to agree with English about
-   * where it goes.
-   *
-   * THE SPACES ARE IN THE TEXT, and they are non-breaking. The line used to be
-   * spaced by a flex gap, with every word trimmed, so it depended on one
-   * stylesheet rule to be readable at all: without it the line printed
-   * "Needs2·3 of 51" and, on a suit, broke into three lines around the
-   * block-level SVG. Now it reads right under any sheet and a screen reader
-   * gets real word breaks. `nowrap` in cards.css keeps it on one line; the
-   * non-breaking spaces mean that even without it no word can come apart from
-   * the token it belongs to. The catalogue's own spacing is kept, not trimmed,
-   * so a locale that writes none ("必要：%s") gets none.
-   */
-  const NBSP = '\u00a0';
-  const unbreakable = (text: string) => text.replace(/ /g, NBSP);
-  const needParts = $derived(t('Needs %s').split('%s').map(unbreakable));
-  const need = $derived(round.state === 'playing' ? round.nextNeed : null);
-  const needOdds = $derived(
-    need ? unbreakable(t('%n of %t').replace('%n', String(need.hits)).replace('%t', String(need.total))) : '',
-  );
 
   /** A card the round will never reach, once it has busted before it. */
   const isDead = (index: number) => round.bustedIndex !== null && index > round.bustedIndex;
@@ -324,14 +298,14 @@
       {#if round.state === 'won'}{isCleanSweep(round.bustedIndex, round.forgivenIndex) ? t('Full Game Win!') : t('Banked')}{:else if round.state === 'lost'}{t('Busted')}{:else if round.state === 'playing'}{round.holdIndex !== null ? t('Last card') : t('Revealing…')}{:else}{t('Winning')}{/if}
     </span>
     <span class="running-win-amount">{numberToCurrencyString(round.runningWin)}</span>
-    <!-- Always rendered (a non-breaking space when there's no result yet) so
-         the multiplier appearing at the end of a round doesn't grow the bar
-         and shove the cards / choices around. During a reveal it carries what
-         the next card needs instead - the same line, so nothing moves. The
-         token is <bdi> so a rank run like "A–3, 8–K" keeps its order inside
-         right-to-left text, and every space in the line is a non-breaking one
-         in the text itself (see needParts). -->
-    <span class="running-win-mult" class:is-need={need !== null}>{#if need}{needParts[0]}<bdi class="rw-need-token" class:is-ranks={need.kind === 'ranks'}>{#if need.kind === 'suit'}<SuitIcon suit={need.suit} scale={0.92} />{:else if need.kind === 'color'}{t(need.color === 'red' ? 'Red' : 'Black')}{:else if need.kind === 'ranks'}{unbreakable(formatRankRuns(need.ranks))}{/if}</bdi>{needParts[1]}<span class="rw-need-odds">{NBSP}<span aria-hidden="true">·</span>{NBSP}{needOdds}</span>{:else}{(round.state === 'won' || round.state === 'lost') && round.initialBet > 0 ? `${(round.wonAmount / round.initialBet).toFixed(2)}×` : ' '}{/if}</span>
+    <!-- Always rendered (a non-breaking space when there is nothing to say) so
+         the multiplier appearing at the end of a round never grows the bar and
+         shoves the cards / choices around. WRITTEN AS '\u00a0', NOT AS THE
+         CHARACTER: it was once retyped as a plain space, which collapses, so
+         the line had no height until something filled it - and the whole board
+         jumped each time it did. cards.css gives the line a minimum height as
+         well, so neither can happen alone (boardStill.test.ts). -->
+    <span class="running-win-mult">{(round.state === 'won' || round.state === 'lost') && round.initialBet > 0 ? `${(round.wonAmount / round.initialBet).toFixed(2)}×` : '\u00a0'}</span>
   </div>
 {/snippet}
 

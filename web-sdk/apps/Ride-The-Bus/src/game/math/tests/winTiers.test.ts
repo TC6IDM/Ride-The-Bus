@@ -24,6 +24,7 @@ import {
   holdClimbMs,
   LAST_CARD_HOLD_MS,
   lastCardHoldMs,
+  lastCardHolds,
   lastCardTunnels,
   segmentDurationMs,
   winTierFor,
@@ -689,9 +690,29 @@ describe('lastCardHoldMs', () => {
     assert.equal(lastCardHoldMs(FAMILY_RULES.tr.maxWin, true, winTiersFor('tr')), LAST_CARD_HOLD_MS.max);
   });
 
+  test('only a round with an Equal pick holds its last card', () => {
+    // The owner's call, 2026-09-25: every clean run to the last card used to be
+    // held - about one round in seven on the easy picks - and the moment wore
+    // thin. Equal is the long shot the hold exists for.
+    assert.equal(lastCardHolds(['red', 'higher', 'outside', 'heart']), false);
+    assert.equal(lastCardHolds(['black', 'lower', 'inside', 'club']), false);
+    assert.equal(lastCardHolds(['red', 'equal', 'outside', 'heart']), true);
+    assert.equal(lastCardHolds(['red', 'higher', 'equal', 'spade']), true);
+    assert.equal(lastCardHolds(['black', 'equal', 'equal', 'diamond']), true);
+    // Three of a Kind's two Equals are the mode, so its card 3 always may.
+    assert.deepEqual([...FAMILY_RULES.tr.fixedChoices!], ['any', 'equal', 'equal']);
+    assert.equal(lastCardHolds(FAMILY_RULES.tr.fixedChoices!), true);
+  });
+
+  test('the reveal gates the hold on the choices the book was bet on', () => {
+    const reveal = source('./round/roundReveal.svelte.ts');
+    assert.match(reveal, /const mayHold = lastCardHolds\(round\.revealEvents\.map\(\(e\) => e\.choice\)\)/);
+    assert.match(reveal, /if \(i === last && !busted && mayHold\)/, 'the hold no longer asks lastCardHolds');
+  });
+
   test('the reveal decides the hold without reading whether the card lands', () => {
     const reveal = source('./round/roundReveal.svelte.ts');
-    const start = reveal.indexOf('if (i === last && !busted)');
+    const start = reveal.indexOf('if (i === last && !busted && mayHold)');
     const end = reveal.indexOf('await revealWait(650, 0);', start);
     assert.ok(start >= 0 && end > start, 'the last-card hold block moved; re-anchor this test');
     const block = reveal.slice(start, end).replace(/\/\/.*$/gm, '');
@@ -740,7 +761,7 @@ describe('holdClimbMs', () => {
 
     // Decided in the same slice of the reveal as the hold, with no .correct in it.
     const reveal = source('./round/roundReveal.svelte.ts');
-    const start = reveal.indexOf('if (i === last && !busted)');
+    const start = reveal.indexOf('if (i === last && !busted && mayHold)');
     const block = reveal.slice(start, reveal.indexOf('await revealWait(650, 0);', start)).replace(/\/\/.*$/gm, '');
     assert.match(block, /lastCardTunnels\(/, 'the tunnel is not decided where the hold is');
     assert.doesNotMatch(block, /\.correct\b/, 'the tunnel reads whether the card lands');
@@ -757,5 +778,15 @@ describe('holdClimbMs', () => {
     assert.ok(zIndex('.card-slot.is-lit') > zIndex('.tunnel'), 'the held card is not lifted over the tunnel');
     assert.match(css, /\.card-slot\.is-held \.card-block\s*\{[^}]*transition:\s*transform var\(--hold-climb/, 'the card does not rise on the climb clock');
     assert.match(css, /\.tunnel\.is-closing\s*\{[^}]*transform var\(--hold-climb/, 'the tunnel does not close on the climb clock');
+  });
+
+  test('the tunnel rises with the card, by the same distance', () => {
+    // It used to stay centred where the card had been and sit 12-15px low at
+    // the top of the hold. One --hold-rise for both, so the two cannot part.
+    const css = source('../styles/board/cards.css');
+    assert.match(css, /\.card-slot,\s*\.tunnel\s*\{[^}]*--hold-rise:/, '--hold-rise is not shared by the card and the tunnel');
+    assert.match(css, /\.card-slot\.is-held \.card-block\s*\{[^}]*transform:\s*translateY\(var\(--hold-rise\)\)/, 'the card does not rise by --hold-rise');
+    assert.match(css, /\.tunnel\.is-closing\s*\{[^}]*transform:\s*translateY\(var\(--hold-rise\)\) scale\(1\)/, 'the tunnel does not rise with the card');
+    assert.match(css, /\.tunnel\s*\{[^}]*transform:\s*translateY\(0\) scale\(2\.4\)/, 'the open tunnel does not name the same two functions');
   });
 });

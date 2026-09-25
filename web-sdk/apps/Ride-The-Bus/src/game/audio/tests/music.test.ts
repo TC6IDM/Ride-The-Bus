@@ -623,6 +623,20 @@ describe('the scene ladder', () => {
 		assert.ok(celebration < loading, 'the bed under the fanfare was not the quietest scene');
 	});
 
+	test('the held last card muffles the bed, and every other scene stands its filter open', () => {
+		// The room falling away is the band losing its top, not only its level:
+		// turned down alone it was the same tune, quieter. Everything else plays
+		// the track as produced - an open lowpass, not a colour.
+		const cutoff = (s: 'loading' | 'lobby' | 'idle' | 'round' | 'hold' | 'celebration') => {
+			music.setScene(s);
+			return music.cutoff();
+		};
+		assert.ok(cutoff('hold') <= 1000, 'the held card does not muffle the bed');
+		for (const s of ['loading', 'lobby', 'idle', 'round', 'celebration'] as const) {
+			assert.ok(cutoff(s) >= 20000, `the ${s} scene filters the bed`);
+		}
+	});
+
 	test("scene 'none' asks for no level at all", () => {
 		music.setScene('none');
 		assert.equal(music.level(), 0, "scene 'none' still asked for a level");

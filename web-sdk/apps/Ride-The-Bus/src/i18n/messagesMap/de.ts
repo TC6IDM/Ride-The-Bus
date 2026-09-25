@@ -280,8 +280,6 @@ export default {
 		'Karte 2 muss Karte 1 entsprechen',
 	'Card 3 must match card 1':
 		'Karte 3 muss Karte 1 entsprechen',
-	'Needs %s':
-		'Nötig: %s',
 	'%n of %t':
 		'%n von %t',
 	'Last card':

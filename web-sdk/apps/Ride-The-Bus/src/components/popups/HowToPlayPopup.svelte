@@ -279,28 +279,6 @@
              remaining deck - so what is stated is the range each pick can pay,
              generated from the same function the game pays out with. Retention
              differs per mode, so every figure here moves with the tab. -->
-        <!-- One dealt round on THIS tab's family: the card, the pick it met,
-             how many cards could have met it, and the running total after it,
-             rounded the way the board's chips are. Built by exampleRoundFor
-             from the same pricing the books are held to, so it cannot show a
-             figure the game would not pay. Not on Three of a Kind, whose
-             table below already is its one round. -->
-        {#if example.length}
-          <h5 class="info-sub">{t('Example round')}</h5>
-          <ol class="example-round">
-            {#each example as step, i}
-              <li class="ex-step" class:is-last={i === example.length - 1}>
-                <span class="ex-card" class:red={step.card.suit === '♥' || step.card.suit === '♦'}>
-                  <span class="ex-rank">{step.card.rank}</span>
-                  <SuitIcon suit={step.card.suit} />
-                </span>
-                <span class="ex-pick">{pickLabel(step.choice)}<span class="ex-tick"><MarkIcon name="check" /></span></span>
-                <span class="ex-odds">{t('%n of %t').replace('%n', String(step.hits)).replace('%t', String(step.total))}</span>
-                <span class="ex-total">{step.runningTotal.toFixed(2)}×</span>
-              </li>
-            {/each}
-          </ol>
-        {/if}
 
         <h5 class="info-sub">{t('Payout table')}</h5>
         <table class="pay-table">
@@ -349,6 +327,35 @@
           <p>{t('Each figure is the running total after that card, in multiples of your bet, exactly as the board shows it beside the cards. Only the last card pays.')}</p>
         {:else}
           <p>{t('Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.')}</p>
+        {/if}
+
+        <!-- One dealt round on THIS tab's family: the card, the pick it met,
+             how many cards could have met it, and the running total after it,
+             rounded the way the board's chips are. Built by exampleRoundFor
+             from the same pricing the books are held to, so it cannot show a
+             figure the game would not pay. Not on Three of a Kind, whose
+             table above already is its one round.
+
+             AFTER the table and the rounding paragraph, not before them. Its
+             first total is 1.90x where the table's colour row says 1.99x - the
+             same pick, one a factor, one a total rounded down the way the chips
+             are - and read first it looked like a contradiction. Here it is the
+             paragraph above, shown: the totals read slightly under. -->
+        {#if example.length}
+          <h5 class="info-sub">{t('Example round')}</h5>
+          <ol class="example-round">
+            {#each example as step, i}
+              <li class="ex-step" class:is-last={i === example.length - 1}>
+                <span class="ex-card" class:red={step.card.suit === '♥' || step.card.suit === '♦'}>
+                  <span class="ex-rank">{step.card.rank}</span>
+                  <SuitIcon suit={step.card.suit} />
+                </span>
+                <span class="ex-pick">{pickLabel(step.choice)}<span class="ex-tick"><MarkIcon name="check" /></span></span>
+                <span class="ex-odds">{t('%n of %t').replace('%n', String(step.hits)).replace('%t', String(step.total))}</span>
+                <span class="ex-total">{step.runningTotal.toFixed(2)}×</span>
+              </li>
+            {/each}
+          </ol>
         {/if}
 
         <!-- Computed per mode. This was once a single fixed list saying both

@@ -337,10 +337,7 @@ export default {
 
 	// Added 2026-09-23: the reveal's tension pass, How to Play's example round and
 	// controls guide, and the per-mode ceiling wording.
-	// The reveal's third line, before each card turns: what it has to be. %s is a rank run (8–K), a suit or a colour.
-	'Needs %s':
-		'Needs %s',
-	// How many cards left land the guess: %n of the %t still in the deck.
+	// How to Play's example round: how many cards left land the guess, %n of the %t still in the deck.
 	'%n of %t':
 		'%n of %t',
 	// The readout label while the last card is held because a lot rides on it.

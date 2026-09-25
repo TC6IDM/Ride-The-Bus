@@ -117,6 +117,34 @@ rewritten as the audio changed.
     hardest and fastest for `celebration`, because the bed and the fanfares
     share one limiter and a bed mixed to sit on top of a win would duck the WIN.
     `music.test.ts` pins the ranking, not the values.
+    - **`hold` also MUFFLES (2026-09-25).** The loop carries a lowpass after its
+      level stage (`audioLoop.ts`, `setTone`), standing open at `OPEN_CUTOFF`
+      (20 kHz) in every scene but `hold`, which closes it to 700 Hz over its own
+      fast fade: the band plays on as if through a wall while the crowd climbs.
+      Turned down alone it was the same tune, quieter. The sweep is exponential
+      and pinned where it is before it moves, like the gain.
+  - **THE HOLD, THE STRIKE AND THE ANSWER (2026-09-25)** - `sound.ts`.
+    - Only a round with an Equal pick holds its last card (`lastCardHolds`).
+    - The climb tops out two octaves under the chime that card plays if it
+      lands (`stageWinRoot`: F#3 under card 4's F#5, E3 under Three of a Kind's
+      E5), so a landing resolves the hum. It was G3, a semitone off.
+    - `HOLD_SHAPE` scales it by the tier the card could land: Big is three
+      voices and a crack (0.5 level); Huge-Epic the full crowd and thunder in two
+      bands (190->50 Hz for weight, 420->170 Hz for phones, which play almost
+      nothing under 200 Hz); Max adds the sub hit. Measured: the Big turn went
+      from -9.0 dBFS (4.5 dB over the Big fanfare) to -12.4, level with an
+      ordinary card turn; the crowd's share under 200 Hz during the climb from
+      45-77% to mostly 15-47%.
+    - A crowd answering the card after the turn - "yeah!" through the "ah"
+      formants, "awww" through the "aw" - was built and removed the same day
+      (owner's call). The reveal loop is asserted to make no such call.
+    - A haptic buzz rides the strike (`haptic()`): only when game sounds are on
+      and only after `navigator.userActivation.hasBeenActive` - Chrome logs an
+      intervention warning otherwise, and the console is inspected.
+    - Speaker models on the 2026-09-25 captures: the idle board (the bed) keeps
+      17% of its energy on a laptop speaker (-7.6 dB) and 3.4% on a phone
+      (-14.7 dB); the cue book keeps 83% / 68%. The bed's weight is under
+      200 Hz - on a phone the music all but disappears under the cues.
     - **The fade time belongs to the DESTINATION**, which makes ducks asymmetric
       without a second table: down fast into `celebration`'s 0.35 s, back up slow
       over `idle`'s 1.5 s.

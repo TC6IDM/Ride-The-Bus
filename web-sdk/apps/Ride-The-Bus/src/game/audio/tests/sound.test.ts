@@ -231,7 +231,7 @@ const storage = new Map<string, string>();
 	setItem: (k: string, v: string) => void storage.set(k, v),
 };
 
-const { sound } = await import('../sound.ts');
+const { sound, stageWinRoot } = await import('../sound.ts');
 
 /** Fire a cue and report how many oscillator voices it scheduled. */
 function voices(fire: () => void): number {
@@ -704,11 +704,14 @@ describe('the held last card', () => {
 			assert.ok(voice.end / voice.frequency > 1.9, 'a voice climbs less than an octave');
 			assert.ok(Math.abs(voice.peakAt - (0.005 + climb)) < 1e-9, `a voice tops out at ${voice.peakAt}s, off the ${climb}s climb`);
 		}
-		// A crowd on ONE note: at least four voices within 40 cents of G2.
-		const low = singers.filter((voice) => voice.frequency < 150);
+		// A crowd on ONE note: at least four voices within 40 cents of where the
+		// climb starts - an octave under its top, which is two octaves under the
+		// card-4 chime (F#2, climbing to F#3; it was G2 to G3, a semitone off).
+		const start = stageWinRoot(3) / 8;
+		const low = singers.filter((voice) => voice.frequency < start * 1.5);
 		assert.ok(low.length >= 4, 'fewer than four voices on the pitch');
 		for (const voice of low) {
-			assert.ok(Math.abs(1200 * Math.log2(voice.frequency / 98)) < 40, `a voice starts at ${voice.frequency}Hz, off G2`);
+			assert.ok(Math.abs(1200 * Math.log2(voice.frequency / start)) < 40, `a voice starts at ${voice.frequency}Hz, off F#2`);
 		}
 
 		// The level: the one gain the cue built that ramps upward at every step.
@@ -749,6 +752,88 @@ describe('the held last card', () => {
 		assert.ok(bands.filter((f) => f >= 4000).length >= 3, 'the crack does not rip - fewer than three bright bursts');
 		assert.ok(bands.some((f) => f <= 250), 'no thunder under the crack');
 		assert.ok(created.bufferSources - sourcesBefore >= 5, 'the strike is not made of noise');
+	});
+});
+
+describe('the held last card, scaled and tuned', () => {
+	// 2026-09-25. A Big-win hold was the whole performance every time - and it is
+	// the common one - so its strike outshouted the fanfare it announced by 4.5 dB.
+	// The size now follows the stake; the pitch follows the card's own chime.
+	test("it is tuned to the chime the card plays if it lands, on either family's last card", () => {
+		for (const stage of [3, 2]) {
+			resetCreated();
+			sound.playLastCardHold(0.8, 'max', stage);
+			const singers = created.oscillators.filter((o) => o.type === 'sawtooth');
+			const top = stageWinRoot(stage) / 4;
+			const reaching = singers.filter((voice) => voice.end < top * 1.5);
+			assert.ok(reaching.length >= 4, `stage ${stage}: fewer than four voices reach the top`);
+			for (const voice of reaching) {
+				assert.ok(Math.abs(1200 * Math.log2(voice.end / top)) < 40, `stage ${stage}: a voice tops out at ${voice.end}Hz, not two octaves under the chime`);
+			}
+		}
+	});
+
+	test('a Big-win hold is a few voices and a crack; Max is the crowd, the thunder and the weight', () => {
+		const run = (tier: 'big' | 'huge' | 'max') => {
+			resetCreated();
+			const release = sound.playLastCardHold(0.8, tier);
+			const singers = created.oscillators.filter((o) => o.type === 'sawtooth').length;
+			const oscBefore = created.oscillators.length;
+			const filtersBefore = created.filterNodes.length;
+			const sourcesBefore = created.bufferSources;
+			release();
+			const bands = created.filterNodes.slice(filtersBefore).map((f) => f.frequency.start);
+			return {
+				singers,
+				hits: created.oscillators.length - oscBefore,
+				noise: created.bufferSources - sourcesBefore,
+				thunder: bands.some((f) => f <= 250),
+				phoneThunder: bands.some((f) => f >= 300 && f <= 500),
+				crack: bands.filter((f) => f >= 4000).length,
+			};
+		};
+		const big = run('big');
+		const huge = run('huge');
+		const max = run('max');
+
+		assert.ok(big.singers < huge.singers, 'a Big-win hold sings with the whole crowd');
+		assert.equal(big.crack, 3, 'a Big-win strike lost its crack');
+		assert.equal(big.thunder || big.phoneThunder, false, 'a Big-win strike still thunders');
+		assert.equal(big.hits, 0, 'a Big-win strike still has the sub hit');
+
+		assert.ok(huge.thunder && huge.phoneThunder, 'a Huge-win strike does not thunder in both bands');
+		assert.equal(huge.hits, 0, 'the sub hit is not kept for Max');
+
+		assert.ok(max.thunder && max.phoneThunder, 'the Max strike does not thunder in both bands');
+		assert.equal(max.hits, 1, 'the Max strike has no sub hit');
+		assert.ok(max.noise > big.noise, 'the Max strike is no bigger than the Big one');
+	});
+
+	test('the strike buzzes a phone - only after a tap, and never with the sound off', () => {
+		const buzzes: unknown[] = [];
+		let active = true;
+		const original = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+		Object.defineProperty(globalThis, 'navigator', {
+			configurable: true,
+			get: () => ({ vibrate: (pattern: unknown) => (buzzes.push(pattern), true), userActivation: { hasBeenActive: active } }),
+		});
+		try {
+			sound.playLastCardHold(0.8, 'max')();
+			assert.equal(buzzes.length, 1, 'the strike did not buzz');
+			sound.playLastCardHold(0.8, 'big')();
+			assert.equal(buzzes.length, 2, 'a Big-win strike did not buzz');
+
+			active = false;
+			sound.playLastCardHold(0.8, 'max')();
+			assert.equal(buzzes.length, 2, 'it buzzed before the player had touched the page');
+
+			active = true;
+			sound.setMuted(true);
+			sound.playLastCardHold(0.8, 'max')();
+			assert.equal(buzzes.length, 2, 'it buzzed with the sound off');
+		} finally {
+			if (original) Object.defineProperty(globalThis, 'navigator', original);
+		}
 	});
 });
 
@@ -840,6 +925,13 @@ describe('the reveal loop is wired to the right cues', () => {
 		for (const effect of ['lastCardHeld = true', 'holdTunnel =', 'sound.playLastCardHold(']) {
 			assert.ok(felt.includes(effect), `${effect} is not inside the felt-hold gate`);
 		}
+	});
+
+	test('the hum is scored at the stake\'s tier, on the card\'s own stage', () => {
+		assert.match(loop, /sound\.playLastCardHold\(round\.holdClimbMs \/ 1000, heldTier, i\)/, 'the hum is not told its tier and stage');
+		// And it takes back nothing else: the crowd's answer after the turn (a
+		// cheer, an "awww") was tried on 2026-09-25 and taken out the same day.
+		assert.doesNotMatch(loop, /playCrowdReaction/, 'the crowd answers the card again');
 	});
 
 	test('the held last card is scored, and its hum is released as the card turns', () => {

@@ -278,8 +278,6 @@ export default {
 		'يجب أن تطابق الورقة 2 الورقة 1',
 	'Card 3 must match card 1':
 		'يجب أن تطابق الورقة 3 الورقة 1',
-	'Needs %s':
-		'المطلوب: %s',
 	'%n of %t':
 		'%n من %t',
 	'Last card':

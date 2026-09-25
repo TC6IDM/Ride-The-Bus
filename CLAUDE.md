@@ -409,26 +409,71 @@ reading before proposing it again.
   either way — measured through CDP with `Log.enable` to confirm a constructed and
   closed context logs nothing. A cold load in a strict embed is still silent
   until the first touch; that is a browser rule.
-- **The scene ladder is a DIP, not a climb.** Six scenes, one file, so level is
-  the only thing a scene can change: loudest at `idle`, ducked for `round` (the
-  busiest the cue book gets), further for `hold` (a held last card, under the
-  cue book's rising hum, until the round settles), and hardest and fastest
-  for `celebration` — the bed and the fanfares share one limiter, so a bed
-  sitting on top of a win would duck the win. The fade time belongs to the
-  **destination**, which makes ducks fast and recoveries slow for free. A
-  celebration outranks a round in the derivation, because the round is still in
-  flight underneath the takeover.
+- **The scene ladder is a DIP, not a climb.** Six scenes, one file, so level
+  and tone are all a scene can change: loudest at `idle`, ducked for `round`
+  (the busiest the cue book gets), further for `hold` (a held last card, under
+  the cue book's rising hum, until the round settles) - where the bed's lowpass
+  also closes to 700 Hz, so the band plays on as if through a wall - and
+  hardest and fastest for `celebration` — the bed and the fanfares share one
+  limiter, so a bed sitting on top of a win would duck the win. The fade time
+  belongs to the **destination**, which makes ducks fast and recoveries slow
+  for free, and the filter rides the same fade. A celebration outranks a round
+  in the derivation, because the round is still in flight underneath the
+  takeover.
+- **The last card is held only on a round with an Equal pick**
+  (`lastCardHolds`, from the choices the book was bet on - never the result).
+  Every clean run to the last card used to be held, about 1 round in 7 on the
+  easy picks, three in four of them missing: the moment wore thin. Now one
+  Equal on Classic / High Stakes holds ~1 in 33 rounds, two ~1 in 835, no Equal
+  never, Second Chance with an Equal ~1 in 11-15 (a forgiven Equal miss still
+  reaches card 4 with a Big stake), Three of a Kind (its two Equals are the
+  mode) 1 in 3.7. The owner's call, 2026-09-25.
 - **The last card's hum is the one HELD voice** (`swell()` in `audioVoices.ts`,
   `playLastCardHold` in `sound.ts`): it hands back a release, and the reveal
   calls it as the card turns however the wait ended - on time, slammed or cut
   by turbo. Its shape is the owner's, after five listens: **up linearly, stay
-  at the top, then a crash** - a crowd's "ohhhh" (six detuned sawtooths through
+  at the top, then a crash** - a crowd's "ohhhh" (detuned sawtooths through
   "oh" formants, with breath), a lightning strike on the turn - and the card
   rises, sits and slams on the same clock (`holdClimbMs`), under a tunnel-vision
   vignette - only when it could land Huge or bigger (`lastCardTunnels`) - that
-  stops at the play area, so the control bar stays lit. The release rides a
+  **rises with the card** (one `--hold-rise` for both) and stops at the play
+  area, so the control bar stays lit. **It is tuned and scaled**: the climb
+  tops out two octaves under the chime the card plays if it lands
+  (`stageWinRoot`), and the tier it could land (`lastCardTier`) sizes it - a
+  few voices and a crack for Big, the crowd and a two-band thunder above, the
+  sub hit on Max (`HOLD_SHAPE`), so the strike never outshouts its fanfare.
+  A crowd answering the card after the turn (a cheer, an "awww") was built and
+  taken out the same day, by the owner's call - `sound.test.ts` fails if it
+  comes back. A short haptic buzz rides the strike (only after a tap, never
+  with game sounds off). The release rides a
   gain stage of its own, never the swell's envelope; `sound.test.ts` fails if
-  the shape, the vowel or the strike drifts, or the release moves after the flip.
+  the shape, the vowel, the tuning, the scaling or the strike drifts, or the
+  release moves after the flip.
+- **The board never moves under the player.** The card row, the readout and
+  the guess row hold their positions through picks, deals, holds and settles
+  (0.0 px, measured every frame across a session at three sizes). The
+  readout's third line is what used to break it: its empty state is a
+  NON-BREAKING space, written as `'\u00a0'`, plus `min-height: 1lh` - a plain
+  space collapses the line, and a rewrite once did exactly that, so the board
+  jumped at the fourth pick and at every settle. `boardStill.test.ts` pins both.
+- **Card backs and the deck carry the house name, not the logo** - "TAKEOVER /
+  CASINO" in Geist 400 at 58% white on a plain label of the card's own red with
+  a faint hairline edge (set straight on the back, the crosshatch ran through
+  the letters), one token set (`--brand-wordmark*`) for the board's backs, the
+  deck prop, the loader's cards and the takeover's fan. On the deck it takes the
+  deck's own shade (`--deck-dim`, as a brightness) and its flat-on-the-table
+  squash (`--flat`) - a label is content, so the scrim in the face's background
+  never reached it. The
+  full-colour chip was five copies on the board before the first deal and the
+  loudest thing on the table; it still leads the loader and the start screen.
+- **No odds line on the board, by the owner's call (2026-09-25).** Two were
+  tried: "Needs 8-K · 24 of 51" before each card, and "Full ride: 1 in 28"
+  before a round; both are gone. If a frequency is ever shown again it must be
+  the published tables' weighted one, NEVER the deck's count - the reweight
+  deals paying rounds up to a third more often than the deck on the Inside
+  modes. A LUT's simulation number indexes `library/deals_standard52.bin`
+  (checked on every row of all 192 four-guess tables), so it can be counted
+  exactly from a build; status.md has the method.
 - **The jurisdiction block is the operator's, and every read must survive it
   being absent.** Every read goes through `readFlag`, and **the fallback is
   always the permissive value**. Social mode is read from BOTH `?social=true`
@@ -799,7 +844,7 @@ between a one-row bar and a two-row one.
 
 ## Current state and outstanding work
 
-809/809 tests (none skipped), 0 type errors, 0 CSS warnings, lint clean, and
+816/816 tests (none skipped), 0 type errors, 0 CSS warnings, lint clean, and
 the client reproduces the published books of all **193** modes exactly — the
 parity test replays a 400-book slice of every mode off `index.json`, three-card
 trips books included. The build on disk is the **2026-09-22 02:30** one: High

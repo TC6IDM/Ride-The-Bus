@@ -274,8 +274,46 @@ export function lastCardHoldMs(
   fullGameWin: boolean,
   tiers: readonly WinTier[] = WIN_TIERS,
 ): number {
-  const tier = winTierFor(landingMultiplier, fullGameWin, tiers);
-  return tier ? LAST_CARD_HOLD_MS[tier.id] : 0;
+  const tier = lastCardTier(landingMultiplier, fullGameWin, tiers);
+  return tier ? LAST_CARD_HOLD_MS[tier] : 0;
+}
+
+/**
+ * The tier the held last card could land, or null - the one figure the hold's
+ * length (lastCardHoldMs), its sound (the voices and the strike scale with it,
+ * sound.ts HOLD_SHAPE) and its tunnel (lastCardTunnels) are all read from.
+ * Like them, from the stake alone and never from whether the card lands.
+ */
+export function lastCardTier(
+  landingMultiplier: number,
+  fullGameWin: boolean,
+  tiers: readonly WinTier[] = WIN_TIERS,
+): WinTierId | null {
+  return winTierFor(landingMultiplier, fullGameWin, tiers)?.id ?? null;
+}
+
+/**
+ * Whether this round's last card may be held at all: only when the round
+ * carries an Equal pick. Three of a Kind always does - its two Equals are the
+ * mode - so its card 3 always may.
+ *
+ * WHY. Every clean run to the last card used to be held, because the full-win
+ * floor lifts any of them onto the ladder. On the easy picks (colour, Higher,
+ * Outside, a suit) that was about one round in seven, and three held cards in
+ * four then missed their suit - the crowd, the strike and the tunnel as often
+ * as a card flip, which is how a big moment stops being one. Equal is this
+ * game's long shot, and a last card with an Equal behind it is the stake the
+ * hold exists for. Measured against the dealt frequencies (deck odds times each
+ * mode's reweight): one Equal on Classic or High Stakes is held about 1 in 33
+ * rounds, two Equals about 1 in 835, no Equal never; Second Chance, whose Equal
+ * miss is usually forgiven and plays on with a big stake, about 1 in 11-15;
+ * Three of a Kind 1 in 3.7. The owner's call, 2026-09-25.
+ *
+ * Read off the book's own choices for the round - what was bet, never what
+ * landed - so, like lastCardHoldMs, it cannot say anything about the result.
+ */
+export function lastCardHolds(choices: readonly string[]): boolean {
+  return choices.includes('equal');
 }
 
 /** The part of a held card's wait spent AT the top, at most - and at most this

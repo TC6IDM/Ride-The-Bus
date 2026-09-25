@@ -43,6 +43,8 @@ type LoopOptions = {
 	loopStart?: number;
 	/** Seconds into the buffer the usable region ends. Default the whole file. */
 	loopEnd?: number;
+	/** Where the loop's lowpass starts, in Hz. Default OPEN_CUTOFF - no filtering. */
+	cutoff?: number;
 };
 
 /**
@@ -56,9 +58,18 @@ type LoopOptions = {
 export type LoopHandle = {
 	/** Ramp to a new level over `seconds`. */
 	setGain(next: number, seconds?: number): void;
+	/** Sweep the loop's lowpass to `cutoff` Hz over `seconds`. */
+	setTone(cutoff: number, seconds?: number): void;
 	/** Ramp down and release every source. Safe to call twice. */
 	stop(fadeOut?: number): void;
 };
+
+/**
+ * A lowpass this high passes the whole track untouched - it is the loop's
+ * filter standing open, not a colour. Below Nyquist at every rate a browser
+ * runs at, which a biquad needs.
+ */
+export const OPEN_CUTOFF = 20000;
 
 /** How far ahead of the clock passes are scheduled, and how often that is topped up. */
 const LOOP_LOOKAHEAD = 8;
@@ -159,6 +170,7 @@ export function loop({
 	crossfade = 0,
 	loopStart = 0,
 	loopEnd,
+	cutoff = OPEN_CUTOFF,
 }: LoopOptions): LoopHandle | null {
 	const voice = openVoice(bus);
 	if (!voice) return null;
@@ -183,11 +195,20 @@ export function loop({
 	const env = audio.createGain();
 	env.gain.setValueAtTime(0, start);
 	env.gain.linearRampToValueAtTime(gain, start + fadeIn);
-	env.connect(out);
+
+	// The scene's tone, after its level: a lowpass that stands open everywhere
+	// but the held last card, where it closes and the room falls away (music.ts
+	// SCENE_MIX). Q at Butterworth, so closing it muffles without a resonant bump.
+	const tone = audio.createBiquadFilter();
+	tone.type = 'lowpass';
+	tone.Q.value = 0.707;
+	tone.frequency.setValueAtTime(cutoff, start);
+	env.connect(tone);
+	tone.connect(out);
 	if (space > 0 && room) {
 		const tap = audio.createGain();
 		tap.gain.value = space;
-		env.connect(tap);
+		tone.connect(tap);
 		tap.connect(room);
 	}
 
@@ -275,6 +296,21 @@ export function loop({
 			const now = audio.currentTime;
 			takeOver(now);
 			env.gain.linearRampToValueAtTime(next, now + seconds);
+		},
+		setTone(next, seconds = 1.5) {
+			if (!live) return;
+			const now = audio.currentTime;
+			// Pinned where it is, for the same reason as takeOver: cancelling a sweep
+			// mid-flight otherwise snaps the cutoff back to its last set point.
+			const f = tone.frequency;
+			const current = f.value;
+			f.cancelScheduledValues(now);
+			f.setValueAtTime(current, now);
+			// Exponential, because pitch is heard in ratios: a straight line from
+			// 20 kHz spends most of its time where nothing changes and then drops
+			// off a cliff at the end.
+			if (typeof f.exponentialRampToValueAtTime === 'function') f.exponentialRampToValueAtTime(next, now + seconds);
+			else f.linearRampToValueAtTime(next, now + seconds);
 		},
 		stop(fadeOut = 0.6) {
 			if (!live) return;

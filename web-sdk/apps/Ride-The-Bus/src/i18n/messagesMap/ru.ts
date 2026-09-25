@@ -276,8 +276,6 @@ export default {
 		'Карта 2 должна совпасть с картой 1',
 	'Card 3 must match card 1':
 		'Карта 3 должна совпасть с картой 1',
-	'Needs %s':
-		'Нужно: %s',
 	'%n of %t':
 		'%n из %t',
 	'Last card':

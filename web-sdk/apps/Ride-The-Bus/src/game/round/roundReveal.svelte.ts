@@ -21,8 +21,7 @@ import { loaderGone } from '../platform/ready.svelte';
 import { HOLD_MIN_CLIMB, sound } from '../audio/sound';
 import { decayFor, forgivenessAvailable, quantizeMultiplier } from '../math/payout';
 import { FREE_CHOICE, isCleanSweep, stageCount } from '../math/modes';
-import { stageNeed } from '../math/stageOdds';
-import { holdClimbMs, lastCardHoldMs, lastCardTunnels } from '../math/winTiers';
+import { holdClimbMs, lastCardHoldMs, lastCardHolds, lastCardTier, lastCardTunnels } from '../math/winTiers';
 import { familyRules, winTiers } from '../bet/betState.svelte';
 import { cueLead, paceMs, pacing, revealWait } from './revealPacing.svelte';
 import { resetForNewRound, round } from './roundState.svelte';
@@ -114,21 +113,17 @@ export async function playRevealSequence() {
   let busted = false;
   let forgivenessSpent = false;
   const last = round.revealEvents.length - 1;
+  // Whether the last card may be held at all: only on a round with an Equal
+  // pick behind it (lastCardHolds). From the choices the book was bet on.
+  const mayHold = lastCardHolds(round.revealEvents.map((e) => e.choice));
   for (let i = 0; i < round.revealEvents.length; i++) {
     const event = round.revealEvents[i];
-    // What this card has to be, counted off the cards already on the table -
-    // the same count the stage is priced on (stageOdds.ts). Shown under the
-    // running total for as long as the card waits. A dealt card needs nothing.
-    round.nextNeed =
-      event.choice === FREE_CHOICE
-        ? null
-        : stageNeed(familyRules(), i, event.choice, round.revealEvents.slice(0, i).map((e) => e.card));
     // The last card waits longer when a lot is riding on it. What it would pay
     // is known before it turns - `event.payout` is the book's price for the
     // pick, written whether or not the pick lands - so the hold says how much
     // is at stake and nothing about the result. See lastCardHoldMs.
     let releaseHold = () => {};
-    if (i === last && !busted) {
+    if (i === last && !busted && mayHold) {
       const landing = quantizeMultiplier(running * event.payout * familyRules().cost);
       const fullGameWin = isCleanSweep(round.bustedIndex, round.forgivenIndex) && familyRules().celebrateEveryFullWin;
       const hold = lastCardHoldMs(landing, fullGameWin, winTiers());
@@ -149,7 +144,10 @@ export async function playRevealSequence() {
           // Tunnel vision only when the card could land a Huge win or bigger -
           // from the same stake, never from the result. See lastCardTunnels.
           round.holdTunnel = lastCardTunnels(landing, fullGameWin, winTiers());
-          releaseHold = sound.playLastCardHold(round.holdClimbMs / 1000);
+          // The voices and the strike scale with the same tier, and the hum is
+          // tuned to this card's own stage-win chime.
+          const heldTier = lastCardTier(landing, fullGameWin, winTiers()) ?? 'big';
+          releaseHold = sound.playLastCardHold(round.holdClimbMs / 1000, heldTier, i);
         }
         await revealWait(hold, 0);
       }
@@ -157,7 +155,6 @@ export async function playRevealSequence() {
     await revealWait(650, 0);
     releaseHold();
     round.holdIndex = null;
-    round.nextNeed = null;
     round.revealedCards[i] = event.card;
     // Spaced, not skipped, when the reveal is instant - see cueLead.
     sound.playCardFlip(cueLead(i));
