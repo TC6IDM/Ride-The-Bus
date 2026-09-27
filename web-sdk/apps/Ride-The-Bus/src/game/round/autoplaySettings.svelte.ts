@@ -8,15 +8,15 @@
  * the state on its own the dependencies are a DAG, which is the version a
  * reader can follow.
  *
- * Four $state objects rather than nineteen exported `let`s, because an exported
+ * Two $state objects rather than a dozen exported `let`s, because an exported
  * `let` cannot be reassigned across a module boundary. They are grouped by who
  * asks:
  *
  *   auto      the live run - what was asked for and what is left of it
- *   stops     the two passive switches on the autoplay panel
- *   advanced  the gated bet-progression fields (see ADVANCED_ENABLED)
- *   run       the running net result, for the stop-on checks
+ *   stops     what ends a run early, and whether it skips the takeover
  */
+import type { LimitSetting } from './autoplayLimits';
+
 export const auto = $state({
   roundsInput: '10',
   infinite: false,
@@ -44,19 +44,33 @@ export const autoRoundsValid = () =>
   auto.infinite ||
   (Number.isFinite(Number(auto.roundsInput)) && Math.floor(Number(auto.roundsInput)) >= 1);
 /**
- * The two passive switches on the autoplay panel.
+ * What ends a run early, plus one switch for how it looks - all on the
+ * autoplay panel (the separate "Advanced" panel that held two of them is gone).
  *
- * Passive is the load-bearing word: every one of these either ends a run or
- * shortens an animation. None of them touches the stake, which is what keeps
- * them shippable while the Advanced progression below stays gated.
+ * PASSIVE is the load-bearing word: every one of these either ends a run or
+ * shortens an animation. None of them touches the stake. An auto-bet that
+ * RAISES the stake after a loss (a martingale) used to sit here behind a
+ * DEV-only flag, never shippable - "chasing losses" is the mechanic Stake's
+ * own auto-bet does not offer - and it was removed outright rather than left in
+ * the source a reviewer can read.
  */
 export const stops = $state({
   /**
-   * Stop the auto run the moment a round is won outright (all 4 cards correct,
-   * no bust). A passive stop condition - it only ends the run, never changes
-   * the stake - so it's safe to ship (unlike the gated Advanced progression).
+   * Stop the auto run the moment a round is won outright (all four right, no
+   * bust, nothing forgiven - isCleanSweep). Ends the run, never changes the stake.
    */
   onFullWin: false,
+
+  /**
+   * Stop once the run is down this much, net of what it won. Typed by the
+   * player, in multiples of the BASE bet or in money, and armed by the button
+   * beside the field. Off until then. autoplayLimits.ts has the rule, and why
+   * the unit is never the round's cost.
+   */
+  lossLimit: { input: '', unit: 'x', on: false } as LimitSetting,
+
+  /** Stop on any single round that pays at least this much. Same shape. */
+  winLimit: { input: '', unit: 'x', on: false } as LimitSetting,
 
   /**
    * Skip the big-win takeover during an auto run: show the finished figure for
@@ -77,43 +91,8 @@ export const stops = $state({
   // others - a second control for a result the first one already gives.
 });
 
-// Advanced auto-bet strategy (Stake-style). When the Advanced switch is on:
-//  - On Win / On Loss adjust the next bet: 'reset' back to the starting bet,
-//    or 'increase' it by a percentage (100% = classic martingale double).
-//  - Stop on Profit / Stop on Loss end the run once the cumulative net result
-//    for this auto run crosses the given amount.
-// Win vs loss is decided by the round's NET result (payout vs the bet placed),
-// not just gameState - this game's partial credit means a "won" round can
-// still pay back less than the stake.
-//
-// COMPLIANCE GATE: the On Win / On Loss bet-progression (martingale) is NOT
-// part of the Stake Engine SDK's auto-bet, which keeps the stake constant and
-// only offers stop-limits (see packages/state-shared stateUi AUTO_SPINS /
-// LOSS_LIMIT / SINGLE_WIN_LIMIT). Auto-raising the bet on a loss is a
-// "chasing losses" mechanic that needs Stake's approval before it can ship,
-// so the Advanced switch is hard-disabled for now. Flip this to true (and
-// confirm with Stake) to re-enable the whole panel - all the logic below is
-// kept intact and gated on it.
-export const ADVANCED_ENABLED = import.meta.env.DEV as boolean;
-export const advanced = $state({
-  mode: false,
-  onWinMode: 'reset' as 'reset' | 'increase',
-  onLossMode: 'reset' as 'reset' | 'increase',
-  onWinPct: '0',
-  onLossPct: '0',
-  stopOnProfit: '0',
-  stopOnLoss: '0',
-});
-// Running net profit (payouts - stakes) for the active auto run; drives the
-// stop-on checks and the live readouts next to those fields.
-export const run = $state({
-  profit: 0,
-  baseBet: 0,
-});
-export const toNum = (s: string) => {
-  const n = Number(`${s ?? ''}`.trim());
-  return Number.isFinite(n) ? n : 0;
-};
+// The rule that applies the limits is in autoplayLimits.ts, a plain module,
+// so it is unit-tested without a Svelte compiler.
 
 /**
  * How many digits the rounds-left counter is showing.

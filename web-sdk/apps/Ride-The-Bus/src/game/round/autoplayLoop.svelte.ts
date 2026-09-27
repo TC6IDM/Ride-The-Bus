@@ -10,23 +10,17 @@
  * The loop is otherwise unremarkable and deliberately so: each iteration is one
  * independent /wallet/play, exactly like a manual spin, because Stake's RGS has
  * no server-side notion of "auto". Everything that makes it stop - the count,
- * the balance, an error, a full game win, a Stop press - is checked here rather
- * than being pushed into the round.
+ * the balance, an error, a full game win, a loss limit, a single big win, a
+ * Stop press - is checked here rather than being pushed into the round. The
+ * stake never changes during a run.
  */
 import { sound } from '../audio/sound';
 import { jurisdiction } from '../jurisdiction/jurisdiction.svelte';
 
 import { isCleanSweep } from '../math/modes';
-import {
-  ADVANCED_ENABLED,
-  advanced,
-  auto,
-  autoRoundsValid,
-  run,
-  stops,
-  toNum,
-} from './autoplaySettings.svelte';
-import { allChoicesMade, bet, betIsValid, betValue, normalizeBet, roundCost } from '../bet/betState.svelte';
+import { auto, autoRoundsValid, stops } from './autoplaySettings.svelte';
+import { limitAmount, limitReached } from './autoplayLimits';
+import { allChoicesMade, betIsValid, roundCost } from '../bet/betState.svelte';
 import { round } from './roundState.svelte';
 import { paceMs } from './revealPacing.svelte';
 import { closeBetMenuForRun, runRound } from './roundPlace.svelte';
@@ -53,22 +47,11 @@ export async function startAuto({ hold = false } = {}) {
   auto.spaceHoldRunning = hold;
   auto.remaining = hold ? 0 : auto.infinite ? Infinity : Math.floor(Number(auto.roundsInput));
 
-  // Advanced strategy setup: the starting bet is the reset target, and the
-  // net result is tracked so Stop on Profit / Stop on Loss can end the run.
-  run.baseBet = normalizeBet(betValue());
-  run.profit = 0;
-  let nextBet = run.baseBet;
-  // Advanced strategy only applies when the feature is enabled AND switched on
-  // (the switch is currently hard-disabled - see ADVANCED_ENABLED). This keeps
-  // the stake constant, matching the SDK's own auto-bet.
-  const useAdvanced = ADVANCED_ENABLED && advanced.mode;
-  const stopProfit = useAdvanced ? toNum(advanced.stopOnProfit) : 0;
-  const stopLoss = useAdvanced ? toNum(advanced.stopOnLoss) : 0;
+  // The run's net result so far - winnings minus stakes - for the loss limit.
+  let net = 0;
 
   try {
     while ((hold ? auto.spaceHoldRunning : auto.remaining > 0) && !auto.stopRequested) {
-      // Bet this round's amount (advanced strategy may have grown / reset it).
-      bet.input = String(nextBet);
       // Affordability and limits, asked of betIsValid rather than re-derived.
       // This used to be its own `betValue() > balance + 1e-9` comparison,
       // which disagreed with betIsValid in two ways: betIsValid has no
@@ -85,10 +68,10 @@ export async function startAuto({ hold = false } = {}) {
       // honour a Stop pressed during the round (the in-flight bet finished).
       if (round.error || auto.stopRequested) break;
 
-      // Tally this round's net result (payout minus the stake actually placed).
-      const roundBet = roundCost(round.initialBet);
-      const won = round.wonAmount > roundBet;
-      run.profit = Math.round((run.profit + (round.wonAmount - roundBet)) * 100) / 100;
+      // This round's stake - what it actually cost, from the bet it was placed
+      // on - and the run's net result after it.
+      const cost = roundCost(round.initialBet);
+      net = Math.round((net + (round.wonAmount - cost)) * 100) / 100;
 
       // Stop on a full game win if requested.
       //
@@ -105,18 +88,13 @@ export async function startAuto({ hold = false } = {}) {
       if (stops.onFullWin && round.state === 'won' && isCleanSweep(round.bustedIndex, round.forgivenIndex))
         break;
 
-      if (useAdvanced) {
-        // End the run once a cumulative profit / loss target is hit.
-        if (stopProfit > 0 && run.profit >= stopProfit - 1e-9) break;
-        if (stopLoss > 0 && -run.profit >= stopLoss - 1e-9) break;
-        // Set the next bet from the win/loss rule: reset to base, or grow the
-        // current bet by the given % (100% = classic martingale double).
-        const mode = won ? advanced.onWinMode : advanced.onLossMode;
-        const pct = won ? toNum(advanced.onWinPct) : toNum(advanced.onLossPct);
-        nextBet = mode === 'reset' ? run.baseBet : nextBet * (1 + pct / 100);
-        nextBet = Math.round(Math.max(0, nextBet) * 100) / 100;
-        if (!(nextBet > 0)) nextBet = run.baseBet;
-      }
+      // The two limits the panel offers, as money. A "x" limit is a multiple of
+      // the BASE bet - the unit every other "your bet" in the game means - and
+      // is read fresh each round, so a limit changed mid-run applies from the
+      // next one (autoplayLimits.ts).
+      const lossAt = limitAmount(stops.lossLimit, round.initialBet);
+      const winAt = limitAmount(stops.winLimit, round.initialBet);
+      if (limitReached(lossAt, winAt, net, round.wonAmount)) break;
 
       if (hold) {
         // Released mid-round: finish here rather than starting another bet.
@@ -132,9 +110,6 @@ export async function startAuto({ hold = false } = {}) {
     auto.running = false;
     auto.spaceHoldRunning = false;
     auto.remaining = 0;
-    // Restore the input to the starting bet so the sidebar doesn't keep the
-    // last (possibly grown) strategy amount after the run ends.
-    bet.input = String(run.baseBet);
     // Deliberately DON'T reset the board here: when the run ends (count
     // exhausted or Stop pressed) the final round stays on screen with its
     // revealed cards and win, exactly like a manual round does. The next

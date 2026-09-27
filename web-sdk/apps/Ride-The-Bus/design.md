@@ -36,8 +36,11 @@ parity of contrast against the three panel grounds (the table is in
 ## Colour
 
 - **One accent for anything chosen; a fixed identity colour per control that
-  opens something.** Turbo amber, autoplay green, advanced purple, sound cream,
-  info blue. These are wayfinding, not decoration (`--ctl-*`).
+  opens something.** Turbo amber, autoplay green, sound cream, info blue, and
+  MODE in the live family's own colour. These are wayfinding, not decoration
+  (`--ctl-*`).
+- **Purple is Three of a Kind's**, and the Epic tier's: a dusty amethyst, not
+  the saturated screen violet every generated palette reaches for.
 - **Every menu wears the colour of the control that opened it** — the
   `--tint` / `--tint-rgb` / `--tint-strong` / `--tint-ink` contract in
   `popup-base.css`. Nothing inside a panel names a colour.
@@ -66,13 +69,44 @@ parity of contrast against the three panel grounds (the table is in
   of `components/app.css`. Geist's neutrality is the point: the wordmark and
   the table carry the character, the type stays out of the way.
 - Small caps: `--track-label`, uppercase, only on a two-word caption over a
-  figure. Never on a sentence.
+  figure (the bar's BALANCE, BET, LAST WIN). Never on a sentence, never on a
+  field's label and never on a section heading - those are sentence case at
+  body size or above. Six spaced-caps headings down one page is the eyebrow
+  tell, and How to Play had them until the third audit.
 - **Figures are tabular** — Geist ships `tnum`, so `font-variant-numeric:
   tabular-nums` is live and a figure keeps its width as its digits change.
   `typeFit.labelEms()` is measured against Geist 800 (every digit 0.65 em);
   its test table is the record. If the face ever changes, that table, the
   `unicode-range` transcription in `displayFace.ts` and the two fitting
   contracts are what must be re-measured — not guessed.
+
+## Cards
+
+A casino deck, printed once and dealt everywhere: `CardFace.svelte` draws every
+face the game deals (the board, the takeover's fan). Paper, edge and shadow are
+the container's; the face is what is printed on it.
+
+- **Numbers** carry their value in pips on the standard grid; a pip below the
+  middle is printed upside down. Pips are a fifth of the card wide.
+- **Aces** are one large pip in a gold ring with a gold engraved line. The
+  **Ace of Spades is the house card** - larger, engraved, the house name under
+  it, as a casino deck prints its maker's mark there. It echoes the backs.
+- **Courts** are the English pattern (CC0), in its own cut-corner frame with a
+  suit pip beside each head, restyled into the card tokens.
+- **The lobby tile is photographed from the game, never painted**:
+  `scripts/tile-art.mjs` renders the hand (`?dev_tile=fg`) and the live table.
+  The generated pair it replaced was the most visibly machine-made thing
+  submitted.
+- **The Takeover crown** - the logo's crown, flat, in gold - sits over each
+  court's pip and over the house spade, where crown-over-spade is the logo's own
+  mark. Gold only: it never carries a suit colour.
+- **One colour family per card**: red, maroon, rose - or ink, slate, stone -
+  plus gold and paper. Never both families: card 1's guess is Red or Black and
+  the courts must not blur it.
+- **Small**: under 46px on screen a number card is one large pip and a larger
+  index - the two marks that survive being small.
+- The corner index is Big Shoulders 700, top-left and turned bottom-right; in
+  Arabic the whole face mirrors and its text is turned back.
 
 ## Icons
 
@@ -133,8 +167,8 @@ the paint must stay small.
 
 ## What may differ
 
-The tint; the content's shape — a list (mode), a chip rack (bet), pills and a
-field (autoplay), rows and switches (advanced), prose (How to Play); and the
+The tint; the content's shape — a list (mode), a chip rack (bet), pills,
+fields and switches (autoplay), prose (How to Play); and the
 width, where prose needs the measure.
 
 ## Known deviations, recorded
@@ -149,7 +183,9 @@ width, where prose needs the measure.
 - Arabic, Hindi, Japanese, Korean and Chinese fall back to the OS sans-serif
   wholesale; neither face has a cut for those scripts and the inlined bundle
   will not take one.
-- The win takeover's title carries a two-layer glow. Atmospheric allows it;
-  it is stamped as such at the top of `win-celebration.css`.
+- The win takeover glows nowhere. Its title is LETTERED - a hard block shadow
+  in the tier's deep colour, cast down and left - and its cards carry a thin
+  tier-coloured rim, not a bloom. The two-layer glow atmospheric once allowed
+  here was the stock slot "BIG WIN" look, and went in the third audit.
 - The intro's four step panels are dealt (fanned, lifted) rather than gridded;
   they flatten to a 2×2 on portrait phones by design.

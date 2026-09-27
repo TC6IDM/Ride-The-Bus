@@ -17,7 +17,7 @@
 	import SoundIcon from './SoundIcon.svelte';
 
 	type Props = {
-		name: 'deal' | 'mode' | 'bet' | 'chip' | 'turbo' | 'autoplay' | 'advanced' | 'sound' | 'info';
+		name: 'deal' | 'mode' | 'bet' | 'chip' | 'turbo' | 'autoplay' | 'sound' | 'info';
 		/** The MODE pill's word, already translated - the bar prints it too. */
 		label?: string;
 	};
@@ -69,12 +69,6 @@
 				<path d="M4.4 18.6v-3.6h3.6" />
 			</g>
 			<path d="M10.6 14.1 12 9.9l1.4 4.2M11.2 12.8h1.6" stroke-width="1.2" />
-		</svg>
-	{:else if props.name === 'advanced'}
-		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-			<path d="M3 5h9.4M17.6 5H21M15 2.4v5.2" />
-			<path d="M3 12h2.4M10.6 12H21M8 9.4v5.2" />
-			<path d="M3 19h7.4M15.6 19H21M13 16.4v5.2" />
 		</svg>
 	{:else if props.name === 'sound'}
 		<SoundIcon muted={false} />

@@ -14,7 +14,7 @@
   import MarkIcon from '../icons/MarkIcon.svelte';
   import { t } from '../../i18n/i18nDerived';
   import { numberToCurrencyString } from 'utils-shared/amount';
-  import { chipColour, splitChipLabel } from '../../game/bet/betChips';
+  import { chipColour, chipInlayAlt, splitChipLabel } from '../../game/bet/betChips';
   import { labelEms } from '../../game/ui/typeFit';
   import { currencySymbol } from '../../game/bet/currencySymbol';
   import {
@@ -87,7 +87,7 @@
         aria-label={t('Custom bet amount')}
       />
     </div>
-    <span class="popup-sub">{t('Quick Bets')}</span>
+    <span class="popup-sub">{t('Quick bets')}</span>
     <!-- Quick picks show what the round will COST, matching the control bar.
          Showing the base bet here and the cost there would leave a player
          tapping "10.00" and being charged 20.00 with no way to connect the
@@ -106,6 +106,7 @@
         {@const label = splitChipLabel(numberToCurrencyString(roundCost(lv)))}
         <button
           class="bet-chip chip-{chipColour(index, betLevels().length)}"
+          class:alt={chipInlayAlt(index, betLevels().length)}
           class:active={Math.abs(betValue() - lv) < 1e-9}
           aria-pressed={Math.abs(betValue() - lv) < 1e-9}
           aria-label={numberToCurrencyString(roundCost(lv))}

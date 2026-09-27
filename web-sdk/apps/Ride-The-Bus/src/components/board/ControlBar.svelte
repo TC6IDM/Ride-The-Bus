@@ -19,7 +19,7 @@
   import MarkIcon from '../icons/MarkIcon.svelte';
   import SoundIcon from '../icons/SoundIcon.svelte';
   import { startAuto, stopAuto } from '../../game/round/autoplayLoop.svelte';
-  import { advanced, auto, countDigits } from '../../game/round/autoplaySettings.svelte';
+  import { auto, countDigits } from '../../game/round/autoplaySettings.svelte';
   import {
     allChoicesMade,
     bet,
@@ -37,7 +37,13 @@
     stepBet,
     canStepBet,
     volatilityLabel,
+    setColorChoice,
+    setHlChoice,
+    setIoChoice,
+    setSuitChoice,
   } from '../../game/bet/betState.svelte';
+  import { GUESS_COLUMNS, guessColumnFor, nextGuess } from '../../game/bet/guessKeys';
+  import { isCombinationPlayable } from '../../game/math/modes';
   import { celebration } from '../../game/celebration/celebrationState.svelte';
   import { fitValue } from '../../game/ui/fitValue';
   import { jurisdiction } from '../../game/jurisdiction/jurisdiction.svelte';
@@ -72,7 +78,6 @@
       | 'mode'
       | 'turbo'
       | 'autospin'
-      | 'advanced'
       | 'info'
       | 'sound';
     /** The bet row, so the parent's fit effects can still measure it. */
@@ -352,6 +357,45 @@ function onKeyDown(event: KeyboardEvent) {
   }, SPACE_HOLD_MS);
 }
 
+// --- Keys 1 to 4: the four guesses -----------------------------------------
+// Each steps its column to the next pick (game/bet/guessKeys.ts), through the
+// board's own setters. Here rather than in GameBoard because this is where the
+// gates already are: a panel open, the takeover up, the intro or replay screen.
+// NOT the regulator's disabledSpacebar flag: that bars the key that BUYS a
+// round, and a digit only changes a pick. Only a focused FIELD is exempt -
+// unlike Space, a digit is not a button's own activation key, so a focused
+// guess square does not stop it.
+const GUESS_STAGE = { color: 0, hl: 1, io: 2, suit: 3 } as const;
+
+function typingInto(target: EventTarget | null) {
+  const el = target as HTMLElement | null;
+  return !!el && (el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName));
+}
+
+function onGuessKey(event: KeyboardEvent) {
+  const column = guessColumnFor(event);
+  if (!column || event.repeat || event.ctrlKey || event.metaKey || event.altKey) return;
+  if (celebration.active || chromeInert || introPhase !== 'playing') return;
+  if (typingInto(event.target)) return;
+  // Three of a Kind asks nothing; its Equal badges are not picks.
+  if (familyRules().fixedChoices !== null) return;
+  event.preventDefault();
+  if (choicesLocked()) { sound.playBlocked(); return; }
+  const current = guesses[column];
+  const next =
+    column === 'io'
+      ? nextGuess(GUESS_COLUMNS.io, guesses.io, (o) => isCombinationPlayable(guesses.hl, o))
+      : nextGuess(GUESS_COLUMNS[column] as readonly string[], current);
+  // The setters toggle, so re-setting the current pick would CLEAR it.
+  if (next === null || next === current) return;
+  if (column === 'color') setColorChoice(next as typeof guesses.color & string);
+  else if (column === 'hl') setHlChoice(next as typeof guesses.hl & string);
+  else if (column === 'io') setIoChoice(next as typeof guesses.io & string);
+  else setSuitChoice(next as typeof guesses.suit & string);
+  // A key is not a click, so the delegated press cue never hears it.
+  sound.playPress('choice', GUESS_STAGE[column]);
+}
+
 function onKeyUp(event: KeyboardEvent) {
   if (event.code !== 'Space' && event.key !== ' ') return;
   releaseSpace();
@@ -373,10 +417,12 @@ function releaseSpace() {
 // otherwise leave a hold run going with nobody holding anything.
 $effect(() => {
   window.addEventListener('keydown', onKeyDown);
+  window.addEventListener('keydown', onGuessKey);
   window.addEventListener('keyup', onKeyUp);
   window.addEventListener('blur', releaseSpace);
   return () => {
     window.removeEventListener('keydown', onKeyDown);
+    window.removeEventListener('keydown', onGuessKey);
     window.removeEventListener('keyup', onKeyUp);
     window.removeEventListener('blur', releaseSpace);
     releaseSpace();
@@ -410,8 +456,7 @@ $effect(() => {
 {/snippet}
 
 <!-- Floating control bar: detached pill groups pulled toward the centre,
-     with the turbo button and the advanced button floating free at the
-     outer edges (slot-style). -->
+     with Turbo and MODE floating free at the outer edges (slot-style). -->
 <!-- The live mode's colours are published on the WHOLE bar, not just on the
      bet panel that used to carry them. Two groups read them now - the bet
      display with its steppers, and the MODE button over in the light pill -
@@ -464,7 +509,7 @@ $effect(() => {
     </button>
   {/if}
 
-  <div class="cb-panel cb-panel-light" class:mode-locked={modeLockedReason() !== null}>
+  <div class="cb-panel cb-panel-light">
     <!-- Opens the mixer rather than toggling. Muting is two actions now
          instead of one, which is the price of having separate music and cue
          levels at all; the panel's two speaker buttons are what satisfy
@@ -482,34 +527,6 @@ $effect(() => {
     <button class="cb-icon cb-info" class:active={openPopup === 'info'} onclick={() => togglePopup('info')} aria-label={t('How to play')}>
       <MarkIcon name="info" />
     </button>
-
-    <!-- Bet mode. Locked during an auto run and in replay, like the bet
-         itself: the run was started on one mode's odds, and a replay is a
-         record of a round already played on one.
-         Gold rather than the bar's usual slate so it reads as the one control
-         that changes what a round IS, not how it looks. -->
-    <button
-      class="cb-icon cb-mode-btn"
-      class:active={openPopup === 'mode'}
-      class:blocked={modeLockedReason() !== null}
-      onclick={onModeClick}
-      disabled={stateUrlDerived.replay()}
-      aria-label={t('Choose game mode')}
-      title={t(familyRules().label)}
-    >
-      <span class="cb-mode-word">{t('Mode')}</span>
-    </button>
-
-    <!-- Why the MODE button is dead. Hosted on the PANEL rather than the button,
-         for the reason .cb-bet-tip gives: in replay the button really is
-         disabled and so receives no pointer events at all. Wrapping the button
-         instead was rejected - the light pill is pinned to one line on a phone
-         (flex-wrap: nowrap in responsive-bar.css) and a new flex item in it is
-         the kind of change that breaks that. -->
-    {#if modeLockedReason()}
-      <span class="cb-mode-tip" class:is-shown={modeTipVisible} role="tooltip" aria-live="polite"
-        >{modeLockedReason()}</span>
-    {/if}
 
     <!-- `solo` when the balance is hidden (replay). One child under
          space-between sits at the START, so the Last Win readout ended up
@@ -635,7 +652,11 @@ $effect(() => {
            Material's filled sync glyph with a play triangle in the middle; the
            triangle went with the fill for the same reason. See the note above
            the turbo button. -->
-      <button class="cb-round cb-autospin" class:active={openPopup === 'autospin'} onclick={() => togglePopup('autospin')} disabled={auto.running || stateUrlDerived.replay()} aria-label={t('Autoplay settings')}>
+      <!-- Live during a run: the stops are in this panel now, and a player
+           watching a run is exactly who wants to change one - the sliders
+           button that used to hold two of them stayed live for that reason.
+           The panel itself locks the count and offers Stop mid-run. -->
+      <button class="cb-round cb-autospin" class:active={openPopup === 'autospin'} onclick={() => togglePopup('autospin')} disabled={stateUrlDerived.replay()} aria-label={t('Autoplay settings')}>
         <svg class="cb-svg cb-autospin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <!-- The arcs are turned 45deg so the two heads sit at 3 and 9
                o'clock. Unturned, their arms reach in toward the centre at
@@ -767,23 +788,44 @@ $effect(() => {
        all: the popup opens and says why instead. Stake's replay guidance is
        to hide AUTOPLAY SETTINGS, which the rows below honour by disabling
        themselves - the button itself is how a reviewer finds that out. -->
-  <!-- Disabled in replay. Everything inside is autoplay-scoped and autoplay
-       does not run in a replay, so the menu had nothing that could take
-       effect. Stake's replay guidance is explicit about this class of
-       control: "hide balance display, play buttons, bet amount selector,
-       autoplay settings". The bet display, the steppers and the autoplay
-       button were already disabled here; this was the one that was not. -->
-  <!-- Three sliders, stroked: each rail is broken where its knob crosses it,
-       so the knob reads as a tick ON the rail rather than a box drawn over it.
-       It was Material's square-ended "tune" glyph, the most visibly foreign
-       of the three - see the note above the turbo button. -->
-  <button class="cb-float cb-advanced" class:active={openPopup === 'advanced'} onclick={() => togglePopup('advanced')} disabled={stateUrlDerived.replay()} aria-label={t('Advanced settings')}>
-    <svg class="cb-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
-      <path d="M3 5h9.4M17.6 5H21M15 2.4v5.2" />
-      <path d="M3 12h2.4M10.6 12H21M8 9.4v5.2" />
-      <path d="M3 19h7.4M15.6 19H21M13 16.4v5.2" />
-    </svg>
-  </button>
+  <!-- MODE, at the right edge, where the sliders button was.
+
+       That button opened a whole panel for two autoplay switches, which now
+       live in the autoplay panel itself (AutospinPopup.svelte). MODE took its
+       place on the owner's suggestion, 2026-09-26, and it earns the slot: it
+       changes what a round IS, where everything else in the light pill is a
+       readout or a setting, and it now mirrors Turbo at the other edge. Its
+       reading stays beside the bet, because the bet display prints the family's
+       name in the family's colour. Taking it out of the light pill also gives
+       Balance and Last Win the width a translated word used to hold - the pill
+       is one line on a phone, in every currency (CLAUDE.md).
+
+       A rounded rectangle, not a disc: the word and the family colour are what
+       players know it by. It keeps .cb-icon, so it keeps the "toggle" press
+       cue (pressCues.ts) rather than the heavier one the floating discs play.
+
+       Locked during an auto run and in replay, like the bet itself: the run
+       was started on one mode's odds, and a replay is a record of a round
+       already played on one. The slot hosts the tip rather than the button,
+       because replay disables the button outright and a disabled button
+       receives no pointer events. -->
+  <div class="cb-mode-slot" class:mode-locked={modeLockedReason() !== null}>
+    <button
+      class="cb-icon cb-mode-btn"
+      class:active={openPopup === 'mode'}
+      class:blocked={modeLockedReason() !== null}
+      onclick={onModeClick}
+      disabled={stateUrlDerived.replay()}
+      aria-label={t('Choose game mode')}
+      title={t(familyRules().label)}
+    >
+      <span class="cb-mode-word">{t('Mode')}</span>
+    </button>
+    {#if modeLockedReason()}
+      <span class="cb-mode-tip" class:is-shown={modeTipVisible} role="tooltip" aria-live="polite"
+        >{modeLockedReason()}</span>
+    {/if}
+  </div>
 </footer>
 
 <style>

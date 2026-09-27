@@ -29,7 +29,8 @@ export default {
 	Start: '시작',
 
 	'Bet Menu': '베팅 메뉴',
-	'Quick Bets': '빠른 베팅',
+	'Quick bets':
+		'빠른 베팅',
 
 	'Turbo Speed': '터보 속도',
 	Normal: '보통',
@@ -40,16 +41,15 @@ export default {
 	'Sound settings': '사운드 설정',
 	Sound: '사운드',
 	Music: '음악',
-	'Game Sounds': '게임 사운드',
+	'Game sounds':
+		'게임 사운드',
 	'Mute music': '음악 음소거',
 	'Unmute music': '음악 음소거 해제',
 	'Mute game sounds': '게임 사운드 음소거',
 	'Unmute game sounds': '게임 사운드 음소거 해제',
 
 	Autoplay: '자동 플레이',
-	'Number of Plays': '라운드 수',
 
-	Advanced: '고급',
 	'Game Mode': '게임 모드',
 	'Choose game mode': '게임 모드 선택',
 	Classic: '클래식',
@@ -60,8 +60,8 @@ export default {
 	Forgiven: '면제됨',
 	// The intro's tagline and the first line of How to Play's Game modes.
 	'%n ways to play': '%n가지 플레이 방법',
-	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
-		'추측 모드의 모든 선택 조합은 각각 별도의 베팅이며, 각자의 확률에 따라 가격이 매겨집니다.',
+	'There are %n ways to play: every set of picks is its own bet, priced on its own odds.':
+		'플레이 방법은 %n가지입니다. 모든 선택 조합은 각각 별도의 베팅이며, 각자의 확률에 따라 가격이 매겨집니다.',
 	'Game modes': '게임 모드',
 	// Confirmation before a bet mode is activated - required by the approval
 	// checklist, and worth having anyway: the guess families cost the same but
@@ -72,17 +72,17 @@ export default {
 	'Volatility %s of %t': '변동성 %t단계 중 %s',
 	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.':
 		'환수율(RTP)은 모든 게임 모드에서 %s입니다. 이 게임의 최대 배당은 %f에서 베팅의 %m입니다.',
-	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
-		'첫 카드를 틀리면 라운드가 끝납니다. 이후 실수는 쌓아둔 배수의 30%를 남깁니다.',
+	'A wrong first card ends the round. Later misses keep 30% of your running total.':
+		'첫 카드를 틀리면 라운드가 끝납니다. 이후 실수는 누적 금액의 30%를 남깁니다.',
 	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
 		'첫 카드를 틀리면 라운드가 끝납니다. 그 뒤 첫 오답은 면제되어 계속 진행됩니다.',
 	'Card 1': '카드 1',
 	'Your first wrong guess': '첫 오답',
 	'Your second wrong guess': '두 번째 오답',
-	'Guess all four right and the payout depends on how hard your picks were. Equal is the rarest guess, so rounds built on it pay the most; two Equal picks together is the most this mode can pay, at %m your bet.':
-		'네 장을 모두 맞히면 배당은 예측이 얼마나 어려웠는지에 따라 결정됩니다. 이퀄은 가장 드문 예측이므로 이를 바탕으로 한 라운드의 배당이 가장 큽니다. 이퀄 두 개를 함께 맞히는 것이 이 모드의 최대 배당으로, 베팅의 %m입니다.',
-	'Only some guess combinations reach a mode’s maximum. Once your four are picked, their own ceiling is shown above.':
-		'예측 조합 중 일부만 모드의 최대치에 도달합니다. 네 가지를 모두 고르면 그 조합의 상한이 위에 표시됩니다.',
+	'A full game win pays more the harder your picks were. Equal is the rarest guess, so it pays the most, and two Equal picks reach this mode’s maximum: %m your bet.':
+		'풀 게임 성공의 배당은 예측이 어려울수록 커집니다. 이퀄은 가장 드문 예측이라 배당이 가장 크며, 이퀄 두 개로 이 모드의 최대 배당인 베팅의 %m에 도달합니다.',
+	'Only some combinations reach the mode’s maximum. Once your four are picked, the most they can pay is shown above.':
+		'일부 조합만 모드의 최대치에 도달합니다. 네 가지를 모두 고르면 그 조합이 받을 수 있는 최대 배당이 위에 표시됩니다.',
 	Playing: '플레이 중',
 	'Card 2, 3 or 4': '카드 2, 3 또는 4',
 	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
@@ -90,20 +90,24 @@ export default {
 
 	'How to Play': '게임 방법',
 	'Guess your way through four cards:': '네 장의 카드를 차례로 예측하세요:',
-	'Color: red or black for card 1.': '색상: 첫 번째 카드가 빨강인지 검정인지.',
-	'Higher / Lower: versus card 1 (or =).': '하이 / 로우: 첫 번째 카드와 비교 (또는 =).',
-	'Inside / Outside: between cards 1 & 2 (or =).': '사이 / 바깥: 첫 번째와 두 번째 카드 사이인지 바깥인지 (또는 =).',
-	'Suit: the suit of card 4.': '무늬: 네 번째 카드의 무늬.',
-	'Pick all four, set your bet and deal. Each right guess multiplies your win; get all four for a full game win. What a wrong guess costs you depends on the game mode, explained below.':
-		'네 가지를 모두 고르고 베팅액을 정한 뒤 딜하세요. 맞힐 때마다 배당이 곱해지고, 네 개를 모두 맞히면 풀 게임 성공입니다. 틀렸을 때 잃는 것은 게임 모드에 따라 다릅니다. 아래를 참고하세요.',
+	'Color: is card 1 red or black?':
+		'색상: 첫 번째 카드가 빨강인가 검정인가?',
+	'Higher or Lower: is card 2 above or below card 1, or Equal to it?':
+		'하이 / 로우: 두 번째 카드가 첫 번째 카드보다 높은가 낮은가, 아니면 이퀄인가?',
+	'Inside or Outside: is card 3 between cards 1 and 2 or outside them, or Equal to one of them?':
+		'사이 / 바깥: 세 번째 카드가 첫 번째와 두 번째 카드 사이인가 바깥인가, 아니면 둘 중 하나와 이퀄인가?',
+	'Suit: which suit is card 4?':
+		'무늬: 네 번째 카드의 무늬는 무엇인가?',
+	'Pick all four, set your bet and deal. Each right guess multiplies your win, and four right is a full game win. What a wrong guess costs depends on the game mode; see Game modes below.':
+		'네 가지를 모두 고르고 베팅액을 정한 뒤 딜하세요. 맞힐 때마다 배당이 곱해지고, 넷 다 맞히면 풀 게임 성공입니다. 틀렸을 때 잃는 것은 게임 모드에 따라 다르니, 아래 게임 모드를 참고하세요.',
 	'Card order': '카드 서열',
-	'Ace is low and King is high. Suit never affects rank: only the number counts for Higher / Lower and Inside / Outside.':
-		'에이스가 가장 낮고 킹이 가장 높습니다. 무늬는 서열에 전혀 영향을 주지 않으며, 하이 / 로우와 사이 / 바깥에서는 숫자만 중요합니다.',
+	'Ace is low and King is high. Suits have no rank: only the card’s value counts for Higher, Lower, Inside and Outside.':
+		'에이스가 가장 낮고 킹이 가장 높습니다. 무늬에는 서열이 없으며, 하이, 로우, 사이, 바깥에서는 카드의 숫자만 중요합니다.',
 	Lowest: '최저',
 	Highest: '최고',
 	'Payouts follow the odds': '배당은 확률을 따릅니다',
-	'Every correct guess pays its true odds against the cards left in the deck, so the less likely your pick, the more it pays, and the same guess can pay differently from one round to the next.':
-		'모든 적중은 덱에 남은 카드를 기준으로 한 실제 확률에 따라 지급되므로, 선택이 일어나기 어려울수록 배당이 커집니다. 같은 예측이라도 라운드마다 배당이 다를 수 있습니다.',
+	'Each right guess is priced on the cards still in the deck: the less likely it is, the more it pays. So the same guess can pay differently from one round to the next.':
+		'모든 적중은 덱에 남은 카드를 기준으로 가격이 매겨집니다. 일어나기 어려울수록 배당이 커지므로, 같은 예측이라도 라운드마다 배당이 다를 수 있습니다.',
 	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
 		'테이블에 3이 있으면 남은 51장 중 더 낮은 카드는 8장뿐이라 로우는 약 %1배, 더 높은 카드는 40장이라 하이는 약 %2배입니다. 3을 8로 바꾸면 반대가 되어 로우는 약 %3배로 낮아지고 하이는 약 %4배로 올라갑니다. 이퀄은 언제나 가장 어려워 약 %5배입니다.',
 	'Payout table': '배당표',
@@ -114,12 +118,12 @@ export default {
 		'합계',
 	'Red or Black': '빨강 또는 검정',
 	'Any suit': '모든 무늬',
-	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
-		'각 단계는 완전한 정밀도로 곱해지므로 위 수치는 정확한 값입니다. 소수점 한 자리로 내림하는 것은 최종 배당에만 적용됩니다. 카드 옆에 표시되는 누적 금액도 단계마다 같은 방식으로 처리되므로, 라운드 중에는 이 수치보다 약간 낮게 보일 수 있습니다.',
+	'These figures are exact: the stages multiply at full precision, and only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded down as it goes, so mid-round it can read a little under them.':
+		'위 수치는 정확한 값입니다. 각 단계는 완전한 정밀도로 곱해지며, 소수점 한 자리로 내림하는 것은 최종 배당에만 적용됩니다. 카드 옆의 누적 금액은 진행하면서 내림하여 표시되므로, 라운드 중에는 약간 낮게 보일 수 있습니다.',
 	'If you guess wrong': '예측이 틀린 경우',
 	'Full game wins': '풀 게임 배당',
-	'Speed and skip settings change only what you see, never the cards, the odds or the payout.':
-		'속도와 건너뛰기 설정은 보이는 것만 바꿉니다. 카드, 확률, 배당은 절대 바뀌지 않습니다.',
+	'Turbo and skipping win animations change only what you see, never the cards, the odds or the payout.':
+		'터보와 당첨 연출 건너뛰기는 보이는 것만 바꿉니다. 카드, 확률, 배당은 절대 바뀌지 않습니다.',
 
 	'Pick a color': '색상 선택',
 	'Higher, lower, or equal': '하이, 로우 또는 이퀄',
@@ -142,7 +146,6 @@ export default {
 	'Decrease bet': '베팅 금액 내리기',
 	'Turbo speed': '터보 속도',
 	'Autoplay settings': '자동 플레이 설정',
-	'Advanced settings': '고급 설정',
 	'Stop autoplay': '자동 플레이 중지',
 	'Rounds must be %s seconds apart': '라운드 사이에는 %s초의 간격이 필요합니다',
 	'Round in progress': '라운드 진행 중',
@@ -209,12 +212,10 @@ export default {
 	'The i button opens this screen.': 'i 버튼은 이 화면을 엽니다.',
 	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
 		'번개 버튼은 터보입니다. 카드가 뒤집히는 속도를 보통부터 즉시까지 조절합니다.',
-	'The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.':
-		'원형 화살표는 자동 플레이를 엽니다. 같은 베팅을 정해진 라운드 수 또는 무제한으로 반복하며, 실행 중에는 버튼에 카운터가 표시됩니다.',
-	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
-		'슬라이더 버튼에는 자동 플레이 옵션이 두 가지 있습니다. 풀 게임 성공 시 중지와 승리 연출 건너뛰기입니다.',
-	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
-		'큰 원형 버튼이 라운드를 진행합니다. 스페이스바도 마찬가지로, 한 번 누르면 한 라운드, 누르고 있으면 계속 진행됩니다. 자동 플레이 중에는 버튼이 중지로 바뀌며, 진행 중인 라운드가 먼저 끝납니다.',
+	'The circular arrows open autoplay: the same bet, dealt again for a set number of rounds or without limit. The button counts down the rounds left.':
+		'원형 화살표는 자동 플레이를 엽니다. 같은 베팅을 정해진 라운드 수 또는 무제한으로 다시 딜하며, 버튼에 남은 라운드 수가 표시됩니다.',
+	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
+		'큰 원형 버튼으로 딜합니다. 스페이스바도 마찬가지로, 한 번 누르면 한 라운드, 누르고 있으면 계속 진행됩니다. 자동 플레이 중에는 중지로 바뀌며, 진행 중인 라운드가 먼저 끝납니다.',
 	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
 		'모드는 게임 모드 선택창을 엽니다. 전환 시 적용 전에 확인을 요청합니다.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
@@ -240,10 +241,10 @@ export default {
 	'Play Again': '다시 재생',
 	'The round ends and pays nothing.':
 		'라운드가 종료되며 배당은 없습니다.',
-	'The round ends, keeping about %s% of what you had built.':
-		'라운드가 종료되며 쌓아온 금액의 약 %s%가 남습니다.',
-	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
-		'카드 2부터는 한 번 넘어가며, 쌓아온 금액의 %s%를 유지한 채 라운드가 이어집니다.',
+	'The round ends, and you keep about %s% of your running total.':
+		'라운드가 종료되며 누적 금액의 약 %s%가 남습니다.',
+	'From card 2 on, it is forgiven: you keep %s% of your running total and play on.':
+		'카드 2부터는 한 번 넘어가며, 누적 금액의 %s%를 유지한 채 계속 플레이합니다.',
 
 	// Three of a Kind.
 	'Three of a Kind':
@@ -286,4 +287,16 @@ export default {
 		'금액을 누르면 빠른 베팅 메뉴가 열립니다.',
 	'Max win %s your bet':
 		'최대 배당 베팅액의 %s',
+	'Stop on a loss of':
+		'손실이 이만큼이면 중지',
+	'Stop on a single win of':
+		'한 번의 승리가 이만큼이면 중지',
+	'On a keyboard, keys 1 to 4 change the four guesses.':
+		'키보드에서는 1~4 키로 네 가지 예측을 바꿀 수 있습니다.',
+	'It can stop by itself on a full game win, a loss limit or one big win.':
+		'풀 게임 성공, 손실 한도, 한 번의 큰 승리 시 자동으로 멈추게 할 수도 있습니다.',
+	'× means times your base bet.':
+		'×는 기본 베팅액의 배수입니다.',
+	'Times your base bet':
+		'기본 베팅액의 배수',
 };

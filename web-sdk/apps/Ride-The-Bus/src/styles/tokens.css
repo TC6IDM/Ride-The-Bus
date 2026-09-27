@@ -326,7 +326,7 @@
      colour systems than it has ideas, and that blue is the hue AI-generated UI
      reaches for by default. Both of those are fair points about colour theory
      and neither survived contact with the game: the per-control tints are
-     WAYFINDING. Turbo is amber, autoplay is green, advanced is purple, and a
+     WAYFINDING. Turbo is amber, autoplay is green, sound is white, and a
      player who has opened one of those menus once finds it again by colour
      rather than by re-reading four identical icons.
 
@@ -355,9 +355,9 @@
   --ctl-autospin: #57d98a;
   --ctl-autospin-ink: #9df0b8;
   --ctl-autospin-rgb: 87, 217, 138;
-  --ctl-advanced: #a98cff;
-  --ctl-advanced-ink: #d0bcff;
-  --ctl-advanced-rgb: 169, 140, 255;
+  /* Purple was the Advanced panel's, retired 2026-09-26 when its two switches
+     moved into autoplay. Left free rather than handed on: --vol-tr is the
+     purple a player now meets, and it means Three of a Kind. */
 
   /* Sound is the fifth identity, and the only achromatic one. It is white
      because the other four have spent the useful hues: amber, green, purple and
@@ -495,6 +495,21 @@
      alone, warmed to the paper. */
   --card-edge: #cfc4ad;
 
+  /* Courts and aces. The court figures are the English pattern
+     (art-masters/courts/), which prints every court in red, blue, yellow and
+     black whatever its suit. Here card 1's guess is RED OR BLACK and a card is
+     on screen for ~650ms, so a black King in red robes blurs the one read the
+     round starts with. Each suit colour therefore draws in its own family
+     only, plus gold and paper:
+       red suits    red (--card-red), maroon, rose tint
+       black suits  ink (--card-ink), slate, stone tint
+     CardFace maps these onto the six roles the court sprite is painted in. */
+  --court-gold: #d4a13d;
+  --court-red-deep: #5c1418;
+  --court-red-tint: #e8bfb3;
+  --court-ink-tone: #5f5a54;
+  --court-ink-tint: #c7beb1;
+
   /* ==== Choice row =======================================================
      The one place in this UI where colour is DATA rather than decoration:
      these squares encode the bet. Red has to look red and black has to look
@@ -595,6 +610,14 @@
   --chip-white-dark: #cec6b9;
   --chip-white-cream: #077dd0;
 
+  /* The alternate edge inlay, for the second chip of a colour when the bet
+     rack has more levels than there are colours (see chipInlayAlt). Brass on
+     the four dark bodies - the table's gold, taken down a step so a spot is
+     not mistaken for the selected chip's ring - and the chip red on the white
+     body, which cannot carry a pale spot. */
+  --chip-inlay-alt: #d2a64a;
+  --chip-white-inlay-alt: var(--chip-red-face);
+
   /* The intro tooltip and the "why is Inside off" box - green on green, so
      they belong to the table rather than to the slate chrome. */
   --tip-bed: #0b1a09;
@@ -621,34 +644,31 @@
   /* Three of a Kind: the purple. Off the green-yellow-red ramp rather than a
      deeper red, because it is not "more of the same" - by the column that
      puts it there (96% of rounds pay nothing) it is past the top of the scale
-     the three four-guess modes span; see volatility.ts. This is the LIFTED
-     purple, not the bolt-only #9d4edd below: unlike the other three it is
-     read as 9.5px text in the bar (the mode name takes its family's colour)
-     and #9d4edd misses 4.5:1 there at 4.00; this measures 5.32 and holds the
-     hue. A bolt at this value survives its drop-shadow fine. Dark --on-vol-ink
-     on it is 5.3, so the confirm button keeps its rule. */
-  --vol-tr-rgb: 176, 106, 232;
+     the three four-guess modes span; see volatility.ts.
+
+     A DUSTY AMETHYST, not a screen violet. Until 2026-09-26 this was
+     176,106,232 (#b06ae8, HSL saturation 73%) - the saturated violet every
+     generated palette reaches for, and the third Hallmark audit's "AI purple".
+     Same hue family (283deg against 273), saturation taken down to 41% so it
+     sits with the warm table rather than on top of it, and well clear of
+     --choice-outside's magenta (298deg at 78%), which is a bet colour.
+
+     It is read as 9.5px TEXT in the bar (the mode name takes its family's
+     colour), so it has to clear 4.5:1 and not only a bolt's 3:1: 5.50 on
+     --panel (the old value was 5.06). Dark --on-vol-ink on it is 5.93, so the
+     confirm button keeps its rule. */
+  --vol-tr-rgb: 178, 124, 200;
   --vol-sc: rgb(var(--vol-sc-rgb));
   --vol-base: rgb(var(--vol-base-rgb));
   --vol-hs: rgb(var(--vol-hs-rgb));
   --vol-tr: rgb(var(--vol-tr-rgb));
-  /* The deeper purple the win takeover's Epic tier reads. It USED to be the
-     colour of the stops past a family's bolt ceiling (High Stakes with an
-     Equal pick); that ceiling is gone - purple is Three of a Kind's own colour
-     now, above - and this stays only for the Epic palette, which is the same
-     reading: past the top of the family bands. */
-  --vol-overflow: #9d4edd;
-  /* The same purple, lifted, for when it has to be TEXT rather than a bolt.
-     A bolt is a graphic and clears WCAG at 3:1; the mode name beside it is
-     ~9.5px and wants 4.5:1, which #9d4edd misses at 4.00 against the bet
-     panel. This measures 5.32 on the same ground and holds the hue, so the
-     word and the stops still read as one colour.
-     The bolt keeps the deeper value: it carries a drop-shadow that the text
-     does not, and it was tuned to survive that. */
+  /* A bolt-only deeper purple, --vol-overflow (#9d4edd), sat here after the
+     stops past a family's ceiling were retired, read by nothing. Removed with
+     the purple's change rather than re-tuned. */
   /* Text on a volatility FILL - the confirm button, once it takes the colour
      of the mode it is about to switch to. Every one of the four is a light
      colour, so this is dark: 10.56 on the green, 12.27 on the yellow, 6.23 on
-     the red, 5.3 on the purple. A hardcoded white would be the bug the
+     the red, 5.93 on the purple. A hardcoded white would be the bug the
      accent-ink rule exists to stop. */
   /* A triplet, because the white bet chip prints its currency code in this ink
      at an alpha, and that was the one place it was written out longhand
@@ -664,8 +684,10 @@
      same dark ink, and a second #14110a in this file is exactly the drift the
      top of it argues against. */
   --on-choice-ink: var(--on-vol-ink);
-  --vol-overflow-ink-rgb: 176, 106, 232;
-  --vol-overflow-ink: rgb(var(--vol-overflow-ink-rgb));
+  /* The win takeover's Epic tier: the same purple as Three of a Kind, by the
+     same reading - past the top of the family bands. volatility.test.ts holds
+     the two triplets equal. */
+  --vol-overflow-ink-rgb: 178, 124, 200;
 
   /* ==== Motion ===========================================================
      Five near-identical cubic-beziers were in use, plus ease-out ten times,

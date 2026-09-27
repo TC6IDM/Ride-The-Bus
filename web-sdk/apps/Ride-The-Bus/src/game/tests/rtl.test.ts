@@ -248,15 +248,27 @@ describe('the takeover holds the hand the same way round as the board', () => {
   });
 
   test('the corner index follows the overlap', () => {
-    // Mirroring the hand mirrors which side each card is covered from, and a
-    // physical `left` then buried the rank and pip of every card but the top
-    // one. cards.css: the index is in the corner precisely so the card stays
+    // Mirroring the hand mirrors which side each card is covered from, and an
+    // index fixed at the top-left then buried the rank and pip of every card
+    // but the top one. The index is in the corner precisely so the card stays
     // readable when it is overlapped.
-    const at = css.indexOf('.wc-fan-index {');
-    assert.ok(at > 0, '.wc-fan-index is gone');
-    const body = css.slice(at, css.indexOf('}', at));
-    assert.ok(body.includes('inset-inline-start:'), '.wc-fan-index lost inset-inline-start');
-    assert.ok(!/^\s*left:/m.test(body), '.wc-fan-index is back on a physical left');
+    //
+    // The fan draws the board's face now (components/cards/CardFace.svelte),
+    // an SVG, where there is no inset-inline-start: the whole face is mirrored
+    // in right-to-left instead - index, pips and court together - and the
+    // rank's own glyphs are turned back about their box so "10" never reads
+    // backwards.
+    const face = read('components/cards/CardFace.svelte');
+    assert.ok(
+      /:global\(\[dir='rtl'\]\)\s*\.cf-face\s*{\s*transform:\s*scaleX\(-1\)/.test(face),
+      'CardFace no longer mirrors in right-to-left, so the fan buries its index',
+    );
+    const rank = face.match(/:global\(\[dir='rtl'\]\)\s*\.cf-rank,\s*:global\(\[dir='rtl'\]\)\s*\.cf-house\s*{([^}]*)}/);
+    assert.ok(rank, 'CardFace mirrors the face but not its text back - the ranks or the house name would read backwards');
+    assert.ok(/transform:\s*scaleX\(-1\)/.test(rank[1]) && /transform-box:\s*fill-box/.test(rank[1]), 'the rank is not turned back about its own box');
+    // And the fan really does draw that face, not a lookalike of its own.
+    assert.ok(read('components/board/WinCelebration.svelte').includes('<CardFace '), 'the fan no longer draws CardFace');
+    assert.ok(!css.includes('.wc-fan-index'), 'win-celebration.css has grown its own index again');
   });
 
   test('the drop is left alone', () => {
@@ -356,7 +368,7 @@ describe('the autoplay panel counts plays, not spins', () => {
     // "Anzahl der Runden", Japanese "ラウンド数" - so English was the odd one
     // out, and social mode had to override all four of these to reach the same
     // word Stake's own terminology table asks for.
-    for (const key of ['Number of Plays', 'Number of plays', 'Unlimited plays', 'More plays', 'Fewer plays']) {
+    for (const key of ['Number of plays', 'Unlimited plays', 'More plays', 'Fewer plays']) {
       assert.ok(key in en, `${key} is missing from the English catalogue`);
     }
     for (const key of ['Number of Spins', 'Number of spins', 'Unlimited spins', 'More spins', 'Fewer spins']) {
@@ -368,7 +380,7 @@ describe('the autoplay panel counts plays, not spins', () => {
     // The autoplay panel's markup moved into ControlPopups.svelte, so this
     // reads the whole rendered surface rather than one path.
     const game = GAME_MARKUP;
-    for (const key of ['Number of Plays', 'Number of plays', 'Unlimited plays', 'More plays', 'Fewer plays']) {
+    for (const key of ['Number of plays', 'Unlimited plays', 'More plays', 'Fewer plays']) {
       assert.ok(game.includes(`t('${key}')`), `the autoplay panel does not render t('${key}')`);
     }
   });

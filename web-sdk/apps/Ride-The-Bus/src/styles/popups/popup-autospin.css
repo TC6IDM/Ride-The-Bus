@@ -1,4 +1,4 @@
-/* The autoplay panel: presets, a count and the stop switches.
+/* The autoplay panel: presets, a count, what stops a run, and Start.
  *
  * Split out of the single 1,032-line popups.css when each panel became its own
  * component. Scoped to AutospinPopup.svelte, which is the only thing that renders
@@ -55,7 +55,7 @@
 
 /* Lit, not haloed: the bar's own hover idiom. The 10px tint bloom that was
    here is the shadow-glow tell popup-mode.css refuses by name. */
-@media (any-hover: hover) {.spin-pill:hover { border-color: var(--tint); color: var(--ink); box-shadow: inset 0 1px 0 var(--panel-lit); }
+@media (any-hover: hover) {.spin-pill:hover:not(:disabled) { border-color: var(--tint); color: var(--ink); box-shadow: inset 0 1px 0 var(--panel-lit); }
 }
 
 .spin-pill.active { background: var(--tint-strong); border-color: var(--tint-strong); color: var(--tint-ink); }
@@ -63,7 +63,12 @@
 
 .autospin-body { display: flex; flex-direction: column; gap: calc(var(--ui-bar) * 0.91); }
 
-.popup-sub { font-size: calc(var(--ui-bar) * 0.93); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink-dim); font-weight: 700; }
+/* A field's label, in the voice every other label in the panels uses - body
+   size, body ink, sentence case (see .control-label in popup-autospin.css,
+   which made the same move for the switches). It was 0.93-unit spaced
+   capitals in the dim ink: the eyebrow register, and beside "Stop on a loss
+   of" in the same panel it read as two different products. */
+.popup-sub { font-size: calc(var(--ui-bar) * 1.09); line-height: 1.3; color: var(--ink-body); font-weight: 600; }
 
 .autospin-input { align-self: stretch; }
 
@@ -207,10 +212,19 @@
    are the busiest control in the autoplay panel - the one a player holds down
    to set a spin count - and a neutral highlight there was the largest patch of
    the panel that did not know what colour it was. */
-@media (any-hover: hover) {.stepper-btn:hover { background: rgba(var(--tint-rgb), 0.18); color: var(--tint); }
+@media (any-hover: hover) {.stepper-btn:hover:not(:disabled) { background: rgba(var(--tint-rgb), 0.18); color: var(--tint); }
 }
 
-.stepper-btn:active { background: rgba(var(--tint-rgb), 0.26); color: var(--tint); }
+.stepper-btn:active:not(:disabled) { background: rgba(var(--tint-rgb), 0.26); color: var(--tint); }
+
+/* Locked during a run: the count a run was started with is spoken for, and the
+   panel is open for its stops. Dimmed, not hidden, so the player can still see
+   what the run was set to. The chosen pill keeps its fill under the dimming. */
+.spin-pill:disabled,
+.stepper-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 
 .stepper-btn:first-child { border-bottom: 1px solid rgba(var(--ink-rgb), 0.12); }
 
@@ -288,4 +302,312 @@
   .action-button {
     min-height: 44px;
   }
+}
+
+/* ==== What ends a run =====================================================
+ * The switches came from the retired Advanced panel (AutospinPopup.svelte has
+ * why it went) with their rules unchanged; the two limit rows are the same
+ * pills as the count presets above, so the panel speaks one control language.
+ */
+
+/* The two limit rows: a sentence, then a field and the button that arms it. */
+.limit-group {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ui-bar) * 0.45);
+}
+
+.limit-row {
+  display: flex;
+  align-items: stretch;
+  gap: calc(var(--ui-bar) * 0.55);
+}
+
+/* The field is the round-count field's well, so the panel has one kind of
+   box a player types into. It carries the unit switch inside it: the unit
+   belongs to the figure, not beside it. */
+.limit-field {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: calc(var(--ui-bar) * 0.45);
+  padding: calc(var(--ui-bar) * 0.35) calc(var(--ui-bar) * 0.45) calc(var(--ui-bar) * 0.35) calc(var(--ui-bar) * 1.09);
+  border-radius: calc(var(--ui-bar) * 0.91);
+  background: var(--field-well);
+  border: 1px solid rgba(var(--ink-rgb), 0.16);
+}
+
+.limit-field:focus-within {
+  border-color: var(--tint);
+  box-shadow: inset 0 1px 0 var(--panel-lit);
+}
+
+/* Armed: the field's edge takes the tint too, so an armed limit reads as one
+   from across the panel, not only from its button. */
+.limit-field.is-on {
+  border-color: rgba(var(--tint-rgb), 0.7);
+}
+
+.limit-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--ink);
+  font-size: calc(var(--ui-bar) * 1.45);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.limit-input::placeholder {
+  color: rgba(var(--ink-rgb), 0.3);
+}
+
+/* x or the currency: a two-segment switch at the field's end. */
+.limit-unit {
+  flex: 0 0 auto;
+  display: flex;
+  padding: calc(var(--ui-bar) * 0.18);
+  border-radius: calc(var(--ui-bar) * 0.6);
+  background: rgba(var(--ink-rgb), 0.06);
+}
+
+.limit-unit-btn {
+  min-width: calc(var(--ui-bar) * 2.6);
+  padding: calc(var(--ui-bar) * 0.3) calc(var(--ui-bar) * 0.55);
+  border: none;
+  border-radius: calc(var(--ui-bar) * 0.45);
+  background: transparent;
+  color: var(--ink-dim);
+  font-size: calc(var(--ui-bar) * 1.1);
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  text-transform: none;
+}
+
+.limit-unit-btn.active {
+  background: rgba(var(--ink-rgb), 0.16);
+  color: var(--ink);
+}
+
+@media (any-hover: hover) {
+  .limit-unit-btn:not(.active):hover { color: var(--ink-body); }
+}
+
+/* Arms the limit, and stays pressed while it is armed: an outline with a dim
+   check when off, the panel's tint with dark ink when on - the same on-state
+   the count presets and the switches wear. */
+.limit-toggle {
+  flex: 0 0 auto;
+  width: calc(var(--ui-bar) * 3.64);
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: calc(var(--ui-bar) * 0.91);
+  border: 1px solid rgba(var(--ink-rgb), 0.16);
+  background: rgba(var(--ink-rgb), 0.05);
+  color: rgba(var(--ink-rgb), 0.35);
+  cursor: pointer;
+  --mark-size: calc(var(--ui-bar) * 1.6);
+  transition: background var(--dur-control) var(--ease-out), border-color var(--dur-control) var(--ease-out), color var(--dur-control) var(--ease-out);
+}
+
+.limit-toggle.on {
+  background: var(--tint-strong);
+  border-color: var(--tint-strong);
+  color: var(--tint-ink);
+}
+
+.limit-toggle:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@media (any-hover: hover) {
+  .limit-toggle:not(:disabled):not(.on):hover { border-color: var(--tint); color: var(--tint); }
+}
+
+.limit-toggle:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* The field shows focus on its EDGE (.limit-field:focus-within, above), as the
+   round-count field does - a ring drawn inside it, round the bare input, boxed
+   the figure in white. So the input draws none; the buttons keep theirs. */
+.limit-input:focus-visible {
+  outline: none;
+}
+
+.limit-unit-btn:focus-visible,
+.limit-toggle:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+@media (pointer: coarse) {
+  .limit-toggle { min-width: 36px; min-height: 36px; }
+  .limit-unit-btn { min-height: 30px; }
+  .limit-input { min-height: 32px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .limit-toggle { transition: none; }
+  .limit-toggle:active:not(:disabled) { transform: none; }
+}
+
+/* One line under both rows saying what x is - once, not per field. */
+.limit-note {
+  margin-top: calc(var(--ui-bar) * -0.35);
+  font-size: calc(var(--ui-bar) * 0.95);
+  color: var(--ink-dim);
+}
+
+/* The two switches, one above the other in their order, directly above the
+   one action (owner's call, 2026-09-26). Each row is a sentence and its switch,
+   the switches in one column at the row's end. */
+.stop-switches {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ui-bar) * 0.73);
+  margin-top: calc(var(--ui-bar) * 0.3);
+}
+
+/* A SENTENCE, set as one. These four labels were tracked uppercase micro-caps
+   in the dim ink - "SKIP CARD REVEAL ON SPACEBAR HOLD" - which is the register
+   for a two-word caption over a figure, not for the longest strings on any
+   panel; in German and Finnish they ran to two lines of small caps. Body size,
+   body ink, sentence case, and allowed to wrap: min-width: 0 is what lets a
+   flex child give way, and the switch beside it is flex: 0 0 auto so it stays
+   pinned while the words reflow. */
+.control-label {
+  min-width: 0;
+  font-size: calc(var(--ui-bar) * 1.09);
+  line-height: 1.3;
+  color: var(--ink-body);
+}
+
+/* A switch and the sentence it answers, on one line. */
+.stop-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--ui-bar) * 0.73);
+}
+
+.switch {
+  flex: 0 0 auto;
+  width: calc(var(--ui-bar) * 4);
+  height: calc(var(--ui-bar) * 2.18);
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: rgba(var(--ink-rgb), 0.16);
+  position: relative;
+  cursor: pointer;
+  transition: background var(--dur-control) var(--ease-out);
+}
+
+.switch.on { background: var(--tint-strong); }
+
+.switch:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* ---- Touch target for the switch ----------------------------------------
+ * The track is 26x14px at 320px - under the 24px floor on BOTH axes, and the
+ * worst target in the game. It cannot simply grow: .switch-knob is positioned
+ * from the track's own height, so a taller track leaves the knob pinned to the
+ * top of it.
+ *
+ * So the target is a transparent pad centred on the track, the device
+ * .ss-help::before uses for its 15.7px badge. 32px rather than 44px, and the
+ * reason is collision: the panel stacks these ~1 --ui-bar apart, a ~23px
+ * pitch at 320px, - a 44px pad would overlap its neighbour by 21px
+ * and a tap between two switches would toggle the wrong one. The row gets a
+ * matching min-height so the pitch can actually hold the pad.
+ *
+ * The pad paints before .switch-knob (tree order, both positioned, no z-index),
+ * so the knob still draws on top of it.
+ */
+@media (pointer: coarse) {
+  .stop-row {
+    min-height: 32px;
+  }
+
+  .switch::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: max(100%, 44px);
+    height: 32px;
+  }
+}
+
+.switch-knob {
+  position: absolute;
+  /* The gap between the knob and the track, on all four sides. Proportional,
+     because the track it sits in is - 2px was 8% of the track on a desktop and
+     24% of it on a Popout S. Floored at 1px so it stays a visible gap rather
+     than rounding away at the smallest sizes. */
+  --knob-inset: max(1px, calc(var(--ui-bar) * 0.18));
+  top: var(--knob-inset);
+  left: var(--knob-inset);
+  /* The track's own height (2.18 --ui-bar) less the inset above and below,
+     rather than a separate 1.82 coefficient that only happened to agree with it
+     while the inset was 2px and --ui-bar was pinned at its 11px ceiling. */
+  width: calc(var(--ui-bar) * 2.18 - var(--knob-inset) * 2);
+  height: calc(var(--ui-bar) * 2.18 - var(--knob-inset) * 2);
+  border-radius: 50%;
+  background: var(--ink);
+  box-shadow: 0 1px 3px rgba(var(--shadow-rgb), 0.4);
+  transition: transform var(--dur-control) var(--ease-out);
+}
+
+/* How far the knob slides: the track's width less the knob and the inset at
+   each end, which works out to exactly 1.82 --ui-bar - the insets cancel,
+   because the knob is defined from them above.
+
+   This was a hardcoded translateX(20px), and 20px is that figure at --ui-bar's
+   11px CEILING - the value it only reaches above about 1086px of viewport.
+   Everywhere below that the track shrank and the throw did not, so switching
+   one on fired the knob clean out of its track: 4.5px past the end on Popout L,
+   7.7px on Mobile S, and 13.6px on Popout S, where the track is only 15.4px
+   wide and the knob ended up outside the panel entirely. */
+.switch.on .switch-knob {
+  transform: translateX(calc(var(--ui-bar) * 1.82));
+}
+
+/* ---- Keyboard focus -------------------------------------------------------
+ * The menu controls. .bet-entry already showed focus through :focus-within on
+ * its wrapper, and .rounds-selector did not - so typing a spin count gave no
+ * indication of where the caret was.
+ */
+.switch:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ---- Reduced motion ----
+   The switch still moves: the knob's position IS the state, so freezing it
+   would leave the control unreadable. It travels instantly instead. */
+@media (prefers-reduced-motion: reduce) {.switch,
+.switch-knob {
+    transition: none;
+  }
+}
+
+/* The switch, pressed. It is the one control here whose hover said nothing in
+   the first place - the knob position is the state - so this is purely the
+   acknowledgement that the tap landed. The knob itself does not move: that
+   travel means "on", and borrowing it for "pressed" would say the switch had
+   flipped before it had. */
+.switch:active:not(:disabled) {
+  filter: brightness(1.25);
 }

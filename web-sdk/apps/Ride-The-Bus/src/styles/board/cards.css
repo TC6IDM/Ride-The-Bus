@@ -524,72 +524,10 @@
     0 4px 8px rgba(var(--shadow-rgb), 0.38);
 }
 
-.card-face {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: stretch;
-  padding: calc(var(--ui) * 0.55);
-  box-sizing: border-box;
-}
-
- /* The corner index: the rank with its suit directly underneath.
- *
- * Every playing card ever printed carries the pip there, and this one carried
- * the rank alone - which is a small thing to add and the single strongest
- * signal that the object is a playing card rather than a rounded rectangle
- * with a letter on it. It also means the card is still readable when it is
- * overlapped from the right, which is the entire reason real decks put the
- * index in the corner in the first place.
- *
- * font-size is set on the INDEX, not on the rank inside it, so the pip can be
- * sized in em against the rank it sits under - SuitIcon takes a scale in em
- * and a child component cannot be reached by a selector from here. */
-.card-face .index {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: var(--rank-fs);
-  line-height: 1;
-  gap: calc(var(--ui) * 0.1);
-}
-
-.card-face .index-rank {
-  font-family: var(--font-display);
-  /* Condensed, so it can go up a size and still leave 10 - the one rank that is
-     two glyphs wide - sitting inside the corner index at the same width as
-     every other rank. That is the functional half of choosing this face; see
-     the note beside the @font-face block in components/app.css.
-     The tracking that used to squeeze 10 into place goes with it: the face is
-     already narrow, and negative tracking on top of it closes the counters. */
-  font-size: 1.18em;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.card-face .index.top {
-  align-self: flex-start;
-}
-
-.card-face .index.bottom {
-  align-self: flex-end;
-  transform: rotate(180deg);
-}
-
-.card-face .suit.center {
-  font-size: var(--suit-fs);
-  text-align: center;
-  margin: 0 auto;
-  line-height: 1;
-}
-
-.card-face.red-card .suit.center,
-.card-face.red-card .index { color: var(--card-red); }
-
-.card-face.black-card .suit.center,
-.card-face.black-card .index { color: var(--card-ink); }
+/* What is printed ON the paper - pips, courts, aces, the corner index - is
+   components/cards/CardFace.svelte, which draws itself: a stylesheet here
+   cannot reach a child component's elements (see the note atop
+   ChoiceIcon.svelte). This sheet keeps the paper, the edge and the flip. */
 
 /* Bust ✕ drawn over the revealed front face. */
 .bust-x {

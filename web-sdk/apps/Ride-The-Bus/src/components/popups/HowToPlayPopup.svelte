@@ -137,20 +137,20 @@
     <div class="info-body">
       <p>{t('Guess your way through four cards:')}</p>
       <ol>
-        <li>{t('Color: red or black for card 1.')}</li>
-        <li>{t('Higher / Lower: versus card 1 (or =).')}</li>
-        <li>{t('Inside / Outside: between cards 1 & 2 (or =).')}</li>
-        <li>{t('Suit: the suit of card 4.')}</li>
+        <li>{t('Color: is card 1 red or black?')}</li>
+        <li>{t('Higher or Lower: is card 2 above or below card 1, or Equal to it?')}</li>
+        <li>{t('Inside or Outside: is card 3 between cards 1 and 2 or outside them, or Equal to one of them?')}</li>
+        <li>{t('Suit: which suit is card 4?')}</li>
       </ol>
       <!-- What a miss costs is deliberately NOT stated here: it is different in
            every family (nothing at card 1; 30% or 15% after; forgiven once on
            Second Chance; nothing at all on Three of a Kind), and a one-line
            summary that fits one of them is wrong for the others. The mode panel
            below says it per family. -->
-      <p>{t('Pick all four, set your bet and deal. Each right guess multiplies your win; get all four for a full game win. What a wrong guess costs you depends on the game mode, explained below.')}</p>
+      <p>{t('Pick all four, set your bet and deal. Each right guess multiplies your win, and four right is a full game win. What a wrong guess costs depends on the game mode; see Game modes below.')}</p>
 
       <h4 class="info-h">{t('Card order')}</h4>
-      <p>{t('Ace is low and King is high. Suit never affects rank: only the number counts for Higher / Lower and Inside / Outside.')}</p>
+      <p>{t('Ace is low and King is high. Suits have no rank: only the card’s value counts for Higher, Lower, Inside and Outside.')}</p>
       <!-- Rendered from the same `ranks` array the game runs on, so it cannot
            disagree with the real ordering. An ordered list because that is
            exactly what it is: lowest to highest. -->
@@ -172,7 +172,7 @@
            The worked example ("with a 3 on the table, Lower pays about...")
            is inside the mode panel, under the paytable, because its numbers
            are that table's numbers and move with the family the same way. -->
-      <p>{t('Every correct guess pays its true odds against the cards left in the deck, so the less likely your pick, the more it pays, and the same guess can pay differently from one round to the next.')}</p>
+      <p>{t('Each right guess is priced on the cards still in the deck: the less likely it is, the more it pays. So the same guess can pay differently from one round to the next.')}</p>
 
       <!-- ---- Game modes ------------------------------------------------
            One switchable block rather than three sections each fixed to the
@@ -185,14 +185,14 @@
            reopening builds a fresh one - which is what makes it snap back to
            whatever the player is actually on, with no reset logic. -->
       <h4 class="info-h">{t('Game modes')}</h4>
-      <!-- The tagline the intro leads its stats with, as the section's first
-           line here, and what it counts said plainly: every set of four picks
-           is priced as its own bet mode, which is why the list of modes the
-           RGS publishes is 193 long and not 4. -->
-      <p class="info-tagline">
-        <strong>{t('%n ways to play').replace('%n', waysToPlay.toLocaleString())}</strong>
-        {t('Every combination of picks on a guess mode is its own bet, priced on its own odds.')}
-      </p>
+      <!-- What the count means, said plainly: every set of four picks is priced
+           as its own bet mode, which is why the list of modes the RGS publishes
+           is 193 long and not 4.
+           ONE SENTENCE, IN THE BODY INK. It was the intro's "193 ways to play"
+           tagline in the panel's tint, bolded, with the explanation run on after
+           it and no punctuation between - a stat callout, which is marketing's
+           voice, in the rules. The intro keeps the tagline; this is the rule. -->
+      <p>{t('There are %n ways to play: every set of picks is its own bet, priced on its own odds.').replace('%n', waysToPlay.toLocaleString())}</p>
       <!-- The cost and the RTP in ONE sentence. Stake's checklist wants the
            cost of every mode stated in the rules ("Game modes include
            description and cost information"). Both figures are interpolated
@@ -271,7 +271,7 @@
              picked, so no line above - read the family figure as their own.
              Not on a family with no guesses: there its one figure IS the bet's. -->
         {#if !viewingFixed}
-          <p class="mode-panel-picked">{t('Only some guess combinations reach a mode’s maximum. Once your four are picked, their own ceiling is shown above.')}</p>
+          <p class="mode-panel-picked">{t('Only some combinations reach the mode’s maximum. Once your four are picked, the most they can pay is shown above.')}</p>
         {/if}
 
         <!-- Approval requires payout amounts stated for every pick. There is no
@@ -326,7 +326,7 @@
                numbers and that only the last one pays. -->
           <p>{t('Each figure is the running total after that card, in multiples of your bet, exactly as the board shows it beside the cards. Only the last card pays.')}</p>
         {:else}
-          <p>{t('Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.')}</p>
+          <p>{t('These figures are exact: the stages multiply at full precision, and only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded down as it goes, so mid-round it can read a little under them.')}</p>
         {/if}
 
         <!-- One dealt round on THIS tab's family: the card, the pick it met,
@@ -387,7 +387,7 @@
             .replace('%m', `${viewingRules.maxWin}×`)
             .replace('%n', String(viewingOneIn))}</p>
         {:else}
-          <p>{t('Guess all four right and the payout depends on how hard your picks were. Equal is the rarest guess, so rounds built on it pay the most; two Equal picks together is the most this mode can pay, at %m your bet.')
+          <p>{t('A full game win pays more the harder your picks were. Equal is the rarest guess, so it pays the most, and two Equal picks reach this mode’s maximum: %m your bet.')
             .replace('%m', `${viewingRules.maxWin}×`)}</p>
         {/if}
       </div>
@@ -406,7 +406,7 @@
            the circular arrows. On a phone the bar has no plus and minus, so
            that line shows the chip and says what the bar there offers. -->
       <ul class="control-guide">
-        <li><ControlGlyph name="deal" /><span>{t('The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.')}</span></li>
+        <li><ControlGlyph name="deal" /><span>{t('The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.')}</span></li>
         <li><ControlGlyph name="mode" label={t('Mode')} /><span>{t('Mode opens the game-mode picker. Switching asks you to confirm before it applies.')}</span></li>
         {#if phoneBar}
           <li><ControlGlyph name="chip" /><span>{t('Tap the amount for the quick-bet menu.')}</span></li>
@@ -414,12 +414,13 @@
           <li><ControlGlyph name="bet" /><span>{t('Plus and minus set your bet. Tap the amount for the quick-bet menu.')}</span></li>
         {/if}
         <li><ControlGlyph name="turbo" /><span>{t('The lightning button is Turbo: how fast the cards flip, from Normal to Instant.')}</span></li>
-        <li><ControlGlyph name="autoplay" /><span>{t('The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.')}</span></li>
-        <li><ControlGlyph name="advanced" /><span>{t('The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.')}</span></li>
+        <li><ControlGlyph name="autoplay" /><span>{t('The circular arrows open autoplay: the same bet, dealt again for a set number of rounds or without limit. The button counts down the rounds left.')} {t('It can stop by itself on a full game win, a loss limit or one big win.')}</span></li>
         <li><ControlGlyph name="sound" /><span>{t('The speaker opens the sound settings. Music and game sounds mute separately.')}</span></li>
         <li><ControlGlyph name="info" /><span>{t('The i button opens this screen.')}</span></li>
       </ul>
-      <p>{t('Speed and skip settings change only what you see, never the cards, the odds or the payout.')}</p>
+      <!-- Not on a phone, which has no keys. Space is in the deal line above. -->
+      {#if !phoneBar}<p>{t('On a keyboard, keys 1 to 4 change the four guesses.')}</p>{/if}
+      <p>{t('Turbo and skipping win animations change only what you see, never the cards, the odds or the payout.')}</p>
 
       <h4 class="info-h">{t('Game information')}</h4>
       <!-- "The cards it deals", not "four cards": Three of a Kind deals three,

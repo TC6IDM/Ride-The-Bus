@@ -10,6 +10,81 @@ rather than on every turn. Nothing here is reworded.
 
 ## Current state
 
+**2026-09-26: casino card faces, autoplay's stops, MODE at the edge.** Client
+and tooling only; no math changed, no build run. 854 tests.
+- **Every dealt card is a real face** (`CardFace.svelte`): pips for 2-10 on the
+  standard grid, the Ace of Spades as the house card with the house name, and
+  the English-pattern courts - CC0, Dmitry Fomin, from Wikimedia Commons,
+  restyled by `scripts/court-art.mjs` into one colour family per card (card 1's
+  guess is Red or Black). The board and the fan draw the same face; the old
+  one-pip faces and their CSS are gone. `?dev_deck=1` lays out every face at
+  every drawn size. Sprite 199 kB / 43 kB gzipped, fetched at start from
+  `static/cards/`, never inlined. Provenance, hashes and the rejected sources
+  (a GPL-3.0 and two LGPL decks) are in `art-masters/courts/README.md`.
+- **The Advanced panel is gone**; its two switches joined the autoplay panel
+  with two new passive stops (loss limit, single-win limit - the SDK's option
+  set, in multiples of the base bet). The DEV-only martingale was deleted.
+  **Found in review, fixed the same day:** the first cut counted the limits in
+  the round's COST, which on Three of a Kind made "your bet" mean 250x what it
+  means everywhere else and left the 25-100x win limits unable to fire; and the
+  autoplay button was disabled mid-run, so the stops (which used to sit behind
+  a sliders button that stayed live) could not be changed during a run. Also
+  from review: keys 1-4 match the physical key (AZERTY), and How to Play's
+  autoplay line names the stops. **Then, on the owner's review:** the limits
+  became TYPED fields - a figure, an x/currency unit switch inside the field,
+  an arm button beside it - x always the base bet; the two switches sit one above
+  the other, above the action; MODE became a rounded rectangle; and the Takeover
+  crown went onto every court pip and the house spade (gold only).
+- **MODE moved to the bar's right edge** where the sliders button was (owner's
+  suggestion), mirroring Turbo; the light pill is now sound, info, Balance,
+  Last Win. Checked at all seven sizes: no overflow, one-row Popout S.
+- **Keys 1-4 step the four guesses.** An intro "Don't show this again" was
+  added and taken out the same day, by the owner's call.
+- **A narrow mouse window put MODE on a third bar row** (owner's screenshot):
+  row two's budget was trimmed for touch only. Now for every pointer, and
+  swept every 4px from 320 to 620 in all 17 languages, mouse and touch: two
+  rows. Touch at exactly 400x225 wraps, as it did before - not a real device;
+  Popout S is a desktop mini-player.
+- **How to Play reworded above the disclaimer** (owner's request): the four
+  picks as questions instead of "(or =)" shorthand; "true odds" dropped (the
+  pricing carries the house edge, so "priced on the cards still in the deck"
+  is the accurate claim); one term, "running total", for what a bust keeps -
+  the bust rows, the Classic blurb (shared with the mode picker) and the
+  rounding note all used to say "what you had built"; "Speed and skip
+  settings" named after the Advanced panel it no longer has. 17 new keys in
+  all 16 catalogues and the social map; the social-terms test caught one new
+  "pay". The autoplay note now says "times your BASE bet" too.
+- **The third Hallmark audit's fixes** (owner: all but the guess-square
+  colours, which stay for now):
+  - **The takeover glows nowhere.** Title lettered with a block shadow in the
+    tier's deep colour, amount the same while it holds, fan cards rimmed not
+    bloomed, burst marks casting shadows. Was the stock neon "BIG WIN".
+  - **The lobby tile is rendered from the game** (`scripts/tile-art.mjs`,
+    `?dev_tile=fg`): the J Q K and house A, the deck, two chips; the table
+    with the board hidden, cups off. 1.32 MB of Stake's 3. Replaced the
+    generated pair.
+  - **How to Play's headings are headings**, sentence case at the panel
+    title's size; its sub-heads and the autoplay / bet / sound field labels
+    are sentence case at body size ("Number of plays", "Quick bets", "Game
+    sounds"; the duplicate "Number of Plays" key is gone). "193 ways to play"
+    is one plain sentence, not a tinted stat callout.
+  - **The purple is a dusty amethyst** (178,124,200, 41% saturation, 5.50:1
+    on the panel) for Three of a Kind and Epic; the unused `--vol-overflow`
+    hex was deleted.
+  - **The limit fields show a dash**, not a grey 0 that read as a zero limit.
+  - **Chips sharing a colour alternate their edge inlay** (brass; red on the
+    white chip), so $50/$75 and $1/$5 stop being one chip printed twice.
+- **Two tooling fixes**: `shoot.mjs`'s round start and `--intro` both still
+  expected the intro in front of a replay, which has not been true since
+  2026-09-22 - every tier and size shot reported "round never started".
+- **Found and NOT changed:** Three of a Kind's chips read in base-bet multiples
+  beside a 250x bet display. That is the trips audit's deliberate one-unit rule
+  (the bet display reads "$1.00 x 250"), so it stays.
+- **Rundown of what else would move the rating**: the 2026-09-25 plan
+  (`do-a-full-rundown-reactive-flute.md`), and its one finding that changes the
+  timeline - Stake allows no math, mode or mechanic change after approval, so
+  Last Stop "for a later update" means never.
+
 **2026-09-25: the phone props, the Equal-only hold, the card backs and a
 sound pass.** Client and tooling only; no math changed, no build run.
 - **The phone props sat on the multiplier chips.** Measured on a settled
@@ -554,8 +629,13 @@ look.**
   mode picker and on the bet display only.
 - B3–B8 optional polish: round history strip, session stats, quick-bet ½/2×,
   round ID surface, keyboard shortcuts for guesses, near-miss reveal.
-- **Parked for a later update: Last Stop (`ls_`), a ticket at the end of the
-  ride.** Out of v1 by the owner's call, 2026-09-25, and if it comes it is a
+- **Parked: Last Stop (`ls_`), a ticket at the end of the ride - and "later"
+  may mean never.** Stake's guidelines (stake-approval, "Post-release"): once
+  approved, only minor visual updates are allowed - "changes to the math model,
+  new game modes, or gameplay mechanic modifications are not allowed". So this
+  ships in v1 or not at all; the note below about shipping it as an update is
+  wrong unless Stake agrees to it in advance. Out of v1 by the owner's call,
+  2026-09-25, and if it comes it is a
   FOURTH four-guess family beside the three, never a replacement for High
   Stakes. Modelled, not built: an exact enumerator (every ordered deal of the
   first three cards, suits counted analytically, reweighted to 0.96) matched

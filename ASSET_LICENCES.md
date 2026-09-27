@@ -20,6 +20,7 @@ anything in that directory ships to players.
 | `static/logo.png` | Original artwork for this game | Owned | — | 743 kB, 710×710 |
 | `static/logo.webp` | Same artwork, re-encoded q90 | Owned | — | 81 kB; the default, see `logoAsset.svelte.ts` |
 | `static/favicon.png` | Same artwork | Owned | — | |
+| `static/cards/courts.svg` | The twelve English-pattern court figures (J, Q, K of each suit) by Dmitry Fomin, Wikimedia Commons, **restyled for this game** by `scripts/court-art.mjs`: figure only, recoloured into the game's card tokens, lower half drawn by turning the upper half, rounded to whole units | **CC0 1.0** (public-domain dedication; no attribution required, given anyway) | 2026-09-25 | 199 kB / 43 kB gzipped, fetched at start rather than inlined. Masters, their Commons SHA-1s and the provenance: `art-masters/courts/README.md`. A GPL-3.0 and two LGPL decks were considered and rejected there. |
 
 **There are no sound-effect files to licence.** Presses, card flips, wins and
 fanfares are generated in code at runtime by `audioGraph.ts`, so none of them is
@@ -49,6 +50,20 @@ The `unicode-range` subsets are Google Fonts' own, fetched from
 commit that added Geist; the reasons are at the top of `components/app.css`. The music bed below is the only audio
 asset the game will ship, and therefore the only one this file has to account
 for.
+
+---
+
+## Lobby tile — `submission/`, handed to Stake, not shipped
+
+| File | Source | Licence | Acquired | Notes |
+|---|---|---|---|---|
+| `submission/RideTheBus-FG.png` | **Rendered from the game** by `scripts/tile-art.mjs` (`?dev_tile=fg`, `components/dev/DevTile.svelte`): the J, Q, K and house A of the game's own deck, the deck's back and two chips, all drawn in the game's CSS | Owned; the three court figures are the CC0 `static/cards/courts.svg` above | 2026-09-26 | 1600 × 1600 transparent PNG, 1.2 MB |
+| `submission/RideTheBus-BG.jpg` | **Rendered from the game** by the same script: the live table, its chips and deck, with the board's furniture hidden and the party cups left off | Owned | 2026-09-26 | 1920 × 1280, 152 kB |
+
+These replaced a generated pair (a hand of cards with a mangled Jack and a
+droplet spade over sparks, on a backyard party the game never shows), which
+the third Hallmark audit named as the one asset Stake's "generic
+AI-generated assets" line fits. The old files are in git history.
 
 ---
 

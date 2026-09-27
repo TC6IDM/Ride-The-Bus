@@ -29,7 +29,8 @@ export default {
 	Start: 'Старт',
 
 	'Bet Menu': 'Меню ставок',
-	'Quick Bets': 'Быстрые ставки',
+	'Quick bets':
+		'Быстрые ставки',
 
 	'Turbo Speed': 'Скорость турбо',
 	Normal: 'Обычная',
@@ -40,16 +41,15 @@ export default {
 	'Sound settings': 'Настройки звука',
 	Sound: 'Звук',
 	Music: 'Музыка',
-	'Game Sounds': 'Звуки игры',
+	'Game sounds':
+		'Звуки игры',
 	'Mute music': 'Выключить музыку',
 	'Unmute music': 'Включить музыку',
 	'Mute game sounds': 'Выключить звуки игры',
 	'Unmute game sounds': 'Включить звуки игры',
 
 	Autoplay: 'Автоигра',
-	'Number of Plays': 'Количество раундов',
 
-	Advanced: 'Дополнительно',
 	'Game Mode': 'Режим игры',
 	'Choose game mode': 'Выбрать режим игры',
 	Classic: 'Классический',
@@ -60,8 +60,8 @@ export default {
 	Forgiven: 'Прощено',
 	// The intro's tagline and the first line of How to Play's Game modes.
 	'%n ways to play': '%n способов играть',
-	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
-		'Каждая комбинация выборов в режиме угадывания — отдельная ставка, оценённая по своим собственным шансам.',
+	'There are %n ways to play: every set of picks is its own bet, priced on its own odds.':
+		'Число вариантов игры: %n. Каждая комбинация выборов — отдельная ставка, оценённая по своим собственным шансам.',
 	'Game modes': 'Режимы игры',
 	// Confirmation before a bet mode is activated - required by the approval
 	// checklist, and worth having anyway: the guess families cost the same but
@@ -72,17 +72,17 @@ export default {
 	'Volatility %s of %t': 'Волатильность %s из %t',
 	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.':
 		'Возврат игроку (RTP) составляет %s в каждом режиме. Максимум, который может выплатить игра, равен %m вашей ставки в режиме %f.',
-	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
-		'Ошибка на первой карте завершает раунд. Последующие промахи сохраняют 30% накопленного.',
+	'A wrong first card ends the round. Later misses keep 30% of your running total.':
+		'Ошибка на первой карте завершает раунд. Последующие промахи сохраняют 30% текущей суммы.',
 	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
 		'Ошибка на первой карте завершает раунд. После неё первый промах прощается и игра продолжается.',
 	'Card 1': 'Карта 1',
 	'Your first wrong guess': 'Ваш первый промах',
 	'Your second wrong guess': 'Ваш второй промах',
-	'Guess all four right and the payout depends on how hard your picks were. Equal is the rarest guess, so rounds built on it pay the most; two Equal picks together is the most this mode can pay, at %m your bet.':
-		'Угадайте все четыре, и выплата зависит от того, насколько сложными были ваши выборы. «Равно» является самым редким прогнозом, поэтому раунды на его основе платят больше всего; два «Равно» вместе дают максимум этого режима, %m вашей ставки.',
-	'Only some guess combinations reach a mode’s maximum. Once your four are picked, their own ceiling is shown above.':
-		'Лишь некоторые сочетания прогнозов достигают максимума режима. Когда все четыре выбраны, их собственный потолок показывается выше.',
+	'A full game win pays more the harder your picks were. Equal is the rarest guess, so it pays the most, and two Equal picks reach this mode’s maximum: %m your bet.':
+		'Полная победа платит тем больше, чем сложнее были ваши выборы. «Равно» — самый редкий прогноз, поэтому он платит больше всего, а два «Равно» дают максимум этого режима: %m вашей ставки.',
+	'Only some combinations reach the mode’s maximum. Once your four are picked, the most they can pay is shown above.':
+		'Лишь некоторые комбинации достигают максимума режима. Когда все четыре выбраны, выше показано, сколько они могут принести самое большее.',
 	Playing: 'В игре',
 	'Card 2, 3 or 4': 'Карта 2, 3 или 4',
 	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
@@ -90,20 +90,24 @@ export default {
 
 	'How to Play': 'Как играть',
 	'Guess your way through four cards:': 'Угадайте четыре карты подряд:',
-	'Color: red or black for card 1.': 'Цвет: красная или чёрная для карты 1.',
-	'Higher / Lower: versus card 1 (or =).': 'Больше / Меньше: относительно карты 1 (или =).',
-	'Inside / Outside: between cards 1 & 2 (or =).': 'Внутри / Снаружи: между картами 1 и 2 (или =).',
-	'Suit: the suit of card 4.': 'Масть: масть карты 4.',
-	'Pick all four, set your bet and deal. Each right guess multiplies your win; get all four for a full game win. What a wrong guess costs you depends on the game mode, explained below.':
-		'Выберите все четыре, задайте ставку и сдавайте. Каждый верный прогноз умножает выигрыш; угадайте все четыре, и это полная победа. Чего стоит промах, зависит от режима игры, см. ниже.',
+	'Color: is card 1 red or black?':
+		'Цвет: карта 1 красная или чёрная?',
+	'Higher or Lower: is card 2 above or below card 1, or Equal to it?':
+		'Больше или Меньше: карта 2 старше или младше карты 1, либо «Равно» ей?',
+	'Inside or Outside: is card 3 between cards 1 and 2 or outside them, or Equal to one of them?':
+		'Внутри или Снаружи: карта 3 попадает между картами 1 и 2 или за их пределы, либо «Равно» одной из них?',
+	'Suit: which suit is card 4?':
+		'Масть: какой масти карта 4?',
+	'Pick all four, set your bet and deal. Each right guess multiplies your win, and four right is a full game win. What a wrong guess costs depends on the game mode; see Game modes below.':
+		'Выберите все четыре, задайте ставку и сдавайте. Каждый верный прогноз умножает выигрыш, а четыре верных — это полная победа. Чего стоит промах, зависит от режима игры; см. «Режимы игры» ниже.',
 	'Card order': 'Порядок карт',
-	'Ace is low and King is high. Suit never affects rank: only the number counts for Higher / Lower and Inside / Outside.':
-		'Туз является самой младшей картой, а король самой старшей. Масть никогда не влияет на старшинство: для «Больше / Меньше» и «Внутри / Снаружи» важно только значение.',
+	'Ace is low and King is high. Suits have no rank: only the card’s value counts for Higher, Lower, Inside and Outside.':
+		'Туз — самая младшая карта, король — самая старшая. У мастей нет старшинства: для «Больше», «Меньше», «Внутри» и «Снаружи» важно только значение карты.',
 	Lowest: 'Младшая',
 	Highest: 'Старшая',
 	'Payouts follow the odds': 'Выплаты зависят от вероятности',
-	'Every correct guess pays its true odds against the cards left in the deck, so the less likely your pick, the more it pays, and the same guess can pay differently from one round to the next.':
-		'Каждый верный прогноз оплачивается по его реальной вероятности относительно карт, оставшихся в колоде: чем менее вероятен ваш выбор, тем больше выплата, и один и тот же прогноз может платить по-разному от раунда к раунду.',
+	'Each right guess is priced on the cards still in the deck: the less likely it is, the more it pays. So the same guess can pay differently from one round to the next.':
+		'Каждый верный прогноз оценивается по картам, оставшимся в колоде: чем он менее вероятен, тем больше платит. Поэтому один и тот же прогноз может платить по-разному от раунда к раунду.',
 	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
 		'Если на столе тройка, «Меньше» платит около %1×, потому что лишь 8 из 51 оставшейся карты младше, а «Больше» около %2×, потому что таких карт 40. Замените тройку на восьмёрку, и всё меняется: «Меньше» падает примерно до %3×, а «Больше» растёт до %4×. «Равно» всегда самый маловероятный вариант, около %5×.',
 	'Payout table': 'Таблица выплат',
@@ -114,12 +118,12 @@ export default {
 		'Итого',
 	'Red or Black': 'Красная или чёрная',
 	'Any suit': 'Любая масть',
-	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
-		'Этапы перемножаются с полной точностью, поэтому цифры выше точные. Округляется вниз, до одного знака после запятой, только итоговая выплата. Текущая сумма рядом с картами округляется так же на каждом шаге, поэтому по ходу раунда она может выглядеть чуть меньше этих значений.',
+	'These figures are exact: the stages multiply at full precision, and only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded down as it goes, so mid-round it can read a little under them.':
+		'Эти цифры точные: этапы перемножаются с полной точностью, и вниз, до одного знака после запятой, округляется только итоговая выплата. Текущая сумма рядом с картами округляется вниз по ходу раунда, поэтому может выглядеть чуть меньше.',
 	'If you guess wrong': 'Если вы ошиблись',
 	'Full game wins': 'Полные победы',
-	'Speed and skip settings change only what you see, never the cards, the odds or the payout.':
-		'Настройки скорости и пропуска меняют только то, что вы видите, но никогда не карты, шансы или выплату.',
+	'Turbo and skipping win animations change only what you see, never the cards, the odds or the payout.':
+		'Турбо и пропуск анимаций выигрыша меняют только то, что вы видите, но никогда не карты, шансы или выплату.',
 
 	'Pick a color': 'Выберите цвет',
 	'Higher, lower, or equal': 'Больше, меньше или равно',
@@ -142,7 +146,6 @@ export default {
 	'Decrease bet': 'Уменьшить ставку',
 	'Turbo speed': 'Скорость турбо',
 	'Autoplay settings': 'Настройки автоигры',
-	'Advanced settings': 'Дополнительные настройки',
 	'Stop autoplay': 'Остановить автоигру',
 	'Rounds must be %s seconds apart': 'Между раундами должно пройти %s с',
 	'Round in progress': 'Раунд идёт',
@@ -208,12 +211,10 @@ export default {
 	'The i button opens this screen.': 'Кнопка i открывает этот экран.',
 	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
 		'Кнопка с молнией включает Турбо: скорость переворота карт, от Обычной до Мгновенной.',
-	'The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.':
-		'Круговые стрелки открывают автоигру, которая повторяет ту же ставку заданное число раундов или без ограничения. Счётчик отображается на кнопке во время работы.',
-	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
-		'Кнопка с ползунками содержит две настройки автоигры: остановка при полной победе и пропуск анимаций выигрыша.',
-	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
-		'Большая круглая кнопка сдаёт раунд. Пробел делает то же самое: нажмите для одного раунда, удерживайте, чтобы сдавать дальше. Во время автоигры кнопка становится «Стоп», а текущий раунд сначала доигрывается.',
+	'The circular arrows open autoplay: the same bet, dealt again for a set number of rounds or without limit. The button counts down the rounds left.':
+		'Круговые стрелки открывают автоигру: та же ставка сдаётся снова заданное число раундов или без ограничения. Кнопка отсчитывает оставшиеся раунды.',
+	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
+		'Большая круглая кнопка сдаёт карты. Пробел делает то же самое: нажмите для одного раунда, удерживайте, чтобы сдавать дальше. Во время автоигры она становится «Стоп», а текущий раунд сначала доигрывается.',
 	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
 		'Режим открывает выбор режима игры. Смена требует подтверждения, прежде чем вступит в силу.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
@@ -240,10 +241,10 @@ export default {
 	'Play Again': 'Воспроизвести снова',
 	'The round ends and pays nothing.':
 		'Раунд заканчивается и ничего не выплачивает.',
-	'The round ends, keeping about %s% of what you had built.':
-		'Раунд заканчивается, сохраняя около %s% накопленного.',
-	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
-		'Начиная со второй карты промах прощается: вы сохраняете %s% накопленного, и раунд продолжается.',
+	'The round ends, and you keep about %s% of your running total.':
+		'Раунд заканчивается, и вы сохраняете около %s% текущей суммы.',
+	'From card 2 on, it is forgiven: you keep %s% of your running total and play on.':
+		'Начиная со второй карты промах прощается: вы сохраняете %s% текущей суммы и играете дальше.',
 
 	// Three of a Kind.
 	'Three of a Kind':
@@ -286,4 +287,16 @@ export default {
 		'Нажмите на сумму, чтобы открыть меню быстрых ставок.',
 	'Max win %s your bet':
 		'Макс. выигрыш %s от вашей ставки',
+	'Stop on a loss of':
+		'Остановить при проигрыше',
+	'Stop on a single win of':
+		'Остановить при разовом выигрыше',
+	'On a keyboard, keys 1 to 4 change the four guesses.':
+		'На клавиатуре клавиши 1–4 меняют четыре прогноза.',
+	'It can stop by itself on a full game win, a loss limit or one big win.':
+		'Автоигра может остановиться сама при полной победе, лимите проигрыша или одном крупном выигрыше.',
+	'× means times your base bet.':
+		'× — кратное вашей базовой ставки.',
+	'Times your base bet':
+		'Кратное вашей базовой ставки',
 };

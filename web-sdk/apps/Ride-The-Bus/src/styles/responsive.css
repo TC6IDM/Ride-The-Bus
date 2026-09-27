@@ -38,11 +38,11 @@
    ========================================================================== */
 
 /* Narrow viewports: give the LIGHT PILL a bar row of its own, above the bet
-   and action panel, otherwise the advanced button wraps on its own and looks
-   stranded.
+   and action panel, otherwise the control at the row's end (MODE, since it
+   replaced the sliders button) wraps on its own and looks stranded.
 
    That is a row of the CONTROL BAR, and it is the only wrap on a phone. The
-   pill's own contents - sound, info, MODE, Balance, Last Win - stay on one
+   pill's own contents - sound, info, Balance, Last Win - stay on one
    line inside it; see .cb-panel-light below, which pins that shut.
 
    Width-scoped rather than portrait-scoped because a narrow LANDSCAPE window

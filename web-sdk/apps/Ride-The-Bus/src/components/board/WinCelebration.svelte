@@ -41,6 +41,7 @@
 
 	import MarkIcon from '../icons/MarkIcon.svelte';
 	import SuitIcon from '../icons/SuitIcon.svelte';
+	import CardFace from '../cards/CardFace.svelte';
 	import type { Card } from '../../game/round/roundContract';
 	import { t } from '../../i18n/i18nDerived';
 	import { sound } from '../../game/audio/sound';
@@ -508,15 +509,10 @@
 					style={`--tilt: ${slot.tilt}deg; --shift: ${slot.shift}; --drop: ${slot.drop}; animation-delay: ${slot.delay}s`}
 				>
 					{#if card}
-						<span
-							class="wc-fan-face"
-							class:is-red={card.suit === '♥' || card.suit === '♦'}
-						>
-							<span class="wc-fan-index">
-								<span class="wc-fan-rank">{card.rank}</span>
-								<SuitIcon suit={card.suit} scale={0.72} />
-							</span>
-							<span class="wc-fan-pip"><SuitIcon suit={card.suit} scale={1} /></span>
+						<!-- The board's own face (CardFace), so a fanned K is the King the
+						     player just watched turn over. The paper is this sheet's. -->
+						<span class="wc-fan-face">
+							<CardFace rank={card.rank} suit={card.suit} />
 						</span>
 					{:else}
 						<!-- Face down: the pack's printed mark, drawn by the sheet. -->
@@ -551,7 +547,7 @@
 		     the colour cross-fades, and promoteTitle gives it a pop. -->
 		<div class="wc-title face-{titleFace}" bind:this={titleEl}>{titleText}</div>
 
-		<!-- is-holding only brightens the glow; the pop is applied through
+		<!-- is-holding only letters the figure in the tier colour; the pop is applied through
 		     popAmount(amountEl) so it cannot clobber the entrance animation. -->
 		<div
 			class="wc-amount"

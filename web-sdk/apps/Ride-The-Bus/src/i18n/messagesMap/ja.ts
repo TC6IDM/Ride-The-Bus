@@ -29,7 +29,8 @@ export default {
 	Start: '開始',
 
 	'Bet Menu': 'ベットメニュー',
-	'Quick Bets': 'クイックベット',
+	'Quick bets':
+		'クイックベット',
 
 	'Turbo Speed': 'ターボ速度',
 	Normal: '通常',
@@ -40,16 +41,15 @@ export default {
 	'Sound settings': 'サウンド設定',
 	Sound: 'サウンド',
 	Music: '音楽',
-	'Game Sounds': 'ゲーム音',
+	'Game sounds':
+		'ゲーム音',
 	'Mute music': '音楽をミュート',
 	'Unmute music': '音楽をオンにする',
 	'Mute game sounds': 'ゲーム音をミュート',
 	'Unmute game sounds': 'ゲーム音をオンにする',
 
 	Autoplay: 'オートプレイ',
-	'Number of Plays': 'ラウンド数',
 
-	Advanced: '詳細設定',
 	'Game Mode': 'ゲームモード',
 	'Choose game mode': 'ゲームモードを選択',
 	Classic: 'クラシック',
@@ -60,8 +60,8 @@ export default {
 	Forgiven: '免除',
 	// The intro's tagline and the first line of How to Play's Game modes.
 	'%n ways to play': '%n通りの遊び方',
-	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
-		'推測モードでの選択の組み合わせはそれぞれ独立したベットで、それぞれのオッズで価格が決まります。',
+	'There are %n ways to play: every set of picks is its own bet, priced on its own odds.':
+		'遊び方は%n通りあります。選択の組み合わせはそれぞれ独立したベットで、それぞれのオッズで価格が決まります。',
 	'Game modes': 'ゲームモード',
 	// Confirmation before a bet mode is activated - required by the approval
 	// checklist, and worth having anyway: the guess families cost the same but
@@ -72,17 +72,17 @@ export default {
 	'Volatility %s of %t': 'ボラティリティ %t段階中 %s',
 	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.':
 		'還元率（RTP）はどのゲームモードでも %s です。このゲームの最大配当は%fでベットの %m です。',
-	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
-		'1枚目を外すとラウンド終了。以降のミスは積み上げた分の30%を保持します。',
+	'A wrong first card ends the round. Later misses keep 30% of your running total.':
+		'1枚目を外すとラウンド終了。以降のミスは進行中の合計の30%を保持します。',
 	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
 		'1枚目を外すとラウンド終了。以降の最初のミスは免除され、続行します。',
 	'Card 1': 'カード1',
 	'Your first wrong guess': '最初のミス',
 	'Your second wrong guess': '2度目のミス',
-	'Guess all four right and the payout depends on how hard your picks were. Equal is the rarest guess, so rounds built on it pay the most; two Equal picks together is the most this mode can pay, at %m your bet.':
-		'4枚すべて当てると、配当は予想の難しさで決まります。イコールは最も起こりにくい予想なので、それを含むラウンドの配当が最も高くなります。イコールを2つ同時に当てるのがこのモードの最大配当で、ベットの%mです。',
-	'Only some guess combinations reach a mode’s maximum. Once your four are picked, their own ceiling is shown above.':
-		'予想の組み合わせのうち、モードの最大配当に届くのは一部だけです。4つを選ぶと、その組み合わせ自体の上限が上に表示されます。',
+	'A full game win pays more the harder your picks were. Equal is the rarest guess, so it pays the most, and two Equal picks reach this mode’s maximum: %m your bet.':
+		'フルゲーム達成の配当は、予想が難しいほど高くなります。イコールは最も起こりにくい予想なので配当も最も高く、イコールを2つ選ぶとこのモードの最大配当、ベットの%mに届きます。',
+	'Only some combinations reach the mode’s maximum. Once your four are picked, the most they can pay is shown above.':
+		'モードの最大配当に届く組み合わせは一部だけです。4つを選ぶと、その組み合わせで得られる最大の配当が上に表示されます。',
 	Playing: 'プレイ中',
 	'Card 2, 3 or 4': 'カード2・3・4',
 	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
@@ -90,20 +90,24 @@ export default {
 
 	'How to Play': '遊び方',
 	'Guess your way through four cards:': '4枚のカードを順に予想します：',
-	'Color: red or black for card 1.': '色：1枚目が赤か黒か。',
-	'Higher / Lower: versus card 1 (or =).': 'ハイ / ロー：1枚目との比較（または＝）。',
-	'Inside / Outside: between cards 1 & 2 (or =).': 'イン / アウト：1枚目と2枚目の間か外か（または＝）。',
-	'Suit: the suit of card 4.': 'スート：4枚目のスート。',
-	'Pick all four, set your bet and deal. Each right guess multiplies your win; get all four for a full game win. What a wrong guess costs you depends on the game mode, explained below.':
-		'4つすべてを選び、ベット額を決めて配ります。的中するたびに配当が倍増し、4つすべて当てればフルゲーム達成です。外したときに失うものはゲームモードによって異なります。詳しくは下記をご覧ください。',
+	'Color: is card 1 red or black?':
+		'色：1枚目は赤か黒か。',
+	'Higher or Lower: is card 2 above or below card 1, or Equal to it?':
+		'ハイ / ロー：2枚目が1枚目より上か下か、それともイコールか。',
+	'Inside or Outside: is card 3 between cards 1 and 2 or outside them, or Equal to one of them?':
+		'イン / アウト：3枚目が1枚目と2枚目の間か外か、それともどちらかとイコールか。',
+	'Suit: which suit is card 4?':
+		'スート：4枚目のスートはどれか。',
+	'Pick all four, set your bet and deal. Each right guess multiplies your win, and four right is a full game win. What a wrong guess costs depends on the game mode; see Game modes below.':
+		'4つすべてを選び、ベット額を決めて配ります。的中するたびに配当が倍増し、4つすべて当てればフルゲーム達成です。外したときに失うものはゲームモードによって異なります。下の「ゲームモード」をご覧ください。',
 	'Card order': 'カードの強さ',
-	'Ace is low and King is high. Suit never affects rank: only the number counts for Higher / Lower and Inside / Outside.':
-		'エースが最も弱く、キングが最も強くなります。スートは強さに影響せず、ハイ / ロー とイン / アウトでは数字だけが関係します。',
+	'Ace is low and King is high. Suits have no rank: only the card’s value counts for Higher, Lower, Inside and Outside.':
+		'エースが最も弱く、キングが最も強くなります。スートに強弱はなく、ハイ、ロー、イン、アウトではカードの数字だけが関係します。',
 	Lowest: '最弱',
 	Highest: '最強',
 	'Payouts follow the odds': '配当は確率に連動します',
-	'Every correct guess pays its true odds against the cards left in the deck, so the less likely your pick, the more it pays, and the same guess can pay differently from one round to the next.':
-		'的中はすべて、山札に残るカードに対する本来の確率どおりに支払われます。選択が起こりにくいほど配当は高くなり、同じ予想でもラウンドごとに配当が変わることがあります。',
+	'Each right guess is priced on the cards still in the deck: the less likely it is, the more it pays. So the same guess can pay differently from one round to the next.':
+		'的中の配当は、山札に残るカードから決まります。起こりにくいほど配当は高くなるため、同じ予想でもラウンドごとに配当が変わることがあります。',
 	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
 		'場に3がある場合、残り51枚のうち3より小さいのは8枚だけなのでローは約%1倍、逆に大きいのは40枚あるためハイは約%2倍です。3が8になると関係は逆転し、ローは約%3倍、ハイは約%4倍になります。イコールは常に最も起こりにくく、およそ%5倍です。',
 	'Payout table': '配当表',
@@ -114,12 +118,12 @@ export default {
 		'合計',
 	'Red or Black': '赤か黒',
 	'Any suit': '任意のスート',
-	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
-		'各ステージは完全な精度のまま掛け合わされるため、上記の数値は正確な値です。小数点 1 桁への切り捨ては最終配当に対してのみ行われます。カードの横に表示される進行中の合計も各段階で同じように切り捨てられるため、ラウンド中はこれらの数値よりわずかに少なく見えることがあります。',
+	'These figures are exact: the stages multiply at full precision, and only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded down as it goes, so mid-round it can read a little under them.':
+		'上記の数値は正確な値です。各ステージは完全な精度のまま掛け合わされ、小数点1桁への切り捨ては最終配当に対してのみ行われます。カードの横の進行中の合計は途中で切り捨てて表示されるため、ラウンド中はわずかに少なく見えることがあります。',
 	'If you guess wrong': '予想が外れた場合',
 	'Full game wins': 'フルゲーム達成時の配当',
-	'Speed and skip settings change only what you see, never the cards, the odds or the payout.':
-		'速度とスキップの設定は表示だけを変えます。カード、確率、配当が変わることはありません。',
+	'Turbo and skipping win animations change only what you see, never the cards, the odds or the payout.':
+		'ターボと勝利演出のスキップは表示だけを変えます。カード、確率、配当が変わることはありません。',
 
 	'Pick a color': '色を選択',
 	'Higher, lower, or equal': 'ハイ、ロー、またはイコール',
@@ -142,7 +146,6 @@ export default {
 	'Decrease bet': 'ベット額を下げる',
 	'Turbo speed': 'ターボ速度',
 	'Autoplay settings': 'オートプレイ設定',
-	'Advanced settings': '詳細設定',
 	'Stop autoplay': 'オートプレイを停止',
 	'Rounds must be %s seconds apart': 'ラウンドの間隔は%s秒必要です',
 	'Round in progress': 'ラウンド進行中',
@@ -210,12 +213,10 @@ export default {
 	'The i button opens this screen.': 'i ボタンでこの画面を開きます。',
 	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
 		'稲妻ボタンはターボです。カードがめくられる速さを通常から瞬時まで調整します。',
-	'The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.':
-		'円形の矢印でオートプレイを開きます。同じベットを指定ラウンド数または無制限に繰り返し、実行中はボタンにカウンターが表示されます。',
-	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
-		'スライダーボタンにはオートプレイの設定が2つあります。フルゲーム達成で停止と、勝利演出のスキップです。',
-	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
-		'大きな丸いボタンでラウンドを配ります。スペースキーでも同様で、押すと1ラウンド、押し続けると配り続けます。オートプレイ中はボタンが停止に変わり、進行中のラウンドが先に終了します。',
+	'The circular arrows open autoplay: the same bet, dealt again for a set number of rounds or without limit. The button counts down the rounds left.':
+		'円形の矢印でオートプレイを開きます。同じベットを指定ラウンド数または無制限に配り直し、ボタンに残りラウンド数が表示されます。',
+	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
+		'大きな丸いボタンで配ります。スペースキーでも同様で、押すと1ラウンド、押し続けると配り続けます。オートプレイ中は停止に変わり、進行中のラウンドが先に終了します。',
 	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
 		'モードでゲームモードの選択画面を開きます。切り替えは適用前に確認を求めます。',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
@@ -240,10 +241,10 @@ export default {
 	'Play Again': 'もう一度再生',
 	'The round ends and pays nothing.':
 		'ラウンドは終了し、配当はありません。',
-	'The round ends, keeping about %s% of what you had built.':
-		'ラウンドが終了し、積み上げた分の約%s%が残ります。',
-	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
-		'カード2以降は免除され、積み上げた分の%s%を残してラウンドが続きます。',
+	'The round ends, and you keep about %s% of your running total.':
+		'ラウンドが終了し、進行中の合計の約%s%が残ります。',
+	'From card 2 on, it is forgiven: you keep %s% of your running total and play on.':
+		'カード2以降は免除され、進行中の合計の%s%を残してプレイが続きます。',
 
 	// Three of a Kind.
 	'Three of a Kind':
@@ -286,4 +287,16 @@ export default {
 		'金額をタップするとクイックベットのメニューが開きます。',
 	'Max win %s your bet':
 		'最大配当 ベット額の%s',
+	'Stop on a loss of':
+		'損失がこの額で停止',
+	'Stop on a single win of':
+		'1回の勝利がこの額で停止',
+	'On a keyboard, keys 1 to 4 change the four guesses.':
+		'キーボードでは、1〜4キーで4つの予想を切り替えられます。',
+	'It can stop by itself on a full game win, a loss limit or one big win.':
+		'フルゲーム達成、損失上限、1回の大きな勝利で自動的に停止させることもできます。',
+	'× means times your base bet.':
+		'× は基本賭け金の倍数です。',
+	'Times your base bet':
+		'基本賭け金の倍数',
 };

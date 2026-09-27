@@ -29,7 +29,8 @@ export default {
 	Start: 'Aloita',
 
 	'Bet Menu': 'Panosvalikko',
-	'Quick Bets': 'Pikapanokset',
+	'Quick bets':
+		'Pikapanokset',
 
 	'Turbo Speed': 'Turbonopeus',
 	Normal: 'Normaali',
@@ -40,16 +41,15 @@ export default {
 	'Sound settings': 'Ääniasetukset',
 	Sound: 'Ääni',
 	Music: 'Musiikki',
-	'Game Sounds': 'Peliäänet',
+	'Game sounds':
+		'Peliäänet',
 	'Mute music': 'Mykistä musiikki',
 	'Unmute music': 'Palauta musiikki',
 	'Mute game sounds': 'Mykistä peliäänet',
 	'Unmute game sounds': 'Palauta peliäänet',
 
 	Autoplay: 'Automaattipeli',
-	'Number of Plays': 'Kierrosten määrä',
 
-	Advanced: 'Lisäasetukset',
 	'Game Mode': 'Pelitila',
 	'Choose game mode': 'Valitse pelitila',
 	Classic: 'Klassinen',
@@ -60,8 +60,8 @@ export default {
 	Forgiven: 'Annettu anteeksi',
 	// The intro's tagline and the first line of How to Play's Game modes.
 	'%n ways to play': '%n tapaa pelata',
-	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
-		'Jokainen arvausyhdistelmä arvaustilassa on oma vetonsa, hinnoiteltu omien kertoimiensa mukaan.',
+	'There are %n ways to play: every set of picks is its own bet, priced on its own odds.':
+		'Pelaamiseen on %n tapaa: jokainen valintayhdistelmä on oma vetonsa, hinnoiteltu omien kertoimiensa mukaan.',
 	'Game modes': 'Pelitilat',
 	// Confirmation before a bet mode is activated - required by the approval
 	// checklist, and worth having anyway: the guess families cost the same but
@@ -72,17 +72,17 @@ export default {
 	'Volatility %s of %t': 'Volatiliteetti %s / %t',
 	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.':
 		'Palautusprosentti (RTP) on %s jokaisessa pelitilassa. Eniten tämä peli voi maksaa %m panoksestasi, %f -tilassa.',
-	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
-		'Väärä ensimmäinen kortti päättää kierroksen. Myöhemmät virheet säilyttävät 30% kertyneestä.',
+	'A wrong first card ends the round. Later misses keep 30% of your running total.':
+		'Väärä ensimmäinen kortti päättää kierroksen. Myöhemmät virheet säilyttävät 30% juoksevasta summastasi.',
 	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
 		'Väärä ensimmäinen kortti päättää kierroksen. Sen jälkeen ensimmäinen virhe annetaan anteeksi ja peli jatkuu.',
 	'Card 1': 'Kortti 1',
 	'Your first wrong guess': 'Ensimmäinen virheesi',
 	'Your second wrong guess': 'Toinen virheesi',
-	'Guess all four right and the payout depends on how hard your picks were. Equal is the rarest guess, so rounds built on it pay the most; two Equal picks together is the most this mode can pay, at %m your bet.':
-		'Osu kaikkiin neljään, niin voitto riippuu siitä, kuinka vaikeita valintasi olivat. Yhtä suuri on harvinaisin arvaus, joten sen varaan rakennetut kierrokset maksavat eniten; kaksi Yhtä suuri -valintaa yhdessä on eniten, mitä tämä tila voi maksaa: %m panoksestasi.',
-	'Only some guess combinations reach a mode’s maximum. Once your four are picked, their own ceiling is shown above.':
-		'Vain osa arvausyhdistelmistä yltää tilan enimmäisvoittoon. Kun neljä arvaustasi on valittu, niiden oma yläraja näytetään yllä.',
+	'A full game win pays more the harder your picks were. Equal is the rarest guess, so it pays the most, and two Equal picks reach this mode’s maximum: %m your bet.':
+		'Täysi voitto maksaa sitä enemmän, mitä vaikeampia valintasi olivat. Yhtä suuri on harvinaisin arvaus, joten se maksaa eniten, ja kaksi Yhtä suuri -valintaa yltää tämän tilan enimmäisvoittoon: %m panoksestasi.',
+	'Only some combinations reach the mode’s maximum. Once your four are picked, the most they can pay is shown above.':
+		'Vain osa yhdistelmistä yltää tilan enimmäisvoittoon. Kun neljä valintaasi on tehty, niiden suurin mahdollinen voitto näytetään yllä.',
 	Playing: 'Pelissä',
 	'Card 2, 3 or 4': 'Kortti 2, 3 tai 4',
 	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
@@ -90,21 +90,24 @@ export default {
 
 	'How to Play': 'Näin pelaat',
 	'Guess your way through four cards:': 'Arvaa neljä korttia järjestyksessä:',
-	'Color: red or black for card 1.': 'Väri: punainen vai musta kortille 1.',
-	'Higher / Lower: versus card 1 (or =).': 'Suurempi / Pienempi: verrattuna korttiin 1 (tai =).',
-	'Inside / Outside: between cards 1 & 2 (or =).':
-		'Välissä / Ulkopuolella: korttien 1 ja 2 välissä (tai =).',
-	'Suit: the suit of card 4.': 'Maa: kortin 4 maa.',
-	'Pick all four, set your bet and deal. Each right guess multiplies your win; get all four for a full game win. What a wrong guess costs you depends on the game mode, explained below.':
-		'Valitse kaikki neljä, aseta panoksesi ja jaa. Jokainen oikea arvaus kertoo voittosi; osu kaikkiin neljään, niin saat täyden voiton. Se, mitä väärä arvaus maksaa, riippuu pelitilasta, katso alta.',
+	'Color: is card 1 red or black?':
+		'Väri: onko kortti 1 punainen vai musta?',
+	'Higher or Lower: is card 2 above or below card 1, or Equal to it?':
+		'Suurempi tai Pienempi: onko kortti 2 korttia 1 suurempi vai pienempi, vai Yhtä suuri?',
+	'Inside or Outside: is card 3 between cards 1 and 2 or outside them, or Equal to one of them?':
+		'Välissä tai Ulkopuolella: osuuko kortti 3 korttien 1 ja 2 väliin vai niiden ulkopuolelle, vai onko se Yhtä suuri kuin toinen niistä?',
+	'Suit: which suit is card 4?':
+		'Maa: mikä on kortin 4 maa?',
+	'Pick all four, set your bet and deal. Each right guess multiplies your win, and four right is a full game win. What a wrong guess costs depends on the game mode; see Game modes below.':
+		'Valitse kaikki neljä, aseta panoksesi ja jaa. Jokainen oikea arvaus kertoo voittosi, ja neljä oikein on täysi voitto. Se, mitä väärä arvaus maksaa, riippuu pelitilasta; katso Pelitilat alta.',
 	'Card order': 'Korttien järjestys',
-	'Ace is low and King is high. Suit never affects rank: only the number counts for Higher / Lower and Inside / Outside.':
-		'Ässä on pienin ja kuningas suurin. Maa ei koskaan vaikuta järjestykseen: Suurempi / Pienempi ja Välissä / Ulkopuolella katsovat vain lukuarvoa.',
+	'Ace is low and King is high. Suits have no rank: only the card’s value counts for Higher, Lower, Inside and Outside.':
+		'Ässä on pienin ja kuningas suurin. Mailla ei ole järjestystä: Suurempi, Pienempi, Välissä ja Ulkopuolella katsovat vain kortin arvoa.',
 	Lowest: 'Pienin',
 	Highest: 'Suurin',
 	'Payouts follow the odds': 'Voitot seuraavat todennäköisyyksiä',
-	'Every correct guess pays its true odds against the cards left in the deck, so the less likely your pick, the more it pays, and the same guess can pay differently from one round to the next.':
-		'Jokainen oikea arvaus maksetaan sen todellisen todennäköisyyden mukaan pakassa jäljellä olevia kortteja vasten: mitä epätodennäköisempi valintasi, sitä enemmän se maksaa, ja sama arvaus voi maksaa eri tavalla kierroksesta toiseen.',
+	'Each right guess is priced on the cards still in the deck: the less likely it is, the more it pays. So the same guess can pay differently from one round to the next.':
+		'Jokainen oikea arvaus hinnoitellaan pakassa vielä olevien korttien mukaan: mitä epätodennäköisempi se on, sitä enemmän se maksaa. Siksi sama arvaus voi maksaa eri tavalla kierroksesta toiseen.',
 	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
 		'Kun pöydällä on 3, Pienempi maksaa noin %1×, koska vain 8 jäljellä olevasta 51 kortista on pienempiä, kun taas Suurempi maksaa noin %2×, koska niitä on 40. Vaihda kolmonen kahdeksikoksi ja tilanne kääntyy: Pienempi laskee noin %3×:een ja Suurempi nousee noin %4×:een. Yhtä suuri on aina epätodennäköisin, noin %5×.',
 	'Payout table': 'Maksutaulukko',
@@ -115,12 +118,12 @@ export default {
 		'Yhteensä',
 	'Red or Black': 'Punainen tai musta',
 	'Any suit': 'Mikä tahansa maa',
-	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
-		'Vaiheet kertautuvat täydellä tarkkuudella, joten yllä olevat luvut ovat tarkkoja. Vain lopullinen voitto pyöristetään alaspäin yhteen desimaaliin. Korttien vieressä näkyvä juokseva summa pyöristetään samoin joka vaiheessa, joten kierroksen aikana se voi näyttää hieman näitä lukuja pienemmältä.',
+	'These figures are exact: the stages multiply at full precision, and only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded down as it goes, so mid-round it can read a little under them.':
+		'Nämä luvut ovat tarkkoja: vaiheet kertautuvat täydellä tarkkuudella, ja vain lopullinen voitto pyöristetään alaspäin yhteen desimaaliin. Korttien vieressä näkyvä juokseva summa pyöristetään alaspäin matkan varrella, joten kierroksen aikana se voi näyttää hieman pienemmältä.',
 	'If you guess wrong': 'Jos arvaat väärin',
 	'Full game wins': 'Täydet voitot',
-	'Speed and skip settings change only what you see, never the cards, the odds or the payout.':
-		'Nopeus- ja ohitusasetukset muuttavat vain sen, mitä näet, eivät koskaan kortteja, todennäköisyyksiä tai voittoa.',
+	'Turbo and skipping win animations change only what you see, never the cards, the odds or the payout.':
+		'Turbo ja voittoanimaatioiden ohitus muuttavat vain sen, mitä näet, eivät koskaan kortteja, todennäköisyyksiä tai voittoa.',
 
 	'Pick a color': 'Valitse väri',
 	'Higher, lower, or equal': 'Suurempi, pienempi tai yhtä suuri',
@@ -143,7 +146,6 @@ export default {
 	'Decrease bet': 'Pienennä panosta',
 	'Turbo speed': 'Turbonopeus',
 	'Autoplay settings': 'Automaattipelin asetukset',
-	'Advanced settings': 'Lisäasetukset',
 	'Stop autoplay': 'Pysäytä automaattipeli',
 	'Rounds must be %s seconds apart': 'Kierrosten välillä on oltava %s sekuntia',
 	'Round in progress': 'Kierros käynnissä',
@@ -210,12 +212,10 @@ export default {
 	'The i button opens this screen.': 'i-painike avaa tämän näytön.',
 	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
 		'Salamapainike on Turbo: kuinka nopeasti kortit kääntyvät, Normaalista Välittömään.',
-	'The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.':
-		'Kiertävät nuolet avaavat automaattipelin, joka pelaa saman panoksen uudelleen asetetun määrän kierroksia tai rajattomasti. Laskuri näkyy painikkeessa pelin ajan.',
-	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
-		'Säädinpainike sisältää automaattipelin kaksi valintaa: pysäytä täydellä voitolla ja ohita voittoanimaatiot.',
-	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
-		'Suuri pyöreä painike jakaa kierroksen. Niin myös välilyönti: napauta yhtä kierrosta varten, pidä pohjassa jakaaksesi lisää. Automaattipelin aikana painikkeesta tulee Pysäytä, ja käynnissä oleva kierros pelataan ensin loppuun.',
+	'The circular arrows open autoplay: the same bet, dealt again for a set number of rounds or without limit. The button counts down the rounds left.':
+		'Kiertävät nuolet avaavat automaattipelin: sama panos jaetaan uudelleen asetetun määrän kierroksia tai rajattomasti. Painike laskee jäljellä olevat kierrokset.',
+	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
+		'Suuri pyöreä painike jakaa. Niin myös välilyönti: napauta yhtä kierrosta varten, pidä pohjassa jakaaksesi lisää. Automaattipelin aikana siitä tulee Pysäytä, ja käynnissä oleva kierros pelataan ensin loppuun.',
 	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
 		'Tila avaa pelitilan valinnan. Vaihto pyytää vahvistuksen ennen kuin se tulee voimaan.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
@@ -242,10 +242,10 @@ export default {
 	'Play Again': 'Toista uudelleen',
 	'The round ends and pays nothing.':
 		'Kierros päättyy eikä maksa mitään.',
-	'The round ends, keeping about %s% of what you had built.':
-		'Kierros päättyy ja säilytät noin %s% kertyneestä.',
-	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
-		'Kortista 2 alkaen se annetaan anteeksi: säilytät %s% kertyneestä ja kierros jatkuu.',
+	'The round ends, and you keep about %s% of your running total.':
+		'Kierros päättyy, ja säilytät noin %s% juoksevasta summastasi.',
+	'From card 2 on, it is forgiven: you keep %s% of your running total and play on.':
+		'Kortista 2 alkaen se annetaan anteeksi: säilytät %s% juoksevasta summastasi ja peli jatkuu.',
 
 	// Three of a Kind.
 	'Three of a Kind':
@@ -288,4 +288,16 @@ export default {
 		'Napauta summaa avataksesi pikapanosvalikon.',
 	'Max win %s your bet':
 		'Enimmäisvoitto %s panoksestasi',
+	'Stop on a loss of':
+		'Pysäytä, kun tappio on',
+	'Stop on a single win of':
+		'Pysäytä, kun yksittäinen voitto on',
+	'On a keyboard, keys 1 to 4 change the four guesses.':
+		'Näppäimistöllä näppäimet 1–4 vaihtavat neljä arvausta.',
+	'It can stop by itself on a full game win, a loss limit or one big win.':
+		'Se voi pysähtyä itsestään täydellä voitolla, tappiorajalla tai yhdellä suurella voitolla.',
+	'× means times your base bet.':
+		'× tarkoittaa peruspanoksesi kerrannaista.',
+	'Times your base bet':
+		'Peruspanoksesi kerrannainen',
 };

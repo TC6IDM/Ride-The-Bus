@@ -15,7 +15,7 @@ import { test, describe } from 'node:test';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { CHIP_COLOURS, chipColour, splitChipLabel } from '../betChips.ts';
+import { CHIP_COLOURS, chipColour, chipInlayAlt, splitChipLabel } from '../betChips.ts';
 import { GAME_MARKUP, POPUP_CSS } from '../../sources.testlib.ts';
 
 /** Lists an operator could plausibly configure. */
@@ -103,6 +103,41 @@ describe('every level gets a chip', () => {
   test('an index outside the list is clamped rather than undefined', () => {
     assert.equal(chipColour(-3, 10), CHIP_COLOURS[0]);
     assert.equal(chipColour(99, 10), CHIP_COLOURS[CHIP_COLOURS.length - 1]);
+  });
+
+  /**
+   * Two neighbours in one colour used to be the same chip printed twice - $50
+   * and $75 both plain green in the seven-level rack. Whatever the list, the
+   * rack never shows two identical chips side by side: a shared colour means a
+   * different inlay.
+   */
+  test('no two neighbouring chips look alike', () => {
+    for (const [name, levels] of Object.entries(LISTS)) {
+      for (let i = 1; i < levels.length; i++) {
+        const same = chipColour(i, levels.length) === chipColour(i - 1, levels.length);
+        if (!same) continue;
+        assert.notEqual(
+          chipInlayAlt(i, levels.length),
+          chipInlayAlt(i - 1, levels.length),
+          `${name}: levels ${i - 1} and ${i} are both ${chipColour(i, levels.length)} with the same inlay`,
+        );
+      }
+    }
+  });
+
+  test('the first chip of every colour wears the standard inlay', () => {
+    for (const [name, levels] of Object.entries(LISTS)) {
+      for (let i = 0; i < levels.length; i++) {
+        if (i > 0 && chipColour(i - 1, levels.length) === chipColour(i, levels.length)) continue;
+        assert.equal(chipInlayAlt(i, levels.length), false, `${name}: level ${i} opens its colour on the alternate inlay`);
+      }
+    }
+  });
+
+  test('the rack draws the alternate inlay, in the chip palette\'s own tokens', () => {
+    assert.ok(GAME_MARKUP.includes('class:alt={chipInlayAlt(index, betLevels().length)}'), 'BetPopup no longer marks the alternate inlay');
+    assert.match(POPUP_CSS, /\.bet-chip\.alt\s*{\s*--chip-cream:\s*var\(--chip-inlay-alt\);/, 'the alternate inlay lost its rule');
+    assert.match(POPUP_CSS, /\.bet-chip\.chip-white\.alt\s*{\s*--chip-cream:\s*var\(--chip-white-inlay-alt\);/, 'the white chip lost its own alternate');
   });
 });
 

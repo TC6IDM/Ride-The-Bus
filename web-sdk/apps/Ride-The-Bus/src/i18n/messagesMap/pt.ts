@@ -29,7 +29,8 @@ export default {
 	Start: 'Iniciar',
 
 	'Bet Menu': 'Menu de apostas',
-	'Quick Bets': 'Apostas rápidas',
+	'Quick bets':
+		'Apostas rápidas',
 
 	'Turbo Speed': 'Velocidade turbo',
 	Normal: 'Normal',
@@ -40,16 +41,15 @@ export default {
 	'Sound settings': 'Configurações de som',
 	Sound: 'Som',
 	Music: 'Música',
-	'Game Sounds': 'Sons do jogo',
+	'Game sounds':
+		'Sons do jogo',
 	'Mute music': 'Silenciar música',
 	'Unmute music': 'Ativar música',
 	'Mute game sounds': 'Silenciar sons do jogo',
 	'Unmute game sounds': 'Ativar sons do jogo',
 
 	Autoplay: 'Jogo automático',
-	'Number of Plays': 'Número de rodadas',
 
-	Advanced: 'Avançado',
 	'Game Mode': 'Modo de Jogo',
 	'Choose game mode': 'Escolher modo de jogo',
 	Classic: 'Clássico',
@@ -60,8 +60,8 @@ export default {
 	Forgiven: 'Perdoado',
 	// The intro's tagline and the first line of How to Play's Game modes.
 	'%n ways to play': '%n formas de jogar',
-	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
-		'Cada combinação de escolhas num modo de palpite é uma aposta própria, precificada pelas suas próprias probabilidades.',
+	'There are %n ways to play: every set of picks is its own bet, priced on its own odds.':
+		'Há %n formas de jogar: cada combinação de escolhas é uma aposta própria, precificada pelas suas próprias probabilidades.',
 	'Game modes': 'Modos de jogo',
 	// Confirmation before a bet mode is activated - required by the approval
 	// checklist, and worth having anyway: the guess families cost the same but
@@ -72,17 +72,17 @@ export default {
 	'Volatility %s of %t': 'Volatilidade %s de %t',
 	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.':
 		'O retorno ao jogador (RTP) é de %s em todos os modos. O máximo que este jogo pode pagar é %m sua aposta, em %f.',
-	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
-		'Errar a primeira carta termina a rodada. Erros seguintes mantêm 30% do acumulado.',
+	'A wrong first card ends the round. Later misses keep 30% of your running total.':
+		'Errar a primeira carta termina a rodada. Erros seguintes mantêm 30% do seu total corrente.',
 	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
 		'Errar a primeira carta termina a rodada. Depois, seu primeiro erro é perdoado e o jogo continua.',
 	'Card 1': 'Carta 1',
 	'Your first wrong guess': 'Seu primeiro erro',
 	'Your second wrong guess': 'Seu segundo erro',
-	'Guess all four right and the payout depends on how hard your picks were. Equal is the rarest guess, so rounds built on it pay the most; two Equal picks together is the most this mode can pay, at %m your bet.':
-		'Acerte as quatro e o pagamento depende de quão difíceis foram seus palpites. Igual é o palpite mais raro, por isso as rodadas construídas sobre ele pagam mais; dois Igual juntos é o máximo que este modo pode pagar, %m sua aposta.',
-	'Only some guess combinations reach a mode’s maximum. Once your four are picked, their own ceiling is shown above.':
-		'Só algumas combinações de palpites atingem o máximo de um modo. Depois de escolher seus quatro, o limite próprio deles é mostrado acima.',
+	'A full game win pays more the harder your picks were. Equal is the rarest guess, so it pays the most, and two Equal picks reach this mode’s maximum: %m your bet.':
+		'Um jogo completo paga mais quanto mais difíceis foram seus palpites. Igual é o palpite mais raro, por isso paga mais, e dois Igual atingem o máximo deste modo: %m sua aposta.',
+	'Only some combinations reach the mode’s maximum. Once your four are picked, the most they can pay is shown above.':
+		'Só algumas combinações atingem o máximo do modo. Depois de escolher seus quatro, o máximo que eles podem pagar aparece acima.',
 	Playing: 'Em jogo',
 	'Card 2, 3 or 4': 'Carta 2, 3 ou 4',
 	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
@@ -90,20 +90,24 @@ export default {
 
 	'How to Play': 'Como jogar',
 	'Guess your way through four cards:': 'Adivinhe as quatro cartas, uma a uma:',
-	'Color: red or black for card 1.': 'Cor: vermelho ou preto para a carta 1.',
-	'Higher / Lower: versus card 1 (or =).': 'Maior / Menor: em relação à carta 1 (ou =).',
-	'Inside / Outside: between cards 1 & 2 (or =).': 'Dentro / Fora: entre as cartas 1 e 2 (ou =).',
-	'Suit: the suit of card 4.': 'Naipe: o naipe da carta 4.',
-	'Pick all four, set your bet and deal. Each right guess multiplies your win; get all four for a full game win. What a wrong guess costs you depends on the game mode, explained below.':
-		'Escolha as quatro, defina sua aposta e distribua. Cada acerto multiplica seu ganho; acerte as quatro para um jogo completo. O que um erro custa depende do modo de jogo, explicado abaixo.',
+	'Color: is card 1 red or black?':
+		'Cor: a carta 1 é vermelha ou preta?',
+	'Higher or Lower: is card 2 above or below card 1, or Equal to it?':
+		'Maior ou Menor: a carta 2 fica acima ou abaixo da carta 1, ou é Igual a ela?',
+	'Inside or Outside: is card 3 between cards 1 and 2 or outside them, or Equal to one of them?':
+		'Dentro ou Fora: a carta 3 cai entre as cartas 1 e 2 ou fora delas, ou é Igual a uma delas?',
+	'Suit: which suit is card 4?':
+		'Naipe: qual é o naipe da carta 4?',
+	'Pick all four, set your bet and deal. Each right guess multiplies your win, and four right is a full game win. What a wrong guess costs depends on the game mode; see Game modes below.':
+		'Escolha as quatro, defina sua aposta e distribua. Cada acerto multiplica seu ganho, e quatro acertos são um jogo completo. O que um erro custa depende do modo de jogo; veja Modos de jogo abaixo.',
 	'Card order': 'Ordem das cartas',
-	'Ace is low and King is high. Suit never affects rank: only the number counts for Higher / Lower and Inside / Outside.':
-		'O ás é a mais baixa e o rei a mais alta. O naipe nunca afeta a ordem: só o número conta para Maior / Menor e Dentro / Fora.',
+	'Ace is low and King is high. Suits have no rank: only the card’s value counts for Higher, Lower, Inside and Outside.':
+		'O ás é a mais baixa e o rei a mais alta. Os naipes não têm ordem: só o valor da carta conta para Maior, Menor, Dentro e Fora.',
 	Lowest: 'Mais baixa',
 	Highest: 'Mais alta',
 	'Payouts follow the odds': 'Os pagamentos seguem as probabilidades',
-	'Every correct guess pays its true odds against the cards left in the deck, so the less likely your pick, the more it pays, and the same guess can pay differently from one round to the next.':
-		'Cada acerto paga conforme suas probabilidades reais face às cartas que restam no baralho, então quanto menos provável a sua escolha, mais ela paga, e o mesmo palpite pode pagar de forma diferente de uma rodada para a outra.',
+	'Each right guess is priced on the cards still in the deck: the less likely it is, the more it pays. So the same guess can pay differently from one round to the next.':
+		'Cada acerto é precificado pelas cartas que ainda restam no baralho: quanto menos provável, mais paga. Por isso o mesmo palpite pode pagar de forma diferente de uma rodada para a outra.',
 	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
 		'Com um 3 na mesa, Menor paga cerca de %1× porque apenas 8 das 51 cartas restantes são menores, enquanto Maior paga cerca de %2× porque 40 delas são. Troque esse 3 por um 8 e tudo se inverte: Menor cai para cerca de %3× e Maior sobe para cerca de %4×. Igual é sempre a aposta mais improvável, em torno de %5×.',
 	'Payout table': 'Tabela de pagamentos',
@@ -114,12 +118,12 @@ export default {
 		'Acumulado',
 	'Red or Black': 'Vermelho ou preto',
 	'Any suit': 'Qualquer naipe',
-	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
-		'As etapas multiplicam-se com precisão total, por isso os valores acima são exatos. Apenas o pagamento final é arredondado para baixo, para uma casa decimal. O total corrente ao lado das cartas é arredondado da mesma forma a cada passo, portanto durante a rodada pode aparecer um pouco abaixo destes valores.',
+	'These figures are exact: the stages multiply at full precision, and only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded down as it goes, so mid-round it can read a little under them.':
+		'Estes valores são exatos: as etapas multiplicam-se com precisão total e apenas o pagamento final é arredondado para baixo, para uma casa decimal. O total corrente ao lado das cartas é arredondado para baixo ao longo da rodada, por isso pode aparecer um pouco abaixo.',
 	'If you guess wrong': 'Se você errar',
 	'Full game wins': 'Vitórias completas',
-	'Speed and skip settings change only what you see, never the cards, the odds or the payout.':
-		'As configurações de velocidade e de pulo mudam apenas o que você vê, nunca as cartas, as probabilidades ou o pagamento.',
+	'Turbo and skipping win animations change only what you see, never the cards, the odds or the payout.':
+		'O Turbo e pular as animações de ganho mudam apenas o que você vê, nunca as cartas, as probabilidades ou o pagamento.',
 
 	'Pick a color': 'Escolha uma cor',
 	'Higher, lower, or equal': 'Maior, menor ou igual',
@@ -142,7 +146,6 @@ export default {
 	'Decrease bet': 'Diminuir aposta',
 	'Turbo speed': 'Velocidade turbo',
 	'Autoplay settings': 'Configurações do jogo automático',
-	'Advanced settings': 'Configurações avançadas',
 	'Stop autoplay': 'Parar jogo automático',
 	'Rounds must be %s seconds apart': 'As rodadas devem ter %s segundos de intervalo',
 	'Round in progress': 'Rodada em andamento',
@@ -210,12 +213,10 @@ export default {
 	'The i button opens this screen.': 'O botão i abre esta tela.',
 	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
 		'O botão do raio é o Turbo: a rapidez com que as cartas viram, de Normal a Instantâneo.',
-	'The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.':
-		'As setas circulares abrem o jogo automático, que repete a mesma aposta por um número definido de rodadas ou sem limite. O contador fica no botão enquanto ele roda.',
-	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
-		'O botão dos controles deslizantes reúne duas opções do jogo automático: parar ao vencer o jogo completo e pular as animações de ganho.',
-	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
-		'O botão redondo grande distribui a rodada. A barra de espaço também: toque para uma rodada, mantenha pressionada para continuar distribuindo. Enquanto o jogo automático roda, o botão vira Parar e a rodada em andamento termina primeiro.',
+	'The circular arrows open autoplay: the same bet, dealt again for a set number of rounds or without limit. The button counts down the rounds left.':
+		'As setas circulares abrem o jogo automático: a mesma aposta, distribuída de novo por um número definido de rodadas ou sem limite. O botão conta as rodadas que faltam.',
+	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
+		'O botão redondo grande distribui. A barra de espaço também: toque para uma rodada, mantenha pressionada para continuar distribuindo. Durante o jogo automático ele vira Parar e a rodada em andamento termina primeiro.',
 	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
 		'Modo abre o seletor de modo de jogo. Mudar pede confirmação antes de se aplicar.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
@@ -241,10 +242,10 @@ export default {
 		'Os seus quatro palpites atingem no máximo %s da sua aposta.',
 	'Play Again': 'Reproduzir novamente',
 	'The round ends and pays nothing.': 'A rodada termina e não paga nada.',
-	'The round ends, keeping about %s% of what you had built.':
-		'A rodada termina e você mantém cerca de %s% do acumulado.',
-	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
-		'A partir da carta 2 ele é perdoado: você mantém %s% do acumulado e a rodada continua.',
+	'The round ends, and you keep about %s% of your running total.':
+		'A rodada termina e você mantém cerca de %s% do seu total corrente.',
+	'From card 2 on, it is forgiven: you keep %s% of your running total and play on.':
+		'A partir da carta 2 ele é perdoado: você mantém %s% do seu total corrente e continua jogando.',
 
 	// Three of a Kind.
 	'Three of a Kind':
@@ -287,4 +288,16 @@ export default {
 		'Toque no valor para abrir o menu de apostas rápidas.',
 	'Max win %s your bet':
 		'Ganho máximo %s da sua aposta',
+	'Stop on a loss of':
+		'Parar com uma perda de',
+	'Stop on a single win of':
+		'Parar com um único ganho de',
+	'On a keyboard, keys 1 to 4 change the four guesses.':
+		'No teclado, as teclas 1 a 4 mudam os quatro palpites.',
+	'It can stop by itself on a full game win, a loss limit or one big win.':
+		'Ele pode parar sozinho ao vencer o jogo completo, ao atingir um limite de perdas ou com um único ganho grande.',
+	'× means times your base bet.':
+		'× significa vezes a sua aposta base.',
+	'Times your base bet':
+		'Vezes a sua aposta base',
 };

@@ -1,6 +1,6 @@
 # RGS verification test plan
 
-101 checks to run against the **uploaded** build on a Developer-page session,
+103 checks to run against the **uploaded** build on a Developer-page session,
 not against localhost.
 
 That distinction is the whole reason this document exists. Locally the game
@@ -356,6 +356,27 @@ working, not a hang.
   Enable stop-on-full-win and run until all four cards land.
   **Expect:** the run ends on that round; a partial win, however large, does not
   stop it.
+
+- [ ] **END-07 · The loss limit stops at the figure, in base bets** — *Major*
+  In the autoplay panel type 5 into "Stop on a loss of", leave the unit on x,
+  press the button beside it so it stays lit, and run unlimited on a Classic
+  mode. Then repeat on Three of a Kind, and once with the unit on the currency
+  (type an amount, e.g. 20).
+  **Expect:** the run ends on the round that leaves it 5 base bets down, net of
+  what it won - not before, not a round later. On Three of a Kind one losing
+  round is 250 base bets, so a 5x limit ends the run after its first loss -
+  "5x your bet" means the same bet there as "costs 250x your bet" does in the
+  mode picker. With the currency unit it ends on the round that leaves the
+  run that much money down. The stake never changes during the run, and the
+  panel can be opened mid-run to change a limit (its count is locked; its
+  button is Stop). In social mode the unit reads SC/GC, never $.
+
+- [ ] **END-08 · The single-win limit stops on one big round, not a good run** — *Minor*
+  Type 5 into "Stop on a single win of" (x), arm it, and run unlimited; then
+  100x on Three of a Kind.
+  **Expect:** the run ends on the first round that alone pays 5 base bets or
+  more; a run that is up 5 bets over many small wins does not stop. On Three of
+  a Kind a 100x limit stops on its first win (4,583.3x).
 
 - [ ] **END-06 · Autoplay runs the balance down gracefully** — *Major*
   On the near-empty account, set unlimited autoplay and let it exhaust the

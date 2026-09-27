@@ -8,8 +8,8 @@
 /* Sizes here are multiples of --ui-bar so the popup box and its text scale
    together with the window instead of the box shrinking around fixed-size text.
 
-   The controls INSIDE the control-bar popups (bet menu, turbo speed, autoplay,
-   advanced). Imported by Game.svelte alone.
+   The controls INSIDE the control-bar popups (bet menu, turbo speed,
+   autoplay). Imported by Game.svelte alone.
 
    Two things that used to live here now sit beside it, because Svelte scopes a
    stylesheet to whichever component imports it and How to Play is its own

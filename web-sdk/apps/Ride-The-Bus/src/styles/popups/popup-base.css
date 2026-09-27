@@ -8,7 +8,7 @@
  * 46 warnings on its own.
  *
  * What lives here is only what BOTH use, so neither reports anything:
- *   - Game.svelte, for the bet / turbo / autoplay / advanced popups
+ *   - Game.svelte, for the bet / turbo / autoplay / sound popups
  *   - HowToPlayPopup.svelte
  *
  * .popup-backdrop is deliberately NOT here: Game.svelte renders the backdrop
@@ -19,7 +19,7 @@
  */
 /* ==== The tint contract ====================================================
  * Every menu wears the colour of the control that OPENED it. Turbo's panel is
- * amber, autoplay's is green, Advanced's is purple, How to Play's is the
+ * amber, autoplay's is green, sound's is white, How to Play's is the
  * accent blue its icon lights, and the bet and mode panels take the live
  * volatility colour their two controls on the bar already burn.
  *
@@ -179,7 +179,7 @@
   flex: 0 0 auto;
   padding: 0;
   /* Round, like every other icon button that floats rather than sits in a row
-     - the turbo and advanced buttons in the bar are circles for the same
+     - the turbo button in the bar is a circle for the same
      reason. It was a rounded square, which made it the only control of its
      kind in the game with corners. */
   border-radius: 50%;

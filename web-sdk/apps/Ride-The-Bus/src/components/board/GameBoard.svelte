@@ -15,6 +15,7 @@
   import ChoiceIcon from '../icons/ChoiceIcon.svelte';
   import MarkIcon from '../icons/MarkIcon.svelte';
   import SuitIcon from '../icons/SuitIcon.svelte';
+  import CardFace from '../cards/CardFace.svelte';
   import {
     familyRules,
     guesses,
@@ -252,17 +253,9 @@
             <div class="card-back" aria-hidden="true"></div>
             <div class="card-front">
               {#if face}
-                <div class="card-face" class:red-card={face.suit === '♥' || face.suit === '♦'} class:black-card={face.suit === '♠' || face.suit === '♣'}>
-                  <div class="index top">
-                    <span class="index-rank">{face.rank}</span>
-                    <SuitIcon suit={face.suit} scale={0.66} />
-                  </div>
-                  <div class="suit center"><SuitIcon suit={face.suit} /></div>
-                  <div class="index bottom">
-                    <span class="index-rank">{face.rank}</span>
-                    <SuitIcon suit={face.suit} scale={0.66} />
-                  </div>
-                </div>
+                <!-- Pips, courts and aces as a casino deck prints them; the
+                     paper, edge and shadow are .card-front's. -->
+                <CardFace rank={face.rank} suit={face.suit} />
               {/if}
               {#if index === shown.busted}
                 <div class="bust-x" aria-hidden="true"><MarkIcon name="cross" /></div>

@@ -45,6 +45,25 @@ export function chipColour(index: number, count: number): ChipColour {
 }
 
 /**
+ * Whether the chip at `index` wears the ALTERNATE edge inlay.
+ *
+ * Five colours and any number of levels means a colour is shared - the dev
+ * list of ten gives two per colour, a list of seven gives $1 and $5 both white
+ * and $50 and $75 both green - and two neighbours alike to the last spot read
+ * as the same chip printed twice (the third Hallmark audit). A real rack tells
+ * such a pair apart the way this does: same body colour, different edge
+ * inserts. So within a run of one colour the inlay alternates, starting on
+ * the standard one; the body colour, and with it the pale-to-dark reading, is
+ * untouched.
+ */
+export function chipInlayAlt(index: number, count: number): boolean {
+  const colour = chipColour(index, count);
+  let step = 0;
+  for (let i = Math.min(Math.max(index, 0), count - 1) - 1; i >= 0 && chipColour(i, count) === colour; i--) step++;
+  return step % 2 === 1;
+}
+
+/**
  * Drop the invisible bidi controls: the marks (LRM/RLM/ALM) and the
  * embedding/override/isolate formatting characters.
  *

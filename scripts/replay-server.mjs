@@ -370,7 +370,7 @@ function landingPage() {
   button.pick.fam-base{--pick-c:#ffc93c}
   button.pick.fam-sc{--pick-c:#3ddc84}
   button.pick.fam-hs{--pick-c:#ff5c5c}
-  button.pick.fam-tr{--pick-c:#9d4edd}
+  button.pick.fam-tr{--pick-c:#b27cc8}
 
   button.pick.red{--pick-c:#b3252b}
   button.pick.blk{--pick-c:#cfd6e4}

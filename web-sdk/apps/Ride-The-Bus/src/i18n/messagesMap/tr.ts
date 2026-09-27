@@ -29,7 +29,8 @@ export default {
 	Start: 'Başlat',
 
 	'Bet Menu': 'Bahis menüsü',
-	'Quick Bets': 'Hızlı bahisler',
+	'Quick bets':
+		'Hızlı bahisler',
 
 	'Turbo Speed': 'Turbo hızı',
 	Normal: 'Normal',
@@ -40,16 +41,15 @@ export default {
 	'Sound settings': 'Ses ayarları',
 	Sound: 'Ses',
 	Music: 'Müzik',
-	'Game Sounds': 'Oyun sesleri',
+	'Game sounds':
+		'Oyun sesleri',
 	'Mute music': 'Müziği kapat',
 	'Unmute music': 'Müziği aç',
 	'Mute game sounds': 'Oyun seslerini kapat',
 	'Unmute game sounds': 'Oyun seslerini aç',
 
 	Autoplay: 'Otomatik oyun',
-	'Number of Plays': 'Tur sayısı',
 
-	Advanced: 'Gelişmiş',
 	'Game Mode': 'Oyun Modu',
 	'Choose game mode': 'Oyun modunu seç',
 	Classic: 'Klasik',
@@ -60,8 +60,8 @@ export default {
 	Forgiven: 'Affedildi',
 	// The intro's tagline and the first line of How to Play's Game modes.
 	'%n ways to play': 'Oynamanın %n yolu',
-	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
-		'Tahmin modundaki her seçim kombinasyonu, kendi oranlarına göre fiyatlanan ayrı bir bahistir.',
+	'There are %n ways to play: every set of picks is its own bet, priced on its own odds.':
+		'Oynamanın %n yolu var: her seçim kombinasyonu, kendi oranlarına göre fiyatlanan ayrı bir bahistir.',
 	'Game modes': 'Oyun modları',
 	// Confirmation before a bet mode is activated - required by the approval
 	// checklist, and worth having anyway: the guess families cost the same but
@@ -72,17 +72,17 @@ export default {
 	'Volatility %s of %t': 'Oynaklık %t üzerinden %s',
 	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.':
 		'Oyuncuya dönüş (RTP) her oyun modunda %s olarak aynıdır. Bu oyunun ödeyebileceği en yüksek tutar, %f modunda bahsinizin %m katıdır.',
-	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
-		"İlk kartı bilememek turu bitirir. Sonraki hatalar biriktirdiğinizin %30'unu tutar.",
+	'A wrong first card ends the round. Later misses keep 30% of your running total.':
+		"İlk kartı bilememek turu bitirir. Sonraki hatalar güncel toplamınızın %30'unu tutar.",
 	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
 		'İlk kartı bilememek turu bitirir. Sonrasında ilk hatanız affedilir ve oyun sürer.',
 	'Card 1': 'Kart 1',
 	'Your first wrong guess': 'İlk yanlış tahmininiz',
 	'Your second wrong guess': 'İkinci yanlış tahmininiz',
-	'Guess all four right and the payout depends on how hard your picks were. Equal is the rarest guess, so rounds built on it pay the most; two Equal picks together is the most this mode can pay, at %m your bet.':
-		'Dördünü de bilirseniz ödeme, tahminlerinizin ne kadar zor olduğuna bağlıdır. Eşit en nadir tahmindir, bu yüzden ona dayanan turlar en çok öder; iki Eşit birlikte tutarsa bu modun ödeyebileceği en yüksek tutar olan bahsinizin %m katı kazanılır.',
-	'Only some guess combinations reach a mode’s maximum. Once your four are picked, their own ceiling is shown above.':
-		'Tahmin kombinasyonlarının yalnızca bazıları bir modun en yüksek değerine ulaşır. Dördü seçildiğinde kendi üst sınırı yukarıda gösterilir.',
+	'A full game win pays more the harder your picks were. Equal is the rarest guess, so it pays the most, and two Equal picks reach this mode’s maximum: %m your bet.':
+		'Tam oyun kazancı, tahminleriniz ne kadar zorsa o kadar çok öder. Eşit en nadir tahmindir, bu yüzden en çok o öder; iki Eşit seçimi bu modun en yüksek değerine ulaşır: bahsinizin %m katı.',
+	'Only some combinations reach the mode’s maximum. Once your four are picked, the most they can pay is shown above.':
+		'Kombinasyonların yalnızca bazıları modun en yüksek değerine ulaşır. Dördünü seçtiğinizde, en fazla ne ödeyebilecekleri yukarıda gösterilir.',
 	Playing: 'Oynanıyor',
 	'Card 2, 3 or 4': 'Kart 2, 3 veya 4',
 	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
@@ -90,21 +90,24 @@ export default {
 
 	'How to Play': 'Nasıl oynanır',
 	'Guess your way through four cards:': 'Dört kartı sırayla tahmin edin:',
-	'Color: red or black for card 1.': 'Renk: 1. kart kırmızı mı siyah mı.',
-	'Higher / Lower: versus card 1 (or =).': 'Yüksek / Düşük: 1. karta göre (veya =).',
-	'Inside / Outside: between cards 1 & 2 (or =).':
-		'İçinde / Dışında: 1. ve 2. kart arasında (veya =).',
-	'Suit: the suit of card 4.': 'Sembol: 4. kartın sembolü.',
-	'Pick all four, set your bet and deal. Each right guess multiplies your win; get all four for a full game win. What a wrong guess costs you depends on the game mode, explained below.':
-		'Dördünü de seçin, bahsinizi belirleyin ve dağıtın. Her doğru tahmin kazancınızı katlar; dördünü de bilirseniz tam oyun kazancı elde edersiniz. Yanlış tahminin bedeli oyun moduna bağlıdır, aşağıya bakın.',
+	'Color: is card 1 red or black?':
+		'Renk: 1. kart kırmızı mı, siyah mı?',
+	'Higher or Lower: is card 2 above or below card 1, or Equal to it?':
+		'Yüksek veya Düşük: 2. kart 1. karttan yüksek mi, düşük mü, yoksa Eşit mi?',
+	'Inside or Outside: is card 3 between cards 1 and 2 or outside them, or Equal to one of them?':
+		'İçinde veya Dışında: 3. kart 1. ve 2. kartın arasına mı düşer, dışına mı, yoksa birine Eşit mi?',
+	'Suit: which suit is card 4?':
+		'Sembol: 4. kartın sembolü ne?',
+	'Pick all four, set your bet and deal. Each right guess multiplies your win, and four right is a full game win. What a wrong guess costs depends on the game mode; see Game modes below.':
+		'Dördünü de seçin, bahsinizi belirleyin ve dağıtın. Her doğru tahmin kazancınızı katlar; dördü de doğruysa tam oyun kazancıdır. Yanlış tahminin bedeli oyun moduna bağlıdır; aşağıda Oyun modları bölümüne bakın.',
 	'Card order': 'Kart sıralaması',
-	'Ace is low and King is high. Suit never affects rank: only the number counts for Higher / Lower and Inside / Outside.':
-		'As en düşük, Papaz en yüksektir. Sembol sıralamayı hiçbir zaman etkilemez: Yüksek / Düşük ve İçinde / Dışında için yalnızca sayı önemlidir.',
+	'Ace is low and King is high. Suits have no rank: only the card’s value counts for Higher, Lower, Inside and Outside.':
+		'As en düşük, Papaz en yüksektir. Sembollerin sırası yoktur: Yüksek, Düşük, İçinde ve Dışında için yalnızca kartın değeri önemlidir.',
 	Lowest: 'En düşük',
 	Highest: 'En yüksek',
 	'Payouts follow the odds': 'Ödemeler olasılığa göre belirlenir',
-	'Every correct guess pays its true odds against the cards left in the deck, so the less likely your pick, the more it pays, and the same guess can pay differently from one round to the next.':
-		'Her doğru tahmin, destede kalan kartlara göre gerçek olasılığıyla ödenir; seçiminiz ne kadar olası değilse o kadar çok kazandırır, aynı tahmin turdan tura farklı ödeyebilir.',
+	'Each right guess is priced on the cards still in the deck: the less likely it is, the more it pays. So the same guess can pay differently from one round to the next.':
+		'Her doğru tahmin, destede kalan kartlara göre fiyatlanır: olasılığı ne kadar düşükse o kadar çok öder. Bu yüzden aynı tahmin turdan tura farklı ödeyebilir.',
 	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
 		'Masada 3 varsa, kalan 51 karttan yalnızca 8’i daha düşük olduğu için Düşük yaklaşık %1× öder; 40’ı daha yüksek olduğu için Yüksek yalnızca %2× öder. O 3’ü 8 yapın, durum tersine döner: Düşük yaklaşık %3×’e iner, Yüksek %4×’e çıkar. Eşit her zaman en zor olanıdır, yaklaşık %5×.',
 	'Payout table': 'Ödeme tablosu',
@@ -115,12 +118,12 @@ export default {
 		'Toplam',
 	'Red or Black': 'Kırmızı veya siyah',
 	'Any suit': 'Herhangi bir sembol',
-	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
-		'Aşamalar tam hassasiyetle çarpılır, bu yüzden yukarıdaki değerler kesindir. Bir ondalık basamağa aşağı yuvarlama yalnızca son ödemeye uygulanır. Kartların yanında görünen güncel toplam da her adımda aynı şekilde yuvarlandığı için tur sırasında bu değerlerin biraz altında görünebilir.',
+	'These figures are exact: the stages multiply at full precision, and only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded down as it goes, so mid-round it can read a little under them.':
+		'Bu değerler kesindir: aşamalar tam hassasiyetle çarpılır ve yalnızca son ödeme bir ondalık basamağa aşağı yuvarlanır. Kartların yanındaki güncel toplam ilerledikçe aşağı yuvarlanır, bu yüzden tur sırasında biraz daha düşük görünebilir.',
 	'If you guess wrong': 'Yanlış tahmin ederseniz',
 	'Full game wins': 'Tam oyun kazançları',
-	'Speed and skip settings change only what you see, never the cards, the odds or the payout.':
-		'Hız ve atlama ayarları yalnızca gördüğünüzü değiştirir, kartları, olasılıkları veya ödemeyi asla.',
+	'Turbo and skipping win animations change only what you see, never the cards, the odds or the payout.':
+		'Turbo ve kazanç animasyonlarını atlamak yalnızca gördüğünüzü değiştirir; kartları, olasılıkları veya ödemeyi asla.',
 
 	'Pick a color': 'Bir renk seçin',
 	'Higher, lower, or equal': 'Yüksek, düşük veya eşit',
@@ -143,7 +146,6 @@ export default {
 	'Decrease bet': 'Bahsi azalt',
 	'Turbo speed': 'Turbo hızı',
 	'Autoplay settings': 'Otomatik oyun ayarları',
-	'Advanced settings': 'Gelişmiş ayarlar',
 	'Stop autoplay': 'Otomatik oyunu durdur',
 	'Rounds must be %s seconds apart': 'Turlar arasında %s saniye olmalıdır',
 	'Round in progress': 'Tur devam ediyor',
@@ -210,12 +212,10 @@ export default {
 	'The i button opens this screen.': 'i düğmesi bu ekranı açar.',
 	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
 		'Şimşek düğmesi Turbodur: kartların ne hızla çevrileceği, Normal ile Anında arasında.',
-	'The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.':
-		'Dairesel oklar otomatik oyunu açar; aynı bahsi belirli sayıda tur boyunca veya sınırsız tekrarlar. Çalışırken sayaç düğmenin üzerinde durur.',
-	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
-		'Kaydırıcı düğmesi iki otomatik oyun seçeneği barındırır: tam oyun kazancında durdur ve kazanç animasyonlarını atla.',
-	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
-		'Büyük yuvarlak düğme turu dağıtır. Boşluk tuşu da öyle: bir tur için dokunun, dağıtmaya devam etmek için basılı tutun. Otomatik oyun sürerken düğme Durdur olur ve oynanan tur önce tamamlanır.',
+	'The circular arrows open autoplay: the same bet, dealt again for a set number of rounds or without limit. The button counts down the rounds left.':
+		'Dairesel oklar otomatik oyunu açar: aynı bahis, belirli sayıda tur boyunca veya sınırsız yeniden dağıtılır. Düğme kalan turları geri sayar.',
+	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
+		'Büyük yuvarlak düğme dağıtır. Boşluk tuşu da öyle: bir tur için dokunun, dağıtmaya devam etmek için basılı tutun. Otomatik oyun sırasında Durdur olur ve oynanan tur önce tamamlanır.',
 	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
 		'Mod, oyun modu seçicisini açar. Değiştirmek, uygulanmadan önce onay ister.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
@@ -242,10 +242,10 @@ export default {
 	'Play Again': 'Tekrar oynat',
 	'The round ends and pays nothing.':
 		'Tur sona erer ve hiçbir ödeme yapılmaz.',
-	'The round ends, keeping about %s% of what you had built.':
-		'Tur sona erer ve biriktirdiğinizin yaklaşık %s% kadarını korursunuz.',
-	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
-		'2. karttan itibaren bu hata affedilir: biriktirdiğinizin %s% kadarını korur ve tur devam eder.',
+	'The round ends, and you keep about %s% of your running total.':
+		'Tur sona erer ve güncel toplamınızın yaklaşık %s% kadarını korursunuz.',
+	'From card 2 on, it is forgiven: you keep %s% of your running total and play on.':
+		'2. karttan itibaren bu hata affedilir: güncel toplamınızın %s% kadarını korur ve oynamaya devam edersiniz.',
 
 	// Three of a Kind.
 	'Three of a Kind':
@@ -288,4 +288,16 @@ export default {
 		'Hızlı bahis menüsü için tutara dokunun.',
 	'Max win %s your bet':
 		'Maksimum kazanç bahsinizin %s katı',
+	'Stop on a loss of':
+		'Şu kadar kayıpta dur',
+	'Stop on a single win of':
+		'Tek seferde şu kadar kazançta dur',
+	'On a keyboard, keys 1 to 4 change the four guesses.':
+		'Klavyede 1–4 tuşları dört tahmini değiştirir.',
+	'It can stop by itself on a full game win, a loss limit or one big win.':
+		'Tam oyun kazancında, kayıp limitinde veya tek büyük kazançta kendiliğinden durabilir.',
+	'× means times your base bet.':
+		'×, temel bahsinizin katı anlamına gelir.',
+	'Times your base bet':
+		'Temel bahsinizin katı',
 };

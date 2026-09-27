@@ -969,12 +969,12 @@ describe('pressKindFor maps onto classes that exist', () => {
 	// boundary reports on code this test is not about. sources.testlib.ts names
 	// which file that is.
 	const GAME = PRESS_CUES_SOURCE;
-	// Each name carries its folder. styles/ is grouped now and these ten sheets
+	// Each name carries its folder. styles/ is grouped now and these nine sheets
 	// span two of those folders, so the single shared prefix this used to have
 	// would still compile and simply read nothing.
 	const CSS = [
 		'popups/popup-mode', 'popups/popup-bet', 'popups/popup-turbo',
-		'popups/popup-sound', 'popups/popup-autospin', 'popups/popup-advanced',
+		'popups/popup-sound', 'popups/popup-autospin',
 		'popups/popup-base',
 		'board/control-bar', 'board/choices', 'board/cards',
 	]

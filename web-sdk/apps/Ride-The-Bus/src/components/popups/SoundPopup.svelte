@@ -75,7 +75,7 @@
           <SoundIcon muted={busSilent('sfx')} />
         </button>
         <div class="sound-track">
-          <span class="sound-label">{t('Game Sounds')}</span>
+          <span class="sound-label">{t('Game sounds')}</span>
           <RangeSlider
             min={0}
             max={100}
@@ -83,7 +83,7 @@
             value={mixer.sfxVolume}
             oninput={onSfxInput}
             disabled={busSilent('sfx')}
-            label={t('Game Sounds')}
+            label={t('Game sounds')}
           />
         </div>
         <span class="sound-readout">{mixer.sfxVolume}</span>

@@ -29,7 +29,8 @@ export default {
 	Start: 'Mulai',
 
 	'Bet Menu': 'Menu taruhan',
-	'Quick Bets': 'Taruhan cepat',
+	'Quick bets':
+		'Taruhan cepat',
 
 	'Turbo Speed': 'Kecepatan turbo',
 	Normal: 'Normal',
@@ -40,16 +41,15 @@ export default {
 	'Sound settings': 'Pengaturan Suara',
 	Sound: 'Suara',
 	Music: 'Musik',
-	'Game Sounds': 'Suara Permainan',
+	'Game sounds':
+		'Suara permainan',
 	'Mute music': 'Bisukan musik',
 	'Unmute music': 'Aktifkan musik',
 	'Mute game sounds': 'Bisukan suara permainan',
 	'Unmute game sounds': 'Aktifkan suara permainan',
 
 	Autoplay: 'Main otomatis',
-	'Number of Plays': 'Jumlah ronde',
 
-	Advanced: 'Lanjutan',
 	'Game Mode': 'Mode Permainan',
 	'Choose game mode': 'Pilih mode permainan',
 	Classic: 'Klasik',
@@ -60,8 +60,8 @@ export default {
 	Forgiven: 'Dimaafkan',
 	// The intro's tagline and the first line of How to Play's Game modes.
 	'%n ways to play': '%n cara bermain',
-	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
-		'Setiap kombinasi pilihan pada mode tebakan adalah taruhan tersendiri, dihargai berdasarkan peluangnya sendiri.',
+	'There are %n ways to play: every set of picks is its own bet, priced on its own odds.':
+		'Ada %n cara bermain: setiap kombinasi pilihan adalah taruhan tersendiri, dihargai berdasarkan peluangnya sendiri.',
 	'Game modes': 'Mode permainan',
 	// Confirmation before a bet mode is activated - required by the approval
 	// checklist, and worth having anyway: the guess families cost the same but
@@ -72,17 +72,17 @@ export default {
 	'Volatility %s of %t': 'Volatilitas %s dari %t',
 	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.':
 		'Return to player (RTP) adalah %s di setiap mode. Maksimum yang dapat dibayar game ini adalah %m taruhan Anda, di %f.',
-	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
-		'Kartu pertama yang salah mengakhiri ronde. Kesalahan berikutnya menyimpan 30% dari yang terkumpul.',
+	'A wrong first card ends the round. Later misses keep 30% of your running total.':
+		'Kartu pertama yang salah mengakhiri ronde. Kesalahan berikutnya menyimpan 30% dari total berjalan Anda.',
 	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
 		'Kartu pertama yang salah mengakhiri ronde. Setelah itu kesalahan pertama Anda dimaafkan dan permainan berlanjut.',
 	'Card 1': 'Kartu 1',
 	'Your first wrong guess': 'Tebakan salah pertama Anda',
 	'Your second wrong guess': 'Tebakan salah kedua Anda',
-	'Guess all four right and the payout depends on how hard your picks were. Equal is the rarest guess, so rounds built on it pay the most; two Equal picks together is the most this mode can pay, at %m your bet.':
-		'Tebak keempatnya dengan benar dan pembayarannya tergantung seberapa sulit pilihan Anda. Sama adalah tebakan paling langka, jadi ronde yang dibangun di atasnya membayar paling besar; dua pilihan Sama bersamaan adalah maksimum yang dapat dibayar mode ini, %m taruhan Anda.',
-	'Only some guess combinations reach a mode’s maximum. Once your four are picked, their own ceiling is shown above.':
-		'Hanya sebagian kombinasi tebakan yang mencapai maksimum suatu mode. Setelah keempatnya dipilih, batas atasnya sendiri ditampilkan di atas.',
+	'A full game win pays more the harder your picks were. Equal is the rarest guess, so it pays the most, and two Equal picks reach this mode’s maximum: %m your bet.':
+		'Menang penuh membayar lebih besar jika pilihan Anda lebih sulit. Sama adalah tebakan paling langka, jadi bayarannya paling besar, dan dua pilihan Sama mencapai maksimum mode ini: %m taruhan Anda.',
+	'Only some combinations reach the mode’s maximum. Once your four are picked, the most they can pay is shown above.':
+		'Hanya sebagian kombinasi yang mencapai maksimum mode ini. Setelah keempatnya dipilih, bayaran tertinggi yang bisa diraihnya ditampilkan di atas.',
 	Playing: 'Sedang dimainkan',
 	'Card 2, 3 or 4': 'Kartu 2, 3 atau 4',
 	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
@@ -90,21 +90,24 @@ export default {
 
 	'How to Play': 'Cara bermain',
 	'Guess your way through four cards:': 'Tebak empat kartu secara berurutan:',
-	'Color: red or black for card 1.': 'Warna: merah atau hitam untuk kartu 1.',
-	'Higher / Lower: versus card 1 (or =).': 'Lebih besar / Lebih kecil: dibanding kartu 1 (atau =).',
-	'Inside / Outside: between cards 1 & 2 (or =).':
-		'Di antara / Di luar: antara kartu 1 dan 2 (atau =).',
-	'Suit: the suit of card 4.': 'Jenis: jenis kartu 4.',
-	'Pick all four, set your bet and deal. Each right guess multiplies your win; get all four for a full game win. What a wrong guess costs you depends on the game mode, explained below.':
-		'Pilih keempatnya, atur taruhan Anda, lalu bagikan. Setiap tebakan benar melipatgandakan kemenangan Anda; tebak keempatnya untuk menang penuh. Apa yang hilang saat salah tergantung pada mode permainan, lihat di bawah.',
+	'Color: is card 1 red or black?':
+		'Warna: apakah kartu 1 merah atau hitam?',
+	'Higher or Lower: is card 2 above or below card 1, or Equal to it?':
+		'Lebih besar atau Lebih kecil: apakah kartu 2 di atas atau di bawah kartu 1, atau Sama?',
+	'Inside or Outside: is card 3 between cards 1 and 2 or outside them, or Equal to one of them?':
+		'Di antara atau Di luar: apakah kartu 3 jatuh di antara kartu 1 dan 2 atau di luarnya, atau Sama dengan salah satunya?',
+	'Suit: which suit is card 4?':
+		'Jenis: apa jenis kartu 4?',
+	'Pick all four, set your bet and deal. Each right guess multiplies your win, and four right is a full game win. What a wrong guess costs depends on the game mode; see Game modes below.':
+		'Pilih keempatnya, atur taruhan Anda, lalu bagikan. Setiap tebakan benar melipatgandakan kemenangan Anda, dan empat benar adalah menang penuh. Apa yang hilang saat salah tergantung pada mode permainan; lihat Mode permainan di bawah.',
 	'Card order': 'Urutan kartu',
-	'Ace is low and King is high. Suit never affects rank: only the number counts for Higher / Lower and Inside / Outside.':
-		'As adalah yang terendah dan King yang tertinggi. Jenis tidak pernah memengaruhi peringkat: hanya angka yang berlaku untuk Lebih besar / Lebih kecil dan Di antara / Di luar.',
+	'Ace is low and King is high. Suits have no rank: only the card’s value counts for Higher, Lower, Inside and Outside.':
+		'As adalah yang terendah dan King yang tertinggi. Jenis tidak punya peringkat: hanya nilai kartu yang berlaku untuk Lebih besar, Lebih kecil, Di antara, dan Di luar.',
 	Lowest: 'Terendah',
 	Highest: 'Tertinggi',
 	'Payouts follow the odds': 'Pembayaran mengikuti peluang',
-	'Every correct guess pays its true odds against the cards left in the deck, so the less likely your pick, the more it pays, and the same guess can pay differently from one round to the next.':
-		'Setiap tebakan benar dibayar sesuai peluang sebenarnya terhadap kartu yang tersisa di dek, jadi makin kecil kemungkinan pilihan Anda, makin besar bayarannya, dan tebakan yang sama bisa membayar berbeda dari satu ronde ke ronde berikutnya.',
+	'Each right guess is priced on the cards still in the deck: the less likely it is, the more it pays. So the same guess can pay differently from one round to the next.':
+		'Setiap tebakan benar dihargai berdasarkan kartu yang masih ada di dek: makin kecil kemungkinannya, makin besar bayarannya. Jadi tebakan yang sama bisa membayar berbeda dari satu ronde ke ronde berikutnya.',
 	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
 		'Dengan kartu 3 di meja, Lebih kecil membayar sekitar %1× karena hanya 8 dari 51 kartu tersisa yang lebih kecil, sedangkan Lebih besar membayar sekitar %2× karena ada 40 kartu yang lebih besar. Ubah 3 menjadi 8 dan keadaannya terbalik: Lebih kecil turun ke sekitar %3× dan Lebih besar naik ke sekitar %4×. Sama selalu paling sulit, sekitar %5×.',
 	'Payout table': 'Tabel pembayaran',
@@ -115,12 +118,12 @@ export default {
 		'Jumlah',
 	'Red or Black': 'Merah atau Hitam',
 	'Any suit': 'Semua jenis',
-	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
-		'Tahap-tahap dikalikan dengan presisi penuh, jadi angka di atas akurat. Hanya pembayaran akhir yang dibulatkan ke bawah, ke satu angka desimal. Total berjalan di samping kartu dibulatkan dengan cara yang sama di setiap langkah, jadi selama ronde nilainya bisa terlihat sedikit lebih rendah dari angka-angka ini.',
+	'These figures are exact: the stages multiply at full precision, and only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded down as it goes, so mid-round it can read a little under them.':
+		'Angka-angka ini akurat: tahap-tahap dikalikan dengan presisi penuh, dan hanya pembayaran akhir yang dibulatkan ke bawah, ke satu angka desimal. Total berjalan di samping kartu dibulatkan ke bawah selama ronde berlangsung, jadi nilainya bisa terlihat sedikit lebih rendah.',
 	'If you guess wrong': 'Jika tebakan Anda salah',
 	'Full game wins': 'Kemenangan penuh',
-	'Speed and skip settings change only what you see, never the cards, the odds or the payout.':
-		'Pengaturan kecepatan dan lewati hanya mengubah apa yang Anda lihat, tidak pernah kartunya, peluangnya, atau pembayarannya.',
+	'Turbo and skipping win animations change only what you see, never the cards, the odds or the payout.':
+		'Turbo dan melewati animasi kemenangan hanya mengubah apa yang Anda lihat, tidak pernah kartunya, peluangnya, atau pembayarannya.',
 
 	'Pick a color': 'Pilih warna',
 	'Higher, lower, or equal': 'Lebih besar, lebih kecil, atau sama',
@@ -143,7 +146,6 @@ export default {
 	'Decrease bet': 'Turunkan taruhan',
 	'Turbo speed': 'Kecepatan turbo',
 	'Autoplay settings': 'Pengaturan main otomatis',
-	'Advanced settings': 'Pengaturan lanjutan',
 	'Stop autoplay': 'Hentikan main otomatis',
 	'Rounds must be %s seconds apart': 'Jarak antar ronde harus %s detik',
 	'Round in progress': 'Ronde sedang berlangsung',
@@ -212,12 +214,10 @@ export default {
 	'The i button opens this screen.': 'Tombol i membuka layar ini.',
 	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
 		'Tombol kilat adalah Turbo: seberapa cepat kartu dibalik, dari Normal hingga Instan.',
-	'The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.':
-		'Panah melingkar membuka main otomatis, yang memasang taruhan yang sama lagi untuk sejumlah ronde tertentu atau tanpa batas. Penghitungnya tampil di tombol selama berjalan.',
-	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
-		'Tombol penggeser berisi dua opsi main otomatis: berhenti saat menang penuh, dan lewati animasi kemenangan.',
-	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
-		'Tombol bulat besar membagikan ronde. Begitu juga tombol spasi: ketuk untuk satu ronde, tahan untuk terus membagikan. Saat main otomatis berjalan, tombol ini menjadi Berhenti, dan ronde yang sedang berjalan diselesaikan dulu.',
+	'The circular arrows open autoplay: the same bet, dealt again for a set number of rounds or without limit. The button counts down the rounds left.':
+		'Panah melingkar membuka main otomatis: taruhan yang sama, dibagikan lagi untuk sejumlah ronde tertentu atau tanpa batas. Tombolnya menghitung mundur ronde yang tersisa.',
+	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
+		'Tombol bulat besar membagikan kartu. Begitu juga tombol spasi: ketuk untuk satu ronde, tahan untuk terus membagikan. Saat main otomatis, tombol ini menjadi Berhenti, dan ronde yang sedang berjalan diselesaikan dulu.',
 	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
 		'Mode membuka pemilih mode permainan. Berganti mode meminta konfirmasi sebelum diterapkan.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
@@ -243,10 +243,10 @@ export default {
 	'Play Again': 'Putar Lagi',
 	'The round ends and pays nothing.':
 		'Ronde berakhir dan tidak membayar apa pun.',
-	'The round ends, keeping about %s% of what you had built.':
-		'Ronde berakhir dan Anda menyimpan sekitar %s% dari yang telah terkumpul.',
-	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
-		'Mulai kartu 2 kesalahan ini dimaafkan: Anda menyimpan %s% dari yang terkumpul dan ronde berlanjut.',
+	'The round ends, and you keep about %s% of your running total.':
+		'Ronde berakhir dan Anda menyimpan sekitar %s% dari total berjalan Anda.',
+	'From card 2 on, it is forgiven: you keep %s% of your running total and play on.':
+		'Mulai kartu 2 kesalahan ini dimaafkan: Anda menyimpan %s% dari total berjalan Anda dan terus bermain.',
 
 	// Three of a Kind.
 	'Three of a Kind':
@@ -289,4 +289,16 @@ export default {
 		'Ketuk jumlahnya untuk membuka menu taruhan cepat.',
 	'Max win %s your bet':
 		'Kemenangan maks %s dari taruhan Anda',
+	'Stop on a loss of':
+		'Berhenti saat rugi sebesar',
+	'Stop on a single win of':
+		'Berhenti saat satu kemenangan sebesar',
+	'On a keyboard, keys 1 to 4 change the four guesses.':
+		'Di keyboard, tombol 1 sampai 4 mengubah keempat tebakan.',
+	'It can stop by itself on a full game win, a loss limit or one big win.':
+		'Main otomatis bisa berhenti sendiri saat menang penuh, mencapai batas kerugian, atau satu kemenangan besar.',
+	'× means times your base bet.':
+		'× berarti kelipatan taruhan dasar Anda.',
+	'Times your base bet':
+		'Kelipatan taruhan dasar Anda',
 };

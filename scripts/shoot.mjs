@@ -340,10 +340,17 @@ const OVERLAY_STATE = [
 /** Load a replay and press play. Returns false if the round never got going. */
 async function startRound(page, mode, event) {
   await page.goto(replayUrl(mode, event));
-  if (!(await page.waitFor('.ss-continue'))) return false;
-  await page.click('.ss-continue');
-  await sleep(1200);
-  if (!(await page.waitFor('.ss-popup'))) return false;
+  // A replay opens straight on its round details since 2026-09-22 (Stake's spec
+  // is load, then show Play - launchGuards.test.ts pins it). This used to wait
+  // for the intro's continue first, and after that change every run printed
+  // "round never started" at every size. Take the intro only if it is there.
+  if (!(await page.waitFor('.ss-popup, .ss-continue'))) return false;
+  if (!(await page.evaluate("return !!document.querySelector('.ss-popup');"))) {
+    await page.click('.ss-continue');
+    await sleep(1200);
+    if (!(await page.waitFor('.ss-popup'))) return false;
+  }
+  await sleep(300);
   await page.click('.ss-play-btn');
   return true;
 }
@@ -464,7 +471,10 @@ const BOARD_SETTLED = [
  * bet in the choice colours, which have to be the board's own.
  */
 async function shootIntro(page, tag) {
-  await page.goto(replayUrl(opts.mode, opts.event));
+  // The intro is the PLAIN game's first screen. A replay opens straight on its
+  // round details since 2026-09-22, so the two are shot from two URLs; this
+  // used to reach both through a replay and printed "no intro" at every size.
+  await page.goto(plainUrl());
   if (!(await page.waitFor('.ss-continue'))) {
     console.log(`  ${tag}: no intro`);
     return;
@@ -476,8 +486,7 @@ async function shootIntro(page, tag) {
   // "staggered" reading a screenshot is supposed to settle.
   await sleep(2000);
   await page.shot(`intro-${tag}`);
-  await page.click('.ss-continue');
-  await sleep(1200);
+  await page.goto(replayUrl(opts.mode, opts.event));
   if (!(await page.waitFor('.ss-popup'))) {
     console.log(`  ${tag}: no replay details`);
     return;
@@ -599,7 +608,6 @@ const PANELS = [
   ['mode', '.cb-mode-btn', '.popup-mode'],
   ['bet', '.cb-bet-display', '.popup-bet'],
   ['autospin', '.cb-autospin', '.popup-autospin'],
-  ['advanced', '.cb-advanced', '.popup-advanced'],
 ];
 
 /**

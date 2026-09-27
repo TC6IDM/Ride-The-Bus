@@ -303,7 +303,8 @@ textarea {
 .ss-stat-val,
 .ss-detail-val,
 .wc-amount,
-.wc-mult {
+.wc-mult,
+.limit-input {
 	direction: ltr;
 	unicode-bidi: isolate;
 }

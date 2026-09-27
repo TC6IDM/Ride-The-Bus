@@ -50,8 +50,6 @@
   --card-w: calc(var(--ui) * 9.27); /* 102px */
   --card-h: calc(var(--ui) * 13.8); /* 152px */
   --card-radius: calc(var(--ui) * 0.9); /* 10px */
-  --rank-fs: calc(var(--ui) * 1.55); /* 17px */
-  --suit-fs: calc(var(--ui) * 4.18); /* 46px */
   --choice-size: calc(var(--ui) * 8.36); /* 92px */
   --choice-fs: calc(var(--ui) * 2.04); /* 22.4px */
   --quad-fs: calc(var(--ui) * 2.33); /* 25.6px */

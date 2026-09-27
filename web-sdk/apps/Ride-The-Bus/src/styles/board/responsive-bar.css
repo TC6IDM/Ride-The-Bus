@@ -38,11 +38,11 @@
    ========================================================================== */
 
 /* Narrow viewports: give the LIGHT PILL a bar row of its own, above the bet
-   and action panel, otherwise the advanced button wraps on its own and looks
-   stranded.
+   and action panel, otherwise the control at the row's end (MODE, since it
+   replaced the sliders button) wraps on its own and looks stranded.
 
    That is a row of the CONTROL BAR, and it is the only wrap on a phone. The
-   pill's own contents - sound, info, MODE, Balance, Last Win - stay on one
+   pill's own contents - sound, info, Balance, Last Win - stay on one
    line inside it; see .cb-panel-light below, which pins that shut.
 
    Width-scoped rather than portrait-scoped because a narrow LANDSCAPE window
@@ -51,6 +51,32 @@
    is the one narrow window where lowering --ui-bar buys a one-row bar that is
    still in proportion. */
 @media (max-width: 620px) {.cb-panel-light { order: -1; flex: 1 0 100%; }
+/* ROW TWO'S BUDGET: Turbo, the bet, the actions and MODE have to share one
+     line. Two things are trimmed for it, and for EVERY pointer, because a narrow
+     desktop window lays out exactly like a phone and runs out of width the same
+     way - the trim used to be touch-only, and at 404-536px with a mouse the row
+     came out 1.4px over and put MODE on a third row by itself:
+       - the bet figure's reservation, measured from "$1,000,000.00", which is not
+         a bet anyone places at this width (use:fitValue shrinks a long one);
+       - MODE's width: still a rectangle, a shade narrower than on the one-row
+         bar, so a longer translated word (MODUS, TILA) still fits beside it;
+       - the gaps BETWEEN the controls on a row (not between the two rows).
+         Russian is the tight case: its family name under the bet widens that
+         panel by ~23px, and with MODE beside it the row came out 9px over.
+     Measured across 320-620px in all 17 languages, mouse and touch: two rows. */
+.control-bar {
+    column-gap: calc(var(--ui-bar) * 0.55);
+    /* And the bar's own side margin, 1.27 -> 1: Russian at 401-408px (412px is
+       a common Android width) was still 1.7px over with the gaps alone. */
+    padding-inline: calc(var(--ui-bar) * 1);
+  }
+.cb-bet-display {
+    min-width: calc(var(--ui-bar) * 11);
+  }
+.cb-mode-slot .cb-mode-btn {
+    min-width: calc(var(--ui-bar) * 5.4);
+    padding: 0 calc(var(--ui-bar) * 0.7);
+  }
 .cb-readouts { justify-content: space-between; }
 /* The multiplier chip used to be dropped here, because the readout reserved a
      fixed width and the cash alone filled it. The cash now SHRINKS to fit (see
@@ -58,7 +84,9 @@
      the only thing on the bar that says how BIG the win was rather than how
      much it paid, and a phone is where that matters most. */
 /* THE READOUTS STAY ON THE ICONS' ROW. One line inside the light pill:
-     sound, info, MODE, Balance, Last Win.
+     sound, info, Balance, Last Win. (MODE was in this pill until 2026-09-26;
+     it sits at the end of the bar's second row now, where the sliders button
+     was, and its translated word no longer takes width from the figures.)
 
      They used to be reserved at a fixed 16 units each, which is more than what
      is left beside three icon buttons, so .cb-panel-light's flex-wrap dropped
@@ -148,12 +176,8 @@
      one than the 36px above - two tall halves would be deeper than the panel
      they sit in, and 36px wide is width the bet figure needs more. */
 /* (the 30x26 floor moved to the pointer-coarse block at the end of this file) */
-/* The reserved width for the bet figure, trimmed. It is measured from
-     "$1,000,000.00", which is not a bet anyone places on a phone, and on this
-     row every pixel it reserves is taken off the four controls beside it. */
-.cb-bet-display {
-    min-width: calc(var(--ui-bar) * 11);
-  }
+/* (the bet figure's trimmed reservation moved to the 620px block at the top of
+     this file, for every pointer - see ROW TWO'S BUDGET there) */
 /* THE BET BUTTON WAS NOT IN THIS LIST. At 5.82 --ui-bar it is 38.2px at 320px -
    already larger than the 36px the icons are floored to, which is probably why
    it read as covered, but still short of the comfortable target for the one
@@ -237,6 +261,19 @@
     min-width: calc(var(--ui-bar) * 26);
     max-width: calc(var(--ui-bar) * 26);
   }
+/* And the three the 620px block trims for row two's budget: Popout S has one
+     row, and is Popout L at half size, so it keeps Popout L's widths and gap. */
+.control-bar {
+    column-gap: calc(var(--ui-bar) * 0.91);
+    padding-inline: calc(var(--ui-bar) * 1.27);
+  }
+.cb-bet-display {
+    min-width: calc(var(--ui-bar) * 13.82);
+  }
+.cb-mode-slot .cb-mode-btn {
+    min-width: calc(var(--ui-bar) * 6.2);
+    padding: 0 calc(var(--ui-bar) * 1.1);
+  }
 }
 
 /* ---- Tap-target floors ----------------------------------------------------
@@ -249,9 +286,10 @@
  * panels were measured - "a phone held sideways needs this as much as one held
  * upright" - and these predate that.
  *
- * They are here rather than re-gated in place because that block also carries
- * .cb-bet-display's narrowed reservation, which is a WIDTH BUDGET decision
- * about a phone row and has nothing to do with fingers. It keeps the old gate.
+ * They are here rather than re-gated in place because that block carried
+ * .cb-bet-display's narrowed reservation, which is a WIDTH BUDGET decision about
+ * a phone row and has nothing to do with fingers. That reservation has since
+ * moved to the 620px block, for every pointer, for the same reason.
  *
  * Popout S is deliberately NOT floored, and that is the same note's other half:
  * it is "a 400px mouse window whose unit is deliberately tiny and must not be

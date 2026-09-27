@@ -1,4 +1,4 @@
-<!-- The autoplay panel: presets, a count and the stop switches.
+<!-- The autoplay panel: presets, a count, what stops a run, and Start.
 
      Split out of Game.svelte when each control-bar panel became its own file.
      The `{#if openPopup === 'autospin'}` that decides whether this is on screen
@@ -20,8 +20,13 @@
     formatAutoRounds,
     setAutoRounds,
     stepAutoRounds,
+    stops,
     toggleAutoInfinite,
   } from '../../game/round/autoplaySettings.svelte';
+  import { parseLimit, type LimitSetting } from '../../game/round/autoplayLimits';
+  import { currencySymbol } from '../../game/bet/currencySymbol';
+  import { stateBet } from 'state-shared';
+  import { stopAuto } from '../../game/round/autoplayLoop.svelte';
   import {
     allChoicesMade,
     betBlockedReason,
@@ -36,6 +41,20 @@
     /** Start the run. The parent closes this panel first. */
     onstart: () => void;
   } = $props();
+
+  /** The two limit rows, in the order the panel draws them. */
+  const LIMITS = [
+    { key: 'lossLimit', id: 'autoplay-stop-loss', label: () => t('Stop on a loss of') },
+    { key: 'winLimit', id: 'autoplay-stop-win', label: () => t('Stop on a single win of') },
+  ] as const;
+
+  /**
+   * A field that stops parsing switches its limit off, so the toggle never
+   * shows "on" over a figure that would not stop anything.
+   */
+  function onLimitInput(setting: LimitSetting) {
+    if (parseLimit(setting.input) === null) setting.on = false;
+  }
 </script>
 
 <!-- The three drawn glyphs this panel uses, DUPLICATED rather than passed down
@@ -70,10 +89,10 @@
   <div class="popup popup-autospin" role="dialog" aria-modal="true" tabindex="-1" aria-label={t('Autoplay')}>
     <div class="popup-head"><span>{t('Autoplay')}</span><button class="popup-close" onclick={onclose} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
     <div class="autospin-body">
-      <span class="popup-sub">{t('Number of Plays')}</span>
+      <span class="popup-sub">{t('Number of plays')}</span>
       <div class="spin-grid">
         {#each AUTOSPIN_PRESETS as p}
-          <button class="spin-pill" class:active={!auto.infinite && Math.floor(Number(auto.roundsInput)) === p} onclick={() => setAutoRounds(p)}>{p}</button>
+          <button class="spin-pill" class:active={!auto.infinite && Math.floor(Number(auto.roundsInput)) === p} disabled={auto.running} onclick={() => setAutoRounds(p)}>{p}</button>
         {/each}
         <!-- Unlimited spans the last row: nine cells in a 4-column grid would
              otherwise leave a ragged single cell. -->
@@ -81,22 +100,90 @@
              row because a ninth cell in a 4-column grid sat alone against
              three empty columns; the row wraps now, so unlimited is just the
              longest option in it. -->
-        <button class="spin-pill spin-pill-inf" class:active={auto.infinite} onclick={toggleAutoInfinite} aria-label={t('Unlimited plays')}>{@render iconInfinity()}</button>
+        <button class="spin-pill spin-pill-inf" class:active={auto.infinite} disabled={auto.running} onclick={toggleAutoInfinite} aria-label={t('Unlimited plays')}>{@render iconInfinity()}</button>
       </div>
       <div class="rounds-selector autospin-input">
         <div class="rounds-field">
           {#if auto.infinite}
             <span class="rounds-infinite">{@render iconInfinity()}</span>
           {:else}
-            <input class="rounds-input" name="autoplay-rounds" autocomplete="off" type="text" inputmode="numeric" bind:value={auto.roundsInput} onblur={formatAutoRounds} aria-label={t('Number of plays')} />
+            <input class="rounds-input" name="autoplay-rounds" autocomplete="off" type="text" inputmode="numeric" bind:value={auto.roundsInput} onblur={formatAutoRounds} disabled={auto.running} aria-label={t('Number of plays')} />
           {/if}
         </div>
         <!-- Plus and minus, matching the bet steppers on the control bar. The
              chevrons that were here made this the build's SECOND way to nudge
              a number, three inches from the first. -->
         <div class="rounds-stepper">
-          <button type="button" class="stepper-btn" onclick={() => stepAutoRounds(1)} aria-label={t('More plays')}>{@render iconPlus()}</button>
-          <button type="button" class="stepper-btn" onclick={() => stepAutoRounds(-1)} aria-label={t('Fewer plays')}>{@render iconMinus()}</button>
+          <button type="button" class="stepper-btn" disabled={auto.running} onclick={() => stepAutoRounds(1)} aria-label={t('More plays')}>{@render iconPlus()}</button>
+          <button type="button" class="stepper-btn" disabled={auto.running} onclick={() => stepAutoRounds(-1)} aria-label={t('Fewer plays')}>{@render iconMinus()}</button>
+        </div>
+      </div>
+      <!-- WHAT ENDS A RUN, all on this panel. Two of these used to be the whole
+           of a separate "Advanced" panel behind a sliders button on the bar;
+           that button is gone and MODE has its place (ControlBar.svelte).
+
+           Every one is PASSIVE: it ends a run or shortens an animation and never
+           touches the stake.
+
+           THE TWO LIMITS are typed, not picked: a figure, its unit - x (times
+           the BASE bet, the multiplier the game prints at the end of a round) or
+           the player's currency - and a button to its right that arms it and
+           stays pressed while it is armed. autoplayLimits.ts has the rule.
+           The empty field shows a dash, not "0": a grey zero read as a limit
+           already set to nothing, and zero is not a figure a limit accepts. -->
+      {#each LIMITS as row (row.key)}
+        {@const setting = stops[row.key]}
+        {@const usable = parseLimit(setting.input) !== null}
+        <div class="limit-group">
+          <label class="control-label" for={row.id}>{row.label()}</label>
+          <div class="limit-row">
+            <div class="limit-field" class:is-on={setting.on}>
+              <input
+                id={row.id}
+                name={row.id}
+                class="limit-input"
+                type="text"
+                inputmode="decimal"
+                autocomplete="off"
+                placeholder="—"
+                bind:value={setting.input}
+                oninput={() => onLimitInput(setting)}
+              />
+              <!-- The unit, inside the field it qualifies. x is times the base
+                   bet; the other is the player's own currency symbol (never a
+                   hardcoded $ - social mode's SC and GC print their codes). -->
+              <div class="limit-unit" role="group">
+                <button type="button" class="limit-unit-btn" class:active={setting.unit === 'x'} aria-pressed={setting.unit === 'x'} aria-label={t('Times your base bet')} onclick={() => (setting.unit = 'x')}>×</button>
+                <button type="button" class="limit-unit-btn" class:active={setting.unit === 'cash'} aria-pressed={setting.unit === 'cash'} aria-label={stateBet.currency || currencySymbol()} onclick={() => (setting.unit = 'cash')}>{currencySymbol()}</button>
+              </div>
+            </div>
+            <!-- Arms the limit. A toggle, pressed while armed; greyed until the
+                 field holds a figure it could stop on. -->
+            <button
+              type="button"
+              class="limit-toggle"
+              class:on={setting.on && usable}
+              aria-pressed={setting.on && usable}
+              aria-label={row.label()}
+              disabled={!usable}
+              onclick={() => (setting.on = !setting.on)}
+            ><MarkIcon name="check" /></button>
+          </div>
+        </div>
+      {/each}
+      <span class="limit-note">{t('× means times your base bet.')}</span>
+
+      <!-- The two switches, one above the other in their order, directly above
+           the panel's one action. The second changes only how the next
+           celebration looks, never the round. -->
+      <div class="stop-switches">
+        <div class="stop-row">
+          <span class="control-label">{t('Stop autoplay on full game win')}</span>
+          <button type="button" class="switch" class:on={stops.onFullWin} role="switch" aria-checked={stops.onFullWin} aria-label={t('Stop autoplay on full game win')} onclick={() => (stops.onFullWin = !stops.onFullWin)}><span class="switch-knob"></span></button>
+        </div>
+        <div class="stop-row">
+          <span class="control-label">{t('Skip win animations on autoplay')}</span>
+          <button type="button" class="switch" class:on={stops.skipWinOnAuto} role="switch" aria-checked={stops.skipWinOnAuto} aria-label={t('Skip big win animations during autoplay')} onclick={() => (stops.skipWinOnAuto = !stops.skipWinOnAuto)}><span class="switch-knob"></span></button>
         </div>
       </div>
       <!-- One reason per failure, the same rule the spin button follows.
@@ -106,9 +193,16 @@
            behind in the one place that did not get the pass. And
            autoRoundsValid() was in `disabled` with no branch here at all, so
            an empty rounds field gave a dead button and no explanation. -->
-      <button class="action-button popup-start" onclick={onstart} disabled={!betIsValid() || !allChoicesMade() || !autoRoundsValid()}>
-        {#if !allChoicesMade()}{t('Pick all 4 guesses')}{:else if betBlockedReason()}{betBlockedReason()}{:else if !autoRoundsValid()}{t('Enter a number of plays')}{:else}{t('Start')}{/if}
-      </button>
+      <!-- During a run the panel is open for its stops, which the loop reads
+           every round; the count is spoken for, so it is locked above, and the
+           one action is to end the run - the same Stop the deal button offers. -->
+      {#if auto.running}
+        <button class="action-button popup-start" onclick={() => { stopAuto(); onclose(); }}>{t('Stop autoplay')}</button>
+      {:else}
+        <button class="action-button popup-start" onclick={onstart} disabled={!betIsValid() || !allChoicesMade() || !autoRoundsValid()}>
+          {#if !allChoicesMade()}{t('Pick all 4 guesses')}{:else if betBlockedReason()}{betBlockedReason()}{:else if !autoRoundsValid()}{t('Enter a number of plays')}{:else}{t('Start')}{/if}
+        </button>
+      {/if}
     </div>
   </div>
 

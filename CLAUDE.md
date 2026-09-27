@@ -72,8 +72,8 @@ have, and `payout.test.ts` guards it by replaying every published book.
 
 **`main` is behind.** It stops at the `ui-art-pass` merge; everything since -
 Three of a Kind, High Stakes at 15%, the direct book writer, the readability
-passes and the 2026-09-22 audit fixes - is on `refactor/readability-passes`,
-23+ commits ahead, until that branch is merged. Merge it before building
+passes, the 2026-09-22 audit fixes and the 2026-09-26 card faces - is on
+`refactor/readability-passes`, 26+ commits ahead, until that branch is merged. Merge it before building
 anything for submission. Note that local `main` tracks
 `origin/monorepo-restructure`, not `origin/main`, so a bare `git push` from it
 goes somewhere unexpected; push `main:main` explicitly or re-point the upstream.
@@ -175,12 +175,18 @@ reading before proposing it again.
   *above* a family's ceiling falls to Epic rather than claiming the rarest screen
   in the game. `winTiers.test.ts` pins both directions.
 - **The takeover is made of the round, not of gradients** — its centrepiece is
-  the four cards just played, fanned, drawn from shared tokens rather than by
-  importing `cards.css`. `revealedCards` is **snapshotted** into `celebration`,
+  the four cards just played, fanned, each drawn by **`CardFace`** - the same
+  face the board turned over, not a lookalike. `revealedCards` is **snapshotted** into `celebration`,
   not referenced. The fan marks what happened: a `--loss` cross on the busted
   card (desaturated), a `--forgiven` arrow on a Second Chance one (**not**
   dimmed). Exactly three shapes can reach it; the fourth is defensive only.
 - **One veil for the whole ladder.** `--wc-veil` on `.wc-overlay`, never per tier.
+- **Lettered, not lit: nothing on the takeover glows.** The title is a hard
+  block shadow in the tier's deep colour (`--wc-cool`), cast down and left; the
+  amount takes the same block while it holds; the fan's cards carry a thin rim
+  in the tier colour and no bloom; the burst marks cast shadows. The two-colour
+  neon title and the haloed hand were the stock slot "BIG WIN" look - the third
+  Hallmark audit's top finding (2026-09-26).
 - **Every tier draws the whole celebration. Escalation is intensity, never
   presence.** `.tier-*` rules may set nothing but custom properties, and
   `winCelebration.test.ts` fails if one does. `--wc-fan-spread` is the rung,
@@ -236,7 +242,10 @@ reading before proposing it again.
   it is calmer than most Classic modes and the comment beside the rating says
   so. The test pins both columns.
 - **One ruler.** Every meter draws `VOLATILITY_BOLTS` (7) stops.
-- **Purple is a family's colour, not an overflow.** `--vol-tr` is the purple;
+- **Purple is a family's colour, not an overflow.** `--vol-tr` is the purple -
+  a dusty amethyst (178, 124, 200) since 2026-09-26, where the saturated
+  #b06ae8 read as a generated palette's violet; the dead `--vol-overflow` hex
+  went with it;
   High Stakes with two Equals draws **seven red bolts**. `FAMILY_BOLT_CEILING`
   and `BoltMeter`'s `overflowAfter` are gone. `--vol-overflow*` survives only
   as the win takeover's Epic tier, which is the same reading (past the top of
@@ -271,7 +280,9 @@ reading before proposing it again.
 - **The bet menu is CHIPS, and the chip palettes are tokens.** A wrapping row,
   never a grid. A symbol rides with the figure; a CODE takes its own line.
   Telling a decimal separator from a grouping one is the hard part. Colour by
-  rank, not amount. The figure is fitted to the disc via `labelEms()`; `--fit` is
+  rank, not amount - and where a colour is shared (more levels than five
+  colours), its second chip wears the alternate edge inlay (`chipInlayAlt`), so
+  no two neighbours are the same chip printed twice. The figure is fitted to the disc via `labelEms()`; `--fit` is
   0.68 of the disc, 0.60 with a code.
 - **The choice icons carry a keyline, and the fills do not move** — four zero-blur
   `drop-shadow`s, **not** on the equals badge (`svg:not(.eq-icon)`).
@@ -327,6 +338,36 @@ reading before proposing it again.
   is the common path. COP is **not** a Stake currency.
 - **The bet is locked while autoplay runs, and the control says so rather than
   going grey.** `setBetLevel` and `formatBetInput` check `betLockedReason()` too.
+- **MODE is the bar's outer-edge control, mirroring Turbo** (owner's call,
+  2026-09-26). The sliders button and its two-switch "Advanced" panel are gone;
+  both switches live in the autoplay panel. MODE is a **rounded rectangle**, in
+  its family colour, keeping its `.cb-icon` "toggle" press cue; its locked-state
+  tip is hosted on `.cb-mode-slot` and anchored to the slot's inner edge (it sits
+  at the screen edge). Out of the light pill, so Balance and Last Win got its
+  width. **Row two of the phone bar is budgeted for every pointer** (tighter
+  gaps and side margin, the bet figure's trimmed reservation, a narrower MODE,
+  all in the 620px block and all restored for Popout S): with only the touch
+  trim, a narrow mouse window and Russian at 401-408px put MODE on a third row.
+  Swept every 4px from 320 to 620 in all 17 languages; `autoplayLimits.test.ts`
+  pins the rules.
+- **Autoplay only ever STOPS; it never changes the stake.** Its stops: a full
+  game win, a loss limit, a single-win limit. The two limits are **typed**, each
+  with a unit switch inside its field - **x, times the BASE bet** (the unit of
+  every other "your bet" in the game, the multiplier the takeover prints, and
+  what the Stake SDK multiplies), or **the player's currency**, by its real
+  symbol (never a hardcoded $: social mode's SC/GC print their codes) - and an
+  arm button to the field's right that stays pressed while armed. A field that
+  does not parse is no limit, never zero (`autoplayLimits.ts`; decimal commas and
+  lakh grouping accepted). Counting x in the round's COST was tried first and
+  was the two-units bug on Three of a Kind. The two switches sit one above the
+  other, directly above the panel's action. The panel stays openable DURING a run (count
+  locked, Stop offered), because the stops live there. The DEV-only martingale that used to sit behind
+  `ADVANCED_ENABLED` was deleted, and `autoplayLimits.test.ts` fails if bet
+  progression comes back.
+- **Keys 1-4 step the four guesses** (`game/bet/guessKeys.ts`), through the
+  board's own setters, gated beside the spacebar in `ControlBar.svelte` - never
+  under the intro, a panel or the takeover, never onto Inside after an Equal,
+  never clearing a pick. Not gated on `disabledSpacebar`: a digit buys nothing.
 - **The +/- buttons ARE grey at the ends of the ladder.** `nextBetLevel()` is
   what a press lands on and what `canStepBet()` disables on, so the two cannot
   disagree; a + with no level above it used to look pressable and do nothing.
@@ -348,7 +389,34 @@ reading before proposing it again.
   `image-set()` with `type()` fails on Safari 14–16, and a `canvas.toDataURL`
   probe is wrong for exactly those browsers.
 - **Glyphs are drawn when, and only when, the font does not own them.** Card
-  ranks are ASCII and deliberately NOT drawn.
+  ranks are ASCII and deliberately NOT drawn; every suit mark is ONE drawing,
+  `game/ui/suitPaths.ts`, which `SuitIcon` and the card pips both read.
+- **Every dealt card wears one face: `components/cards/CardFace.svelte`** - the
+  board's four and the takeover's fan (the intro's and How to Play's minis are
+  glyph tokens, not faces). A casino deck's layout in a 200 x 298 SVG
+  (`game/ui/cardFaceLayout.ts`): 2-10 in pips on the standard grid with the
+  lower half inverted, the Ace of Spades as the house card, the English-pattern
+  courts. **One colour family per card** - red/maroon/rose or ink/slate/stone,
+  plus gold and paper - because card 1's guess is Red or Black; `cardFace.test.ts`
+  fails if a card mixes them or the sprite paints a literal colour. **Below 46px
+  on screen a number card goes compact** (one pip, larger index), measured by
+  `bind:clientWidth`, not a container query (iOS 16+). **In Arabic the face
+  mirrors and its text is turned back** (`rtl.test.ts`).
+- **The court figures are `static/cards/courts.svg`, generated, never
+  hand-edited.** `node scripts/court-art.mjs` rebuilds it from the CC0 masters in
+  `art-masters/courts/` (Dmitry Fomin, Wikimedia Commons; provenance, SHA-1s and
+  the rejected GPL/LGPL sources in its README) and fails if a rebuilt court
+  strays from its master. Fetched at start like the music bed, never imported
+  (`courtArt.svelte.ts`); until it lands a court draws its frame and pips round a
+  large rank letter.
+- **The lobby tile is photographed from the game, never painted.**
+  `node scripts/tile-art.mjs` (game + replay RGS running) writes
+  `submission/RideTheBus-FG.png` from `?dev_tile=fg` (`components/dev/DevTile.svelte`:
+  the real J Q K and house A, the deck's back, two chips, on a transparent
+  ground) and `-BG.jpg` from the live table with the board hidden, and refuses a
+  pair over Stake's 3 MB. The cups are left off unless `--cups`. The generated
+  pair it replaced (a mangled Jack, a droplet spade, a backyard party) is in git
+  history.
 - **The body face is Geist (variable, one file per subset), and its metrics
   are measured, never guessed.** It ships `tnum`, so every `tabular-nums` in
   the app is live (they were inert for the whole life of Poppins).
@@ -844,7 +912,7 @@ between a one-row bar and a two-row one.
 
 ## Current state and outstanding work
 
-816/816 tests (none skipped), 0 type errors, 0 CSS warnings, lint clean, and
+854/854 tests (none skipped), 0 type errors, 0 CSS warnings, lint clean, and
 the client reproduces the published books of all **193** modes exactly — the
 parity test replays a 400-book slice of every mode off `index.json`, three-card
 trips books included. The build on disk is the **2026-09-22 02:30** one: High
@@ -988,7 +1056,7 @@ Read it when planning work. It also carries the local dev tooling: the replay
 RGS, `npm run dev`, the six scenario aliases, and the headless CDP driver
 (`npm run shots`) that every visual judgement in this repo has been made with.
 
-The single biggest open item: **`RGS_TEST_PLAN.md` holds 101 live-session checks
+The single biggest open item: **`RGS_TEST_PLAN.md` holds 103 live-session checks
 and none has been run.** They need a real Stake session and cannot be done
 locally.
 

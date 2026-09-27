@@ -117,6 +117,20 @@
   --chip-cream: var(--chip-black-cream);
 }
 
+/* The second chip of a colour, when the rack has more levels than colours:
+   same body, brass edge inserts - the way a real rack tells two denominations
+   in one colour apart. The white chip's standard spots are already the one
+   cool value in the set, so its alternate is the brand red. After the colour
+   rules, which set --chip-cream at the same specificity. chipInlayAlt() in
+   game/bet/betChips.ts decides which chips wear it. */
+.bet-chip.alt {
+  --chip-cream: var(--chip-inlay-alt);
+}
+
+.bet-chip.chip-white.alt {
+  --chip-cream: var(--chip-white-inlay-alt);
+}
+
 /* The dash ring is masked to an annulus so it does not paint over the face. */
 .bet-chip::before {
   content: '';
@@ -295,7 +309,12 @@
 
 .popup-bet .popup-sub { display: block; margin-bottom: calc(var(--ui-bar) * 0.64); }
 
-.popup-sub { font-size: calc(var(--ui-bar) * 0.93); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink-dim); font-weight: 700; }
+/* A field's label, in the voice every other label in the panels uses - body
+   size, body ink, sentence case (see .control-label in popup-autospin.css,
+   which made the same move for the switches). It was 0.93-unit spaced
+   capitals in the dim ink: the eyebrow register, and beside "Stop on a loss
+   of" in the same panel it read as two different products. */
+.popup-sub { font-size: calc(var(--ui-bar) * 1.09); line-height: 1.3; color: var(--ink-body); font-weight: 600; }
 
 /* ---- Keyboard focus -------------------------------------------------------
  * The menu controls. .bet-entry already showed focus through :focus-within on

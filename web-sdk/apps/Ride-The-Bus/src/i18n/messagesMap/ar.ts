@@ -30,7 +30,8 @@ export default {
 	Start: 'ابدأ',
 
 	'Bet Menu': 'قائمة الرهان',
-	'Quick Bets': 'رهانات سريعة',
+	'Quick bets':
+		'رهانات سريعة',
 
 	'Turbo Speed': 'سرعة التيربو',
 	Normal: 'عادي',
@@ -41,16 +42,15 @@ export default {
 	'Sound settings': 'إعدادات الصوت',
 	Sound: 'الصوت',
 	Music: 'الموسيقى',
-	'Game Sounds': 'أصوات اللعبة',
+	'Game sounds':
+		'أصوات اللعبة',
 	'Mute music': 'كتم الموسيقى',
 	'Unmute music': 'إلغاء كتم الموسيقى',
 	'Mute game sounds': 'كتم أصوات اللعبة',
 	'Unmute game sounds': 'إلغاء كتم أصوات اللعبة',
 
 	Autoplay: 'اللعب التلقائي',
-	'Number of Plays': 'عدد الجولات',
 
-	Advanced: 'متقدم',
 	'Game Mode': 'وضع اللعبة',
 	'Choose game mode': 'اختر وضع اللعبة',
 	Classic: 'كلاسيكي',
@@ -61,8 +61,8 @@ export default {
 	Forgiven: 'مُتسامَح عنها',
 	// The intro's tagline and the first line of How to Play's Game modes.
 	'%n ways to play': '%n طريقة للعب',
-	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
-		'كل مجموعة اختيارات في وضع التخمين هي رهان مستقل بذاته، يُسعَّر وفق احتمالاته الخاصة.',
+	'There are %n ways to play: every set of picks is its own bet, priced on its own odds.':
+		'عدد طرق اللعب: %n. كل مجموعة اختيارات هي رهان مستقل بذاته، يُسعَّر وفق احتمالاته الخاصة.',
 	'Game modes': 'أوضاع اللعبة',
 	// Confirmation before a bet mode is activated - required by the approval
 	// checklist, and worth having anyway: the guess families cost the same but
@@ -73,17 +73,17 @@ export default {
 	'Volatility %s of %t': 'التقلب %s من %t',
 	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.':
 		'نسبة العائد للاعب (RTP) هي %s في كل أوضاع اللعبة. وأقصى ما يمكن أن تدفعه هذه اللعبة هو %m من رهانك، في وضع %f.',
-	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
-		'خطأ في البطاقة الأولى ينهي الجولة. الأخطاء اللاحقة تحتفظ بنسبة 30% مما جمعته.',
+	'A wrong first card ends the round. Later misses keep 30% of your running total.':
+		'خطأ في البطاقة الأولى ينهي الجولة. الأخطاء اللاحقة تحتفظ بنسبة 30% من إجماليك الجاري.',
 	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
 		'خطأ في البطاقة الأولى ينهي الجولة. بعدها يُسامَح أول تخمين خاطئ ويستمر اللعب.',
 	'Card 1': 'البطاقة 1',
 	'Your first wrong guess': 'أول تخمين خاطئ لك',
 	'Your second wrong guess': 'ثاني تخمين خاطئ لك',
-	'Guess all four right and the payout depends on how hard your picks were. Equal is the rarest guess, so rounds built on it pay the most; two Equal picks together is the most this mode can pay, at %m your bet.':
-		'أصب البطاقات الأربع كلها ويعتمد المكسب على صعوبة اختياراتك. «متساوٍ» هو أندر التخمينات، لذا فالجولات المبنية عليه تدفع الأكثر؛ واجتماع اختيارين «متساوٍ» هو أقصى ما يمكن أن يدفعه هذا الوضع، %m من رهانك.',
-	'Only some guess combinations reach a mode’s maximum. Once your four are picked, their own ceiling is shown above.':
-		'بعض تركيبات التخمينات فقط تبلغ الحد الأقصى للوضع. بعد اختيار تخميناتك الأربع، يُعرض سقفها الخاص أعلاه.',
+	'A full game win pays more the harder your picks were. Equal is the rarest guess, so it pays the most, and two Equal picks reach this mode’s maximum: %m your bet.':
+		'يزداد ما يدفعه الفوز الكامل كلما كانت اختياراتك أصعب. «متساوٍ» هو أندر التخمينات، لذا يدفع الأكثر، واختياران «متساوٍ» يبلغان الحد الأقصى لهذا الوضع: %m من رهانك.',
+	'Only some combinations reach the mode’s maximum. Once your four are picked, the most they can pay is shown above.':
+		'بعض التركيبات فقط تبلغ الحد الأقصى للوضع. بعد اختيار تخميناتك الأربعة، يُعرض أعلاه أقصى ما يمكن أن تدفعه.',
 	Playing: 'قيد اللعب',
 	'Card 2, 3 or 4': 'البطاقة 2 أو 3 أو 4',
 	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
@@ -91,21 +91,24 @@ export default {
 
 	'How to Play': 'كيفية اللعب',
 	'Guess your way through four cards:': 'خمّن البطاقات الأربع بالترتيب:',
-	'Color: red or black for card 1.': 'اللون: أحمر أو أسود للبطاقة الأولى.',
-	'Higher / Lower: versus card 1 (or =).': 'أعلى / أقل: مقارنة بالبطاقة الأولى (أو =).',
-	'Inside / Outside: between cards 1 & 2 (or =).':
-		'داخل / خارج: بين البطاقتين الأولى والثانية (أو =).',
-	'Suit: the suit of card 4.': 'النوع: نوع البطاقة الرابعة.',
-	'Pick all four, set your bet and deal. Each right guess multiplies your win; get all four for a full game win. What a wrong guess costs you depends on the game mode, explained below.':
-		'اختر التخمينات الأربعة، حدّد رهانك ووزّع. كل تخمين صحيح يضاعف ربحك؛ أصب الأربعة كلها لتحقق فوزًا كاملًا. أما ما يكلفك التخمين الخاطئ فيعتمد على وضع اللعبة، انظر أدناه.',
+	'Color: is card 1 red or black?':
+		'اللون: هل البطاقة الأولى حمراء أم سوداء؟',
+	'Higher or Lower: is card 2 above or below card 1, or Equal to it?':
+		'أعلى أو أقل: هل البطاقة الثانية أعلى من الأولى أم أقل منها، أم «متساوٍ»؟',
+	'Inside or Outside: is card 3 between cards 1 and 2 or outside them, or Equal to one of them?':
+		'داخل أو خارج: هل تقع البطاقة الثالثة بين البطاقتين الأولى والثانية أم خارجهما، أم «متساوٍ» مع إحداهما؟',
+	'Suit: which suit is card 4?':
+		'النوع: ما نوع البطاقة الرابعة؟',
+	'Pick all four, set your bet and deal. Each right guess multiplies your win, and four right is a full game win. What a wrong guess costs depends on the game mode; see Game modes below.':
+		'اختر التخمينات الأربعة، حدّد رهانك ووزّع. كل تخمين صحيح يضاعف ربحك، وإصابة الأربعة فوز كامل. أما ما يكلفك التخمين الخاطئ فيعتمد على وضع اللعبة؛ انظر أوضاع اللعبة أدناه.',
 	'Card order': 'ترتيب البطاقات',
-	'Ace is low and King is high. Suit never affects rank: only the number counts for Higher / Lower and Inside / Outside.':
-		'الآس هو الأدنى والملك هو الأعلى. النوع لا يؤثر في الترتيب أبدًا: الرقم وحده هو ما يهم في أعلى / أقل وداخل / خارج.',
+	'Ace is low and King is high. Suits have no rank: only the card’s value counts for Higher, Lower, Inside and Outside.':
+		'الآس هو الأدنى والملك هو الأعلى. لا ترتيب للأنواع: قيمة البطاقة وحدها هي ما يهم في أعلى وأقل وداخل وخارج.',
 	Lowest: 'الأدنى',
 	Highest: 'الأعلى',
 	'Payouts follow the odds': 'المكافآت تتبع الاحتمالات',
-	'Every correct guess pays its true odds against the cards left in the deck, so the less likely your pick, the more it pays, and the same guess can pay differently from one round to the next.':
-		'كل تخمين صحيح يُدفع وفق احتمالاته الحقيقية مقابل البطاقات المتبقية في المجموعة، فكلما قل احتمال اختيارك زاد ما يدفعه، وقد يدفع التخمين نفسه مبلغًا مختلفًا من جولة إلى أخرى.',
+	'Each right guess is priced on the cards still in the deck: the less likely it is, the more it pays. So the same guess can pay differently from one round to the next.':
+		'كل تخمين صحيح يُسعَّر وفق البطاقات المتبقية في المجموعة: كلما قل احتماله زاد ما يدفعه. لذا قد يدفع التخمين نفسه مبلغًا مختلفًا من جولة إلى أخرى.',
 	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
 		'مع وجود 3 على الطاولة، يدفع «أقل» نحو %1× لأن 8 فقط من البطاقات الـ51 المتبقية أقل منها، بينما يدفع «أعلى» نحو %2× لأن 40 منها أعلى. حوّل الـ3 إلى 8 فينقلب الأمر: ينخفض «أقل» إلى نحو %3× ويرتفع «أعلى» إلى نحو %4×. و«متساوٍ» هو دائمًا الأبعد احتمالًا بنحو %5×.',
 	'Payout table': 'جدول الأرباح',
@@ -116,12 +119,12 @@ export default {
 		'الإجمالي',
 	'Red or Black': 'أحمر أو أسود',
 	'Any suit': 'أي نوع',
-	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
-		'تتضاعف الأدوار معًا بدقة كاملة، لذا فالأرقام أعلاه دقيقة. يُقرّب المكسب النهائي وحده نزولاً إلى خانة عشرية واحدة. ويُقرّب الإجمالي الظاهر بجانب الأوراق بالطريقة نفسها في كل خطوة، لذا قد يبدو أقل قليلاً من هذه الأرقام أثناء الجولة.',
+	'These figures are exact: the stages multiply at full precision, and only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded down as it goes, so mid-round it can read a little under them.':
+		'هذه الأرقام دقيقة: تتضاعف الأدوار معًا بدقة كاملة، ولا يُقرَّب نزولاً إلى خانة عشرية واحدة إلا المكسب النهائي. ويُقرَّب الإجمالي الجاري بجانب الأوراق نزولاً أثناء الجولة، لذا قد يبدو أقل قليلاً.',
 	'If you guess wrong': 'إذا خمّنت خطأ',
 	'Full game wins': 'الفوز الكامل',
-	'Speed and skip settings change only what you see, never the cards, the odds or the payout.':
-		'إعدادات السرعة والتخطي تغيّر ما تراه فقط، لا البطاقات ولا الاحتمالات ولا المكسب أبدًا.',
+	'Turbo and skipping win animations change only what you see, never the cards, the odds or the payout.':
+		'التيربو وتخطي مؤثرات الفوز يغيّران ما تراه فقط، لا البطاقات ولا الاحتمالات ولا المكسب أبدًا.',
 
 	'Pick a color': 'اختر لونًا',
 	'Higher, lower, or equal': 'أعلى أو أقل أو متساوٍ',
@@ -144,7 +147,6 @@ export default {
 	'Decrease bet': 'خفض الرهان',
 	'Turbo speed': 'سرعة التيربو',
 	'Autoplay settings': 'إعدادات اللعب التلقائي',
-	'Advanced settings': 'الإعدادات المتقدمة',
 	'Stop autoplay': 'إيقاف اللعب التلقائي',
 	'Rounds must be %s seconds apart': 'يجب أن يفصل بين الجولات %s ثانية',
 	'Round in progress': 'الجولة جارية',
@@ -211,12 +213,10 @@ export default {
 	'The i button opens this screen.': 'زر i يفتح هذه الشاشة.',
 	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
 		'زر البرق هو التيربو: مدى سرعة قلب البطاقات، من عادي إلى فوري.',
-	'The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.':
-		'السهمان الدائريان يفتحان اللعب التلقائي، الذي يكرر الرهان نفسه لعدد محدد من الجولات أو بلا حد. يظهر العدّاد على الزر أثناء التشغيل.',
-	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
-		'زر المنزلقات يضم خيارين للعب التلقائي: التوقف عند الفوز الكامل، وتخطي مؤثرات الفوز.',
-	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
-		'الزر الدائري الكبير يوزّع الجولة. ومفتاح المسافة كذلك: اضغطه لجولة واحدة أو اضغطه باستمرار لمواصلة التوزيع. أثناء اللعب التلقائي يتحول الزر إلى إيقاف، وتُكمَل الجولة الجارية أولًا.',
+	'The circular arrows open autoplay: the same bet, dealt again for a set number of rounds or without limit. The button counts down the rounds left.':
+		'السهمان الدائريان يفتحان اللعب التلقائي: الرهان نفسه يُوزَّع مجددًا لعدد محدد من الجولات أو بلا حد. ويعدّ الزر الجولات المتبقية تنازليًا.',
+	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
+		'الزر الدائري الكبير يوزّع. ومفتاح المسافة كذلك: اضغطه لجولة واحدة أو اضغطه باستمرار لمواصلة التوزيع. أثناء اللعب التلقائي يتحول إلى إيقاف، وتُكمَل الجولة الجارية أولًا.',
 	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
 		'زر الوضع يفتح قائمة أوضاع اللعبة. يطلب التبديل تأكيدك قبل تطبيقه.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
@@ -242,10 +242,10 @@ export default {
 	'Play Again': 'تشغيل مرة أخرى',
 	'The round ends and pays nothing.':
 		'تنتهي الجولة ولا تدفع شيئًا.',
-	'The round ends, keeping about %s% of what you had built.':
-		'تنتهي الجولة مع الاحتفاظ بنحو %s% مما جمعته.',
-	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
-		'من الورقة 2 فصاعدًا يُتجاوز عنه: تحتفظ بـ %s% مما جمعته وتستمر الجولة.',
+	'The round ends, and you keep about %s% of your running total.':
+		'تنتهي الجولة وتحتفظ بنحو %s% من إجماليك الجاري.',
+	'From card 2 on, it is forgiven: you keep %s% of your running total and play on.':
+		'من الورقة 2 فصاعدًا يُتجاوز عنه: تحتفظ بـ %s% من إجماليك الجاري وتواصل اللعب.',
 
 	// Three of a Kind.
 	'Three of a Kind':
@@ -288,4 +288,16 @@ export default {
 		'اضغط على المبلغ لفتح قائمة الرهانات السريعة.',
 	'Max win %s your bet':
 		'أقصى ربح %s من رهانك',
+	'Stop on a loss of':
+		'التوقف عند خسارة قدرها',
+	'Stop on a single win of':
+		'التوقف عند ربح واحد قدره',
+	'On a keyboard, keys 1 to 4 change the four guesses.':
+		'على لوحة المفاتيح، تغيّر المفاتيح من 1 إلى 4 التخمينات الأربعة.',
+	'It can stop by itself on a full game win, a loss limit or one big win.':
+		'ويمكنه التوقف تلقائيًا عند الفوز الكامل أو حد الخسارة أو ربح واحد كبير.',
+	'× means times your base bet.':
+		'× تعني مضاعفات رهانك الأساسي.',
+	'Times your base bet':
+		'مضاعفات رهانك الأساسي',
 };

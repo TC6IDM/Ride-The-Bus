@@ -29,7 +29,8 @@ export default {
 	Start: '开始',
 
 	'Bet Menu': '投注菜单',
-	'Quick Bets': '快速投注',
+	'Quick bets':
+		'快速投注',
 
 	'Turbo Speed': '加速档位',
 	Normal: '正常',
@@ -40,16 +41,15 @@ export default {
 	'Sound settings': '声音设置',
 	Sound: '声音',
 	Music: '音乐',
-	'Game Sounds': '游戏音效',
+	'Game sounds':
+		'游戏音效',
 	'Mute music': '静音音乐',
 	'Unmute music': '开启音乐',
 	'Mute game sounds': '静音游戏音效',
 	'Unmute game sounds': '开启游戏音效',
 
 	Autoplay: '自动游戏',
-	'Number of Plays': '局数',
 
-	Advanced: '高级',
 	'Game Mode': '游戏模式',
 	'Choose game mode': '选择游戏模式',
 	Classic: '经典',
@@ -60,8 +60,8 @@ export default {
 	Forgiven: '已豁免',
 	// The intro's tagline and the first line of How to Play's Game modes.
 	'%n ways to play': '%n 种玩法',
-	'Every combination of picks on a guess mode is its own bet, priced on its own odds.':
-		'猜测模式中的每一种选择组合都是一注独立的投注，按其自身赔率定价。',
+	'There are %n ways to play: every set of picks is its own bet, priced on its own odds.':
+		'共有 %n 种玩法：每一种选择组合都是一注独立的投注，按其自身赔率定价。',
 	'Game modes': '游戏模式',
 	// Confirmation before a bet mode is activated - required by the approval
 	// checklist, and worth having anyway: the guess families cost the same but
@@ -72,17 +72,17 @@ export default {
 	'Volatility %s of %t': '波动性 %t 级中的 %s',
 	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.':
 		'所有游戏模式的返奖率（RTP）均为 %s。本游戏的最高赔付为投注额的 %m，出现在%f模式。',
-	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
-		'第一张牌猜错即结束本局。之后猜错保留已累积的30%。',
+	'A wrong first card ends the round. Later misses keep 30% of your running total.':
+		'第一张牌猜错即结束本局。之后猜错保留累计金额的30%。',
 	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
 		'第一张牌猜错即结束本局。此后第一次猜错可获豁免并继续游戏。',
 	'Card 1': '第一张牌',
 	'Your first wrong guess': '你的第一次猜错',
 	'Your second wrong guess': '你的第二次猜错',
-	'Guess all four right and the payout depends on how hard your picks were. Equal is the rarest guess, so rounds built on it pay the most; two Equal picks together is the most this mode can pay, at %m your bet.':
-		'四张全中时，赔付取决于你的选择有多难。相同是最罕见的猜测，因此包含它的局赔付最高；两次相同同时命中即为本模式的最高赔付，为投注额的 %m。',
-	'Only some guess combinations reach a mode’s maximum. Once your four are picked, their own ceiling is shown above.':
-		'只有部分猜测组合能达到某模式的最高赔付。选好四步后，其自身上限会显示在上方。',
+	'A full game win pays more the harder your picks were. Equal is the rarest guess, so it pays the most, and two Equal picks reach this mode’s maximum: %m your bet.':
+		'全中的赔付取决于你的选择有多难。相同是最罕见的猜测，因此赔付最高；两次选择相同即可达到本模式的最高赔付：投注额的 %m。',
+	'Only some combinations reach the mode’s maximum. Once your four are picked, the most they can pay is shown above.':
+		'只有部分组合能达到本模式的最高赔付。选好四项后，它们最多能赔付多少会显示在上方。',
 	Playing: '游戏中',
 	'Card 2, 3 or 4': '第二、三或四张牌',
 	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
@@ -90,20 +90,24 @@ export default {
 
 	'How to Play': '玩法说明',
 	'Guess your way through four cards:': '依次预测四张牌：',
-	'Color: red or black for card 1.': '颜色：第 1 张是红色还是黑色。',
-	'Higher / Lower: versus card 1 (or =).': '更大 / 更小：与第 1 张相比（或 =）。',
-	'Inside / Outside: between cards 1 & 2 (or =).': '之间 / 之外：在第 1、2 张之间或之外（或 =）。',
-	'Suit: the suit of card 4.': '花色：第 4 张的花色。',
-	'Pick all four, set your bet and deal. Each right guess multiplies your win; get all four for a full game win. What a wrong guess costs you depends on the game mode, explained below.':
-		'选好四项、设定投注并发牌。每猜中一张，奖金就翻倍；四张全中即为全中。猜错的代价取决于游戏模式，见下文。',
+	'Color: is card 1 red or black?':
+		'颜色：第 1 张是红色还是黑色？',
+	'Higher or Lower: is card 2 above or below card 1, or Equal to it?':
+		'更大 / 更小：第 2 张比第 1 张大还是小，还是相同？',
+	'Inside or Outside: is card 3 between cards 1 and 2 or outside them, or Equal to one of them?':
+		'之间 / 之外：第 3 张落在第 1、2 张之间还是之外，还是与其中一张相同？',
+	'Suit: which suit is card 4?':
+		'花色：第 4 张是什么花色？',
+	'Pick all four, set your bet and deal. Each right guess multiplies your win, and four right is a full game win. What a wrong guess costs depends on the game mode; see Game modes below.':
+		'选好四项、设定投注并发牌。每猜中一次，奖金就会相乘；四项全中即为全中。猜错的代价取决于游戏模式，见下方“游戏模式”。',
 	'Card order': '牌面大小',
-	'Ace is low and King is high. Suit never affects rank: only the number counts for Higher / Lower and Inside / Outside.':
-		'A 最小、K 最大。花色从不影响大小：更大 / 更小与之间 / 之外只看点数。',
+	'Ace is low and King is high. Suits have no rank: only the card’s value counts for Higher, Lower, Inside and Outside.':
+		'A 最小、K 最大。花色没有大小：更大、更小、之间与之外只看牌的点数。',
 	Lowest: '最小',
 	Highest: '最大',
 	'Payouts follow the odds': '赔付取决于概率',
-	'Every correct guess pays its true odds against the cards left in the deck, so the less likely your pick, the more it pays, and the same guess can pay differently from one round to the next.':
-		'每次猜中都按其相对于牌堆剩余牌的真实概率赔付，因此你的选择越难出现，赔付越高，同一猜测在不同局的赔付也可能不同。',
+	'Each right guess is priced on the cards still in the deck: the less likely it is, the more it pays. So the same guess can pay differently from one round to the next.':
+		'每次猜中都按牌堆中剩余的牌定价：越难出现，赔付越高。因此同一猜测在不同局的赔付可能不同。',
 	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
 		'若桌上是 3，剩余 51 张牌中只有 8 张更小，因此「更小」约赔 %1 倍；而更大的有 40 张，因此「更大」仅约 %2 倍。把 3 换成 8，情况就反过来：「更小」降至约 %3 倍，「更大」升至约 %4 倍。「相同」始终是最难中的，约 %5 倍。',
 	'Payout table': '赔付表',
@@ -114,12 +118,12 @@ export default {
 		'合计',
 	'Red or Black': '红色或黑色',
 	'Any suit': '任意花色',
-	'Stages multiply together at full precision, so the figures above are exact. Only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded the same way at each step, so mid-round it can read slightly under these figures.':
-		'各阶段以完整精度累乘，因此上方数字是精确值。只有最终赔付会向下取整到一位小数。牌旁显示的累计金额在每一步也按同样方式处理，因此局中可能看起来略低于这些数字。',
+	'These figures are exact: the stages multiply at full precision, and only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded down as it goes, so mid-round it can read a little under them.':
+		'这些数字是精确值：各阶段以完整精度累乘，只有最终赔付会向下取整到一位小数。牌旁的累计金额在过程中向下取整显示，因此局中可能看起来略低。',
 	'If you guess wrong': '若猜错',
 	'Full game wins': '全中赔付',
-	'Speed and skip settings change only what you see, never the cards, the odds or the payout.':
-		'速度与跳过设置只改变你看到的内容，绝不会改变牌、概率或赔付。',
+	'Turbo and skipping win animations change only what you see, never the cards, the odds or the payout.':
+		'加速与跳过获胜动画只改变你看到的内容，绝不会改变牌、概率或赔付。',
 
 	'Pick a color': '选择颜色',
 	'Higher, lower, or equal': '更大、更小或相同',
@@ -142,7 +146,6 @@ export default {
 	'Decrease bet': '减少投注额',
 	'Turbo speed': '加速档位',
 	'Autoplay settings': '自动游戏设置',
-	'Advanced settings': '高级设置',
 	'Stop autoplay': '停止自动游戏',
 	'Rounds must be %s seconds apart': '每局之间需间隔 %s 秒',
 	'Round in progress': '本局进行中',
@@ -205,12 +208,10 @@ export default {
 	'The i button opens this screen.': 'i 按钮打开此界面。',
 	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
 		'闪电按钮是加速：控制翻牌快慢，从正常到瞬间。',
-	'The circular arrows open autoplay, which deals the same bet again for a set number of rounds or unlimited. The counter sits on the button while it runs.':
-		'环形箭头打开自动游戏，按设定局数或无限次重复同一投注。运行时计数显示在按钮上。',
-	'The sliders button holds two autoplay options: stop on a full game win, and skip the win animations.':
-		'滑块按钮包含两个自动游戏选项：全中时停止，以及跳过中奖动画。',
-	'The large round button deals the round. So does the spacebar: tap for one round, hold to keep dealing. While autoplay runs the button becomes Stop, and the round in play finishes first.':
-		'大圆形按钮发牌开始一局。空格键同样可以：轻按发一局，按住则持续发牌。自动游戏进行时，该按钮变为停止，进行中的一局会先结束。',
+	'The circular arrows open autoplay: the same bet, dealt again for a set number of rounds or without limit. The button counts down the rounds left.':
+		'环形箭头打开自动游戏：以同一投注按设定局数或无限次重新发牌。按钮会倒数剩余局数。',
+	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
+		'大圆形按钮发牌。空格键同样可以：轻按发一局，按住则持续发牌。自动游戏时它变为停止，进行中的一局会先结束。',
 	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
 		'模式打开游戏模式选择器。切换前会要求确认。',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
@@ -235,9 +236,10 @@ export default {
 		'你选择的四个猜测最高可达投注额的 %s。',
 	'Play Again': '再看一次',
 	'The round ends and pays nothing.': '本局结束，不予派彩。',
-	'The round ends, keeping about %s% of what you had built.': '本局结束，保留已累积金额的约 %s%。',
-	'From card 2 on, it is forgiven: you keep %s% of what you had built and the round carries on.':
-		'从第 2 张牌起可获宽恕，保留已累积金额的 %s%，本局继续。',
+	'The round ends, and you keep about %s% of your running total.':
+		'本局结束，你保留累计金额的约 %s%。',
+	'From card 2 on, it is forgiven: you keep %s% of your running total and play on.':
+		'从第 2 张牌起可获宽恕：你保留累计金额的 %s%，继续游戏。',
 
 	// Three of a Kind.
 	'Three of a Kind':
@@ -280,4 +282,16 @@ export default {
 		'点击金额可打开快速投注菜单。',
 	'Max win %s your bet':
 		'最高赔付 投注额的 %s',
+	'Stop on a loss of':
+		'亏损达到时停止',
+	'Stop on a single win of':
+		'单次赢取达到时停止',
+	'On a keyboard, keys 1 to 4 change the four guesses.':
+		'使用键盘时，按 1 至 4 键可切换四项预测。',
+	'It can stop by itself on a full game win, a loss limit or one big win.':
+		'也可设置在全中、达到亏损上限或单次大额赢取时自动停止。',
+	'× means times your base bet.':
+		'× 表示基础投注额的倍数。',
+	'Times your base bet':
+		'基础投注额的倍数',
 };

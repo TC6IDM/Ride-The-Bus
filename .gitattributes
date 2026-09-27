@@ -1,0 +1,5 @@
+# The court masters are byte-exact copies of their Wikimedia Commons files, and
+# art-masters/courts/README.md lists the SHA-1 each must have. With
+# core.autocrlf on, git would rewrite their line endings on checkout and every
+# hash would stop matching the file it vouches for. No conversion, either way.
+art-masters/courts/*.svg -text

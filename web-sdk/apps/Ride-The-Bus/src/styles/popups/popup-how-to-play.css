@@ -197,14 +197,14 @@
 }
 
 /* Sub-heading inside the mode panel. Quieter than .info-h, which marks the
-   screen's top-level sections - these sit one level down, inside one of them. */
+   screen's top-level sections - these sit one level down, inside one of them.
+   Sentence case at body size, weighted and in the strong ink: the step down
+   from .info-h is colour and size, not a switch into spaced capitals. */
 .info-sub {
-	margin: calc(var(--ui-bar) * 1) 0 calc(var(--ui-bar) * 0.27);
-	font-size: calc(var(--ui-bar) * 1.05);
-	font-weight: 800;
-	letter-spacing: 0.05em;
-	text-transform: uppercase;
-	color: var(--ink-dim);
+	margin: calc(var(--ui-bar) * 1.1) 0 calc(var(--ui-bar) * 0.27);
+	font-size: calc(var(--ui-bar) * 1.16);
+	font-weight: 700;
+	color: var(--ink-strong);
 }
 
 .pay-table th {
@@ -247,32 +247,28 @@
 	white-space: nowrap;
 }
 
-/* Section heading inside the how-to-play body. The popup now covers odds,
-   losses and max wins, which needs signposting to stay skimmable. */
 /* Section heading inside the how-to-play body.
  *
  * Gold, not accent blue, and the reason is the ladder above it. The panel's own
  * header is white now, so a blue section heading underneath was louder than the
  * thing it sat under - and it was the same blue the controls use to say "this
  * one is selected", which a heading has no business borrowing. Three levels,
- * three treatments: white for the panel, gold for a section, dim for a
- * sub-section. */
+ * three treatments: white for the panel, gold for a section, strong ink for a
+ * sub-section.
+ *
+ * A HEADING, NOT AN EYEBROW. It was small (1.16 units, under the 1.24 body),
+ * uppercase and tracked 0.06em - the tiny spaced-caps label that sits over
+ * every section of a generated page, six times down this one. It is set the
+ * size of the panel's own title now, in the sentence case the strings are
+ * already written in, so the page reads as a document with a hierarchy
+ * rather than a stack of labelled cards. */
 .info-h {
-  margin: calc(var(--ui-bar) * 1.1) 0 calc(var(--ui-bar) * 0.36);
-  font-size: calc(var(--ui-bar) * 1.16);
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  margin: calc(var(--ui-bar) * 1.55) 0 calc(var(--ui-bar) * 0.36);
+  font-size: calc(var(--ui-bar) * 1.36);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.005em;
   color: var(--gold);
-}
-
-/* The "193 ways to play" line under the Game modes heading: the count in the
-   panel's tint, the sentence after it in the body ink - the same pairing
-   .mode-panel-max draws, so a figure the section wants read is always the
-   tinted thing in it. */
-.info-tagline strong {
-  color: var(--tint);
-  font-variant-numeric: tabular-nums;
 }
 
 /* Keyboard focus on the mode tabs. */

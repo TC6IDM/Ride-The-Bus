@@ -75,11 +75,13 @@ export const MARKUP_COMPONENT_PATHS: string[] = [
   at('../components/popups/TurboPopup.svelte'),
   at('../components/popups/SoundPopup.svelte'),
   at('../components/popups/AutospinPopup.svelte'),
-  at('../components/popups/AdvancedPopup.svelte'),
   at('../components/intro/IntroPanels.svelte'),
   at('../components/intro/ReplayDetails.svelte'),
   at('../components/board/ControlBar.svelte'),
   at('../components/board/GameBoard.svelte'),
+  // The card face the board and the takeover's fan both draw, moved out of
+  // GameBoard's markup 2026-09-26.
+  at('../components/cards/CardFace.svelte'),
   at('../components/board/SessionReadouts.svelte'),
 ];
 
@@ -146,7 +148,6 @@ export const POPUP_STYLESHEET_PATHS = [
   at('../styles/popups/popup-turbo.css'),
   at('../styles/popups/popup-sound.css'),
   at('../styles/popups/popup-autospin.css'),
-  at('../styles/popups/popup-advanced.css'),
 ];
 
 /** Every panel sheet, joined. */

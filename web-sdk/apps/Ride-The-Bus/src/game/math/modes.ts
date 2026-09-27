@@ -282,12 +282,12 @@ export function stageCount(rules: Pick<FamilyRules, 'fixedChoices'>): number {
  * The numbers are the measured ceilings, so they cannot drift into marketing.
  */
 export const FAMILY_BLURB: Record<ModeFamily, string> & {
-  base: 'A wrong first card ends the round. Later misses keep 30% of what you had built.';
+  base: 'A wrong first card ends the round. Later misses keep 30% of your running total.';
   sc: 'A wrong first card ends the round. After that your first miss is forgiven and play continues.';
   hs: 'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.';
   tr: 'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.';
 } = {
-  base: 'A wrong first card ends the round. Later misses keep 30% of what you had built.',
+  base: 'A wrong first card ends the round. Later misses keep 30% of your running total.',
   sc: 'A wrong first card ends the round. After that your first miss is forgiven and play continues.',
   hs: 'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.',
   tr: 'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.',

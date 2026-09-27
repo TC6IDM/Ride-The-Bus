@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { Component } from 'svelte';
   import './app.css';
   // TYPE ONLY, deliberately - this line erases at build time.
   //
@@ -31,7 +32,6 @@
   import ControlBar from './board/ControlBar.svelte';
   import GameBoard from './board/GameBoard.svelte';
   import SessionReadouts from './board/SessionReadouts.svelte';
-  import AdvancedPopup from './popups/AdvancedPopup.svelte';
   import AutospinPopup from './popups/AutospinPopup.svelte';
   import BetPopup from './popups/BetPopup.svelte';
   import ModePopup from './popups/ModePopup.svelte';
@@ -70,6 +70,8 @@
   import { music, type MusicScene } from '../game/audio/music';
   import { primeAudio } from '../game/audio/audioAutoplay';
   import { MUSIC_BED } from '../game/audio/bedAsset';
+  import { COURT_ART_URL } from '../game/ui/courtAsset';
+  import { loadCourtArt } from '../game/ui/courtArt.svelte';
   import {
     ceilingFor,
   } from '../game/math/modes';
@@ -82,7 +84,6 @@
     pacing,
   } from '../game/round/revealPacing.svelte';
   import {
-    advanced,
     auto,
     autoRoundsValid,
   } from '../game/round/autoplaySettings.svelte';
@@ -237,7 +238,7 @@
   });
 
   // Bottom control-bar UI: which popup (if any) is open, plus mute state.
-  let openPopup = $state<null | 'bet' | 'mode' | 'turbo' | 'autospin' | 'advanced' | 'info' | 'sound'>(null);
+  let openPopup = $state<null | 'bet' | 'mode' | 'turbo' | 'autospin' | 'info' | 'sound'>(null);
   /**
    * The simulation ID to print on the round-details panel.
    *
@@ -555,6 +556,26 @@
   // or if the file is missing, the room is fully synthesised.
   music.setBed(MUSIC_BED);
 
+  // The court figures (J, Q, K), fetched now so they are in the page behind the
+  // loader, long before the first round can deal one. Same reason as the bed
+  // for fetching rather than importing; courtArt.svelte.ts has it, and what a
+  // court looks like if this never lands.
+  loadCourtArt(COURT_ART_URL);
+
+  // DEV ONLY: ?dev_deck=1 lays every card face out at every size it is drawn
+  // (components/dev/DevDeck.svelte). Behind the same `import.meta.env.DEV`
+  // literal as devOverrides, so a production build drops the import with it.
+  let DevDeck: Component | null = $state(null);
+  if (import.meta.env.DEV && typeof location !== 'undefined' && new URLSearchParams(location.search).has('dev_deck')) {
+    void import('./dev/DevDeck.svelte').then((m) => (DevDeck = m.default));
+  }
+  // DEV ONLY: ?dev_tile=fg composes the lobby tile's foreground from the game's
+  // own cards for scripts/tile-art.mjs (components/dev/DevTile.svelte).
+  let DevTile: Component | null = $state(null);
+  if (import.meta.env.DEV && typeof location !== 'undefined' && new URLSearchParams(location.search).has('dev_tile')) {
+    void import('./dev/DevTile.svelte').then((m) => (DevTile = m.default));
+  }
+
   // Open the audio graph as early as the browser allows, so the bed is playing
   // UNDER the loading and start screens rather than arriving with the tap that
   // leaves them. Where autoplay is blocked this builds nothing and waits for the
@@ -773,9 +794,6 @@
     <AutospinPopup onclose={closePopup} onstart={startAutoFromPopup} />
   {/if}
 
-  {#if openPopup === 'advanced'}
-    <AdvancedPopup onclose={closePopup} />
-  {/if}
 
   {#if openPopup === 'info'}
     <HowToPlayPopup
@@ -806,6 +824,9 @@
      { error: 'ERR_IS', status: {...} }, so it showed the player the literal
      text "[object Object]". ErrorModal maps the documented codes instead. -->
 <ErrorModal />
+
+{#if DevDeck}<DevDeck />{/if}
+{#if DevTile}<DevTile />{/if}
 
 <style>
   /* Styles live in src/styles/*.css and are pulled in here so they stay
