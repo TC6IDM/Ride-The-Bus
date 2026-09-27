@@ -452,7 +452,65 @@ npm run shots -- --sizes   # a max win at each of the seven target sizes
 npm run shots -- --intro   # the intro fan and the replay details panel
 npm run shots -- --reduced # prefers-reduced-motion
 npm run shots -- --mode sc_red_equal_equal_heart --event forgiven
+npm run shots -- --all     # every scenario below and above, ~20 minutes
 ```
+
+**What `shots` covers, and how it was made whole (2026-09-27).** A coverage
+check set every `{#if}` branch in the components against every screen the
+script opened, and found these never shot: the loader, a reveal in flight, the
+held last card, the refusal tips, a run of autoplay, How to Play below its
+first screen and its mode tabs, a resumed round, four of the error dialog's
+eight codes, social mode and the operator's switches. Each has a flag now:
+`--loader`, `--reveal` (turning, landed, hold rising, hold top), `--tips`,
+`--autoplay` (the bar, the panel mid-run, bet and mode locked), `--howto`,
+`--resume`, `--errors` (all eight and an unknown code), and on ANY scenario
+`--social`, `--operator turbo,autoplay,…` and `--query "&dev_…"`. `--resume`
+needs the replay server's `/__force-resume/<mode>/<event>`, which puts an
+active round on the next `/wallet/authenticate` and disarms. Still never shot:
+the court art's fallback (the frame and a big letter, only while
+`courts.svg` is loading) and the dev-only tile/deck pages, which
+`scripts/tile-art.mjs` covers. The first-load flake (`--board` at desktop,
+25s, under load) is a reload-once in `openPlain`.
+
+**Ad-hoc browser work is `playwright-cli`** (2026-09-27): Microsoft's
+`@playwright/cli`, installed globally (`npm i -g @playwright/cli@latest`) and
+NOT a project dependency, so the no-new-dependency argument above still holds.
+Its skill is `.claude/skills/playwright-cli`. It drives the installed Chrome
+headless and keeps one browser open across commands. Each command answers in
+0.2-0.4 KB and writes the page's accessibility snapshot to a file rather than
+into the reply (the idle board's is 3.1 KB), which is what makes it cheaper
+than the chrome-devtools MCP for a look, a click or a computed-style read.
+Measured on the idle board at all seven sizes against a spare 3002/3011 pair:
+40 s one command at a time, 32.5 s as a single `run-code` call, 62.9 s for
+`npm run shots -- --board`. Most of that gap is `shoot.mjs`'s fixed six-second
+wait after each navigation, not the driver.
+
+**Phones need `open --mobile`.** A bare `resize 320 568` is a narrow desktop,
+`(hover: hover)` and `(pointer: fine)`, and the bar measured 95 / 110 / 124 px
+at the three phone sizes where a phone gets 115 / 121 / 136. Open with
+`--mobile` (touch, coarse pointer, no hover) and THEN `resize`: all three
+matched `shots` to the pixel. It is the finding in `shoot.mjs`'s `viewport()`
+("a phone also has a finger"), reached from the other side.
+
+```
+# from the repo root, so --filename lands in the one ignored shots directory
+playwright-cli open "http://localhost:3001/?currency=USD&lang=en&rgs_url=localhost%3A3010"
+playwright-cli resize 1200 675
+playwright-cli click .ss-continue
+playwright-cli screenshot --filename=scripts/.shots/look-desktop.png
+playwright-cli --raw eval "getComputedStyle(document.querySelector('footer button')).fontFamily"
+playwright-cli console
+playwright-cli -s=phone open --mobile "<same url>"
+playwright-cli -s=phone resize 320 568
+playwright-cli close-all
+```
+
+Add `&sessionID=<anything>` when a round must reach the replay RGS: without it
+a dev build plays a local round and never calls it (see `--errors` in
+`shoot.mjs`). `npm run shots` stays the tool for the scenario sweeps (tiers,
+`--sizes`, the `--popups` tab probe, `--errors`, `--family`), because it
+carries knowledge a CLI session would have to re-derive each time.
+`.playwright-cli/`, where the snapshots land, is git-ignored at any depth.
 
 **Shots are a working surface, not an archive.** `scripts/.shots/` is
 git-ignored and every run overwrites what it finds. Re-shoot after a visual

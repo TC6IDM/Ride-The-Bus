@@ -14,7 +14,7 @@ export default {
 	Suit: 'スート',
 
 	Winning: '配当',
-	'Full Game Win!': 'フルゲーム達成！',
+	'Full game win': 'フルゲーム達成',
 	Banked: '確保',
 	Busted: '失敗',
 	'Revealing…': 'めくり中…',
@@ -28,11 +28,10 @@ export default {
 	'Set rounds': 'ラウンド数を設定',
 	Start: '開始',
 
-	'Bet Menu': 'ベットメニュー',
+	'Bet menu': 'ベットメニュー',
 	'Quick bets':
 		'クイックベット',
 
-	'Turbo Speed': 'ターボ速度',
 	Normal: '通常',
 	Instant: '瞬時',
 	'Off: full animation': 'オフ：通常アニメーション',
@@ -50,7 +49,6 @@ export default {
 
 	Autoplay: 'オートプレイ',
 
-	'Game Mode': 'ゲームモード',
 	'Choose game mode': 'ゲームモードを選択',
 	Classic: 'クラシック',
 	'Second Chance': 'セカンドチャンス',
@@ -88,7 +86,6 @@ export default {
 	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
 		'1枚目を外すとラウンド終了です。以降のミスは15%しか残らないぶん、的中1つ1つの価値が高くなります。',
 
-	'How to Play': '遊び方',
 	'Guess your way through four cards:': '4枚のカードを順に予想します：',
 	'Color: is card 1 red or black?':
 		'色：1枚目は赤か黒か。',

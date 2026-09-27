@@ -14,7 +14,7 @@ export default {
 	Suit: 'Symbol',
 
 	Winning: 'Gewinn',
-	'Full Game Win!': 'Komplettgewinn!',
+	'Full game win': 'Komplettgewinn',
 	Banked: 'Gesichert',
 	Busted: 'Verloren',
 	'Revealing…': 'Wird aufgedeckt…',
@@ -28,11 +28,10 @@ export default {
 	'Set rounds': 'Runden festlegen',
 	Start: 'Start',
 
-	'Bet Menu': 'Einsatzmenü',
+	'Bet menu': 'Einsatzmenü',
 	'Quick bets':
 		'Schnelleinsätze',
 
-	'Turbo Speed': 'Turbo-Geschwindigkeit',
 	Normal: 'Normal',
 	Instant: 'Sofort',
 	'Off: full animation': 'Aus: volle Animation',
@@ -50,7 +49,6 @@ export default {
 
 	Autoplay: 'Autoplay',
 
-	'Game Mode': 'Spielmodus',
 	'Choose game mode': 'Spielmodus wählen',
 	Classic: 'Klassisch',
 	'Second Chance': 'Zweite Chance',
@@ -88,7 +86,6 @@ export default {
 	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
 		'Eine falsche erste Karte beendet die Runde. Spätere Fehler behalten nur 15%, dadurch ist jeder richtige Tipp mehr wert.',
 
-	'How to Play': 'Spielanleitung',
 	'Guess your way through four cards:': 'Tippe dich durch vier Karten:',
 	'Color: is card 1 red or black?':
 		'Farbe: Ist Karte 1 rot oder schwarz?',

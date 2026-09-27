@@ -48,6 +48,7 @@
 	import { CEILING_PAUSE_MS, countUpSegments, type WinTier } from '../../game/math/winTiers';
 	import { FAMILY_RULES, stageCount, type ModeFamily } from '../../game/math/modes';
 	import { BURST, fanFor } from '../../game/celebration/celebrationScene';
+	import { formatMultiplier } from '../../game/ui/formatMultiplier';
 	import {
 		hopFan,
 		pop,
@@ -561,7 +562,7 @@
 
 		<!-- Climbs with the amount, so the multiplier and the title agree at
 		     every frame instead of the multiplier spoiling the ending. -->
-		<div class="wc-mult">{shownMultiplier.toFixed(2)}×</div>
+		<div class="wc-mult">{formatMultiplier(shownMultiplier)}</div>
 
 		<div class="wc-prompt" class:is-ready={!counting}>
 			{counting ? t('Tap to skip') : t('Tap to continue')}

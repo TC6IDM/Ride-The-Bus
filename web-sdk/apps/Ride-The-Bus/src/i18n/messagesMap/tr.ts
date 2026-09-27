@@ -14,7 +14,7 @@ export default {
 	Suit: 'Sembol',
 
 	Winning: 'Kazanç',
-	'Full Game Win!': 'Tam oyun kazancı!',
+	'Full game win': 'Tam oyun kazancı',
 	Banked: 'Güvence altında',
 	Busted: 'Kaybettiniz',
 	'Revealing…': 'Açılıyor…',
@@ -28,11 +28,10 @@ export default {
 	'Set rounds': 'Tur sayısını ayarla',
 	Start: 'Başlat',
 
-	'Bet Menu': 'Bahis menüsü',
+	'Bet menu': 'Bahis menüsü',
 	'Quick bets':
 		'Hızlı bahisler',
 
-	'Turbo Speed': 'Turbo hızı',
 	Normal: 'Normal',
 	Instant: 'Anında',
 	'Off: full animation': 'Kapalı: tam animasyon',
@@ -50,7 +49,6 @@ export default {
 
 	Autoplay: 'Otomatik oyun',
 
-	'Game Mode': 'Oyun Modu',
 	'Choose game mode': 'Oyun modunu seç',
 	Classic: 'Klasik',
 	'Second Chance': 'İkinci Şans',
@@ -88,7 +86,6 @@ export default {
 	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
 		'İlk kartı bilememek turu bitirir. Sonraki hatalar yalnızca %15 tutar, bu yüzden her doğru tahmin daha değerlidir.',
 
-	'How to Play': 'Nasıl oynanır',
 	'Guess your way through four cards:': 'Dört kartı sırayla tahmin edin:',
 	'Color: is card 1 red or black?':
 		'Renk: 1. kart kırmızı mı, siyah mı?',

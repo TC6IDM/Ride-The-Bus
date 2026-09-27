@@ -31,7 +31,7 @@
    render on, where --accent measured 5.20 / 6.75 / 6.38. Deliberately matched:
    the caption changes temperature and keeps its exact weight in the hierarchy,
    so nothing about what the eye reaches first has moved. */
-.cb-cap { display: block; font-size: calc(var(--ui-bar) * 0.87) /* 9.6px */; letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink-warm-mute); font-weight: 700; }
+.cb-cap { display: block; font-size: max(calc(var(--ui-bar) * 0.87), var(--type-floor)) /* 9.6px */; letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink-warm-mute); font-weight: 700; }
 
 /* tabular-nums + the reserved min-widths below mean a value changing (a win
    landing, the bet stepping) never re-flows the bar. */
@@ -70,7 +70,7 @@
      overflow, right-aligned, ran leftward straight over the MODE and info
      buttons. Overlapping another control is worse than being cut off. */
   overflow: hidden;
-  font-size: calc(var(--ui-bar) * 1.53) /* 16.8px */;
+  font-size: max(calc(var(--ui-bar) * 1.53), var(--type-floor-figure)) /* 16.8px */;
   font-weight: 800;
   color: var(--ink);
   line-height: 1.1;

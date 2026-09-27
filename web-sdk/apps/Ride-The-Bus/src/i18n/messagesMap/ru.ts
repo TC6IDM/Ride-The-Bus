@@ -14,7 +14,7 @@ export default {
 	Suit: 'Масть',
 
 	Winning: 'Выигрыш',
-	'Full Game Win!': 'Полная победа!',
+	'Full game win': 'Полная победа',
 	Banked: 'Сохранено',
 	Busted: 'Проигрыш',
 	'Revealing…': 'Открываем…',
@@ -28,11 +28,10 @@ export default {
 	'Set rounds': 'Задать раунды',
 	Start: 'Старт',
 
-	'Bet Menu': 'Меню ставок',
+	'Bet menu': 'Меню ставок',
 	'Quick bets':
 		'Быстрые ставки',
 
-	'Turbo Speed': 'Скорость турбо',
 	Normal: 'Обычная',
 	Instant: 'Мгновенная',
 	'Off: full animation': 'Выкл.: полная анимация',
@@ -50,7 +49,6 @@ export default {
 
 	Autoplay: 'Автоигра',
 
-	'Game Mode': 'Режим игры',
 	'Choose game mode': 'Выбрать режим игры',
 	Classic: 'Классический',
 	'Second Chance': 'Второй шанс',
@@ -88,7 +86,6 @@ export default {
 	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
 		'Ошибка на первой карте завершает раунд. Последующие промахи сохраняют лишь 15%, поэтому каждая верная догадка стоит дороже.',
 
-	'How to Play': 'Как играть',
 	'Guess your way through four cards:': 'Угадайте четыре карты подряд:',
 	'Color: is card 1 red or black?':
 		'Цвет: карта 1 красная или чёрная?',

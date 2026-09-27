@@ -143,7 +143,7 @@ rather than on every turn. Nothing here is reworded.
     while.** "A full game win" is one rule, and `Game.svelte` puts the question
     in five places: the takeover floor above, the **autoplay "Stop on full game
     win"** condition, the **`playFullWin()` sting**, the **running-win bar's
-    own "Full Game Win!" label**, and (added 2026-09-23) the **last-card hold's
+    own "Full game win" label**, and (added 2026-09-23) the **last-card hold's
     floor** in `roundReveal.svelte.ts`. (Since the 2026-09 split those five live
     in four files — `GameBoard.svelte`, `roundSettle.svelte.ts`,
     `autoplayLoop.svelte.ts` and `roundReveal.svelte.ts` — which is why the grep
@@ -159,7 +159,7 @@ rather than on every turn. Nothing here is reworded.
     spelling can never mean
     "won the full game", so its absence is the invariant rather than a proxy for
     one. Driven and confirmed on the real board: a forgiven `sc` round settles to
-    **"Banked"** and a genuine `sc` 4/4 to **"Full Game Win!"**.
+    **"Banked"** and a genuine `sc` 4/4 to **"Full game win"**.
   - **The non-clean-sweep label is "Banked", and that is the existing string.**
     A forgiven round did bank a reduced amount and carry on, so it reads
     correctly, and reusing it kept this a logic fix rather than a 17-locale one.

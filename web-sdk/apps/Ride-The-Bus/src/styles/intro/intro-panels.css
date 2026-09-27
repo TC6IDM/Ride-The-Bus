@@ -758,14 +758,14 @@
 }
 
 .ss-stat-val {
-	font-size: calc(var(--ui) * 1.35);
+	font-size: max(calc(var(--ui) * 1.35), var(--type-floor));
 	font-weight: 800;
 	color: var(--gold);
 	font-variant-numeric: tabular-nums;
 }
 
 .ss-stat-cap {
-	font-size: calc(var(--ui) * 1.05);
+	font-size: max(calc(var(--ui) * 1.05), var(--type-floor));
 	color: var(--ink-warm-mute);
 	text-transform: uppercase;
 	letter-spacing: 0.1em;
@@ -792,7 +792,7 @@
 
 .ss-stat-foot {
 	margin: calc(var(--ui) * 0.3) 0 0;
-	font-size: calc(var(--ui) * 0.95);
+	font-size: max(calc(var(--ui) * 0.95), var(--type-floor));
 	line-height: 1.35;
 	color: var(--ink-warm-mute);
 	text-align: center;
@@ -818,7 +818,7 @@
 	background: linear-gradient(180deg, rgba(var(--tint-rgb), 1), rgba(var(--tint-rgb), 0.76));
 	color: var(--tint-ink);
 	font-family: inherit;
-	font-size: calc(var(--ui) * 1.6);
+	font-size: max(calc(var(--ui) * 1.6), var(--type-floor-figure));
 	font-weight: 800;
 	cursor: pointer;
 	letter-spacing: 0.03em;
@@ -871,12 +871,12 @@
 		--ui: calc(var(--ss) * 1.05);
 	}
 .ss-stats { gap: calc(var(--ui) * 0.5) calc(var(--ui) * 1.2); margin-top: 0; }
-.ss-stat-val { font-size: calc(var(--ui) * 1.2); }
-.ss-stat-cap { font-size: calc(var(--ui) * 0.95); }
+.ss-stat-val { font-size: max(calc(var(--ui) * 1.2), var(--type-floor)); }
+.ss-stat-cap { font-size: max(calc(var(--ui) * 0.95), var(--type-floor)); }
 .ss-continue {
 		margin-top: calc(var(--ui) * 1);
 		padding: calc(var(--ui) * 1) calc(var(--ui) * 3);
-		font-size: calc(var(--ui) * 1.4);
+		font-size: max(calc(var(--ui) * 1.4), var(--type-floor-figure));
 	}
 }
 
@@ -990,6 +990,15 @@
 		   longer translations instead of letting them wrap. */
 		height: auto;
 		min-height: calc(var(--ui) * 3.4);
+		/* Clear of the "?" badge at THIS size. The base rule takes 2.8 units
+		   off for it, which fits the four-across layout - but here the badge
+		   and its inset come to 2.3 units a side, so "Higher / Lower" ran into
+		   the badge while "Inside / Outside" wrapped, and the two headings of
+		   one row sat at different heights. With the room the badge really
+		   takes, both two-word names wrap, at the slash (the no-break space in
+		   IntroPanels.svelte), and balance keeps the two lines even. */
+		width: calc(100% - var(--ui) * 5);
+		text-wrap: balance;
 	}
 /* The explanation is the point of the badge, so it gets a readable floor
 	   rather than scaling all the way down with --ss. */

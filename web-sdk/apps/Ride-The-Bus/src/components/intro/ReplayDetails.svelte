@@ -9,6 +9,7 @@
 <script lang="ts">
 	import { numberToCurrencyString } from 'utils-shared/amount';
 	import { t } from '../../i18n/i18nDerived';
+	import { formatMultiplier } from '../../game/ui/formatMultiplier';
 	import { FAMILY_RULES, familyOf, parseModeName } from '../../game/math/modes';
 
 	let {
@@ -145,7 +146,7 @@
 				{#if payoutMultiplier !== null}
 					<div class="ss-detail-row">
 						<span class="ss-detail-cap">{t('Payout')}</span>
-						<span class="ss-detail-val">{payoutMultiplier.toFixed(1)}×</span>
+						<span class="ss-detail-val">{formatMultiplier(payoutMultiplier)}</span>
 					</div>
 				{/if}
 

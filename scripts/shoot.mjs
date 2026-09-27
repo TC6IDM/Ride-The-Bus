@@ -10,6 +10,28 @@
  *   npm run shots -- --board      -- the idle board and control bar, every size
  *   npm run shots -- --popups     -- all eight panels, opened and tabbed through
  *   npm run shots -- --errors     -- the error dialog, one round refused per code
+ *                                    (all eight RGS codes, and an unknown one)
+ *   npm run shots -- --loader     -- the loading screen, every size
+ *   npm run shots -- --reveal     -- a round mid-reveal: a card turning, a card
+ *                                    landed, the held last card rising and at
+ *                                    the top of its hold (with the tunnel)
+ *   npm run shots -- --tips       -- the refusals: spin with nothing picked,
+ *                                    Inside after Equal
+ *   npm run shots -- --autoplay   -- a run in progress: the bar, the panel
+ *                                    mid-run, and the bet and mode locked
+ *   npm run shots -- --howto      -- How to Play scrolled top to bottom, and
+ *                                    every game-mode tab
+ *   npm run shots -- --resume     -- a round the RGS hands back as still active,
+ *                                    finished on load (replay-server
+ *                                    /__force-resume); --mode/--event pick it
+ *   npm run shots -- --all        -- every scenario above, then reduced motion
+ *   npm run shots -- --board --social        -- social mode (?social=true)
+ *   npm run shots -- --board --operator turbo,autoplay
+ *                    -- the operator's switches: turbo, superturbo, autoplay,
+ *                       slamstop, spacebar off; rg turns the three
+ *                       responsible-gambling readouts on
+ *   npm run shots -- --board --query "&dev_minimumRoundDuration=3000"
+ *                                        -- anything else, on every URL
  *   npm run shots -- --sizes --lang pl   -- any scenario in another locale
  *   npm run shots -- --board --family tr -- the board/panels on another family
  *                                           (opens the picker, confirms the row)
@@ -109,19 +131,68 @@ const opts = {
   bet: value('bet', null),
   balance: value('balance', null),
   maxbet: value('maxbet', null),
-  tiers:
-    flag('tiers') ||
-    (!flag('sizes') && !flag('reduced') && !flag('intro') && !flag('board') && !flag('popups') && !flag('errors')),
-  sizes:
-    flag('sizes') ||
-    (!flag('tiers') && !flag('reduced') && !flag('intro') && !flag('board') && !flag('popups') && !flag('errors')),
+  /* The rest of the app, which the scenarios above never reached: the loader,
+     a reveal in flight, the refusals, a run of autoplay, How to Play past its
+     first screen, and a resumed round. */
+  loader: flag('loader'),
+  reveal: flag('reveal'),
+  tips: flag('tips'),
+  autoplay: flag('autoplay'),
+  howto: flag('howto'),
+  resume: flag('resume'),
+  all: flag('all'),
+  /* Appended to EVERY URL a run opens, so any scenario can be shot in social
+     mode or under an operator's jurisdiction block (game/dev/devOverrides.ts
+     reads the dev_* flags). */
+  social: flag('social'),
+  operator: value('operator', ''),
+  query: value('query', ''),
   headed: flag('headed'),
 };
+
+/* No scenario named means the original default: the tiers and the sizes. */
+const SCENARIO_FLAGS = ['tiers', 'sizes', 'reduced', 'intro', 'board', 'popups', 'errors',
+  'loader', 'reveal', 'tips', 'autoplay', 'howto', 'resume', 'all'];
+const anyScenario = SCENARIO_FLAGS.some(flag);
+opts.tiers = flag('tiers') || opts.all || !anyScenario;
+opts.sizes = flag('sizes') || opts.all || !anyScenario;
+for (const name of ['intro', 'board', 'popups', 'errors', 'loader', 'reveal', 'tips', 'autoplay', 'howto', 'resume']) {
+  opts[name] = opts[name] || opts.all;
+}
+
+/** The operator's switches, by the names a person would use. */
+const OPERATOR_FLAGS = {
+  turbo: ['disabledTurbo'],
+  superturbo: ['disabledSuperTurbo'],
+  autoplay: ['disabledAutoplay'],
+  slamstop: ['disabledSlamstop'],
+  spacebar: ['disabledSpacebar'],
+  rg: ['displayNetPosition', 'displayRTP', 'displaySessionTimer'],
+};
+const urlExtra = () => {
+  const operator = opts.operator
+    .split(',')
+    .map((name) => name.trim())
+    .filter(Boolean)
+    .flatMap((name) => {
+      if (!OPERATOR_FLAGS[name]) {
+        console.error(`--operator: unknown switch "${name}" (${Object.keys(OPERATOR_FLAGS).join(', ')})`);
+        process.exit(1);
+      }
+      return OPERATOR_FLAGS[name].map((f) => `&dev_${f}=1`);
+    })
+    .join('');
+  return (opts.social ? '&social=true' : '') + operator + opts.query;
+};
+
+/** The three sizes that stand for the range, for the slower scenarios. */
+const KEY_SIZES = ['desktop', 'popout-s', 'mobile-s'];
 
 const replayUrl = (mode, event) =>
   `http://localhost:${GAME_PORT}/?replay=true&game=ride_the_bus&version=1` +
   `&mode=${mode}&event=${event}&rgs_url=localhost%3A${REPLAY_PORT}` +
-  `&currency=USD&amount=1000000&lang=${opts.lang}`;
+  `&currency=USD&amount=1000000&lang=${opts.lang}` +
+  urlExtra();
 
 /* ---- The browser --------------------------------------------------------- */
 async function launch() {
@@ -157,8 +228,19 @@ async function launch() {
     );
   }
 
-  const targets = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();
-  const target = targets.find((t) => t.type === 'page');
+  // /json/version answers before Chrome has opened its first tab, so a list
+  // read straight after it can hold no page at all - and `target` came back
+  // undefined and killed the run (seen with two drivers starting at once).
+  // Wait for the tab; if one never appears, open one.
+  let target = null;
+  for (let i = 0; i < 50 && !target; i++) {
+    const targets = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();
+    target = targets.find((t) => t.type === 'page') ?? null;
+    if (!target) await sleep(100);
+  }
+  if (!target) {
+    target = await (await fetch(`http://127.0.0.1:${port}/json/new?about:blank`, { method: 'PUT' })).json();
+  }
   const ws = new WebSocket(target.webSocketDebuggerUrl);
   await new Promise((res, rej) => {
     ws.onopen = res;
@@ -188,6 +270,8 @@ async function launch() {
      things that need emulating - reduced motion and a coarse pointer - have to
      be written together or the second silently clears the first. */
   let touch = false;
+  // The current viewport, for a fast shot's clip.
+  let size = { w: 1200, h: 675 };
   let reduced = false;
   const applyMedia = () => {
     const features = [];
@@ -204,6 +288,7 @@ async function launch() {
   const page = {
     send,
     async viewport(w, h, mobile) {
+      size = { w, h };
       await send('Emulation.setDeviceMetricsOverride', {
         width: w,
         height: h,
@@ -265,10 +350,28 @@ async function launch() {
       }
       return false;
     },
-    async shot(name) {
+    /**
+     * `fast` is for a MOMENT rather than a screen: a JPEG with Chrome's
+     * optimizeForSpeed. The PNG at 2x took around a second here, which is
+     * longer than a card takes to turn - a "mid-turn" shot came back with the
+     * card landed, and a "held card" shot came back as the win takeover.
+     * It is also drawn at 1x rather than the 2x device scale: at Desktop even
+     * a fast JPEG of 2400x1350 outlasted the half-second a card takes to land.
+     */
+    async shot(name, { fast = false } = {}) {
       mkdirSync(OUT, { recursive: true });
-      const { data } = await send('Page.captureScreenshot', { format: 'png' });
-      const file = path.join(OUT, `${prefix()}${name}.png`);
+      const { data } = await send(
+        'Page.captureScreenshot',
+        fast
+          ? {
+              format: 'jpeg',
+              quality: 88,
+              optimizeForSpeed: true,
+              clip: { x: 0, y: 0, width: size.w, height: size.h, scale: 0.5 },
+            }
+          : { format: 'png' },
+      );
+      const file = path.join(OUT, `${prefix()}${name}.${fast ? 'jpg' : 'png'}`);
       writeFileSync(file, Buffer.from(data, 'base64'));
       console.log(`  ${path.relative(ROOT, file)}`);
       return file;
@@ -545,7 +648,32 @@ const plainUrl = (extra = '') =>
   (opts.bet ? `&bet=${opts.bet}` : '') +
   (opts.balance ? `&balance=${opts.balance}` : '') +
   (opts.maxbet ? `&maxbet=${opts.maxbet}` : '') +
-  extra;
+  extra +
+  urlExtra();
+
+/**
+ * Open the plain game and get past its intro onto the board.
+ *
+ * ONE RELOAD on a first load that never shows the intro. A full `--all` run on
+ * a dev server that is compiling, or sharing the machine with another capture,
+ * missed the 25s window exactly once in its first pass (board at desktop) and
+ * passed on its own a minute later - a slow compile, not a defect, and not a
+ * reason to lose that size from the run.
+ */
+async function openPlain(page, tag, extra = '') {
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    await page.goto(plainUrl(extra));
+    if (await page.waitFor('.ss-continue', attempt === 1 ? 25000 : 45000)) {
+      await page.click('.ss-continue');
+      await sleep(1400);
+      if (await page.waitFor('footer')) return true;
+      console.log(`  ${tag}: never reached the board`);
+      return false;
+    }
+    console.log(`  ${tag}: no intro${attempt === 1 ? ' - reloading once' : ''}`);
+  }
+  return false;
+}
 
 /** `<tag>-` when a run was given one, so its files do not overwrite another's. */
 const prefix = () => (opts.tag ? `${opts.tag}-` : '');
@@ -558,17 +686,8 @@ const prefix = () => (opts.tag ? `${opts.tag}-` : '');
  * sheet reached it is to render it.
  */
 async function shootBoard(page, tag, rg) {
-  await page.goto(plainUrl(rg ? '&dev_displayNetPosition=1&dev_displayRTP=1&dev_displaySessionTimer=1' : ''));
-  if (!(await page.waitFor('.ss-continue'))) {
-    console.log(`  ${tag}: no intro`);
-    return;
-  }
-  await page.click('.ss-continue');
-  await sleep(1400);
-  if (!(await page.waitFor('footer'))) {
-    console.log(`  ${tag}: never reached the board`);
-    return;
-  }
+  const rgFlags = rg ? '&dev_displayNetPosition=1&dev_displayRTP=1&dev_displaySessionTimer=1' : '';
+  if (!(await openPlain(page, tag, rgFlags))) return;
   if (opts.family && !(await switchFamily(page, opts.family))) {
     console.log(`  ${tag}: could not switch to ${opts.family}`);
     return;
@@ -730,17 +849,7 @@ async function shootPanel(page, tag, name, opener, panelSel) {
 }
 
 async function shootPopups(page, tag) {
-  await page.goto(plainUrl());
-  if (!(await page.waitFor('.ss-continue'))) {
-    console.log('  ' + tag + ': no intro');
-    return;
-  }
-  await page.click('.ss-continue');
-  await sleep(1400);
-  if (!(await page.waitFor('footer'))) {
-    console.log('  ' + tag + ': never reached the board');
-    return;
-  }
+  if (!(await openPlain(page, tag))) return;
   if (opts.family && !(await switchFamily(page, opts.family))) {
     console.log('  ' + tag + ': could not switch to ' + opts.family);
     return;
@@ -802,10 +911,17 @@ async function shootModeConfirm(page, tag) {
  * on request, see /__force-error in replay-server.mjs.
  */
 const ERROR_CASES = [
-  // code, what it should prove
+  // code, what it should prove. All eight ErrorModal maps, then one it does
+  // not - four of them used to be all this shot, so half the sentences a
+  // player can be shown had never been looked at.
   ['ERR_VAL', 'a rejected bet - mapped message, Close'],
   ['ERR_IPB', 'not enough balance - mapped message, Close'],
   ['ERR_IS', 'dead session - mapped message, RELOAD instead of Close'],
+  ['ERR_ATE', 'expired token - the dead-session message, RELOAD instead of Close'],
+  ['ERR_GLE', 'a gambling limit reached - mapped message, Close'],
+  ['ERR_LOC', 'a blocked location - mapped message, Close'],
+  ['ERR_GEN', 'a server fault - mapped message, Close'],
+  ['ERR_MAINTENANCE', 'maintenance - mapped message, Close'],
   ['ERR_NOPE', 'an unrecognised code - generic message, raw payload kept'],
 ];
 
@@ -865,7 +981,8 @@ async function shootErrorModal(page, tag) {
     // calls the RGS at all, so nothing can refuse it.
     await page.goto(
       `http://localhost:${GAME_PORT}/?currency=USD&lang=${opts.lang}` +
-        `&rgs_url=localhost%3A${REPLAY_PORT}&sessionID=shots-${code}`,
+        `&rgs_url=localhost%3A${REPLAY_PORT}&sessionID=shots-${code}` +
+        urlExtra(),
     );
     if (!(await page.waitFor('.ss-continue'))) {
       console.log(`  error/${code}: no intro`);
@@ -919,6 +1036,286 @@ async function shootErrorModal(page, tag) {
 
   await forceError(null);
   if (!any) console.log('  error: no variant could be reached');
+}
+
+/* ---- The rest of the app ----------------------------------------------------
+   Each of these shoots screens the scenarios above never reached. A coverage
+   check on 2026-09-27 set every conditional branch in the components against
+   every screen this script opened, and these were what nothing captured: the
+   loader, a reveal in flight, the held last card, the refusals, a run of
+   autoplay, How to Play past its first screen, and a resumed round. Each one
+   prints what it saw, so a scenario that reaches nothing says so rather than
+   leaving a folder of shots of the wrong screen. */
+
+/** What the card row and its readout are doing, read off the live page. */
+const REVEAL_STATE = [
+  "const flipped = document.querySelectorAll('.card-row .card-inner.flipped').length;",
+  "const held = document.querySelector('.card-slot.is-held');",
+  'return {',
+  '  flipped,',
+  '  held: !!held,',
+  "  climb: held ? parseFloat(held.style.getPropertyValue('--hold-climb')) || 0 : 0,",
+  "  tunnel: !!document.querySelector('.is-closing'),",
+  "  overlay: !!document.querySelector('.wc-overlay'),",
+  "  label: document.querySelector('.running-win-label')?.textContent.trim() ?? '',",
+  "  amount: document.querySelector('.running-win-amount')?.textContent.trim() ?? '',",
+  '};',
+].join('');
+
+/** The loading screen - drawn first, held at least 1.4s once the game is ready. */
+async function shootLoader(page, tag) {
+  await page.goto(plainUrl(), 0);
+  if (!(await page.waitFor('.game-loader', 15000))) {
+    console.log(`  ${tag}: the loader never showed`);
+    return;
+  }
+  await sleep(450); // its own entrance
+  await page.shot(`loader-${tag}`);
+  console.log(`  ${tag}: shot`);
+  // Let it finish before the next navigation, so the next size starts clean.
+  await page.waitFor('.ss-continue', 25000);
+}
+
+/**
+ * A round in flight: a card turning (its figure not yet down - the rule is
+ * that a result lands after the turn), a card landed with its chip and the
+ * total, and - on a round with an Equal pick - the held last card rising and
+ * then at the top of its hold, where the tunnel closes on a big enough stake.
+ * --mode / --event pick the round; the default (the Max win) holds.
+ */
+async function shootReveal(page, tag) {
+  if (!(await startRound(page, opts.mode, opts.event))) {
+    console.log(`  ${tag}: round never started`);
+    return;
+  }
+  // NO SLEEPS between noticing a moment and shooting it. Each moment is timed
+  // from when the loop first SAW its trigger, and the loop keeps polling in
+  // between - a sleep here is how an earlier version shot the takeover and
+  // called it the held card. Each note carries the shot's delay after its
+  // trigger, so a frame that came late says so.
+  const done = new Set();
+  const notes = [];
+  const seen = {};
+  const t0 = Date.now();
+  const shoot = async (key, name, trigger) => {
+    done.add(key);
+    const lag = Date.now() - trigger;
+    await page.shot(`reveal-${tag}-${name}`, { fast: true });
+    return lag;
+  };
+  while (Date.now() - t0 < 60000) {
+    const s = await page.evaluate(REVEAL_STATE);
+    const now = Date.now();
+    if (s.overlay) break;
+    if (s.flipped >= 1) seen.flip1 ??= now;
+    if (s.flipped >= 2) seen.flip2 ??= now;
+    if (s.held) seen.held ??= now;
+    // Card 1 on its way over: the face is past edge-on within ~60ms of a
+    // 500ms turn, and its chip and the total must not be down until ~450ms.
+    if (seen.flip1 && !done.has('turning')) {
+      const lag = await shoot('turning', '1-card-turning', seen.flip1);
+      const after = await page.evaluate(REVEAL_STATE);
+      notes.push(`turning +${lag}ms (total then ${after.amount})`);
+    }
+    // Card 2 down, its chip and the new total with it.
+    if (seen.flip2 && !done.has('landed') && now - seen.flip2 >= 650) {
+      const lag = await shoot('landed', '2-card-landed', seen.flip2);
+      notes.push(`landed +${lag}ms ${s.label} ${s.amount}`);
+    }
+    // The held last card: part-way up, and then at the top of its climb,
+    // where it sits for a breath before the slam.
+    if (seen.held && !done.has('rise') && now - seen.held >= 400) {
+      const lag = await shoot('rise', '3-hold-rising', seen.held);
+      notes.push(`rising +${lag}ms${s.tunnel ? ', tunnel closing' : ''}`);
+    }
+    if (seen.held && s.climb > 0 && !done.has('top') && now - seen.held >= s.climb + 100) {
+      const lag = await shoot('top', '4-hold-top', seen.held);
+      notes.push(`top +${lag}ms of a ${Math.round(s.climb)}ms climb${s.tunnel ? ', tunnel closed' : ', NO tunnel'}`);
+    }
+    await sleep(30);
+  }
+  if (!seen.held) notes.push('no hold on this round');
+  console.log(`  ${tag}: ${notes.join('  |  ') || 'nothing captured'}`);
+}
+
+/** The two refusals a player meets first: spin with nothing picked, and Inside
+ *  after Equal. Each answers with a tip that says why. */
+async function shootTips(page, tag) {
+  if (!(await openPlain(page, tag))) return;
+  await page.click('.cb-spin');
+  await sleep(350);
+  const spinTip = await page.evaluate("return !!document.querySelector('.cb-cooldown-tip.is-shown');");
+  await page.shot(`tip-spin-blocked-${tag}`);
+  await page.click('.hl-square .equal-btn');
+  await sleep(250);
+  await page.click('.io-square .inside-half');
+  await sleep(350);
+  const insideTip = await page.evaluate("return !!document.querySelector('.choice-tip');");
+  await page.shot(`tip-inside-unavailable-${tag}`);
+  console.log(
+    `  ${tag}: spin tip ${spinTip ? 'shown' : 'MISSING'}, inside tip ${insideTip ? 'shown' : 'MISSING'}`,
+  );
+}
+
+/**
+ * A run of autoplay: the bar counting down, the panel opened mid-run (it stays
+ * openable - the stops live there - with the count locked and Stop offered),
+ * and the stake and the mode refusing a press while it runs, each with its tip.
+ * Local rounds: no sessionID, so dev deals them itself and no RGS is needed.
+ */
+async function shootAutoplay(page, tag) {
+  if (!(await openPlain(page, tag))) return;
+  const picked = await page.evaluate(PICK_GUESSES);
+  if (picked < 4) {
+    console.log(`  ${tag}: only picked ${picked} of 4 guesses`);
+    return;
+  }
+  await page.click('.cb-autospin');
+  if (!(await page.waitFor('.popup-autospin', 4000))) {
+    console.log(`  ${tag}: the autoplay panel never opened`);
+    return;
+  }
+  await sleep(300);
+  await page.evaluate(
+    "const p = [...document.querySelectorAll('.popup-autospin .spin-pill')].find((b) => b.textContent.trim() === '10');" +
+      'if (p) p.click(); return !!p;',
+  );
+  await sleep(200);
+  await page.click('.popup-autospin .popup-start');
+  await sleep(1800);
+  const count = await page.evaluate("return document.querySelector('.cb-spin-count')?.textContent.trim() ?? null;");
+  await page.shot(`autoplay-running-${tag}`);
+
+  await page.click('.cb-autospin');
+  if (await page.waitFor('.popup-autospin', 4000)) {
+    await sleep(450);
+    await page.shot(`autoplay-panel-running-${tag}`);
+    await page.key('Escape', 'Escape', 27);
+    await sleep(300);
+  }
+
+  await page.click('.cb-bet-display');
+  await sleep(350);
+  const betTip = await page.evaluate("return !!document.querySelector('.cb-bet-tip.is-shown');");
+  await page.shot(`autoplay-bet-locked-${tag}`);
+  await sleep(2600); // let that tip go before raising the next
+  await page.click('.cb-mode-btn');
+  await sleep(350);
+  const modeTip = await page.evaluate("return !!document.querySelector('.cb-mode-tip.is-shown');");
+  await page.shot(`autoplay-mode-locked-${tag}`);
+
+  // Stop the run from its own panel, so the next size starts on a quiet board.
+  await page.click('.cb-autospin');
+  if (await page.waitFor('.popup-autospin', 4000)) {
+    await sleep(300);
+    await page.click('.popup-autospin .popup-start');
+    await sleep(300);
+  }
+  console.log(
+    `  ${tag}: counter ${count ?? 'MISSING'}, bet tip ${betTip ? 'shown' : 'MISSING'}, ` +
+      `mode tip ${modeTip ? 'shown' : 'MISSING'}`,
+  );
+}
+
+/**
+ * How to Play, all of it: the longest screen in the game, and the only one
+ * whose first screen is a fraction of it. Top to bottom a screen at a time,
+ * overlapping by a fifth so no line is only ever seen cut in half - and then
+ * each game-mode tab, scrolled to sit just under the pinned header.
+ */
+async function shootHowTo(page, tag) {
+  if (!(await openPlain(page, tag))) return;
+  await page.click('.cb-info');
+  if (!(await page.waitFor('.popup-info', 4000))) {
+    console.log(`  ${tag}: How to Play never opened`);
+    return;
+  }
+  await sleep(450);
+  const steps = await page.evaluate(
+    "const p = document.querySelector('.popup-info');" +
+      'return Math.max(1, Math.ceil((p.scrollHeight - p.clientHeight) / (p.clientHeight * 0.8)) + 1);',
+  );
+  const n = Math.min(steps, 14);
+  for (let i = 0; i < n; i++) {
+    await page.evaluate(
+      "const p = document.querySelector('.popup-info');" +
+        `p.scrollTop = ${i} * p.clientHeight * 0.8; return p.scrollTop;`,
+    );
+    await sleep(250);
+    await page.shot(`howto-${tag}-${String(i + 1).padStart(2, '0')}`);
+  }
+  const tabs = await page.evaluate("return document.querySelectorAll('.popup-info .mode-tab').length;");
+  for (let i = 0; i < tabs; i++) {
+    const name = await page.evaluate(
+      "const p = document.querySelector('.popup-info');" +
+        `const tab = p.querySelectorAll('.mode-tab')[${i}];` +
+        "const head = p.querySelector('.popup-head');" +
+        'tab.click();' +
+        'p.scrollTop = Math.max(0, tab.getBoundingClientRect().top - p.getBoundingClientRect().top' +
+        ' + p.scrollTop - (head ? head.offsetHeight : 0) - 8);' +
+        `return (tab.firstChild && tab.firstChild.textContent.trim()) || String(${i});`,
+    );
+    await sleep(300);
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || String(i + 1);
+    await page.shot(`howto-${tag}-tab-${slug}`);
+  }
+  console.log(`  ${tag}: ${n} screens${steps > n ? ` (of ${steps})` : ''}, ${tabs} mode tabs`);
+  await page.key('Escape', 'Escape', 27);
+}
+
+/**
+ * A round the RGS hands back as still active - the player closed the game
+ * mid-round - finished on load. Armed on the replay server (/__force-resume),
+ * which puts it on the next /wallet/authenticate; the sessionID is what makes
+ * dev authenticate at all (see --errors). --mode / --event pick the round.
+ */
+async function shootResume(page, tag) {
+  const resumeRgs = (what) => fetch(`http://localhost:${REPLAY_PORT}/__force-resume/${what}`).then((r) => r.ok).catch(() => false);
+  if (!(await resumeRgs(`${opts.mode}/${opts.event}`))) {
+    console.log(`  ${tag}: the replay RGS would not arm a resume - restart it (it predates /__force-resume)`);
+    return;
+  }
+  try {
+    await page.goto(plainUrl(`&rgs_url=localhost%3A${REPLAY_PORT}&sessionID=shots-resume-${tag}`), 0);
+    let dealt = false;
+    const t0 = Date.now();
+    while (Date.now() - t0 < 60000) {
+      if (await page.evaluate("return !!document.querySelector('.ss-continue');")) {
+        await page.click('.ss-continue');
+        await sleep(600);
+      }
+      const s = await page.evaluate(REVEAL_STATE);
+      if (!dealt && s.flipped >= 2) {
+        dealt = true;
+        await sleep(700);
+        await page.shot(`resume-${tag}-1-dealing`);
+      }
+      const overlay = await page.evaluate(OVERLAY_STATE);
+      if (overlay?.settled) {
+        await sleep(600);
+        await page.shot(`resume-${tag}-2-settled`);
+        console.log(`  ${tag}: resumed and settled - ${overlay.title} ${overlay.amount}`);
+        return;
+      }
+      if (dealt && !overlay) {
+        const board = await page.evaluate(
+          "const bar = document.querySelector('.running-win.is-loss, .running-win.is-win, .running-win.is-partial');" +
+            "return bar ? bar.textContent.trim().replace(/\\s+/g, ' ') : null;",
+        );
+        if (board) {
+          await sleep(900);
+          await page.shot(`resume-${tag}-2-settled`);
+          console.log(`  ${tag}: resumed and settled on the board - ${board}`);
+          return;
+        }
+      }
+      await sleep(150);
+    }
+    console.log(`  ${tag}: ${dealt ? 'resumed but never settled' : 'the round never resumed'}`);
+  } finally {
+    // Never leave a resume armed for whatever authenticates next.
+    await resumeRgs('off');
+  }
 }
 
 /* ---- Run ----------------------------------------------------------------- */
@@ -990,6 +1387,31 @@ Board + bar  plain game, idle${opts.family ? ' on ' + opts.family : ''}  ${opts.
       await page.viewport(w, h, mobile);
       await shootBoard(page, tag, tag === 'desktop');
     }
+  }
+
+  const sweep = async (label, sizes, fn) => {
+    console.log(`\n${label}`);
+    for (const [tag, w, h, mobile] of SIZES) {
+      if (sizes && !sizes.includes(tag)) continue;
+      await page.viewport(w, h, mobile);
+      await fn(page, tag);
+    }
+  };
+  if (opts.loader) await sweep('Loader', null, shootLoader);
+  if (opts.reveal) await sweep(`Reveal  ${opts.mode} #${opts.event}`, null, shootReveal);
+  if (opts.tips) await sweep('Refusals  spin with nothing picked, Inside after Equal', KEY_SIZES, shootTips);
+  if (opts.autoplay) await sweep('Autoplay  a run of 10, mid-run', KEY_SIZES, shootAutoplay);
+  if (opts.howto) await sweep('How to Play  every screen, every tab', KEY_SIZES, shootHowTo);
+  if (opts.resume) await sweep(`Resume  ${opts.mode} #${opts.event}, active on authenticate`, ['desktop', 'mobile-s'], shootResume);
+
+  // --all ends on the reduced-motion pass, rather than running everything
+  // reduced: it is the one scenario that is about that setting.
+  if (opts.all) {
+    console.log(`\nReduced motion  ${opts.mode} #${opts.event}`);
+    await page.viewport(1200, 675, false);
+    await page.reducedMotion(true);
+    await shootTiers(page, 'tier-reduced');
+    await page.reducedMotion(false);
   }
 
   if (opts.reduced && !opts.tiers && !opts.sizes && !opts.intro && !opts.board) {

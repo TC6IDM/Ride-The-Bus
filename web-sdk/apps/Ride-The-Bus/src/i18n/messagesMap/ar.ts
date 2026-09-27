@@ -15,7 +15,7 @@ export default {
 	Suit: 'النوع',
 
 	Winning: 'الربح',
-	'Full Game Win!': 'فوز كامل!',
+	'Full game win': 'فوز كامل',
 	Banked: 'محفوظ',
 	Busted: 'خسارة',
 	'Revealing…': 'جارٍ الكشف…',
@@ -29,11 +29,10 @@ export default {
 	'Set rounds': 'حدد عدد الجولات',
 	Start: 'ابدأ',
 
-	'Bet Menu': 'قائمة الرهان',
+	'Bet menu': 'قائمة الرهان',
 	'Quick bets':
 		'رهانات سريعة',
 
-	'Turbo Speed': 'سرعة التيربو',
 	Normal: 'عادي',
 	Instant: 'فوري',
 	'Off: full animation': 'إيقاف: رسوم متحركة كاملة',
@@ -51,7 +50,6 @@ export default {
 
 	Autoplay: 'اللعب التلقائي',
 
-	'Game Mode': 'وضع اللعبة',
 	'Choose game mode': 'اختر وضع اللعبة',
 	Classic: 'كلاسيكي',
 	'Second Chance': 'فرصة ثانية',
@@ -89,7 +87,6 @@ export default {
 	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
 		'خطأ في البطاقة الأولى ينهي الجولة. والأخطاء اللاحقة تحتفظ بنسبة 15% فقط، لذا تصبح كل تخمينة صحيحة أثمن.',
 
-	'How to Play': 'كيفية اللعب',
 	'Guess your way through four cards:': 'خمّن البطاقات الأربع بالترتيب:',
 	'Color: is card 1 red or black?':
 		'اللون: هل البطاقة الأولى حمراء أم سوداء؟',

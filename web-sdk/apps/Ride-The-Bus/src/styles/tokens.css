@@ -262,11 +262,32 @@
      --panel-elevation-low is the same shape for something that SITS on the
      table rather than floating over it - the bar, the RG plate - scaled down
      so a pill an inch from the felt does not cast a popup's shadow. */
+  /* THE LEGIBILITY FLOOR. Every size in the game is a multiple of --ui or
+     --ui-bar, which is what lets Popout S be Popout L at exactly half size -
+     and at half size the balance printed at 5.9px, the bar's captions at
+     3.4px and the intro's Tap to continue at 4.9px (measured, UI review
+     2026-09-27). The ARRANGEMENT still halves; the type now stops here.
+
+     Applied as max(own calc, floor), so it binds nowhere but the smallest
+     window - every other size is already above it - and fitValue can still
+     shrink a figure below it (its floor is a ratio of this), because a
+     twelve-figure naira balance must fit its box before it may be big. */
+  --type-floor: 6px;        /* a label, a caption, a line of prose */
+  --type-floor-figure: 9px; /* a money figure, a win, the one action on screen */
   --panel-face: linear-gradient(
     168deg,
     rgba(var(--panel-lit-rgb), 0.055) 0%,
     rgba(var(--panel-lit-rgb), 0.018) 26%,
     transparent 52%
+  );
+  /* The face's TOP SLICE, for a panel header that stays put while the panel
+     scrolls under it (popup-base.css). It has to be opaque - text scrolls
+     beneath it - so it is the face's first few percent laid over --panel,
+     flat, rather than the whole gradient redrawn in a box a tenth the height.
+     The seam falls on the header's own rule. */
+  --panel-head-face: linear-gradient(
+    rgba(var(--panel-lit-rgb), 0.052),
+    rgba(var(--panel-lit-rgb), 0.044)
   );
   --panel-elevation:
     0 2px 6px rgba(var(--shadow-rgb), 0.55),
@@ -546,13 +567,38 @@
 
      All four pass, and the two that were failing are now the two clearest -
      which also settles the opposites problem, since the pair is no longer
-     legible at wildly different levels. */
+     legible at wildly different levels.
+
+     SOFTENED, 2026-09-27, on the owner's call - after the review above was
+     shown side by side (scripts/.shots/choice-fills-*). NOT the rejected
+     re-derivation: same hue, same lightness, less chroma, worked in OKLCH, on
+     the three fills that were screen colours in a sampled scene (magenta sat at
+     oklch 0.281 chroma, further out than anything else in the game). Red and
+     black are the card's own colours and are untouched. The squares also take
+     the table's light now (choices.css .choice-square and ::after).
+
+       Higher   #2ecc71 -> #5dc680   oklch(74.6% 0.181 -> 0.141 152)   keyline 8.84:1
+       Inside   #00bcd4 -> #4cb8cb   oklch(72.9% 0.126 -> 0.101 211)   keyline 8.10:1
+       Outside  #d81ce0 -> #c552c9   oklch(63.0% 0.281 -> 0.203 326)   keyline 4.87:1
+
+     THE BACKUP IS KEPT. The fills that shipped until now stay here as the
+     -original tokens. To go back, point the three live tokens below at them:
+     `var(--choice-higher-original)` and so on - three words, nothing else
+     moves - and put the same three values back in betChips.test.ts, which
+     pins the live set and checks the backup is still here. */
+  --choice-higher-original: #2ecc71;
+  --choice-inside-original: #00bcd4;
+  --choice-outside-original: #d81ce0;
+  --choice-higher-soft: #5dc680;
+  --choice-inside-soft: #4cb8cb;
+  --choice-outside-soft: #c552c9;
+
   --choice-black: #16181c;
   --choice-red: #c0392b;
-  --choice-higher: #2ecc71;
+  --choice-higher: var(--choice-higher-soft);
   --choice-lower: #c0392b;
-  --choice-inside: #00bcd4;
-  --choice-outside: #d81ce0;
+  --choice-inside: var(--choice-inside-soft);
+  --choice-outside: var(--choice-outside-soft);
   --choice-equal-lit: #ffe680;
   --choice-equal: #f1c40f;
   --choice-equal-deep: #d29d05;

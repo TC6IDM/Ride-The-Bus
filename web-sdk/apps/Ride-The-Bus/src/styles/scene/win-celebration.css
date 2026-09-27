@@ -925,7 +925,7 @@
    come from everything else: less than half the size, a lighter weight, and
    enough less opacity that the eye picks the amount first without being told. */
 .wc-mult {
-	font-size: calc(var(--ui) * 1.9);
+	font-size: max(calc(var(--ui) * 1.9), var(--type-floor-figure));
 	font-weight: 700;
 	color: var(--wc-hot);
 	opacity: 0.72;
@@ -939,12 +939,16 @@
    to dismiss the takeover was below the contrast minimum for its size.
 
    The pulse is kept, because a static prompt on a celebration goes unread, but
-   it is floored at a level that stays legible for the whole cycle. */
+   it is floored at a level that stays legible for the whole cycle.
+
+   SENTENCE CASE. It was spaced small caps, which design.md keeps for a
+   two-word caption over a figure and rules out on a sentence - and "Tap to
+   continue" is one, which the intro already sets in sentence case on its own
+   button. Weight 600 carries it instead of the tracking. */
 .wc-prompt {
 	margin-top: calc(var(--ui) * 1.8);
-	font-size: calc(var(--ui) * 1.3);
-	letter-spacing: var(--track-label);
-	text-transform: uppercase;
+	font-size: max(calc(var(--ui) * 1.3), var(--type-floor-figure));
+	font-weight: 600;
 	color: var(--ink-warm-dim);
 	opacity: 0.72;
 	animation: wc-breathe 3.6s var(--ease-in-out) infinite;
@@ -1071,6 +1075,21 @@
 /* ---- Short viewports ----
    Popout S is 400x225. The stack has to shrink or the prompt falls off the
    bottom and the player cannot see how to dismiss it. */
+/* LANDSCAPE: THE HAND CLEARS THE TITLE. The fan hangs 3.6 units down into the
+   text block, which buries a third of each 10.4-unit card behind the title -
+   the court figures and the bottom indices of the very cards the round was
+   won with, the centrepiece this screen is "made of", on a landscape window
+   with a band of empty table above the hand (UI review, 2026-09-27). 1.4
+   leaves the title over the bottom corner only, which is enough for the band
+   to seat the hand on the text. Portrait keeps the deeper tuck: it has the
+   height and wants the stack as one block (below). The short-window rule that
+   follows is later and wins on Popout S, which has no room to spare. */
+@media (orientation: landscape) {
+	.wc-fan {
+		margin-bottom: calc(var(--ui) * -1.4);
+	}
+}
+
 @media (max-height: 380px) {
 	.wc-title {
 		font-size: min(calc(var(--ui) * 3.9), 9vw);
@@ -1079,7 +1098,7 @@
 		font-size: min(calc(var(--ui) * 3.7), 9vw);
 	}
 	.wc-mult {
-		font-size: calc(var(--ui) * 1.5);
+		font-size: max(calc(var(--ui) * 1.5), var(--type-floor-figure));
 	}
 	.wc-prompt {
 		margin-top: calc(var(--ui) * 0.9);

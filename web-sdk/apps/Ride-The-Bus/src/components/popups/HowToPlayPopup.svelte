@@ -27,6 +27,7 @@
 	import { FAMILIES_BY_VOLATILITY } from '../../game/math/volatility';
 	import gameConfig from '../../game/platform/config';
 	import { t } from '../../i18n/i18nDerived';
+	import { formatMultiplier } from '../../game/ui/formatMultiplier';
 	import MarkIcon from '../icons/MarkIcon.svelte';
 	import SuitIcon from '../icons/SuitIcon.svelte';
 	import ControlGlyph from '../icons/ControlGlyph.svelte';
@@ -42,7 +43,10 @@
 	// Counted, not typed - see the same line on the intro (IntroPanels.svelte).
 	const waysToPlay = allPlayableModes().length;
 
-	/** "1.99×" for a fixed row, "1.04× – 9.19×" for one that swings. */
+	/** "1.99×" for a fixed row, "1.04× – 9.19×" for one that swings.
+	 *  TWO places on purpose, unlike every other multiplier in the game
+	 *  (formatMultiplier): this is one guess's PRICE, which is not floored -
+	 *  a fair 50/50 is 1.96× - where a running total or a payout always is. */
 	const payRange = (min: number, max: number) =>
 		min === max ? `${min.toFixed(2)}×` : `${min.toFixed(2)}× – ${max.toFixed(2)}×`;
 
@@ -133,7 +137,7 @@
 </script>
 
   <div class="popup popup-info" role="dialog" aria-modal="true" tabindex="-1" aria-label={t('How to play')}>
-    <div class="popup-head"><span>{t('How to Play')}</span><button class="popup-close" onclick={props.onclose} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
+    <div class="popup-head"><span>{t('How to play')}</span><button class="popup-close" onclick={props.onclose} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
     <div class="info-body">
       <p>{t('Guess your way through four cards:')}</p>
       <ol>
@@ -242,7 +246,7 @@
           <p class="mode-panel-blurb">{t('Card 1 is dealt, not guessed. The deck holds one Ace, King and Queen of each suit, so card 2 matches 3 times in 11 and card 3 twice in 10.')}</p>
         {/if}
         <p class="mode-panel-max">
-          {maxWinParts[0]}<strong>{viewingRules.maxWin}×</strong>{maxWinParts[1] ?? ''}
+          {maxWinParts[0]}<strong>{formatMultiplier(viewingRules.maxWin)}</strong>{maxWinParts[1] ?? ''}
         </p>
         <!-- The figure above is the most this MODE can reach, which is the right
              headline for a mode a player is choosing between: some combination
@@ -261,7 +265,7 @@
              their pick, and the two figures agreeing IS the information. -->
         {#if pickedCeiling !== null && !viewingFixed}
           <p class="mode-panel-picked">
-            {t('Your four guesses top out at %s your bet.').replace('%s', `${pickedCeiling}×`)}
+            {t('Your four guesses top out at %s your bet.').replace('%s', formatMultiplier(pickedCeiling))}
           </p>
         {/if}
         <!-- Says in words what the conditional line above only shows by
@@ -352,7 +356,7 @@
                 </span>
                 <span class="ex-pick">{pickLabel(step.choice)}<span class="ex-tick"><MarkIcon name="check" /></span></span>
                 <span class="ex-odds">{t('%n of %t').replace('%n', String(step.hits)).replace('%t', String(step.total))}</span>
-                <span class="ex-total">{step.runningTotal.toFixed(2)}×</span>
+                <span class="ex-total">{formatMultiplier(step.runningTotal)}</span>
               </li>
             {/each}
           </ol>
@@ -364,12 +368,16 @@
              running total at card 2 IS 0.5x the bet) and only of Classic. -->
         <!-- No guesses on the fixed family, so no "guess wrong" there either. -->
         <h5 class="info-sub">{viewingFixed ? t('If a card does not match') : t('If you guess wrong')}</h5>
-        <ul>
+        <ul class="bust-rules">
           {#each bustRules as row}
             <!-- Through t(), like every other string here. It was rendered raw for
                  a long time, which left this section English in all sixteen other
                  locales and let "pays nothing" through in social mode. -->
-            <li><strong>{t(row.label)}</strong> — {row.percent === null ? t(row.key) : t(row.key).replace('%s', String(row.percent))}</li>
+            <!-- A label and its rule, parted by weight and a gap, not by a
+                 character. This was an em dash - the one in the game's copy -
+                 and a colon would be as wrong: French sets a space before it,
+                 Chinese and Japanese a full-width one. -->
+            <li><strong>{t(row.label)}</strong>{row.percent === null ? t(row.key) : t(row.key).replace('%s', String(row.percent))}</li>
           {/each}
         </ul>
 
@@ -384,11 +392,11 @@
                `oneIn` - the recorded figure, after the reweighter - so the
                sentence cannot quote a rate the tables do not deal. -->
           <p>{t('Three of a kind pays %m your bet, about one round in %n.')
-            .replace('%m', `${viewingRules.maxWin}×`)
+            .replace('%m', formatMultiplier(viewingRules.maxWin))
             .replace('%n', String(viewingOneIn))}</p>
         {:else}
           <p>{t('A full game win pays more the harder your picks were. Equal is the rarest guess, so it pays the most, and two Equal picks reach this mode’s maximum: %m your bet.')
-            .replace('%m', `${viewingRules.maxWin}×`)}</p>
+            .replace('%m', formatMultiplier(viewingRules.maxWin))}</p>
         {/if}
       </div>
 
@@ -440,7 +448,7 @@
              pay" is exactly the claim a reviewer checks. -->
         {t('Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.')
           .replace('%s', `${(gameConfig.rtp * 100).toFixed(2)}%`)
-          .replace('%m', `${maxWinOverall}×`)
+          .replace('%m', formatMultiplier(maxWinOverall))
           .replace('%f', t(FAMILY_RULES[maxWinFamily].label))}
       </p>
 

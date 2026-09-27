@@ -21,7 +21,7 @@
 </script>
 
   <div class="popup popup-turbo" role="dialog" aria-modal="true" tabindex="-1" aria-label={t('Turbo speed')}>
-    <div class="popup-head"><span>{t('Turbo Speed')}</span><button class="popup-close" onclick={onclose} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
+    <div class="popup-head"><span>{t('Turbo speed')}</span><button class="popup-close" onclick={onclose} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
     <div class="turbo-body">
       <div class="turbo-track">
         <span class="turbo-end">{t('Normal')}</span>

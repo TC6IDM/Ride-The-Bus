@@ -62,6 +62,7 @@
   import { t } from '../../i18n/i18nDerived';
   import { stateBet, stateUrlDerived } from 'state-shared';
   import { numberToCurrencyString } from 'utils-shared/amount';
+  import { formatMultiplier } from '../../game/ui/formatMultiplier';
 
   import { choicesLocked } from '../../game/round/roundState.svelte';
 
@@ -558,7 +559,9 @@ $effect(() => {
              the chip can never be the thing that pushes the cash out. -->
         <span class="cb-val" use:fitValue={`${round.lastWinAmount}|${round.lastWinMultiplier}`}>
           {numberToCurrencyString(round.lastWinAmount)}
-          <span class="cb-lastwin-mult">{round.lastWinMultiplier.toFixed(2)}×</span>
+          <!-- Only once a round has paid: before the first one, and after a
+               bust that kept nothing, "$0.00 0.0x" said zero twice. -->
+          {#if round.lastWinAmount > 0}<span class="cb-lastwin-mult">{formatMultiplier(round.lastWinMultiplier)}</span>{/if}
         </span>
       </div>
     </div>

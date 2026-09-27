@@ -42,7 +42,44 @@
   --choice-radius: calc(var(--choice-size) * 0.2);
   border-radius: var(--choice-radius);
   overflow: hidden;
-  box-shadow: 0 8px 18px rgba(var(--shadow-rgb), 0.35), 0 0 0 2px rgba(var(--ink-rgb), 0.25);
+  /* The table's two-part shadow - a tight contact patch under a wide soft one -
+     where this was one blurred blob and a 2px ring all the way round: the
+     "sticker, not an object" and the drawn-rather-than-lit box that table.css
+     and design.md both name. The ring stays at 1px, faint, because the Color
+     square's black half needs an edge against the dark wood. */
+  box-shadow:
+    0 2px 4px rgba(var(--shadow-rgb), 0.4),
+    0 10px 22px rgba(var(--shadow-rgb), 0.3),
+    0 0 0 1px rgba(var(--ink-rgb), 0.18);
+}
+
+/* LIT FROM THE UPPER RIGHT, like everything else on the table. The squares
+   were the one surface with no light on them at all - flat fills, which is
+   what made the row read as a screen laid over the scene rather than
+   something on it. A sheen that falls off from the top at the panel face's
+   own angle, a lit top edge, a shaded bottom one.
+
+   Over the segments (they fill the square, so the square's own insets would
+   paint underneath them) and under the Equal badge (z-index 2), which has its
+   own light. Static and never hit-tested: the fills still do not move, and a
+   tap still lands on the segment below. */
+.choice-square::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    168deg,
+    rgba(var(--panel-lit-rgb), 0.16) 0%,
+    transparent 34%,
+    transparent 66%,
+    rgba(var(--shadow-rgb), 0.18) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(var(--panel-lit-rgb), 0.32),
+    inset 0 -1px 0 rgba(var(--shadow-rgb), 0.4);
 }
 
 .half-btn,
@@ -374,12 +411,14 @@
   color: var(--choice-black);
   cursor: pointer;
   z-index: 2;
-  /* Outer ring and drop shadow match .choice-square exactly. The inset is a
-     single hairline now rather than 2px - with a real border above it, more
-     than that turns an 18px badge into concentric rings. */
+  /* Outer ring and two-part shadow match .choice-square's, scaled to the
+     badge. The inset is a single hairline now rather than 2px - with a real
+     border above it, more than that turns an 18px badge into concentric
+     rings. */
   box-shadow:
-    0 4px 10px rgba(var(--shadow-rgb), 0.45),
-    0 0 0 2px rgba(var(--ink-rgb), 0.25),
+    0 1px 2px rgba(var(--shadow-rgb), 0.45),
+    0 4px 10px rgba(var(--shadow-rgb), 0.35),
+    0 0 0 1px rgba(var(--ink-rgb), 0.18),
     inset 0 0 0 1px rgba(var(--ink-rgb), 0.28);
   transition: box-shadow var(--dur-control) var(--ease-out), transform var(--dur-control) var(--ease-out), filter var(--dur-control) var(--ease-out);
 }
@@ -390,13 +429,20 @@
    reaches ~16px in). Floored for touch in responsive.css, where the square is
    known to be big enough to host it - on a Popout S the square is ~29px across
    and a fixed floor would spill past it. */
+/* WITHOUT touch - where --equal-hit is unset - the pad used to be the paint
+   and nothing more: 20.4px on desktop, under WCAG 2.2's 24px for a mouse
+   too. It now reaches 24px wherever the square can host that without
+   crowding the thirds (a third of the square, so 24px from a 75px square up
+   - Laptop and Desktop), and stays proportional below it, where Popout L and
+   S could not spare the room. axe measures boxes and cannot see this pad; a
+   pointer can. */
 .equal-btn::before {
   content: '';
   position: absolute;
   top: 50%;
   left: 50%;
-  width: var(--equal-hit, 100%);
-  height: var(--equal-hit, 100%);
+  width: var(--equal-hit, max(100%, min(24px, calc(var(--choice-size) * 0.32))));
+  height: var(--equal-hit, max(100%, min(24px, calc(var(--choice-size) * 0.32))));
   transform: translate(-50%, -50%);
 }
 

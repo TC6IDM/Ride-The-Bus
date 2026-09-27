@@ -27,7 +27,7 @@ export default {
 
 	// Win readout above the guesses
 	Winning: 'Winning',
-	'Full Game Win!': 'Full Game Win!',
+	'Full game win': 'Full game win',
 	Banked: 'Banked',
 	Busted: 'Busted',
 	'Revealing…': 'Revealing…',
@@ -43,12 +43,11 @@ export default {
 	Start: 'Start',
 
 	// Bet menu
-	'Bet Menu': 'Bet Menu',
+	'Bet menu': 'Bet menu',
 	'Quick bets':
 		'Quick bets',
 
 	// Turbo popup
-	'Turbo Speed': 'Turbo Speed',
 	Normal: 'Normal',
 	Instant: 'Instant',
 	'Off: full animation': 'Off: full animation',
@@ -72,7 +71,6 @@ export default {
 	// Bet mode picker. The three ways to buy the same four guesses - only what a
 	// miss keeps differs - plus Three of a Kind, a different game at 250x the bet.
 	// Blurbs quote the measured ceilings so the copy cannot drift from the maths.
-	'Game Mode': 'Game Mode',
 	// Confirmation before a bet mode is activated - required by the approval
 	// checklist ("high cost bet modes require confirmation": Three of a Kind is
 	// 250x), and worth having anyway: the guess families cost the same but differ
@@ -117,7 +115,6 @@ export default {
 		'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.',
 
 	// How to play
-	'How to Play': 'How to Play',
 	'Guess your way through four cards:': 'Guess your way through four cards:',
 	'Color: is card 1 red or black?':
 		'Color: is card 1 red or black?',

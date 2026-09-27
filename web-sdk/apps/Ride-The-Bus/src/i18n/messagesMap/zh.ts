@@ -14,7 +14,7 @@ export default {
 	Suit: '花色',
 
 	Winning: '赢额',
-	'Full Game Win!': '全中！',
+	'Full game win': '全中',
 	Banked: '已锁定',
 	Busted: '未中',
 	'Revealing…': '翻牌中…',
@@ -28,11 +28,10 @@ export default {
 	'Set rounds': '设置局数',
 	Start: '开始',
 
-	'Bet Menu': '投注菜单',
+	'Bet menu': '投注菜单',
 	'Quick bets':
 		'快速投注',
 
-	'Turbo Speed': '加速档位',
 	Normal: '正常',
 	Instant: '瞬间',
 	'Off: full animation': '关闭：完整动画',
@@ -50,7 +49,6 @@ export default {
 
 	Autoplay: '自动游戏',
 
-	'Game Mode': '游戏模式',
 	'Choose game mode': '选择游戏模式',
 	Classic: '经典',
 	'Second Chance': '第二次机会',
@@ -88,7 +86,6 @@ export default {
 	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
 		'第一张牌猜错即结束本局。之后猜错仅保留15%，因此每一次猜对都更有价值。',
 
-	'How to Play': '玩法说明',
 	'Guess your way through four cards:': '依次预测四张牌：',
 	'Color: is card 1 red or black?':
 		'颜色：第 1 张是红色还是黑色？',

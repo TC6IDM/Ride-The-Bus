@@ -1,7 +1,7 @@
 ---
 name: rtb-visual-qa
 description: Drives the real Ride The Bus game in a headless browser against the local replay RGS and reports what it actually looks like at the seven target viewports. Use after any visual change, for RGS_TEST_PLAN sections 06/07/11/14, and whenever a judgement is being made about how a screen renders rather than how it is coded.
-tools: Bash, Read, Glob, Grep, mcp__plugin_chrome-devtools-mcp_chrome-devtools__navigate_page, mcp__plugin_chrome-devtools-mcp_chrome-devtools__new_page, mcp__plugin_chrome-devtools-mcp_chrome-devtools__list_pages, mcp__plugin_chrome-devtools-mcp_chrome-devtools__select_page, mcp__plugin_chrome-devtools-mcp_chrome-devtools__close_page, mcp__plugin_chrome-devtools-mcp_chrome-devtools__take_screenshot, mcp__plugin_chrome-devtools-mcp_chrome-devtools__take_snapshot, mcp__plugin_chrome-devtools-mcp_chrome-devtools__resize_page, mcp__plugin_chrome-devtools-mcp_chrome-devtools__emulate, mcp__plugin_chrome-devtools-mcp_chrome-devtools__click, mcp__plugin_chrome-devtools-mcp_chrome-devtools__hover, mcp__plugin_chrome-devtools-mcp_chrome-devtools__press_key, mcp__plugin_chrome-devtools-mcp_chrome-devtools__evaluate_script, mcp__plugin_chrome-devtools-mcp_chrome-devtools__wait_for, mcp__plugin_chrome-devtools-mcp_chrome-devtools__list_console_messages, mcp__plugin_chrome-devtools-mcp_chrome-devtools__list_network_requests
+tools: Bash, Read, Glob, Grep
 model: opus
 ---
 
@@ -32,8 +32,8 @@ npm run dev          # reclaims ports 3001 + 3010, starts vite AND the replay
 The replay server serves any of the **193 published modes** out of the real
 books. A player session is not required for replay.
 
-Then either drive it yourself over the chrome-devtools tools, or use the
-project's own capture script:
+Then either drive it yourself with `playwright-cli` (below), or use the
+project's own capture script for a whole scenario sweep:
 
 ```
 npm run shots                                    # five tiers, desktop
@@ -44,6 +44,12 @@ npm run shots -- --mode sc_red_equal_equal_heart --event forgiven
 npm run shots -- --board --family tr --tag trips   # the plain board on another family
 npm run shots -- --popups --family tr --tag trips  # every panel, plus the picker's confirmation
 npm run shots -- --board --cur TZS --bet 540000 --maxbet 100000000 --balance 1e12
+npm run shots -- --reveal                          # a card turning / landed, the held last card
+npm run shots -- --tips --autoplay                 # the refusals, a run mid-flight, the lock tips
+npm run shots -- --howto --resume --loader         # How to Play in full, a resumed round, the loader
+npm run shots -- --errors                          # all eight RGS error codes
+npm run shots -- --board --social --operator turbo,autoplay   # social mode, operator switches
+npm run shots -- --all                             # everything, ~20 minutes
 ```
 
 `--family` drives the picker the way a player does (MODE, the row, Switch),
@@ -55,6 +61,40 @@ board and is shot as `size-<tag>-board`.
 Six scenario aliases resolve out of `REPLAY_EVENTS.md`: `max`, `big`, `win`,
 `loss`, `bustwin` (busted and still paid enough to celebrate) and `forgiven`
 (Second Chance spent its forgiveness, survived, finished big).
+
+## Driving it by hand: `playwright-cli`
+
+The global `@playwright/cli` (`playwright-cli --help`; the full command list is
+`.claude/skills/playwright-cli/SKILL.md`). It keeps one headless Chrome open
+across commands, answers each in a few hundred bytes, and writes the page's
+accessibility snapshot to `.playwright-cli/` instead of printing it - read the
+file only when you need a ref. Run it from the repo root.
+
+```
+playwright-cli open "http://localhost:3001/?currency=USD&lang=en&rgs_url=localhost%3A3010"
+playwright-cli resize 1200 675
+playwright-cli click .ss-continue
+playwright-cli screenshot --filename=scripts/.shots/qa-desktop.png
+playwright-cli --raw eval "getComputedStyle(document.querySelector('footer button')).fontFamily"
+playwright-cli console          # errors, and any game information logged
+playwright-cli requests
+playwright-cli close-all        # always, before you report
+```
+
+**The three phone sizes need their own session opened with `--mobile`**, then
+`resize`: `playwright-cli -s=phone open --mobile "<url>"`, then
+`playwright-cli -s=phone resize 320 568`. A bare `resize` is a narrow desktop,
+with `(hover: hover)` and `(pointer: fine)`, and the control bar measured
+11-20px shorter than a phone gets. Every tap-target floor and hover gate in
+this app keys on the opposite. Add `&sessionID=<anything>` to the URL when a
+round must reach the replay RGS; without it a dev build plays a local round.
+For a replay, use `shoot.mjs`'s `replayUrl` shape:
+
+```
+http://localhost:3001/?replay=true&game=ride_the_bus&version=1&mode=<slug>&event=<id>&rgs_url=localhost%3A3010&currency=USD&amount=1000000&lang=en
+```
+
+Quote any URL with `&` in it.
 
 **Shots are a working surface, not an archive.** `scripts/.shots/` is
 git-ignored and every run overwrites it. Re-shoot after a change rather than

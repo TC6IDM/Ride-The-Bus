@@ -14,7 +14,7 @@ export default {
 	Suit: 'Maa',
 
 	Winning: 'Voitto',
-	'Full Game Win!': 'Täysi voitto!',
+	'Full game win': 'Täysi voitto',
 	Banked: 'Turvattu',
 	Busted: 'Meni ohi',
 	'Revealing…': 'Paljastetaan…',
@@ -28,11 +28,10 @@ export default {
 	'Set rounds': 'Aseta kierrokset',
 	Start: 'Aloita',
 
-	'Bet Menu': 'Panosvalikko',
+	'Bet menu': 'Panosvalikko',
 	'Quick bets':
 		'Pikapanokset',
 
-	'Turbo Speed': 'Turbonopeus',
 	Normal: 'Normaali',
 	Instant: 'Välitön',
 	'Off: full animation': 'Pois: täysi animaatio',
@@ -50,7 +49,6 @@ export default {
 
 	Autoplay: 'Automaattipeli',
 
-	'Game Mode': 'Pelitila',
 	'Choose game mode': 'Valitse pelitila',
 	Classic: 'Klassinen',
 	'Second Chance': 'Toinen mahdollisuus',
@@ -88,7 +86,6 @@ export default {
 	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
 		'Väärä ensimmäinen kortti päättää kierroksen. Myöhemmät virheet säilyttävät vain 15%, joten jokainen oikea arvaus on arvokkaampi.',
 
-	'How to Play': 'Näin pelaat',
 	'Guess your way through four cards:': 'Arvaa neljä korttia järjestyksessä:',
 	'Color: is card 1 red or black?':
 		'Väri: onko kortti 1 punainen vai musta?',

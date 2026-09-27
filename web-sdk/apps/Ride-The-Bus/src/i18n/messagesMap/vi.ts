@@ -14,7 +14,7 @@ export default {
 	Suit: 'Chất',
 
 	Winning: 'Tiền thắng',
-	'Full Game Win!': 'Thắng toàn ván!',
+	'Full game win': 'Thắng toàn ván',
 	Banked: 'Đã giữ',
 	Busted: 'Thua',
 	'Revealing…': 'Đang lật bài…',
@@ -28,11 +28,10 @@ export default {
 	'Set rounds': 'Đặt số vòng',
 	Start: 'Bắt đầu',
 
-	'Bet Menu': 'Menu cược',
+	'Bet menu': 'Menu cược',
 	'Quick bets':
 		'Cược nhanh',
 
-	'Turbo Speed': 'Tốc độ turbo',
 	Normal: 'Bình thường',
 	Instant: 'Tức thì',
 	'Off: full animation': 'Tắt: hoạt ảnh đầy đủ',
@@ -50,7 +49,6 @@ export default {
 
 	Autoplay: 'Tự động chơi',
 
-	'Game Mode': 'Chế độ chơi',
 	'Choose game mode': 'Chọn chế độ chơi',
 	Classic: 'Cổ điển',
 	'Second Chance': 'Cơ hội thứ hai',
@@ -88,7 +86,6 @@ export default {
 	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
 		'Sai lá bài đầu tiên là kết thúc vòng. Các lần sai sau chỉ giữ lại 15%, nên mỗi lần đoán đúng có giá trị hơn.',
 
-	'How to Play': 'Cách chơi',
 	'Guess your way through four cards:': 'Dự đoán lần lượt bốn lá bài:',
 	'Color: is card 1 red or black?':
 		'Màu: lá 1 đỏ hay đen?',

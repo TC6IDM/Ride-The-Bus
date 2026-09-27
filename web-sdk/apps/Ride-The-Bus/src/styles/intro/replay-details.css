@@ -221,7 +221,7 @@
 	justify-content: space-between;
 	align-items: baseline;
 	gap: calc(var(--ui) * 1.2);
-	font-size: calc(var(--ui) * 1.4);
+	font-size: max(calc(var(--ui) * 1.4), var(--type-floor));
 	padding: calc(var(--ui) * 0.5) 0;
 	border-bottom: 1px solid rgba(var(--ink-rgb), 0.06);
 }
@@ -261,7 +261,7 @@
 	background: linear-gradient(180deg, rgba(var(--tint-rgb), 1), rgba(var(--tint-rgb), 0.76));
 	color: var(--tint-ink);
 	font-family: inherit;
-	font-size: calc(var(--ui) * 1.6);
+	font-size: max(calc(var(--ui) * 1.6), var(--type-floor-figure));
 	font-weight: 800;
 	cursor: pointer;
 	letter-spacing: 0.03em;
@@ -328,7 +328,7 @@
 	display: inline-block;
 	padding: calc(var(--ui) * 0.25) calc(var(--ui) * 0.9);
 	border-radius: calc(var(--ui) * 0.5);
-	font-size: calc(var(--ui) * 1.25);
+	font-size: max(calc(var(--ui) * 1.25), var(--type-floor));
 	font-weight: 700;
 	text-transform: capitalize;
 	line-height: 1.5;
@@ -357,7 +357,11 @@
 
 .ss-choice-badge.choice-inside { background: var(--choice-inside);  color: var(--on-choice-ink); }
 
-.ss-choice-badge.choice-outside { background: var(--choice-outside); color: var(--ink); }
+/* Dark ink, like its Higher and Inside neighbours. It wins on both magentas
+   tokens.css keeps: 4.87:1 against white's 3.87 on the softened one, and
+   4.63 against 4.07 on the original - white is under the 4.5 small bold text
+   needs on either. */
+.ss-choice-badge.choice-outside { background: var(--choice-outside); color: var(--on-choice-ink); }
 
 .ss-choice-badge.choice-equal { background: var(--choice-equal);   color: var(--on-choice-ink); }
 

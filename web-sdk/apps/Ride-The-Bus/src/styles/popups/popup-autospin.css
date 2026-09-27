@@ -453,7 +453,12 @@
 
 @media (pointer: coarse) {
   .limit-toggle { min-width: 36px; min-height: 36px; }
-  .limit-unit-btn { min-height: 30px; }
+  /* WIDTH as well as height. With only the height floored, each half of the
+     x / $ switch was 17px wide at 320px - and the two halves touch, so WCAG
+     2.2's spacing exception cannot save them either (axe: target-size,
+     serious). 32px is design.md's floor for a control whose paint must stay
+     small; the field's input is flex: 1 and gives up the width. */
+  .limit-unit-btn { min-height: 30px; min-width: 32px; }
   .limit-input { min-height: 32px; }
 }
 

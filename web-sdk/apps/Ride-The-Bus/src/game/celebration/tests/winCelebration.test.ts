@@ -305,6 +305,26 @@ describe('the takeover does not spoil its own count-up', () => {
     }
   });
 
+  test('the choice row steps back under the takeover even while it is locked', () => {
+    // A takeover only opens while a round is in flight, so the row is always
+    // .locked under it - and `.choice-row.locked { opacity: 0.5 }`
+    // (choices-board.css) has the same specificity as the takeover's dim and
+    // loads after it. It won: the row sat at 0.5 under every win screen, and on
+    // a phone - no backdrop blur there - the captions printed on the same line
+    // as the takeover's multiplier. Naming .locked is what out-ranks it.
+    assert.match(
+      CARDS_CSS,
+      /:global\(\.takeover-open\) \.choice-row\.locked\s*\{[^}]*opacity:\s*0\.16/,
+      'the takeover dim must name .choice-row.locked, or the lock (0.5) wins',
+    );
+    // And its labels leave outright. Even at 0.16 they printed, faint but
+    // legible, on the same line as the win's multiplier on a portrait phone.
+    assert.ok(
+      read('../../../styles/board/choices-board.css').includes(':global(.takeover-open) .choice-label'),
+      '.choice-label is text beside the win figure and must be hidden under .takeover-open',
+    );
+  });
+
   test('Game.svelte sets takeover-open for exactly as long as the overlay lives', () => {
     assert.ok(
       /class:takeover-open=\{celebration\.active !== null\}/.test(GAME),

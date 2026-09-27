@@ -14,7 +14,7 @@ export default {
 	Suit: 'Jenis',
 
 	Winning: 'Kemenangan',
-	'Full Game Win!': 'Menang penuh!',
+	'Full game win': 'Menang penuh',
 	Banked: 'Diamankan',
 	Busted: 'Gagal',
 	'Revealing…': 'Membuka…',
@@ -28,11 +28,10 @@ export default {
 	'Set rounds': 'Atur jumlah ronde',
 	Start: 'Mulai',
 
-	'Bet Menu': 'Menu taruhan',
+	'Bet menu': 'Menu taruhan',
 	'Quick bets':
 		'Taruhan cepat',
 
-	'Turbo Speed': 'Kecepatan turbo',
 	Normal: 'Normal',
 	Instant: 'Instan',
 	'Off: full animation': 'Mati: animasi penuh',
@@ -50,7 +49,6 @@ export default {
 
 	Autoplay: 'Main otomatis',
 
-	'Game Mode': 'Mode Permainan',
 	'Choose game mode': 'Pilih mode permainan',
 	Classic: 'Klasik',
 	'Second Chance': 'Kesempatan Kedua',
@@ -88,7 +86,6 @@ export default {
 	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
 		'Kartu pertama yang salah mengakhiri ronde. Kesalahan berikutnya hanya menyimpan 15%, jadi setiap tebakan benar bernilai lebih.',
 
-	'How to Play': 'Cara bermain',
 	'Guess your way through four cards:': 'Tebak empat kartu secara berurutan:',
 	'Color: is card 1 red or black?':
 		'Warna: apakah kartu 1 merah atau hitam?',

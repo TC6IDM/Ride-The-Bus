@@ -21,6 +21,17 @@
   flex-wrap: wrap; /* lets the readouts take their own row on narrow viewports */
   gap: calc(var(--ui-bar) * 0.91);
   padding: 0 calc(var(--ui-bar) * 1.27) calc(var(--ui-bar) * 1.27);
+  /* CLEAR OF THE HOME INDICATOR AND THE NOTCH. app.html asks for
+     viewport-fit=cover - draw under the rounded corners, edge to edge - and
+     until this nothing read the safe-area insets back, so a replay link opened
+     straight on an iPhone put the bar's bottom row under the home indicator.
+     max(), so where there is no inset (every desktop, and Stake's iframe, where
+     the insets are 0) the bar is exactly where it was. The phone rules in
+     responsive-bar.css override padding-inline only, so the bottom holds
+     there; a portrait phone has no side inset to lose. */
+  padding-bottom: max(calc(var(--ui-bar) * 1.27), env(safe-area-inset-bottom, 0px));
+  padding-left: max(calc(var(--ui-bar) * 1.27), env(safe-area-inset-left, 0px));
+  padding-right: max(calc(var(--ui-bar) * 1.27), env(safe-area-inset-right, 0px));
   background: none;
   pointer-events: none;
 }
@@ -202,7 +213,7 @@
 
 .cb-lastwin.won .cb-val { color: var(--win); }
 
-.cb-lastwin-mult { font-size: calc(var(--ui-bar) * 1.05) /* 11.5px */; font-weight: 800; color: var(--gold-bright); margin-inline-start: calc(var(--ui-bar) * 0.27); }
+.cb-lastwin-mult { font-size: max(calc(var(--ui-bar) * 1.05), var(--type-floor)) /* 11.5px */; font-weight: 800; color: var(--gold-bright); margin-inline-start: calc(var(--ui-bar) * 0.27); }
 
 /* position: relative so .cb-bet-tip below has a positioning context - .cb-panel
    sets none, and the tip is absolutely placed against this panel. */
@@ -475,7 +486,7 @@
   transform: translateX(-50%);
   z-index: var(--z-bar-caption);
   color: var(--gold-bright);
-  font-size: calc(var(--ui-bar) * 0.95);
+  font-size: max(calc(var(--ui-bar) * 0.95), var(--type-floor));
   font-weight: 800;
   letter-spacing: 0.04em;
   line-height: 1;
@@ -913,7 +924,7 @@
    nowrap because a two-line label inside a 36px-tall pill would clip, and
    `Chế độ` contains a space. */
 .cb-mode-word {
-  font-size: calc(var(--ui-bar) * 0.95);
+  font-size: max(calc(var(--ui-bar) * 0.95), var(--type-floor));
   font-weight: 900;
   letter-spacing: var(--track-label);
   /* The tracking is added to the RIGHT of the last letter too, which would sit
@@ -950,7 +961,7 @@
      the ruler, not the size, and the picker's meter is its own size anyway. */
   gap: calc(var(--ui-bar) * 0.25);
   max-width: 100%;
-  font-size: calc(var(--ui-bar) * 0.86);
+  font-size: max(calc(var(--ui-bar) * 0.86), var(--type-floor));
   font-weight: 800;
   /* The mode name is written in its own volatility colour - green for Second
      Chance, yellow for Classic, red for High Stakes, and purple once the
@@ -1056,33 +1067,17 @@
    The board's own share of this - .card-mult, .running-win, .card-row and
    .choice-row - stays in cards.css with GameBoard. */
 
-/* REPLAY ONLY: the readouts box collapses rather than sitting there empty.
-   In a real session the balance stays lit through the takeover - only Last Win
-   goes, because only Last Win prints the settled figure the count-up is still
-   climbing to. A replay has no balance to show either (.solo, see
-   control-bar.css), so during a replay takeover the box has nothing left in it
-   at all, and on a phone - where the light pill takes a bar row of its own -
-   that reads as a large empty panel under the win screen.
-
-   Scoped to .solo so it can only fire in the case that is actually empty; the
-   live-session pill still carries its balance and keeps its width. */
-:global(.takeover-open) .cb-readouts.solo {
-  display: none;
-}
-
-/* Hiding the box is not enough on a phone. responsive.css gives the light pill
-   `flex: 1 0 100%` there - a bar row of its own, which is the right call when
-   it holds a balance - so with the readouts gone the row stayed full width with
-   three icons at one end and a hand-width of empty panel after them.
-
-   `:has()` keeps this to the replay case rather than shrinking the pill in a
-   live session, where the balance is still in it and a mid-takeover reflow of
-   the bar would be worse than the gap. Two classes beat responsive.css's one,
-   so it lands without !important; a browser without :has() simply keeps
-   today's behaviour, which is the safe direction. */
-:global(.takeover-open) .cb-panel-light:has(.cb-readouts.solo) {
-  flex: 0 1 auto;
-}
+/* REPLAY: THE PILL KEEPS ITS SHAPE. A replay has no balance (.solo), so under
+   a replay's takeover Last Win is the only thing in the readouts box and it
+   goes (the rule below). This used to collapse the box as well - display:none,
+   and the light pill shrunk to its icons via :has(.solo) - so an empty panel
+   would not sit under the win screen. The price was the whole bar re-flowing
+   under the veil the moment the takeover opened and again when it closed: the
+   pill shrank, everything re-centred, and on a phone the spin button left its
+   corner for the middle of the second row (UI review, 2026-09-27). The board's
+   rule is that nothing moves under the player; the bar keeps it too. Last Win
+   fades out where it stands, and a dimmed, empty pill under a veil is the
+   quieter of the two. */
 
 /* The last-win readout goes with them: the takeover is counting up to that very
    figure, and printing the answer beside it spoils the only suspense the game

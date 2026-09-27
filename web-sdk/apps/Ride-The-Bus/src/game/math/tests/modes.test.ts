@@ -422,7 +422,7 @@ describe('parseModeName', () => {
   //
   //   - stop an autoplay run configured to stop on a full game win (reported),
   //   - sound playFullWin() rather than the ordinary win sting,
-  //   - and print "Full Game Win!" on the board's own running-win bar.
+  //   - and print "Full game win" on the board's own running-win bar.
   //
   // Grepping the source for the same reason as the test above: these live in a
   // .svelte component that `node --test` cannot mount, and the failure is

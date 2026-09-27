@@ -24,6 +24,7 @@
     setHlChoice,
     setIoChoice,
     setSuitChoice,
+    allChoicesMade,
   } from '../../game/bet/betState.svelte';
   import { FREE_CHOICE, isCleanSweep, stageCount } from '../../game/math/modes';
   import { isNetWin } from '../../game/math/winTiers';
@@ -31,9 +32,13 @@
   import type { Card } from '../../game/platform/typesBookEvent';
   import { t } from '../../i18n/i18nDerived';
   import { numberToCurrencyString } from 'utils-shared/amount';
+  import { formatMultiplier } from '../../game/ui/formatMultiplier';
 
   import { choicesLocked } from '../../game/round/roundState.svelte';
+  import { flipDurSec } from '../../game/round/revealPacing.svelte';
+  import { reducedMotion } from '../../game/celebration/celebrationGestures';
   import { sound } from '../../game/audio/sound';
+  import { untrack } from 'svelte';
 
   /**
    * Pointer or keyboard focus is on the barred Inside button.
@@ -158,6 +163,109 @@
     return index === shown.busted && multiplier !== null && !isNetWin(multiplier, familyRules().cost);
   };
 
+  /**
+   * The running-win bar, a beat behind the round.
+   *
+   * roundReveal commits a card's face, its stage multiplier and the new total
+   * in one tick, and the card then takes `--flip-dur` to turn. Drawn straight
+   * off the round, the bar printed the new total - and "Busted" or "Full Game
+   * Win!", and the loss red - while the card still showed its back. So a
+   * change that arrives with a newly dealt card waits until that card has
+   * landed: 0.9 of the flip, the delay the chip, the bust cross and the
+   * missed guess's ring already take. Everything else - a reset, the hold's
+   * "Last card", a settle that comes after the card is down - shows at once.
+   *
+   * Presentation only. The round's own figures move on cue; settleRound, the
+   * credit and the takeover never read this. Reduced motion has no flip, so
+   * nothing waits.
+   */
+  type Readout = {
+    state: typeof round.state;
+    runningWin: number;
+    held: boolean;
+    hasPlayed: boolean;
+    lastWinNet: boolean;
+    wonAmount: number;
+    initialBet: number;
+  };
+  const live = $derived<Readout>({
+    state: round.state,
+    runningWin: round.runningWin,
+    held: round.holdIndex !== null,
+    hasPlayed: round.hasPlayed,
+    lastWinNet: round.lastWinNet,
+    wonAmount: round.wonAmount,
+    initialBet: round.initialBet,
+  });
+  let readout = $state<Readout>(untrack(() => live));
+  let dealtBefore = 0;
+  let landsAt = 0;
+  $effect(() => {
+    const next = live;
+    const dealt = round.revealedCards.filter((c) => c !== null).length;
+    if (dealt > dealtBefore) {
+      landsAt = reducedMotion() ? 0 : performance.now() + Number(flipDurSec()) * 900;
+    } else if (dealt < dealtBefore) {
+      landsAt = 0;
+    }
+    dealtBefore = dealt;
+    const wait = landsAt - performance.now();
+    if (wait <= 0) {
+      readout = next;
+      return;
+    }
+    const timer = setTimeout(() => (readout = next), wait);
+    return () => clearTimeout(timer);
+  });
+
+  /** The settled round's name for itself - the bar's label and the
+   *  announcement below both read it, so the clean-sweep question is asked
+   *  once here (modes.test.ts counts the sites that ask it). */
+  const cleanSweep = $derived(isCleanSweep(round.bustedIndex, round.forgivenIndex));
+  const resultLabel = $derived(
+    readout.state === 'won'
+      ? cleanSweep
+        ? t('Full game win')
+        : t('Banked')
+      : readout.state === 'lost'
+        ? t('Busted')
+        : null,
+  );
+  /** Whether the round paid anything. A bust that kept nothing has no
+   *  multiplier worth printing: "Busted $0.00 0.0x" said zero twice. */
+  const paid = $derived(readout.wonAmount > 0 && readout.initialBet > 0);
+
+  /**
+   * The result, said out loud. The bar prints it and a sighted player reads it
+   * as the card lands; a screen reader was told nothing - no focus moves, and
+   * the takeover's own label is only read if it is navigated to (WCAG 4.1.3,
+   * Status Messages). One polite line per settled round, from the same latched
+   * `readout` as the bar, so it too waits for the card to turn. Emptied while a
+   * round plays, so two identical results in a row still announce twice.
+   */
+  const announcement = $derived(
+    resultLabel === null
+      ? ''
+      : readout.state === 'lost'
+        ? resultLabel
+        : [resultLabel, numberToCurrencyString(readout.runningWin), formatMultiplier(readout.wonAmount / readout.initialBet)].join(', '),
+  );
+
+  /**
+   * Before the first deal the readout's space is kept but has nothing in it -
+   * on a phone, a band of empty table between the cards and the guesses. Until
+   * the four are picked, it says the one thing there is to do. Once they are,
+   * or once a round has been dealt, it goes: it is a first-deal prompt, not a
+   * nag. Three of a Kind has nothing to pick, so it never shows there.
+   */
+  const showHint = $derived(
+    !readout.hasPlayed &&
+      !allChoicesMade() &&
+      // The Inside tip opens in this same slot (choices-board.css); one
+      // voice at a time.
+      !(insideBlockedHover && !insideIsPossible()),
+  );
+
   /** A card the round will never reach, once it has busted before it. */
   const isDead = (index: number) => round.bustedIndex !== null && index > round.bustedIndex;
 
@@ -246,7 +354,7 @@
           class:show={round.stageMultipliers[index] !== null && !isFreeSlot(index)}
           class:is-short={chipIsShort(index)}
         >
-          {(shown.multipliers[index] ?? 0).toFixed(2)}×
+          {formatMultiplier(shown.multipliers[index] ?? 0)}
         </div>
         <div class="card-block">
           <div class="card-inner" class:flipped={card}>
@@ -279,18 +387,25 @@
 {/snippet}
 
 {#snippet runningWinBar()}
+  <!-- Every figure and state here is `readout`, the round a card-flip behind
+       - see the note on it in the script. -->
   <div
     class="running-win"
-    class:is-idle={!round.hasPlayed}
-    aria-hidden={!round.hasPlayed}
-    class:is-win={round.state === 'won' && round.lastWinNet}
-    class:is-partial={round.state === 'won' && !round.lastWinNet}
-    class:is-loss={round.state === 'lost'}
+    class:is-idle={!readout.hasPlayed}
+    aria-hidden={!readout.hasPlayed}
+    class:is-win={readout.state === 'won' && readout.lastWinNet}
+    class:is-partial={readout.state === 'won' && !readout.lastWinNet}
+    class:is-loss={readout.state === 'lost'}
   >
     <span class="running-win-label">
-      {#if round.state === 'won'}{isCleanSweep(round.bustedIndex, round.forgivenIndex) ? t('Full Game Win!') : t('Banked')}{:else if round.state === 'lost'}{t('Busted')}{:else if round.state === 'playing'}{round.holdIndex !== null ? t('Last card') : t('Revealing…')}{:else}{t('Winning')}{/if}
+      {#if resultLabel !== null}{resultLabel}{:else if readout.state === 'playing'}{readout.held ? t('Last card') : t('Revealing…')}{:else}{t('Winning')}{/if}
     </span>
-    <span class="running-win-amount">{numberToCurrencyString(round.runningWin)}</span>
+    <!-- Laid over the three lines rather than in them, so it arriving or
+         going moves nothing (cards.css). Mounted only while it shows: hidden
+         text left in the readout would be read back by anything that reads
+         the readout's text. -->
+    {#if showHint}<span class="running-win-hint">{t('Pick all 4 guesses')}</span>{/if}
+    <span class="running-win-amount">{numberToCurrencyString(readout.runningWin)}</span>
     <!-- Always rendered (a non-breaking space when there is nothing to say) so
          the multiplier appearing at the end of a round never grows the bar and
          shoves the cards / choices around. WRITTEN AS '\u00a0', NOT AS THE
@@ -298,7 +413,7 @@
          the line had no height until something filled it - and the whole board
          jumped each time it did. cards.css gives the line a minimum height as
          well, so neither can happen alone (boardStill.test.ts). -->
-    <span class="running-win-mult">{(round.state === 'won' || round.state === 'lost') && round.initialBet > 0 ? `${(round.wonAmount / round.initialBet).toFixed(2)}×` : '\u00a0'}</span>
+    <span class="running-win-mult">{paid ? formatMultiplier(readout.wonAmount / readout.initialBet) : '\u00a0'}</span>
   </div>
 {/snippet}
 
@@ -310,6 +425,8 @@
      a chip stack then sat on the cards and the squares for the rest of the
      session. One layout, before and after, is what table.css places against. -->
 {@render runningWinBar()}
+<!-- Visually hidden; see `announcement`. -->
+<p class="round-announcer" role="status">{announcement}</p>
 
 {#if fixed}
   <!-- Three of a Kind: no guesses to make. Two Equal squares under the gaps
@@ -346,7 +463,10 @@
   </div>
 
   <div class="choice-column" class:is-missed={round.bustedIndex === 1} class:is-forgiven={round.forgivenIndex === 1}>
-    <span class="choice-label"><span>{t('Higher')}<br />{t('Lower')}</span></span>
+    <!-- "Higher / Lower", as the intro and How to Play name it. The no-break
+         space holds the slash to the first word, so where the pair wraps it
+         reads "Higher /" over "Lower", never "Higher" over "/ Lower". -->
+    <span class="choice-label"><span>{t('Higher')}&nbsp;/ {t('Lower')}</span></span>
     <div class="choice-square hl-square" role="group" aria-label={t('Higher, lower, or equal')}>
       <button type="button" class="third-btn higher-third" class:selected={guesses.hl === 'higher'} onclick={() => pick(setHlChoice, 'higher')} aria-disabled={choicesLocked()} aria-label={t('Higher')}>{@render iconTriangleUp()}</button>
       <button type="button" class="third-btn lower-third" class:selected={guesses.hl === 'lower'} onclick={() => pick(setHlChoice, 'lower')} aria-disabled={choicesLocked()} aria-label={t('Lower')}>{@render iconTriangleDown()}</button>
@@ -355,7 +475,7 @@
   </div>
 
   <div class="choice-column" class:is-missed={round.bustedIndex === 2} class:is-forgiven={round.forgivenIndex === 2}>
-    <span class="choice-label"><span>{t('Inside')}<br />{t('Outside')}</span></span>
+    <span class="choice-label"><span>{t('Inside')}&nbsp;/ {t('Outside')}</span></span>
     <div class="choice-square io-square" role="group" aria-label={t('Inside, outside, or equal')}>
       <button
         type="button"

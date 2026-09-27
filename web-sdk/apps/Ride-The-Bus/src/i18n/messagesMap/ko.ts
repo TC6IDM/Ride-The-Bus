@@ -14,7 +14,7 @@ export default {
 	Suit: '무늬',
 
 	Winning: '당첨금',
-	'Full Game Win!': '풀 게임 성공!',
+	'Full game win': '풀 게임 성공',
 	Banked: '확보',
 	Busted: '실패',
 	'Revealing…': '공개 중…',
@@ -28,11 +28,10 @@ export default {
 	'Set rounds': '라운드 수 설정',
 	Start: '시작',
 
-	'Bet Menu': '베팅 메뉴',
+	'Bet menu': '베팅 메뉴',
 	'Quick bets':
 		'빠른 베팅',
 
-	'Turbo Speed': '터보 속도',
 	Normal: '보통',
 	Instant: '즉시',
 	'Off: full animation': '끄기: 전체 애니메이션',
@@ -50,7 +49,6 @@ export default {
 
 	Autoplay: '자동 플레이',
 
-	'Game Mode': '게임 모드',
 	'Choose game mode': '게임 모드 선택',
 	Classic: '클래식',
 	'Second Chance': '세컨드 챈스',
@@ -88,7 +86,6 @@ export default {
 	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
 		'첫 카드를 틀리면 라운드가 끝납니다. 이후 실수는 15%만 남기므로 정답 하나하나의 가치가 커집니다.',
 
-	'How to Play': '게임 방법',
 	'Guess your way through four cards:': '네 장의 카드를 차례로 예측하세요:',
 	'Color: is card 1 red or black?':
 		'색상: 첫 번째 카드가 빨강인가 검정인가?',

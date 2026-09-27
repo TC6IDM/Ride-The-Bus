@@ -107,8 +107,15 @@
   gap: calc(var(--ui) * 0.73);
 }
 
+/* SENTENCE CASE, at body size. These were spaced small caps - HIGHER over
+   LOWER - which design.md keeps for a two-word caption over a FIGURE (the
+   bar's BALANCE, BET, LAST WIN) and rules out on a control's label. They are
+   the labels of the four guess controls, and the intro and How to Play already
+   name the same four in sentence case with a slash; the board was the one
+   screen spelling them a third way. */
 .choice-label {
-  font-size: calc(var(--ui) * 0.95); /* 10.5px */
+  font-size: max(calc(var(--ui) * 1.05), var(--type-floor)); /* 11.5px */
+  font-weight: 700;
   line-height: 1.2;
   text-align: center;
   /* The two-word labels wrap to two lines, so reserve two lines for ALL of them
@@ -117,14 +124,12 @@
      top of a two-line box sat level with HIGHER and INSIDE, with an empty line
      under it, and read as a label that had slipped up rather than one that was
      level with its neighbours. The text is in an inner span (GameBoard.svelte)
-     because a <br> laid out directly by a flex container becomes an item of its
-     own and the two words would sit side by side. */
+     so it wraps as one run of text: laid out directly by this flex container,
+     each piece of it would become an item of its own. */
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 2.4em;
-  letter-spacing: var(--track-label);
-  text-transform: uppercase;
   /* Was #fff6df, a fifth warm white kept in no token. --ink-cream is the warm
      near-white the takeover prints its amount in; a hair lighter here, and one
      value instead of two. */
@@ -137,9 +142,15 @@
    rather than disabled precisely so it still receives hover and focus and can
    raise this - a `disabled` button fires no mouse events at all, which is why
    the old native `title` never appeared either. */
+/* ABOVE the column, not below it. Below, it ran off the bottom of the play
+   area - which clips - and on Desktop the explanation was cut off mid-sentence
+   behind the control bar ("...Nothing can fall"). Nothing had ever shot it
+   (`npm run shots -- --tips` does now). Above is the readout's slot, which has
+   room at every size and is empty before a deal; the first-deal hint that
+   also lives there steps aside while this is up (GameBoard.svelte). */
 .choice-tip {
   position: absolute;
-  top: calc(100% + var(--ui) * 0.5);
+  bottom: calc(100% + var(--ui) * 0.5);
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;
@@ -203,6 +214,22 @@
 .choice-column.is-forgiven .equal-slot {
   outline-color: var(--forgiven);
   transition: outline-color 200ms var(--ease-out) calc(var(--flip-dur, 0.5s) * 0.9);
+}
+
+/* ---- Under the win takeover the labels go; the squares stay ---------------
+   The row steps back to 0.16 (cards.css), and the squares can: they are the
+   bet, and dimmed they read as the table's. Their LABELS are text, and on a
+   portrait phone the takeover's text stack lands on exactly this line - the
+   win's multiplier printed between "Higher / Lower" and "Inside / Outside",
+   faint but legible, even at 0.16. Words beside the win's figure are the one
+   thing the takeover cannot share the screen with, so these leave with the
+   readouts, on their timing. */
+:global(.takeover-open) .choice-label {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.3s var(--ease-out),
+    visibility 0s linear 0.3s;
 }
 
 .choice-column.is-missed .choice-label { color: var(--loss-soft); }

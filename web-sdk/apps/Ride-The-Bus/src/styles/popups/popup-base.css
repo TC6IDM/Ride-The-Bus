@@ -64,6 +64,9 @@
   width: min(calc(var(--ui-bar) * 32.73), calc(100vw - max(32px, var(--ui-bar) * 2.55)));
   max-height: calc(100vh - calc(var(--ui-bar) * 3.64));
   overflow-y: auto;
+  /* Scrolling to the end of the panel stops there, rather than carrying on
+     into the page - on Android that is a pull-to-refresh of the game. */
+  overscroll-behavior: contain;
   /* Every menu wears the colour of the control that opened it, and its
      scrollbar is part of the menu. app.css draws the bar; this is the one line
      that tells it which colour to be. */
@@ -159,7 +162,26 @@
  * actually separates the header from the body, and it lets the title stop
  * shouting. The 12px was also the last hardcoded pixel gap in the shell, so
  * the header no longer stays put while the box around it scales. */
+/* THE HEADER STAYS WHEN THE PANEL SCROLLS. The panel is its own scroller
+   (overflow-y above), so on the one long panel - How to Play - the title and
+   the close disc scrolled away with the first screen of prose, and the only
+   ways out were Escape, the backdrop, or scrolling all the way back. Every
+   panel promises the same header (design.md); now it keeps it.
+
+   Pinned flush from the first pixel: the negative margin lifts the header's
+   box into the panel's top padding and its own padding puts the text back
+   where it was, so at rest nothing moves and once scrolled the header covers
+   the strip the padding used to leave open. `top` is the padding NEGATED
+   because a sticky box pins inside its scroller's padding, not at the edge -
+   at `top: 0` a band of scrolled prose showed above the header. It is opaque
+   - prose passes under it - in the face's own top slice (--panel-head-face). */
 .popup-head {
+  position: sticky;
+  top: calc(var(--ui-bar) * -1.27);
+  z-index: 2;
+  margin-top: calc(var(--ui-bar) * -1.27);
+  padding-top: calc(var(--ui-bar) * 1.27);
+  background: var(--panel-head-face), var(--panel);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -254,11 +276,32 @@
      the same reason, and still clears the 24px WCAG 2.2 AA floor by half again.
      It was 15.5px square at 320px, across all seven panels.
 
-     --mark-size is deliberately NOT grown with it: the glyph stays the size it
-     was drawn at and gains room around it, the same trade .sound-slider's
-     height makes. */
+     --mark-size grows WITH it now, to keep the proportion the desktop disc has
+     (0.8 of 2.36 units, about a third). It was left at the size it was drawn
+     at, so it could gain room around it - but "drawn at" was 0.8 of a unit
+     that bottoms out near 3px on a 320px phone: a 5px cross in a 36px disc,
+     which on every panel read as a speck, not a way out (UI review,
+     2026-09-27). 11px is a third of 36, rounded down. */
   .popup-close {
     min-width: 36px;
     min-height: 36px;
+    --mark-size: max(calc(var(--ui-bar) * 0.8), 11px);
+  }
+}
+
+/* ---- Popout S: the panels take the type floor ------------------------------
+   Popout S restores base.css's unit over the bar's two-row one (responsive.css,
+   the same media query as this), which puts --ui-bar at 3.85px - and every
+   size in a panel is a multiple of it, so the prose inside came out at 3.2 to
+   5px: How to Play's paragraphs, the mode blurbs, autoplay's field labels
+   (measured, 2026-09-27). The game's surfaces took --type-floor one rule at a
+   time; a panel is built from one unit, so it takes the floor as ONE unit -
+   6px here, the base formula everywhere it is already more - and the whole
+   panel scales together, type and layout alike. It is wider and taller for
+   it; it scrolls, and its header stays (above). Phones and every larger
+   window already sit at or over 6px, so this binds on Popout S alone. */
+@media (orientation: landscape) and (max-height: 320px) and (max-width: 520px) {
+  .popup {
+    --ui-bar: max(6px, clamp(3px, min(calc((100vw - 30px) / 96), 2.4vh), 11px));
   }
 }

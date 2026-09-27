@@ -14,7 +14,7 @@ export default {
 	Suit: 'सूट',
 
 	Winning: 'जीत',
-	'Full Game Win!': 'पूरी जीत!',
+	'Full game win': 'पूरी जीत',
 	Banked: 'सुरक्षित',
 	Busted: 'हार',
 	'Revealing…': 'खोला जा रहा है…',
@@ -28,11 +28,10 @@ export default {
 	'Set rounds': 'राउंड तय करें',
 	Start: 'शुरू करें',
 
-	'Bet Menu': 'दांव मेन्यू',
+	'Bet menu': 'दांव मेन्यू',
 	'Quick bets':
 		'त्वरित दांव',
 
-	'Turbo Speed': 'टर्बो गति',
 	Normal: 'सामान्य',
 	Instant: 'तत्काल',
 	'Off: full animation': 'बंद: पूर्ण एनिमेशन',
@@ -50,7 +49,6 @@ export default {
 
 	Autoplay: 'ऑटोप्ले',
 
-	'Game Mode': 'गेम मोड',
 	'Choose game mode': 'गेम मोड चुनें',
 	Classic: 'क्लासिक',
 	'Second Chance': 'दूसरा मौका',
@@ -88,7 +86,6 @@ export default {
 	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
 		'पहला कार्ड गलत होने पर राउंड खत्म। बाद की गलतियाँ केवल 15% रखती हैं, इसलिए हर सही अनुमान ज्यादा कीमती है।',
 
-	'How to Play': 'कैसे खेलें',
 	'Guess your way through four cards:': 'चार कार्ड का क्रम से अनुमान लगाएं:',
 	'Color: is card 1 red or black?':
 		'रंग: कार्ड 1 लाल है या काला?',

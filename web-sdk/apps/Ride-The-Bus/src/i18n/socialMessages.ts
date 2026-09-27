@@ -35,7 +35,7 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 	Start: 'Start',
 
 	// Bet menu
-	'Bet Menu': 'Play Menu',
+	'Bet menu': 'Play menu',
 	'Quick bets': 'Quick plays',
 
 	// Autoplay popup
@@ -56,7 +56,7 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 
 	// Running win bar
 	Winning: 'Won',
-	'Full Game Win!': 'Full Game Won!',
+	'Full game win': 'Full game won',
 	Banked: 'Banked',
 	Busted: 'Busted',
 	'Revealing…': 'Revealing…',

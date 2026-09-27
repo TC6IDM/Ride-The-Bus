@@ -59,7 +59,7 @@
   align-items: center;
   justify-content: center;
   padding: 0 calc(var(--ui) * 1.5);
-  font-size: calc(var(--ui) * 1.55); /* 17px */
+  font-size: max(calc(var(--ui) * 1.55), var(--type-floor)); /* 17px */
   font-weight: 800;
   letter-spacing: 0.01em;
   font-variant-numeric: tabular-nums;
@@ -96,9 +96,18 @@
   transition: opacity 0.2s var(--ease-out), transform 0.2s var(--ease-out);
 }
 
+/* The chip arrives once the card under it has turned, not the instant the
+   book says so. It used to print the stage's figure - and with it whether the
+   guess landed - at the START of the flip, while the card still showed its
+   back: the one moment of suspense each card has, answered half a second
+   early. Same delay as the missed guess's ring (choices-board.css) and the
+   bust cross, and on the entering rule only, so it still clears at once when
+   the next round deals. Reduced motion has no flip and no transition, so no
+   delay either. */
 .card-mult.show {
   opacity: 1;
   transform: translateY(0);
+  transition-delay: calc(var(--flip-dur, 0.5s) * 0.9);
 }
 
 /* A bust card's chip that prints less than the round cost: 0.00x on a bust
@@ -164,8 +173,17 @@
 
    The table, the rail, the chips and the cups all stay lit. That is the line
    this stops at: the SCENE stays, the INTERFACE recedes. Blacking out the
-   former is the mistake win-celebration.css opens by warning against. */
-:global(.takeover-open) .choice-row {
+   former is the mistake win-celebration.css opens by warning against.
+
+   `.locked` IS NAMED ON PURPOSE. A takeover only ever opens while a round is
+   in flight, so the row is always locked under it - and `.choice-row.locked`
+   (choices-board.css, 0.5) has this rule's specificity and loads after it, so
+   it won. The row sat at 0.5 under every takeover, and on a phone, where the
+   veil has no blur, the captions read clearly on the same line as the win's
+   multiplier ("HIGHER 17.20x NSIDE"). One more class makes this the answer
+   whatever order the sheets load in. */
+:global(.takeover-open) .choice-row,
+:global(.takeover-open) .choice-row.locked {
   opacity: 0.16;
   transition: opacity 0.36s var(--ease-out);
 }
@@ -182,8 +200,53 @@
    readout used to arrive with the first card and move the whole board. */
 .running-win.is-idle { visibility: hidden; }
 
+/* The first-deal prompt (GameBoard.svelte, showHint). Laid OVER the three
+   readout lines rather than in them - absolute, inset to the readout's own
+   box - so it appearing or going moves nothing. A sentence, so sentence case
+   at body size in the dim ink, not the small caps the label above a figure
+   wears. Its own `visible` beats the idle readout's `hidden`, which is how it
+   shows while the lines under it stay reserved and blank. */
+.running-win { position: relative; }
+.running-win-hint {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  translate: -50% 0;
+  /* Its OWN width, one line where it fits. Inset to the readout's box, it
+     took that box's width - only as wide as "$0.00" - and wrapped "Pick all
+     4 / guesses" on a desktop with the whole table to spare. */
+  width: max-content;
+  max-width: min(90vw, calc(var(--ui) * 36));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  visibility: visible;
+  font-size: max(calc(var(--ui) * 1.15), var(--type-floor));
+  font-weight: 600;
+  color: var(--ink-dim);
+  text-shadow: 0 1px 6px rgba(var(--shadow-rgb), 0.7);
+  pointer-events: none;
+}
+
+/* The round's result for a screen reader (GameBoard.svelte, announcement).
+   Off screen, not display:none - a live region that is not rendered is not
+   read. */
+.round-announcer {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
 .running-win-label {
-  font-size: calc(var(--ui) * 1.02); /* 11.2px */
+  font-size: max(calc(var(--ui) * 1.02), var(--type-floor)); /* 11.2px */
   letter-spacing: var(--track-label);
   text-transform: uppercase;
   color: var(--ink-felt);

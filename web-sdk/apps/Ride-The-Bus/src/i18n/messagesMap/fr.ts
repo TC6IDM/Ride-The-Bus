@@ -14,7 +14,7 @@ export default {
 	Suit: 'Enseigne',
 
 	Winning: 'Gain',
-	'Full Game Win!': 'Partie complète !',
+	'Full game win': 'Partie complète',
 	Banked: 'Sécurisé',
 	Busted: 'Perdu',
 	'Revealing…': 'Révélation…',
@@ -28,11 +28,10 @@ export default {
 	'Set rounds': 'Définir les manches',
 	Start: 'Démarrer',
 
-	'Bet Menu': 'Menu des mises',
+	'Bet menu': 'Menu des mises',
 	'Quick bets':
 		'Mises rapides',
 
-	'Turbo Speed': 'Vitesse turbo',
 	Normal: 'Normale',
 	Instant: 'Instantanée',
 	'Off: full animation': 'Désactivé : animation complète',
@@ -50,7 +49,6 @@ export default {
 
 	Autoplay: 'Jeu automatique',
 
-	'Game Mode': 'Mode de jeu',
 	'Choose game mode': 'Choisir le mode de jeu',
 	Classic: 'Classique',
 	'Second Chance': 'Seconde chance',
@@ -88,7 +86,6 @@ export default {
 	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
 		'Une première carte manquée met fin à la manche. Les erreurs suivantes ne conservent que 15%, chaque bonne réponse vaut donc davantage.',
 
-	'How to Play': 'Comment jouer',
 	'Guess your way through four cards:': 'Devinez au fil de quatre cartes :',
 	'Color: is card 1 red or black?':
 		'Couleur : la carte 1 est-elle rouge ou noire ?',

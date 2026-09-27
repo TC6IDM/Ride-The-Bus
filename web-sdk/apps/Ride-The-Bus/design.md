@@ -47,7 +47,12 @@ parity of contrast against the three panel grounds (the table is in
 - **The volatility ruler** (`--vol-*`, seven stops) is the one scale both the
   bet display and the mode picker read; the bet and mode panels tint with it.
 - **Colour that is data is not art-directed**: the choice-row fills, the chip
-  denominations, the card reds and blacks.
+  denominations, the card reds and blacks. The fills are the owner's; the
+  LIGHT on them is the table's - the squares take the lit top edge, the shaded
+  bottom and the two-part shadow like every other object on it. Higher, Inside
+  and Outside were softened on 2026-09-27 - same hue and lightness, less
+  chroma - on the owner's call; the fills that shipped before are kept in
+  `tokens.css` as the `-original` tokens, one edit away.
 - Two files are exempt from tokens: `table.css` (sampled measurements) and
   `win-celebration.css`'s tier palette (a closed one-screen set). The deal
   button's `--spin-*` palette was a third until the controls guide drew the same
@@ -72,7 +77,26 @@ parity of contrast against the three panel grounds (the table is in
   figure (the bar's BALANCE, BET, LAST WIN). Never on a sentence, never on a
   field's label and never on a section heading - those are sentence case at
   body size or above. Six spaced-caps headings down one page is the eyebrow
-  tell, and How to Play had them until the third audit.
+  tell, and How to Play had them until the third audit. The board's four guess
+  labels and the takeover's "Tap to continue" were the last two in small caps
+  (the fourth review, 2026-09-27); a guess is named one way everywhere,
+  "Higher / Lower". Panel titles are sentence case too: "Game mode", "How to
+  play".
+- **A multiplier prints one way**: one decimal, grouped like money, then ×
+  (`formatMultiplier`). Payouts are floored to 0.1, so a second place is always
+  a false 0. A guess's PRICE (How to Play's pay table) is the one exception,
+  and keeps two places because it is not floored. A round that paid nothing
+  prints no multiplier at all - "$0.00 0.0×" said zero twice.
+- **The result is said as well as shown**: one polite status line per settled
+  round ("Banked, $1.20, 1.2×"), off the same latched readout as the bar, so a
+  screen reader hears it when the card has turned and not before.
+- **Before the first deal, the readout's empty slot says the one thing to do**
+  ("Pick all 4 guesses"), in sentence case at body size, laid over the slot so
+  nothing moves - and goes the moment the four are picked.
+- **The type stops at a floor.** Everything scales with `--ui`, and Popout S is
+  Popout L at half size - so at half size the balance was 5.9px. Type now takes
+  `max(its own size, --type-floor | --type-floor-figure)`: 6px for a label, 9px
+  for money, a win and the one action on screen. The arrangement still halves.
 - **Figures are tabular** — Geist ships `tnum`, so `font-variant-numeric:
   tabular-nums` is live and a figure keeps its width as its digits change.
   `typeFit.labelEms()` is measured against Geist 800 (every digit 0.65 em);
@@ -149,7 +173,10 @@ one clock (`holdClimbMs`). The control
 bar is outside the tunnel on purpose: the balance and the skip stay lit.
 A bust **knocks** once
 as its cross lands, the cards it never reached step back, and the guess that
-failed takes a ring - after the card has turned, never during.
+failed takes a ring - after the card has turned, never during. **A result of
+any kind lands after the turn**: the card's multiplier chip and the running
+total wait for the flip too (0.9 of `--flip-dur`), where they used to print the
+answer while the card still showed its back.
 
 ## Focus
 
@@ -163,7 +190,8 @@ dialog, and never the browser's default.
 The material, the ink, the tint contract, the header voice (strong ink, 700, a
 rule beneath, the close disc), the arrival, the focus device, and the touch
 floors — 44px for a control alone or primary, 36px in a dense row, 32px where
-the paint must stay small.
+the paint must stay small. The header STAYS: a panel that scrolls scrolls
+under it, so its title and its way out are never a scroll away.
 
 ## What may differ
 

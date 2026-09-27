@@ -14,7 +14,7 @@ export default {
 	Suit: 'Palo',
 
 	Winning: 'Ganancia',
-	'Full Game Win!': '¡Juego completo!',
+	'Full game win': 'Juego completo',
 	Banked: 'Asegurado',
 	Busted: 'Fallaste',
 	'Revealing…': 'Revelando…',
@@ -28,11 +28,10 @@ export default {
 	'Set rounds': 'Definir rondas',
 	Start: 'Empezar',
 
-	'Bet Menu': 'Menú de apuestas',
+	'Bet menu': 'Menú de apuestas',
 	'Quick bets':
 		'Apuestas rápidas',
 
-	'Turbo Speed': 'Velocidad turbo',
 	Normal: 'Normal',
 	Instant: 'Instantáneo',
 	'Off: full animation': 'Desactivado: animación completa',
@@ -50,7 +49,6 @@ export default {
 
 	Autoplay: 'Juego automático',
 
-	'Game Mode': 'Modo de juego',
 	'Choose game mode': 'Elegir modo de juego',
 	Classic: 'Clásico',
 	'Second Chance': 'Segunda oportunidad',
@@ -88,7 +86,6 @@ export default {
 	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
 		'Fallar la primera carta termina la ronda. Los fallos posteriores conservan solo el 15%, así que cada acierto vale más.',
 
-	'How to Play': 'Cómo jugar',
 	'Guess your way through four cards:': 'Adivina las cuatro cartas, una a una:',
 	'Color: is card 1 red or black?':
 		'Color: ¿la carta 1 es roja o negra?',

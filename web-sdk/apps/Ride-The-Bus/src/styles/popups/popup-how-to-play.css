@@ -401,3 +401,9 @@
 }
 
 .ex-step.is-last .ex-total { color: var(--gold-bright); }
+
+/* "If you guess wrong": each rule's card, then the rule, parted by weight and
+   a gap rather than a character - see the note in HowToPlayPopup.svelte. */
+.bust-rules strong {
+  margin-inline-end: 0.45em;
+}

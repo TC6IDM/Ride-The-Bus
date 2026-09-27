@@ -48,10 +48,10 @@
     role="dialog"
     aria-modal="true"
     tabindex="-1"
-    aria-label={t('Bet Menu')}
+    aria-label={t('Bet menu')}
     style={`--tint: ${modeNameColor()}; --tint-rgb: ${modeRgb()}; --tint-strong: ${modeNameColor()}`}
   >
-    <div class="popup-head"><span>{t('Bet Menu')}</span><button class="popup-close" onclick={onclose} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
+    <div class="popup-head"><span>{t('Bet menu')}</span><button class="popup-close" onclick={onclose} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
     <!-- On a mode that multiplies the bet, the figure a player is about to
          spend leads: the round's cost, in the bar's own blue, with the
          arithmetic under it. The field below stays the BASE bet - that is

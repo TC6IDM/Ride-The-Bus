@@ -52,6 +52,16 @@ These override default behaviour. Follow them every time.
    that it cannot tell you whether the result sounds good. Details are in
    `.claude/skills/rtb-audio-lab/`.
 
+   **Browser work defaults to `playwright-cli`** (the global `@playwright/cli`,
+   not a project dependency; skill in `.claude/skills/playwright-cli`). Use it
+   for any ad-hoc look, click, computed-style read or console check, ahead of the
+   chrome-devtools MCP or a throwaway CDP script: a command answers in a few
+   hundred bytes and its page snapshot goes to a file, not into context.
+   **Phones need `open --mobile` before `resize`.** A bare resize is a narrow
+   desktop with hover and a fine pointer, and the bar came out 11-20px short at
+   all three phone sizes. The scenario sweeps stay on `npm run shots`. Timings
+   and a recipe are in status.md.
+
 ---
 
 ## Where things are
@@ -198,8 +208,15 @@ reading before proposing it again.
   edge-to-edge shadow band. Three ambient circles on one centre is not depth.
 - **The board's numeric readouts are hidden while the takeover counts** —
   `.running-win`, the four `.card-mult` chips and `.cb-lastwin`, each named
-  individually in the test. The card row goes entirely; the choice row only dims;
-  the table, rail, chips and cups stay lit.
+  individually in the test. The card row goes entirely; the choice row only dims
+  - to 0.16, and the rule names `.choice-row.locked`, because the lock (0.5)
+  has the same specificity, loads later, and is ALWAYS on under a takeover: it
+  silently won until 2026-09-27, and on phones the captions printed on the
+  same line as the win's multiplier. Its LABELS go outright (`.choice-label`,
+  choices-board.css): text beside the win figure, legible even at 0.16. The
+  table, rail, chips and cups stay lit.
+  A card's chip and the running total land after the card has turned (0.9 of
+  `--flip-dur`, like the bust cross), never during the flip.
 - **The win ramp IS the volatility ramp** — `--vol-sc` / `--vol-base` / `--vol-hs`
   / `--vol-overflow`, referenced from the same triplets as the bolt meter. Max
   alone is off the scale and keeps its cream-on-crimson inversion. The hand hops
@@ -208,7 +225,7 @@ reading before proposing it again.
   "did not bust", and FIVE decisions ask it.** A clean sweep is floored onto the
   takeover ladder however little it pays; the same question also gates the
   autoplay **Stop on full game win**, the `playFullWin()` sting, the
-  running-win bar's **"Full Game Win!"** label, and (since 2026-09-23) the
+  running-win bar's **"Full game win"** label, and (since 2026-09-23) the
   **last-card hold's floor** - a card that would complete a clean sweep is held
   at least the entry tier's length. Only the takeover was converted
   when `isCleanSweep` landed, so a forgiven Second Chance round — three of four
@@ -332,7 +349,14 @@ reading before proposing it again.
   share of the row (`flex: 1 1 0`), not a reservation. Popout S opts out and must
   restate `.cb-balance`, `.cb-lastwin` and `.cb-readouts.solo`.
 - **Replay hides the balance, and that is a different layout** — `.solo` pushes
-  Last Win right; its 26-unit floor is cleared on phones.
+  Last Win right; its 26-unit floor is cleared on phones. Under a replay's
+  takeover the pill KEEPS its width with Last Win faded out in place; it used
+  to collapse, which re-flowed the whole bar under the veil.
+- **A payout multiplier prints through `formatMultiplier`** (`game/ui/`): one
+  decimal, grouped like money. Payouts floor to 0.1, so ".20" was a false
+  place, and it was three formats for one number. How to Play's per-guess
+  PRICE keeps two decimals (not floored). `multiplier.test.ts` greps every
+  component for a hand-built `×`.
 - **High-denomination currencies are the stress case.** Worst three are TZS, UGX
   and XOF at 24 characters. 31 of 46 render as a bare code, so the two-line chip
   is the common path. COP is **not** a Stake currency.
@@ -880,7 +904,12 @@ Every layout change is checked at all seven. The first four are **exactly
 so a row of four that fits a 16:9 window cannot be assumed to fit, and the
 control bar breaks onto extra rows there by design. From Popout S up to
 Desktop the arrangement must be **identical** and only the scale changes —
-Popout S is Popout L at exactly half size, and is laid out that way.
+Popout S is Popout L at exactly half size, and is laid out that way. **Type is
+the one exception**: it stops at `--type-floor` (6px) / `--type-floor-figure`
+(9px) in `tokens.css`, as `max(own calc, floor)`, because at half size the
+balance printed at 5.9px and the bar's captions at 3.4px. The floor binds on
+Popout S alone, and `fitValue` can still shrink a figure below it. The
+panels' prose (How to Play, the mode blurbs) is not floored yet.
 
 That is a constraint on the *clamp floors*, not on the media queries: whenever
 `--ui` or `--ui-bar` bottoms out, the layout stops scaling and starts
@@ -912,7 +941,7 @@ between a one-row bar and a two-row one.
 
 ## Current state and outstanding work
 
-854/854 tests (none skipped), 0 type errors, 0 CSS warnings, lint clean, and
+861/861 tests (none skipped), 0 type errors, 0 CSS warnings, lint clean, and
 the client reproduces the published books of all **193** modes exactly — the
 parity test replays a 400-book slice of every mode off `index.json`, three-card
 trips books included. The build on disk is the **2026-09-22 02:30** one: High
@@ -1053,8 +1082,9 @@ changeable until the user says otherwise.
 **The full picture — what is built, what was measured, every open item and every
 approval-checklist gap — is `.claude/skills/rtb-invariants/references/status.md`.**
 Read it when planning work. It also carries the local dev tooling: the replay
-RGS, `npm run dev`, the six scenario aliases, and the headless CDP driver
-(`npm run shots`) that every visual judgement in this repo has been made with.
+RGS, `npm run dev`, the six scenario aliases, the headless CDP driver
+(`npm run shots`) that every visual judgement in this repo has been made with,
+and the `playwright-cli` recipe for looking at one screen by hand.
 
 The single biggest open item: **`RGS_TEST_PLAN.md` holds 103 live-session checks
 and none has been run.** They need a real Stake session and cannot be done

@@ -14,7 +14,7 @@ export default {
 	Suit: 'Naipe',
 
 	Winning: 'Ganho',
-	'Full Game Win!': 'Jogo completo!',
+	'Full game win': 'Jogo completo',
 	Banked: 'Garantido',
 	Busted: 'Errou',
 	'Revealing…': 'Revelando…',
@@ -28,11 +28,10 @@ export default {
 	'Set rounds': 'Definir rodadas',
 	Start: 'Iniciar',
 
-	'Bet Menu': 'Menu de apostas',
+	'Bet menu': 'Menu de apostas',
 	'Quick bets':
 		'Apostas rápidas',
 
-	'Turbo Speed': 'Velocidade turbo',
 	Normal: 'Normal',
 	Instant: 'Instantâneo',
 	'Off: full animation': 'Desligado: animação completa',
@@ -50,7 +49,6 @@ export default {
 
 	Autoplay: 'Jogo automático',
 
-	'Game Mode': 'Modo de Jogo',
 	'Choose game mode': 'Escolher modo de jogo',
 	Classic: 'Clássico',
 	'Second Chance': 'Segunda Oportunidade',
@@ -88,7 +86,6 @@ export default {
 	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
 		'Errar a primeira carta termina a rodada. Erros seguintes mantêm apenas 15%, por isso cada acerto vale mais.',
 
-	'How to Play': 'Como jogar',
 	'Guess your way through four cards:': 'Adivinhe as quatro cartas, uma a uma:',
 	'Color: is card 1 red or black?':
 		'Cor: a carta 1 é vermelha ou preta?',

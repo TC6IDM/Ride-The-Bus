@@ -323,17 +323,33 @@ describe('the chrome does not slide back', () => {
     assert.equal(shadows.length, 4, `expected 4 keyline shadows, found ${shadows.length}`);
   });
 
-  /** The fills are owner-decided. A repaint was tried and rejected. */
-  test('the choice fills are untouched', () => {
-    for (const [name, hex] of [
-      ['higher', '#2ecc71'],
+  /**
+   * The fills are owner-decided. A re-derivation from the scene was tried and
+   * rejected on the look; a softer set (same hue and lightness, less chroma)
+   * was shown side by side and taken on 2026-09-27. Pinned so neither drifts
+   * without the owner, and so the shipped-until-then set stays one edit away.
+   */
+  test('the choice fills are the owner-chosen set, with the originals kept as the backup', () => {
+    for (const [name, value] of [
+      ['higher', 'var(--choice-higher-soft)'],
       ['lower', '#c0392b'],
-      ['inside', '#00bcd4'],
-      ['outside', '#d81ce0'],
+      ['inside', 'var(--choice-inside-soft)'],
+      ['outside', 'var(--choice-outside-soft)'],
     ] as const) {
       assert.ok(
-        TOKENS.includes(`--choice-${name}: ${hex}`),
-        `--choice-${name} moved off ${hex} - that repaint was rejected on the look`,
+        TOKENS.includes(`--choice-${name}: ${value}`),
+        `--choice-${name} is not ${value} - the fills are the owner's call`,
+      );
+    }
+    for (const [name, soft, original] of [
+      ['higher', '#5dc680', '#2ecc71'],
+      ['inside', '#4cb8cb', '#00bcd4'],
+      ['outside', '#c552c9', '#d81ce0'],
+    ] as const) {
+      assert.ok(TOKENS.includes(`--choice-${name}-soft: ${soft}`), `--choice-${name}-soft moved off ${soft}`);
+      assert.ok(
+        TOKENS.includes(`--choice-${name}-original: ${original}`),
+        `--choice-${name}-original is gone - it is the way back to the fills that shipped before 2026-09-27`,
       );
     }
   });

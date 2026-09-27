@@ -21,6 +21,14 @@
 		     leaves pinch alone, so the checklist item is met without taking
 		     magnification away from anyone who needs it. -->
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+		<!-- The game is dark, and says so before any stylesheet loads: the
+		     browser draws its own parts - a native scrollbar, form controls,
+		     the canvas behind the first frame - in their dark variants rather
+		     than white. theme-color tints a phone's browser chrome to the same
+		     felt the body starts on (--felt-edge, as a literal for the same
+		     reason as the body's colour below). -->
+		<meta name="color-scheme" content="dark" />
+		<meta name="theme-color" content="#030d08" />
 		%sveltekit.head%
 	</head>
 	<!-- The background here is the flash guard for the moment before any

@@ -15,6 +15,7 @@
   import MarkIcon from '../icons/MarkIcon.svelte';
   import gameConfig from '../../game/platform/config';
   import { t } from '../../i18n/i18nDerived';
+  import { formatMultiplier } from '../../game/ui/formatMultiplier';
   import { FAMILY_BLURB, FAMILY_RULES, stageCount } from '../../game/math/modes';
   import { clearBoard } from '../../game/round/roundState.svelte';
   import {
@@ -44,11 +45,11 @@
     role="dialog"
     aria-modal="true"
     tabindex="-1"
-    aria-label={t('Game Mode')}
+    aria-label={t('Game mode')}
     style={`--tint: ${volatilityColorVar(bet.family)}; --tint-rgb: ${volatilityColorRgbVar(bet.family)}; --tint-strong: ${volatilityColorVar(bet.family)}`}
   >
     <div class="popup-head">
-      <span>{bet.pending ? t('Switch mode?') : t('Game Mode')}</span>
+      <span>{bet.pending ? t('Switch mode?') : t('Game mode')}</span>
       <button class="popup-close" onclick={onclose} aria-label={t('Close')}><MarkIcon name="cross" /></button>
     </div>
 
@@ -85,7 +86,7 @@
         {#if target.cost !== 1}
           <p class="mode-confirm-cost">{t('Costs %c× your bet').replace('%c', String(target.cost))}</p>
         {/if}
-        <p class="mode-confirm-max">{t('Max win %s your bet').replace('%s', `${target.maxWin}×`)}</p>
+        <p class="mode-confirm-max">{t('Max win %s your bet').replace('%s', formatMultiplier(target.maxWin))}</p>
         <!-- The family's ceiling is the headline above; this is what the four
              guesses already on the board would top out at if the switch goes
              through. Only 8 of a family's 64 combinations reach the headline,
@@ -102,7 +103,7 @@
              headline above. -->
         {#if picked !== null && !target.fixedChoices}
           <p class="mode-confirm-picked">
-            {t('Your four guesses top out at %s your bet.').replace('%s', `${picked}×`)}
+            {t('Your four guesses top out at %s your bet.').replace('%s', formatMultiplier(picked))}
           </p>
         {/if}
         <!-- No "costs 1x" line on the three four-guess families: it restated
@@ -180,7 +181,7 @@
           <!-- Approval requires the maximum win per mode. Read from
                FAMILY_RULES rather than written into the blurb, so the figure
                exists once and a test can pin it to the payout maths. -->
-          <span class="mode-option-max">{t('Max win %s your bet').replace('%s', `${rules.maxWin}×`)}</span>
+          <span class="mode-option-max">{t('Max win %s your bet').replace('%s', formatMultiplier(rules.maxWin))}</span>
           <!-- And the cost, on the one family where it is not 1x. Approval
                wants "description and cost information" per mode; the other
                three carry it in the foot note, which says every mode. -->

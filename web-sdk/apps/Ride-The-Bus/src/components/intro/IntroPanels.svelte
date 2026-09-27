@@ -10,6 +10,7 @@
      see the Svelte scoping note in CLAUDE.md. -->
 <script lang="ts">
 	import { t } from '../../i18n/i18nDerived';
+	import { formatMultiplier } from '../../game/ui/formatMultiplier';
 	import gameConfig from '../../game/platform/config';
 	import { FAMILY_RULES, MODE_FAMILIES, allPlayableModes } from '../../game/math/modes';
 	import ChoiceIcon from '../icons/ChoiceIcon.svelte';
@@ -216,7 +217,7 @@
 				<li class="ss-step" style="--d: 5">
 					<span class="ss-step-n">2</span>
 					{@render help('Guess whether card 2 is higher or lower than card 1, or equal to it.')}
-					<span class="ss-step-label">{t('Higher')} / {t('Lower')}</span>
+					<span class="ss-step-label">{t('Higher')}&nbsp;/ {t('Lower')}</span>
 
 					<div class="choice-square hl-square" role="group" onmouseleave={() => (hover.hl = null)} aria-label={t('Higher, lower, or equal')}>
 						<button
@@ -251,7 +252,7 @@
 				<li class="ss-step" style="--d: 6">
 					<span class="ss-step-n">3</span>
 					{@render help('Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either. After Equal on step 2 there is nothing to fall between, so Inside is unavailable.')}
-					<span class="ss-step-label">{t('Inside')} / {t('Outside')}</span>
+					<span class="ss-step-label">{t('Inside')}&nbsp;/ {t('Outside')}</span>
 
 					<div class="choice-square io-square" role="group" onmouseleave={() => (hover.io = null)} aria-label={t('Inside, outside, or equal')}>
 						<button
@@ -341,7 +342,7 @@
 					     which put a grouped and an ungrouped spelling of the same
 					     ceiling on screens a player moves between in seconds, and
 					     grouped it by the BROWSER's locale rather than the game's. -->
-					<span class="ss-stat-val">{maxWinOverall}×<span class="ss-stat-note" aria-hidden="true">*</span></span>
+					<span class="ss-stat-val">{formatMultiplier(maxWinOverall)}<span class="ss-stat-note" aria-hidden="true">*</span></span>
 				</div>
 			</div>
 			<!-- The asterisk's sentence. The figure above is the game's ceiling,
