@@ -29,5 +29,6 @@ files, but [`audio-masters/`](../audio-masters/) at the repository root holds th
 ten Suno downloads unmodified. Under the Terms effective 2026-09-03 the
 commercial right attaches to a permitted **download** taken on a paid plan, so
 those WAVs are the licensed artefacts in the same way the invoice is the proof of
-payment. They are gitignored and must be backed up off this machine alongside
-`private/`.
+payment. They are gitignored, so no clone holds them; the owner copied them
+to another machine on 2026-09-27 and the originals stay here. Keep `private/`
+in the same backup.

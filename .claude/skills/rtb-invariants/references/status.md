@@ -326,8 +326,13 @@ superseded `books_tr_any_equal_equal_any.jsonl.zst` and its LUT (19:13) were
 still there beside the 23:15 build and the parity test replayed them against
 the client until it was made to read the mode list off `index.json`. They have
 since been deleted (the folder is 387 files: 193 + 193 + `index.json`, checked
-2026-09-22), but the folder is what gets uploaded, so re-count it before the
-next upload after any rebuild.
+2026-09-22 and again 2026-09-27), but the folder is what gets uploaded, so
+re-count it before the next upload after any rebuild. The same build's other
+five files (its segmented and published LUTs, force record, event config and
+verification sidecar in `lookup_tables/`, `forces/` and `configs/`) were
+deleted on 2026-09-27; nothing reads those folders by listing, but they were
+~30 MB of a mode that no longer exists. The July `*_base*` files beside them
+predate the family split and are still there.
 
 The remaining soft point is the trips mode's non-paying share: 94.8% of its
 rounds pay nothing, past the "90,000 of 100,000 may be grounds for rejection"
@@ -550,9 +555,11 @@ look.**
   file with the verbatim Styles and Exclude Styles fields, the settings
   (instrumental, 50% weirdness, 50% style influence) and the SHA-256. The
   invoice, receipt and both Terms PDFs are in `licence-evidence/` (checked
-  2026-09-13). **Two items in that file are still open**, neither
-  Stake-facing: archiving the page behind each generation URL while the
-  subscription is live, and backing up `audio-masters/` off this machine.
+  2026-09-13). **Its two housekeeping items are closed**: the ten song pages
+  were captured on 2026-09-23 (`licence-evidence/private/generation-pages/`),
+  and the owner copied `audio-masters/` to another machine on 2026-09-27 - the
+  originals stay here too. Check that `private/` travels with the next backup:
+  the invoice and receipt are only on this machine.
 
   The WAV masters live in the repo-root `audio-masters/`, outside the app so they are never
   served, and the shipped MP3s were encoded from them at 112 kbps in a single

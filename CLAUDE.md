@@ -908,8 +908,9 @@ Popout S is Popout L at exactly half size, and is laid out that way. **Type is
 the one exception**: it stops at `--type-floor` (6px) / `--type-floor-figure`
 (9px) in `tokens.css`, as `max(own calc, floor)`, because at half size the
 balance printed at 5.9px and the bar's captions at 3.4px. The floor binds on
-Popout S alone, and `fitValue` can still shrink a figure below it. The
-panels' prose (How to Play, the mode blurbs) is not floored yet.
+Popout S alone, and `fitValue` can still shrink a figure below it. A panel
+takes the floor as one unit instead - `--ui-bar` itself floors at 6px there
+(`popup-base.css`), so the whole panel scales up and scrolls under its header.
 
 That is a constraint on the *clamp floors*, not on the media queries: whenever
 `--ui` or `--ui-bar` bottoms out, the layout stops scaling and starts
@@ -1074,7 +1075,9 @@ builds just those modes into `library_test/` and stops before publish
 **`run.py` does not sweep `publish_files/`.** A superseded build's books and
 LUT (`*_tr_any_equal_equal_any_*`, 19:13) sat beside the current ones, which is
 why the parity test reads the mode list off `index.json` rather than listing
-the directory. Delete leftovers before uploading the folder to Stake.
+the directory. They are gone (the rest of that build's files in `library/`
+went on 2026-09-27), but re-count the folder after any rebuild and delete
+leftovers before uploading it to Stake.
 
 **Not yet submitted to Stake** — math, bet modes and mechanics are all still
 changeable until the user says otherwise.

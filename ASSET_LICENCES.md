@@ -351,12 +351,12 @@ is the only proof the subscription was paid before the tracks were generated.
    title, the handle, the style summary, the generation date and time, the model
    (v5.5) and the length - the facts the tables above state, now held
    independently of the URL resolving.
-3. **Back up `audio-masters/` off this machine.** Those WAVs are the permitted
+3. ~~**Back up `audio-masters/` off this machine.**~~ **Done 2026-09-27**, by
+   the owner, onto a different machine; the originals stay in `audio-masters/`
+   here as well. Those WAVs are the permitted
    Downloads the commercial licence attaches to, and they are gitignored, so no
    clone, fork or remote holds a copy. A later re-download on a lapsed account
-   would carry the free-tier licence instead. **Still the owner's to do** - the
-   copy has to land somewhere this machine is not (an external drive, or a
-   cloud folder), which nothing in the repo can do. Made ready on 2026-09-23:
+   would carry the free-tier licence instead. Made ready on 2026-09-23:
    `audio-masters/SHA256SUMS` lists all nineteen files and travels with the
    folder, so a copy verifies with `sha256sum -c SHA256SUMS`, and the ten WAV
    masters' full hashes are below, in a tracked file, so a backup can be proven
