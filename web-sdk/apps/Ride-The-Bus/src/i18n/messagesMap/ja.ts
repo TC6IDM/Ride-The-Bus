@@ -14,123 +14,113 @@ export default {
 	Suit: 'スート',
 
 	Winning: '配当',
-	'Full Game Win!': 'フルゲーム達成！',
+	'Full game win': 'フルゲーム達成',
 	Banked: '確保',
 	Busted: '失敗',
 	'Revealing…': 'めくり中…',
 
-	Spin: 'スピン',
+	Deal: 'ディール',
 	Stop: '停止',
 	left: '残り',
 	'Pick all 4 guesses': '4つすべて選択してください',
-	'Enter a number of plays': 'プレイ回数を入力してください',
+	'Enter a number of plays': 'ラウンド数を入力してください',
 	'Enter a valid bet': '有効なベット額を入力してください',
 	'Set rounds': 'ラウンド数を設定',
 	Start: '開始',
 
-	'Bet Menu': 'ベットメニュー',
-	'Quick Bets': 'クイックベット',
+	'Bet menu': 'ベットメニュー',
+	'Quick bets':
+		'クイックベット',
 
-	'Turbo Speed': 'ターボ速度',
 	Normal: '通常',
 	Instant: '瞬時',
-	'Off — full animation': 'オフ — 通常アニメーション',
+	'Off: full animation': 'オフ：通常アニメーション',
 	'% faster': '％高速',
 
 	'Sound settings': 'サウンド設定',
 	Sound: 'サウンド',
 	Music: '音楽',
-	'Game Sounds': 'ゲーム音',
+	'Game sounds':
+		'ゲーム音',
 	'Mute music': '音楽をミュート',
 	'Unmute music': '音楽をオンにする',
 	'Mute game sounds': 'ゲーム音をミュート',
 	'Unmute game sounds': 'ゲーム音をオンにする',
 
 	Autoplay: 'オートプレイ',
-	'Number of Plays': 'ラウンド数',
 
-	Advanced: '詳細設定',
-	'Game Mode': 'ゲームモード',
 	'Choose game mode': 'ゲームモードを選択',
 	Classic: 'クラシック',
 	'Second Chance': 'セカンドチャンス',
 	'High Stakes': 'ハイステークス',
-	'Every mode returns the same %s over many rounds. What changes is how often a round pays and how much it can pay.':
-		'どのモードも多数のラウンドで同じ%sを還元します。変わるのは配当の頻度と大きさです。',
+	'This mode costs %c× your bet. Every mode returns the same %s over many rounds; what changes is how often a round pays and how much it can pay.':
+		'このモードのコストは賭け金の%c倍です。どのモードも多くのラウンドを通じて同じ%sを返します。変わるのは、ラウンドが支払う頻度と金額です。',
 	Forgiven: '免除',
+	// The intro's tagline and the first line of How to Play's Game modes.
+	'%n ways to play': '%n通りの遊び方',
+	'There are %n ways to play: every set of picks is its own bet, priced on its own odds.':
+		'遊び方は%n通りあります。選択の組み合わせはそれぞれ独立したベットで、それぞれのオッズで価格が決まります。',
 	'Game modes': 'ゲームモード',
-	'Max win': '最大配当',
 	// Confirmation before a bet mode is activated - required by the approval
-	// checklist, and worth having anyway: the three families cost the same but
+	// checklist, and worth having anyway: the guess families cost the same but
 	// differ in what a miss keeps and how high they reach.
 	'Switch mode?': 'モードを変更しますか？',
 	Cancel: 'キャンセル',
 	Switch: '変更する',
 	'Volatility %s of %t': 'ボラティリティ %t段階中 %s',
-	'Every mode costs 1× your bet.': 'どのモードもベット額の1倍です。',
-	'Return to player (RTP) is %s on every game mode, and each returns that same figure over many rounds. The most this game can pay is %m your bet, on High Stakes.':
-		'還元率（RTP）はどのゲームモードでも %s で、いずれも多数のラウンドで同じ数値を還元します。このゲームの最大配当はハイステークスでベットの %m です。',
-	'A wrong first card ends the round. Later misses keep 30% of what you had built.':
-		'1枚目を外すとラウンド終了。以降のミスは積み上げた分の30%を保持します。',
-	'Card 1 still ends the round. After that your first wrong guess is forgiven and play continues.':
-		'カード1は変わらずラウンド終了です。その後の最初のミスは免除され、続行します。',
-	'Skip card reveal on spacebar hold': 'スペースキーでカード演出をスキップ',
-	'Skip the card reveal while the spacebar is held': 'スペースキーで開始したラウンドのカード演出をスキップします',
-	'Skip card reveal on spacebar hold (the sliders button) plays rounds without the card animation while the spacebar is held. It changes only the animation, never the cards, the odds or the payout.':
-		'スペースキーでカード演出をスキップ（スライダーボタン）は、スペースキーで始めたラウンドをカードのアニメーションなしで進めます。変わるのは演出だけで、カードや確率、配当には影響しません。',
+	'Return to player (RTP) is %s on every game mode. The most this game can pay is %m your bet, on %f.':
+		'還元率（RTP）はどのゲームモードでも %s です。このゲームの最大配当は%fでベットの %m です。',
+	'A wrong first card ends the round. Later misses keep 30% of your running total.':
+		'1枚目を外すとラウンド終了。以降のミスは進行中の合計の30%を保持します。',
+	'A wrong first card ends the round. After that your first miss is forgiven and play continues.':
+		'1枚目を外すとラウンド終了。以降の最初のミスは免除され、続行します。',
 	'Card 1': 'カード1',
 	'Your first wrong guess': '最初のミス',
 	'Your second wrong guess': '2度目のミス',
-	'Equal is the rarest guess, so the rounds built on it carry the largest wins — and are the hardest to land. Two Equal picks landing together is the most this mode can pay, at %m your bet.':
-		'イコールは最も出にくい予想なので、それを軸にしたラウンドが最大の配当を生み、同時に最も難しくなります。イコール2回が揃うのがこのモードの上限で、ベットの %m です。',
+	'A full game win pays more the harder your picks were. Equal is the rarest guess, so it pays the most, and two Equal picks reach this mode’s maximum: %m your bet.':
+		'フルゲーム達成の配当は、予想が難しいほど高くなります。イコールは最も起こりにくい予想なので配当も最も高く、イコールを2つ選ぶとこのモードの最大配当、ベットの%mに届きます。',
+	'Only some combinations reach the mode’s maximum. Once your four are picked, the most they can pay is shown above.':
+		'モードの最大配当に届く組み合わせは一部だけです。4つを選ぶと、その組み合わせで得られる最大の配当が上に表示されます。',
 	Playing: 'プレイ中',
 	'Card 2, 3 or 4': 'カード2・3・4',
-	'A wrong first card ends the round. Later misses keep only 20%, so every correct guess is worth more.':
-		'1枚目を外すとラウンド終了です。以降のミスは20%しか残らないぶん、的中1つ1つの価値が高くなります。',
-	'Stop on full game win': 'フルゲーム達成で停止',
+	'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.':
+		'1枚目を外すとラウンド終了です。以降のミスは15%しか残らないぶん、的中1つ1つの価値が高くなります。',
 
-	'How to Play': '遊び方',
 	'Guess your way through four cards:': '4枚のカードを順に予想します：',
-	'Colour — red or black for card 1.': '色 — 1枚目が赤か黒か。',
-	'Higher / Lower — versus card 1 (or =).': 'ハイ / ロー — 1枚目との比較（または＝）。',
-	'Inside / Outside — between cards 1 & 2 (or =).':
-		'イン / アウト — 1枚目と2枚目の間か外か（または＝）。',
-	'Suit — the suit of card 4.': 'スート — 4枚目のスート。',
-	'Pick all four, set your bet, and hit Spin. Each correct guess multiplies your win; a wrong guess ends the round but you keep whatever you had banked so far. Guess all four to win the full game.':
-		'4つすべてを選び、ベット額を決めてスピンを押します。予想が当たるたびに配当が倍増し、外れるとラウンドは終了しますが、それまでに確保した分は残ります。4つすべて当てるとフルゲーム達成です。',
+	'Color: is card 1 red or black?':
+		'色：1枚目は赤か黒か。',
+	'Higher or Lower: is card 2 above or below card 1, or Equal to it?':
+		'ハイ / ロー：2枚目が1枚目より上か下か、それともイコールか。',
+	'Inside or Outside: is card 3 between cards 1 and 2 or outside them, or Equal to one of them?':
+		'イン / アウト：3枚目が1枚目と2枚目の間か外か、それともどちらかとイコールか。',
+	'Suit: which suit is card 4?':
+		'スート：4枚目のスートはどれか。',
+	'Pick all four, set your bet and deal. Each right guess multiplies your win, and four right is a full game win. What a wrong guess costs depends on the game mode; see Game modes below.':
+		'4つすべてを選び、ベット額を決めて配ります。的中するたびに配当が倍増し、4つすべて当てればフルゲーム達成です。外したときに失うものはゲームモードによって異なります。下の「ゲームモード」をご覧ください。',
 	'Card order': 'カードの強さ',
-	'Ace is low and King is high — worth knowing, since plenty of card games play it the other way. Suit never affects rank; only the number counts for Higher / Lower and Inside / Outside.':
-		'エースが最も弱く、キングが最も強くなります。逆のルールのカードゲームも多いので覚えておいてください。スートは強さに影響せず、ハイ / ロー とイン / アウトでは数字だけが関係します。',
+	'Ace is low and King is high. Suits have no rank: only the card’s value counts for Higher, Lower, Inside and Outside.':
+		'エースが最も弱く、キングが最も強くなります。スートに強弱はなく、ハイ、ロー、イン、アウトではカードの数字だけが関係します。',
 	Lowest: '最弱',
 	Highest: '最強',
 	'Payouts follow the odds': '配当は確率に連動します',
-	'Every correct guess pays its true odds, so the less likely your pick, the more it pays — and that depends on the cards already showing.':
-		'的中はすべて本来の確率どおりに支払われます。選択が起こりにくいほど配当は高くなり、それは場に出ているカードによって決まります。',
-	'With a 3 on the table, Lower pays about 4.75× because only 8 of the 51 remaining cards are lower, while Higher pays about 1.19× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about 1.57× and Higher rises to about 2.08×. Equal is always the longest shot at roughly 12×.':
-		'場に3がある場合、残り51枚のうち3より小さいのは8枚だけなのでローは約4.75倍、逆に大きいのは40枚あるためハイは約1.19倍です。3が8になると関係は逆転し、ローは約1.57倍、ハイは約2.08倍になります。イコールは常に最も起こりにくく、およそ12倍です。',
+	'Each right guess is priced on the cards still in the deck: the less likely it is, the more it pays. So the same guess can pay differently from one round to the next.':
+		'的中の配当は、山札に残るカードから決まります。起こりにくいほど配当は高くなるため、同じ予想でもラウンドごとに配当が変わることがあります。',
+	'With a 3 on the table, Lower pays about %1× because only 8 of the 51 remaining cards are lower, while Higher pays about %2× because 40 of them are. Turn that 3 into an 8 and it flips: Lower drops to about %3× and Higher rises to about %4×. Equal is always the longest shot at roughly %5×.':
+		'場に3がある場合、残り51枚のうち3より小さいのは8枚だけなのでローは約%1倍、逆に大きいのは40枚あるためハイは約%2倍です。3が8になると関係は逆転し、ローは約%3倍、ハイは約%4倍になります。イコールは常に最も起こりにくく、およそ%5倍です。',
 	'Payout table': '配当表',
 	Card: 'カード',
 	Pick: '予想',
 	Pays: '配当',
+	'Total':
+		'合計',
 	'Red or Black': '赤か黒',
 	'Any suit': '任意のスート',
-	'Each stage multiplies the one before it, and they compound at full precision — the figures above are exact, not rounded. Only the round’s final payout is rounded down, once, to one decimal place. The running total beside the cards is rounded the same way at each step, so during a round it can read slightly under these figures.':
-		'各ステージは前のステージに掛け合わされ、完全な精度のまま累積されます。上記の数値は丸められていない正確な値です。小数点 1 桁への切り捨ては、ラウンド最終の配当に対して 1 度だけ行われます。カードの横に表示される進行中の合計も各段階で同じように切り捨てられるため、ラウンド中はこれらの数値よりわずかに少なく見えることがあります。',
+	'These figures are exact: the stages multiply at full precision, and only the final payout is rounded down, to one decimal place. The running total beside the cards is rounded down as it goes, so mid-round it can read a little under them.':
+		'上記の数値は正確な値です。各ステージは完全な精度のまま掛け合わされ、小数点1桁への切り捨ては最終配当に対してのみ行われます。カードの横の進行中の合計は途中で切り捨てて表示されるため、ラウンド中はわずかに少なく見えることがあります。',
 	'If you guess wrong': '予想が外れた場合',
 	'Full game wins': 'フルゲーム達成時の配当',
-	'Guess all four cards right and the payout depends on how hard your picks were:':
-		'4枚すべて的中した場合、配当は選択の難しさによって変わります：',
-	'Speed and autoplay': '速度とオートプレイ',
-	'Turbo (the lightning button) slides from Normal to Instant and changes only how fast the cards flip. It never changes the cards, the odds or the payout.':
-		'ターボ（稲妻のボタン）は通常から瞬時まで調整でき、カードがめくれる速さだけを変えます。カードや確率、配当が変わることはありません。',
-	'Autoplay (the circular arrows) replays the same four guesses for a set number of rounds, or unlimited. The round counter sits on the button while it runs — press the red square to stop, and the round already in play finishes first.':
-		'オートプレイ（円形の矢印）は同じ4つの予想を指定回数または無制限に繰り返します。実行中はボタン上に残りラウンド数が表示されます。赤い四角を押すと停止しますが、進行中のラウンドは最後まで実行されます。',
-	'Stop on full game win (the sliders button) ends an autoplay run the moment a round lands all four cards. It only stops the run; your bet never changes.':
-		'「フルゲーム達成で停止」（スライダーのボタン）は、4枚すべて的中した時点でオートプレイを終了します。停止するだけで、ベット額が変わることはありません。',
-	'Skip card reveal on autoplay (the sliders button) runs autoplay without the card animation. It changes only the animation, never the cards, the odds or the payout.':
-		'オートプレイでカード演出をスキップ（スライダーボタン）は、カードのアニメーションなしでオートプレイを進めます。変わるのは演出だけで、カードや確率、配当には影響しません。',
-	'Tap the spacebar to play one round, or hold it to keep spinning until you let go.':
-		'スペースキーを押すと1ラウンド、押し続けると離すまで連続してプレイします。',
+	'Turbo and skipping win animations change only what you see, never the cards, the odds or the payout.':
+		'ターボと勝利演出のスキップは表示だけを変えます。カード、確率、配当が変わることはありません。',
 
 	'Pick a color': '色を選択',
 	'Higher, lower, or equal': 'ハイ、ロー、またはイコール',
@@ -153,14 +143,14 @@ export default {
 	'Decrease bet': 'ベット額を下げる',
 	'Turbo speed': 'ターボ速度',
 	'Autoplay settings': 'オートプレイ設定',
-	'Advanced settings': '詳細設定',
 	'Stop autoplay': 'オートプレイを停止',
-	'Spins must be %s seconds apart': 'ラウンドの間隔は%s秒必要です',
+	'Rounds must be %s seconds apart': 'ラウンドの間隔は%s秒必要です',
 	'Round in progress': 'ラウンド進行中',
 	'Insufficient funds': '残高が不足しています',
 	'Bet is below the minimum of %s': 'ベットが最小額 %s を下回っています',
 	'Bet is above the maximum of %s': 'ベットが最大額 %s を上回っています',
-	'Bet is locked while autoplay runs': '自動プレイ中はベットを変更できません',
+	'Bet is locked while autoplay runs': 'オートプレイ中はベットを変更できません',
+	'Mode is locked while autoplay runs': 'オートプレイ中はゲームモードを変更できません',
 	'Replays cannot be re-bet': 'リプレイに賭け直すことはできません',
 	'Replay is view-only': 'リプレイは閲覧専用です',
 	'No active game session': '有効なゲームセッションがありません',
@@ -189,7 +179,7 @@ export default {
 	'Unlimited plays': '無制限',
 	'More plays': 'ラウンドを増やす',
 	'Fewer plays': 'ラウンドを減らす',
-	'Stop autoplay on a full game win': 'フルゲーム達成でオートプレイを停止',
+	'Stop autoplay on full game win': 'フルゲーム達成でオートプレイを停止',
 	'Close menu': 'メニューを閉じる',
 	Close: '閉じる',
 	'Game information': 'ゲーム情報',
@@ -205,52 +195,125 @@ export default {
 	Mode: 'モード',
 	'Game mode': 'ゲームモード',
 	Guesses: '予想',
+	Cards: 'カード',
+	'Round cost': 'ラウンドのコスト',
 	Event: 'イベント',
 	Payout: '配当',
 	Play: '再生',
 
 	// Rule additions (new)
-	'Payouts are dynamic and change based on which cards remain in the deck — the less likely your pick, the higher it pays. The same guess can return different amounts from one round to the next.':
-		'配当は動的で、デッキに残っているカードによって変化します。予想が起こりにくいほど配当は高くなります。同じ予想でもラウンドごとに異なる金額になることがあります。',
 	Controls: '操作方法',
-	'Use the bet display and the plus and minus buttons to set your play amount. Tap the bet amount to open the quick-select menu.':
-		'ベット表示とプラス・マイナスボタンでベット額を設定します。ベット額をタップするとクイック選択メニューが開きます。',
-	'The speaker button mutes and unmutes the game sounds.':
-		'スピーカーボタンでゲーム音のミュートと解除を切り替えます。',
-	'The i button opens this screen at any time.': 'i ボタンでいつでもこの画面を開けます。',
-	'The lightning button adjusts the speed of the card reveal.':
-		'稲妻ボタンでカードがめくられる速度を調整します。',
-	'The circular arrow button opens the autoplay settings.':
-		'円形矢印ボタンでオートプレイ設定を開きます。',
-	'The sliders button lets you toggle stop-on-full-win for autoplay runs.':
-		'スライダーボタンでオートプレイ中のフルウィン時停止を切り替えられます。',
-	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent four-card draw.':
-		'このゲームにはフリースピン、ボーナスラウンド、ジャックポット、再トリガー機能はありません。各ラウンドは独立した1回の4枚カードドローです。',
+	'Plus and minus set your bet. Tap the amount for the quick-bet menu.':
+		'プラスとマイナスでベット額を設定します。金額をタップするとクイックベットのメニューが開きます。',
+	'The speaker opens the sound settings. Music and game sounds mute separately.':
+		'スピーカーでサウンド設定を開きます。音楽とゲーム音は別々にミュートできます。',
+	'The i button opens this screen.': 'i ボタンでこの画面を開きます。',
+	'The lightning button is Turbo: how fast the cards flip, from Normal to Instant.':
+		'稲妻ボタンはターボです。カードがめくられる速さを通常から瞬時まで調整します。',
+	'The circular arrows open autoplay: the same bet, dealt again for a set number of rounds or without limit. The button counts down the rounds left.':
+		'円形の矢印でオートプレイを開きます。同じベットを指定ラウンド数または無制限に配り直し、ボタンに残りラウンド数が表示されます。',
+	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
+		'大きな丸いボタンで配ります。スペースキーでも同様で、押すと1ラウンド、押し続けると配り続けます。オートプレイ中は停止に変わり、進行中のラウンドが先に終了します。',
+	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
+		'モードでゲームモードの選択画面を開きます。切り替えは適用前に確認を求めます。',
+	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
+		'このゲームにはフリースピン、ボーナスラウンド、ジャックポット、再トリガー機能はありません。各ラウンドは独立した1回の配札です：予想モードでは4枚、スリーカードでは3枚。',
 	'Big Win': '大当たり',
 	'Huge Win': '特大当たり',
 	'Mega Win': 'メガウィン',
 	'Epic Win': 'エピックウィン',
 	'Tap to skip': 'タップしてスキップ',
-	'Skip card reveal on autoplay': 'オートプレイでカード演出をスキップ',
-	'Skip the card reveal during autoplay': 'オートプレイ中のカード演出をスキップします',
 	'Skip win animations on autoplay': 'オートプレイ中は勝利演出をスキップ',
 	'Skip big win animations during autoplay': 'オートプレイ中は大当たり演出をスキップします',
 	'Guess the color of card 1: red or black.': 'カード1の色を予想します。赤か黒か。',
 	'Guess whether card 2 is higher or lower than card 1, or equal to it.':
 		'カード2がカード1より高いか低いか、または同じかを予想します。',
-	'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either of the first 2 cards. If you pick Equal on step 2, Inside becomes impossible: nothing can fall between two cards of the same rank.':
-		'カード3がカード1と2の間か、その外側か、最初の2枚のどちらかと同じかを予想します。ステップ2でイコールを選ぶとインサイドは不可能になります。同じ数字の2枚のあいだには何も入りません。',
+	'Guess whether card 3 lands between cards 1 and 2, outside them, or equal to either. After Equal on step 2 there is nothing to fall between, so Inside is unavailable.':
+		'カード3がカード1と2の間に入るか、その外側か、どちらかと同じかを予想します。ステップ2でイコールを選んだあとは間に入る数字がないため、インは選べません。',
 	'Guess the suit of card 4: hearts, diamonds, clubs or spades.':
 		'カード4のスートを予想します。ハート、ダイヤ、クラブ、スペード。',
 	'You guessed Equal, so cards 1 and 2 share a rank. Nothing can fall between them, so Inside cannot win.':
-		'イコールを選んだため、カード1と2は同じ数字です。その間には何も入らないので、インサイドは当たりません。',
-	'Your four guesses top out at %s your bet.':
-		'選んだ4つの予想の上限は賭け金の%sです。',
+		'イコールを選んだため、カード1と2は同じ数字です。その間には何も入らないので、インは当たりません。',
+	'Your four guesses top out at %s your bet.': '選んだ4つの予想の上限はベット額の%sです。',
 	'Play Again': 'もう一度再生',
 	'The round ends and pays nothing.':
 		'ラウンドは終了し、配当はありません。',
-	'The round ends, keeping %s% of what you had built.':
-		'ラウンドが終了し、積み上げた分の%s%が残ります。',
-	'From card 2 on, it is forgiven — you keep %s% of what you had built and the round carries on.':
-		'カード2以降は免除され、積み上げた分の%s%を残してラウンドが続きます。',
+	'The round ends, and you keep about %s% of your running total.':
+		'ラウンドが終了し、進行中の合計の約%s%が残ります。',
+	'From card 2 on, it is forgiven: you keep %s% of your running total and play on.':
+		'カード2以降は免除され、進行中の合計の%s%を残してプレイが続きます。',
+
+	// Three of a Kind.
+	'Three of a Kind':
+		'スリーカード',
+	'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.':
+		'エース、キング、クイーンの12枚デッキから3枚。カード2と3はカード1と同じ数字でなければならず、それ以外は何も支払われません。',
+	'Costs %c× your bet':
+		'コストは賭け金の%c倍',
+	'Any':
+		'任意',
+	'Any card':
+		'任意のカード',
+	'A card that does not match':
+		'一致しないカード',
+	'If a card does not match':
+		'カードが一致しない場合',
+	'Card 1 is dealt, not guessed. The deck holds one Ace, King and Queen of each suit, so card 2 matches 3 times in 11 and card 3 twice in 10.':
+		'カード1は配られるだけで、予想はしません。デッキには各スートのエース、キング、クイーンが1枚ずつあるため、カード2は11回中3回、カード3は10回中2回一致します。',
+	'Each figure is the running total after that card, in multiples of your bet, exactly as the board shows it beside the cards. Only the last card pays.':
+		'各数値はそのカードまでの累計で、ベット額の倍率としてボードのカード横に表示されるものと同じです。配当があるのは最後のカードだけです。',
+	'Three of a kind pays %m your bet, about one round in %n.':
+		'スリーカードは賭け金の%mを支払います。およそ%nラウンドに1回です。',
+	'%c× your base bet of %b':
+		'基本賭け金%bの%c倍',
+	'*On %f. Each game mode has its own maximum win, shown in the mode picker and in How to Play.':
+		'*%fでの値です。ゲームモードごとに最大配当が異なり、モード選択と遊び方に表示されています。',
+	'That mode costs %c× your bet.':
+		'そのモードはベット額の%c倍かかります。',
+	'Card 2 must match card 1':
+		'カード2はカード1と同じ数字',
+	'Card 3 must match card 1':
+		'カード3はカード1と同じ数字',
+	'%n of %t':
+		'%t枚中%n枚',
+	'Last card':
+		'最後の1枚',
+	'Example round':
+		'ラウンドの例',
+	'Tap the amount for the quick-bet menu.':
+		'金額をタップするとクイックベットのメニューが開きます。',
+	'Max win %s your bet':
+		'最大配当 ベット額の%s',
+	'Stop on a loss of':
+		'損失がこの額で停止',
+	'Stop on a single win of':
+		'1回の勝利がこの額で停止',
+	'On a keyboard, keys 1 to 4 change the four guesses.':
+		'キーボードでは、1〜4キーで4つの予想を切り替えられます。',
+	'It can stop by itself on a full game win, a loss limit or one big win.':
+		'フルゲーム達成、損失上限、1回の大きな勝利で自動的に停止させることもできます。',
+	'× means times your base bet.':
+		'× は基本賭け金の倍数です。',
+	'Times your base bet':
+		'基本賭け金の倍数',
+	'Last Stop':
+		'ラストストップ',
+	'A wrong first card ends the round. Later misses keep 30% of your running total. A right suit draws a ticket that multiplies it by 2 to 10.':
+		'1枚目を外すとラウンド終了。以降のミスは進行中の合計の30%を保持します。スートを当てるとチケットを1枚引き、合計が2〜10倍になります。',
+	'Ticket':
+		'チケット',
+	'The ticket':
+		'チケット',
+	'Drawn only when all four are right, from a stack of 20. It multiplies your running total.':
+		'4つすべて当てたときだけ、20枚の束から引きます。進行中の合計に掛かります。',
+	'Cards 1 to 3 are priced exactly as on Classic. A right suit draws the ticket in place of a price.':
+		'1〜3枚目の配当はクラシックとまったく同じです。スートを当てると、配当の代わりにチケットを引きます。',
+	'On Classic the same cards end at %s.':
+		'クラシックなら同じカードは%sで終わります。',
+	'A full game win pays more the harder your picks were, and the ticket multiplies it. Two Equal picks and a ×10 ticket reach this mode’s maximum: %m your bet.':
+		'フルゲーム達成の配当は予想が難しいほど高く、さらにチケットが掛かります。イコール2つと×10のチケットで、このモードの最大配当、ベットの%mに届きます。',
+	'Roll the die for random guesses':
+		'サイコロを振って予想をランダムに選ぶ',
+	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
+		'予想の横のサイコロは、4つすべてをランダムに選びます。配るまでは何もプレイされません。',
 };

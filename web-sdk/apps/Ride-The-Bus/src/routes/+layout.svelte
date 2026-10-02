@@ -3,8 +3,8 @@
 	import { GlobalStyle } from 'components-ui-html';
 	import { Authenticate, LoadI18n } from 'components-shared';
 	import Game from '../components/Game.svelte';
-	import GameLoader from '../components/GameLoader.svelte';
-	import { setContext } from '../game/context';
+	import GameLoader from '../components/intro/GameLoader.svelte';
+	import { setContext } from '../game/platform/context';
 
 	import { stateUrlDerived } from 'state-shared';
 
@@ -37,7 +37,7 @@
 </GlobalStyle>
 
 <!-- Our loader, drawn entirely in CSS. It waits for the logo to decode and the
-     game tree to mount, with a 1400ms floor and 8000ms ceiling, so the board
+     game tree to mount, with a 1400ms floor and 10.5s ceiling, so the board
      can never pop in behind the player. -->
 <GameLoader />
 

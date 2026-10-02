@@ -202,6 +202,29 @@ export interface components {
 			feature?: boolean;
 		};
 		ConfigObject: {
+			/**
+			 * LOCAL ADDITION to the Stake SDK - re-apply if this package is updated
+			 * from upstream.
+			 *
+			 * The RGS returns all three from /wallet/authenticate and enforces them
+			 * on every bet - docs/rgs_docs/RGS.md, "Bet Levels": "the bet must fall
+			 * between minBet and maxBet" and "must be divisible by stepBet", and the
+			 * worked authenticate response there lists them inside `config` beside
+			 * betLevels. The vendored schema simply omitted them.
+			 *
+			 * Not cosmetic. Authenticate.svelte already reads all three to populate
+			 * stateConfig.betLimits (its own LOCAL ADDITION, for the reason recorded
+			 * there: betLevels alone cannot guarantee a bet the RGS will accept), so
+			 * without these the only thing standing between the game and an
+			 * ERR_VAL rejection was three property accesses the type said did not
+			 * exist. Every helper in betLimits.ts reads them.
+			 *
+			 * Raw micro-units, as returned - 100000 is $0.10. Optional to match the
+			 * rest of ConfigObject and because a replay session has no config at all.
+			 */
+			minBet?: number;
+			maxBet?: number;
+			stepBet?: number;
 			betLevels?: number[];
 			betModes?: {
 				BASE?: components['schemas']['Config'];

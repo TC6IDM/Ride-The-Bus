@@ -1,12 +1,20 @@
-/* Hallmark - audit + redesign, not a greenfield build. Ride The Bus, Aug 2026.
+/* Hallmark - audit + redesign, not a greenfield build. Ride The Bus.
  * genre: atmospheric  ·  anchor: the table (felt #123a26, wood #663108, brand
- * crimson #a80828)  ·  audit: 5 critical / 10 major / 5 minor
+ * crimson #a80828)  ·  design-system: design.md  ·  designed-as-app
+ * pass 1, Aug 2026:  audit 5 critical / 10 major / 5 minor
+ * pass 2, Sep 2026:  audit 4 critical / 12 major / 7 minor
+ *   pre-emit critique: P5 H4 E4 S5 R5 V4
  *
- * The audit's headline was that this app shipped TWO design systems that never
- * met: a hand-sampled warm table, and generic cool dark-SaaS chrome laid over
- * it. This file is the join. Read the accent note below before changing any
- * colour - two of the decisions in here were made, reverted, and remade, and
- * the reasoning is recorded so that does not happen a third time.
+ * The first pass's headline was that this app shipped TWO design systems that
+ * never met: a hand-sampled warm table, and generic cool dark-SaaS chrome laid
+ * over it. This file is the join. The second pass found the seams the first
+ * had left: a cool INK ramp still printing on the panels the first pass had
+ * warmed, one shadow for the popups and another for the bar, three Material
+ * glyphs beside the drawn ones, and one screen nobody had redesigned. Read the
+ * accent note below before changing any colour - two of the decisions in here
+ * were made, reverted, and remade, and the reasoning is recorded so that does
+ * not happen a third time. design.md, beside this app's package.json, is the
+ * short statement of the system; this file is its values.
  */
 /* The shared vocabulary: colour, and the shapes motion moves in.
  *
@@ -30,7 +38,7 @@
  *
  * WHAT IS DELIBERATELY NOT HERE
  *
- *   - styles/table.css. Every colour in it is a SAMPLED MEASUREMENT off the
+ *   - styles/scene/table.css. Every colour in it is a SAMPLED MEASUREMENT off the
  *     reference render, with the sampling recorded beside it (the felt is
  *     #0D381E, not "green"; the wood is #653008, not "brown"). Renaming those
  *     would throw away the provenance and buy nothing - nothing else in the app
@@ -63,12 +71,30 @@
      have the SAME specificity, so which one won came down to whichever Vite
      happened to emit last. app.css now selects "html body" (0,0,2) so the
      question cannot be reopened by a bundle reshuffle. See the note there. */
-  --font-body: 'Poppins', sans-serif;
+  --font-body: 'Geist', sans-serif;
   /* The display face. Two slots only - the wordmark and the card ranks - which
      is what keeps it a register rather than a third body font. Its subset is
      latin, NOT latin-ext, so it must not be put on a translated string. See the
      long note beside the @font-face block in components/app.css. */
-  --font-display: 'Big Shoulders', 'Poppins', sans-serif;
+  --font-display: 'Big Shoulders', 'Geist', sans-serif;
+
+  /* The micro-label track.
+     Six values - 0.16em, 0.09em, 0.08em, 0.08em, 0.08em and 0.09em - were doing
+     one job across the board and the panels: a small uppercase caption over a
+     figure. Five of the six sat within one hundredth of each other, which is not
+     six decisions, and the sixth (.running-win-label at 0.16em) was simply the
+     odd one out rather than a louder label on purpose.
+
+     NOT applied to .game-title-sub, which is 0.22em and stays: that is the
+     lockup's credit line, it is set across the loader, the intro and the board
+     as one mark, and CLAUDE.md's rule is that changing one means changing all
+     three. It is a wordmark component, not a caption.
+
+     NOT applied to the How to Play panel's 0.05/0.06/0.07 labels either. That is
+     a dense reference screen where each label is paired with its own size, and
+     widening them would reflow the payout table for a difference no one can
+     see. */
+  --track-label: 0.09em;
 
   /* ==== Surfaces: the room ===============================================
      The felt ramp, taken from the LIVE one in table.css .scene - the layer the
@@ -102,6 +128,22 @@
   /* The double edge a card carries: white outside, chrome inside. */
   --brand-paper: #f8f8f8;
   --brand-chrome: #c8c8c8;
+  /* The pack's printed mark: the house name, small and light, on every card
+     back and on the deck - where the full-colour Takeover Casino chip sat until
+     2026-09-25. Five chips were on the board before the first deal (four backs
+     and the deck), each the highest-contrast thing on the table, and the one
+     the tunnel spotlit during a held card; the owner asked for the name, quiet.
+     One string, so every back in the game prints the same thing. The logo
+     itself still leads the loader and the start screen, where it is a logo. */
+  --brand-wordmark: 'TAKEOVER\A CASINO';
+  --brand-wordmark-ink: rgba(var(--ink-rgb), 0.58);
+  /* It sits on a plain label of the card's own red, edged with a hairline -
+     the way a real deck prints its maker's name in a cartouche - because set
+     straight on the back, the crosshatch ran through the letters and the name
+     was hard to read. The label is the SAME red, so it reads as printed on the
+     card, not stuck to it. */
+  --brand-wordmark-ground: var(--brand-red);
+  --brand-wordmark-edge: rgba(var(--ink-rgb), 0.16);
 
   /* ==== Gold =============================================================
      Two roles, not three. #f5d78c (titles, the MODE button, the intro stats),
@@ -124,19 +166,46 @@
   --ink-lockup-sub: rgba(255, 224, 170, 0.72);
 
   /* ==== Ink ==============================================================
-     Cool ramp - the control bar, the popups, the board. */
-  --ink: #fff;
-  --ink-strong: #dfe8f2;
-  --ink-body: #cfe0f0;
-  /* One dim, not two. #93a4b5 and #97a8b8 are separated by less than a
-     perceptible step and were used for the same job on adjacent lines of the
-     control bar. */
-  --ink-dim: #93a4b5;
+     ONE RAMP, WARM. This was two: a cool blue-grey ramp (#dfe8f2 / #cfe0f0 /
+     #93a4b5, "the control bar, the popups, the board") and a warm one for the
+     intro. The cool one predates the panels being re-hued to the table, and it
+     survived that change - so every popup, and the bar, printed blue-white type
+     on a graphite panel that had been warmed precisely so it would stop reading
+     as web chrome. The intro drew the IDENTICAL material with the warm ramp,
+     and the two screens a player moves between in one tap were the same panel
+     with two different inks. readout.css had already made this argument for one
+     caption ("the last cool thing on a warmed bar") and stopped there.
 
-  /* Warm ramp - the intro, which sits on green rather than on slate. */
-  --ink-warm: #e8e0d0;
-  --ink-warm-dim: #c8c0b0;
-  --ink-warm-mute: #a0a080;
+     Re-pointed AT PARITY, not by eye. Each step was solved to match the cool
+     step it replaces against the three grounds these render on - --panel, the
+     bar's light pill composited over the felt (#2f2721), and its dark pill
+     (#15120e) - so nothing moves in the hierarchy:
+
+                        panel   light   dark
+       strong  was      14.13   11.84   15.08
+               now      14.07   11.79   15.02
+       body    was      12.97   10.87   13.85
+               now      11.30    9.46   12.06
+       dim     was       6.84    5.73    7.31
+               now       6.92    5.80    7.38
+
+     Body gives up a step and a half it never needed; dim, the one that has to
+     clear 4.5:1 for small captions, comes out fractionally ahead. */
+  --ink: #fff;
+  --ink-strong: #ece6da;
+  --ink-body: #d6cfc2;
+  /* One dim, not two. The cool #93a4b5 and #97a8b8 were separated by less than
+     a perceptible step and were used for the same job on adjacent lines of the
+     control bar; this is the one warm value both of them became. */
+  --ink-dim: #aaa294;
+
+  /* The intro's three names, kept for the sheets that use them, now ALIASES of
+     the three steps above: six names, three values. The old values (#e8e0d0 /
+     #c8c0b0 / #a0a080) were each within a step of the ramp they now point at,
+     which is the proof that the two ramps were always trying to be one. */
+  --ink-warm: var(--ink-strong);
+  --ink-warm-dim: var(--ink-body);
+  --ink-warm-mute: var(--ink-dim);
 
   /* ==== Panels ===========================================================
      Translucent because they float over the table and the felt has to show
@@ -159,14 +228,115 @@
   /* The lit top edge. Was 0.14, which on a 1px line is below the threshold of
      being seen at all - popup-base.css built the table's whole lighting model
      and then drew it too faint to notice, so the panels read as flat. */
-  --panel-lit: rgba(255, 240, 220, 0.3);
+  /* ONE TRIPLET, and everything warm on a panel comes off it. The colour was
+     written out longhand in four places at three different alphas, and in two
+     more it had drifted to a pure white - .action-button's lit edge in
+     popup-mode.css and popup-autospin.css both said rgba(255,255,255,0.28),
+     which is the cool-chrome-over-a-warm-table split this palette exists to
+     close, surviving inside the very sheets that close it. Anything needing
+     this colour at a new alpha writes rgba(var(--panel-lit-rgb), a). */
+  --panel-lit-rgb: 255, 240, 220;
+  --panel-lit: rgba(var(--panel-lit-rgb), 0.3);
   --panel-shade: rgba(0, 0, 0, 0.55);
   /* Hairlines on panels are warm, matching the light rather than the pure
      white the rest of the app uses over felt. */
-  --panel-edge: rgba(255, 240, 220, 0.1);
-  --panel-light: rgba(28, 42, 58, 0.72);
-  --panel-dark: rgba(8, 14, 22, 0.82);
-  --panel-float: rgba(10, 17, 26, 0.82);
+  --panel-edge: rgba(var(--panel-lit-rgb), 0.1);
+
+  /* ==== The panel material, as three values ==============================
+     What makes a panel read as an OBJECT lying in the room rather than a box
+     drawn over it: a lit face, and the table's own shadow. popup-base.css built
+     all three and argued each - the short gradient "so the fall-off runs down
+     and left" from the one light at the upper right; the two-part drop shadow
+     ("a tight dark contact patch plus a wide soft one - because a single
+     blurred blob reads as a sticker, not an object"); and the inset pair that
+     gives the slab a lit top edge and a shaded bottom one.
+
+     It then stayed in that one sheet. The bar's pills, the floating turbo and
+     advanced discs, the responsible-gambling plate and the error dialog each
+     carried the single blurred blob that note names as the tell, and the error
+     dialog swapped the edge for a red hairline all the way round - so the game
+     had one material for its menus and another for the surface a player looks
+     at for the whole session. Named here, every panel reads the same three
+     values and the material cannot fork again.
+
+     --panel-elevation-low is the same shape for something that SITS on the
+     table rather than floating over it - the bar, the RG plate - scaled down
+     so a pill an inch from the felt does not cast a popup's shadow. */
+  /* THE LEGIBILITY FLOOR. Every size in the game is a multiple of --ui or
+     --ui-bar, which is what lets Popout S be Popout L at exactly half size -
+     and at half size the balance printed at 5.9px, the bar's captions at
+     3.4px and the intro's Tap to continue at 4.9px (measured, UI review
+     2026-09-27). The ARRANGEMENT still halves; the type now stops here.
+
+     Applied as max(own calc, floor), so it binds nowhere but the smallest
+     window - every other size is already above it - and fitValue can still
+     shrink a figure below it (its floor is a ratio of this), because a
+     twelve-figure naira balance must fit its box before it may be big. */
+  --type-floor: 6px;        /* a label, a caption, a line of prose */
+  --type-floor-figure: 9px; /* a money figure, a win, the one action on screen */
+  --panel-face: linear-gradient(
+    168deg,
+    rgba(var(--panel-lit-rgb), 0.055) 0%,
+    rgba(var(--panel-lit-rgb), 0.018) 26%,
+    transparent 52%
+  );
+  /* The face's TOP SLICE, for a panel header that stays put while the panel
+     scrolls under it (popup-base.css). It has to be opaque - text scrolls
+     beneath it - so it is the face's first few percent laid over --panel,
+     flat, rather than the whole gradient redrawn in a box a tenth the height.
+     The seam falls on the header's own rule. */
+  --panel-head-face: linear-gradient(
+    rgba(var(--panel-lit-rgb), 0.052),
+    rgba(var(--panel-lit-rgb), 0.044)
+  );
+  --panel-elevation:
+    0 2px 6px rgba(var(--shadow-rgb), 0.55),
+    0 18px 50px rgba(var(--shadow-rgb), 0.6),
+    inset 0 1px 0 var(--panel-lit),
+    inset 0 -1px 0 var(--panel-shade);
+  --panel-elevation-low:
+    0 1px 3px rgba(var(--shadow-rgb), 0.5),
+    0 8px 22px rgba(var(--shadow-rgb), 0.45),
+    inset 0 1px 0 var(--panel-lit),
+    inset 0 -1px 0 var(--panel-shade);
+  /* WARMED TO THE TABLE, and this is the other half of the join at the top of
+     this file.
+
+     These three are the control bar's panels and nothing else uses them. They
+     were blue-slate - composited over the felt, (25,46,52) and (10,22,25),
+     blue-dominant - sitting directly beneath popups painted --panel #1c1917,
+     which is (28,25,23) and red-dominant. Two panels, same lightness, opposite
+     temperature, on screen at the same time. The note at --panel above spends a
+     paragraph on why blue-slate was wrong there; it was just as wrong here, and
+     the bar is the surface a player looks at for the whole session.
+
+     Re-hued to --panel's own R:G:B ratio at the SAME composited lightness, so
+     nothing changes weight in the layout. The raw values look far more
+     saturated than the result because they are solved BACKWARDS through their
+     own alpha and the green felt behind them - at 0.72 the felt contributes
+     nearly a third of what you see, and it pulls everything toward green. */
+  --panel-light: rgba(54, 38, 34, 0.82);
+  /* A TRIPLET, because the bar paints this colour at two alphas: 0.82 for the
+     panel and 0.96 for the three tooltips that float off it. The second was
+     written out longhand five times in control-bar.css, which is the same
+     failure --panel-lit-rgb above was made a triplet to stop. */
+  --panel-dark-rgb: 23, 12, 10;
+  --panel-dark: rgba(var(--panel-dark-rgb), 0.82);
+  --panel-float: rgba(26, 14, 12, 0.82);
+  /* The recessed well a value is typed into - the bet field and the autoplay
+     rounds field. Named because it is the one panel colour used by two
+     different panels, and each had its own copy.
+
+     A DARKENING, not a colour. It was rgba(5, 12, 18, 0.6) - a blue-black -
+     and on the warmed panels it was the one cool rectangle left in the bet and
+     autoplay menus. Black at an alpha takes the temperature of whatever panel
+     it is cut into, so the well reads as recessed in the panel's own material
+     rather than as a different material set into it. */
+  --field-well: rgba(var(--shadow-rgb), 0.42);
+  /* Ink for a control sitting on GOLD, on the green screens. The intro's
+     continue button and the replay screen's play button are the same control
+     wearing two class names, and they each spelled this out. */
+  --on-gold-ink: #0d1f0d;
 
   /* ==== Accent ==========================================================
      The interactive blue, and the per-control identity colours beside it.
@@ -177,7 +347,7 @@
      colour systems than it has ideas, and that blue is the hue AI-generated UI
      reaches for by default. Both of those are fair points about colour theory
      and neither survived contact with the game: the per-control tints are
-     WAYFINDING. Turbo is amber, autoplay is green, advanced is purple, and a
+     WAYFINDING. Turbo is amber, autoplay is green, sound is white, and a
      player who has opened one of those menus once finds it again by colour
      rather than by re-reading four identical icons.
 
@@ -206,9 +376,9 @@
   --ctl-autospin: #57d98a;
   --ctl-autospin-ink: #9df0b8;
   --ctl-autospin-rgb: 87, 217, 138;
-  --ctl-advanced: #a98cff;
-  --ctl-advanced-ink: #d0bcff;
-  --ctl-advanced-rgb: 169, 140, 255;
+  /* Purple was the Advanced panel's, retired 2026-09-26 when its two switches
+     moved into autoplay. Left free rather than handed on: --vol-tr is the
+     purple a player now meets, and it means Three of a Kind. */
 
   /* Sound is the fifth identity, and the only achromatic one. It is white
      because the other four have spent the useful hues: amber, green, purple and
@@ -230,6 +400,38 @@
   --ctl-sound-rgb: 255, 253, 245;
   --ctl-sound: rgb(var(--ctl-sound-rgb));
   --ctl-sound-ink: var(--ink);
+
+  /* The deal button's own palette: resting blue, the stop red while autoplay
+     ends, the slam amber mid-reveal, and the well its ring sits in. Lived on
+     .cb-spin as a closed set for one control until How to Play's controls
+     guide drew the same button (ControlGlyph.svelte) - two readers make it a
+     token. Values unchanged. */
+  --spin-lit: #2a4d74;
+  --spin-deep: #12233a;
+  --spin-stop-lit: #5a1f27;
+  --spin-stop-deep: #2a0d11;
+  --spin-slam-lit: #4a3a12;
+  --spin-slam-deep: #221a06;
+  --spin-well: #0d0d10;
+
+  /* ==== Stacking ===========================================================
+     The page's layers, bottom to top, named so a new overlay is placed by
+     what it is rather than by reaching for a bigger number. Every value is the
+     literal it replaced, so nothing restacks. Stacking INSIDE a component - the
+     fan's cards, a square's badge, the table's rim - stays local and numeric:
+     those never meet anything across a component boundary. */
+  --z-title: 5; /* the wordmark over the table */
+  --z-rg-panel: 6; /* the responsible-gaming plate, just above the title */
+  --z-popup-backdrop: 40;
+  --z-popup: 50;
+  --z-bar-caption: 55; /* "Play Again" under the deal button */
+  --z-bar-tip: 60; /* the bar's tooltips, over an open panel's edge */
+  --z-error-backdrop: 90;
+  --z-error: 91;
+  --z-loader: 998; /* under Stake's own loader (999), over the game */
+  --z-intro: 1000; /* the intro, and the replay's round details */
+  --z-intro-popup: 1001; /* the round-details dimmer over the intro's table */
+  --z-takeover: 1200; /* the win takeover, over everything */
 
   /* ==== Translucency =====================================================
      Three colours the app paints at many different alphas: white hairlines and
@@ -265,8 +467,18 @@
   /* ==== State ============================================================ */
   --win: #7cffb2;
   --win-soft: #7ee2a8;
-  --loss: #ff3b3b;
-  --loss-soft: #ff8f8f;
+  /* A triplet, for the same reason --loss-soft-rgb below is one: the spin
+     button's stop indicator needs this colour at an alpha, and it had been
+     written out as rgba(255, 59, 59, 0.7) rather than named. */
+  --loss-rgb: 255, 59, 59;
+  --loss: rgb(var(--loss-rgb));
+  /* A TRIPLET, because the error dialog's edge needs this colour at an alpha
+     and the colour rule says anything needing one is an rgb triplet with the
+     hex derived from it - not a second literal kept in step by hand. The edge
+     was rgba(255, 120, 120, 0.4) written out in error-modal.css, which is not
+     one of the two files the rule exempts. */
+  --loss-soft-rgb: 255, 143, 143;
+  --loss-soft: rgb(var(--loss-soft-rgb));
   /* The running-win label, which sits on FELT rather than on slate - so it
      takes a green cast the cool ink ramp above does not have. Named because it
      was a literal in cards.css, which is not one of the two files the
@@ -292,7 +504,10 @@
      in the table rather than as paper lying on it. Backs already use the brand
      tokens above. */
   --card-paper: #f7f2e6;
-  --card-ink: #16130f;
+  /* A triplet, because Last Stop's ticket (TicketFace.svelte) prints its
+     perforation and route in the card's ink at an alpha. #16130f, unchanged. */
+  --card-ink-rgb: 22, 19, 15;
+  --card-ink: rgb(var(--card-ink-rgb));
   /* Not the #c0392b it was, which is Flat UI "Pomegranate" and reads orange
      beside the brand crimson. Darker as well as truer, which is why the red
      rank gains contrast on the warmer paper rather than losing it: 5.84:1 here
@@ -303,6 +518,21 @@
      the white half would be invisible, so the front gets the chrome half
      alone, warmed to the paper. */
   --card-edge: #cfc4ad;
+
+  /* Courts and aces. The court figures are the English pattern
+     (art-masters/courts/), which prints every court in red, blue, yellow and
+     black whatever its suit. Here card 1's guess is RED OR BLACK and a card is
+     on screen for ~650ms, so a black King in red robes blurs the one read the
+     round starts with. Each suit colour therefore draws in its own family
+     only, plus gold and paper:
+       red suits    red (--card-red), maroon, rose tint
+       black suits  ink (--card-ink), slate, stone tint
+     CardFace maps these onto the six roles the court sprite is painted in. */
+  --court-gold: #d4a13d;
+  --court-red-deep: #5c1418;
+  --court-red-tint: #e8bfb3;
+  --court-ink-tone: #5f5a54;
+  --court-ink-tint: #c7beb1;
 
   /* ==== Choice row =======================================================
      The one place in this UI where colour is DATA rather than decoration:
@@ -340,13 +570,38 @@
 
      All four pass, and the two that were failing are now the two clearest -
      which also settles the opposites problem, since the pair is no longer
-     legible at wildly different levels. */
+     legible at wildly different levels.
+
+     SOFTENED, 2026-09-27, on the owner's call - after the review above was
+     shown side by side (scripts/.shots/choice-fills-*). NOT the rejected
+     re-derivation: same hue, same lightness, less chroma, worked in OKLCH, on
+     the three fills that were screen colours in a sampled scene (magenta sat at
+     oklch 0.281 chroma, further out than anything else in the game). Red and
+     black are the card's own colours and are untouched. The squares also take
+     the table's light now (choices.css .choice-square and ::after).
+
+       Higher   #2ecc71 -> #5dc680   oklch(74.6% 0.181 -> 0.141 152)   keyline 8.84:1
+       Inside   #00bcd4 -> #4cb8cb   oklch(72.9% 0.126 -> 0.101 211)   keyline 8.10:1
+       Outside  #d81ce0 -> #c552c9   oklch(63.0% 0.281 -> 0.203 326)   keyline 4.87:1
+
+     THE BACKUP IS KEPT. The fills that shipped until now stay here as the
+     -original tokens. To go back, point the three live tokens below at them:
+     `var(--choice-higher-original)` and so on - three words, nothing else
+     moves - and put the same three values back in betChips.test.ts, which
+     pins the live set and checks the backup is still here. */
+  --choice-higher-original: #2ecc71;
+  --choice-inside-original: #00bcd4;
+  --choice-outside-original: #d81ce0;
+  --choice-higher-soft: #5dc680;
+  --choice-inside-soft: #4cb8cb;
+  --choice-outside-soft: #c552c9;
+
   --choice-black: #16181c;
   --choice-red: #c0392b;
-  --choice-higher: #2ecc71;
+  --choice-higher: var(--choice-higher-soft);
   --choice-lower: #c0392b;
-  --choice-inside: #00bcd4;
-  --choice-outside: #d81ce0;
+  --choice-inside: var(--choice-inside-soft);
+  --choice-outside: var(--choice-outside-soft);
   --choice-equal-lit: #ffe680;
   --choice-equal: #f1c40f;
   --choice-equal-deep: #d29d05;
@@ -404,16 +659,25 @@
   --chip-white-dark: #cec6b9;
   --chip-white-cream: #077dd0;
 
+  /* The alternate edge inlay, for the second chip of a colour when the bet
+     rack has more levels than there are colours (see chipInlayAlt). Brass on
+     the four dark bodies - the table's gold, taken down a step so a spot is
+     not mistaken for the selected chip's ring - and the chip red on the white
+     body, which cannot carry a pale spot. */
+  --chip-inlay-alt: #d2a64a;
+  --chip-white-inlay-alt: var(--chip-red-face);
+
   /* The intro tooltip and the "why is Inside off" box - green on green, so
      they belong to the table rather than to the slate chrome. */
   --tip-bed: #0b1a09;
   --tip-edge: #6b8a58;
 
   /* ==== Volatility =======================================================
-     Green, yellow, red as the modes get wilder. NOT decorative: sc < base < hs
-     holds for every one of the 64 guess combinations in the published stats,
-     so the three colours rank a real ordering rather than labelling three
-     flavours. See game/volatility.ts.
+     Green, yellow, orange, red as the modes get wilder. NOT decorative:
+     sc < base < ls < hs holds for the 64 guess combinations (the published
+     stats; Last Stop and High Stakes tie within sampling on three - see
+     game/math/volatility.ts), so the four colours rank a real ordering rather
+     than labelling four flavours.
 
      Moved here from .game-layout in base.css. They were declared there because
      two meters burn them (the mode picker and the bet display) and a
@@ -427,28 +691,50 @@
   --vol-sc-rgb: 61, 220, 132;
   --vol-base-rgb: 255, 201, 60;
   --vol-hs-rgb: 255, 92, 92;
+  /* Three of a Kind: the purple. Off the green-yellow-red ramp rather than a
+     deeper red, because it is not "more of the same" - by the column that
+     puts it there (96% of rounds pay nothing) it is past the top of the scale
+     the three four-guess modes span; see volatility.ts.
+
+     A DUSTY AMETHYST, not a screen violet. Until 2026-09-26 this was
+     176,106,232 (#b06ae8, HSL saturation 73%) - the saturated violet every
+     generated palette reaches for, and the third Hallmark audit's "AI purple".
+     Same hue family (283deg against 273), saturation taken down to 41% so it
+     sits with the warm table rather than on top of it, and well clear of
+     --choice-outside's magenta (298deg at 78%), which is a bet colour.
+
+     It is read as 9.5px TEXT in the bar (the mode name takes its family's
+     colour), so it has to clear 4.5:1 and not only a bolt's 3:1: 5.50 on
+     --panel (the old value was 5.06). Dark --on-vol-ink on it is 5.93, so the
+     confirm button keeps its rule. */
+  --vol-tr-rgb: 178, 124, 200;
+  /* Last Stop: the orange ON the ramp, between Classic's amber (43deg) and
+     High Stakes' red (0deg) at 26deg - because by std it sits between those two
+     families (exactly, on every one of the 64 combinations), so its colour
+     sits between theirs too. Read as small text in the bar like the others: 7.86 on
+     --panel, and dark --on-vol-ink reads 8.47 on it. Not a bet colour -
+     --choice-* holds none near this hue. */
+  --vol-ls-rgb: 255, 146, 64;
   --vol-sc: rgb(var(--vol-sc-rgb));
   --vol-base: rgb(var(--vol-base-rgb));
+  --vol-ls: rgb(var(--vol-ls-rgb));
   --vol-hs: rgb(var(--vol-hs-rgb));
-  /* Stops past the family ceiling, which only Equal picks on High Stakes
-     reach. Deliberately off the green-yellow-red ramp rather than a deeper
-     red: it is not "more of the same", it is past the top of the scale the
-     three modes span. Kept bright enough to survive the drop-shadow on a dark
-     bar. */
-  --vol-overflow: #9d4edd;
-  /* The same purple, lifted, for when it has to be TEXT rather than a bolt.
-     A bolt is a graphic and clears WCAG at 3:1; the mode name beside it is
-     ~9.5px and wants 4.5:1, which #9d4edd misses at 4.00 against the bet
-     panel. This measures 5.32 on the same ground and holds the hue, so the
-     word and the stops still read as one colour.
-     The bolt keeps the deeper value: it carries a drop-shadow that the text
-     does not, and it was tuned to survive that. */
+  --vol-tr: rgb(var(--vol-tr-rgb));
+  /* A bolt-only deeper purple, --vol-overflow (#9d4edd), sat here after the
+     stops past a family's ceiling were retired, read by nothing. Removed with
+     the purple's change rather than re-tuned. */
   /* Text on a volatility FILL - the confirm button, once it takes the colour
-     of the mode it is about to switch to. Every one of the three is a light
+     of the mode it is about to switch to. Every one of the four is a light
      colour, so this is dark: 10.56 on the green, 12.27 on the yellow, 6.23 on
-     the red. A hardcoded white would be the bug the accent-ink rule exists to
-     stop. */
-  --on-vol-ink: #14110a;
+     the red, 5.93 on the purple. A hardcoded white would be the bug the
+     accent-ink rule exists to stop. */
+  /* A triplet, because the white bet chip prints its currency code in this ink
+     at an alpha, and that was the one place it was written out longhand
+     (rgba(20, 17, 10, 0.78) in popup-bet.css). Same rule as every other
+     colour that is ever needed at an alpha: the hex is derived FROM the
+     triplet, so there is one place to change. */
+  --on-vol-ink-rgb: 20, 17, 10;
+  --on-vol-ink: rgb(var(--on-vol-ink-rgb));
   /* The same job on a CHOICE fill - the replay panel's guess badges, which are
      the choice colours at label size. Aliased rather than re-spelled: three of
      the choice fills (--choice-higher green, --choice-inside cyan,
@@ -456,8 +742,10 @@
      same dark ink, and a second #14110a in this file is exactly the drift the
      top of it argues against. */
   --on-choice-ink: var(--on-vol-ink);
-  --vol-overflow-ink-rgb: 176, 106, 232;
-  --vol-overflow-ink: rgb(var(--vol-overflow-ink-rgb));
+  /* The win takeover's Epic tier: the same purple as Three of a Kind, by the
+     same reading - past the top of the family bands. volatility.test.ts holds
+     the two triplets equal. */
+  --vol-overflow-ink-rgb: 178, 124, 200;
 
   /* ==== Motion ===========================================================
      Five near-identical cubic-beziers were in use, plus ease-out ten times,
@@ -474,8 +762,21 @@
      a control that overshoots reads as unreliable. */
   --ease-pop: cubic-bezier(0.2, 1.5, 0.4, 1);
 
-  /* No duration tokens yet, on purpose. The app runs 0.1s / 0.12s / 0.14s /
-     0.15s / 0.2s / 0.25s and up, and picking three winners out of that is the
-     same redesign the alpha note above defers. Curves were drift and are fixed;
-     durations are a decision, and belong with the motion pass. */
+  /* ONE duration token, not a ladder, and the line between them is the same one
+     this file draws for the curves above.
+
+     0.12s, 0.14s and 0.15s were doing a single job - "a control changed state"
+     - in 51 places across nine files. Three values 30ms apart, chosen
+     independently, that nobody can tell apart on a hover wash: that is drift by
+     the same definition the curve note uses ("The curves differed in the third
+     decimal place, which is not a design decision, it is drift").
+
+     Everything else is LEFT ALONE, deliberately, and that is why this is not the
+     ladder the old note here deferred. 0.1s is a press. 0.2s is the card
+     multiplier rising into place, and the backdrop under a panel. 0.22s is a
+     panel arriving (popup-base.css). 0.25s is the loader bar. Every value at
+     0.28s and above belongs to one tuned entrance or ambient loop - the deal,
+     the count-up, the beam's breathe - and each was set against what it
+     animates. Those are decisions. Only the near-identical trio was drift. */
+  --dur-control: 0.14s;
 }

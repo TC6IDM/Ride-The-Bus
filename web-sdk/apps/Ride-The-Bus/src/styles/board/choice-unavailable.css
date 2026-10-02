@@ -1,0 +1,65 @@
+/* The one choice the game takes off the table: Inside, after Equal at stage 2.
+ *
+ * WHY THIS IS NOT IN choices.css
+ *
+ * choices.css is shared by the board and the start screen, and the start screen
+ * never disables anything - on the intro nobody is really playing, so picking
+ * Equal there must not grey out Inside. That makes every rule below dead weight
+ * in StartScreen.svelte, and Svelte reports each one as an unused selector.
+ * Keeping them here, imported only by Game.svelte, is what keeps that quiet.
+ *
+ * WHY A CLASS AND NOT [aria-disabled='true']
+ *
+ * These rules used to key off the attribute, and that conflated two states that
+ * only looked alike:
+ *
+ *   .unavailable          this option can NEVER win, given a guess already made
+ *   aria-disabled         you cannot operate this control RIGHT NOW
+ *
+ * The second is now set on all eleven guess buttons while a round is in flight,
+ * which is correct for assistive tech - and the moment it was, every .half-btn
+ * in the row inherited this file's treatment. A player who picked Black and
+ * pressed Play watched the colour square go dark and lose its selection, while
+ * the three squares beside it dimmed normally: the Colour halves are .half-btn
+ * too, and nothing here had ever needed to tell the two states apart.
+ *
+ * A class says what is meant. The transient lock is left to .choice-row.locked's
+ * own opacity in choices-board.css, which is what every other control in the
+ * game does and what the other three squares were already doing.
+ *
+ * aria-disabled is still the right ATTRIBUTE on the Inside half, and is still
+ * load-bearing: a `disabled` button fires no mouse events at all, so it could
+ * never raise the .choice-tip explaining why the option is off. That is why the
+ * native `title` never appeared either. It is simply not what styles it.
+ *
+ * The :disabled equivalents of these rules stay in choices.css.
+ */
+
+/* Dimmed rather than hidden. Removing the button would reflow the row and leave
+   the player wondering where a control went; showing it knocked back says the
+   option exists but is off the table for the guess they have already made.
+   The hover and press rules in choices.css exclude .unavailable, so it cannot
+   light up under a cursor or answer a press either. */
+.half-btn.unavailable,
+.half-btn.unavailable:hover {
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* NO STRIKE-THROUGH. There was a drawn diagonal line across the button here as
+   well, and it was doing too much: greyed-out is how everything else in this
+   game says unavailable, and a struck-out control reads as an error rather than
+   as an option that is merely off for now. The .choice-tip beside it says why in
+   words, which is the part that was actually carrying the meaning.
+
+   The dimming is an OVERLAY rather than a filter on the button.
+   filter: brightness() would apply to the button AND its pseudo-elements as one
+   unit; painting a translucent black layer last dims the half and its icon
+   together, so the whole button reads as one knocked-back thing. */
+.half-btn.unavailable::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(var(--shadow-rgb), 0.6);
+  pointer-events: none;
+}

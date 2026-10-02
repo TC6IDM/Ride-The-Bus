@@ -4,7 +4,7 @@
  *   node scripts/replay-events.js
  *
  * Stake's frontend approval asks for replay event IDs per bet mode covering
- * normal win, big win, win cap and loss. With 192 bet modes that is 768 IDs, so
+ * normal win, big win, win cap and loss. With 193 bet modes that is 772 IDs, so
  * they are derived from the published lookup tables rather than collected by
  * hand.
  *
@@ -12,10 +12,17 @@
  * IDs. The table is only meaningful against the build currently in
  * math-sdk/games/ride_the_bus/library/publish_files/.
  */
+/* The scan below decompresses 193 book files. zstd runs on libuv's thread
+   pool, so several books really do scan at once - but only as wide as that
+   pool, which defaults to 4. Set before the first async call, which is the
+   only time libuv reads it. */
+process.env.UV_THREADPOOL_SIZE = process.env.UV_THREADPOOL_SIZE || '16';
+
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 const zlib = require('zlib');
+const { Worker, isMainThread, parentPort, workerData } = require('worker_threads');
 
 const ROOT = path.resolve(__dirname, '..');
 const LIBRARY = path.join(ROOT, 'math-sdk/games/ride_the_bus/library');
@@ -23,7 +30,7 @@ const PUBLISH = path.join(LIBRARY, 'publish_files');
 /**
  * Normally every published mode. REPLAY_EVENTS_MODES limits it to a
  * comma-separated few, for smoke-testing this script without paying for a scan
- * of all 192 books.
+ * of all 193 books.
  *
  * A filtered run writes REPLAY_EVENTS.partial.md instead, and says so. It must
  * not be able to leave a truncated table where the real one belongs - that file
@@ -53,20 +60,41 @@ const idx = JSON.parse(fs.readFileSync(path.join(PUBLISH, 'index.json'), 'utf8')
  * exist - this only supplies the labels, and a family it does not recognise
  * still appears in the table under its own name.
  */
-const FAMILY_LABELS = { base: 'Classic', sc: 'Second Chance', hs: 'High Stakes' };
+const FAMILY_LABELS = {
+  base: 'Classic',
+  sc: 'Second Chance',
+  ls: 'Last Stop',
+  hs: 'High Stakes',
+  tr: 'Three of a Kind',
+};
+// Longest prefix first, like game_calculations.py:_PREFIXES.
+const FAMILY_PREFIXES = [
+  ['tr_', 'tr'],
+  ['sc_', 'sc'],
+  ['ls_', 'ls'],
+  ['hs_', 'hs'],
+];
+
+/** Last Stop's ticket values - one replay ID each, so a reviewer can open every
+ *  face the ticket can show. Mirrors TICKET_STACK in game_calculations.py. */
+const TICKET_VALUES = [2, 3, 5, 10];
 const familyOf = (name) =>
-  name.startsWith('sc_') ? 'sc' : name.startsWith('hs_') ? 'hs' : 'base';
+  FAMILY_PREFIXES.find(([prefix]) => name.startsWith(prefix))?.[1] ?? 'base';
 
 const rows = [];
 
-async function main() {
-  const modes = ONLY.length ? idx.modes.filter((m) => ONLY.includes(m.name)) : idx.modes;
-  if (ONLY.length) {
-    console.log(`REPLAY_EVENTS_MODES set - ${modes.length} of ${idx.modes.length} modes.`);
-    console.log('Writing REPLAY_EVENTS.partial.md; the real table is untouched.');
-  }
-
-  for (const mode of modes) {
+/**
+ * One mode's lookup table, reduced to the four replay scenarios.
+ *
+ * Reading and parsing these is the expensive half of this script - 193 tables
+ * of up to 800,000 rows, each row split and turned into a BigInt - and it is
+ * pure CPU on whatever thread calls it. That is why it is a function: it runs
+ * in a worker thread, one mode at a time, several modes at once.
+ *
+ * Returns null for a mode with no winning row (nothing to demonstrate), and
+ * otherwise the row for the table plus the `eligible` set the book scan needs.
+ */
+function analyseTable(mode) {
     const txt = fs.readFileSync(path.join(PUBLISH, mode.weights), 'utf8');
 
     // Keep only rows the RGS can actually draw. A zero-weight row exists in the
@@ -84,9 +112,15 @@ async function main() {
       weightByPayout.set(payout, (weightByPayout.get(payout) || 0n) + weight);
     }
 
+    // The scan below needs the drawable rows large enough to celebrate. That
+    // is this same file, parsed again - 193 tables of up to 800k rows - so it
+    // is collected here instead, while the lines are already in hand.
+    const floor = CELEBRATION_FLOOR[familyOf(mode.name)];
+    const eligible = new Set(drawable.filter((r) => r.payout >= floor).map((r) => r.id));
+
     const losses = drawable.filter((r) => r.payout === 0);
     const wins = drawable.filter((r) => r.payout > 0).sort((a, b) => a.payout - b.payout);
-    if (!wins.length) continue;
+    if (!wins.length) return null;
 
     const capPayout = wins[wins.length - 1].payout;
 
@@ -114,32 +148,86 @@ async function main() {
 
     const pick = (payout) => wins.find((r) => r.payout === payout) || null;
 
-    rows.push({
-      mode: mode.name,
-      family: familyOf(mode.name),
-      cost: mode.cost,
-      loss: losses[0] ? losses[0].id : null,
-      normal: pick(normalPayout),
-      big: pick(bigPayout),
-      cap: pick(capPayout),
-    });
+    return {
+      eligible,
+      row: {
+        mode: mode.name,
+        family: familyOf(mode.name),
+        cost: mode.cost,
+        loss: losses[0] ? losses[0].id : null,
+        normal: pick(normalPayout),
+        big: pick(bigPayout),
+        cap: pick(capPayout),
+      },
+    };
+}
+
+/** The whole per-mode job: the table, then its book. What a worker runs. */
+async function analyseMode(mode) {
+  const analysed = analyseTable(mode);
+  if (!analysed) return null;
+  const shapes = await scanShapes(mode, analysed.eligible);
+  return { ...analysed.row, bustwin: shapes.bustwin, forgiven: shapes.forgiven, tickets: shapes.tickets };
+}
+
+async function main() {
+  const modes = ONLY.length ? idx.modes.filter((m) => ONLY.includes(m.name)) : idx.modes;
+  if (ONLY.length) {
+    console.log(`REPLAY_EVENTS_MODES set - ${modes.length} of ${idx.modes.length} modes.`);
+    console.log('Writing REPLAY_EVENTS.partial.md; the real table is untouched.');
   }
 
-  /* The two SHAPE scenarios, resolved from the books.
-     Done here, in the generator, so the local replay tool never has to: it used
-     to stream a 215k-round book file on demand the first time either was asked
-     for, which made two buttons behave unlike the other four and put minutes of
-     work into a dev server start. This runs once, in the build that produced
-     the books, and the answer lands in the table below like everything else. */
+  /* WORKER THREADS, because both halves of the per-mode job are CPU on this
+     thread: parsing a lookup table of up to 800k rows, and JSON-parsing the
+     eligible lines of a book. Running the scans concurrently on ONE thread
+     bought 10% (the zstd decompression already overlapped on libuv's pool);
+     running the whole job on N threads is the rest of it.
+
+     The two SHAPE scenarios are resolved here, in the generator, so the local
+     replay tool never has to: it used to stream a 215k-round book file on
+     demand the first time either was asked for, which made two buttons behave
+     unlike the other four and put minutes of work into a dev server start.
+
+     The per-mode line is also what the build monitor reads, to fill in each
+     mode's box as it is finished rather than all 193 at the end. */
+  const WORKERS = Math.max(1, Math.min(Number(process.env.REPLAY_SCAN_WORKERS || 8), modes.length));
   console.log('');
-  console.log(`Scanning ${rows.length} books for bust-win and second-chance rounds...`);
+  console.log(`Scanning ${modes.length} books for bust-win and second-chance rounds, ${WORKERS} threads...`);
+  const byMode = new Map();
   let done = 0;
-  for (const r of rows) {
-    const shapes = await scanShapes(idx.modes.find((m) => m.name === r.mode));
-    r.bustwin = shapes.bustwin;
-    r.forgiven = shapes.forgiven;
-    done += 1;
-    if (done % 24 === 0) console.log(`  ${done}/${rows.length}`);
+  await new Promise((resolve, reject) => {
+    let live = 0;
+    for (let w = 0; w < WORKERS; w += 1) {
+      // Round-robin rather than contiguous slices: the 800k-simulation modes
+      // are grouped together in index.json, and a contiguous split hands one
+      // worker all of them.
+      const slice = modes.filter((_mode, index) => index % WORKERS === w);
+      if (!slice.length) continue;
+      live += 1;
+      const worker = new Worker(__filename, { workerData: { modes: slice } });
+      worker.on('message', (message) => {
+        if (!message.ok) {
+          reject(new Error(`${message.mode}: ${message.error}`));
+          return;
+        }
+        if (message.row) byMode.set(message.mode, message.row);
+        done += 1;
+        console.log(`  scanned ${message.mode} (${done}/${modes.length})`);
+      });
+      worker.on('error', reject);
+      worker.on('exit', () => {
+        live -= 1;
+        if (live === 0) resolve();
+      });
+    }
+    if (live === 0) resolve();
+  });
+
+  // Back into index.json's order: the table is read by a person, and worker
+  // completion order is not an order.
+  for (const mode of modes) {
+    const row = byMode.get(mode.name);
+    if (row) rows.push(row);
   }
 
   const x = (r) => (r ? (r.payout / 100).toFixed(2) + 'x' : '-');
@@ -151,7 +239,8 @@ async function main() {
 
 Stake's frontend approval requires replay event IDs to be supplied **per bet
 mode**, covering normal win, big win, win cap and loss. Every mode here is one
-full four-stage guess combination in one mode family, so the tables below list
+full guess combination in one mode family - four stages on the guess families,
+three on Three of a Kind, which has one combination - so the tables below list
 every published mode and all four of its scenarios.
 
 Generated by \`scripts/replay-events.js\`. **Regenerate after every math
@@ -185,7 +274,8 @@ No recapture from a live session is needed.
 | Big win | The smallest payout worth at least **a quarter of that mode's cap**, so it is clearly large but still a different round from the cap. |
 | Win cap | The highest payout the mode can produce. |
 | Bust + win | The first drawable round that **busted and still paid enough to fire a celebration** - the family's Big Win floor. A round does not have to be a full game win to take the screen over: a bust on the last card keeps its retention of a multiplier that may already be large. Shown as \`-\` where the mode has none. |
-| 2nd chance | **Second Chance only.** The first drawable round that spent its forgiveness, survived, and still finished above the celebration floor. \`-\` in the other two families, and \`-\` in a Second Chance mode that has none. |
+| 2nd chance | **Second Chance only.** The first drawable round that spent its forgiveness, survived, and still finished above the celebration floor. \`-\` in the other families, and \`-\` in a Second Chance mode that has none. |
+| Ticket ×2 … ×10 | **Last Stop only.** The first drawable round that swept and drew each ticket value, so every face the ticket can show has a replay. A bust never carries a ticket. |
 
 ## The table
 
@@ -197,25 +287,38 @@ is meant to demonstrate.
   // One table per family, each stating its own cost and ceiling.
   //
   // A reviewer asking "what is the max win on High Stakes" should not have to
-  // scan 192 interleaved rows for it, and the families genuinely differ: they
+  // scan 193 interleaved rows for it, and the families genuinely differ: they
   // carry different costs and reach different caps, so a single combined figure
   // would describe none of them.
   for (const family of Object.keys(FAMILY_LABELS)) {
     const mine = rows.filter((r) => r.family === family);
     if (!mine.length) continue;
     const myCaps = mine.map((r) => (r.cap ? r.cap.payout : 0));
+    // Last Stop's table carries four more columns, one per ticket value, AFTER
+    // the columns every table shares - so replay-server.mjs, which reads the
+    // first eight cells of any row, reads this one the same way.
+    const tickets = family === 'ls';
 
     md += `### ${FAMILY_LABELS[family]} — \`${family}\`\n\n`;
     md += `Cost **${mine[0].cost}x** the bet. **${mine.length}** modes, `;
     md += `**${mine.length * 4}** required event IDs. `;
     md += `Highest cap **${(Math.max(...myCaps) / 100).toFixed(2)}x**, `;
     md += `lowest **${(Math.min(...myCaps) / 100).toFixed(2)}x**.\n\n`;
-    md += `| Bet mode | Loss | Normal win | Big win | Win cap | Bust + win | 2nd chance |\n|---|---|---|---|---|---|---|\n`;
+    md += `| Bet mode | Loss | Normal win | Big win | Win cap | Bust + win | 2nd chance |`;
+    md += tickets ? ` ${TICKET_VALUES.map((v) => `Ticket ×${v}`).join(' | ')} |` : '';
+    md += `\n|---|---|---|---|---|---|---|${tickets ? '---|'.repeat(TICKET_VALUES.length) : ''}\n`;
     for (const r of mine) {
       md +=
         `| \`${r.mode}\` | ${r.loss ?? '-'} | ${id(r.normal)} (${x(r.normal)}) ` +
         `| ${id(r.big)} (${x(r.big)}) | ${id(r.cap)} (${x(r.cap)}) ` +
-        `| ${id(r.bustwin)} (${x(r.bustwin)}) | ${id(r.forgiven)} (${x(r.forgiven)}) |\n`;
+        `| ${id(r.bustwin)} (${x(r.bustwin)}) | ${id(r.forgiven)} (${x(r.forgiven)}) |`;
+      if (tickets) {
+        for (const v of TICKET_VALUES) {
+          const t = r.tickets ? r.tickets[v] : null;
+          md += ` ${id(t)} (${x(t)}) |`;
+        }
+      }
+      md += '\n';
     }
     md += '\n';
   }
@@ -238,7 +341,7 @@ is meant to demonstrate.
 
 - **${rows.length}** bet modes across **${familyCount}** ${familyCount === 1 ? 'family' : 'families'}, **${rows.length * 4}** event IDs, all four distinct within every mode.
 - The highest cap across all modes is **${(Math.max(...caps) / 100).toFixed(2)}x**, on ${FAMILY_LABELS[rows.find((r) => r.cap && r.cap.payout === Math.max(...caps)).family] ?? 'an unrecognised family'} - the game's overall maximum win, matching the figure stated in How to Play. Each family's own ceiling is stated above its table.
-- The lowest per-mode cap is **${(Math.min(...caps) / 100).toFixed(2)}x**. Caps differ by mode because the ceiling depends on how unlikely the four guesses were.
+- The lowest per-mode cap is **${(Math.min(...caps) / 100).toFixed(2)}x**. Caps differ by mode because the ceiling depends on how unlikely the guesses were.
 - Every mode has a drawable loss, so no mode is missing a scenario.
 `;
 
@@ -297,18 +400,30 @@ is meant to demonstrate.
    whenever the simulation set changes - which is exactly when it goes stale.
 
    Both are resolved in ONE pass per book, stopping as soon as everything
-   applicable is found. 192 files, ~900 MB compressed; a minute or two against a
+   applicable is found. 193 files, ~900 MB compressed; a minute or two against a
    40-minute build.                                                          */
 
 /**
  * Entry tier per family, in raw units (100 = 1.00x).
  *
- * Mirrors FAMILY_BANDS[family][0] in web-sdk/apps/Ride-The-Bus/src/game/
+ * Mirrors FAMILY_BANDS[family][0] in web-sdk/apps/Ride-The-Bus/src/game/math/
  * winTiers.ts - the Big Win floor. A local copy for the same reason
  * FAMILY_LABELS above is one: this script runs from the repo root with no path
  * into the Svelte app.
  */
-const CELEBRATION_FLOOR = { base: 1000, sc: 1100, hs: 1200 };
+// Three of a Kind's ladder is one rung at its 4,583.3x ceiling (458,330 raw):
+// its only win IS the floor, so the "bust + win" column is `-` by construction.
+// Last Stop's is 8x: a wrong suit keeps 30% of a run no suit price has
+// multiplied, so its small wins run smaller and the ladder starts lower. WITHOUT an
+// entry here every Last Stop row reported no bust-win - `payout >= undefined` is
+// false - silently.
+const CELEBRATION_FLOOR = { base: 1000, sc: 1100, ls: 800, hs: 1200, tr: 458330 };
+
+/** A ticket event inside a book line, and the line's payout, read off the raw
+ *  text - a ticket can sit on a round far below the celebration floor, so these
+ *  lines are matched before the eligibility filter and never JSON-parsed. */
+const TICKET_IN = /"type":\s*"ticket",\s*"value":\s*(\d+)/;
+const PAYOUT_HEAD = /"payoutMultiplier":\s*(\d+)/;
 
 /** The `id` field at the head of every book line, without parsing the line. */
 const ID_HEAD = /^\{"id":\s*(\d+)/;
@@ -339,24 +454,33 @@ function shapeOf(book, family) {
   return { busted, forgivenessSpent };
 }
 
-async function scanShapes(mode) {
+async function scanShapes(mode, precomputed) {
   const family = familyOf(mode.name);
   const floor = CELEBRATION_FLOOR[family];
 
-  // Only rows the RGS can draw, and only ones large enough to celebrate.
-  const eligible = new Set();
-  const csv = fs.readFileSync(path.join(PUBLISH, mode.weights), 'utf8');
-  for (const line of csv.split(/\r?\n/)) {
-    if (!line) continue;
-    const [id, weight, payout] = line.split(',');
-    if (BigInt(weight) === 0n) continue;
-    if (Number(payout) < floor) continue;
-    eligible.add(Number(id));
+  // Only rows the RGS can draw, and only ones large enough to celebrate. main()
+  // already has these from its own pass over the same table and passes them in;
+  // the fallback keeps this function callable on its own.
+  let eligible = precomputed;
+  if (!eligible) {
+    eligible = new Set();
+    const csv = fs.readFileSync(path.join(PUBLISH, mode.weights), 'utf8');
+    for (const line of csv.split(/\r?\n/)) {
+      if (!line) continue;
+      const [id, weight, payout] = line.split(',');
+      if (BigInt(weight) === 0n) continue;
+      if (Number(payout) < floor) continue;
+      eligible.add(Number(id));
+    }
   }
 
   const want = family === 'sc' ? ['bustwin', 'forgiven'] : ['bustwin'];
   const found = {};
-  if (eligible.size) {
+  // Last Stop: the first round with each ticket value, from ANY drawable row -
+  // every sweep is drawable (its ticket tier carries positive weight).
+  const tickets = family === 'ls' ? {} : null;
+  const ticketsDone = () => !tickets || TICKET_VALUES.every((v) => tickets[v]);
+  if (eligible.size || tickets) {
     const stream = fs
       .createReadStream(path.join(PUBLISH, mode.events))
       .pipe(zlib.createZstdDecompress());
@@ -369,7 +493,17 @@ async function scanShapes(mode) {
         // of rows are eligible - 1110 of 215k in sc_red_lower_outside_heart -
         // so parsing every line to look at its id was almost all of the cost.
         const head = ID_HEAD.exec(line);
-        if (!head || !eligible.has(Number(head[1]))) continue;
+        if (!head) continue;
+        if (tickets) {
+          const ticket = TICKET_IN.exec(line);
+          if (ticket && !tickets[Number(ticket[1])]) {
+            tickets[Number(ticket[1])] = { id: Number(head[1]), payout: Number(PAYOUT_HEAD.exec(line)?.[1] ?? 0) };
+          }
+        }
+        if (!eligible.has(Number(head[1]))) {
+          if (ticketsDone() && want.every((k) => found[k])) break;
+          continue;
+        }
         const book = JSON.parse(line);
         const shape = shapeOf(book, family);
         if (!found.bustwin && shape.busted) {
@@ -378,7 +512,7 @@ async function scanShapes(mode) {
         if (!found.forgiven && family === 'sc' && shape.forgivenessSpent && !shape.busted) {
           found.forgiven = { id: book.id, payout: Number(book.payoutMultiplier) };
         }
-        if (want.every((k) => found[k])) break;
+        if (want.every((k) => found[k]) && ticketsDone()) break;
       }
     } finally {
       lines.close();
@@ -392,10 +526,28 @@ async function scanShapes(mode) {
   return {
     bustwin: found.bustwin ?? null,
     forgiven: family === 'sc' ? (found.forgiven ?? null) : null,
+    tickets,
   };
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+/* A worker runs the same file. Bootstrapped at the BOTTOM so every const
+   above - CELEBRATION_FLOOR, ID_HEAD - is initialised before the first job
+   touches it. */
+if (isMainThread) {
+  main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+} else {
+  (async () => {
+    for (const mode of workerData.modes) {
+      try {
+        const row = await analyseMode(mode);
+        parentPort.postMessage({ ok: true, mode: mode.name, row });
+      } catch (error) {
+        parentPort.postMessage({ ok: false, mode: mode.name, error: String((error && error.stack) || error) });
+        return;
+      }
+    }
+  })();
+}

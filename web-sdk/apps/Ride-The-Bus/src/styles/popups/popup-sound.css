@@ -1,0 +1,136 @@
+/* The two-bus sound mixer.
+ *
+ * Split out of the single 1,032-line popups.css when each panel became its own
+ * component. Scoped to SoundPopup.svelte, which is the only thing that renders
+ * these classes - see the Svelte scoping note in CLAUDE.md: a stylesheet is
+ * scoped to the component that IMPORTS it, so a panel's rules have to travel
+ * with its markup.
+ *
+ * Sizes are multiples of --ui-bar, and colour comes in through the one --tint
+ * contract every menu wears. Nothing here names a colour.
+ */
+
+/* White, so --tint-strong is the lightest fill of any panel and its ink has to
+   be the darkest. Same rule as the amber and green panels, just further along
+   it: white type on this would measure about 1.1:1. */
+.popup-sound {
+  --tint: var(--ctl-sound);
+  --tint-rgb: var(--ctl-sound-rgb);
+  --tint-strong: var(--ctl-sound);
+  --tint-ink: var(--on-vol-ink);
+}
+
+/* ---- Sound -------------------------------------------------------------
+   Two rows of the same three parts: a speaker that mutes that bus, a labelled
+   slider, and the level as a number. Sized off the turbo panel above rather
+   than off new constants - it is the same control in the same shell, and the
+   one thing this panel adds is that there are two of them. */
+.sound-body { display: flex; flex-direction: column; gap: calc(var(--ui-bar) * 1.09); padding: calc(var(--ui-bar) * 0.36) calc(var(--ui-bar) * 0.18) calc(var(--ui-bar) * 0.18); }
+
+.sound-row { display: flex; align-items: center; gap: calc(var(--ui-bar) * 0.73); }
+
+.sound-track { display: flex; flex-direction: column; gap: calc(var(--ui-bar) * 0.27); flex: 1 1 auto; min-width: 0; }
+
+/* Sentence case at body size, like every field label in the panels. */
+.sound-label { font-size: calc(var(--ui-bar) * 1.09); line-height: 1.3; color: var(--ink-body); font-weight: 600; }
+
+/* The slider is RangeSlider.svelte - a child component that paints itself and
+   takes --tint from this panel. The 24px target (32px on a coarse pointer), the
+   disabled treatment and the focus ring all moved in with it. Nothing here
+   reaches into it: a child's elements never carry this sheet's scope class,
+   which is the same note SoundIcon carries below. */
+
+/* Fixed width so the two rows' sliders start and end at the same place; the
+   number is tabular for the same reason the bar readouts are. */
+.sound-readout {
+  width: calc(var(--ui-bar) * 2.6);
+  text-align: end;
+  font-weight: 800;
+  color: var(--tint);
+  font-size: calc(var(--ui-bar) * 1.24);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The speaker. A square tap target rather than a bare glyph: at Mobile S this
+   is one of only two ways to mute, so it has to clear the 24px floor the guess
+   segments and bar icons are measured against. */
+.sound-mute {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: calc(var(--ui-bar) * 2.4);
+  height: calc(var(--ui-bar) * 2.4);
+  min-width: 26px;
+  min-height: 26px;
+  padding: 0;
+  border: 1px solid rgba(var(--tint-rgb), 0.42);
+  border-radius: calc(var(--ui-bar) * 0.45);
+  background: rgba(var(--tint-rgb), 0.1);
+  color: var(--tint);
+  cursor: pointer;
+}
+
+/* `.sound-mute svg` lived here and never matched anything: SoundIcon is a child
+   component, and a child's elements never carry this component's scope class -
+   see the note atop SoundIcon.svelte, which says so in as many words. The icon
+   is sized by SoundIcon itself. Do not re-add it without :global(), and do not
+   add :global() without looking at the panel: that would be a visual change. */
+
+/* Muted. The slash inside SoundIcon is what says it - handed in as a custom
+   property because that icon is a CHILD COMPONENT and never carries this
+   stylesheet's scope class, so a descendant selector into its <svg> would
+   compile to nothing (see the note atop SoundIcon.svelte).
+
+   --sound-slash-cut is the panel's own surface colour, so the slash cuts a
+   channel through the arcs it crosses instead of blending into them. */
+.sound-mute.off {
+  --sound-slash: var(--loss);
+  --sound-slash-cut: var(--panel);
+  border-color: rgba(var(--ink-rgb), 0.16);
+  background: transparent;
+  color: var(--ink-dim);
+}
+
+/* Hover only where there is a pointer, and never on the disabled slider. */
+@media (any-hover: hover) {.sound-mute:hover { border-color: var(--tint); background: rgba(var(--tint-rgb), 0.2); color: var(--tint); }
+.sound-mute.off:hover { border-color: var(--loss); }
+}
+
+/* A muted bus cannot be levelled - the speaker is the way back, and un-muting
+   returns the slider to the level the player last chose. Disabled rather than
+   merely dimmed, so the control refuses the drag instead of accepting one that
+   silently does nothing; a slider that moves while the bus stays silent is the
+   same lie the speaker glyph is careful not to tell. */
+.sound-row.is-off .sound-label,
+.sound-row.is-off .sound-readout {
+  color: var(--ink-dim);
+  opacity: 0.55;
+}
+
+
+/* ---- Keyboard focus -------------------------------------------------------
+ * The one panel that must always be reachable - "an option to disable sounds"
+ * is a blocker everywhere - and the one panel with no focus indicator on any
+ * of its own controls: this sheet had hover, active and disabled rules, and
+ * nothing about reading it said a state was missing. The shots probe found it
+ * by tabbing ("NOTHING CHANGES ON FOCUS"). Same ring as the turbo slider.
+ */
+.sound-mute:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ---- Pressed ------------------------------------------------------------
+ * The two mute toggles are one of only two ways to silence the game, and a
+ * finger cannot hover - so without this a tap had nothing to acknowledge it
+ * between finger-down and the level bar going flat. Not motion-only, because
+ * reduced motion takes a transform away and would leave nothing behind.
+ */
+.sound-mute:active {
+  background: rgba(var(--shadow-rgb), 0.28);
+  transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sound-mute:active { transform: none; }
+}

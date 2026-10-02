@@ -1,6 +1,6 @@
 # RGS verification test plan
 
-94 checks to run against the **uploaded** build on a Developer-page session,
+115 checks to run against the **uploaded** build on a Developer-page session,
 not against localhost.
 
 That distinction is the whole reason this document exists. Locally the game
@@ -57,17 +57,20 @@ pass in a browser", not as done.
 | Check | Local evidence |
 | --- | --- |
 | `CMP-01` RTP stated | 96.00% present in How to Play |
+| `CMP-06b` Worked example per mode | "Lower on a 3 pays about …" reads 4.75× / 3.67× / 5.28× on the Classic / Second Chance / High Stakes tabs, matching that tab's own paytable |
 | `CMP-03` Disclaimer | all required points present |
 | `CMP-06` Paytable | 8 payout rows rendered |
 | `CMP-07` Mode description and cost | 3 tabs, cost and ceiling on each |
 | `CMP-08` UI guide | Controls section names every bar button |
 | `CMP-09` Sound can be disabled | both buses mute independently and survive a reload |
-| `CMP-10` Spacebar bound to the bet button | plays with nothing focused; refuses on a focused INPUT and on a focused BUTTON |
+| `CMP-10` Spacebar bound to the bet button | plays with nothing focused AND with a guess square, the die or a bar button focused (keydown and keyup both taken); refuses only on a focused INPUT, an open panel, the intro and the takeover |
+| `CMP-10b` Spacebar refused behind a panel | How to Play open, all four guesses picked, Space: no `/wallet/play` (it used to buy one behind the panel); with the panel closed the same press does |
 | `CMP-11` Frame never scrolls | all seven target sizes, idle / bet menu open / How to Play open |
 | `CMP-12` Double-tap zoom off, pinch intact | `touch-action: manipulation`, no `user-scalable=no` |
 | `BET-12` Mode change confirmed | picking a family shows the confirmation; Cancel leaves the live mode alone |
 | `BET-13` Autoplay confirmed | the panel opens with a Start button and begins no round on its own |
 | `LNG-05` Malformed `?lang=` | `en_US`, `zz!!`, `en;a`, empty, `po`, `xx`, `ar`, `de` all render every money readout, no RangeError |
+| `REP-04b` Malformed `?currency=` on a replay | `currency=ab` renders the replay in the USD default, no RangeError (the raw parameter used to override the validated one) |
 | `SOC-01` No restricted term on screen | 761 visible strings swept across board, rules (3 tabs), bet menu, autoplay, mode picker and confirmation |
 | `SOC-02` High Risk naming | mode tabs read Classic / Second Chance / High Risk |
 | `SOC-03` English only in social mode | `de`, `ar`, `ja` all render English, `dir=ltr` |
@@ -112,10 +115,14 @@ inherits the mistake, usually silently.
   reload.
 
 - [ ] **SES-04 · Reload mid-round restores cleanly** — *Major*
-  Spin, then hard-reload while the cards are revealing.
+  Spin, then hard-reload while the cards are revealing. Do it once on a guess
+  mode and once on Three of a Kind.
   **Expect:** correct balance on return. Either the interrupted round replays
   onto the board or it settles silently, but the balance must be right either
-  way and no error modal appears.
+  way and no error modal appears. A resumed round comes back on its OWN family
+  - three slots, the purple MODE button and the 250x readout for Three of a
+  Kind - not on whichever mode was last chosen; the resume path has dropped the
+  family twice before.
 
 - [ ] **SES-05 · An invalid `rgs_url` fails cleanly** — *Blocker*
   Launch with `rgs_url` pointed at a host that does not answer, and again at one
@@ -154,8 +161,9 @@ so this section is genuinely untested until upload.
   **Expect:** Inside is struck through and dimmed, hovering explains why, and it
   cannot be selected by click, keyboard or tap. Tying the rank leaves nothing
   strictly between the two cards, so the math publishes no such mode -
-  2 x (3x3 - 1) x 4 = **64** per mode family, not 72, and 192 published in
-  total across the three families. Sending the missing mode earns `ERR_VAL`.
+  2 x (3x3 - 1) x 4 = **64** per guess family, not 72, and 193 published in
+  total - three families of 64 plus Three of a Kind's one. Sending the missing
+  mode earns `ERR_VAL`.
 
 - [ ] **BET-04 · Sample the mode space** — *Major*
   Play at least one round in each guess family, checking the mode string sent in
@@ -165,16 +173,18 @@ so this section is genuinely untested until upload.
   matches the four buttons lit on screen.
 
 - [ ] **BET-06 · Every bet mode is accepted** — *Blocker*
-  Play at least one round in each of the three modes — Classic, Second Chance,
-  High Stakes — and check the mode string sent in `/wallet/play`.
-  **Expect:** Classic sends an unprefixed name, the others `sc_`/`hs_`. All
-  accepted. There are 192 published modes; a rejection here means the math
-  version live on the site predates the three-family build.
+  Play at least one round in each of the four modes — Classic, Second Chance,
+  High Stakes, Three of a Kind — and check the mode string sent in
+  `/wallet/play`.
+  **Expect:** Classic sends an unprefixed name, the others `sc_`/`hs_`, and
+  Three of a Kind sends exactly `tr_any_equal_equal` - three tokens, no suit.
+  All accepted. There are 193 published modes; a rejection here means the math
+  version live on the site predates the four-family build.
 
-- [ ] **BET-07 · Every mode debits exactly the bet** — *Blocker*
-  Note the balance, place one round in each mode, and check what was taken.
-  **Expect:** exactly the bet shown, in all three. Every mode costs 1.0×, so no
-  mode should ever debit a multiple — and the bet display should show a single
+- [ ] **BET-07 · Every guess mode debits exactly the bet** — *Blocker*
+  Note the balance, place one round in each guess mode, and check what was taken.
+  **Expect:** exactly the bet shown, in all three. The guess modes cost 1.0×, so
+  none should ever debit a multiple — and the bet display should show a single
   plain figure with no multiplier line. If a multiplied amount appears, a cost
   has drifted away from 1.0 in `FAMILY_RULES` or `MODE_FAMILIES`.
 
@@ -220,6 +230,24 @@ so this section is genuinely untested until upload.
   with one click"). **Also check the spacebar-hold path**, which does not go
   through the panel: holding Space runs rounds only while the key is physically
   held and stops the moment it is released or focus is lost.
+
+- [ ] **BET-14 · A 250× mode keeps the base bet the RGS allows** — *Blocker*
+  Switch to **Three of a Kind**, set the base bet to the session's `maxBet`, and
+  play one round.
+  **Expect:** `/wallet/play` is sent with `amount = maxBet` and `mode =
+  tr_any_equal_equal`, the RGS accepts it, and the balance moves by 250 × the
+  base bet. The docs in this repo and the template's own 100× / 200× bonus buys
+  say the limits are on the BASE amount and the cost is applied on top; this has
+  never been observed live. If the RGS rejects it, the mode's bet ladder needs
+  its own cap (`maxBet / cost`) and this plan needs a check for that instead.
+
+- [ ] **BET-15 · The 250× mode's caps match the tier** — *Major*
+  Read the Developer page's risk summary for the uploaded build.
+  **Expect:** max bet cost for `tr_any_equal_equal` sits under the tier's
+  $50,000 (a $200 base × 250) and max exposure under $5,000,000 (4,583.3 × the
+  base bet); no tail row (P ≥ 5,000× / 10,000× / 25,000×, CVaR absolute, ETL
+  above 10,000×) is flagged. The first build of this mode - 1000× paying 25,000×
+  - failed every one of them, which is why the mode is the size it is.
 
 ---
 
@@ -271,7 +299,39 @@ one.
   contains multiple winning actions, the payout must incrementally update to the
   final multiplier"). In this game the stages ARE those actions.
 
+- [ ] **RND-07 · A Three of a Kind round settles on three cards** — *Blocker*
+  Switch to Three of a Kind and play until one round busts and one pays.
+  **Expect:** exactly three cards turn, never a fourth. The bust (card 2 or 3
+  not matching card 1) sends one `/wallet/play` and **no** `end-round`, and the
+  balance moves by 250 x the base bet. The win sends `end-round` and credits
+  4583.3 x the base bet - the chips read 916.60x then 4583.30x, the dealt first
+  card carries no chip, and Last Win reads 4583.30x. The client rejects a book
+  with the wrong number of reveal events ("Round did not contain all 3 reveal
+  stages"), so a settled round that shows an error here means the live math
+  version predates the three-card build.
+
 ---
+
+- [ ] **RND-08 · A Last Stop sweep settles with its ticket** — *Blocker*
+  On a Last Stop mode (`ls_`, an easy pick such as Red / Higher / Outside /
+  Heart), play until all four land and the ticket turns.
+  **Expect:** the credited payout equals the book's `payoutMultiplier` - the
+  full-precision run to card 3 times the ticket, floored once to 0.1×, which
+  is NOT card 3's chip times the ticket (the chip is already floored: event
+  1136 of `ls_red_higher_inside_heart` reads 7.2× on card 3 and pays 72.6×,
+  not 72.0×) - and it is the figure card 4's chip and the readout land on when
+  the ticket turns, with one `/wallet/end-round`. The book's card-4 reveal says
+  `payout: 1.0`, and it carries one `ticket` event, between the reveals and
+  `finalWin`.
+
+- [ ] **RND-09 · A Last Stop miss keeps Classic's share, and no ticket** — *Major*
+  Miss card 2, 3 or 4 on Last Stop. A live session cannot deal the same cards
+  twice, so compare by replay: the two families share the deal, and a bust ID
+  is the same round on both (e.g. 1801 is 13.60x on `red_higher_inside_heart`
+  and on `ls_red_higher_inside_heart` - REPLAY_EVENTS.md).
+  **Expect:** the bust card's chip is the same figure Classic shows for the
+  same miss (about 30%), and the book has **no** `ticket` event. The ticket
+  stays face down and dims with the dead cards.
 
 ## 04 · Autoplay endurance
 
@@ -317,6 +377,27 @@ working, not a hang.
   Enable stop-on-full-win and run until all four cards land.
   **Expect:** the run ends on that round; a partial win, however large, does not
   stop it.
+
+- [ ] **END-07 · The loss limit stops at the figure, in base bets** — *Major*
+  In the autoplay panel type 5 into "Stop on a loss of", leave the unit on x,
+  press the button beside it so it stays lit, and run unlimited on a Classic
+  mode. Then repeat on Three of a Kind, and once with the unit on the currency
+  (type an amount, e.g. 20).
+  **Expect:** the run ends on the round that leaves it 5 base bets down, net of
+  what it won - not before, not a round later. On Three of a Kind one losing
+  round is 250 base bets, so a 5x limit ends the run after its first loss -
+  "5x your bet" means the same bet there as "costs 250x your bet" does in the
+  mode picker. With the currency unit it ends on the round that leaves the
+  run that much money down. The stake never changes during the run, and the
+  panel can be opened mid-run to change a limit (its count is locked; its
+  button is Stop). In social mode the unit reads SC/GC, never $.
+
+- [ ] **END-08 · The single-win limit stops on one big round, not a good run** — *Minor*
+  Type 5 into "Stop on a single win of" (x), arm it, and run unlimited; then
+  100x on Three of a Kind.
+  **Expect:** the run ends on the first round that alone pays 5 base bets or
+  more; a run that is up 5 bets over many small wins does not stop. On Three of
+  a Kind a 100x limit stops on its first win (4,583.3x).
 
 - [ ] **END-06 · Autoplay runs the balance down gracefully** — *Major*
   On the near-empty account, set unlimited autoplay and let it exhaust the
@@ -426,18 +507,25 @@ a full-game win is floored into the bottom tier, because the smallest possible
 one pays 6.6x and would otherwise pass in silence.
 
 **Every band is per mode.** A tier is a claim about how RARE something is, and
-the three families spread their payouts differently, so one shared set of
+the guess families spread their payouts differently, so one shared set of
 thresholds made the same word mean different things. Each ladder is solved to
 land on the same rarities - Classic's originals - with Max Win being exactly
-that mode's ceiling:
+that mode's ceiling. Three of a Kind has one rung: its only win IS its ceiling,
+so it is called Max Win, at 1 in 19 - the label says what the win is, not how
+rare it is.
 
-| Tier | Classic | Second Chance | High Stakes | Roughly |
-| --- | ---: | ---: | ---: | ---: |
-| Big Win | 10x | 11x | 12x | 1 in 70 |
-| Huge Win | 40x | 28x | 50x | 1 in 300 |
-| Mega Win | 120x | 60x | 130x | 1 in 3,100 |
-| Epic Win | 300x | 130x | 440x | 1 in 15,800 |
-| Max Win | 1354.2x | 585.2x | 1910.2x | 1 in 36,400 |
+| Tier | Classic | Second Chance | High Stakes | Three of a Kind | Roughly |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Big Win | 10x | 11x | 12x | — | 1 in 70 |
+| Huge Win | 40x | 28x | 55x | — | 1 in 300 |
+| Mega Win | 120x | 60x | 145x | — | 1 in 3,100 |
+| Epic Win | 300x | 130x | 500x | — | 1 in 15,800 |
+| Max Win | 1354.2x | 585.2x | 2237.3x | 4583.3x (1 in 19) | 1 in 36,400 |
+
+(High Stakes' bands survived its move to 15% unchanged: re-measured against the
+0.15 build's lookup tables, 12 / 55 / 145 / 500 are still the round thresholds
+closest to the target rarities. What moved is how often they land - 1 in 68 /
+295 / 2,818 / 15,444 - and the ceiling.)
 
 At the old shared thresholds, "Epic" was 1 in 16,198 on Classic but 1 in 26,768
 on Second Chance - nearly as rare as that mode's Max Win, squashing the top of
@@ -474,9 +562,10 @@ on nearly every round. It still celebrates on size.
 
 - [ ] **WIN-09 · Max Win is announced on each mode's own ceiling** — *Major*
   Use a max-win replay ID for each family (see REPLAY_EVENTS.md).
-  **Expect:** "Max Win" on 1354.2x in Classic, on 585.2x in Second Chance and on
-  1910.2x in High Stakes. Two specific failures to watch for: a High Stakes win
-  of 1354.2x - which is NOT its maximum - announcing "Max Win", and a Second
+  **Expect:** "Max Win" on 1354.2x in Classic, on 585.2x in Second Chance, on
+  2237.3x in High Stakes and on 4583.3x in Three of a Kind, where the takeover
+  fans THREE cards. Two specific failures to watch for: a High Stakes win of
+  1354.2x - which is NOT its maximum - announcing "Max Win", and a Second
   Chance ceiling of 585.2x announcing only "Epic Win".
 
 - [ ] **WIN-10 · The lower bands differ per mode too** — *Minor*
@@ -525,7 +614,7 @@ on nearly every round. It still celebrates on size.
   68.2x) and the cap round of one that does not (`red_equal_equal_heart`).
   **Expect:** only the second announces MAX WIN. A mode reaching its own ceiling
   is not a max win - the claim is about a single reachable figure per family
-  (1354.2 / 585.2 / 1910.2), and softening it to "the best this bet can do"
+  (1354.2 / 585.2 / 2237.3 / 4583.3), and softening it to "the best this bet can do"
   would make the rarest screen in the game routine.
 
 - [ ] **WIN-13 · Turbo and skip keep the figures legible** — *Minor*
@@ -535,6 +624,22 @@ on nearly every round. It still celebrates on size.
   amounts, winning combinations and pop-up information legible").
 
 ---
+
+- [ ] **WIN-14 · The ticket counts up and joins the fan** — *Major*
+  Land any Last Stop sweep - every one celebrates, down to the 4.5× minimum,
+  through the full-game-win floor.
+  **Expect:** card 4 turns with no chip, the ticket turns after one uniform
+  pause - the same length whatever it shows - and card 4's chip and the readout
+  land together on the ticketed figure. The takeover fans the four cards as on
+  every family and lays the ticket over the middle of them, lower - and on a
+  win that climbs a tier, the ticket hops with the hand.
+
+- [ ] **WIN-15 · No correct pick ever reads under 1×** — *Major*
+  On Last Stop, pick near-certain guesses (Higher on an Ace, Outside on a pair)
+  and watch the chips, then play the same picks on Classic.
+  **Expect:** every chip after a right guess is at least the one before it,
+  and cards 1-3 read exactly what they read on Classic. The owner's rule;
+  `ticket.test.ts` and `test_model.py` pin both.
 
 ## 08 · Replay
 
@@ -623,7 +728,26 @@ being logged, so this must not become a production-visible flag.
   ("Supports all optional parameters like currency, language, amount");
   `REP-04` covers currency and `REP-02` the amount, so this closes the set.
 
+- [ ] **REP-09 · A Three of a Kind replay shows its cost and three cards** — *Blocker*
+  Open a replay for `tr_any_equal_equal` (IDs in REPLAY_EVENTS.md), at desktop
+  and at 400 x 225.
+  **Expect:** the details panel reads Game mode "Three of a Kind", a **Round
+  cost** row of 250 x the play amount, a "Cards" row of exactly THREE badges
+  (Any, Equal, Equal - no empty fourth pill) and the payout; the round deals
+  three cards and the takeover fans three. Verbatim ("UI clearly displays bet
+  cost and applied multiplier") - the play amount alone is the base bet, and on
+  this mode the round took 250 of them.
+
 ---
+
+- [ ] **REP-10 · A Last Stop replay shows its ticket** — *Major*
+  Open a replay from `REPLAY_EVENTS.md`'s Last Stop table, one per ticket column.
+  **Expect:** the round details list the ticket (×2 / ×3 / ×5 / ×10) beside the
+  payout, the reveal turns that ticket, and the payout matches the table.
+
+- [ ] **REP-11 · A Last Stop bust replays with no ticket** — *Minor*
+  Open a Last Stop "Bust + win" replay.
+  **Expect:** no ticket row in the details, and the ticket stays face down.
 
 ## 09 · Localisation
 
@@ -666,7 +790,23 @@ English is required for approval; the rest are shipped.
   underscore emptied the board. `?lang=` is now resolved against the shipped
   locales before activation; this confirms it on the uploaded build.
 
+- [ ] **LNG-06 · The Three of a Kind copy reads in every language** — *Minor*
+  In `pl`, `ar` and `ja`, open the mode picker, confirm a switch to Three of a
+  Kind, and read its tab in How to Play.
+  **Expect:** the blurb, "Costs 250x your bet", the running-total table headed
+  "Total", the one bust rule and the "about one round in 19" line are all
+  translated, and the Arabic table mirrors without overflowing. These strings
+  arrived with the mode and were translated in one pass; `locales.test.ts`
+  proves they exist and differ from English, not that they read well.
+
 ---
+
+- [ ] **LNG-07 · Last Stop reads in every language** — *Minor*
+  Switch to `?lang=de`, `ar`, `ja` on Last Stop.
+  **Expect:** the tab, the blurb, the ticket's band ("LAST STOP" in the
+  language), the stack's "N of 20" counts, the example's range and its Classic
+  line are all translated; in Arabic the route runs right to left, the ticket
+  hangs under card 4, and "×2 – ×10" still reads low to high.
 
 ## 10 · Compliance surface
 
@@ -707,13 +847,18 @@ live in the How to Play panel behind the `i` button.
   function the game pays out with.
 
 - [ ] **CMP-07 · Every mode states its description and its cost** — *Blocker*
-  **Expect:** all three families are reachable from the tabs in How to Play,
-  each with its blurb, its ceiling, its retention rule and "Every mode costs 1x
-  your bet". Verbatim ("Game modes include description and cost information").
+  **Expect:** all four families are reachable from the tabs in How to Play,
+  each with its blurb, its ceiling and its bust rule, and the line under the
+  Game modes heading follows the tab: "This mode costs 1x your bet..." on the
+  three guess modes and "This mode costs 250x your bet..." on Three of a Kind,
+  which also states the cost on its picker row and in the switch confirmation.
+  Verbatim ("Game modes include description and cost information" and "High
+  cost bet modes require confirmation before activation").
 
-- [ ] **CMP-08 · The UI guide is present** — *Blocker*
-  **Expect:** the Controls and Speed sections in How to Play name every button
-  on the bar and say what it does. Verbatim ("A User Interface guide briefly
+- [ ] **CMP-08 · The UI guide is present** - *Blocker*
+  **Expect:** the Controls section in How to Play names every button on the
+  bar, one line each, and says what it does. There is no separate Speed section
+  any more; turbo, autoplay and the sliders are described on their own lines. Verbatim ("A User Interface guide briefly
   describing what the UI buttons do"; "User interaction guide is included in the
   game information").
 
@@ -767,12 +912,14 @@ live in the How to Play panel behind the `i` button.
   under-specified, that is why - do not add them back.
 
 - [ ] **CMP-13 · Five wins per mode agree with the rules** — *Major*
-  Play or replay five winning rounds in each of the three families, checking
-  each payout against the stage figures in that family's payout table.
+  Play or replay five winning rounds in each of the three guess families,
+  checking each payout against the stage figures in that family's payout table,
+  and five Three of a Kind rounds against its running-total table (250.00x /
+  916.60x / 4583.30x - the chips print the same digits).
   **Expect:** every figure reconciles. Verbatim ("Check 5 wins for each game
-  mode against the Game Rules"). Scoped to the three families a player sees
-  rather than to the 192 published bet modes; `REPLAY_EVENTS.md` carries a
-  win-cap, big-win, normal-win and loss ID for every one of the 192 if a
+  mode against the Game Rules"). Scoped to the four families a player sees
+  rather than to the 193 published bet modes; `REPLAY_EVENTS.md` carries a
+  win-cap, big-win, normal-win and loss ID for every one of the 193 if a
   reviewer wants to go wider.
 
 - [ ] **CMP-14 · Title, assets and imagery clear the compliance checks** — *Major*
@@ -789,6 +936,66 @@ live in the How to Play panel behind the `i` button.
   the foreground transparent, no text or multipliers baked into either, no dark
   edges on the background, and the provider logo legible at small sizes. These
   are uploaded through the dashboard, not shipped in the build.
+
+- [ ] **CMP-16 · The music bed is licensed, single, and behaves** — *Blocker*
+  Nothing in this item can be checked by the test suite, and the first line of it
+  is the one that stops a submission.
+
+  **Licence.** The track in `static/music/` must have been **generated on a paid
+  Suno subscription**, with its `ASSET_LICENCES.md` row carrying the generation
+  URL, the date, the verbatim prompt and the tier active on that date.
+  Free-tier Output is licensed for personal, non-commercial use only.
+  Re-downloading a free-tier track after subscribing does **not** fix it — the
+  licence attaches when the Output is *generated*. **As of 2026-09-02 this is
+  satisfied**: the free-tier placeholders were deleted and ten fresh tracks
+  generated on a paid Pro subscription (v5.5), with a row per file in
+  `ASSET_LICENCES.md`. One of the ten ships and the other nine are benched in
+  `audio-masters/`, still licensed and still documented. Still open there, and
+  required before sign-off: the ten **generation URLs**, the **invoice**, and a
+  saved copy of the **Terms as they read on 2026-09-02** (a new Terms took effect the following day, so that text
+  cannot be retrieved from the site later).
+
+  **One file.** `static/` is copied wholesale into the build, so every candidate
+  left in `static/music/` ships. **Expect:** exactly one audio file there, named
+  by `ACTIVE_TRACK_ID` in `musicTracks.ts`. `musicTracks.test.ts` prints the
+  directory total and holds a 9 MB ceiling, but it cannot know which one you
+  meant. **Satisfied as of 2026-09-06**: `A.mp3` alone, 2.2 MB, with the nine
+  benched takes moved to the repo-root `audio-masters/`. Re-check it anyway if
+  anyone has auditioned a take since — the way this fails is a copied-in
+  candidate that was never copied back out.
+
+  **The seam, and it now happens often.** Leave the game idle on the board for
+  **longer than one full loop period** — `loopEnd − loopStart − crossfade`, which
+  on the shipping track is **154 seconds**, not the five minutes the earlier
+  candidates ran — and listen through the wrap. Sit through at least two. A
+  player on a long session hears this every two and a half minutes, so it carries
+  more weight than it did. **Expect:** no dropout, no level dip, no audible
+  restart, and no fade to silence followed by a cold entry. If it wraps badly the
+  fix is `loopEnd` in the manifest, pulled back to a bar line.
+  `npm run audio -- --params "dev_loop=40,70,4"` reproduces the same seam every
+  26 seconds if you need to hear it repeatedly.
+
+  **Laptop speakers — the one measurement could not settle.** The bed measures
+  0.4% of its energy above 2 kHz on the board: four times the free-tier set this
+  replaced, a quarter of the `noir-triphop-c2` placeholder. **Expect:** the bed
+  is still present, not just felt as low rumble, on a laptop's built-in speakers
+  and on phone speakers. If it disappears, the nine benched takes in
+  `audio-masters/` are the shortlist and
+  `rtb-invariants/references/audio-and-jurisdiction.md` ranks them.
+
+  **The ladder.** Play a round through to a big win. **Expect:** the bed is
+  loudest on the idle board, pulls back as the cards turn, and ducks hard and
+  fast under the fanfare — never the other way round. It shares one limiter with
+  every cue, so a bed sitting on top of a win ducks the *win*.
+
+  **Bandwidth.** With music muted before the first tap, open the network tab and
+  reload. **Expect:** the track is **not** requested at all. Muting is a
+  bandwidth claim here, not only a CPU one.
+
+  **The two screens before the board.** **Expect:** on Stake's own embed, the bed
+  is already playing under the loading and start screens. If it only arrives at
+  the board, the iframe is not granting autoplay — which is legitimate, not a
+  bug, but it is worth knowing which of the two a real session does.
 
 ---
 
@@ -862,7 +1069,48 @@ badge taking a bite out of their inner edge.
   **Expect:** slow responses delay the reveal but never double-charge, never
   desync the balance and never strand the spin button disabled.
 
+- [ ] **DEV-06 · The Three of a Kind board holds at Popout S and Mobile S** — *Major*
+  Switch to Three of a Kind at 400 x 225 and at 320 x 568, then play a round.
+  **Expect:** three card slots and two read-only Equal badges under the gaps
+  between them, the bar on one row at Popout S with the blue cost figure and
+  the "1.00 x 250" line under it, the mode picker's four rows scrolling inside
+  the panel rather than the frame, and no horizontal scroll. Switching back to
+  a guess family turns the cards over and restores the four squares.
+
 ---
+
+- [ ] **DEV-07 · The ticket on the small sizes** — *Major*
+  Last Stop at Popout S, Mobile S, M and L, idle and after a sweep.
+  **Expect:** the ticket is whole on screen, hanging under card 4 at every size,
+  and touches neither the readout, the Suit label nor a prop.
+
+- [ ] **DEV-08 · The deal goes INTO the deck, at every size** — *Minor*
+  Start rounds at all seven sizes (and Last Stop for the ticket).
+  **Expect:** the last round's cards shrink onto the deck and disappear into
+  it, a short rest, then deal back out; the ticket does the same into its
+  stack. Nothing hovers over the deck or the stack at any size.
+
+- [ ] **DEV-09 · Fast slams never strew the board** — *Major*
+  With the skip button, slam rounds over and over, early in the deal.
+  **Expect:** every card and the ticket land in their places at once, every
+  time; the bus is at its stop immediately. Locally: 40 slammed rounds, worst
+  displacement 0.2 px, no deal animation left running (2026-10-01).
+
+- [ ] **DEV-10 · The table die picks, and only the deal plays** — *Major*
+  (Also: click the die with the mouse, then press Space - it must DEAL, not
+  roll again; the same after clicking a guess square. Space always deals on
+  the board - CMP-10.)
+  Roll the die beside the guesses a few times, then deal; try it mid-round, in
+  autoplay, in replay and on Three of a Kind; and in `?lang=ar`.
+  **Expect:** each roll changes the four picks to a playable set (never Equal
+  then Inside), the bet mode in the deal request is the one shown, and nothing
+  is placed until the deal. Mid-round, in autoplay and in replay it is dimmed
+  with the squares and does nothing; Three of a Kind shows no die. It sits on
+  the wood right of the Suit square (under the Color square on a portrait
+  phone) and stays on the RIGHT in Arabic. One roll sound, no click under it.
+  Locally (2026-10-01) it was on screen, on top, fully opaque and on the wood
+  at all seven sizes and at 667x375, 844x390 and 932x430 landscape - 18 px at
+  Popout S, 30-35 px on a landscape phone, where its touch target grows to 44.
 
 ## 12 · Regression watch
 
@@ -932,6 +1180,11 @@ Run every check here with `&social=true` on the URL.
   replay UI is a different set of strings that is easy to miss.
 
 ---
+
+- [ ] **SOC-06 · Last Stop's copy in social mode** — *Major*
+  `?social=true` on Last Stop: the picker and How to Play.
+  **Expect:** no "pay", "bet", "fund" or "buy" anywhere in the family's copy.
+  (The idle readout's "Wins up to" line was removed on 2026-10-01.)
 
 ## 14 · Performance
 

@@ -103,9 +103,33 @@ export const rgsFetcher = {
 		if (!response.ok) throw new RgsHttpError(response.status, text);
 		return data as TResponse;
 	},
+	/**
+	 * LOCAL ADDITION to the Stake SDK - re-apply if this package is updated from
+	 * upstream. Types only; the body below is untouched.
+	 *
+	 * This signature accounted for FIVE of the seven errors `npm run check` used
+	 * to report, and both tsc and svelte-check flagged it, so it was real rather
+	 * than a tool artefact.
+	 *
+	 * The default was `paths[T]['get'][...]`, and **not one of the eight paths in
+	 * schema.ts declares a `get`** - they are all `post`. So `paths[T]['get']`
+	 * cannot resolve for any T the constraint admits, and TypeScript said so five
+	 * times over, once per link in the chain.
+	 *
+	 * Kept rather than deleted: it is vendored API surface, and upstream may add
+	 * a GET endpoint later. Written as a conditional so the type tells the truth
+	 * instead of asserting a shape that is not there - it still infers the
+	 * response exactly as before for any path that DOES gain a `get`, and
+	 * resolves to `unknown` for the ones that have not, which is correct. Nothing
+	 * in this game calls it; `rgs-requests.ts` uses `post` for all five requests.
+	 */
 	get: async function get<
 		T extends keyof paths,
-		TResponse = paths[T]['get']['responses'][200]['content']['application/json'],
+		TResponse = paths[T] extends {
+			get: { responses: { 200: { content: { 'application/json': infer R } } } };
+		}
+			? R
+			: unknown,
 	>(options: { url: T; rgsUrl: string }): Promise<TResponse> {
 		const response = await fetcher({
 			method: 'GET',

@@ -1,0 +1,1060 @@
+# Current state and outstanding work
+
+What is built, what is measured, and what is still open. Status rather than
+rules - read it when planning work, not when checking a change.
+
+Moved verbatim out of CLAUDE.md so it is loaded on demand
+rather than on every turn. Nothing here is reworded.
+
+---
+
+## Current state
+
+**2026-10-02: Space always deals; the ticket stack on Last Stop only.** The
+owner's calls on two review items. Space is taken from every focused button on
+the board (squares, the die, the bar) on keydown AND keyup, and kept only by a
+field, an open panel, the intro and the takeover; the die's pointer-click blur
+went with it. The ticket stack prop renders on a family with a ticket only.
+
+**2026-10-01, later: three review agents before a commit (none made).**
+Invariant guard, locale auditor and compliance, all report-only. The
+math<->client mirror holds exactly, ticket stage and float order included;
+nothing would fail a hard Stake requirement; the published ticket odds are the
+stack's to 3.3e-6 of a twentieth on all 64 modes. Fixed from their findings,
+each checked:
+- the running total printed a ticketed amount before the ticket turned (the
+  readout latch waited for cards only) - now 450 ms after the turn, 0.9 of the
+  flip, measured on a replayed x10; `ticket.test.ts` pins it;
+- after a MOUSE roll the die kept focus and Space rolled again instead of
+  dealing (Space must deal) - it drops focus after a pointer click only, and
+  keyboard Enter still rolls; checked in Chromium;
+- the takeover ticket's tier-coloured blurred drop-shadow (a halo) is gone;
+- the die's two names: "Roll the die" / "The die beside the guesses";
+- 11 locale wording fixes (es/pl family-name case, ko/fr/de "priced", de
+  "enden bei", tr polite imperative, three zh lines);
+- the Last Stop ladder MEASURED off the build: 72 / 297 / 3,028 / 16,260,
+  Max 1:283,787 (bands unchanged); `MIN_FULL_GAME_WIN_LAST_STOP` now tested;
+- doc drift: volatility.ts / tokens.css figures and the open tie, config.ts,
+  a test comment, PROMO_BLURB's "recheck" caveat, RND-08 (the payout is the
+  full-precision run x ticket, not card 3's chip x ticket), RND-09 (compare by
+  replay pairs), WIN-14 (every sweep celebrates), DEV-10 (Space after a roll),
+  check counts in CLAUDE.md and the stake-approval skill; `playBlocked`'s doc
+  comment back above it; an unused import.
+Left for the owner: the volatility tie; the ticket stack (and its "x2 - x10")
+is set dressing on EVERY family's table - approved in the plan, flagged as
+the single-family leak in reverse; How to Play's suit row prints the table's
+"2.00x - 10.00x" where the stack prints "x5" (kept: one notation per table);
+the guess squares share the die's Space-after-click behaviour (pre-existing,
+RGS_TEST_PLAN records it as intended); the ticket stack's two hand-typed edge
+colours in table.css (the deck's are too). For the submission notes: the
+only client-side randomness is the die's pre-bet pick over published modes
+(`crypto.getRandomValues`). Product questions to playtest: a uniform roll
+lands an Equal half the time, which can jump the bolt meter; and Last
+Stop's held last card is sized for the x10 ticket, 1 sweep in 10.
+915 tests, 914 pass (the tie); math 26 passed.
+
+**2026-10-01: Last Stop built, and the board's motion tightened.** The owner
+ran the full build of the 2026-09-30 design (18:32).
+- **The build reads true.** Parity replays all 257 modes; math 26 passed,
+  including the model against the build: Last Stop's built worst cases are std
+  31.4, etl40b 0.591, CVaR 483.5 (exact 31.0 / 0.585 / 475.5), 53 of 64 modes
+  at their exact ceiling, none above.
+- **OPEN DECISION - the volatility ordering fails on 3 of 64 combinations.**
+  `red_higher_outside_spade`, `black_higher_inside_diamond`,
+  `black_lower_outside_heart`: Last Stop's published std is level with or
+  above High Stakes'. Exactly, Last Stop is the calmer on all 64. Two of the
+  three are Higher/Lower + Outside modes, where the two families are only
+  0.78% apart exactly (4.562 against 4.597) - well inside the build's
+  sampling noise, so no rebuild can guarantee that order. The third,
+  `black_higher_inside_diamond`, is 14.8% apart exactly (6.42 against 7.37),
+  and the build's sampling ran Last Stop's std 12% hot there (7.21): a ticket
+  family's tail is a handful of x10 sweeps, so its std samples noisily. Options for the owner: accept the tie on those combinations
+  (and say so in the test), or move Last Stop away from High Stakes (e.g. a
+  calmer stack), which is a math change and a rebuild.
+- **Owner's calls, built and checked in a browser** (dev fallback on 3002,
+  replay RGS on 3011):
+  - the takeover's ticket rides the hand's hop, with its middle (traced on a
+    replayed x10 sweep; `winCelebration.test.ts` drives `hopFan` with stand-in
+    elements);
+  - no "Pays up to X your bet" on the idle readout (the line, its CSS and the
+    key in 17 catalogues and the social map are gone);
+  - a rest at the deck between gathering and dealing (`DEAL_REST_MS`, 300 ms at
+    normal speed, turbo-scaled), the ticket too, and card 1 held back by it;
+  - the deal lands ON the deck and the ticket stack - fitted to each prop's
+    centre, angle and foreshortened size, within 1 px at Desktop, Mobile M and
+    Popout S - and fades into it, because a full-brightness card on a deck
+    dimmed to 60% floats however well it fits;
+  - a slam finishes the deal outright and the bus rides on `--flip-dur`. The
+    strewn cards were a deal measured mid-flight (a previous deal, a lift
+    easing back): pieces are measured at rest now. 40 slammed rounds: worst
+    displacement 0.2 px, nothing left running. The original bug was not
+    reproduced locally before the fix.
+  - Also found: the ticket's deal was aimed in screen space but applied after
+    the slot's own `rotate: -6deg`, so it never quite reached its stack.
+- **The table die, built** (the owner's choice over a book-picks mode): roll
+  it and it fills the four picks with one of the 64 published combinations,
+  evenly, never the one on the board; nothing is bought until the deal. In
+  the guess row, so locked and dimmed with it. Drawn on the table's camera
+  (`dieGeometry.ts` holds --flat / --upright to table.css), the card back's
+  reds, physical right in Arabic (the props do not mirror). Checked at all
+  seven sizes and three landscape phones - on screen, on top, fully opaque, on
+  the wood, no collision with a square, prop, readout or the bar - and
+  in Arabic; a keyboard roll mid-round changes nothing. Its sound
+  (`playDiceRoll`) was measured with the music muted: two knocks 0.21 s apart
+  on the tumble's landings, the second 3-9 dB under the first, about 10 dB
+  over the bed's hi-hats with the music on. The audio lab gained `--click
+  <selector> --every <s>` and `--no-music` for it. RGS_TEST_PLAN DEV-10.
+- 913 tests (with the die): 912 pass, the 1 failure above. RGS_TEST_PLAN: 115 checks (DEV-08 to
+  DEV-10).
+
+**2026-09-30: Last Stop redesigned - Classic until the suit, which the ticket
+pays.** The owner asked whether a mode that prices card 1 at 1.28× (Classic:
+1.99×) is a good idea, since to a player it reads as cutting their profit and
+handing it back as a ticket. It is not, and nothing short of not cutting fixes
+it. Now:
+- **Cards 1-3 are Classic's to the bit; the suit card has no price.** A right
+  suit draws the ticket (mean 3.5×, where Classic's suit price is 2.9-3.7×), a
+  wrong suit keeps 30%. The book writes the suit card's `payout` as 1.0
+  (`TICKET_STAGE_PAYOUT`), so settle is unchanged: running × ticket, then the
+  cost, then the floor. `flat_bust`, `card1_decay`, per-card decays and `r_eff`
+  are gone from both sides; the consolidation into `guessPrice` / `applyBust`
+  stayed (roundReveal used to fold the bust into one factor and round
+  differently from the Python).
+- **Modelled exactly**: std 4.5 / 7.5 / 31.0, etl40b 0.585
+  (`ls_black_equal_outside_heart`), CVaR 475.5, max 4,301.9× (Classic's best
+  run to card 3 × 10; 1 in 35,391 on its mode), ticket 1 in 29-3,539, smallest
+  right chip Classic's 1.0266, cheapest sweep 4.5× (A♥ K♥ 2♥ on Red / Higher /
+  Inside / Heart, then a heart and the 2× ticket), between Classic and High
+  Stakes on 64/64. wincap 4400. Ladder 8 / 40 / 170 / 350, modelled.
+- **Board**: card 4's chip lands WITH the ticket, on the ticketed total. **How
+  to Play**: the suit row reads 2.00× - 10.00× (a factor on the running total,
+  the same unit as every row); the example's last total is the ticket's range,
+  followed by "On Classic the same cards end at X." Three keys added and four
+  retired in all 17 catalogues; none needs a social override.
+- **Also this session, before the redesign** (owner's review of the first
+  build in a browser): the ticket is laid ON the takeover's hand - the four
+  cards fan as on every family, the ticket over the middle, lower; the bus
+  rides above a lifted card 4 (`z-index: 5`); the ticket's beat is 1,050 ms.
+- **The build on disk (2026-09-28 15:26, all 257 modes) is of the rejected
+  design.** The parity replays are per family now (`currentFamilies()`), so
+  Classic, Second Chance, High Stakes and Three of a Kind - 193 modes, 77,200
+  books - are still verified against it; `ls` and the whole-build tests
+  (ceilings, mode list, volatility) wait. **Owner**: the full build, then
+  `node scripts/mode-ceilings.js`, re-measure the ls ladder and `maxWin`, and
+  `npm run audio` on the ticket cue. 893 tests, 878 pass, 15 skip; math 25 pass,
+  1 skip.
+- **Driven in a browser** (dev fallback, 3002): a Desktop sweep (card 4
+  chipless until the ×2 ticket, then 16.5× on both); How to Play at Desktop,
+  Mobile S and in Arabic; a held card 4 (the bus lands on its stop over the
+  card's edge, visible). **Found in Arabic:** the example's totals were never
+  pinned left to right, so the new range printed 49.4× left of 9.8× - the
+  ticket face's defect again. `.ex-total` joined app.css's list; `rtl.test.ts`
+  pins it.
+- **The random-picks mode is an idea, not built** (owner, 2026-09-30) - see
+  Ideas below.
+
+**2026-09-27: Last Stop, built in code - awaiting its first build.** SUPERSEDED
+in its pricing by the entry above; kept for how the ticket, the route and the
+table prop were built. Math and
+client both; the owner runs the scratch and full builds. Plan:
+`~/.claude/plans/idempotent-mixing-brooks.md`.
+- **Un-parked**, because post-approval Stake allows no new modes: v1 or never.
+- **The first design was rejected on the owner's rule that a correct pick
+  never loses money.** Spreading the ticket's price over all four cards (decay
+  (0.99/3.5)^1/4 = 0.729 each) priced a right Higher on an Ace at x0.76. A
+  stage's price falls as its odds rise, so only card 1 (always 50/50) and the
+  suit card (never better than 13 in 49) can carry a cut: decays
+  `0.64, D, D, D*D/3.5/0.64`, cards 2-3 exactly Classic's. Worst correct chip
+  1.03x; cheapest sweep 3.7x (A-2-3 of diamonds, A of hearts, 2x ticket).
+- **Modelled exactly** (`model_families.py`, committed this time, pinned by
+  `tests/test_model.py` to the 09-22 build's family worst cases within a few
+  percent - the build runs hot, the max of 64 sampled modes): Last Stop std
+  3.9 / 6.4 / 25.8, etl40b 0.473, CVaR 404.2, max 3,571.1x, ticket 1 in 27.0
+  to 1 in 3,458, between Classic and High Stakes by std on 64/64. Expect a
+  build ~1-3% hotter.
+- **Math**: `MODE_FAMILIES["ls"]` (flat bust, ticket stack, card-1 decay);
+  `score_stage` prices a flat bust against `r_eff`; the ticket is a pure
+  function of the simulation index (`ticket_slot`), drawn only on a clean
+  sweep, a `ticket` event between the reveals and finalWin. direct_books and
+  create_books still byte-identical (a Last Stop mode added to the test;
+  sabotage caught). The reweight weights each sweep by its ticket so the
+  PUBLISHED ticket odds are exactly 10/5/3/2 of 20, reading tickets off the
+  books; every other family's tables are computed exactly as before.
+  `scratch_stats.py` reweights and reads a scratch build against the model.
+- **Client**: one pricing path (`guessPrice`, `pricedRetention`, `stageDecay`,
+  `applyBust` in payout.ts - the price used to be copied in four files and the
+  bust in two); `bookTicket` refuses any ticket the game never writes; the fifth
+  beat is uniform whatever the value (a test slices the source); card 4's hold
+  judges landing x10. `TicketFace.svelte` draws every ticket: the board's slot
+  at the end of the route (under card 4 on portrait phones), the takeover's fan,
+  How to Play's stack, the table prop. `--vol-ls` 255,146,64, the fourth bolt.
+  Ladder 8 / 35 / 145 / 300, modelled - re-measure off the build. 10 strings in
+  17 locales; Stake.US variants for two (the blurb and the priced-lower line
+  were written without "pay", "fund" or "buy").
+- **Also shipped in the pass** (owner's yes): the route line (drawn only - the
+  "Missed/Rode the bus" captions were left out because the readout already says
+  the result), the right-hand cup is now the ticket stack, "Pays up to X× your
+  bet" on the idle readout (a ceiling, from MODE_CEILINGS), and the deal from
+  the deck (WAAPI on `.card-block`, so no slot moves).
+- **Driven in a browser** (dev fallback, port 3002; 890 tests, 873 pass, 17
+  skip until the build): a Desktop sweep with a x2 ticket and its takeover fan;
+  a card-4 bust keeping exactly half with the ticket face down and dimmed; a
+  Mobile S sweep and its fan; idle boards at Desktop, Popout L, Popout S,
+  Mobile S and Mobile L; Arabic. Two defects found and fixed on the way: beside
+  card 4 the ticket sat on the top-right chips, and in Arabic on the left cup
+  (the props do not mirror) - so it hangs UNDER the last stop at every size -
+  and in Arabic its range read "10× – 2×" until its figures were pinned left to
+  right. Still to do: reduced motion, Laptop and Mobile M, and an `npm run
+  audio` pass on the ticket cue, which needs Last Stop books to replay.
+- **Build-dependent and pending**: parity over 257 modes, MODE_CEILINGS rows,
+  REPLAY_EVENTS.md (ticket columns now generated), the volatility ranking read
+  off the published stats, the Last Stop row of winTiers re-measured.
+
+**2026-09-26: casino card faces, autoplay's stops, MODE at the edge.** Client
+and tooling only; no math changed, no build run. 854 tests.
+- **Every dealt card is a real face** (`CardFace.svelte`): pips for 2-10 on the
+  standard grid, the Ace of Spades as the house card with the house name, and
+  the English-pattern courts - CC0, Dmitry Fomin, from Wikimedia Commons,
+  restyled by `scripts/court-art.mjs` into one colour family per card (card 1's
+  guess is Red or Black). The board and the fan draw the same face; the old
+  one-pip faces and their CSS are gone. `?dev_deck=1` lays out every face at
+  every drawn size. Sprite 199 kB / 43 kB gzipped, fetched at start from
+  `static/cards/`, never inlined. Provenance, hashes and the rejected sources
+  (a GPL-3.0 and two LGPL decks) are in `art-masters/courts/README.md`.
+- **The Advanced panel is gone**; its two switches joined the autoplay panel
+  with two new passive stops (loss limit, single-win limit - the SDK's option
+  set, in multiples of the base bet). The DEV-only martingale was deleted.
+  **Found in review, fixed the same day:** the first cut counted the limits in
+  the round's COST, which on Three of a Kind made "your bet" mean 250x what it
+  means everywhere else and left the 25-100x win limits unable to fire; and the
+  autoplay button was disabled mid-run, so the stops (which used to sit behind
+  a sliders button that stayed live) could not be changed during a run. Also
+  from review: keys 1-4 match the physical key (AZERTY), and How to Play's
+  autoplay line names the stops. **Then, on the owner's review:** the limits
+  became TYPED fields - a figure, an x/currency unit switch inside the field,
+  an arm button beside it - x always the base bet; the two switches sit one above
+  the other, above the action; MODE became a rounded rectangle; and the Takeover
+  crown went onto every court pip and the house spade (gold only).
+- **MODE moved to the bar's right edge** where the sliders button was (owner's
+  suggestion), mirroring Turbo; the light pill is now sound, info, Balance,
+  Last Win. Checked at all seven sizes: no overflow, one-row Popout S.
+- **Keys 1-4 step the four guesses.** An intro "Don't show this again" was
+  added and taken out the same day, by the owner's call.
+- **A narrow mouse window put MODE on a third bar row** (owner's screenshot):
+  row two's budget was trimmed for touch only. Now for every pointer, and
+  swept every 4px from 320 to 620 in all 17 languages, mouse and touch: two
+  rows. Touch at exactly 400x225 wraps, as it did before - not a real device;
+  Popout S is a desktop mini-player.
+- **How to Play reworded above the disclaimer** (owner's request): the four
+  picks as questions instead of "(or =)" shorthand; "true odds" dropped (the
+  pricing carries the house edge, so "priced on the cards still in the deck"
+  is the accurate claim); one term, "running total", for what a bust keeps -
+  the bust rows, the Classic blurb (shared with the mode picker) and the
+  rounding note all used to say "what you had built"; "Speed and skip
+  settings" named after the Advanced panel it no longer has. 17 new keys in
+  all 16 catalogues and the social map; the social-terms test caught one new
+  "pay". The autoplay note now says "times your BASE bet" too.
+- **The third Hallmark audit's fixes** (owner: all but the guess-square
+  colours, which stay for now):
+  - **The takeover glows nowhere.** Title lettered with a block shadow in the
+    tier's deep colour, amount the same while it holds, fan cards rimmed not
+    bloomed, burst marks casting shadows. Was the stock neon "BIG WIN".
+  - **The lobby tile is rendered from the game** (`scripts/tile-art.mjs`,
+    `?dev_tile=fg`): the J Q K and house A, the deck, two chips; the table
+    with the board hidden, cups off. 1.32 MB of Stake's 3. Replaced the
+    generated pair.
+  - **How to Play's headings are headings**, sentence case at the panel
+    title's size; its sub-heads and the autoplay / bet / sound field labels
+    are sentence case at body size ("Number of plays", "Quick bets", "Game
+    sounds"; the duplicate "Number of Plays" key is gone). "193 ways to play"
+    is one plain sentence, not a tinted stat callout.
+  - **The purple is a dusty amethyst** (178,124,200, 41% saturation, 5.50:1
+    on the panel) for Three of a Kind and Epic; the unused `--vol-overflow`
+    hex was deleted.
+  - **The limit fields show a dash**, not a grey 0 that read as a zero limit.
+  - **Chips sharing a colour alternate their edge inlay** (brass; red on the
+    white chip), so $50/$75 and $1/$5 stop being one chip printed twice.
+- **Two tooling fixes**: `shoot.mjs`'s round start and `--intro` both still
+  expected the intro in front of a replay, which has not been true since
+  2026-09-22 - every tier and size shot reported "round never started".
+- **Found and NOT changed:** Three of a Kind's chips read in base-bet multiples
+  beside a 250x bet display. That is the trips audit's deliberate one-unit rule
+  (the bet display reads "$1.00 x 250"), so it stays.
+- **Rundown of what else would move the rating**: the 2026-09-25 plan
+  (`do-a-full-rundown-reactive-flute.md`), and its one finding that changes the
+  timeline - Stake allows no math, mode or mechanic change after approval, so
+  Last Stop "for a later update" means never.
+
+**2026-09-25: the phone props, the Equal-only hold, the card backs and a
+sound pass.** Client and tooling only; no math changed, no build run.
+- **The phone props sat on the multiplier chips.** Measured on a settled
+  max-win board (the chips' INK against each prop's BODY, not its anchor), the
+  deck, the top cup and all three top-right stacks overlapped the multiplier
+  chips of cards 1, 3 and 4 at Mobile S/M/L and every tall phone, in both
+  directions of text. The 09-22 placement kept each prop's CENTRE above 21.3% of
+  the table, but a cup's body runs 12.5% above its anchor and a stack hangs
+  1.6% below its own. Every top-band body now ends at 17.0% (Mobile S's chips
+  start at 17.9%); the cup moved toward the middle where the rim is highest,
+  the stacks 3.5-4% left and level. Clear on 7 portrait shapes, en and ar.
+- **"Needs" is gone, and so is its replacement.** "Full ride: 1 in N" showed
+  before a round for most of the day and was then taken out too (owner's call);
+  `scripts/mode-odds.js`, `modeOdds.ts` and their test went with it. The
+  method is recorded here because it is the right one if a frequency is ever
+  shown again:
+  count each mode's weighted full-ride frequency in its published LUT against
+  the shared deal cache (the removed generator did all 193 in ~18 s). It is NOT
+  the deck's count: the reweight deals paying rounds 1.02-1.35x as often as the
+  deck (red/higher/inside/heart: deck 1 in 59, dealt 1 in 48). A LUT's
+  simulation number indexes `deals_standard52.bin`; the generator proved it on
+  every row (a zero payout must coincide with a card-1 colour miss). Classic
+  runs 1 in 26.3 to 1 in 3,485, Three of a Kind 1 in 19.1. A sanity bound
+  for any such table: each figure sits between the mode's non-zero hit rate and
+  its max-win rate in stats_summary.json.
+- **The last card is held only on a round with an Equal pick** (see CLAUDE.md
+  for the rates). The tunnel now rises with the card (`--hold-rise`), centred
+  on it at the top of the hold (it sat 12-15px low).
+- **How to Play:** the example round follows the payout table and the rounding
+  note, so its 1.90x after a correct Red reads as the note's point rather than
+  a contradiction of the table's 1.99x.
+- **Sound:** the hold tuned to its card's chime and sized by its tier, the strike
+  sized with it and a two-band thunder, a bed that muffles under the hold, a
+  haptic buzz - see audio-and-jurisdiction.md. A crowd answering the card (a
+  cheer / an "awww") was added and removed the same day.
+- **Later the same day:** the board jumped at the fourth pick and at every
+  settle - the odds line's empty state had been retyped as a plain space,
+  which collapses; it is a `'\u00a0'` again, with `min-height: 1lh`, and a
+  frame-by-frame sweep measures 0.0 px of movement. And the card backs, the
+  deck, the loader's cards and the takeover fan print "TAKEOVER / CASINO"
+  small instead of the full-colour chip - on a plain label of the card's red,
+  after the first cut (light text straight on the back) was hard to read
+  through the crosshatch. 825 tests.
+- **Resolved:** the "Needs" line (removed, above).
+
+**2026-09-23: the reveal got tension, the rules got pictures.** Client only;
+no math changed.
+- **Every card says what it needs before it turns** ("Needs 8–K · 24 of 51"),
+  in the readout's third line so nothing moves. `game/math/stageOdds.ts` counts
+  the deck left; `stageOdds.test.ts` replays 30,840 stage prices from the
+  published books through it and every one matches, so the line IS the price.
+- **The last card is held when a lot rides on it** - it rises off the table,
+  "Last card" over the total - for 450ms (Big) to 1400ms (Max) at normal speed,
+  scaled by turbo, cut by a slam. `lastCardHoldMs` decides it from the stake
+  only; a test slices the reveal loop and fails if the hold ever reads
+  `.correct`. It is the fifth `isCleanSweep` site (modes.test.ts counts five).
+- **The bust is unmistakable**: the unreached cards step back, the bust card
+  knocks as its cross lands, the guess that failed takes a red ring (a forgiven
+  one amber) - all after the card has turned.
+- **How to Play**: an example round per family built by `exampleRoundFor`
+  from the same pricing, and a controls guide that shows each bar glyph
+  (`components/icons/ControlGlyph.svelte`); on phones the bet line says what a
+  phone's bar offers. "Max win X× your bet" replaced "Max win X× Bet".
+- `--spin-*` and a named `--z-*` stacking scale are tokens; the Popout S
+  replay slivers are gone; ten Suno generation pages captured into
+  `licence-evidence/private/`, and `audio-masters/SHA256SUMS` plus the masters'
+  hashes in ASSET_LICENCES.md make a backup verifiable - the copy itself is
+  still the owner's to make. 796 tests.
+- **Later the same day, from the owner's first look:** the held last card got
+  a riser that climbs over exactly the hold and is released as the card turns
+  (`swell()`, `playLastCardHold`), with the bed ducking to a new `hold` scene
+  under it. Up linearly (plain Hz and plain gain): an octave from G2, a 20 dB
+  crescendo, a lowpass opening to 1.8 kHz, a pulse quickening to ~7/s; then
+  ~0.4 s held at the top; then a SLAM as the card turns - the pitch dives two
+  octaves in 0.26 s through `detune` over a low hit. Four listens: a steady G2
+  pedal sounded like it was standing still, a climb that sped up into the turn
+  was the wrong shape, and an even climb that faded out did not land.
+  `sound.test.ts` fails unless the climb is one straight line covering an
+  octave, tops out at least 0.3 s before the turn, and the release dives two
+  octaves over one low hit. Captured with `npm run audio -- --play --mode
+  red_equal_equal_heart --event max` and pitch-tracked: +6-7 Hz per 100 ms from
+  107 to 197 Hz, 0.4 s flat, then 130 and 81 Hz on the way down.
+  **2026-09-24, the fifth listen:** "more ohhhh than mmmm", "the drop is too
+  subtle - a crash, like a lightning strike", and the card "jumping, then going
+  up". So the voice is a crowd singing "oh" - six detuned sawtooths (four on
+  G2, two an octave up) through F1 450 / F2 800 / F3 2800 formants, pink breath
+  through the same bank, a vibrato widening as it climbs - and it ends on
+  `strike()`: a crack that rips (three bright bursts in 45 ms), its body,
+  thunder, a sub hit, with the voices dropping an octave under it. Measured: the
+  600-1000 Hz share doubled (9% to 20%) and the buzzy 1-2 kHz share fell from
+  12% to 3%; the strike peaks ~-8 dBFS, a few dB over the fanfare (its first cut
+  was -6.2 and came down 3 dB). The card now slides up from rest in a straight
+  line for exactly the climb (`--hold-climb` from `holdClimbMs`, which the hum
+  also runs on), sits for the top, then drops back in 130 ms, accelerating -
+  sampled per frame: 0 to -15.4 px evenly over 1.65 s, flat 0.4 s, down in
+  ~130 ms. The slow flip and the breathing bob are gone; `lastCardHeld` replaced
+  `slowFlipIndex` for the music scene. Then **tunnel vision**, on request: a
+  fixed radial vignette (`.tunnel` in GameBoard, z 3 inside the play area's
+  stacking context) centred on the held card, scaling from 2.4 to 1 over the
+  climb and opening outward in 170 ms on the strike; the held card is lifted
+  over it (`.card-slot.is-lit`, z 4, kept until the next deal so the dark never
+  crosses it on the way out). The play area sits under the control bar, so the
+  bar, the title and the RG panel stay lit. Measured at its tightest: the two
+  far cards at 27% brightness, the near one ~70%, the held card untouched, at
+  desktop and phone. A transform on a gradient drawn once, not a repainted
+  gradient, so it costs the compositor, not the main thread. By the owner's
+  call it only closes when the card could land **Huge or bigger**
+  (`lastCardTunnels`, `TUNNEL_FROM = 'huge'`, decided in the same slice as the
+  hold and from the same stake, never the result); a Big-win hold still rises,
+  hums and strikes, with the room lit. Three of a Kind's one rung is Max, so its
+  held card always tunnels. Checked on replays: 17.20x Big held, no tunnel;
+  Max held and tunnelled. **Found in the review pass:** near the top of the
+  turbo range the climb shrinks below the hum's own 0.25 s floor and the hum
+  stayed quiet - but `lastCardHeld` was still set, so the bed ducked (and the
+  tunnel would dim) on every held card of a fast autoplay run: a pump and a
+  flicker with nothing behind them. The duck, the tunnel and the hum now share
+  one gate, `HOLD_MIN_CLIMB` (sound.ts), and `sound.test.ts` fails if any of the
+  three moves outside it; under it the card just hops. The
+  "Needs" line carries its spaces in the text (non-breaking) instead of a flex
+  gap - without that one rule it printed "Needs2·3 of 51" and broke round the
+  suit's block-level SVG - and Three of a Kind's missed-guess ring follows the
+  badge's corners and clears its white ring. The audio lab's `--play` presses a
+  replay's Round-details Play as its first gesture again (it had been stopping
+  at NO TAP since replays stopped opening on the intro). 809 tests.
+- **Resolved 2026-09-25 - removed.** Was open: whether the "Needs" line stays. It stayed then. At
+  650ms a card it flashes by faster than it can be read, and the eye is on the
+  card, not the readout. Keeping it only on the held last card was proposed;
+  the owner's objection is that on the last card it only names the suit they
+  picked. The one thing the last card's line could say that the player does
+  not already know is what the card is worth if it lands.
+- **Parked 2026-09-25:** the end-of-game multiplier ("Last Stop") is out of
+  v1 by the owner's call. **Un-parked and built 2026-09-27** - see the top
+  entry.
+- **Declined 2026-10-01 in favour of the table die (built): a random-picks
+  mode.** Kept for the reasoning. One more
+  published mode whose book draws the four picks as well as the cards - the
+  even mix of the 64 Classic combinations, cost 1×, 96%, payouts in multiples
+  of the base bet like every other mode. Modelled with the scratch enumerator
+  (Classic's rules): std 9.92, etl40b 0.299, CVaR 145, max 1,354.2× at 1 in
+  33,858, pays something 1 in 1.83, full ride 1 in 59 - inside every 2-star
+  limit with room. As a separate mode rather than a UI shortcut, because a
+  "random" button that picked client-side would just be one of the 64 existing
+  modes. Building it needs: a slug and a family with no fixed choices whose
+  picks come from the book (a `picks` event before the reveals, or picks on
+  each reveal); run_spin / direct_books support; a board that shows the drawn
+  picks as they land; the picker entry and its bolts; How to Play; 16 locales
+  and social; replay rows and test-plan rows; a place in FAMILY_BUILD_ORDER.
+  Stake allows no new modes after approval, so it is v1 or never, like Last
+  Stop was.
+
+**2026-09-22, later: a full pre-submission audit (including a Hallmark pass).**
+Every gate green; the math clears every 2-star limit and so every 3-star one;
+every Stake checklist item was traced to code and the game driven in Chrome.
+What it changed, all client-side, no math:
+
+- **Replay opens on its round details.** The intro used to sit in front of the
+  replay panel, so a replay cost two taps where Stake's spec asks for one
+  ("auto-load ... then show a Play button"). `launchGuards.test.ts` pins it.
+- **A partial return no longer looks or sounds like a win.** `isNetWin`
+  (`winTiers.ts`), decided once at settle into `round.lastWinNet`. Measured on
+  this build: P(0 < payout < bet) is 40-50% of all Classic rounds, 46-64% on
+  High Stakes, 31-44% on Second Chance, against P(payout >= bet) of 3-14% /
+  3-7% / 9-22%. Every one of those partial returns got the green amount, the
+  green Last Win and `playRoundWin`. Now: neutral ink, the loss settle, and
+  `playRoundLoss` after the bust cue it follows.
+- **The board no longer jumps on the first deal, and the props were re-placed
+  against the board a player actually sees.** The win readout mounted with the
+  first card and moved the cards up / the squares down by its height; the props
+  had been placed against the pre-deal board, so after one round card 1's
+  multiplier chip sat on the deck (all 16:9 sizes), the bottom-left chips slid
+  under the Color square, and on phones a cup sat on card 3, the chip arc on
+  card 4 and the left cup under the Color square. The readout now holds its
+  space from the start (`.running-win.is-idle`), and every prop was re-placed
+  by testing its box against every card, multiplier chip, readout and square at
+  the seven sizes plus 19.5:9 / 20:9 phones, iPads, 16:10, 4:3, ultrawide and
+  sideways phones: all clear. Portrait drops the single top-right chip - there
+  was no spot neither on the multiplier chip nor off the wood.
+- The bar's frosted glass (`backdrop-filter: blur(6px)`) is gone; names on the
+  two text inputs; the 53 third-party asset URLs in `state-shared`'s default
+  meta blanked (`sdkDefaults.test.ts`); docs drift fixed.
+
+**Found and NOT changed - owner's calls, all recorded in the audit plan:** the
+guess squares' fills are the stock Flat UI / Material palette (`#2ecc71`,
+`#c0392b`, `#f1c40f`, `#00bcd4`, a neon magenta) - the one surface that is not
+the sampled warm system, and design.md exempts it as "data"; the Popout S bar
+text renders at 3.35px captions / 5.9px figures (`--ui-bar` floors at 3px); the
+tile FG carries cut-out debris (a cleaned copy was produced, the original was
+not replaced) and both tile images read as AI-generated; "Ride the Bus" is
+also the casino mini-game in *Schedule I*, same four stages; the red Solo cups
+and backyard-party tile read as a college drinking game; the GitHub repo is
+public and indexed. The honest rating read was ~1.5-2 stars as built -
+gameplay is the weak dimension (no decisions after the deal, ~2.5s uniform
+reveal, no feature) - with the ranked levers written up in the plan.
+
+**2026-09-22: High Stakes retention is 0.15** (ceiling 2237.3×, wincap 2300),
+rebuilt and measured the same day: worst etl40b 0.769 / CVaR 639.0 / std 38.401,
+all inside the 2-star limits with ETL the tight one at 4% of headroom. The
+win-tier bands were re-measured against the new lookup tables and did not move
+(12 / 55 / 145 / 500, now 1 in 68 / 295 / 2,818 / 15,444); `modeCeilings.ts` and
+`REPLAY_EVENTS.md` are the build's own output again. `run.py` now writes
+`library/build_rules.json`, so a client whose `FAMILY_RULES` have moved past the
+build on disk reads it as stale instead of failing parity. 769 pass / 0 fail /
+0 skipped, 0 type errors, 0 CSS warnings, lint clean. **A fourth family shipped in the client and the math on 2026-09-20:
+Three of a Kind** — a 12-card A K Q deck, three cards, no guesses, nothing on a
+miss, cost 250×, one outcome of 4,583.3× the base bet at a recorded 1 in 19. High
+Stakes went from 20% to 16% retention in the same pass (ceiling 1910.2× →
+2169.2×), and to 15% two days later (2237.3×). CLAUDE.md's "The game" section and THE ALL-OR-NOTHING BOUND in
+`game_calculations.py` carry the design; `modes-and-volatility.md` beside this
+file carries the whole analysis, including the build that failed.
+
+**The math build on disk is current (2026-09-22 02:30) and measured as
+predicted.** The build before it, of the first trips design — four cards, cost
+1000×, 25,000× — had failed Stake's verifier on every tail row (P ≥ 5,000×
+0.0384 vs 0.01, P ≥ 10,000× vs 0.005, P ≥ 25,000× vs 0.002, CVaR absolute
+25,000 vs 20,000, ETL above 10,000× 0.96 vs 0.6); the rebuild of the 250× /
+4,583.3× design reads: trips RTP 96.0000%, non-zero hit rate 1 in 19.10, max
+458330 raw, P(≥5,000×) 0, etl40b 0, etl10k 0, cvar 4,583.3 (18.3 per stake);
+High Stakes at 15% worst CVaR 639.0 (`hs_red_equal_equal_heart`), etl40b 0.769
+(`hs_red_equal_outside_club`), std 38.401, max 223730 raw. Stake's console reports the statistics valid. `modeCeilings.ts` is
+the generator's output again, 193 entries, no placeholder.
+
+**The local verifier's `fails 3-star volatility limits: cvar 4583.3 > 800` was
+a false alarm, and the verifier was what got fixed.**
+`math-sdk/utils/rgs_verification.py` applied one flat 3-star table to every mode
+and compared the un-normalised CVaR (the SDK's `conditional_value_at_risk` never
+divides by cost) to a limit meant for 1× modes, on a build Stake's own console
+passed. Stake considers both figures — 18.3 normalised against 700, 4,583.3
+un-normalised against 20,000 (50,000 at 3 star) — and passes both;
+`verify_mode_volatility` now takes the mode's cost and does the same, so the
+2026-09-22 build prints no warning and a real violation is no longer buried
+under an expected one. The mode was never the thing to change.
+
+**The build has a live view of itself.** `run.py` runs under
+`games/ride_the_bus/build_monitor.py` (a re-exec, so the simulation workers'
+output is captured too) and serves http://127.0.0.1:8765 while it runs: 193
+mode boxes by family, the four passes, the eight workers, an ETA and the full
+transcript. `RTB_BUILD_MONITOR=0` disables it; `build_monitor.py --demo`
+replays a build in ~45s for working on the page. Its parsers read the vendored
+SDK's prints, so the demo transcript is where a reworded print gets fixed.
+`library/build_timings.json` (last run's stage durations, weights the next
+ETA) and `library/build_progress.jsonl` are both gitignored with the rest of
+`library/`.
+
+**The build writes its books directly off one shared deal (2026-09-22).**
+`direct_books.py` scores every mode through `GameState.score_round` and writes
+its files in one pass; all 193 modes' 1,352 files were byte-compared with the
+16:02 build and are identical. Simulate stage 1,980s -> ~68s; whole build 34.4
+minutes -> about 2 (tail stages measured separately, not yet in one real run -
+record the next build's `build_timings.json` here). Also: configs written in
+parallel after the reweight (fixes `config.json` hashing the previous build's
+tables after a rule change). `games/ride_the_bus/tests/` (13) guards it.
+
+**`run.py` leaves the previous build's files in `publish_files/`.** The
+superseded `books_tr_any_equal_equal_any.jsonl.zst` and its LUT (19:13) were
+still there beside the 23:15 build and the parity test replayed them against
+the client until it was made to read the mode list off `index.json`. They have
+since been deleted (the folder is 387 files: 193 + 193 + `index.json`, checked
+2026-09-22 and again 2026-09-27), but the folder is what gets uploaded, so
+re-count it before the next upload after any rebuild. The same build's other
+five files (its segmented and published LUTs, force record, event config and
+verification sidecar in `lookup_tables/`, `forces/` and `configs/`) were
+deleted on 2026-09-27; nothing reads those folders by listing, but they were
+~30 MB of a mode that no longer exists. The July `*_base*` files beside them
+predate the family split and are still there.
+
+The remaining soft point is the trips mode's non-paying share: 94.8% of its
+rounds pay nothing, past the "90,000 of 100,000 may be grounds for rejection"
+example in Stake's guidelines even though its hit rate clears 1 in 20. The
+first fix if review objects is written in `game_calculations.py` (a token pair
+payout); the user chose to submit it binary.
+
+**It is NOT committed**, and the note here used to say it was. `math-sdk/.gitignore`
+line 9 is `**/library/**`, so `git ls-files` on the library returns nothing: the
+1.6 GB of books, lookup tables and `stats_summary.json` exist only on the machine
+that built them. Two things follow. A fresh clone cannot reproduce the books
+without a 40-minute rebuild, and every test that reads the math tree
+(`payout.test.ts`, `volatility.test.ts`, `modeCeilings.test.ts`) silently skips
+there rather than failing — which is deliberate, but only safe while it is
+written down.
+
+`npm run lint` works again — `eslint.config.js` (flat) was added because ESLint 9
+ignores the `.eslintrc.cjs` every app in the vendored SDK still ships. The old
+`.eslintrc.cjs` is now dead and only kept so the app still matches its siblings.
+
+The four-guess families clear the **2-star** risk limits, not merely the 3-star
+ones. Last measured (2026-09-22 build, High Stakes at 15%): worst std 38.401
+(limit 0.6–50.0), worst etl40b 0.769 (limit 0.8), worst CVaR 639.0 (limit 700),
+worst non-zero hit rate 1 in 2.039 (limit 1 in 20; an earlier note here said
+2.03, the figure is stats_summary.json's), P(≥5000×) zero. All four worst cases
+are High Stakes modes.
+
+### Seeing the game, rather than reasoning about it
+
+Two things landed together and are worth knowing about before touching anything
+visual, because between them they turn "this should look right" into "this does".
+
+**A local replay RGS** (`scripts/replay-server.mjs`) serves any of the 192 modes
+out of the real published books.
+
+`npm run dev` / `pnpm run dev` is now the whole thing: it **reclaims ports 3001
+and 3010 first** (so a second run is a restart, not a second pair — vite used to
+slide to 3002 while the browser tab kept showing an hour-old build on 3001,
+which looks exactly like everything working), starts both, and opens the link
+builder. `--no-open` skips the tab; `dev:game` is raw vite if you want only that.
+
+**The dev port travels by environment variable, never on the command line**, and
+that is not a style preference. dev-all used to append `-- --port N
+--strictPort` to the inner script; npm *strips* the `--` separator before
+handing the rest to the script, pnpm passes it through as a literal argument. So
+under pnpm vite received `--host "--" "--port" "3021"`, ignored an argument list
+it could not parse, and came up on its own default 5173 while the builder went
+on linking to 3021 — silently, which is the same failure the port reclamation
+exists to prevent, arriving by a different route. `vite.config.js` reads
+`GAME_PORT` and sets `server.port` + `strictPort` from it. dev-all also spawns
+the inner script with whatever package manager started it, read off
+`npm_config_user_agent`.
+
+Six scenario aliases, not four — and **the server does no scanning of any kind.
+It reads every one of them out of `REPLAY_EVENTS.md`.**
+
+`max`/`big`/`win`/`loss` were read from the 192 lookup CSVs at boot, which cost
+**33 seconds** on the first landing-page load. `bustwin` and `forgiven` describe
+the SHAPE of a round rather than its size — whether it busted, whether it spent
+a Second Chance — which lives in the book events, and those were resolved by
+streaming a 215k-round book file on demand. Both are gone: the generator writes
+all six into `REPLAY_EVENTS.md` and the server parses that. First load is
+**0.11 s**, and the four table-derived figures were checked against the old
+CSV-derived ones mode for mode.
+
+- `bustwin` — busted and still paid enough to take the screen over. A round does
+  not have to be a full game win to celebrate.
+- `forgiven` — Second Chance only: spent its forgiveness, survived, finished big
+  enough to celebrate. The case `isCleanSweep` deliberately does not floor.
+
+**Regenerate after a math build** — `run.py` already calls
+`scripts/replay-events.js` at the end of every one, and that script now scans
+the books for those two columns. It can also be run on its own against an
+existing build: `node scripts/replay-events.js` (a few minutes, almost all of it
+the book scan).
+
+Three states on a round button, and they are different problems:
+
+| Shows | Means |
+|---|---|
+| `129.00x #1393` | resolved |
+| `none` | scanned, and this mode has no such round — **button greyed out** |
+| `rebuild` | the table predates these columns — run the generator |
+| `sc only` | `forgiven` off Second Chance — **button greyed out** |
+
+A greyed-out button is the point. `sc_red_lower_outside_heart` has zero drawable
+bust-win rounds (0 of 1110 eligible), and the page used to let you build that
+link anyway — the game then opened an error modal reading `RGS responded 404`.
+Showing the answer is not the same as refusing the pick, which is the lesson
+Equal-then-Inside already taught this page. Switching mode also repairs a
+now-impossible selection.
+
+**The round-details panel shows the ID the RGS served, not the URL parameter.**
+The server returns `bookId` (a local extension Stake does not send) and
+`replayEventId()` in `Game.svelte` prefers it, falling back to `?event=` — which
+is the production path, since a real replay URL always carries the ID. Without
+that, `event=bustwin` printed "Event #bustwin".
+
+The builder also has a **game-port field**, defaulting to 3001 and remembered in
+`localStorage`, because vite does not always land there.
+
+It carries **all 49 currencies** with their dashboard names (it had fourteen),
+and its guess buttons wear **the game's own choice colours** - Higher green,
+Lower red, Inside cyan, Outside magenta, Equal gold, hearts/diamonds red - copied
+by name from `tokens.css`. Red and Black were already painted that way and the
+other three rows were not, so half the picker spoke the game's language and half
+spoke the page's generic green. The ink there stays **light**, unlike the app:
+these fills are a 26% wash over near-black, not the app's full-strength colour,
+so `--on-choice-ink` dark-on-dark was unreadable. Same colour, different ground,
+opposite answer.
+
+**Headless browser driving over CDP** — `scripts/shoot.mjs`, `npm run shots`.
+Node 22+ ships a `WebSocket` client and Playwright's chromium is already on disk
+under `%LOCALAPPDATA%\ms-playwright`, so it can launch Chrome, open a replay
+URL, click through the round details, poll for each tier promotion and
+screenshot at any viewport — with **no new dependency in the project**, which
+matters because the bundle is inlined and bundle size is a 3-star criterion.
+
+```
+npm run shots              # five tiers, desktop
+npm run shots -- --sizes   # a max win at each of the seven target sizes
+npm run shots -- --intro   # the intro fan and the replay details panel
+npm run shots -- --reduced # prefers-reduced-motion
+npm run shots -- --mode sc_red_equal_equal_heart --event forgiven
+npm run shots -- --all     # every scenario below and above, ~20 minutes
+```
+
+**What `shots` covers, and how it was made whole (2026-09-27).** A coverage
+check set every `{#if}` branch in the components against every screen the
+script opened, and found these never shot: the loader, a reveal in flight, the
+held last card, the refusal tips, a run of autoplay, How to Play below its
+first screen and its mode tabs, a resumed round, four of the error dialog's
+eight codes, social mode and the operator's switches. Each has a flag now:
+`--loader`, `--reveal` (turning, landed, hold rising, hold top), `--tips`,
+`--autoplay` (the bar, the panel mid-run, bet and mode locked), `--howto`,
+`--resume`, `--errors` (all eight and an unknown code), and on ANY scenario
+`--social`, `--operator turbo,autoplay,…` and `--query "&dev_…"`. `--resume`
+needs the replay server's `/__force-resume/<mode>/<event>`, which puts an
+active round on the next `/wallet/authenticate` and disarms. Still never shot:
+the court art's fallback (the frame and a big letter, only while
+`courts.svg` is loading) and the dev-only tile/deck pages, which
+`scripts/tile-art.mjs` covers. The first-load flake (`--board` at desktop,
+25s, under load) is a reload-once in `openPlain`.
+
+**Ad-hoc browser work is `playwright-cli`** (2026-09-27): Microsoft's
+`@playwright/cli`, installed globally (`npm i -g @playwright/cli@latest`) and
+NOT a project dependency, so the no-new-dependency argument above still holds.
+Its skill is `.claude/skills/playwright-cli`. It drives the installed Chrome
+headless and keeps one browser open across commands. Each command answers in
+0.2-0.4 KB and writes the page's accessibility snapshot to a file rather than
+into the reply (the idle board's is 3.1 KB), which is what makes it cheaper
+than the chrome-devtools MCP for a look, a click or a computed-style read.
+Measured on the idle board at all seven sizes against a spare 3002/3011 pair:
+40 s one command at a time, 32.5 s as a single `run-code` call, 62.9 s for
+`npm run shots -- --board`. Most of that gap is `shoot.mjs`'s fixed six-second
+wait after each navigation, not the driver.
+
+**Phones need `open --mobile`.** A bare `resize 320 568` is a narrow desktop,
+`(hover: hover)` and `(pointer: fine)`, and the bar measured 95 / 110 / 124 px
+at the three phone sizes where a phone gets 115 / 121 / 136. Open with
+`--mobile` (touch, coarse pointer, no hover) and THEN `resize`: all three
+matched `shots` to the pixel. It is the finding in `shoot.mjs`'s `viewport()`
+("a phone also has a finger"), reached from the other side.
+
+```
+# from the repo root, so --filename lands in the one ignored shots directory
+playwright-cli open "http://localhost:3001/?currency=USD&lang=en&rgs_url=localhost%3A3010"
+playwright-cli resize 1200 675
+playwright-cli click .ss-continue
+playwright-cli screenshot --filename=scripts/.shots/look-desktop.png
+playwright-cli --raw eval "getComputedStyle(document.querySelector('footer button')).fontFamily"
+playwright-cli console
+playwright-cli -s=phone open --mobile "<same url>"
+playwright-cli -s=phone resize 320 568
+playwright-cli close-all
+```
+
+Add `&sessionID=<anything>` when a round must reach the replay RGS: without it
+a dev build plays a local round and never calls it (see `--errors` in
+`shoot.mjs`). `npm run shots` stays the tool for the scenario sweeps (tiers,
+`--sizes`, the `--popups` tab probe, `--errors`, `--family`), because it
+carries knowledge a CLI session would have to re-derive each time.
+`.playwright-cli/`, where the snapshots land, is git-ignored at any depth.
+
+**Shots are a working surface, not an archive.** `scripts/.shots/` is
+git-ignored and every run overwrites what it finds. Re-shoot after a visual
+change rather than reasoning about a stale image, and delete anything that no
+longer shows what it claims to - a screenshot of a screen that has since moved
+on is worse than none, because it looks like evidence. Nothing outside that
+directory should link to a file inside it.
+
+**The repo-root `scripts/.shots/` is the only place they go.** `shoot.mjs`
+anchors there correctly; an ad-hoc capture script run from inside
+`web-sdk/apps/Ride-The-Bus/` once wrote 18 PNGs into *that* app's `scripts/`
+directory, where the anchored ignore pattern did not reach them and `git status`
+offered them for commit. `.gitignore` now carries a bare `.shots/` as well, so a
+stray one at any depth is still ignored — but a capture script must resolve the
+directory from the repo root, never from `pwd`.
+
+This is how the win takeover was actually looked at, and every defect fixed in
+that pass was invisible in the source and obvious in a screenshot: three ambient
+circles that composed into a lens smudge, sixteen suit marks that never shared a
+start, the settled payout legible behind the blur, a fan that covered its own
+headline on a phone, and an intro fan that split into two half-fans leaning off
+opposite sides when it wrapped 2-per-row. **If a change is visual, drive it and
+look.**
+
+## Outstanding
+
+- **The music bed: built, playing, and now licensed.** The audio path is finished — `musicTracks.ts` holds the
+  candidates, `music.ts` runs the five-scene level ladder, `audioContext.ts`
+  cross-fades the loop, `primeAudio` opens the graph early enough that the
+  loading and start screens have music. Measured through `npm run audio` at every
+  scene, nothing clipping.
+
+  **The licence is settled.** The four free-tier placeholders were deleted and
+  replaced on **2026-09-02** by ten fresh generations (v5.5) on a paid **Suno Pro**
+  subscription — fresh generations, not re-downloads, because the licence
+  attaches when the Output is *generated*. `ASSET_LICENCES.md` carries a row per
+  file with the verbatim Styles and Exclude Styles fields, the settings
+  (instrumental, 50% weirdness, 50% style influence) and the SHA-256. The
+  invoice, receipt and both Terms PDFs are in `licence-evidence/` (checked
+  2026-09-13). **Its two housekeeping items are closed**: the ten song pages
+  were captured on 2026-09-23 (`licence-evidence/private/generation-pages/`),
+  and the owner copied `audio-masters/` to another machine on 2026-09-27 - the
+  originals stay here too. Check that `private/` travels with the next backup:
+  the invoice and receipt are only on this machine.
+
+  The WAV masters live in the repo-root `audio-masters/`, outside the app so they are never
+  served, and the shipped MP3s were encoded from them at 112 kbps in a single
+  lossy generation:
+  `ffmpeg -i in.wav -vn -b:a 112k out.mp3`
+
+  **The board mix, re-measured 2026-09-06 with the chosen track** (`npm run
+  audio`, 18s on the board, so bed plus cue book through the real limiter):
+  centroid **1638–1673 Hz**, **0.4%** of energy above 2 kHz, peak −17.0 dBFS,
+  RMS −33.6, crest 16.6 dB, 14 dB of level movement, nothing clipped.
+
+  **Read that against both predecessors, because it lands between them.** The
+  free-tier set measured 1268 Hz and 0.1% above 2 kHz — the dark-bed risk this
+  list flagged. The measurement-led placeholder `noir-triphop-c2` measured
+  1716 Hz and 1.6%. The by-ear pick is **four times the free-tier set's high-end
+  energy and a quarter of the placeholder's**, so it clears the flagged edge
+  without being the brightest option that was on the table.
+
+  That is not a contradiction of the file-level numbers, and it is worth writing
+  down because it looks like one: `A.mp3` is second brightest of the ten **by
+  centroid** (2186 Hz) while sitting at 0.89% above 2 kHz, where `noir-triphop-c2`
+  is 2.69%. The two rankings genuinely disagree — a centroid can be pulled up by
+  strong upper-mid content that never reaches 2 kHz. **The board measurement is
+  the one that decides**, because it is the mix a player hears.
+
+  Two things remain:
+
+  1. **Picked by ear, 2026-09-06: `jazz-lounge-a1` (`A.mp3`).** It replaces
+     `noir-triphop-c2`, which was a measurement-led placeholder and always
+     labelled one. Still "for now" — nothing is submitted.
+  2. **Done in the same pass.** The nine losing takes were **moved to the
+     repo-root `audio-masters/`** as MP3s beside their WAV masters, rather than
+     deleted: they are equally licensed, and keeping them makes a re-audition a
+     file copy. `static/music/` is one 2.2 MB file, and the
+     `musicTracks.test.ts` directory ceiling is back to 9 MB from 56 MB. Their
+     measured loop regions and trims are in `audio-and-jurisdiction.md` so
+     bringing one back costs no measurement pass, and their provenance rows moved
+     to a "Benched" table in `ASSET_LICENCES.md` rather than being dropped.
+     Caveat worth knowing: the nine were committed once before this, so they are
+     still in git history. That is accepted — the payload problem was the build,
+     not the clone, and a history rewrite would cost more than it saves.
+
+  Then re-measure: `SCENE_MIX` was tuned against one track, and `MusicTrack.trim`
+  is what keeps the others level with it, so a new file needs a new trim.
+  `RGS_TEST_PLAN.md` CMP-16 is the live-session pass for all of this, and it is
+  currently failing by design.
+
+  Two things about the bed that no test can reach and that want ears on real
+  speakers.
+
+  **The loop seam, and it matters more than it used to.** The chosen track has
+  the shortest region of the ten: 160s with a 6s crossfade wraps every **154s**,
+  against 6:42 for the placeholder it replaced and 7:53 for the three takes that
+  loop end to end. So the seam is heard roughly every two and a half minutes by
+  anyone sitting on the board — often enough that a bad one would be the most
+  noticeable property of the bed, where before it was a once-per-session event.
+  `?dev_loop=40,70,4` still exists to make it happen every 26 seconds rather than
+  waiting; the difference is that this one is now worth hearing at full length
+  too, because a player will.
+
+  **Whether the track survives laptop speakers, which is the open one.** This was
+  the flagged risk when the free-tier set put 0.1% of its energy above 2 kHz —
+  the dark late-night brief working as intended, and close to the edge of a track
+  a laptop cannot carry. The chosen take measures **0.4% on the board**: four
+  times that, and comfortably off the floor, but a quarter of what
+  `noir-triphop-c2` put there and therefore **less margin than the placeholder
+  had**. A by-ear pick beats a measurement on a full-range monitor and says
+  nothing about a laptop, so this needs the check on real hardware rather than
+  another capture.
+  If it turns out thin, the shortlist is in the benched table in
+  `audio-and-jurisdiction.md` — `soul-groove-e2` is brightest of the ten at
+  3016 Hz, and `noir-triphop-c2` puts 22.1% of its energy above 200 Hz, which is
+  where a laptop speaker starts working at all — and every file is one copy away
+  in `audio-masters/`.
+
+- **Win takeover: still wants real hardware, but the perf risk is mostly
+  spent.** The blur is `blur(2px) saturate(0.86)` and is dropped entirely under
+  `@media (pointer: coarse)` — that was the pre-emptive fix this list used to
+  defer, and it is free now that the text sits on its own shadow band rather
+  than depending on the blur for legibility. The burst is ten one-shot marks
+  instead of sixteen on infinite loops. What remains for a device: the fan's
+  four `box-shadow`ed cards and the `drop-shadow` on the marks. If it still
+  drops frames, take the marks' `filter` first; do not go back to blacking out
+  the table.
+  - All five tiers **have** now been eyeballed at Desktop, Laptop, Popout L,
+    Popout S, Mobile M and Mobile L, on Classic and High Stakes, including a
+    busted-but-paying round and `prefers-reduced-motion`. Driven headless over
+    CDP against the local replay RGS, not by hand — see the note on browser
+    automation below. Mobile S (320×568) and a real device are still open.
+  - Two responsive traps are recorded in the CSS because both cost a pass:
+    `.wc-fan` is a **child of `.wc-body`**, not a viewport-anchored sibling —
+    anchored to the viewport it sized in `--ui` while the title is capped in
+    `vw`, so on a 375px phone (title 41px, `--ui` 7.5px) the word landed across
+    the middle of the cards. And the deck sweep's mask percentages are measured
+    against an element inset `-60%`, i.e. 220% of the viewport, so every value
+    there lands 2.2× wider on screen than it reads.
+- **B2 — art pass. Half done; the remaining half is assets, not treatment.**
+  Stake names "over-reliance on generic AI-generated assets — standard fonts,
+  gradients, emoji icons and border effects" as a top cause of a 1-star rating,
+  and 1 star is **not published**.
+
+  **Done** (branch `ui-art-pass`): the emoji-substitution risk is gone (drawn
+  marks); the gradient-plus-border-plus-glow title plate is gone, replaced by a
+  two-stop scrim; the four-equal-panels intro grid is now a dealt fan on the
+  real table; the popup shell is a lit material rather than the default dark
+  modal; the 999 px multiplier badges are gone; the card face has warm paper,
+  the back's own edge and a real corner index. The audit that drove it found
+  5 critical / 10 major / 5 minor.
+
+  **Assets, done:** `static/` holds `logo.webp` (81 KB) with `logo.png`
+  (743 KB) kept only as the fallback, plus `favicon.png` at 10 KB. A cold load
+  now fetches **90 KB of images against 743 KB before** — the favicon used to be
+  the full 710×710 logo, three quarters of a megabyte for a 16 px tab icon,
+  fetched before anything a player can see. Whether the game needs any
+  *bitmap* art at all is still a judgement call: the table scene is hand-sampled
+  CSS and is the best work in the repo, so the honest risk is not "no assets" but
+  "does a reviewer read CSS art as art". Note the tension before adding any:
+  `config-svelte` sets `bundleStrategy: "inline"`, so anything Vite processes is
+  base64'd into `index.html`, and bundle size is itself a 3-star criterion —
+  ship art from `static/` via `${base}/…` like `logo.png` does, not through Vite.
+- **REP-02 — deliberately deferred, not forgotten.** A replay on the Stake site
+  showed bet amount 1000 where the game rendered 1 — an exact 1000× gap pointing at a units convention. Stake documents
+  `?amount=` as "bet amount in units" and the RGS speaks micro-units, which is
+  what `Authenticate.svelte:121-122` assumes. Capturing the answer is now one
+  console line: paste a Stake replay query string onto `localhost:3001` (replay
+  needs no session) and read `[RideTheBus] REP-02 replay amount chain`.
+- **Volatility, next step:** the meter rates Inside and Outside identically,
+  which the published figures say is a real (if secondary) simplification —
+  Classic's `inside` band is 4.34–5.22 against `outside` at 3.31–3.51. Splitting
+  it needs an eighth stop. `volatility.test.ts` asserts the current behaviour so
+  the choice is on the record. No board-level meter yet: the rating shows in the
+  mode picker and on the bet display only.
+- B3–B8 optional polish: round history strip, session stats, quick-bet ½/2×,
+  round ID surface, keyboard shortcuts for guesses, near-miss reveal.
+- **BUILT 2026-09-27 (see Current state) - the history below is the design
+  it came from, and its pricing was changed:** the spread decay it describes
+  priced a correct pick under 1x and was rejected by the owner.
+- **Was parked: Last Stop (`ls_`), a ticket at the end of the ride - and "later"
+  may mean never.** Stake's guidelines (stake-approval, "Post-release"): once
+  approved, only minor visual updates are allowed - "changes to the math model,
+  new game modes, or gameplay mechanic modifications are not allowed". So this
+  ships in v1 or not at all; the note below about shipping it as an update is
+  wrong unless Stake agrees to it in advance. Out of v1 by the owner's call,
+  2026-09-25, and if it comes it is a
+  FOURTH four-guess family beside the three, never a replacement for High
+  Stakes. Modelled, not built: an exact enumerator (every ordered deal of the
+  first three cards, suits counted analytically, reweighted to 0.96) matched
+  the 2026-09-22 build's maximum wins exactly and its std, etl40b and CVaR to
+  within 1-3.5%, the sampled build running hotter. Confirm with an
+  `RTB_ONLY_MODES` scratch build before quoting any figure as measured.
+  - **Shape.** The four usual guesses; on a clean sweep only, a ticket is drawn
+    from a visible stack of 20 - ten 2×, five 3×, three 5×, two 10× (mean
+    3.5×). The ride is priced to pay for it, decay d = (0.99/3.5)^¼, so the
+    chips on the way up read about 25% lower (a right first card shows 1.4×,
+    not 1.9×) and the ticket pays it back. Players have to be told that.
+  - **A miss keeps a FLAT share, with no decay term, and that is what makes
+    it pass.** The same shape with Classic's decayed bust fails (std 50.2
+    against 50, etl40b 0.79), and so does a flat 2-10× ticket (etl40b 0.85).
+  - **Cost 1×, forced**, like every four-guess family: etl40b is not divided
+    by cost, so at 2× it doubles to 1.07-1.40 against the 0.8 limit.
+  - **Recommended: a miss keeps 50%** (45% if 50% reads too much like Second
+    Chance - it also ranks between the two). Between Classic and High Stakes
+    on all 64 combinations, so the free 4-bolt stop. std 4.3-28.9, worst
+    etl40b 0.54, CVaR 408, maximum about 4,056×. The ticket shows about 1
+    round in 72 (1 in 27 on the easiest picks), a 10× ticket about 1 in 717.
+    Draft tiers: Big 7.5 / Huge 41 / Mega 163 / Epic 340 / Max = its ceiling.
+  - **Wild version: a miss keeps 30%.** Above High Stakes on all 64 (std
+    5.4-42.7), etl40b 0.70, CVaR 563, maximum about 5,989× - the biggest in
+    the game. The meter would need an eighth stop.
+  - **Ideas kept.** A face-down ticket slot on the board all round; its own
+    short, uniform flip after card 4; an orange family colour between
+    Classic's yellow and High Stakes' red; How to Play shows the stack of 20.
+    It would give the no-Equal picks a held beat (they never hold card 4 now),
+    and card 4's hold would be judged on what the round could pay, `landing`
+    × 10. **Never show the ticket a bust would have won** - that is near-miss
+    staging.
+  - **What building it takes.** A `MODE_FAMILIES` entry and a ticket event in
+    the books, mirrored in `FAMILY_RULES` and `payout.ts`; a fifth reveal in
+    `roundReveal`; the slot; its own tier ladder and bolt count; 16 locales
+    plus social; rows in `REPLAY_EVENTS` and `RGS_TEST_PLAN.md`; 257 modes, a
+    build and library about a third bigger. After launch it ships as an
+    update, and every live check that touches modes runs again.
+- ~~Open naming question~~ **Settled 2026-09-25: "High Stakes" keeps its
+  name** (owner's call). It names what rides on a miss, not the price - a miss
+  keeps 15% of the running total where Classic keeps 30%. All three
+  four-guess families cost 1×, and the picker and the rules say so. Do not
+  re-raise it as a defect.
+- **Approval-checklist gaps still open** (all from the verbatim criteria below):
+  - ~~Replay "Play Again" button~~ — **closed.** The spin button already
+    re-ran the round; it now says so. `replayFinished()` drives both the
+    accessible name and a visible gold caption under the button. A caption
+    rather than a label inside the disc: the button is 44 px and the words do
+    not fit, and the deal glyph is still the right picture — it deals the same
+    four cards again. Positioned out of flow like the tooltip, so it cannot add
+    a row to a bar whose height budget is the tightest thing in the layout.
+    Verified at Desktop, Popout S and Mobile M.
+  - Touch targets: guess segments **paint** 29/35/39 px at 320/375/425,
+    equal-badge tap area `min(32px, 45% of the square)`, bar icons 36 px,
+    sound sliders 32 px on coarse pointers. The badge's ceiling is tied to the
+    square rather than flat at 32 px because a flat 32 px reaches past a
+    segment's own centre on a 320 px screen and steals it. Nothing reaches the
+    44 px *comfortable* target: four cards across cap `--ui` at 2.265vw, and
+    44 px bar icons overflowed a 375 px viewport. Table in
+    `RGS_TEST_PLAN.md` §11. "Popout S/L" is still a named responsive check.
+    - **This used to claim the 24 px floor was cleared "everywhere", and that
+      is not true on Mobile S.** The claim measured the segments' PAINT. The
+      badge is centred on the seam and its `::before` overlays them, so what a
+      thumb can actually reach — probed with `elementFromPoint`, which is the
+      only way to see a pseudo-element hit area — is **21 px** on
+      `.third-btn.higher-third` and **22 px** on the two `.io-square` halves at
+      320×568. Mobile M and Mobile L are genuinely clear (badge hit 32/33 px,
+      segments unobstructed).
+    - **It cannot be tuned out, and the arithmetic is why.** At 320 the square
+      is 58.9 px; two 24 px halves plus a 24 px badge needs 72 px, i.e. `--ui`
+      8.61 against the 7.04 available. Shrinking the badge instead makes it
+      worse — for the halves to keep 24 px the badge would have to drop to
+      10.9 px, below even its current 13.7 px paint, which is the unhittable
+      state the `::before` exists to fix. And `--ui` is bound at 320 by
+      **2.2vw** (the four-card row), not by height — `1.55vh` would allow 8.80.
+      So the only real fixes are a narrower card row or moving the badge off
+      the seam, and both are the owner's call, not a tuning pass.
+    - Do not "fix" this by restating the paint figure. That is what hid it.
+  - Tile assets: **done, and they live in `submission/`, not `static/`.** All
+    three fixed names are present — `RideTheBus-BG.jpg` (1536×1024, 499 KB),
+    `RideTheBus-FG.png` (1254×1254, 1.50 MB) and `TakeoverCasino-Logo.png`
+    (710×710, 726 KB). BG+FG is **1.99 MB against the 3 MB cap**, with a megabyte
+    of headroom; there is no documented cap on the provider logo.
+    - They were in `static/`, which is copied wholesale into the build output,
+      so every deployed build carried 2.7 MB of artwork no player ever fetches.
+      `static/` is 726 KB now — just `logo.png`, the only one the game loads.
+      **Do not move them back**; they go up through the Tile Editor.
+    - `TakeoverCasino-Logo.png` is byte-identical to `logo.png`, which is
+      correct rather than sloppy: the chip the loader and the start screen show
+      *is* the Takeover Casino mark (the card backs and the deck prop carried it
+      too until 2026-09-25, and now print the house name instead). Kept as two files because
+      they have different owners — one is resolved through `${base}/logo.png`,
+      the other's filename is dictated by Stake.
+    - `logo.png` is now the WebP's fallback rather than the file the game
+      loads, so it stays at 710×710 and byte-identical to the tile asset.
+      README's older 4-layer Tile Editor description has been corrected.
+  - **The live-session checks in `RGS_TEST_PLAN.md` remain unrun — now 101, not
+    52.** Six are Three of a Kind's (BET-14, BET-15, RND-07, REP-09, LNG-06,
+    DEV-06): whether the RGS applies `maxBet` to the base amount under a 250×
+    cost, the tier caps, a three-card settlement, the replay panel's cost row and
+    three badges, the translated trips tab, and the trips board on the small
+    sizes. The plan was strong on this project's own regression history and thin
+    on the criteria Stake publishes; 33 were added covering the spacebar binding,
+    the mute control, autoplay confirmation, an invalid `rgs_url`, a malformed
+    `?lang=`, min/max bet selectability, the paytable and UI guide, double-tap
+    zoom, the frame never scrolling, Play Again, replay in Popout S, and two new
+    sections — **13 · Stake.US and social mode** and **14 · Performance** — that
+    had no coverage at all.
+  - **Closed on `ui-art-pass`, listed so they are not re-opened by accident:**
+    - *"High cost bet modes require confirmation before activation."* The mode
+      picker now proposes rather than applies: picking a different family shows
+      a confirmation restating its blurb, ceiling and volatility, read from the
+      same `FAMILY_RULES` / `FAMILY_BLURB` the list rows use. Every close path
+      runs through one `closePopup()` that discards an unconfirmed pick.
+    - *"Double tap to zoom is disabled on mobile."* Now `touch-action:
+      manipulation`, **not** `maximum-scale=1.0, user-scalable=no`. The old pair
+      met the checklist by disabling pinch zoom too, which fails WCAG 1.4.4. If
+      the viewport meta looks under-specified, this is why — do not add them back.
+    - Keyboard focus. There was no `:focus-visible` anywhere on the board, and
+      `.choice-square` is `overflow: hidden`, so the browser's own outline on the
+      four primary controls was **clipped away entirely**. Segments use inset
+      rings for the same reason `.selected` does; everything unclipped uses an
+      offset outline. Never transition a focus ring.
+    - `prefers-reduced-motion` now covers the board (`cards.css`, `choices.css`,
+      `control-bar.css`, `popups.css`), not just the loader, intro and
+      celebration. The card flip still *happens* — it is how the game says a card
+      was revealed — it just stops being a rotation.
+- ~~Promo blurb for submission~~ — **written**, at three lengths, in
+  `PROMO_BLURB.md`. The **standard** one is the default to submit. Its Second
+  Chance sentence used to say the family "forgives your first wrong call
+  outright", which is wrong twice over — forgiveness keeps **half** the running
+  multiplier, and only from **card 2**. Stake reads the blurb against the game,
+  so every claim in that file has to be checkable against `FAMILY_RULES`.
+- **Not yet submitted to Stake** — math, bet modes and mechanics are all still
+  changeable until the user says otherwise.
+
+
+---

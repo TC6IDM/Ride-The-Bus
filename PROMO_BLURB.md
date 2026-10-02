@@ -8,8 +8,13 @@ one is the default to submit; the **long** one is there if a longer slot needs
 filling. They say the same thing at three sizes — pick one, don't mix.
 
 Every claim in them is checkable against the build: 96.00% RTP on every mode,
-1910.2× ceiling on High Stakes, all four guesses committed before the bet, one
-price for all three modes.
+2237.3× ceiling on High Stakes, 4301.9× on Last Stop (its best route with the
+10× ticket), a ticket stack of ten 2×, five 3×, three 5× and two 10×, all four
+guesses committed before the bet, one price for the four guess modes, and Three
+of a Kind at 250× the bet paying 4583.3× it about one round in nineteen
+(recorded hit rate 1 in 19.1). The Last Stop figures are the 2026-10-01
+build's: 4301.9× reached by its eight two-Equal modes, and the published
+ticket odds the stack's to within 3.3e-6 of one in twenty on all 64.
 
 ---
 
@@ -29,14 +34,22 @@ price for all three modes.
 > lock the whole run in before a single card turns.
 >
 > Nothing pays a flat rate. Each guess is priced off the cards still in the
-> deck, so calling Lower on a 3 pays about 4.75× while Higher pays 1.19×, and
-> the odds shift under you as the run builds. Three modes change only what a
-> miss leaves behind: Classic keeps 30%, High Stakes keeps 20% and pays further,
-> and Second Chance keeps half of what you had built on your first wrong call
-> from card two on and plays through it. All three cost the same and return the
+> deck, so in Classic calling Lower on a 3 pays about 4.75× while Higher pays
+> 1.19×, and the odds shift under you as the run builds. Three guess modes
+> change only what a miss leaves behind: Classic keeps 30%, High Stakes keeps
+> 15% and pays further, and Second Chance keeps half of what you had built on
+> your first wrong call from card two on and plays through it. **Last Stop**
+> plays Classic's first three cards and pays a right suit with a bus ticket
+> that multiplies the run by 2 to 10. All four cost the same and return the
 > same 96.00%.
 >
-> Four correct calls is the whole game. The longest of them pays 1910.2×.
+> Four correct calls is the whole game. The longest of them pays 4301.9×, on
+> Last Stop with the 10× ticket.
+>
+> Or skip the guessing. **Three of a Kind** deals three cards from a twelve-card
+> deck of Aces, Kings and Queens: cards two and three must match card one, and
+> anything less pays nothing. It costs 250× your bet and pays 4583.3× it —
+> about one round in nineteen.
 
 ---
 
@@ -52,18 +65,28 @@ price for all three modes.
 > all four, then watch it play.
 >
 > Nothing pays a flat rate. Every guess is priced off what is still in the deck,
-> so a Lower on a 3 pays about 4.75× where Higher pays 1.19×, and turn that 3
-> into an 8 and it flips. Tie the rank and you are on the longest shot on the
-> table at roughly 12×. The multiplier compounds across all four calls, and the
-> odds move under you the whole way down.
+> so in Classic a Lower on a 3 pays about 4.75× where Higher pays 1.19×, and
+> turn that 3 into an 8 and it flips. Tie the rank and you are on the longest
+> shot on the table at roughly 12×. The multiplier compounds across all four
+> calls, and the odds move under you the whole way down.
 >
-> Three ways to back the same four calls, at the same price. **Classic** keeps
-> 30% of what you had built when a call misses. **High Stakes** keeps only 20%,
+> Four ways to back the same four calls, at the same price. **Classic** keeps
+> 30% of what you had built when a call misses. **High Stakes** keeps only 15%,
 > and pays every correct call more for the shortfall — the steepest climb, and
-> the 1910.2× ceiling. **Second Chance** keeps half of what you had built on
+> the 2237.3× ceiling. **Second Chance** keeps half of what you had built on
 > your first wrong call from card two onward and plays on through it, trading
-> the ceiling for the odds of finishing. Every mode returns the same 96.00%;
-> what changes is the shape of the ride.
+> the ceiling for the odds of finishing. **Last Stop** ends the ride on a
+> ticket: land all four and one is drawn from a stack of twenty - ten 2×, five
+> 3×, three 5×, two 10× - and multiplies everything you built, up to 4301.9×.
+> The first three cards pay as they do on Classic, and a miss keeps 30%. Every
+> mode returns the same 96.00%; what changes is the shape of the ride.
+>
+> And one way to skip the calls altogether. **Three of a Kind** is a different
+> game on the same table: three cards from a twelve-card deck of Aces, Kings and
+> Queens, no guesses to make. Card one is dealt; cards two and three have to
+> match it, and anything less pays nothing. It costs 250× your bet and pays
+> 4583.3× it, about one round in nineteen — the biggest single win on the table,
+> at fair odds on its own deck.
 >
 > Get all four and you have ridden the bus.
 
@@ -74,14 +97,30 @@ price for all three modes.
 - **Social mode wording differs.** "bet", "pays", "cash" and "stake" are all
   restricted on stake.us, and "High Stakes" is renamed **High Risk** in-game for
   exactly that reason (see `src/i18n/socialMessages.ts`). If the blurb is used
-  in a social context, the mode must be called High Risk and "pays" must become
-  "wins". The versions above are the standard-market wording.
-- **Do not add a max-win figure other than 1910.2×.** That is the High Stakes
-  ceiling and the game's overall maximum. Classic tops out at 1354.2× and
-  Second Chance at 585.2×, so a blanket "win up to 1354×" would be wrong in two
-  directions at once.
-- **Do not describe the modes as costing different amounts.** All three are
-  1.0× the bet. The naming is a known wart — "High Stakes" implies a premium it
-  does not charge.
+  in a social context, the mode must be called High Risk, "pays" must become
+  "wins" and "costs 250× your bet" must become "can be played for 250× your
+  play amount". The versions above are the standard-market wording.
+- **The 4.75× / 1.19× / 12× examples are Classic's.** High Stakes prices the
+  same calls at 5.55× / 1.23× / 14.56× and Second Chance at 3.67× / 1.13× /
+  8.96× (`oddsExampleFor` in `payoutTable.ts`, re-derived after High Stakes
+  went to 15%). The blurbs say "in Classic" for that reason; keep the
+  qualifier if the sentence is reworded.
+- **Two max-win figures, and they are different claims.** 2237.3× is the most
+  the four-guess ride pays (High Stakes; Classic tops out at 1354.2× and Second
+  Chance at 585.2×). 4583.3× is the game's overall maximum, on Three of a Kind,
+  and is a multiple of the BASE bet on a mode that costs 250 of them — Stake's
+  convention for every payout figure. Never quote 4583.3× as the four-guess
+  ceiling, never quote it without the cost beside it, and never write
+  "18.33×" (its multiple of the cost) anywhere a player could read it against
+  the other figures.
+- **The three guess modes cost the same; Three of a Kind does not.** Classic,
+  Second Chance and High Stakes are all 1.0× the bet. "High Stakes" names what
+  a miss keeps (15% against Classic's 30%), not a price - the owner's call,
+  2026-09-25 - so never write that it costs more. Three of a Kind is
+  250× the bet, and its cost is stated in the mode picker, the confirmation
+  before it is activated, and the rules.
+- **"About one round in nineteen" is the recorded figure**, 1 in 19.1 after
+  the reweighter (physical odds 1 in 18.3). Do not round it to "one in twenty":
+  that is the line Stake's hit-rate guidance draws, and the mode sits inside it.
 - Avoid "bonus", "free spins", "jackpot" and "re-trigger". The game has none,
   the rules panel says so, and claiming one is a fast rejection.
