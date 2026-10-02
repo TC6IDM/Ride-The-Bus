@@ -14,6 +14,7 @@ import {
   MAX_WIN_MULTIPLIER,
   winTiersFor,
   MIN_FULL_GAME_WIN_MULTIPLIER,
+  MIN_FULL_GAME_WIN_LAST_STOP,
   WIN_TIERS,
   CEILING_PAUSE_MS,
   autoHoldMs,
@@ -112,6 +113,16 @@ describe('full-game wins always celebrate', () => {
   test('the same amount without a full win does not celebrate', () => {
     assert.equal(winTierFor(MIN_FULL_GAME_WIN_MULTIPLIER, false), null);
     assert.equal(winTierFor(9.99, false), null);
+  });
+
+  test('Last Stop\'s smallest full win sits under its own entry tier, and is floored onto it', () => {
+    // 4.5x - A, K, 2 of hearts and the 2x ticket, from a search of every sweep
+    // of every Last Stop mode. Unpinned, it could drift past the family's 8x
+    // entry band unseen (found in review, 2026-10-01).
+    const ls = winTiersFor('ls');
+    assert.ok(MIN_FULL_GAME_WIN_LAST_STOP < ls[0]!.minMultiplier, 'the floor is redundant on Last Stop');
+    assert.equal(winTierFor(MIN_FULL_GAME_WIN_LAST_STOP, true, ls)?.id, 'big');
+    assert.equal(winTierFor(MIN_FULL_GAME_WIN_LAST_STOP, false, ls), null);
   });
 
   test('the flag floors but never downgrades', () => {

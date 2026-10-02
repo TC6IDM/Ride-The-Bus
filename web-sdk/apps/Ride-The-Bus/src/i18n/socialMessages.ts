@@ -167,6 +167,11 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 		'Tap the amount for the quick-play menu.',
 	'Max win %s your bet':
 		'Max win %s your play amount',
+	// Last Stop: "pays" and "bet" are restricted. Its blurb, the Classic-pricing
+	// line and the example's ending were written without either, so they need no
+	// entry here; the one below is How to Play's full-win line.
+	'A full game win pays more the harder your picks were, and the ticket multiplies it. Two Equal picks and a ×10 ticket reach this mode’s maximum: %m your bet.':
+		'A full game win is worth more the harder your picks were, and the ticket multiplies it. Two Equal picks and a ×10 ticket reach this mode’s maximum: %m your play amount.',
 };
 
 export default socialMessages;

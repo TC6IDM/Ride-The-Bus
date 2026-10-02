@@ -407,3 +407,35 @@
 .bust-rules strong {
   margin-inline-end: 0.45em;
 }
+
+/* Last Stop's stack, one ticket per value with how many of the 20 carry it.
+   The tickets are TicketFace, the board's own drawing, at a size a row of four
+   fits a phone's panel; the count sits under each in the panel's figure face. */
+.info-body .ticket-stack {
+  list-style: none;
+  margin: calc(var(--ui-bar) * 0.8) 0 calc(var(--ui-bar) * 1.2);
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--ui-bar) * 1.4);
+}
+
+.info-body .ticket-stack li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--ui-bar) * 0.5);
+}
+
+.info-body .ticket-mini {
+  display: block;
+  width: calc(var(--ui-bar) * 4.6);
+  height: calc(var(--ui-bar) * 7.67);
+  filter: drop-shadow(0 1px 2px rgba(var(--shadow-rgb), 0.5));
+}
+
+.info-body .ticket-count {
+  font-size: max(calc(var(--ui-bar) * 1.05), var(--type-floor));
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-dim);
+}

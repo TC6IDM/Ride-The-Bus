@@ -299,4 +299,24 @@ export default {
 		'× signifie fois votre mise de base.',
 	'Times your base bet':
 		'Fois votre mise de base',
+	'Last Stop':
+		'Terminus',
+	'A wrong first card ends the round. Later misses keep 30% of your running total. A right suit draws a ticket that multiplies it by 2 to 10.':
+		'Une première carte manquée met fin à la manche. Les erreurs suivantes conservent 30% de votre total courant. La bonne enseigne tire un billet qui le multiplie par 2 à 10.',
+	'Ticket':
+		'Billet',
+	'The ticket':
+		'Le billet',
+	'Drawn only when all four are right, from a stack of 20. It multiplies your running total.':
+		'Tiré seulement quand les quatre sont justes, dans une pile de 20. Il multiplie votre total courant.',
+	'Cards 1 to 3 are priced exactly as on Classic. A right suit draws the ticket in place of a price.':
+		'Les cartes 1 à 3 sont tarifées exactement comme en Classique. La bonne enseigne tire le billet au lieu d’un tarif.',
+	'On Classic the same cards end at %s.':
+		'En Classique, les mêmes cartes finissent à %s.',
+	'A full game win pays more the harder your picks were, and the ticket multiplies it. Two Equal picks and a ×10 ticket reach this mode’s maximum: %m your bet.':
+		'Une partie complète rapporte d’autant plus que vos pronostics étaient difficiles, et le billet la multiplie. Deux Égal et un billet ×10 atteignent le maximum de ce mode : %m votre mise.',
+	'Roll the die for random guesses':
+		'Lancer le dé pour des pronostics au hasard',
+	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
+		'Le dé à côté des pronostics choisit les quatre au hasard. Rien n’est joué tant que vous ne distribuez pas.',
 };

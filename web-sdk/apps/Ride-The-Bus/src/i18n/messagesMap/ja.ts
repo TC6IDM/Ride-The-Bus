@@ -296,4 +296,24 @@ export default {
 		'× は基本賭け金の倍数です。',
 	'Times your base bet':
 		'基本賭け金の倍数',
+	'Last Stop':
+		'ラストストップ',
+	'A wrong first card ends the round. Later misses keep 30% of your running total. A right suit draws a ticket that multiplies it by 2 to 10.':
+		'1枚目を外すとラウンド終了。以降のミスは進行中の合計の30%を保持します。スートを当てるとチケットを1枚引き、合計が2〜10倍になります。',
+	'Ticket':
+		'チケット',
+	'The ticket':
+		'チケット',
+	'Drawn only when all four are right, from a stack of 20. It multiplies your running total.':
+		'4つすべて当てたときだけ、20枚の束から引きます。進行中の合計に掛かります。',
+	'Cards 1 to 3 are priced exactly as on Classic. A right suit draws the ticket in place of a price.':
+		'1〜3枚目の配当はクラシックとまったく同じです。スートを当てると、配当の代わりにチケットを引きます。',
+	'On Classic the same cards end at %s.':
+		'クラシックなら同じカードは%sで終わります。',
+	'A full game win pays more the harder your picks were, and the ticket multiplies it. Two Equal picks and a ×10 ticket reach this mode’s maximum: %m your bet.':
+		'フルゲーム達成の配当は予想が難しいほど高く、さらにチケットが掛かります。イコール2つと×10のチケットで、このモードの最大配当、ベットの%mに届きます。',
+	'Roll the die for random guesses':
+		'サイコロを振って予想をランダムに選ぶ',
+	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
+		'予想の横のサイコロは、4つすべてをランダムに選びます。配るまでは何もプレイされません。',
 };

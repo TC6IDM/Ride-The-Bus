@@ -17,7 +17,7 @@ import { stageNeed, stagePrice } from '../stageOdds.ts';
 import { DECAY, forgivenessAvailable, partialMultiplier } from '../payout.ts';
 import { FAMILY_RULES, familyOf } from '../modes.ts';
 import type { Card } from '../../round/roundContract.ts';
-import { INDEX, PUBLISH_DIR, mathBuildIsCurrent } from '../../mathBuild.testlib.ts';
+import { INDEX, PUBLISH_DIR, currentFamilies } from '../../mathBuild.testlib.ts';
 
 const card = (rank: Card['rank'], suit: Card['suit']): Card => ({ rank, suit });
 const base = FAMILY_RULES.base;
@@ -114,7 +114,9 @@ async function readBooks(file: string, limit: number): Promise<Book[]> {
 }
 
 describe('parity with the published books', () => {
-  const available = mathBuildIsCurrent();
+  // Family by family, as payout.test.ts's replay - see currentFamilies.
+  const families = currentFamilies();
+  const available = families.size > 0;
 
   test('every stage payout in the books is stagePrice(stageNeed(...))', { skip: !available }, async () => {
     const index = JSON.parse(readFileSync(INDEX, 'utf8')) as { modes: { name: string; events: string }[] };
@@ -122,6 +124,7 @@ describe('parity with the published books', () => {
     const mismatches: string[] = [];
 
     for (const mode of index.modes) {
+      if (!families.has(familyOf(mode.name))) continue;
       const rules = FAMILY_RULES[familyOf(mode.name)];
       for (const book of await readBooks(join(PUBLISH_DIR, mode.events), 40)) {
         const reveals = book.events.filter((e: any) => e.type === 'reveal');

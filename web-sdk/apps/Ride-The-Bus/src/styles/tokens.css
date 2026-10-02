@@ -504,7 +504,10 @@
      in the table rather than as paper lying on it. Backs already use the brand
      tokens above. */
   --card-paper: #f7f2e6;
-  --card-ink: #16130f;
+  /* A triplet, because Last Stop's ticket (TicketFace.svelte) prints its
+     perforation and route in the card's ink at an alpha. #16130f, unchanged. */
+  --card-ink-rgb: 22, 19, 15;
+  --card-ink: rgb(var(--card-ink-rgb));
   /* Not the #c0392b it was, which is Flat UI "Pomegranate" and reads orange
      beside the brand crimson. Darker as well as truer, which is why the red
      rank gains contrast on the warmer paper rather than losing it: 5.84:1 here
@@ -670,10 +673,11 @@
   --tip-edge: #6b8a58;
 
   /* ==== Volatility =======================================================
-     Green, yellow, red as the modes get wilder. NOT decorative: sc < base < hs
-     holds for every one of the 64 guess combinations in the published stats,
-     so the three colours rank a real ordering rather than labelling three
-     flavours. See game/volatility.ts.
+     Green, yellow, orange, red as the modes get wilder. NOT decorative:
+     sc < base < ls < hs holds for the 64 guess combinations (the published
+     stats; Last Stop and High Stakes tie within sampling on three - see
+     game/math/volatility.ts), so the four colours rank a real ordering rather
+     than labelling four flavours.
 
      Moved here from .game-layout in base.css. They were declared there because
      two meters burn them (the mode picker and the bet display) and a
@@ -704,8 +708,16 @@
      --panel (the old value was 5.06). Dark --on-vol-ink on it is 5.93, so the
      confirm button keeps its rule. */
   --vol-tr-rgb: 178, 124, 200;
+  /* Last Stop: the orange ON the ramp, between Classic's amber (43deg) and
+     High Stakes' red (0deg) at 26deg - because by std it sits between those two
+     families (exactly, on every one of the 64 combinations), so its colour
+     sits between theirs too. Read as small text in the bar like the others: 7.86 on
+     --panel, and dark --on-vol-ink reads 8.47 on it. Not a bet colour -
+     --choice-* holds none near this hue. */
+  --vol-ls-rgb: 255, 146, 64;
   --vol-sc: rgb(var(--vol-sc-rgb));
   --vol-base: rgb(var(--vol-base-rgb));
+  --vol-ls: rgb(var(--vol-ls-rgb));
   --vol-hs: rgb(var(--vol-hs-rgb));
   --vol-tr: rgb(var(--vol-tr-rgb));
   /* A bolt-only deeper purple, --vol-overflow (#9d4edd), sat here after the

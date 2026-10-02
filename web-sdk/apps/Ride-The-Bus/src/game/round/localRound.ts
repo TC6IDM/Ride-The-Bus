@@ -22,7 +22,15 @@
  */
 // `.ts` extensions so `node --test` can load this module - its ESM resolver
 // will not resolve an extensionless relative import. See payoutTable.ts.
-import { decayFor, forgivenessAvailable, partialMultiplier, stageRetention } from '../math/payout.ts';
+import {
+  decayFor,
+  forgivenessAvailable,
+  partialMultiplier,
+  stageRetention,
+  TICKET_STAGE_PAYOUT,
+  ticketStage,
+  ticketValues,
+} from '../math/payout.ts';
 import { FAMILY_RULES, FREE_CHOICE, type FamilyRules } from '../math/modes.ts';
 import { rankValue, type Card } from './roundContract.ts';
 
@@ -155,7 +163,9 @@ export function buildLocalRevealEvents(
       card,
       choice,
       correct,
-      payout: tableFor(index, retention)[choice]!,
+      // Last Stop's suit card is paid by the ticket, not priced - the book
+      // writes 1.0 there, right or wrong.
+      payout: index === ticketStage(rules) ? TICKET_STAGE_PAYOUT : tableFor(index, retention)[choice]!,
     });
 
     if (!busted && !correct) {
@@ -165,4 +175,15 @@ export function buildLocalRevealEvents(
   }
 
   return events;
+}
+
+/**
+ * The ticket a DEV round draws - only on a clean sweep of a ticket family, the
+ * same rule gamestate.draw_ticket applies. `slot` is the round contract's own
+ * ticketSlot, so a seeded local round always draws the same ticket.
+ */
+export function buildLocalTicket(events: RevealEvent[], rules: FamilyRules, slot: number): number | null {
+  const values = ticketValues(rules);
+  if (!values || !events.every((event) => event.correct)) return null;
+  return values[slot % values.length]!;
 }

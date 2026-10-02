@@ -19,6 +19,7 @@ import { resolve } from 'node:path';
 
 import { GAME_MARKUP, GAME_SOURCES } from '../../sources.testlib.ts';
 import { BURST, BURST_COUNT, FAN, SUIT_CYCLE } from '../celebrationScene.ts';
+import { hopFan } from '../celebrationGestures.ts';
 
 const read = (rel: string) => readFileSync(resolve(import.meta.dirname, rel), 'utf8');
 
@@ -334,6 +335,34 @@ describe('the takeover does not spoil its own count-up', () => {
 });
 
 describe('motion', () => {
+  test('the hand hops as one, and Last Stop’s ticket rides the bump with its middle', () => {
+    // Owner's call, 2026-10-01: the ticket laid on the hand stayed put while
+    // the cards around it hopped. Driven with stand-in elements that record
+    // what hopFan asks of them.
+    const made = (label: string, calls: { label: string; delay: number; composite?: string }[]) => ({
+      animate: (_frames: Keyframe[], options: KeyframeAnimationOptions) =>
+        calls.push({ label, delay: Number(options.delay), composite: options.composite }),
+    });
+    const hand = (withTicket: boolean) => {
+      const calls: { label: string; delay: number; composite?: string }[] = [];
+      const cards = [0, 1, 2, 3].map((i) => made(`card${i}`, calls));
+      const ticket = withTicket ? made('ticket', calls) : null;
+      const fan = {
+        querySelectorAll: (selector: string) => (selector === '.wc-fan-card' ? cards : []),
+        querySelector: (selector: string) => (selector === '.wc-fan-ticket' ? ticket : null),
+      };
+      hopFan(fan as unknown as HTMLElement);
+      return calls;
+    };
+
+    const swept = hand(true);
+    assert.deepEqual(swept.map((c) => c.label), ['card0', 'card1', 'card2', 'card3', 'ticket']);
+    assert.ok(swept.every((c) => c.composite === 'add'), 'a hop that replaces the transform drops the deal');
+    // Between the second and third cards' starts: it sits over the middle.
+    assert.equal(swept.at(-1)!.delay, (swept[1]!.delay + swept[2]!.delay) / 2);
+    assert.deepEqual(hand(false).map((c) => c.label), ['card0', 'card1', 'card2', 'card3']);
+  });
+
   /**
    * The burst is an event, not an ambience. Looping it was what made sixteen
    * marks sit at sixteen unrelated radii and read as dust; the one-shot only

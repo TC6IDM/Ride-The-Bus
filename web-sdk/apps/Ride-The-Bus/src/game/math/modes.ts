@@ -77,18 +77,23 @@ export function isCombinationPlayable(
 
 /* ---- Mode families --------------------------------------------------------
  *
- * The same four guesses can be bought three ways, and a fourth family plays a
- * different game on the same table. Among the three, what differs is only what
- * a MISS keeps, and because the math reweights every mode onto the same RTP, a
- * family that forgives more cannot also pay more - the two are one dial seen
- * from opposite ends.
+ * The same four guesses can be bought four ways, and a fifth family plays a
+ * different game on the same table. Among Classic, Second Chance and High
+ * Stakes what differs is only what a MISS keeps, and because the math
+ * reweights every mode onto the same RTP, a family that forgives more cannot
+ * also pay more - the two are one dial seen from opposite ends. Last Stop is
+ * Classic until the suit, which a ticket pays in place of a price - see LAST
+ * STOP in game_calculations.py.
  *
  * Must stay in step with math-sdk game_calculations.py:MODE_FAMILIES. The
  * retention and forgiveness numbers below are what the stage multipliers are
  * priced against; if they drift from the Python the game shows a player one
  * number while the RGS credits another. payoutTable.test.ts pins them.
+ *
+ * This is the PUBLISH order (it drives allPlayableModes), not the order the
+ * families are shown in - see FAMILIES_BY_VOLATILITY in volatility.ts.
  */
-export const MODE_FAMILIES = ['base', 'sc', 'hs', 'tr'] as const;
+export const MODE_FAMILIES = ['base', 'sc', 'hs', 'tr', 'ls'] as const;
 export type ModeFamily = (typeof MODE_FAMILIES)[number];
 
 /** A family's deck: the standard 52 unless it names its own ranks and copies. */
@@ -139,8 +144,15 @@ export type FamilyRules = {
    * the family's stage count: Three of a Kind deals three cards, not four.
    */
   fixedChoices: ChoiceTuple | null;
+  /**
+   * The stack a right last card draws a ticket from, as [multiplier, how many
+   * of the 20]. Null on every family but Last Stop. The ticket IS that card's
+   * price - it has none of its own (TICKET_STAGE_PAYOUT) - and multiplies the
+   * running total before the one floor; see computeFinalMultiplier.
+   */
+  ticket: readonly (readonly [number, number])[] | null;
   /** English label, which is also the i18n key. */
-  label: 'Classic' | 'Second Chance' | 'High Stakes' | 'Three of a Kind';
+  label: 'Classic' | 'Second Chance' | 'High Stakes' | 'Three of a Kind' | 'Last Stop';
   /**
    * The most this family can pay, as a multiple of the BET.
    *
@@ -196,6 +208,18 @@ export const TRIPS_DECK: DeckSpec = { ranks: ['Q', 'K', 'A'], copies: 1 };
 /** Its one combination: card 1 dealt, cards 2 and 3 must match. Three stages. */
 export const TRIPS_COMBO: ChoiceTuple = [FREE_CHOICE, 'equal', 'equal'];
 
+/**
+ * Last Stop's ticket stack: [multiplier, how many of the 20]. Mean 3.5 exactly.
+ * Mirrors TICKET_STACK in game_calculations.py. How to Play draws it, and the
+ * reweight makes the published tables deal it at exactly these odds.
+ */
+export const TICKET_STACK: readonly (readonly [number, number])[] = [
+  [2, 10],
+  [3, 5],
+  [5, 3],
+  [10, 2],
+];
+
 export const FAMILY_RULES: Record<ModeFamily, FamilyRules> = {
   base: {
     prefix: '',
@@ -206,6 +230,7 @@ export const FAMILY_RULES: Record<ModeFamily, FamilyRules> = {
     targetRtp: FOUR_GUESS_TARGET_RTP,
     deck: null,
     fixedChoices: null,
+    ticket: null,
     label: 'Classic',
     maxWin: 1354.2,
     celebrateEveryFullWin: true,
@@ -222,6 +247,7 @@ export const FAMILY_RULES: Record<ModeFamily, FamilyRules> = {
     targetRtp: FOUR_GUESS_TARGET_RTP,
     deck: null,
     fixedChoices: null,
+    ticket: null,
     label: 'Second Chance',
     maxWin: 585.2,
     celebrateEveryFullWin: true,
@@ -241,6 +267,7 @@ export const FAMILY_RULES: Record<ModeFamily, FamilyRules> = {
     targetRtp: FOUR_GUESS_TARGET_RTP,
     deck: null,
     fixedChoices: null,
+    ticket: null,
     label: 'High Stakes',
     maxWin: 2237.3,
     celebrateEveryFullWin: true,
@@ -263,8 +290,30 @@ export const FAMILY_RULES: Record<ModeFamily, FamilyRules> = {
     targetRtp: 1,
     deck: TRIPS_DECK,
     fixedChoices: TRIPS_COMBO,
+    ticket: null,
     label: 'Three of a Kind',
     maxWin: 4583.3,
+    celebrateEveryFullWin: true,
+  },
+  /**
+   * Classic's first three cards, to the bit, and a suit card with no price of
+   * its own: a right suit draws a bus ticket (2x to 10x) that multiplies the
+   * running total, and a wrong one keeps Classic's 30%. game_calculations.py's
+   * LAST STOP carries the argument; this record only mirrors it.
+   */
+  ls: {
+    prefix: 'ls_',
+    cost: 1,
+    retention: BASE_RETENTION,
+    forgive: null,
+    forgiveFrom: 0,
+    targetRtp: FOUR_GUESS_TARGET_RTP,
+    deck: null,
+    fixedChoices: null,
+    ticket: TICKET_STACK,
+    label: 'Last Stop',
+    // Classic's best run to card 3 (430.19x) times the 10x ticket.
+    maxWin: 4301.9,
     celebrateEveryFullWin: true,
   },
 };
@@ -286,11 +335,13 @@ export const FAMILY_BLURB: Record<ModeFamily, string> & {
   sc: 'A wrong first card ends the round. After that your first miss is forgiven and play continues.';
   hs: 'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.';
   tr: 'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.';
+  ls: 'A wrong first card ends the round. Later misses keep 30% of your running total. A right suit draws a ticket that multiplies it by 2 to 10.';
 } = {
   base: 'A wrong first card ends the round. Later misses keep 30% of your running total.',
   sc: 'A wrong first card ends the round. After that your first miss is forgiven and play continues.',
   hs: 'A wrong first card ends the round. Later misses keep only 15%, so every correct guess is worth more.',
   tr: 'Three cards from a 12-card deck of Aces, Kings and Queens. Cards 2 and 3 must match card 1; anything less pays nothing.',
+  ls: 'A wrong first card ends the round. Later misses keep 30% of your running total. A right suit draws a ticket that multiplies it by 2 to 10.',
 };
 
 /** Longest prefix first, so "sc_" is tested before base's empty one. */
@@ -457,7 +508,7 @@ export function ceilingFor(mode: string): number | null {
 
 /**
  * Every playable mode name, across all families. Mirrors all_published_modes()
- * on the math side - 3 x 64 + 1 = 193.
+ * on the math side - 4 x 64 + 1 = 257.
  */
 export function allPlayableModes(): string[] {
   const names: string[] = [];

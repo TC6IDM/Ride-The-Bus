@@ -352,7 +352,7 @@ export async function playRound(): Promise<boolean> {
   // behaves like prod.
   // Local fallback only - the RGS debits the real thing. Cost, not bet.
   stateBet.balanceAmount -= roundCost(round.initialBet);
-  const [{ createRoundContract }, { buildLocalRevealEvents }] = await Promise.all([
+  const [{ createRoundContract }, { buildLocalRevealEvents, buildLocalTicket }] = await Promise.all([
     import('./roundShuffler'),
     import('./localRound'),
   ]);
@@ -366,6 +366,8 @@ export async function playRound(): Promise<boolean> {
     [...(modeChoices(bet.family, guesses) ?? [])],
     familyRules(),
   );
+  // Last Stop's ticket, on a clean sweep only - the rule the book follows.
+  round.ticket = buildLocalTicket(round.revealEvents, familyRules(), contract.ticketSlot);
   round.engineFinalMultiplier = null; // local round computes its own payout
   resetForNewRound();
   await playRevealSequence();

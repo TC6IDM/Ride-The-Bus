@@ -299,4 +299,24 @@ export default {
 		'× bedeutet das Vielfache deines Grundeinsatzes.',
 	'Times your base bet':
 		'Vielfaches deines Grundeinsatzes',
+	'Last Stop':
+		'Letzter Halt',
+	'A wrong first card ends the round. Later misses keep 30% of your running total. A right suit draws a ticket that multiplies it by 2 to 10.':
+		'Eine falsche erste Karte beendet die Runde. Spätere Fehler behalten 30% deiner laufenden Summe. Ein richtiges Symbol zieht einen Fahrschein, der sie mit 2 bis 10 multipliziert.',
+	'Ticket':
+		'Fahrschein',
+	'The ticket':
+		'Der Fahrschein',
+	'Drawn only when all four are right, from a stack of 20. It multiplies your running total.':
+		'Wird nur gezogen, wenn alle vier stimmen, aus einem Stapel von 20. Er multipliziert deine laufende Summe.',
+	'Cards 1 to 3 are priced exactly as on Classic. A right suit draws the ticket in place of a price.':
+		'Die Karten 1 bis 3 werden genau wie bei Klassisch bepreist. Ein richtiges Symbol zieht statt eines Preises den Fahrschein.',
+	'On Classic the same cards end at %s.':
+		'Bei Klassisch enden dieselben Karten bei %s.',
+	'A full game win pays more the harder your picks were, and the ticket multiplies it. Two Equal picks and a ×10 ticket reach this mode’s maximum: %m your bet.':
+		'Ein Komplettgewinn zahlt umso mehr, je schwerer deine Tipps waren, und der Fahrschein multipliziert ihn. Zwei Gleich-Tipps und ein ×10-Fahrschein erreichen das Maximum dieses Modus: %m deines Einsatzes.',
+	'Roll the die for random guesses':
+		'Würfeln für zufällige Tipps',
+	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
+		'Der Würfel neben den Tipps wählt alle vier zufällig. Gespielt wird erst, wenn du austeilst.',
 };

@@ -315,6 +315,25 @@ export function setHlChoice(next: HigherLowerChoice) {
   if (!isCombinationPlayable(guesses.hl, guesses.io)) guesses.io = null;
 }
 
+/**
+ * All four at once - the table die (TableDie.svelte). Assigned, not passed
+ * through the setters above: they TOGGLE, so a roll that repeated one pick
+ * would clear it. Refuses the one combination no bet mode exists for, as
+ * setIoChoice does.
+ */
+export function setAllGuesses(next: {
+  color: NonNullable<ColorChoice>;
+  hl: NonNullable<HigherLowerChoice>;
+  io: NonNullable<InsideOutsideChoice>;
+  suit: NonNullable<SuitChoice>;
+}) {
+  if (!isCombinationPlayable(next.hl, next.io)) return;
+  guesses.color = next.color;
+  guesses.hl = next.hl;
+  guesses.io = next.io;
+  guesses.suit = next.suit;
+}
+
 // Bring a raw bet into what the RGS will actually accept.
 //
 // Per the RGS spec ("Bet Levels") the predefined betLevels are only

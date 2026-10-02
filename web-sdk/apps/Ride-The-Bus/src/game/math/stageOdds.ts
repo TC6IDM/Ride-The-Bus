@@ -22,7 +22,7 @@
 // `.ts` extensions so `node --test` can load this module - see payoutTable.ts.
 import { createDeck, rankValue, ranks as RANK_ORDER, type Card } from '../round/roundContract.ts';
 import { FREE_CHOICE, type FamilyRules } from './modes.ts';
-import { decayFor, partialMultiplier, stageRetention } from './payout.ts';
+import { guessPrice } from './payout.ts';
 
 export type StageNeed =
   /** Three of a Kind's card 1: dealt, not guessed. */
@@ -113,16 +113,16 @@ export function stageNeed(
 }
 
 /**
- * The multiplier a correct guess at this stage pays - partialMultiplier on the
- * need's own odds, against the retention a miss here would bank. Equal to the
+ * The multiplier a correct guess at this stage pays - guessPrice on the need's
+ * own odds, so it is priced exactly as the book prices it. Equal to the
  * book's `payout` for the stage; stageOdds.test.ts holds it to that.
  */
 export function stagePrice(
-  rules: Pick<FamilyRules, 'retention' | 'forgive' | 'forgiveFrom' | 'targetRtp'>,
+  rules: Pick<FamilyRules, 'retention' | 'forgive' | 'forgiveFrom' | 'targetRtp' | 'ticket'>,
   stageIndex: number,
   need: StageNeed,
   forgivenessSpent: boolean,
 ): number {
   const probability = need.total > 0 ? need.hits / need.total : 0;
-  return partialMultiplier(probability, stageIndex, stageRetention(rules, stageIndex, forgivenessSpent), decayFor(rules));
+  return guessPrice(rules, stageIndex, probability, forgivenessSpent);
 }

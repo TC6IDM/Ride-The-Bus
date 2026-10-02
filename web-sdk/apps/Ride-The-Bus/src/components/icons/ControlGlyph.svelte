@@ -15,9 +15,10 @@
 	 */
 	import MarkIcon from './MarkIcon.svelte';
 	import SoundIcon from './SoundIcon.svelte';
+	import DieFace from '../cards/DieFace.svelte';
 
 	type Props = {
-		name: 'deal' | 'mode' | 'bet' | 'chip' | 'turbo' | 'autoplay' | 'sound' | 'info';
+		name: 'deal' | 'mode' | 'bet' | 'chip' | 'turbo' | 'autoplay' | 'sound' | 'info' | 'die';
 		/** The MODE pill's word, already translated - the bar prints it too. */
 		label?: string;
 	};
@@ -30,6 +31,7 @@
 	class:is-deal={props.name === 'deal'}
 	class:is-pill={props.name === 'mode' || props.name === 'bet'}
 	class:is-mode={props.name === 'mode'}
+	class:is-object={props.name === 'die'}
 	aria-hidden="true"
 >
 	{#if props.name === 'deal'}
@@ -74,6 +76,9 @@
 		<SoundIcon muted={false} />
 	{:else if props.name === 'info'}
 		<MarkIcon name="info" />
+	{:else if props.name === 'die'}
+		<!-- Not a bar control: the die on the table, drawn as it sits there. -->
+		<DieFace face={5} />
 	{/if}
 </span>
 
@@ -127,6 +132,19 @@
 	.ctl-glyph.is-mode {
 		border-color: var(--gold);
 		color: var(--gold);
+	}
+
+	/* The table die is an object on the wood, not a control on the bar, so
+	   it is shown as itself - no disc of bar material round it. */
+	.ctl-glyph.is-object {
+		border: 0;
+		background: none;
+		box-shadow: none;
+	}
+
+	.ctl-glyph.is-object :global(svg) {
+		width: calc(var(--size) * 0.9);
+		height: calc(var(--size) * 0.9);
 	}
 
 	.ctl-mode-word {

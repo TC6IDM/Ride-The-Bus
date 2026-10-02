@@ -298,4 +298,24 @@ export default {
 		'× significa veces tu apuesta base.',
 	'Times your base bet':
 		'Veces tu apuesta base',
+	'Last Stop':
+		'Última parada',
+	'A wrong first card ends the round. Later misses keep 30% of your running total. A right suit draws a ticket that multiplies it by 2 to 10.':
+		'Fallar la primera carta termina la ronda. Los fallos posteriores conservan el 30% de tu total acumulado. Acertar el palo saca un billete que lo multiplica de 2 a 10 veces.',
+	'Ticket':
+		'Billete',
+	'The ticket':
+		'El billete',
+	'Drawn only when all four are right, from a stack of 20. It multiplies your running total.':
+		'Solo se saca cuando aciertas las cuatro, de un montón de 20. Multiplica tu total acumulado.',
+	'Cards 1 to 3 are priced exactly as on Classic. A right suit draws the ticket in place of a price.':
+		'Las cartas 1 a 3 tienen exactamente el mismo precio que en Clásico. Acertar el palo saca el billete en lugar de un precio.',
+	'On Classic the same cards end at %s.':
+		'En Clásico, las mismas cartas terminan en %s.',
+	'A full game win pays more the harder your picks were, and the ticket multiplies it. Two Equal picks and a ×10 ticket reach this mode’s maximum: %m your bet.':
+		'Un juego completo paga más cuanto más difíciles eran tus predicciones, y el billete lo multiplica. Dos Igual y un billete ×10 alcanzan el máximo de este modo: %m tu apuesta.',
+	'Roll the die for random guesses':
+		'Tira el dado para predicciones al azar',
+	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
+		'El dado junto a las predicciones elige las cuatro al azar. No se juega nada hasta que repartes.',
 };

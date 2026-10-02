@@ -142,7 +142,7 @@ describe('volatility ruler', () => {
   });
 
   test('the picker lists the families in that order, ending on the purple one', () => {
-    assert.deepEqual([...FAMILIES_BY_VOLATILITY], ['sc', 'base', 'hs', 'tr']);
+    assert.deepEqual([...FAMILIES_BY_VOLATILITY], ['sc', 'base', 'ls', 'hs', 'tr']);
   });
 
   test('every family has its own colour token', () => {

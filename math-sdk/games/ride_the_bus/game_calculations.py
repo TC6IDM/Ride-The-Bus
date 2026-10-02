@@ -1,6 +1,7 @@
 """Card-odds helper functions for Ride The Bus."""
 
 import math
+import random
 
 from src.executables.executables import Executables
 
@@ -60,6 +61,11 @@ SUIT_NAME_TO_SYMBOL = {"heart": "♥", "diamond": "♦", "club": "♣", "spade":
 #            RANK - and nothing back on any miss. One mode, at cost 250x,
 #            paying 4,583.3x the base bet. See THE ALL-OR-NOTHING BOUND below
 #            for why it is this shape and no other.
+#   ls       Last Stop. Classic's first three cards, to the bit, and a suit
+#            card with no price of its own: a right suit draws a bus ticket
+#            from a stack of 20 (ten 2x, five 3x, three 5x, two 10x) and the
+#            ticket multiplies the running total. Every miss from card 2 keeps
+#            30%, as on Classic. See LAST STOP below.
 #
 # The retention numbers are not free choices. Stake measures CVaR and Expected
 # Tail Liability as the worst value across all modes, and a failed class shrinks
@@ -169,6 +175,46 @@ SUIT_NAME_TO_SYMBOL = {"heart": "♥", "diamond": "♦", "club": "♣", "spade":
 # though the hit rate itself clears 1 in 20. If review objects, the first fix
 # is a token pair payout (retention ~2e-3 on the card-3 miss returns 1x base on
 # a pair: hit rate 1 in 5, RTP cost ~0.06%, trips unchanged).
+#
+# LAST STOP (why the suit card pays a ticket instead of a price)
+#
+# Cards 1-3 are Classic's to the bit: the same decay, the same 30% banked on a
+# miss from card 2 and decayed for the cards never played. The suit card has
+# no price of its own. A right suit draws a ticket and the ticket multiplies
+# the running total; a wrong suit keeps 30%, as it does on Classic. So nothing
+# a player sees on cards 1-3 differs from Classic, and the least a right guess
+# can multiply the total by anywhere is Classic's own 1.03x (Outside on a
+# pair). The suit card's least is the 2x ticket.
+#
+# The ticket REPLACES the suit card's price; nothing else pays for it. A right
+# suit on Classic pays 2.9x to 3.7x (13 down to 10 of the 49 cards left); the
+# ticket averages 3.5x, so the trade is one fixed figure for a spread of 2x to
+# 10x at much the same mean. Two designs came before it, both rejected:
+#
+#   * The ticket's price spread over all four cards (decay (0.99 / 3.5) **
+#     0.25 per card). A price falls as its odds rise, so near-certain picks
+#     priced under 1x: a right Higher on an Ace read x0.76. A right guess that
+#     shrinks the total loses the player money - the owner ruled it out
+#     (2026-09-27).
+#   * The price taken from card 1 and the suit card only (decays 0.64, D, D,
+#     D*D/3.5/0.64, and a flat 50% on a miss). Every chip stayed over 1x, but
+#     a right first card read 1.28x where Classic reads 1.99x: a mode that cut
+#     the player's profit and handed it back as a ticket. Rejected 2026-09-30.
+#
+# The martingale does NOT hold on the suit card: its expected factor is
+# p x 3.5 + (1 - p) x 0.3, about 1.10 at 12 in 49, where every priced card
+# returns 0.9975. So a Last Stop mode's raw RTP sits a few percent above the
+# same combination's Classic figure (0.81-1.02 against 0.77-0.94 on the
+# lowest and highest), and reweight_luts.py pins it to 0.96 by loss weight like
+# every other mode - and weights the sweeps so the published ticket odds are
+# exactly the stack's.
+#
+# Modelled exactly (model_families.py, every ordered deal) on 2026-09-30:
+# std 4.5-31.0, worst etl40b 0.585, worst CVaR 475, max 4,301.9x (Classic's
+# best run to card 3, 430.19x, times the 10x ticket), a ticket 1 round in 29
+# (the easiest picks) to 1 in 3,539 (two Equals), and between Classic and High
+# Stakes by std on all 64 combinations. The ticket is drawn only on a clean
+# sweep; a bust never carries one, not even a hidden one.
 # ---------------------------------------------------------------------------
 
 BASE_RETENTION = (0.0, 0.3, 0.3, 0.3)
@@ -179,6 +225,9 @@ BASE_RETENTION = (0.0, 0.3, 0.3, 0.3)
 # that many cards. The four-guess families are the only ones with a suit stage.
 TRIPS_DECK = {"ranks": ["Q", "K", "A"], "copies": 1}
 TRIPS_COMBO = (FREE_CHOICE, "equal", "equal")
+
+# Last Stop's ticket stack: (multiplier, how many of the 20). Mean 3.5 exactly.
+TICKET_STACK = ((2, 10), (3, 5), (5, 3), (10, 2))
 
 MODE_FAMILIES = {
     "base": {
@@ -238,6 +287,19 @@ MODE_FAMILIES = {
         "target_rtp": 1.0,
         "deck": TRIPS_DECK,
         "combos": [TRIPS_COMBO],
+    },
+    "ls": {
+        "prefix": "ls_",
+        "cost": 1.0,
+        "retention": BASE_RETENTION,
+        "forgive": None,
+        "forgive_from": 0,
+        # Reaches 4,301.9x (modelled exactly; the build confirms it). Under the
+        # 5,000x line, and 4400 never binds.
+        "wincap": 4400,
+        # (value, count) - the stack of 20 a right suit draws from. It pays the
+        # last card in place of a price; see LAST STOP above.
+        "ticket": TICKET_STACK,
     },
 }
 
@@ -318,14 +380,14 @@ def parse_mode_name(name: str) -> tuple:
 # READING ORDER ONLY - no family's cost, retention or payout depends on where
 # it sits here, and a simulation's outcome is a function of its global index
 # (reset_seed(sim)), never of when its mode was run.
-FAMILY_BUILD_ORDER = ("sc", "base", "hs", "tr")
+FAMILY_BUILD_ORDER = ("sc", "base", "ls", "hs", "tr")
 
 
 def ordered_families() -> list:
     """MODE_FAMILIES' keys in FAMILY_BUILD_ORDER, all of them, checked.
 
     A family added to MODE_FAMILIES and forgotten here would simply stop being
-    published - 193 modes would quietly become 129 - so this refuses rather
+    published - 257 modes would quietly become 193 - so this refuses rather
     than dropping it.
     """
     missing = [family for family in MODE_FAMILIES if family not in FAMILY_BUILD_ORDER]
@@ -338,7 +400,7 @@ def ordered_families() -> list:
 
 
 def all_published_modes():
-    """Every (family, combo) pair the game publishes - 3 x 64 + 1 = 193."""
+    """Every (family, combo) pair the game publishes - 4 x 64 + 1 = 257."""
     for family in ordered_families():
         for combo in all_mode_combinations(family):
             yield family, combo
@@ -378,6 +440,27 @@ def family_target_rtp(family: str, default: float) -> float:
     return MODE_FAMILIES[family].get("target_rtp", default)
 
 
+def ticket_values(family: str):
+    """The family's ticket stack laid out as its 20 values, or None if it has no ticket."""
+    stack = MODE_FAMILIES[family].get("ticket")
+    if stack is None:
+        return None
+    return tuple(value for value, count in stack for _ in range(count))
+
+
+def ticket_slot(sim: int) -> int:
+    """
+    Which of the 20 tickets simulation `sim` draws, if it sweeps.
+
+    A stream of its own, seeded on the simulation index and nothing else: the
+    shared deal (deals_standard52.bin) and every other family's book are
+    untouched by it, and run_spin and direct_books get the same ticket for the
+    same round without either having to carry RNG state. A string seed goes
+    through SHA-512, so it is the same on every machine and interpreter build.
+    """
+    return random.Random(f"rtb-ticket-{sim}").randrange(20)
+
+
 
 
 class GameCalculations(Executables):
@@ -404,7 +487,7 @@ class GameCalculations(Executables):
     and an impossible guess - p<=0, chiefly "inside" on rank-adjacent
     references - pays 0 and so escapes the martingale, dragging those modes
     low). The EXACT common RTP and Stake's Cross-Mode RTP Consistency check
-    (all 193 modes within 0.5%) are delivered afterwards by reweight_luts.py,
+    (all 257 modes within 0.5%) are delivered afterwards by reweight_luts.py,
     which reweights each mode's lookup table onto config.rtp precisely; the
     martingale's job is just to get close enough that that reweight stays a
     gentle nudge rather than a distortion.

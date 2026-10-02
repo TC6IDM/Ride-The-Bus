@@ -680,6 +680,46 @@ export const sound = {
 	},
 
 	/**
+	 * Last Stop's ticket, turned over after a clean sweep.
+	 *
+	 * Paper, then a punch, then a chord. The snap is the ticket coming off its
+	 * stack - a shorter, drier riffle than a card, because a ticket is thinner.
+	 * The punch is a conductor's clipper: a hard click over a small, dull clunk.
+	 * The chord is the NEXT step of the stage-win climb - card 4 chimes on F#5,
+	 * this lands a whole tone above it, G#5 - so the ticket is heard as the
+	 * ride's fifth stop rather than as a separate prize.
+	 *
+	 * The chord grows with the value (a bare note for 2x, the fifth for 3x, the
+	 * octave for 5x, a shimmer on top for 10x). That is only allowed because it
+	 * plays AFTER the ticket has turned: nothing before the flip - the pause,
+	 * the snap - knows what is under it, which is the rule the hold follows too.
+	 */
+	playTicket(value: number, lead = 0) {
+		noise({
+			duration: rand(0.045, 0.06),
+			gain: rand(0.1, 0.13),
+			from: rand(3600, 4200),
+			to: rand(1500, 1900),
+			q: rand(0.8, 1.2),
+			curve: 1.2,
+			space: 0.3,
+			delay: lead,
+		});
+		const punch = lead + rand(0.07, 0.085);
+		noise({ duration: 0.012, gain: 0.16, from: 5200, to: 4200, q: 2.2, space: 0.2, delay: punch });
+		thud({ from: rand(210, 240), to: 110, duration: 0.07, gain: 0.08, delay: punch + 0.004 });
+
+		const root = stageWinRoot(4);
+		const chord = punch + 0.06;
+		tone({ from: root, duration: 0.2, type: 'triangle', gain: 0.24, space: 0.45, attack: 0.008, delay: chord });
+		if (value >= 3) tone({ from: root * 1.5, duration: 0.22, type: 'sine', gain: 0.16, delay: chord + 0.035, space: 0.5 });
+		if (value >= 5) tone({ from: root * 2, duration: 0.26, type: 'sine', gain: 0.12, delay: chord + 0.07, space: 0.55 });
+		if (value >= 10) {
+			noise({ duration: 0.3, gain: 0.035, from: 6000, to: 9000, q: 3, delay: chord + 0.09, space: 0.7, curve: 0.6 });
+		}
+	},
+
+	/**
 	 * The hand being dealt, at the top of a round.
 	 *
 	 * The round used to begin in silence: the first thing a player heard was the
@@ -707,6 +747,20 @@ export const sound = {
 		}
 		// One low settle under the last of them - the deck being squared up.
 		thud({ from: rand(120, 150), to: 58, duration: 0.13, gain: 0.07, delay: 0.21 });
+	},
+
+	/**
+	 * The table die: a hard plastic click over a soft tap on the wood at each
+	 * landing, each quieter than the last as the die runs out of energy.
+	 * `landings` are seconds from now - TableDie passes its tumble's own
+	 * (DIE_ROLL_MS x DIE_LANDINGS), and a single 0 when there is no tumble.
+	 */
+	playDiceRoll(landings: readonly number[]) {
+		landings.forEach((at, i) => {
+			const left = Math.max(0.2, 1 - i * 0.5);
+			noise({ duration: rand(0.016, 0.024), gain: 0.085 * left, from: rand(2800, 3500), q: rand(2.2, 3), delay: at, curve: 3, space: 0.25 });
+			thud({ from: rand(190, 230), to: 95, duration: 0.07, gain: 0.07 * left, delay: at });
+		});
 	},
 
 	/**

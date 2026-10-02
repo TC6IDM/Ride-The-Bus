@@ -92,6 +92,7 @@ class _Mode:
         self.criteria = criteria
         self.plan = gamestate._spin_plan()
         self.reveal_json = {}
+        self.ticket_json = {}
         self.tails = {}
         self.criteria_json = encode_book(criteria)
 
@@ -102,15 +103,25 @@ class _Mode:
             text = self.reveal_json[reveal] = encode_book(_reveal_event(*reveal))
         return text
 
-    def tail(self, win: float):
+    def ticket(self, value) -> str:
+        """The JSON of a Last Stop ticket event, rendered once per value."""
+        text = self.ticket_json.get(value)
+        if text is None:
+            text = self.ticket_json[value] = encode_book(_ticket_event(self.plan.stages, value))
+        return text
+
+    def tail(self, win: float, ticketed: bool = False):
         """
-        Everything a round's line needs that depends only on what it paid.
+        Everything a round's line needs that depends only on what it paid -
+        and on whether a ticket sits between the reveals and finalWin, which
+        moves finalWin's index along by one.
 
         Settled by the SDK's own code - reset_book, the win manager,
         evaluate_finalwin, Book.to_json - so payoutMultiplier, the finalWin
         event and the two win totals are exactly what run_spin would record.
         """
-        cached = self.tails.get(win)
+        key = (win, ticketed)
+        cached = self.tails.get(key)
         if cached is not None:
             return cached
         gs = self.gs
@@ -122,10 +133,11 @@ class _Mode:
         gs.evaluate_finalwin()
         book = gs.book.to_json()
         final = dict(book["events"][-1])
-        final["index"] = self.plan.stages  # after the reveals, in a real book
+        # After the reveals and the ticket, in a real book.
+        final["index"] = self.plan.stages + (1 if ticketed else 0)
         payout_int = book["payoutMultiplier"]
         base, free = book["baseGameWins"], book["freeGameWins"]
-        cached = self.tails[win] = (
+        cached = self.tails[key] = (
             payout_int,
             ', "payoutMultiplier": ' + str(payout_int) + ', "events": [',
             ", "
@@ -145,13 +157,16 @@ class _Mode:
         )
         return cached
 
-    def check(self, sim: int, reveals: list, win: float, line: str) -> None:
+    def check(self, sim: int, reveals: list, ticket, win: float, line: str, ticketed: bool = None) -> None:
         """Rebuild this round's line the slow way and insist they agree."""
-        payout_int, _head, _suffix, _lut, _seg, final, base, free = self.tail(win)
+        if ticketed is None:
+            ticketed = ticket is not None
+        payout_int, _head, _suffix, _lut, _seg, final, base, free = self.tail(win, ticketed)
+        middle = [] if ticket is None else [_ticket_event(self.plan.stages, ticket)]
         book = {
             "id": sim,
             "payoutMultiplier": payout_int,
-            "events": [_reveal_event(*r) for r in reveals] + [final],
+            "events": [_reveal_event(*r) for r in reveals] + middle + [final],
             "criteria": self.criteria,
             "baseGameWins": base,
             "freeGameWins": free,
@@ -175,6 +190,11 @@ def _reveal_event(stage_index, rank, suit, choice, correct, payout) -> dict:
         "correct": correct,
         "payout": payout,
     }
+
+
+def _ticket_event(stages: int, value) -> dict:
+    """run_spin's ticket event, field for field: straight after the reveals."""
+    return {"index": stages, "type": gs_module._TICKET, "value": value}
 
 
 def write_mode(job: dict) -> dict:
@@ -217,6 +237,8 @@ def write_mode(job: dict) -> dict:
     score_round = gs.score_round
     score_stage = gs.score_stage
     settle_round = gs.settle_round
+    draw_ticket = gs.draw_ticket
+    ticket_text = m.ticket
     rank_values = gs_module._RANK_VALUES
     round_start = gs_module.ROUND_START
     last = stages - 1
@@ -234,10 +256,16 @@ def write_mode(job: dict) -> dict:
     total_win = 0.0
 
     # The per-mode event config: one example of each event type, taken where
-    # the SDK's last worker to finish always took it - the first round of the
-    # mode's final slice (see the module note in run.py / CLAUDE.md).
+    # the SDK's last worker to finish always took it - its slice is the mode's
+    # final one (see the module note in run.py / CLAUDE.md). The SDK takes each
+    # type's FIRST appearance across that whole slice, in round order: reveal
+    # and finalWin from its first round, and a Last Stop ticket from the
+    # slice's first clean sweep. So collection starts at the slice and stops
+    # once every type the mode can produce has been seen.
     repeats = _num_repeats(sims, job["threads"], job["batch_size"])
     sample_sim = sims - sims // job["threads"] // repeats
+    event_config = {}
+    event_types = 2 + (plan.ticket is not None)
 
     with open(book_path, "wb") as book_file, open(lut_path, "w", encoding="UTF-8") as lut, open(
         seg_path, "w", encoding="UTF-8"
@@ -268,18 +296,22 @@ def write_mode(job: dict) -> dict:
                     stage_reveal, state = score_stage(plan, drawn, drawn_ranks, last, state)
                     reveals.append(stage_reveal)
                     texts.append(reveal(stage_reveal))
-                    win = settle_round(plan, state)
-                    payout_int, head, suffix, lut_tail, seg_tail = tail(win)[:5]
+                    ticket = draw_ticket(plan, state, sim)
+                    if ticket is not None:
+                        texts.append(ticket_text(ticket))
+                    win = settle_round(plan, state, ticket)
+                    ticketed = ticket is not None
+                    payout_int, head, suffix, lut_tail, seg_tail = tail(win, ticketed)[:5]
                     sid = str(sim)
                     line = '{"id": ' + sid + head + ", ".join(texts) + suffix
                     if sim < CHECK_FIRST:
                         # The memo against the plain path, then the rendering
                         # against the book dict - both on every build.
-                        if (reveals, win) != tuple(score_round(plan, drawn)):
+                        if (reveals, ticket, win) != tuple(score_round(plan, drawn, sim)):
                             raise AssertionError(f"direct_books: {mode} round {sim}: stage memo disagrees")
-                        m.check(sim, reveals, win, line)
-                    if sim == sample_sim:
-                        event_config = _event_config(reveals, tail(win)[5])
+                        m.check(sim, reveals, ticket, win, line)
+                    if sim >= sample_sim and len(event_config) < event_types:
+                        _collect_events(event_config, reveals, stages, ticket, tail(win, ticketed)[5])
                     lines.append(line)
                     lut_rows.append(sid + lut_tail)
                     seg_rows.append(sid + seg_tail)
@@ -291,8 +323,9 @@ def write_mode(job: dict) -> dict:
 
     # Every new tail value was settled by the SDK's code; now make sure each
     # one also RENDERS as the book dict would, not just the first rounds'.
-    for win in list(m.tails):
-        m.check(-1, [], win, '{"id": -1' + m.tails[win][1] + m.tails[win][2][2:])
+    for key in list(m.tails):
+        win, ticketed = key
+        m.check(-1, [], None, win, '{"id": -1' + m.tails[key][1] + m.tails[key][2][2:], ticketed=ticketed)
 
     optimized = of.get_optimized_lookup_name(mode)
     if not os.path.exists(optimized):
@@ -329,13 +362,13 @@ def write_mode(job: dict) -> dict:
     }
 
 
-def _event_config(reveals: list, final: dict) -> dict:
-    """write_library_events' output for one round: one example per event type."""
-    items = {}
-    for event in [_reveal_event(*r) for r in reveals] + [final]:
+def _collect_events(items: dict, reveals: list, stages: int, ticket, final: dict) -> None:
+    """write_library_events, one round at a time: add each event type this
+    round shows that `items` has not seen yet, in the order the book has them."""
+    middle = [] if ticket is None else [_ticket_event(stages, ticket)]
+    for event in [_reveal_event(*r) for r in reveals] + middle + [final]:
         if event["type"] not in items:
             items[event["type"]] = {k: v for k, v in event.items() if k != "index"}
-    return items
 
 
 def write_all_books(

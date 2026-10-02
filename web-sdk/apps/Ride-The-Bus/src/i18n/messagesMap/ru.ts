@@ -296,4 +296,24 @@ export default {
 		'× — кратное вашей базовой ставки.',
 	'Times your base bet':
 		'Кратное вашей базовой ставки',
+	'Last Stop':
+		'Конечная',
+	'A wrong first card ends the round. Later misses keep 30% of your running total. A right suit draws a ticket that multiplies it by 2 to 10.':
+		'Ошибка на первой карте завершает раунд. Последующие промахи сохраняют 30% текущей суммы. Угаданная масть вытягивает билет, который умножает её в 2–10 раз.',
+	'Ticket':
+		'Билет',
+	'The ticket':
+		'Билет',
+	'Drawn only when all four are right, from a stack of 20. It multiplies your running total.':
+		'Вытягивается только при четырёх верных прогнозах, из стопки в 20 билетов. Умножает вашу текущую сумму.',
+	'Cards 1 to 3 are priced exactly as on Classic. A right suit draws the ticket in place of a price.':
+		'Карты 1–3 оценены точно так же, как в Классическом режиме. Угаданная масть вытягивает билет вместо цены.',
+	'On Classic the same cards end at %s.':
+		'В Классическом режиме те же карты дают %s.',
+	'A full game win pays more the harder your picks were, and the ticket multiplies it. Two Equal picks and a ×10 ticket reach this mode’s maximum: %m your bet.':
+		'Полная победа платит тем больше, чем сложнее были ваши выборы, и билет её умножает. Два «Равно» и билет ×10 дают максимум этого режима: %m вашей ставки.',
+	'Roll the die for random guesses':
+		'Бросить кубик для случайных прогнозов',
+	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
+		'Кубик рядом с прогнозами выбирает все четыре случайно. Ничего не разыгрывается, пока вы не сдадите карты.',
 };

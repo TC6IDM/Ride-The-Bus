@@ -28,6 +28,14 @@ import { sound, type PressKind } from '../audio/sound';
 // anything outside the guess row, where the stage means nothing.
 export const CHOICE_SQUARES = ['.color-square', '.hl-square', '.io-square', '.suit-square'];
 
+/**
+ * Controls that sound their own cue and take no press under it - the table
+ * die's roll (TableDie.svelte). Named up here rather than in onDocumentClick:
+ * sound.test.ts reads the quoted classes from pressKindFor down against the
+ * shared stylesheets, and the die styles itself in its component.
+ */
+export const OWN_CUE = '.table-die';
+
 export function choiceStageFor(el: HTMLElement): number {
   return CHOICE_SQUARES.findIndex((selector) => el.closest(selector));
 }
@@ -58,6 +66,9 @@ export function onDocumentClick(event: MouseEvent) {
   // The caller plays sound.playBlocked() instead.
   if (!el || (el as HTMLButtonElement).disabled) return;
   if (el.getAttribute('aria-disabled') === 'true') return;
+  // A control with its own cue (OWN_CUE): a press under it would be a second,
+  // unrelated click on the same tap.
+  if (el.closest(OWN_CUE)) return;
   const target = el as HTMLElement;
   sound.playPress(pressKindFor(target), Math.max(0, choiceStageFor(target)));
 }

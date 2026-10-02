@@ -62,6 +62,17 @@ const PARAMS = val("params", "");
 // without it, the first gesture is what starts the music. Both are real, and
 // only this flag can reach the first.
 const AUTOPLAY = argv.includes("--autoplay");
+// Press a control during the capture, as a trusted click, every --every
+// seconds - a cue that a control fires (the table die's roll) has no replay to
+// carry it into a recording otherwise.
+//
+//   npm run audio -- --click .table-die --every 2 --seconds 8 --out die
+const CLICK = val("click", "");
+const EVERY = Number(val("every", 3));
+// Mute the music bus before the page loads (the mixer's own stored setting),
+// so a cue can be measured alone: the bed's hi-hats sit in the same band as a
+// click, and on the same grid as a short cue's repeats.
+const NO_MUSIC = argv.includes("--no-music");
 const SR = 48000;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -314,6 +325,11 @@ async function main() {
   };
   await send('Page.enable'); await send('Runtime.enable');
   await send('Page.addScriptToEvaluateOnNewDocument', { source: TAP });
+  if (NO_MUSIC) {
+    await send('Page.addScriptToEvaluateOnNewDocument', {
+      source: `try { localStorage.setItem('ride-the-bus:mute:music', 'true'); } catch (e) {}`,
+    });
+  }
   const url = PLAY
     ? `http://localhost:${GAME_PORT}/?replay=true&game=ride_the_bus&version=1` +
       `&mode=${MODE}&event=${EVENT}&rgs_url=localhost%3A${REPLAY_PORT}` +
@@ -457,7 +473,26 @@ async function main() {
     console.log('dealt:', box ? box.cls : 'NO PLAY BUTTON FOUND');
   }
   console.log(`recording ${SECONDS}s...`);
-  await sleep(SECONDS * 1000);
+  if (CLICK) {
+    const end = Date.now() + SECONDS * 1000;
+    await sleep(800);
+    while (Date.now() < end - 600) {
+      const box = await ev(`
+        const el = document.querySelector(${JSON.stringify(CLICK)});
+        if (!el) return null;
+        const r = el.getBoundingClientRect();
+        return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };`);
+      if (box) {
+        await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: box.x, y: box.y, button: 'left', clickCount: 1 });
+        await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: box.x, y: box.y, button: 'left', clickCount: 1 });
+      }
+      console.log(box ? `clicked ${CLICK}` : `NOT FOUND: ${CLICK}`);
+      await sleep(Math.min(EVERY * 1000, Math.max(0, end - Date.now())));
+    }
+    await sleep(Math.max(0, end - Date.now()));
+  } else {
+    await sleep(SECONDS * 1000);
+  }
   const frames = await ev(`window.__rtb.recording = false; return window.__rtb.frames;`);
   console.log('frames:', frames);
 

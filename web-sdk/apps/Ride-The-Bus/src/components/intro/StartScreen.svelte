@@ -23,6 +23,8 @@
 		eventId: string;
 		/** Payout multiplier from the replay RGS response, or null if not yet known. */
 		payoutMultiplier: number | null;
+		/** The replayed round's Last Stop ticket, or null. */
+		ticket: number | null;
 		oncontinue: () => void;
 		onplay: () => void;
 	};
@@ -46,6 +48,7 @@
 			betAmount={props.betAmount}
 			eventId={props.eventId}
 			payoutMultiplier={props.payoutMultiplier}
+			ticket={props.ticket}
 			onplay={props.onplay}
 		/>
 	{/if}

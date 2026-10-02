@@ -10,6 +10,206 @@ rather than on every turn. Nothing here is reworded.
 
 ## Current state
 
+**2026-10-02: Space always deals; the ticket stack on Last Stop only.** The
+owner's calls on two review items. Space is taken from every focused button on
+the board (squares, the die, the bar) on keydown AND keyup, and kept only by a
+field, an open panel, the intro and the takeover; the die's pointer-click blur
+went with it. The ticket stack prop renders on a family with a ticket only.
+
+**2026-10-01, later: three review agents before a commit (none made).**
+Invariant guard, locale auditor and compliance, all report-only. The
+math<->client mirror holds exactly, ticket stage and float order included;
+nothing would fail a hard Stake requirement; the published ticket odds are the
+stack's to 3.3e-6 of a twentieth on all 64 modes. Fixed from their findings,
+each checked:
+- the running total printed a ticketed amount before the ticket turned (the
+  readout latch waited for cards only) - now 450 ms after the turn, 0.9 of the
+  flip, measured on a replayed x10; `ticket.test.ts` pins it;
+- after a MOUSE roll the die kept focus and Space rolled again instead of
+  dealing (Space must deal) - it drops focus after a pointer click only, and
+  keyboard Enter still rolls; checked in Chromium;
+- the takeover ticket's tier-coloured blurred drop-shadow (a halo) is gone;
+- the die's two names: "Roll the die" / "The die beside the guesses";
+- 11 locale wording fixes (es/pl family-name case, ko/fr/de "priced", de
+  "enden bei", tr polite imperative, three zh lines);
+- the Last Stop ladder MEASURED off the build: 72 / 297 / 3,028 / 16,260,
+  Max 1:283,787 (bands unchanged); `MIN_FULL_GAME_WIN_LAST_STOP` now tested;
+- doc drift: volatility.ts / tokens.css figures and the open tie, config.ts,
+  a test comment, PROMO_BLURB's "recheck" caveat, RND-08 (the payout is the
+  full-precision run x ticket, not card 3's chip x ticket), RND-09 (compare by
+  replay pairs), WIN-14 (every sweep celebrates), DEV-10 (Space after a roll),
+  check counts in CLAUDE.md and the stake-approval skill; `playBlocked`'s doc
+  comment back above it; an unused import.
+Left for the owner: the volatility tie; the ticket stack (and its "x2 - x10")
+is set dressing on EVERY family's table - approved in the plan, flagged as
+the single-family leak in reverse; How to Play's suit row prints the table's
+"2.00x - 10.00x" where the stack prints "x5" (kept: one notation per table);
+the guess squares share the die's Space-after-click behaviour (pre-existing,
+RGS_TEST_PLAN records it as intended); the ticket stack's two hand-typed edge
+colours in table.css (the deck's are too). For the submission notes: the
+only client-side randomness is the die's pre-bet pick over published modes
+(`crypto.getRandomValues`). Product questions to playtest: a uniform roll
+lands an Equal half the time, which can jump the bolt meter; and Last
+Stop's held last card is sized for the x10 ticket, 1 sweep in 10.
+915 tests, 914 pass (the tie); math 26 passed.
+
+**2026-10-01: Last Stop built, and the board's motion tightened.** The owner
+ran the full build of the 2026-09-30 design (18:32).
+- **The build reads true.** Parity replays all 257 modes; math 26 passed,
+  including the model against the build: Last Stop's built worst cases are std
+  31.4, etl40b 0.591, CVaR 483.5 (exact 31.0 / 0.585 / 475.5), 53 of 64 modes
+  at their exact ceiling, none above.
+- **OPEN DECISION - the volatility ordering fails on 3 of 64 combinations.**
+  `red_higher_outside_spade`, `black_higher_inside_diamond`,
+  `black_lower_outside_heart`: Last Stop's published std is level with or
+  above High Stakes'. Exactly, Last Stop is the calmer on all 64. Two of the
+  three are Higher/Lower + Outside modes, where the two families are only
+  0.78% apart exactly (4.562 against 4.597) - well inside the build's
+  sampling noise, so no rebuild can guarantee that order. The third,
+  `black_higher_inside_diamond`, is 14.8% apart exactly (6.42 against 7.37),
+  and the build's sampling ran Last Stop's std 12% hot there (7.21): a ticket
+  family's tail is a handful of x10 sweeps, so its std samples noisily. Options for the owner: accept the tie on those combinations
+  (and say so in the test), or move Last Stop away from High Stakes (e.g. a
+  calmer stack), which is a math change and a rebuild.
+- **Owner's calls, built and checked in a browser** (dev fallback on 3002,
+  replay RGS on 3011):
+  - the takeover's ticket rides the hand's hop, with its middle (traced on a
+    replayed x10 sweep; `winCelebration.test.ts` drives `hopFan` with stand-in
+    elements);
+  - no "Pays up to X your bet" on the idle readout (the line, its CSS and the
+    key in 17 catalogues and the social map are gone);
+  - a rest at the deck between gathering and dealing (`DEAL_REST_MS`, 300 ms at
+    normal speed, turbo-scaled), the ticket too, and card 1 held back by it;
+  - the deal lands ON the deck and the ticket stack - fitted to each prop's
+    centre, angle and foreshortened size, within 1 px at Desktop, Mobile M and
+    Popout S - and fades into it, because a full-brightness card on a deck
+    dimmed to 60% floats however well it fits;
+  - a slam finishes the deal outright and the bus rides on `--flip-dur`. The
+    strewn cards were a deal measured mid-flight (a previous deal, a lift
+    easing back): pieces are measured at rest now. 40 slammed rounds: worst
+    displacement 0.2 px, nothing left running. The original bug was not
+    reproduced locally before the fix.
+  - Also found: the ticket's deal was aimed in screen space but applied after
+    the slot's own `rotate: -6deg`, so it never quite reached its stack.
+- **The table die, built** (the owner's choice over a book-picks mode): roll
+  it and it fills the four picks with one of the 64 published combinations,
+  evenly, never the one on the board; nothing is bought until the deal. In
+  the guess row, so locked and dimmed with it. Drawn on the table's camera
+  (`dieGeometry.ts` holds --flat / --upright to table.css), the card back's
+  reds, physical right in Arabic (the props do not mirror). Checked at all
+  seven sizes and three landscape phones - on screen, on top, fully opaque, on
+  the wood, no collision with a square, prop, readout or the bar - and
+  in Arabic; a keyboard roll mid-round changes nothing. Its sound
+  (`playDiceRoll`) was measured with the music muted: two knocks 0.21 s apart
+  on the tumble's landings, the second 3-9 dB under the first, about 10 dB
+  over the bed's hi-hats with the music on. The audio lab gained `--click
+  <selector> --every <s>` and `--no-music` for it. RGS_TEST_PLAN DEV-10.
+- 913 tests (with the die): 912 pass, the 1 failure above. RGS_TEST_PLAN: 115 checks (DEV-08 to
+  DEV-10).
+
+**2026-09-30: Last Stop redesigned - Classic until the suit, which the ticket
+pays.** The owner asked whether a mode that prices card 1 at 1.28× (Classic:
+1.99×) is a good idea, since to a player it reads as cutting their profit and
+handing it back as a ticket. It is not, and nothing short of not cutting fixes
+it. Now:
+- **Cards 1-3 are Classic's to the bit; the suit card has no price.** A right
+  suit draws the ticket (mean 3.5×, where Classic's suit price is 2.9-3.7×), a
+  wrong suit keeps 30%. The book writes the suit card's `payout` as 1.0
+  (`TICKET_STAGE_PAYOUT`), so settle is unchanged: running × ticket, then the
+  cost, then the floor. `flat_bust`, `card1_decay`, per-card decays and `r_eff`
+  are gone from both sides; the consolidation into `guessPrice` / `applyBust`
+  stayed (roundReveal used to fold the bust into one factor and round
+  differently from the Python).
+- **Modelled exactly**: std 4.5 / 7.5 / 31.0, etl40b 0.585
+  (`ls_black_equal_outside_heart`), CVaR 475.5, max 4,301.9× (Classic's best
+  run to card 3 × 10; 1 in 35,391 on its mode), ticket 1 in 29-3,539, smallest
+  right chip Classic's 1.0266, cheapest sweep 4.5× (A♥ K♥ 2♥ on Red / Higher /
+  Inside / Heart, then a heart and the 2× ticket), between Classic and High
+  Stakes on 64/64. wincap 4400. Ladder 8 / 40 / 170 / 350, modelled.
+- **Board**: card 4's chip lands WITH the ticket, on the ticketed total. **How
+  to Play**: the suit row reads 2.00× - 10.00× (a factor on the running total,
+  the same unit as every row); the example's last total is the ticket's range,
+  followed by "On Classic the same cards end at X." Three keys added and four
+  retired in all 17 catalogues; none needs a social override.
+- **Also this session, before the redesign** (owner's review of the first
+  build in a browser): the ticket is laid ON the takeover's hand - the four
+  cards fan as on every family, the ticket over the middle, lower; the bus
+  rides above a lifted card 4 (`z-index: 5`); the ticket's beat is 1,050 ms.
+- **The build on disk (2026-09-28 15:26, all 257 modes) is of the rejected
+  design.** The parity replays are per family now (`currentFamilies()`), so
+  Classic, Second Chance, High Stakes and Three of a Kind - 193 modes, 77,200
+  books - are still verified against it; `ls` and the whole-build tests
+  (ceilings, mode list, volatility) wait. **Owner**: the full build, then
+  `node scripts/mode-ceilings.js`, re-measure the ls ladder and `maxWin`, and
+  `npm run audio` on the ticket cue. 893 tests, 878 pass, 15 skip; math 25 pass,
+  1 skip.
+- **Driven in a browser** (dev fallback, 3002): a Desktop sweep (card 4
+  chipless until the ×2 ticket, then 16.5× on both); How to Play at Desktop,
+  Mobile S and in Arabic; a held card 4 (the bus lands on its stop over the
+  card's edge, visible). **Found in Arabic:** the example's totals were never
+  pinned left to right, so the new range printed 49.4× left of 9.8× - the
+  ticket face's defect again. `.ex-total` joined app.css's list; `rtl.test.ts`
+  pins it.
+- **The random-picks mode is an idea, not built** (owner, 2026-09-30) - see
+  Ideas below.
+
+**2026-09-27: Last Stop, built in code - awaiting its first build.** SUPERSEDED
+in its pricing by the entry above; kept for how the ticket, the route and the
+table prop were built. Math and
+client both; the owner runs the scratch and full builds. Plan:
+`~/.claude/plans/idempotent-mixing-brooks.md`.
+- **Un-parked**, because post-approval Stake allows no new modes: v1 or never.
+- **The first design was rejected on the owner's rule that a correct pick
+  never loses money.** Spreading the ticket's price over all four cards (decay
+  (0.99/3.5)^1/4 = 0.729 each) priced a right Higher on an Ace at x0.76. A
+  stage's price falls as its odds rise, so only card 1 (always 50/50) and the
+  suit card (never better than 13 in 49) can carry a cut: decays
+  `0.64, D, D, D*D/3.5/0.64`, cards 2-3 exactly Classic's. Worst correct chip
+  1.03x; cheapest sweep 3.7x (A-2-3 of diamonds, A of hearts, 2x ticket).
+- **Modelled exactly** (`model_families.py`, committed this time, pinned by
+  `tests/test_model.py` to the 09-22 build's family worst cases within a few
+  percent - the build runs hot, the max of 64 sampled modes): Last Stop std
+  3.9 / 6.4 / 25.8, etl40b 0.473, CVaR 404.2, max 3,571.1x, ticket 1 in 27.0
+  to 1 in 3,458, between Classic and High Stakes by std on 64/64. Expect a
+  build ~1-3% hotter.
+- **Math**: `MODE_FAMILIES["ls"]` (flat bust, ticket stack, card-1 decay);
+  `score_stage` prices a flat bust against `r_eff`; the ticket is a pure
+  function of the simulation index (`ticket_slot`), drawn only on a clean
+  sweep, a `ticket` event between the reveals and finalWin. direct_books and
+  create_books still byte-identical (a Last Stop mode added to the test;
+  sabotage caught). The reweight weights each sweep by its ticket so the
+  PUBLISHED ticket odds are exactly 10/5/3/2 of 20, reading tickets off the
+  books; every other family's tables are computed exactly as before.
+  `scratch_stats.py` reweights and reads a scratch build against the model.
+- **Client**: one pricing path (`guessPrice`, `pricedRetention`, `stageDecay`,
+  `applyBust` in payout.ts - the price used to be copied in four files and the
+  bust in two); `bookTicket` refuses any ticket the game never writes; the fifth
+  beat is uniform whatever the value (a test slices the source); card 4's hold
+  judges landing x10. `TicketFace.svelte` draws every ticket: the board's slot
+  at the end of the route (under card 4 on portrait phones), the takeover's fan,
+  How to Play's stack, the table prop. `--vol-ls` 255,146,64, the fourth bolt.
+  Ladder 8 / 35 / 145 / 300, modelled - re-measure off the build. 10 strings in
+  17 locales; Stake.US variants for two (the blurb and the priced-lower line
+  were written without "pay", "fund" or "buy").
+- **Also shipped in the pass** (owner's yes): the route line (drawn only - the
+  "Missed/Rode the bus" captions were left out because the readout already says
+  the result), the right-hand cup is now the ticket stack, "Pays up to X× your
+  bet" on the idle readout (a ceiling, from MODE_CEILINGS), and the deal from
+  the deck (WAAPI on `.card-block`, so no slot moves).
+- **Driven in a browser** (dev fallback, port 3002; 890 tests, 873 pass, 17
+  skip until the build): a Desktop sweep with a x2 ticket and its takeover fan;
+  a card-4 bust keeping exactly half with the ticket face down and dimmed; a
+  Mobile S sweep and its fan; idle boards at Desktop, Popout L, Popout S,
+  Mobile S and Mobile L; Arabic. Two defects found and fixed on the way: beside
+  card 4 the ticket sat on the top-right chips, and in Arabic on the left cup
+  (the props do not mirror) - so it hangs UNDER the last stop at every size -
+  and in Arabic its range read "10× – 2×" until its figures were pinned left to
+  right. Still to do: reduced motion, Laptop and Mobile M, and an `npm run
+  audio` pass on the ticket cue, which needs Last Stop books to replay.
+- **Build-dependent and pending**: parity over 257 modes, MODE_CEILINGS rows,
+  REPLAY_EVENTS.md (ticket columns now generated), the volatility ranking read
+  off the published stats, the Last Stop row of winTiers re-measured.
+
 **2026-09-26: casino card faces, autoplay's stops, MODE at the edge.** Client
 and tooling only; no math changed, no build run. 854 tests.
 - **Every dealt card is a real face** (`CardFace.svelte`): pips for 2-10 on the
@@ -216,8 +416,24 @@ no math changed.
   picked. The one thing the last card's line could say that the player does
   not already know is what the card is worth if it lands.
 - **Parked 2026-09-25:** the end-of-game multiplier ("Last Stop") is out of
-  v1 by the owner's call. The modelled figures are under Outstanding,
-  "Parked for a later update".
+  v1 by the owner's call. **Un-parked and built 2026-09-27** - see the top
+  entry.
+- **Declined 2026-10-01 in favour of the table die (built): a random-picks
+  mode.** Kept for the reasoning. One more
+  published mode whose book draws the four picks as well as the cards - the
+  even mix of the 64 Classic combinations, cost 1×, 96%, payouts in multiples
+  of the base bet like every other mode. Modelled with the scratch enumerator
+  (Classic's rules): std 9.92, etl40b 0.299, CVaR 145, max 1,354.2× at 1 in
+  33,858, pays something 1 in 1.83, full ride 1 in 59 - inside every 2-star
+  limit with room. As a separate mode rather than a UI shortcut, because a
+  "random" button that picked client-side would just be one of the 64 existing
+  modes. Building it needs: a slug and a family with no fixed choices whose
+  picks come from the book (a `picks` event before the reveals, or picks on
+  each reveal); run_spin / direct_books support; a board that shows the drawn
+  picks as they land; the picker entry and its bolts; How to Play; 16 locales
+  and social; replay rows and test-plan rows; a place in FAMILY_BUILD_ORDER.
+  Stake allows no new modes after approval, so it is v1 or never, like Last
+  Stop was.
 
 **2026-09-22, later: a full pre-submission audit (including a Hallmark pass).**
 Every gate green; the math clears every 2-star limit and so every 3-star one;
@@ -694,7 +910,10 @@ look.**
   mode picker and on the bet display only.
 - B3–B8 optional polish: round history strip, session stats, quick-bet ½/2×,
   round ID surface, keyboard shortcuts for guesses, near-miss reveal.
-- **Parked: Last Stop (`ls_`), a ticket at the end of the ride - and "later"
+- **BUILT 2026-09-27 (see Current state) - the history below is the design
+  it came from, and its pricing was changed:** the spread decay it describes
+  priced a correct pick under 1x and was rejected by the owner.
+- **Was parked: Last Stop (`ls_`), a ticket at the end of the ride - and "later"
   may mean never.** Stake's guidelines (stake-approval, "Post-release"): once
   approved, only minor visual updates are allowed - "changes to the math model,
   new game modes, or gameplay mechanic modifications are not allowed". So this

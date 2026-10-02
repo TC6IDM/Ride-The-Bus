@@ -298,4 +298,24 @@ export default {
 		'× berarti kelipatan taruhan dasar Anda.',
 	'Times your base bet':
 		'Kelipatan taruhan dasar Anda',
+	'Last Stop':
+		'Halte Terakhir',
+	'A wrong first card ends the round. Later misses keep 30% of your running total. A right suit draws a ticket that multiplies it by 2 to 10.':
+		'Kartu pertama yang salah mengakhiri ronde. Kesalahan berikutnya menyimpan 30% dari total berjalan Anda. Jenis yang benar menarik tiket yang mengalikannya 2 hingga 10 kali.',
+	'Ticket':
+		'Tiket',
+	'The ticket':
+		'Tiketnya',
+	'Drawn only when all four are right, from a stack of 20. It multiplies your running total.':
+		'Ditarik hanya saat keempatnya benar, dari tumpukan 20. Tiket mengalikan total berjalan Anda.',
+	'Cards 1 to 3 are priced exactly as on Classic. A right suit draws the ticket in place of a price.':
+		'Kartu 1 sampai 3 dihargai persis seperti di Klasik. Jenis yang benar menarik tiket sebagai ganti harga.',
+	'On Classic the same cards end at %s.':
+		'Di Klasik, kartu yang sama berakhir di %s.',
+	'A full game win pays more the harder your picks were, and the ticket multiplies it. Two Equal picks and a ×10 ticket reach this mode’s maximum: %m your bet.':
+		'Menang penuh membayar lebih besar jika pilihan Anda lebih sulit, dan tiket mengalikannya. Dua pilihan Sama dan tiket ×10 mencapai maksimum mode ini: %m taruhan Anda.',
+	'Roll the die for random guesses':
+		'Lempar dadu untuk tebakan acak',
+	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
+		'Dadu di samping tebakan memilih keempatnya secara acak. Tidak ada yang dimainkan sampai Anda membagikan kartu.',
 };

@@ -28,6 +28,15 @@
  *   Classic        10x  1:70   40x 1:305  120x 1:3092  300x 1:15561  1354.2x 1:36384
  *   Second Chance  11x  1:70   28x 1:290   60x 1:3063  130x 1:15469   585.2x 1:36542
  *   High Stakes    12x  1:68   55x 1:295  145x 1:2818  500x 1:15444  2237.3x 1:36248
+ *   Last Stop       8x  1:72   40x 1:297  170x 1:3028  350x 1:16260  4301.9x 1:283787
+ *
+ * LAST STOP'S ROW was solved on math-sdk model_families.py's exact figures and
+ * MEASURED off the 2026-10-01 build the same way as the others, landing within
+ * 2% of the model at every band (the model: 72 / 296 / 3,061 / 16,092, Max
+ * 1:281,986). Its Max is about eight times rarer than the other families'
+ * because the ceiling needs the 10x ticket on the best route; its Big sits at
+ * 8x because a wrong suit keeps 30% of a run no suit price has multiplied, so
+ * small wins run smaller.
  *
  * High Stakes' row was re-solved when its retention went from 20% to 16% (from
  * 12 / 50 / 130 / 440, max 1910.2x) and re-measured when it went to 15% on
@@ -81,6 +90,16 @@ export const MAX_WIN_MULTIPLIER = FAMILY_RULES.base.maxWin;
  */
 export const MIN_FULL_GAME_WIN_MULTIPLIER = 6.6;
 
+/**
+ * Last Stop's smallest full-game win: A, K, 2 of hearts on Red / Higher /
+ * Inside / Heart, then a heart and the 2x ticket - 4.5x, found by searching
+ * every sweep of every Last Stop mode through the book's own pricing. Lower
+ * than Classic's because the cheapest ticket is worth less than the suit
+ * price it replaces; still under its 8x entry band, so the fullGameWin floor
+ * matters there exactly as it does on Classic.
+ */
+export const MIN_FULL_GAME_WIN_LAST_STOP = 4.5;
+
 export type WinTierId = 'big' | 'huge' | 'mega' | 'epic' | 'max';
 
 export type WinTier = {
@@ -114,6 +133,7 @@ const FAMILY_BANDS: Record<LadderFamily, readonly [number, number, number, numbe
   base: [10, 40, 120, 300],
   sc: [11, 28, 60, 130],
   hs: [12, 55, 145, 500],
+  ls: [8, 40, 170, 350],
 };
 
 /** Measured frequency of each band or better, including Max - read off the
@@ -123,6 +143,7 @@ const FAMILY_ONE_IN: Record<LadderFamily, readonly [number, number, number, numb
   base: [70, 305, 3092, 15561, 36384],
   sc: [70, 290, 3063, 15469, 36542],
   hs: [68, 295, 2818, 15444, 36248],
+  ls: [72, 297, 3028, 16260, 283787],
 };
 
 /**

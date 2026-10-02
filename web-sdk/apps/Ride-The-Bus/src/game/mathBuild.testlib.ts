@@ -20,6 +20,15 @@
  * different numbers is not stale, it is a drift, and those tests fail on it
  * as they should: that is the worst bug this project can have.
  *
+ * STALENESS IS PER FAMILY where it can be. When only one family's rules have
+ * moved since the build (Last Stop's redesign, 2026-09-30), the other
+ * families' books still describe exactly the client's arithmetic, and
+ * skipping them for the whole rebuild window would leave the worst bug this
+ * project can have unguarded for no reason. currentFamilies() names the
+ * families whose recorded rules match; the two parity replays check those
+ * and say which they left out. The tests that read the build as a whole -
+ * the ceilings table, the volatility ranking - still want mathBuildIsCurrent().
+ *
  * Absolute paths from this file, so the tests that import it keep working
  * wherever they sit under game/ - a moved test that rebuilt these paths from
  * its own depth is how ten anchors broke in the last reorganisation.
@@ -27,7 +36,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { FAMILY_RULES, MODE_FAMILIES, allPlayableModes } from './math/modes.ts';
+import { FAMILY_RULES, MODE_FAMILIES, allPlayableModes, type ModeFamily } from './math/modes.ts';
 
 export const LIBRARY = resolve(
   import.meta.dirname,
@@ -47,7 +56,7 @@ export const RULES = resolve(LIBRARY, 'build_rules.json');
 export type MathBuildState = 'absent' | 'stale' | 'current';
 
 /** One reading per process - the tests call this at describe time, repeatedly. */
-let cached: { state: MathBuildState; detail: string } | null = null;
+let cached: { state: MathBuildState; detail: string; families: ModeFamily[] } | null = null;
 
 /**
  * Is the build on disk the one this client describes?
@@ -56,10 +65,14 @@ let cached: { state: MathBuildState; detail: string } | null = null;
  * hides the difference between "you have not built the math" and "you have,
  * and it is older than the code you are testing".
  */
-export function mathBuild(): { state: MathBuildState; detail: string } {
+export function mathBuild(): { state: MathBuildState; detail: string; families: ModeFamily[] } {
   if (cached) return cached;
   if (!existsSync(INDEX) || !existsSync(STATS)) {
-    cached = { state: 'absent', detail: `${LIBRARY} is missing - run the math build to enable the parity tests` };
+    cached = {
+      state: 'absent',
+      detail: `${LIBRARY} is missing - run the math build to enable the parity tests`,
+      families: [],
+    };
     return cached;
   }
   const index = JSON.parse(readFileSync(INDEX, 'utf8')) as { modes: { name: string }[] };
@@ -75,6 +88,7 @@ export function mathBuild(): { state: MathBuildState; detail: string } {
         (missing.length ? ` - not built: ${missing.slice(0, 3).join(', ')}${missing.length > 3 ? ', ...' : ''}` : '') +
         (extra.length ? ` - no longer offered: ${extra.slice(0, 3).join(', ')}${extra.length > 3 ? ', ...' : ''}` : '') +
         '. Rebuild the math before trusting any parity result.',
+      families: [],
     };
     return cached;
   }
@@ -86,8 +100,26 @@ export function mathBuild(): { state: MathBuildState; detail: string } {
   // build is older than the code, which is what "stale" means.
   if (existsSync(RULES)) {
     const built = JSON.parse(readFileSync(RULES, 'utf8')) as {
-      families?: Record<string, { cost: number; retention: number[]; forgive: number | null; forgive_from: number }>;
+      families?: Record<
+        string,
+        {
+          cost: number;
+          retention: number[];
+          forgive: number | null;
+          forgive_from: number;
+          // Last Stop's stack - absent from a build older than the family.
+          ticket?: [number, number][] | null;
+          // Written only by builds of Last Stop's rejected second design
+          // (2026-09-28), which priced its ticket into card 1 and the suit
+          // card and kept a flat half on a miss. Any value but the default
+          // means such a build.
+          flat_bust?: boolean;
+          card1_decay?: number | null;
+        }
+      >;
     };
+    const stale: string[] = [];
+    const current: ModeFamily[] = [];
     for (const family of MODE_FAMILIES) {
       const rules = FAMILY_RULES[family];
       const was = built.families?.[family];
@@ -97,21 +129,52 @@ export function mathBuild(): { state: MathBuildState; detail: string } {
         was.forgive !== rules.forgive ||
         was.forgive_from !== rules.forgiveFrom ||
         was.retention.length !== rules.retention.length ||
-        was.retention.some((r, i) => Math.abs(r - rules.retention[i]!) > 1e-9);
+        was.retention.some((r, i) => Math.abs(r - rules.retention[i]!) > 1e-9) ||
+        // A ticket change moves every price on the family without changing
+        // its mode list, exactly as a retention change does.
+        JSON.stringify(was.ticket ?? null) !== JSON.stringify(rules.ticket ?? null) ||
+        (was.flat_bust ?? false) !== false ||
+        (was.card1_decay ?? null) !== null;
       if (differs) {
-        cached = {
-          state: 'stale',
-          detail:
-            `the math build on disk was made with ${family} = ${JSON.stringify(was ?? null)} and the client now says ` +
-            `cost ${rules.cost}, retention [${rules.retention.join(', ')}], forgive ${rules.forgive} from ${rules.forgiveFrom}. ` +
-            'Rebuild the math before trusting any parity result.',
-        };
-        return cached;
+        stale.push(
+          `${family}: built with ${JSON.stringify(was ?? null)}, and the client now says ` +
+            `cost ${rules.cost}, retention [${rules.retention.join(', ')}], forgive ${rules.forgive} from ${rules.forgiveFrom}, ` +
+            `ticket ${JSON.stringify(rules.ticket)}`,
+        );
+      } else {
+        current.push(family);
       }
     }
+    if (stale.length) {
+      cached = {
+        state: 'stale',
+        detail:
+          `the math build on disk predates the client's rules for ${stale.length} famil${stale.length === 1 ? 'y' : 'ies'} ` +
+          `(${stale.join('; ')}). Rebuild the math before trusting a whole-build result; the parity replays still ` +
+          `check ${current.length ? current.join(', ') : 'nothing'}.`,
+        families: current,
+      };
+      return cached;
+    }
   }
-  cached = { state: 'current', detail: '' };
+  cached = { state: 'current', detail: '', families: [...MODE_FAMILIES] };
   return cached;
+}
+
+/**
+ * The families whose books on disk were built under the rules the client
+ * has now - every family on a current build, none on an absent one or one
+ * whose mode list differs, and the unmoved ones when only some families'
+ * rules have changed. What the parity replays check. Prints why any are left
+ * out, once.
+ */
+export function currentFamilies(): ReadonlySet<ModeFamily> {
+  const { state, detail, families } = mathBuild();
+  if (state !== 'current' && !warned) {
+    warned = true;
+    console.warn(`  ! math build ${state}: ${detail}`);
+  }
+  return new Set(families);
 }
 
 /** True when the parity tests should run. Prints why they will not, once. */

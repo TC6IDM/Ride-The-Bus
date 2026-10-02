@@ -83,8 +83,10 @@
   }
 }
 
-/* Choice squares */
+/* Choice squares. Positioned so the table die (TableDie.svelte) can sit
+   beside the row - or under it on a phone - without being in its flex flow. */
 .choice-row {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;

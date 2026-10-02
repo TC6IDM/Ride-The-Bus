@@ -32,7 +32,7 @@ describe('the spacebar cannot buy a round behind a panel', () => {
   // THE BUG. The footer is `inert` while a popup or the error dialog is up,
   // so the spin button cannot be clicked - but the Space handler is on
   // window, inert does not reach it, and the open panel takes focus onto its
-  // own DIV, which spaceIsForUs() lets through. Reading How to Play and
+  // own DIV, which spaceIsForUs() lets through (it yields only to a field). Reading How to Play and
   // pressing Space placed a bet behind the panel.
   test('onKeyDown returns on chromeInert before anything else can fire', () => {
     const keydown = body(CONTROL_BAR, 'onKeyDown');

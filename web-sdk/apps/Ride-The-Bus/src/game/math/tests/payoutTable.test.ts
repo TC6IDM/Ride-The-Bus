@@ -14,7 +14,7 @@ import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
 
 import { PAYOUT_ROWS, bustRowsFor, oddsExampleFor, payoutColumnFor, payoutRowsFor } from '../payoutTable.ts';
-import { partialMultiplier, stageRetention } from '../payout.ts';
+import { decayFor, partialMultiplier, stageRetention } from '../payout.ts';
 import {
 	localColorPayouts,
 	localHigherLowerPayouts,
@@ -284,9 +284,13 @@ describe('the worked example in How to Play', () => {
 	test('every family quotes its own odds, solved against its own retention', () => {
 		for (const f of LADDER_FAMILIES) {
 			const rules = FAMILY_RULES[f];
+			// What card 2's miss would bank, at the family's decay. Built here from
+			// the two primitives rather than through guessPrice, so the test does
+			// not just restate the function it checks.
 			const r = stageRetention(rules, 1, false);
+			const decay = decayFor(rules);
 			const o = oddsExampleFor(rules);
-			const expect = (cards: number) => Math.round(partialMultiplier(cards / 51, 1, r) * 100) / 100;
+			const expect = (cards: number) => Math.round(partialMultiplier(cards / 51, 1, r, decay) * 100) / 100;
 			assert.equal(o.lowerOn3, expect(8), `${f} lower on 3`);
 			assert.equal(o.higherOn3, expect(40), `${f} higher on 3`);
 			assert.equal(o.lowerOn8, expect(28), `${f} lower on 8`);

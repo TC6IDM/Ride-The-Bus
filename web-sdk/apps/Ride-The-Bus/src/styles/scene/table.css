@@ -308,7 +308,8 @@
    made every prop look pasted on. */
 .chip-shadow,
 .cup-shadow,
-.deck-shadow {
+.deck-shadow,
+.tickets-shadow {
   position: absolute;
   border-radius: 50%;
   background: rgba(26, 9, 0, 0.42);
@@ -317,7 +318,8 @@
 
 .chip-shadow::after,
 .cup-shadow::after,
-.deck-shadow::after {
+.deck-shadow::after,
+.tickets-shadow::after {
   content: '';
   position: absolute;
   /* Offset left, because the light is up and to the right. */
@@ -918,6 +920,56 @@
   filter: brightness(calc(1 - var(--deck-dim)));
 }
 
+/* ---- the ticket stack ------------------------------------------------------
+   Last Stop's twenty tickets, lying on the wood - the "visible stack" a clean
+   sweep draws from. Built the way the deck is: scenery, so smaller than the
+   ticket it deals, foreshortened by --flat because it lies flat, and sunk into
+   the room's light by --tk-dim (a brightness, for the same reason the deck's
+   printed name takes --deck-dim: a scrim over an SVG face would not reach it).
+   The top ticket is TicketFace itself, so the stack and the board's slot are
+   one ticket at two sizes rather than two that rhyme. */
+.tickets {
+  --tk-w: calc(5 * var(--cq));
+  --tk-dim: 0.38;
+  width: var(--tk-w);
+  height: calc(var(--tk-w) * 5 / 3 * var(--flat) + 0.7 * var(--cq));
+  transform: translate(-50%, -50%) rotate(9deg);
+}
+
+.tickets-shadow {
+  left: -14%;
+  bottom: -4%;
+  width: 114%;
+  height: 20%;
+  border-radius: 42%;
+}
+
+/* The stack's thickness: paper edges under the top ticket, in the ticket's own
+   paper, dimmed with it. */
+.tickets-stack {
+  position: absolute;
+  left: 1%;
+  top: 8%;
+  width: 99%;
+  height: 92%;
+  border-radius: calc(var(--tk-w) * 0.075);
+  background:
+    linear-gradient(rgba(0, 0, 0, var(--tk-dim)), rgba(0, 0, 0, var(--tk-dim))),
+    repeating-linear-gradient(180deg, #e7dfcd 0 1px, #978d7c 1px 2px);
+  box-shadow: calc(-0.14 * var(--cq)) calc(0.2 * var(--cq)) calc(0.45 * var(--cq)) rgba(0, 0, 0, 0.4);
+}
+
+.tickets-face {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: calc(var(--tk-w) * 5 / 3);
+  transform-origin: top;
+  transform: scaleY(var(--flat));
+  filter: brightness(calc(1 - var(--tk-dim)));
+}
+
 /* ---- placement ---------------------------------------------------------- */
 /* Percentages of the table's box. Chips and the cup are placed by where they
    TOUCH the wood, not by their centre; the deck by its centre.
@@ -953,9 +1005,11 @@
 .p-chip-3 { left: 85.7%; top: 29.9%; } /* green, two */
 .p-chip-4 { left: 88%; top: 34.6%; } /* black, one */
 
-/* Staggered rather than mirrored: two cups at the same height either side read
-   as a symmetrical decoration, two at different heights read as two people. */
-.p-cup-1 { left: 88%; top: 66%; } /* right, low */
+/* The ticket stack stands where the right-hand cup stood - right, low - and
+   is placed by its centre, like the deck: the cup's base was at 66%, and a
+   flat stack is far shorter than a standing cup, so its centre sits a little
+   above that base. The left cup keeps its place under the deck. */
+.p-tickets { left: 88%; top: 62%; } /* right, low */
 .p-cup-2 { left: 12%; top: 58%; } /* left, higher - under the deck */
 
 /* Bottom left, on the matching arc round the near edge, and kept left of the
@@ -1036,10 +1090,10 @@
      now ends at 17.0%, clear of Mobile S by 0.9% and of the rest by more, and
      starts at least a point below the rim where it stands. */
   .p-deck { left: 30%; top: 12.4%; }
-  /* Toward the middle, where the rim is highest and the band deepest: a cup is
-     the tallest thing on the table and only fits here once it has to clear the
-     chips. */
-  .p-cup-1 { left: 57%; top: 17%; }
+  /* Toward the middle, where the rim is highest and the band deepest - where
+     the cup stood. The stack lies flat and is placed by its centre, so its
+     whole body sits in the band the cup's body had to be squeezed into. */
+  .p-tickets { left: 57%; top: 12.8%; }
   /* No room beside the deck in the top band, so the left cup goes to the near
      edge instead - near the middle, where the rim runs lowest. */
   .p-cup-2 { left: 42%; top: 97%; }

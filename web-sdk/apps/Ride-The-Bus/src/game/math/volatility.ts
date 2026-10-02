@@ -1,7 +1,7 @@
 /**
  * How wild a mode is, as a rating out of five.
  *
- * Every one of the 193 published modes returns the same 96.00%, so RTP tells a
+ * Every one of the 257 published modes returns the same 96.00%, so RTP tells a
  * player nothing about which one to buy. What actually separates them is
  * SPREAD, and until now the picker never said so - it stated a ceiling and left
  * the player to infer the rest.
@@ -9,28 +9,38 @@
  * WHERE THE ORDERING COMES FROM
  *
  * math-sdk games/ride_the_bus/library/stats_summary.json carries `std` - the
- * standard deviation of the payout, in bet multiples - for all 193 published
+ * standard deviation of the payout, in bet multiples - for all 257 published
  * modes, and it reproduces exactly from the published lookup tables. Taken per
- * family it says:
+ * family, on the 2026-10-01 build:
  *
  *              min     median   max
- *   sc        2.345    3.946   11.146
- *   base      3.311    6.249   23.631
- *   hs        4.076    8.068   32.938
+ *   sc        2.345    3.583   11.146
+ *   base      3.311    5.733   23.631
+ *   ls        4.306    7.779   31.419
+ *   hs        4.498    8.513   38.401
  *
- * and, far more strongly than the medians suggest, sc < base < hs holds for
- * every one of the 64 guess combinations INDIVIDUALLY, with no exceptions. That
- * is what makes a single ordering of the three guess families honest: it is not an
- * average that happens to come out that way, it is true of every bet a player
- * can actually place. volatility.test.ts pins it against the published figures.
+ * and, far more strongly than the medians suggest, sc < base < ls < hs holds
+ * for the 64 guess combinations INDIVIDUALLY. That is what makes a single
+ * ordering of the guess families honest: it is not an average that happens to
+ * come out that way, it is true of the bets a player can actually place, and
+ * volatility.test.ts pins it against the published figures.
  *
- * WHY 1 / 3 / 5 AND NOT 1 / 2 / 3
+ * WITH ONE OPEN QUESTION. Exactly (math-sdk model_families.py, every ordered
+ * deal) Last Stop is the calmer of it and High Stakes on all 64; on the
+ * published build it is level with or above High Stakes on three - two
+ * Higher/Lower + Outside modes the exact model puts only 0.78% apart, and one
+ * Higher + Inside mode whose sampled std ran 12% hot. Sampling noise, not
+ * pricing; whether the test accepts those ties or the math moves is the
+ * owner's call (status.md).
+ *
+ * WHY 1 / 3 / 4 / 5 AND NOT 1 / 2 / 3 / 4
  *
  * The ruler has five stops because the guess combination moves volatility far
  * more than the family does - Classic alone spans 3.31 to 23.63, a 7x range,
- * against the 2x that separates the family medians. Sitting the three guess families
- * at 1, 3 and 5 leaves the even stops free for the per-guess rating to fill in
- * later without renumbering anything a player has already learned.
+ * against the 2x that separates the family medians. The three original guess
+ * families sat at 1, 3 and 5 to leave the even stops free, and Last Stop - which
+ * lands between Classic and High Stakes on every combination - took the 4th
+ * (2026-09-27): the one stop the ruler had for exactly this. 2 is still free.
  *
  * THREE OF A KIND IS OFF THAT SCALE, AND THE RULE SAYS WHICH COLUMN PUTS IT
  * THERE. Two published figures disagree about it. Its std is only ~4.1 (÷ cost)
@@ -38,7 +48,7 @@
  * calmer than most Classic modes. But 95% of its rounds pay NOTHING, against
  * ~50% on every other mode in the game; its non-zero hit rate is 1 in 19 where
  * the worst four-guess mode is 1 in 2. So the rule is two columns: the four-guess
- * families rank by std (1 / 3 / 5, per combination, as above), and a family
+ * families rank by std (1 / 3 / 4 / 5, per combination, as above), and a family
  * whose zero-rate is off that scale is drawn FULL and PURPLE - the seventh
  * stop, in the hue that used to mean "the guesses pushed this past its family".
  * volatility.test.ts pins both columns from stats_summary.json. Written here
@@ -64,7 +74,7 @@ import {
  * Seven, not five, because the guesses push the rating past where the family
  * alone leaves it - High Stakes starts at 5 and two Equal picks take it to 7 -
  * and because Three of a Kind sits on the seventh stop outright. The mode
- * picker lights 1, 3, 5 or 7 of these; it draws all seven so that the picker
+ * picker lights 1, 3, 4, 5 or 7 of these; it draws all seven so that the picker
  * and the bet display are the SAME ruler. Two lightning meters counting to
  * different maxima would be the "two units on one screen" mistake, which this
  * game has already shipped three times.
@@ -79,14 +89,16 @@ export const VOLATILITY_BOLTS = 7;
 /**
  * Lit bolts per family before the guesses are counted - see the note above.
  *
- * Spread 1 / 3 / 5 rather than bunched at 1-2-3 so the even stops stay free for
+ * Spread 1 / 3 / 5 rather than bunched at 1-2-3 so the even stops stayed free for
  * the Equal picks to fill in, and so a five-stop showing never reads as "nothing
- * is ever very volatile" on a mode that can pay 2169x. Three of a Kind is the
- * whole ruler, by the zero-rate column - see the header.
+ * is ever very volatile" on a mode that can pay 2169x. Last Stop took the 4th,
+ * between the two families it sits between on every combination. Three of a
+ * Kind is the whole ruler, by the zero-rate column - see the header.
  */
 export const FAMILY_BOLTS: Record<ModeFamily, number> = {
   sc: 1,
   base: 3,
+  ls: 4,
   hs: 5,
   tr: VOLATILITY_BOLTS,
 };
@@ -94,13 +106,13 @@ export const FAMILY_BOLTS: Record<ModeFamily, number> = {
 /**
  * The families in VOLATILITY order, for anything that draws them as a list.
  *
- * MODE_FAMILIES is ['base', 'sc', 'hs', 'tr'], which is the order the math publishes
+ * MODE_FAMILIES is ['base', 'sc', 'hs', 'tr', 'ls'], which is the order the math publishes
  * and must stay that way - it drives allPlayableModes() and, through it, which
  * books get generated. But every screen that iterates it also prints a bolt
  * meter on each row, so the picker and the rules tabs were rendering 3, 1, 5
  * down the column: a ruler shown next to three values in no order at all, which
  * asks the reader to sort it themselves and gives them no reason to think it
- * sorts. Sorted, the meters climb 1 / 3 / 5 down the page and the list IS the
+ * sorts. Sorted, the meters climb 1 / 3 / 4 / 5 down the page and the list IS the
  * ladder.
  *
  * DERIVED, not written out. A second literal ordering is exactly the kind of

@@ -297,4 +297,24 @@ export default {
 		'×, temel bahsinizin katı anlamına gelir.',
 	'Times your base bet':
 		'Temel bahsinizin katı',
+	'Last Stop':
+		'Son Durak',
+	'A wrong first card ends the round. Later misses keep 30% of your running total. A right suit draws a ticket that multiplies it by 2 to 10.':
+		'İlk kartı bilememek turu bitirir. Sonraki hatalar güncel toplamınızın %30\'unu tutar. Doğru sembol, onu 2 ila 10 kat artıran bir bilet çeker.',
+	'Ticket':
+		'Bilet',
+	'The ticket':
+		'Bilet',
+	'Drawn only when all four are right, from a stack of 20. It multiplies your running total.':
+		'Yalnızca dördü de doğru olduğunda, 20 biletlik bir desteden çekilir. Güncel toplamınızı çarpar.',
+	'Cards 1 to 3 are priced exactly as on Classic. A right suit draws the ticket in place of a price.':
+		'1. ile 3. kartlar tam olarak Klasik moddaki gibi fiyatlanır. Doğru sembol, fiyat yerine bileti çeker.',
+	'On Classic the same cards end at %s.':
+		'Klasik modda aynı kartlar %s ile biter.',
+	'A full game win pays more the harder your picks were, and the ticket multiplies it. Two Equal picks and a ×10 ticket reach this mode’s maximum: %m your bet.':
+		'Tam oyun kazancı, tahminleriniz ne kadar zorsa o kadar çok öder ve bilet onu çarpar. İki Eşit seçimi ve ×10 bilet bu modun en yüksek değerine ulaşır: bahsinizin %m katı.',
+	'Roll the die for random guesses':
+		'Rastgele tahminler için zar atın',
+	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
+		'Tahminlerin yanındaki zar dördünü de rastgele seçer. Siz dağıtana kadar hiçbir şey oynanmaz.',
 };

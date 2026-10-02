@@ -18,6 +18,9 @@
 	 * the markup carries a :global block below rather than moving the stylesheet -
 	 * a Svelte stylesheet only applies to the component that imports it.
 	 */
+	import TicketFace from '../cards/TicketFace.svelte';
+	import { familyRules } from '../../game/bet/betState.svelte';
+
 	type Props = {
 		/**
 		 * Whether to draw the deck, the cups and the chip stacks.
@@ -38,6 +41,11 @@
 
 	const props: Props = $props();
 	const showProps = $derived(props.showProps ?? true);
+	/** The ticket stack is Last Stop's: on a family without a ticket, a stack
+	 *  printing "x2 - x10" offers a multiplier that cannot be won there (the
+	 *  owner's call, 2026-10-02; a review called it the single-family leak in
+	 *  reverse). That side of the table is bare wood on the other families. */
+	const showTickets = $derived(familyRules().ticket !== null);
 </script>
 
 <!-- One chip, or a pile of them. Each chip in a stack is its own disc rather
@@ -80,25 +88,20 @@
           <div class="deck-face"></div>
         </div>
 
-        <!-- A party cup either side - it is a drinking game, and a pair reads
-             as two people sitting at the table. The left one is further down
-             its drink so they are not the same object twice. -->
-        <div class="prop cup p-cup-1">
-          <div class="cup-shadow"></div>
-          <div class="cup-body">
-            <!-- The three stepped ribs below the lip and the roll above the
-                 base, which is what makes a party cup that shape and not a
-                 plain cone. Each is the front arc of a circle round the cone,
-                 so each has its own width and squash. -->
-            <div class="cup-rib rib-1"></div>
-            <div class="cup-rib rib-2"></div>
-            <div class="cup-rib rib-3"></div>
-            <div class="cup-rib rib-4"></div>
-            <div class="cup-rib rib-5"></div>
+        <!-- The stack of bus tickets, where the right-hand party cup stood:
+             the visible stack Last Stop's clean sweep draws from, on Last
+             Stop's table only (see showTickets). Its top ticket is TicketFace,
+             the same drawing as the board's slot, lying flat. The cup it
+             replaced does not come back: that halved the drinking-game
+             imagery the rundown flagged (2026-09-25). -->
+        {#if showTickets}
+          <div class="prop tickets p-tickets">
+            <div class="tickets-shadow"></div>
+            <div class="tickets-stack"></div>
+            <div class="tickets-face"><TicketFace value={null} /></div>
           </div>
-          <div class="cup-rim"></div>
-          <div class="cup-inside"><div class="cup-drink"></div></div>
-        </div>
+        {/if}
+        <!-- A party cup - it is a drinking game. -->
         <div class="prop cup cup-low p-cup-2">
           <div class="cup-shadow"></div>
           <div class="cup-body">

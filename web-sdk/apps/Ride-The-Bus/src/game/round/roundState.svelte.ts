@@ -44,6 +44,16 @@ export const round = $state({
 
   /** The book's four reveal events, as they arrived. */
   revealEvents: [] as RevealEvent[],
+  /**
+   * The ticket the book drew - Last Stop's multiplier for a clean sweep - or
+   * null. Book DATA, like revealEvents: set wherever they are, and untouched by
+   * resetForNewRound, so a replay's re-run still has it. A bust's book carries
+   * none at all, so this is null on every round that did not sweep.
+   */
+  ticket: null as number | null,
+  /** The ticket once it has been turned over on the board, or null while it
+   *  is face down. The board draws this; the takeover snapshots it. */
+  ticketShown: null as number | null,
   /** The cards turned so far. null = still face down. */
   // Four wide always: a three-card family (Three of a Kind) leaves the last
   // slot null and the board renders stageCount() of them. Sizing the array
@@ -206,6 +216,7 @@ export const roundInProgress = () =>
  */
 export function resetForNewRound() {
   round.revealedCards = [null, null, null, null];
+  round.ticketShown = null;
   round.stageMultipliers = [null, null, null, null];
   round.runningWin = 0;
   round.bustedIndex = null;
@@ -234,6 +245,7 @@ export function resetForNewRound() {
  */
 export function clearBoard() {
   round.revealedCards = [null, null, null, null];
+  round.ticketShown = null;
   round.stageMultipliers = [null, null, null, null];
   round.runningWin = 0;
   round.bustedIndex = null;

@@ -704,6 +704,7 @@
     betAmount={round.initialBet}
     eventId={replayEventId()}
     payoutMultiplier={replay.payoutMultiplier}
+    ticket={replay.ticket}
     oncontinue={onStartContinue}
     onplay={onReplayPlay}
   />
@@ -721,6 +722,7 @@
       cards={celebration.active.cards}
       bustedIndex={celebration.active.bustedIndex}
       forgivenIndex={celebration.active.forgivenIndex}
+      ticket={celebration.active.ticket}
       family={celebration.active.family}
       autoSkipMs={celebrationAutoSkipMs()}
       ondismiss={dismissCelebration}

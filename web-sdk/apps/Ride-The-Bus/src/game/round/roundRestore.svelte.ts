@@ -51,6 +51,9 @@ export const replay = $state({
   ready: false,
   /** The payout multiplier off the replay response, for the details panel. */
   payoutMultiplier: null as number | null,
+  /** A Last Stop round's ticket, for the same panel - null on every round that
+   *  drew none, which is every bust and every other family. */
+  ticket: null as number | null,
 });
 
 // Replay (Stake's Fairness view, ?replay=true). Authenticate.svelte has
@@ -141,6 +144,10 @@ export function restoreReplay() {
   // popup (amount is multiplier × 100 — see math-sdk events.py:final_win_event).
   const finalWin = resume.state.find((e: any) => e.type === 'finalWin') as any;
   replay.payoutMultiplier = finalWin ? Number(finalWin.amount) / 100 : null;
+  // The ticket, read leniently for the panel: the reveal itself goes through
+  // bookTicket and refuses a ticket the game would never have written.
+  const ticket = resume.state.find((e: any) => e.type === 'ticket') as any;
+  replay.ticket = ticket ? Number(ticket.value) : null;
 
   // Park the data. The reveal starts when the player clicks "Play" on the
   // replay-info popup (onReplayPlay below), not here.

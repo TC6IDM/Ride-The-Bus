@@ -19,11 +19,11 @@
 import type { Card } from './roundContract';
 import { loaderGone } from '../platform/ready.svelte';
 import { HOLD_MIN_CLIMB, sound } from '../audio/sound';
-import { decayFor, forgivenessAvailable, quantizeMultiplier } from '../math/payout';
+import { applyBust, bookTicket, forgivenessAvailable, quantizeMultiplier, ticketStage, topTicket } from '../math/payout';
 import { FREE_CHOICE, isCleanSweep, stageCount } from '../math/modes';
 import { holdClimbMs, lastCardHoldMs, lastCardHolds, lastCardTier, lastCardTunnels } from '../math/winTiers';
 import { familyRules, winTiers } from '../bet/betState.svelte';
-import { cueLead, paceMs, pacing, revealWait } from './revealPacing.svelte';
+import { DEAL_REST_MS, cueLead, paceMs, pacing, revealWait } from './revealPacing.svelte';
 import { resetForNewRound, round } from './roundState.svelte';
 import { settleRound } from './roundSettle.svelte';
 
@@ -113,18 +113,27 @@ export async function playRevealSequence() {
   let busted = false;
   let forgivenessSpent = false;
   const last = round.revealEvents.length - 1;
+  // Last Stop's suit card, or -1: the card whose right guess the ticket pays.
+  const paidByTicket = ticketStage(familyRules());
   // Whether the last card may be held at all: only on a round with an Equal
   // pick behind it (lastCardHolds). From the choices the book was bet on.
   const mayHold = lastCardHolds(round.revealEvents.map((e) => e.choice));
   for (let i = 0; i < round.revealEvents.length; i++) {
     const event = round.revealEvents[i];
+    // The hand rests on the deck before it is dealt (GameBoard's dealFromDeck),
+    // so the first card waits out that beat too - or it turns mid-flight.
+    if (i === 0) await revealWait(DEAL_REST_MS, 0);
     // The last card waits longer when a lot is riding on it. What it would pay
     // is known before it turns - `event.payout` is the book's price for the
     // pick, written whether or not the pick lands - so the hold says how much
     // is at stake and nothing about the result. See lastCardHoldMs.
     let releaseHold = () => {};
     if (i === last && !busted && mayHold) {
-      const landing = quantizeMultiplier(running * event.payout * familyRules().cost);
+      // On a ticket family the last card has no price (the book writes 1.0)
+      // and a right one is paid by the ticket - so what it could land is
+      // judged at the top of the stack, the most it could come to. Still from
+      // the pick, never from the result, and 1 on every other family.
+      const landing = quantizeMultiplier(running * event.payout * topTicket(familyRules()) * familyRules().cost);
       const fullGameWin = isCleanSweep(round.bustedIndex, round.forgivenIndex) && familyRules().celebrateEveryFullWin;
       const hold = lastCardHoldMs(landing, fullGameWin, winTiers());
       if (hold > 0) {
@@ -181,22 +190,52 @@ export async function playRevealSequence() {
       } else {
         round.bustedIndex = i;
         // The stages never played, counted from the round's own length -
-        // three on Three of a Kind. Mirrors computeFinalMultiplier.
-        running *= familyRules().retention[i]! * decayFor(familyRules()) ** (round.revealEvents.length - 1 - i);
+        // three on Three of a Kind. The same applyBust computeFinalMultiplier
+        // settles with.
+        running = applyBust(running, familyRules(), i, round.revealEvents.length);
         busted = true;
         sound.playBust(cueLead(i));
       }
     }
-    round.stageMultipliers[i] = quantizeMultiplier(running * familyRules().cost);
-    round.runningWin = round.stageMultipliers[i]! * round.initialBet;
+    // A right suit on Last Stop has not paid yet - the ticket is its price - so
+    // its chip and the running total wait for the ticket to turn, below.
+    if (i !== paidByTicket || busted) {
+      round.stageMultipliers[i] = quantizeMultiplier(running * familyRules().cost);
+      round.runningWin = round.stageMultipliers[i]! * round.initialBet;
+    }
     if (busted) {
       await revealWait(900, 150);
       break;
     }
   }
 
+  // THE TICKET - Last Stop's fifth beat, on a clean sweep only, and the suit
+  // card's price. A bust has broken out of the loop above and its book carries
+  // no ticket (bookTicket refuses one), so the slot stays face down: the ticket
+  // a bust would have won is never shown. The beat is the same length whatever
+  // is under it - pacing that knew the value would announce it before the
+  // ticket turns. Card 4's chip lands with it, on the ticketed total: the one
+  // step from the run to card 3 to the payout.
+  if (round.ticket !== null && !busted) {
+    await revealWait(TICKET_BEAT_MS, 0);
+    const turn = round.revealEvents.length;
+    round.ticketShown = round.ticket;
+    sound.playTicket(round.ticket, cueLead(turn));
+    running *= round.ticket;
+    round.stageMultipliers[last] = quantizeMultiplier(running * familyRules().cost);
+    round.runningWin = round.stageMultipliers[last]! * round.initialBet;
+    await revealWait(TICKET_SETTLE_MS, 0);
+  }
+
   await settleRound();
 }
+
+/** The pause before the ticket turns - longer than a card's own 650ms beat, so
+ *  the last stop reads as its own moment (the owner's call, 2026-09-30: 520ms
+ *  arrived too fast after card 4). Turbo still scales it. */
+const TICKET_BEAT_MS = 1050;
+/** Time for the ticket's flip and its x-step to land before the round settles. */
+const TICKET_SETTLE_MS = 700;
 
 // Turn a book's event list into the on-screen reveal. Shared by a freshly
 // placed bet (/wallet/play) and by replay, which reads an already-settled
@@ -227,6 +266,9 @@ export async function animateRoundFromEvents(
     correct: Boolean(event.correct),
     payout: event.payout,
   }));
+  // Last Stop's ticket, if the round swept - and a refusal for a ticket this
+  // game would never have written (see bookTicket).
+  round.ticket = bookTicket(events as any[], familyRules());
 
   // The book's finalWin event carries the authoritative payout the RGS
   // settled (amount is the multiplier x100 - see math-sdk

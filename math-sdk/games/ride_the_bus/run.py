@@ -47,9 +47,9 @@ if __name__ == "__main__":
 
     # A LIVE VIEW OF THIS BUILD, at http://127.0.0.1:8765.
     #
-    # This run is ~44M simulations over 193 modes and prints a wall of text for
+    # This run is ~58M simulations over 257 modes and prints a wall of text for
     # forty minutes. build_monitor.py runs THIS FILE again as a child process,
-    # reads its output, and serves it as 193 boxes with four progress bars and
+    # reads its output, and serves it as 257 boxes with four progress bars and
     # an ETA; every line still reaches the terminal unchanged. The re-exec is
     # what makes the simulation workers visible - they are separate processes
     # (run_sims.py) and their "Thread 3 finished with 0.961 RTP" lines only
@@ -62,8 +62,8 @@ if __name__ == "__main__":
             build_monitor.run_with_monitor([sys.executable, os.path.abspath(__file__)] + sys.argv[1:])
         )
 
-    # This build is ~44M simulations across the 193 bet modes - 64 choice
-    # combinations in each of three families, plus Three of a Kind - so it
+    # This build is ~58M simulations across the 257 bet modes - 64 choice
+    # combinations in each of four families, plus Three of a Kind - so it
     # runs in parallel.
     # src/state/run_sims.py spawns real multiprocessing.Process
     # workers (not GIL-bound threads), each taking a disjoint slice of the
@@ -174,7 +174,7 @@ if __name__ == "__main__":
     # The monitor's mode table. Sent rather than parsed out of the prints
     # above: this is the one place that knows a mode's family, cost and
     # simulation count before the build starts, which is what lets the page
-    # draw all 193 boxes at rest and weight its progress bar by simulations
+    # draw all 257 boxes at rest and weight its progress bar by simulations
     # instead of by mode count.
     _emit(
         "plan",
@@ -196,9 +196,9 @@ if __name__ == "__main__":
     config = GameConfig()
     gamestate = GameState(config)
 
-    # DEAL ONCE, SCORE 192 TIMES. Every four-guess mode reseeds on the
+    # DEAL ONCE, SCORE 256 TIMES. Every four-guess mode reseeds on the
     # simulation index and shuffles the same 52-card deck, so simulation N
-    # deals identical cards in all 192 of them - and reseeding plus shuffling
+    # deals identical cards in all 256 of them - and reseeding plus shuffling
     # was a fifth of every simulation. The first four cards of every shuffle
     # the build needs are dealt here, once, and each mode reads its cards from
     # the result (gamestate.DealCache). A cache from an earlier build is reused
@@ -219,7 +219,7 @@ if __name__ == "__main__":
             print(f"Deal cache written in {time.time() - _deals_started:.1f}s")
 
     # SCORE EVERY MODE STRAIGHT OFF THE DEAL (direct_books.py) instead of
-    # simulating each one through the SDK. All 192 four-guess modes deal the
+    # simulating each one through the SDK. All 256 four-guess modes deal the
     # same cards for a given simulation, and what a round pays is a pure
     # function of those cards and the mode's rules (GameState.score_round, the
     # one function both paths call) - so each mode is scored against the shared
@@ -315,6 +315,9 @@ if __name__ == "__main__":
                         "forgive": cfg["forgive"],
                         "forgive_from": cfg["forgive_from"],
                         "target_rtp": cfg.get("target_rtp"),
+                        # Last Stop's stack, which pays its suit card - null on
+                        # every other family.
+                        "ticket": [list(pair) for pair in cfg["ticket"]] if cfg.get("ticket") else None,
                     }
                     for key, cfg in MODE_FAMILIES.items()
                 },

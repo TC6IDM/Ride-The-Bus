@@ -9,7 +9,7 @@
 <script lang="ts">
 	import { numberToCurrencyString } from 'utils-shared/amount';
 	import { t } from '../../i18n/i18nDerived';
-	import { formatMultiplier } from '../../game/ui/formatMultiplier';
+	import { formatMultiplier, formatTicket } from '../../game/ui/formatMultiplier';
 	import { FAMILY_RULES, familyOf, parseModeName } from '../../game/math/modes';
 
 	let {
@@ -17,6 +17,7 @@
 		betAmount,
 		eventId,
 		payoutMultiplier,
+		ticket,
 		onplay,
 	}: {
 		/** Bet mode string, e.g. "red_higher_inside_heart". */
@@ -27,6 +28,8 @@
 		eventId: string;
 		/** Payout multiplier from the replay RGS response, or null if not yet known. */
 		payoutMultiplier: number | null;
+		/** The round's Last Stop ticket, or null when it drew none. */
+		ticket: number | null;
 		onplay: () => void;
 	} = $props();
 
@@ -142,6 +145,16 @@
 					<span class="ss-detail-cap">{t('Event')}</span>
 					<span class="ss-detail-val">#{eventId}</span>
 				</div>
+
+				<!-- The ticket a Last Stop sweep drew: the round's "applied
+				     multiplier" in Stake's replay checklist, beside the payout it
+				     multiplied. Absent on a bust, which draws none. -->
+				{#if ticket !== null}
+					<div class="ss-detail-row">
+						<span class="ss-detail-cap">{t('Ticket')}</span>
+						<span class="ss-detail-val">{formatTicket(ticket)}</span>
+					</div>
+				{/if}
 
 				{#if payoutMultiplier !== null}
 					<div class="ss-detail-row">

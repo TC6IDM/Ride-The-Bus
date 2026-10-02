@@ -18,6 +18,8 @@ from game_calculations import (
     build_deck,
     parse_mode_name,
     rank_value,
+    ticket_slot,
+    ticket_values,
 )
 from src.events.events import *
 
@@ -63,6 +65,12 @@ from src.events.events import *
 # ---------------------------------------------------------------------------
 
 _REVEAL = EventConstants.REVEAL.value
+# Last Stop's ticket, after the reveals and before finalWin - on a clean sweep only.
+_TICKET = "ticket"
+# What a right guess on a ticket family's last card multiplies the running
+# total by: nothing. The ticket IS that card's price, and it is applied once, in
+# settle_round, from its own event - see LAST STOP in game_calculations.py.
+TICKET_STAGE_PAYOUT = 1.0
 # (running_multiplier, busted, forgiveness_spent) before a round's first card.
 ROUND_START = (1.0, False, False)
 _SUIT_NAME = {"♥": "heart", "♦": "diamond", "♣": "club", "♠": "spade"}
@@ -293,7 +301,8 @@ class SpinPlan:
     """What run_spin used to re-derive from the mode name on every simulation."""
 
     __slots__ = (
-        "family", "choices", "stages", "retention", "forgive", "forgive_from", "cost", "decay", "deck", "deals"
+        "family", "choices", "stages", "retention", "forgive", "forgive_from", "cost", "decay",
+        "ticket", "ticket_stage", "deck", "deals"
     )
 
     def __init__(self, gamestate, betmode: str):
@@ -307,6 +316,10 @@ class SpinPlan:
         self.forgive_from = config["forgive_from"]
         self.cost = config["cost"]
         self.decay = gamestate.target_rtp_decay(family)
+        # The 20 ticket values a clean sweep draws from, or None - and the card
+        # whose right guess the ticket pays for: the last one. -1 = none.
+        self.ticket = ticket_values(family)
+        self.ticket_stage = self.stages - 1 if self.ticket is not None else -1
         self.deck = DeckCounts(build_deck(family))
         # Only a family on the standard deck can read the shared deal.
         self.deals = None
@@ -351,7 +364,7 @@ class GameState(GameStateOverride):
                     random.shuffle(deck)
                 drawn = deck[:stages]
 
-            reveals, win_amount = self.score_round(plan, drawn)
+            reveals, ticket, win_amount = self.score_round(plan, drawn, sim)
             for stage_index, rank, suit, choice, correct, payout in reveals:
                 # Appended directly rather than through Book.add_event, which
                 # deep-copies. This dict is built on this line and never held
@@ -369,6 +382,8 @@ class GameState(GameStateOverride):
                         "payout": payout,
                     }
                 )
+            if ticket is not None:
+                self.book.events.append({"index": len(self.book.events), "type": _TICKET, "value": ticket})
             self.win_manager.update_spinwin(win_amount)
             self.win_manager.update_gametype_wins(self.gametype)
 
@@ -376,15 +391,16 @@ class GameState(GameStateOverride):
 
         self.imprint_wins()
 
-    def score_round(self, plan: SpinPlan, drawn: list):
+    def score_round(self, plan: SpinPlan, drawn: list, sim: int = None):
         """
         What one deal is worth to one bet mode - THE place this game's rules
         are applied to cards.
 
-        Returns (reveals, win_amount): one (stage_index, rank, suit, choice,
-        correct, payout) per card turned, and the round's payout as a multiple
-        of the base bet. Pure: it reads the plan and the cards and nothing
-        else, and it touches no state.
+        Returns (reveals, ticket, win_amount): one (stage_index, rank, suit,
+        choice, correct, payout) per card turned, the ticket a Last Stop
+        clean sweep drew (None everywhere else), and the round's payout as a
+        multiple of the base bet. Pure: it reads the plan, the cards and - for
+        the ticket alone - the simulation index, and it touches no state.
 
         Both ways of building a book call this - run_spin, inside the SDK's
         per-round machinery, and direct_books.py, which scores every mode
@@ -401,9 +417,9 @@ class GameState(GameStateOverride):
         # IS the combination's length.
         stages = plan.stages
 
-        # What a miss keeps, and whether the first one is forgiven, is the only
-        # thing that separates the three families - see MODE_FAMILIES - and
-        # score_stage reads both off the plan.
+        # What a miss keeps, whether the first one is forgiven, and whether a
+        # clean sweep draws a ticket are what separate the four-guess
+        # families - see MODE_FAMILIES - and score_stage reads them off the plan.
         drawn_ranks = [_RANK_VALUES[rank] for rank, _ in drawn]
 
         # Partial credit: a miss doesn't zero the round - it keeps
@@ -423,7 +439,25 @@ class GameState(GameStateOverride):
         for stage_index in range(stages):
             reveal, state = self.score_stage(plan, drawn, drawn_ranks, stage_index, state)
             reveals.append(reveal)
-        return reveals, self.settle_round(plan, state)
+        ticket = self.draw_ticket(plan, state, sim)
+        return reveals, ticket, self.settle_round(plan, state, ticket)
+
+    @staticmethod
+    def draw_ticket(plan: SpinPlan, state: tuple, sim: int):
+        """
+        The ticket a finished round draws: None unless the family has one AND
+        the round was a clean sweep - every card right, nothing forgiven. A
+        bust draws nothing, so its book carries no ticket at all: showing the
+        ticket a bust would have won is near-miss staging.
+        """
+        if plan.ticket is None:
+            return None
+        _running, busted, forgiveness_spent = state
+        if busted or forgiveness_spent:
+            return None
+        if sim is None:
+            raise ValueError(f"{plan.family}: a clean sweep needs its simulation index to draw a ticket")
+        return plan.ticket[ticket_slot(sim)]
 
     def score_stage(self, plan: SpinPlan, drawn: list, drawn_ranks: list, stage_index: int, state: tuple):
         """
@@ -454,7 +488,11 @@ class GameState(GameStateOverride):
         else:
             stage_retention = plan.retention[stage_index]
 
-        if choice == FREE_CHOICE:
+        if stage_index == plan.ticket_stage:
+            # Last Stop's suit card has no price of its own: a right suit is
+            # paid by the ticket, which settle_round applies from its own event.
+            payout = TICKET_STAGE_PAYOUT
+        elif choice == FREE_CHOICE:
             # No guess: the card is shown and the stage pays decay (p = 1 in
             # the martingale), which is exactly 1.0 on the only family that
             # uses it.
@@ -477,7 +515,7 @@ class GameState(GameStateOverride):
                 busted = True
         return (stage_index, rank, suit, choice, correct, payout), (running_multiplier, busted, forgiveness_spent)
 
-    def settle_round(self, plan: SpinPlan, state: tuple) -> float:
+    def settle_round(self, plan: SpinPlan, state: tuple, ticket=None) -> float:
         """
         What a finished round pays, as a multiple of the base bet.
 
@@ -492,8 +530,16 @@ class GameState(GameStateOverride):
         adjusts loss weight, and refuses outright once the target rises above
         a mode's win-conditional mean (~1.49x). Without this a 2x mode would
         silently settle at half the RTP.
+
+        A Last Stop ticket is the suit card's price, so it multiplies the
+        running total first, then the cost, then the one floor - the order the
+        client's computeFinalMultiplier uses, so the two produce the same
+        float.
         """
-        return self.quantize_multiplier(state[0] * plan.cost)
+        running = state[0]
+        if ticket is not None:
+            running *= ticket
+        return self.quantize_multiplier(running * plan.cost)
 
     def run_freespin(self):
         pass

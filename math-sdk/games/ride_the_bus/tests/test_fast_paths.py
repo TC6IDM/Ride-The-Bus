@@ -102,7 +102,9 @@ def test_price_choice_matches_the_full_table_everywhere():
         decay = gamestate.target_rtp_decay(family)
         stages = len(next(iter(all_mode_combinations(family))))
         # Every retention a stage can be priced against: the family's table,
-        # and the forgiveness value where the family has one.
+        # and the forgiveness value where the family has one. (Last Stop's
+        # suit card is paid by its ticket and never priced, but pricing it
+        # here still checks the arithmetic both paths share.)
         retentions = set(config["retention"])
         if config["forgive"] is not None:
             retentions.add(config["forgive"])

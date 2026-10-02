@@ -198,6 +198,30 @@ from this round's own cards. Substituting it for stages that never happened
 preserves the expectation exactly. If `decay` ever became per-round, this line
 would silently become wrong.
 
+### Last Stop: the suit card is paid by a ticket
+
+Last Stop is Classic until the suit. Cards 1-3 are priced, and bust, exactly as
+on Classic. The suit card has no price of its own: a right suit draws a ticket
+from a stack of 20 (ten 2×, five 3×, three 5×, two 10× - mean 3.5×) and the
+ticket multiplies the running total; a wrong suit keeps 30%, as on Classic. In
+the book the suit card's reveal says `payout: 1.0` and the ticket is an event of
+its own, after the reveals.
+
+That knowingly breaks the martingale on one card. The suit card's expected
+factor is `p × 3.5 + (1 − p) × 0.3`, about 1.10 at 12 in 49, where every priced
+card returns 0.9975 - so a Last Stop mode's raw RTP sits a few percent above
+its Classic twin's, and the reweight pins it to 0.96 by loss weight like every
+other mode's.
+
+Two earlier designs paid for the ticket out of the other cards, and both were
+rejected. Spread over all four cards, it priced a right Higher on an Ace at
+×0.76 - a correct pick that loses money. Taken from card 1 and the suit card
+only, card 1 read 1.28× where Classic reads 1.99× - a mode that cut the
+player's profit and handed it back as a ticket.
+[`model_families.py`](math-sdk/games/ride_the_bus/model_families.py) computes
+the family's figures exactly, over every ordered deal, through the same
+`score_stage`.
+
 ### Flooring, never rounding
 
 ```python
@@ -234,21 +258,29 @@ A mode whose raw RTP is too high gets its losses *up*-weighted; too low, and
 they're *down*-weighted. Because ~half of all rounds are stage-1 busts, there
 is always plenty of zero-weight to tune with.
 
-Result: **193 modes, all at RTP 96.0000%, spread 0.000000%.**
+Last Stop adds one tier: each clean sweep is weighted by its ticket so the
+**published** ticket odds are exactly the stack's - a rare mode sees only a
+couple of hundred sweeps, and How to Play draws a stack of 20 that has to be
+true of the tables (`ticket_weights`).
+
+Result: **193 modes, all at RTP 96.0000%, spread 0.000000%** - 257 once Last
+Stop is built.
 
 ---
 
-## 4. The four families
+## 4. The five families
 
 Three of them are the same four guesses on the same deck; the only thing that
 differs is **what a miss keeps** — and that alone reshapes the entire payout
-curve. The fourth is a different game on the same table.
+curve. The fourth, Last Stop, is Classic until the suit, which it pays with a
+ticket. The fifth is a different game on the same table.
 
 | Family | Prefix | Cost | Retention on a miss | Max win (× base bet) | Forgiveness |
 |---|---|---|---|---|---|
 | Classic | *(none)* | 1× | card 1 nothing, then 30% | 1354.2× | none |
 | Second Chance | `sc_` | 1× | card 1 nothing, then 30% | 585.2× | first miss from card 2 keeps 50%, **play continues** |
 | High Stakes | `hs_` | 1× | card 1 nothing, then 15% | 2237.3× | none |
+| Last Stop | `ls_` | 1× | card 1 nothing, then 30% | 4301.9× | none - a right suit draws a 2-10× ticket |
 | Three of a Kind | `tr_` | **250×** | nothing, ever | 4583.3× | none |
 
 **Three of a Kind** deals three cards from a 12-card deck (A K Q of each suit),
@@ -277,7 +309,7 @@ miss, so each correct guess is priced higher, and it reaches 2237.3×.
 
 **They are the same dial seen from opposite ends.**
 
-### The three guess families cost 1.0×, and that is forced
+### The four guess families cost 1.0×, and that is forced
 
 Second Chance and High Stakes used to cost 2.0×. Both had to come down.
 

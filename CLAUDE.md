@@ -97,7 +97,7 @@ Guess four cards: **colour → higher/lower/equal → inside/outside/equal → s
 All four guesses are picked *before* the round, so **each guess combination is
 its own RGS bet mode**.
 
-**193 published modes = 3 families × 64 playable combinations, plus one.**
+**257 published modes = 4 families × 64 playable combinations, plus one.**
 (`equal` then `inside` is impossible — nothing falls strictly between two cards
 of the same rank — so 64, not the 72 the four lists multiply out to. A mode that
 loses 100% of the time also has zero variance, which the RGS rejects outright.)
@@ -107,7 +107,28 @@ loses 100% of the time also has zero variance, which the RGS rejects outright.)
 | Classic | *(none)* | 1× | card 1 nothing, then 30% | 1354.2× | none |
 | Second Chance | `sc_` | 1× | card 1 nothing, then 30% | 585.2× | first miss from card 2 keeps 50%, play continues |
 | High Stakes | `hs_` | 1× | card 1 nothing, then 15% | 2237.3× | none |
+| Last Stop | `ls_` | 1× | card 1 nothing, then 30% | 4,301.9× | none - a right suit draws a 2-10× ticket in place of its price |
 | Three of a Kind | `tr_` | **250×** | nothing, ever | 4,583.3× base bet | none |
+
+**Last Stop is Classic until the suit** (redesigned 2026-09-30): cards 1-3 are
+Classic's to the bit, and the suit card has no price of its own - a right suit
+draws a bus ticket from a stack of 20 (ten 2×, five 3×, three 5×, two 10×) that
+multiplies the running total, and a wrong one keeps Classic's 30%. The book
+writes the suit card's `payout` as 1.0 (`TICKET_STAGE_PAYOUT`, both sides) and
+the ticket as its own event; card 4's chip lands WITH the ticket. **A correct
+pick never shows under 1×** (the owner's rule), and **no card is priced below
+Classic's** (the owner's call: the design before this took the ticket's price
+out of card 1 and the suit card, and card 1 read 1.28× against Classic's
+1.99× - "cutting their profit, and the profit comes back as the ticket").
+Modelled exactly by `model_families.py`: std 4.5-31.0, etl40b 0.585, CVaR 475,
+max 4,301.9×, between Classic and High Stakes by std on all 64 combinations -
+the fourth bolt, the orange (`--vol-ls`). The reweight publishes the ticket
+odds EXACTLY as the stack (`ticket_weights`), because How to Play draws the
+stack. A bust carries no ticket at all. **Built 2026-10-01**: parity replays
+all 257 modes; the built worst cases (std 31.4, etl40b 0.591, CVaR 483.5) sit
+within a few percent of the model. The parity replays go family by family
+(`currentFamilies()`), so a family whose rules move before a rebuild is the
+only one they skip. The argument is LAST STOP in `game_calculations.py`.
 
 **Three of a Kind is a different game on the same table**: a 12-card deck (A K
 Q of each suit), **three cards**, no guesses — card 1 is dealt, cards 2 and 3
@@ -185,8 +206,13 @@ reading before proposing it again.
   *above* a family's ceiling falls to Epic rather than claiming the rarest screen
   in the game. `winTiers.test.ts` pins both directions.
 - **The takeover is made of the round, not of gradients** — its centrepiece is
-  the four cards just played, fanned, each drawn by **`CardFace`** - the same
-  face the board turned over, not a lookalike. `revealedCards` is **snapshotted** into `celebration`,
+  the cards just played, fanned, each drawn by **`CardFace`** - the same
+  face the board turned over, not a lookalike - and, on a Last Stop sweep, the
+  ticket laid ON the hand: the four cards fan as on every family and the ticket
+  (**`TicketFace`**) sits over their middle, lower, in front, dealt after the
+  last card (owner's call, 2026-09-30 - as a fifth place in the fan it read as
+  a fifth card) - and it rides the hand's hop, with the middle of the hand
+  (`hopFan`, 2026-10-01). `revealedCards` is **snapshotted** into `celebration`,
   not referenced. The fan marks what happened: a `--loss` cross on the busted
   card (desaturated), a `--forgiven` arrow on a Second Chance one (**not**
   dimmed). Exactly three shapes can reach it; the fourth is defensive only.
@@ -253,8 +279,8 @@ reading before proposing it again.
   the four guesses. `modes.test.ts` greps both call sites; this has failed twice.
 - The volatility rating is a **ranking of published figures, not a marketing
   claim**, re-derived from `stats_summary.json` by `volatility.test.ts` — and it
-  reads **two columns**. The four-guess families rank by std (1 / 3 / 5, per
-  combination); Three of a Kind is drawn **full and purple** by its zero-rate
+  reads **two columns**. The four-guess families rank by std (1 / 3 / 4 / 5 -
+  Second Chance, Classic, Last Stop, High Stakes - per combination); Three of a Kind is drawn **full and purple** by its zero-rate
   (1 in 19 pays anything, against 1 in 2 everywhere else), because by std alone
   it is calmer than most Classic modes and the comment beside the rating says
   so. The test pins both columns.
@@ -388,6 +414,29 @@ reading before proposing it again.
   locked, Stop offered), because the stops live there. The DEV-only martingale that used to sit behind
   `ADVANCED_ENABLED` was deleted, and `autoplayLimits.test.ts` fails if bet
   progression comes back.
+- **The table die fills the four picks; only the deal buys them** (owner's
+  call, 2026-10-01, chosen over a published random-picks mode).
+  `game/bet/dicePicks.ts` draws one of the 64 published combinations evenly,
+  never the one already on the board (so never Equal-then-Inside), and
+  `setAllGuesses` assigns it on the CLICK - the setters toggle, and a deal
+  pressed mid-tumble buys what the squares show. `TableDie.svelte` lives
+  inside `.choice-row`, so the row's lock and the takeover's dimming are its
+  own, and `choicesLocked()` refuses a keyboard roll; no die on Three of a
+  Kind. Physical `left`, never logical: the props do not mirror in Arabic,
+  and a mirrored die lands on the bottom-left chips. Drawn by `DieFace`
+  through `game/ui/dieGeometry.ts`, on table.css's `--flat` / `--upright`.
+  It sounds its own roll (`playDiceRoll`, knocks on `DIE_LANDINGS`) and
+  `pressCues`' `OWN_CUE` keeps the press cue off it. `dicePicks.test.ts`.
+- **Space always deals** (owner's call, 2026-10-02). `spaceIsForUs` yields it
+  only to a field being typed in; a focused guess square, the die or a bar
+  button no longer takes it as its own activation key (a mouse click focuses
+  a button, so "pick, then Space" toggled the pick off), and onKeyUp takes the
+  keyup of a press it handled, which is when a button would fire. An open
+  panel (`chromeInert`), the intro and the takeover still keep Space.
+  `launchGuards.test.ts` / `dicePicks.test.ts`.
+- **The ticket stack is on Last Stop's table only** (`TableScene`'s
+  `showTickets`, owner's call 2026-10-02): elsewhere it offered a multiplier
+  that could not be won. The cup it replaced stays gone.
 - **Keys 1-4 step the four guesses** (`game/bet/guessKeys.ts`), through the
   board's own setters, gated beside the spacebar in `ControlBar.svelte` - never
   under the intro, a panel or the takeover, never onto Inside after an Equal,
@@ -548,6 +597,16 @@ reading before proposing it again.
   NON-BREAKING space, written as `'\u00a0'`, plus `min-height: 1lh` - a plain
   space collapses the line, and a rewrite once did exactly that, so the board
   jumped at the fourth pick and at every settle. `boardStill.test.ts` pins both.
+- **The deal lands ON the pile, rests, and a slam finishes it** (2026-10-01).
+  Each card - and Last Stop's ticket - is fitted to the prop it goes back to
+  (centre, angle, foreshortened size, measured off the prop: a fixed scale
+  hovered over the deck at some sizes), fades into it, rests `DEAL_REST_MS`
+  out of sight and is dealt back; the reveal holds card 1 back by the same
+  beat. Every piece is measured AT REST - the running transform taken out,
+  the ticket slot's own `rotate` turned back - because a deal measured mid-
+  flight sent cards across the board under fast slams. A slam `finish()`es
+  the deal, and the bus rides on `--flip-dur`, so nothing is left travelling.
+  No idle "Pays up to" line: removed by the owner's call the same day.
 - **Card backs and the deck carry the house name, not the logo** - "TAKEOVER /
   CASINO" in Geist 400 at 58% white on a plain label of the card's own red with
   a faint hairline edge (set straight on the back, the crosshatch ran through
@@ -942,7 +1001,17 @@ between a one-row bar and a two-row one.
 
 ## Current state and outstanding work
 
-861/861 tests (none skipped), 0 type errors, 0 CSS warnings, lint clean, and
+**Last Stop is built (2026-10-01, the "Classic until the suit" design), and
+nothing is committed.** 915 tests, 914 pass, 1 FAILS: `volatility.test.ts`'s
+per-combination ordering, on three of 64 combinations, where the build's
+sampling put Last Stop level with or above High Stakes - two Higher/Lower +
+Outside modes the exact model puts only 0.78% apart, and one Higher + Inside
+mode where Last Stop's sampled std ran 12% hot (an open decision - status.md).
+0 type errors, 0 CSS warnings, lint clean; math 26 passed. The Last Stop row
+of `winTiers.ts` is measured off the published tables. Still to do:
+`npm run audio` on the ticket cue.
+
+Before Last Stop: 861/861 tests (none skipped), 0 type errors, 0 CSS warnings, lint clean, and
 the client reproduces the published books of all **193** modes exactly — the
 parity test replays a 400-book slice of every mode off `index.json`, three-card
 trips books included. The build on disk is the **2026-09-22 02:30** one: High
@@ -1089,7 +1158,7 @@ RGS, `npm run dev`, the six scenario aliases, the headless CDP driver
 (`npm run shots`) that every visual judgement in this repo has been made with,
 and the `playwright-cli` recipe for looking at one screen by hand.
 
-The single biggest open item: **`RGS_TEST_PLAN.md` holds 103 live-session checks
+The single biggest open item: **`RGS_TEST_PLAN.md` holds 115 live-session checks
 and none has been run.** They need a real Stake session and cannot be done
 locally.
 

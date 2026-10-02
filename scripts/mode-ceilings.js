@@ -78,6 +78,7 @@ for (const name of published) {
 const FAMILY_PREFIXES = [
   ['tr_', 'tr'],
   ['sc_', 'sc'],
+  ['ls_', 'ls'],
   ['hs_', 'hs'],
 ];
 const familyOf = (name) =>

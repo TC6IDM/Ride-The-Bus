@@ -367,4 +367,36 @@ export default {
 		'× means times your base bet.',
 	'Times your base bet':
 		'Times your base bet',
+	// Added 2026-09-27: Last Stop, the fourth guess family - its name, rule, ticket and ceiling line.
+	// The fourth guess family's name - picker, tabs, the bar's MODE button, the ticket's band. A bus's last stop: the ride ends on a ticket.
+	'Last Stop':
+		'Last Stop',
+	// Last Stop's one-line rule, in the picker and above its How to Play tab (FAMILY_BLURB.ls). Classic's two sentences, then the ticket that pays the suit card.
+	'A wrong first card ends the round. Later misses keep 30% of your running total. A right suit draws a ticket that multiplies it by 2 to 10.':
+		'A wrong first card ends the round. Later misses keep 30% of your running total. A right suit draws a ticket that multiplies it by 2 to 10.',
+	// The replay details' row for the ticket a Last Stop round drew, and the ticket's spoken name on the board.
+	'Ticket':
+		'Ticket',
+	// How to Play, Last Stop tab: the heading over the stack of 20.
+	'The ticket':
+		'The ticket',
+	// How to Play, Last Stop tab: under The ticket, before the stack.
+	'Drawn only when all four are right, from a stack of 20. It multiplies your running total.':
+		'Drawn only when all four are right, from a stack of 20. It multiplies your running total.',
+	// How to Play, Last Stop tab: above the payout table, whose suit row reads 2.00× – 10.00× - the ticket, not a price.
+	'Cards 1 to 3 are priced exactly as on Classic. A right suit draws the ticket in place of a price.':
+		'Cards 1 to 3 are priced exactly as on Classic. A right suit draws the ticket in place of a price.',
+	// How to Play, Last Stop tab: after the example round, whose last total is the range the ticket decides - what the same four cards end at on Classic.
+	'On Classic the same cards end at %s.':
+		'On Classic the same cards end at %s.',
+	// How to Play, Last Stop tab: Full game wins - the maximum needs the top ticket as well as the two Equals.
+	'A full game win pays more the harder your picks were, and the ticket multiplies it. Two Equal picks and a ×10 ticket reach this mode’s maximum: %m your bet.':
+		'A full game win pays more the harder your picks were, and the ticket multiplies it. Two Equal picks and a ×10 ticket reach this mode’s maximum: %m your bet.',
+	// Added 2026-10-01: the table die.
+	// The table die's accessible name (TableDie.svelte) - it picks all four guesses at random.
+	'Roll the die for random guesses':
+		'Roll the die for random guesses',
+	// How to Play, Controls: the line for the table die. Each locale's own words for 'guesses' and 'deal'.
+	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
+		'The die beside the guesses picks all four at random. Nothing is played until you deal.',
 };

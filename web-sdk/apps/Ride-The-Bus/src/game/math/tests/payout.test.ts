@@ -18,18 +18,23 @@ import { createInterface } from 'node:readline';
 import { createZstdDecompress } from 'node:zlib';
 
 import {
+  bookTicket,
   computeFinalMultiplier,
   DECAY,
   decayFor,
   forgivenessAvailable,
+  guessPrice,
   partialMultiplier,
   quantizeMultiplier,
   STAGE_RETENTION,
   stageRetention,
   TARGET_RTP,
+  TICKET_STAGE_PAYOUT,
+  ticketStage,
+  topTicket,
 } from '../payout.ts';
 import { FAMILY_RULES, MODE_FAMILIES, familyOf, stageCount, type ModeFamily } from '../modes.ts';
-import { INDEX, PUBLISH_DIR, mathBuildIsCurrent } from '../../mathBuild.testlib.ts';
+import { INDEX, PUBLISH_DIR, currentFamilies } from '../../mathBuild.testlib.ts';
 
 describe('constants match the math-sdk', () => {
   test('DECAY**4 === target_rtp', () => {
@@ -149,9 +154,12 @@ async function readBooks(file: string, limit: number): Promise<Book[]> {
 
 describe('parity with the published books', () => {
   // Absent OR stale skips (a build publishing a different mode list from the
-  // client predates it - see mathBuild.testlib.ts). A build with the same
-  // modes and different numbers is a drift, and fails below as it must.
-  const available = mathBuildIsCurrent();
+  // client predates it - see mathBuild.testlib.ts), family by family: a
+  // family whose rules moved since the build is left out and the rest are
+  // still replayed. A build with the same modes and rules and different
+  // numbers is a drift, and fails below as it must.
+  const families = currentFamilies();
+  const available = families.size > 0;
 
   test('publish_files is current (skip parity if the math has not been rebuilt)', () => {
     assert.ok(true);
@@ -164,12 +172,14 @@ describe('parity with the published books', () => {
     // mode was renamed, the previous build's books_tr_any_equal_equal_any
     // survived beside the new file and a listing replayed it against rules it
     // was never built to. index.json is what the RGS is given, and it is the
-    // set mathBuildIsCurrent() judged current a moment ago.
+    // set mathBuild() read a moment ago, less any family awaiting a rebuild.
     const index = JSON.parse(readFileSync(INDEX, 'utf8')) as { modes: { name: string; events: string }[] };
-    const files = index.modes.map((m) => m.events);
+    const files = index.modes.filter((m) => families.has(familyOf(m.name))).map((m) => m.events);
     assert.ok(files.length > 0, 'no book files found');
 
     let checked = 0;
+    let ticketed = 0;
+    let ticketFamilyBuilt = false;
     const mismatches: string[] = [];
 
     // A slice of every mode - enough to catch a formula change, fast enough
@@ -187,11 +197,18 @@ describe('parity with the published books', () => {
       // silently skipped every trips book, and a parity test that checks
       // nothing passes.
       const dealt = stageCount(rules);
-      for (const book of await readBooks(join(PUBLISH_DIR, file), 400)) {
+      // A ticket family reads a longer slice: a sweep is 1 round in 29 to 1 in
+      // 3,539 there, and a slice with no sweep in it checks no ticket at all.
+      if (rules.ticket) ticketFamilyBuilt = true;
+      for (const book of await readBooks(join(PUBLISH_DIR, file), rules.ticket ? 2000 : 400)) {
         const reveals = (book.events || []).filter((e: any) => e.type === 'reveal');
         assert.equal(reveals.length, dealt, `${file} id=${book.id}: ${reveals.length} reveals, family deals ${dealt}`);
         const stages = reveals.map((e: any) => ({ correct: Boolean(e.correct), payout: e.payout }));
-        const got = computeFinalMultiplier(stages, rules);
+        // The ticket the book drew, through the same reader the reveal uses -
+        // which refuses a ticket on a round with a miss.
+        const ticket = bookTicket(book.events || [], rules);
+        if (ticket !== null) ticketed += 1;
+        const got = computeFinalMultiplier(stages, rules, ticket);
         const want = book.payoutMultiplier / 100;
         if (Math.abs(got - want) > 1e-9) {
           if (mismatches.length < 5) {
@@ -219,7 +236,11 @@ describe('parity with the published books', () => {
       `${mismatches.length} payout mismatches across ${checked} books:\n  ${mismatches.join('\n  ')}`,
     );
     assert.ok(checked > 1000, `only ${checked} books checked`);
-    console.log(`    verified ${checked.toLocaleString()} published books across ${files.length} modes`);
+    if (ticketFamilyBuilt) assert.ok(ticketed > 100, `only ${ticketed} ticketed books checked - the ticket went unverified`);
+    console.log(
+      `    verified ${checked.toLocaleString()} published books across ${files.length} modes` +
+        (families.size < MODE_FAMILIES.length ? ` (${[...families].join(', ')} - the rest await a rebuild)` : ''),
+    );
   });
 });
 
@@ -249,11 +270,13 @@ describe('mode families', () => {
     const stages = probabilities.map((probability, stage) => ({
       correct: true,
       // No miss occurs on this path, so any forgiveness is still in hand and is
-      // what every stage is priced against. The family's own decay, exactly
-      // as gamestate.py builds the stage table.
-      payout: partialMultiplier(probability, stage, stageRetention(rules, stage, false), decayFor(rules)),
+      // what every stage is priced against - exactly as gamestate.py builds the
+      // stage table. A ticket family's last card prices at 1.
+      payout: guessPrice(rules, stage, probability),
     }));
-    return computeFinalMultiplier(stages, rules);
+    // A clean sweep of a ticket family draws a ticket - its suit card's price -
+    // and the ceiling is the best route with the best one.
+    return computeFinalMultiplier(stages, rules, rules.ticket ? topTicket(rules) : null);
   };
 
   test('each family reaches the ceiling its design was chosen for', () => {
@@ -261,6 +284,7 @@ describe('mode families', () => {
     assert.equal(maxWinFor('sc'), 585.2);
     assert.equal(maxWinFor('hs'), 2237.3);
     assert.equal(maxWinFor('tr'), 4583.3);
+    assert.equal(maxWinFor('ls'), 4301.9);
   });
 
   test('Three of a Kind is 1 x 11/3 x 5, times its cost of 250 - fair odds, three cards', () => {
@@ -390,18 +414,26 @@ describe('mode families', () => {
     assert.equal(forgivenessAvailable(FAMILY_RULES.base, 1, false), false, 'base forgives nothing');
   });
 
-  test('a stage is priced against the retention its miss would bank', () => {
-    // The martingale identity, checked at every stage of every family in both
-    // forgiveness states: p*m + (1-p)*retention === decay.
+  test('a stage is priced against the retention its miss is worth', () => {
+    // The martingale identity, checked at every priced stage of every family
+    // in both forgiveness states: p*m + (1-p)*retention === decay. guessPrice
+    // is the one call every price takes. Last Stop's suit card is not priced -
+    // the ticket pays it - and reads exactly 1 at every probability.
     for (const family of MODE_FAMILIES) {
       const rules = FAMILY_RULES[family];
+      const decay = decayFor(rules);
       for (const spent of [false, true]) {
         for (let stage = 0; stage < rules.retention.length; stage += 1) {
           const retention = stageRetention(rules, stage, spent);
           for (const p of [0.05, 0.25, 0.5, 0.8, 0.98]) {
-            const m = partialMultiplier(p, stage, retention);
+            const m = guessPrice(rules, stage, p, spent);
+            if (stage === ticketStage(rules)) {
+              assert.equal(m, TICKET_STAGE_PAYOUT, `${family} stage ${stage}: the ticket's card has no price`);
+              continue;
+            }
+            assert.equal(m, partialMultiplier(p, stage, retention, decay));
             assert.ok(
-              Math.abs(p * m + (1 - p) * retention - DECAY) < 1e-12,
+              Math.abs(p * m + (1 - p) * retention - decay) < 1e-12,
               `${family} stage ${stage} spent=${spent} p=${p} breaks the martingale`,
             );
           }

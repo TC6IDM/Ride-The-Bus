@@ -8,9 +8,13 @@ one is the default to submit; the **long** one is there if a longer slot needs
 filling. They say the same thing at three sizes — pick one, don't mix.
 
 Every claim in them is checkable against the build: 96.00% RTP on every mode,
-2237.3× ceiling on High Stakes, all four guesses committed before the bet, one
-price for the three guess modes, and Three of a Kind at 250× the bet paying
-4583.3× it about one round in nineteen (recorded hit rate 1 in 19.1).
+2237.3× ceiling on High Stakes, 4301.9× on Last Stop (its best route with the
+10× ticket), a ticket stack of ten 2×, five 3×, three 5× and two 10×, all four
+guesses committed before the bet, one price for the four guess modes, and Three
+of a Kind at 250× the bet paying 4583.3× it about one round in nineteen
+(recorded hit rate 1 in 19.1). The Last Stop figures are the 2026-10-01
+build's: 4301.9× reached by its eight two-Equal modes, and the published
+ticket odds the stack's to within 3.3e-6 of one in twenty on all 64.
 
 ---
 
@@ -34,10 +38,13 @@ price for the three guess modes, and Three of a Kind at 250× the bet paying
 > 1.19×, and the odds shift under you as the run builds. Three guess modes
 > change only what a miss leaves behind: Classic keeps 30%, High Stakes keeps
 > 15% and pays further, and Second Chance keeps half of what you had built on
-> your first wrong call from card two on and plays through it. All three cost
-> the same and return the same 96.00%.
+> your first wrong call from card two on and plays through it. **Last Stop**
+> plays Classic's first three cards and pays a right suit with a bus ticket
+> that multiplies the run by 2 to 10. All four cost the same and return the
+> same 96.00%.
 >
-> Four correct calls is the whole game. The longest of them pays 2237.3×.
+> Four correct calls is the whole game. The longest of them pays 4301.9×, on
+> Last Stop with the 10× ticket.
 >
 > Or skip the guessing. **Three of a Kind** deals three cards from a twelve-card
 > deck of Aces, Kings and Queens: cards two and three must match card one, and
@@ -63,13 +70,16 @@ price for the three guess modes, and Three of a Kind at 250× the bet paying
 > shot on the table at roughly 12×. The multiplier compounds across all four
 > calls, and the odds move under you the whole way down.
 >
-> Three ways to back the same four calls, at the same price. **Classic** keeps
+> Four ways to back the same four calls, at the same price. **Classic** keeps
 > 30% of what you had built when a call misses. **High Stakes** keeps only 15%,
 > and pays every correct call more for the shortfall — the steepest climb, and
 > the 2237.3× ceiling. **Second Chance** keeps half of what you had built on
 > your first wrong call from card two onward and plays on through it, trading
-> the ceiling for the odds of finishing. Every mode returns the same 96.00%;
-> what changes is the shape of the ride.
+> the ceiling for the odds of finishing. **Last Stop** ends the ride on a
+> ticket: land all four and one is drawn from a stack of twenty - ten 2×, five
+> 3×, three 5×, two 10× - and multiplies everything you built, up to 4301.9×.
+> The first three cards pay as they do on Classic, and a miss keeps 30%. Every
+> mode returns the same 96.00%; what changes is the shape of the ride.
 >
 > And one way to skip the calls altogether. **Three of a Kind** is a different
 > game on the same table: three cards from a twelve-card deck of Aces, Kings and

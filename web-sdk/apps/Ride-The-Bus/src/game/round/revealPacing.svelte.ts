@@ -72,6 +72,15 @@ export const revealIsInstant = () => paceMs(650, 0) <= 0;
 const INSTANT_CUE_STAGGER = 0.06;
 export const cueLead = (index: number) => (revealIsInstant() ? index * INSTANT_CUE_STAGGER : 0);
 
+/**
+ * The beat the hand rests on the deck between gathering the last round's cards
+ * and dealing the next (GameBoard's dealFromDeck), at normal speed - scaled by
+ * turbo like every pause here (paceMs). The owner's call, 2026-10-01: with no
+ * rest the cards went back and came out in one motion. The reveal holds the
+ * first card's turn back by the same beat, so it never turns mid-flight.
+ */
+export const DEAL_REST_MS = 300;
+
 // Card flip duration (seconds) for the --flip-dur CSS var; shrinks to 0 as
 // turbo approaches instant, and snaps to 0 on a slam.
 export const flipDurSec = () =>

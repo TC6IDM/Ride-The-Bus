@@ -37,6 +37,10 @@ positive for every mode because TARGET_RTP (0.96) is well under each mode's
 win-conditional mean (~2x), so no mode ever needs losses removed entirely -
 we never have to fabricate wins.
 
+Last Stop adds one tier: its clean sweeps weigh K scaled by their ticket, so
+the published ticket odds are the stack's exactly (see ticket_weights). Every
+other family's tables are computed exactly as before, to the byte.
+
 This replaces the pipeline's default behaviour of copying the raw weight-1
 lookup straight into the published _0 file (src/write_data/write_data.py:251,
 which only fires when the _0 file is absent - the reason a stale _0 lingered
@@ -44,46 +48,125 @@ before). Run automatically at the end of run.py.
 """
 
 import csv
+import io
 import os
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
-from game_calculations import MODE_FAMILIES, all_published_modes, mode_name
+import zstandard as zstd
+
+from game_calculations import MODE_FAMILIES, all_published_modes, family_of, mode_name
 
 # Integer scale for the winning-outcome weight. Large enough that rounding the
 # losing weight to an integer perturbs RTP by well under 0.001x.
 WEIGHT_SCALE = 1_000_000
 
-
-def _segmented_path(game_dir: str, mode: str) -> str:
-    return os.path.join(game_dir, "library", "lookup_tables", f"lookUpTableSegmented_{mode}.csv")
-
-
-def _publish_path(game_dir: str, mode: str) -> str:
-    return os.path.join(game_dir, "library", "publish_files", f"lookUpTable_{mode}_0.csv")
+# How a ticket event reads inside a book line (the SDK's encoder: ", " and ": ").
+_TICKET_MARK = '"type": "ticket", "value": '
 
 
-def reweight_mode(game_dir: str, mode: str, target_rtp: float) -> dict:
+def _segmented_path(game_dir: str, mode: str, library: str = "library") -> str:
+    return os.path.join(game_dir, library, "lookup_tables", f"lookUpTableSegmented_{mode}.csv")
+
+
+def _publish_path(game_dir: str, mode: str, library: str = "library") -> str:
+    return os.path.join(game_dir, library, "publish_files", f"lookUpTable_{mode}_0.csv")
+
+
+def _book_path(game_dir: str, mode: str, library: str = "library") -> str:
+    return os.path.join(game_dir, library, "publish_files", f"books_{mode}.jsonl.zst")
+
+
+def read_tickets(book_path: str) -> dict:
+    """
+    sim id (as the table writes it) -> ticket value, for every book that
+    carries one. Read off the published books rather than a sidecar, because
+    the books are what the RGS serves and both ways of building them (direct
+    and the SDK's) write the same ones.
+    """
+    tickets = {}
+    with open(book_path, "rb") as fh:
+        lines = io.TextIOWrapper(zstd.ZstdDecompressor().stream_reader(fh), encoding="UTF-8")
+        for line in lines:
+            at = line.find(_TICKET_MARK)
+            if at < 0:
+                continue
+            # Every line opens '{"id": <n>, ...'.
+            sim_id = line[7 : line.index(",", 7)]
+            start = at + len(_TICKET_MARK)
+            tickets[sim_id] = int(line[start : line.index("}", start)])
+    return tickets
+
+
+def ticket_weights(family: str, sampled: dict) -> dict:
+    """
+    The weight a clean sweep gets per ticket value, so that the PUBLISHED
+    ticket odds are exactly the stack's - not whatever this build happened to
+    draw.
+
+    Tickets are drawn per simulation, and a rare mode sees only a couple of
+    hundred sweeps, so its sampled 10x share could land at 7% or 13% while How
+    to Play draws a stack of 20 that says 10%. Scaling each ticket's sweeps by
+    (stack share / sampled share) makes the published conditional distribution
+    the stack's to within integer rounding, and leaves the total weight on
+    sweeps where it was - so it moves no RTP by itself; the loss weight is
+    still what pins the mode to target.
+    """
+    stack = MODE_FAMILIES[family]["ticket"]
+    in_stack = sum(count for _value, count in stack)
+    drawn = sum(sampled.values())
+    weights = {}
+    for value, count in stack:
+        got = sampled.get(value, 0)
+        if got == 0:
+            raise ValueError(
+                f"{family}: no sweep in this mode drew the {value}x ticket, so its published share "
+                f"cannot be made {count} in {in_stack}. Expected about once in 1e11 builds."
+            )
+        weights[value] = round(WEIGHT_SCALE * (count / in_stack) / (got / drawn))
+    return weights
+
+
+def reweight_mode(game_dir: str, mode: str, target_rtp: float, library: str = "library") -> dict:
     """Rewrite one mode's published _0 lookup table to hit target_rtp exactly.
 
     Reads the SEGMENTED table and writes the PUBLISHED one, so it is idempotent
     and independent of every other mode - which is what makes reweight_all
     safe to run across a process pool, and safe to re-run on a finished build.
+
+    On a family with a ticket, each clean sweep is weighted by its ticket (see
+    ticket_weights) before the loss weight is solved.
     """
     started = time.perf_counter()
-    seg = _segmented_path(game_dir, mode)
-    rows = []  # (sim_id, payout_float)
+    seg = _segmented_path(game_dir, mode, library)
+    family = family_of(mode)
+    tickets = None
+    if MODE_FAMILIES[family].get("ticket") is not None:
+        tickets = read_tickets(_book_path(game_dir, mode, library))
+    rows = []  # (sim_id, payout_float, weight or None for a loss)
     win_payout_sum = 0.0
+    win_weight = 0
+    weighted_win_sum = 0.0
     num_wins = 0
     num_losses = 0
+    sampled = {}
+    if tickets is not None:
+        for value in tickets.values():
+            sampled[value] = sampled.get(value, 0) + 1
+    by_ticket = ticket_weights(family, sampled) if tickets else {}
     with open(seg, newline="", encoding="UTF-8") as f:
         for sim_id, _criteria, payout, *_rest in csv.reader(f):
             payout = float(payout)
-            rows.append((sim_id, payout))
             if payout > 0:
+                ticket = tickets.get(sim_id) if tickets else None
+                weight = WEIGHT_SCALE if ticket is None else by_ticket[ticket]
+                rows.append((sim_id, payout, weight))
                 win_payout_sum += payout
+                win_weight += weight
+                weighted_win_sum += weight * payout
                 num_wins += 1
             else:
+                rows.append((sim_id, payout, None))
                 num_losses += 1
 
     if num_losses == 0:
@@ -92,8 +175,15 @@ def reweight_mode(game_dir: str, mode: str, target_rtp: float) -> dict:
             f"(this should be impossible; stage-1 colour misses always bust to 0)."
         )
 
-    # K*win_sum / (K*num_wins + w0*num_losses) == target  ->  solve w0
-    loss_weight = (WEIGHT_SCALE * win_payout_sum / target_rtp - WEIGHT_SCALE * num_wins) / num_losses
+    if tickets is None:
+        # K*win_sum / (K*num_wins + w0*num_losses) == target  ->  solve w0.
+        # Written exactly as it always was: summing K*payout row by row is not
+        # the same float as K*sum(payout), and a loss weight one unit off
+        # would change every existing mode's published table.
+        loss_weight = (WEIGHT_SCALE * win_payout_sum / target_rtp - WEIGHT_SCALE * num_wins) / num_losses
+    else:
+        # The same equation with each sweep carrying its ticket's weight.
+        loss_weight = (weighted_win_sum / target_rtp - win_weight) / num_losses
     loss_weight = round(loss_weight)
     if loss_weight < 1:
         # target >= win-conditional mean: can't reach by adding losses. Not
@@ -104,36 +194,45 @@ def reweight_mode(game_dir: str, mode: str, target_rtp: float) -> dict:
             f"({win_payout_sum / num_wins:.3f}x); reweight cannot lower to target."
         )
 
-    pub = _publish_path(game_dir, mode)
+    pub = _publish_path(game_dir, mode, library)
     with open(pub, "w", newline="", encoding="UTF-8") as f:
         writer = csv.writer(f, lineterminator="\n")
-        for sim_id, payout in rows:
-            weight = WEIGHT_SCALE if payout > 0 else loss_weight
+        for sim_id, payout, weight in rows:
             # payout stored as integer hundredths (x100), a multiple of 10
             # since payouts are already floored to 0.1x by quantize_multiplier.
-            writer.writerow([sim_id, weight, int(round(payout * 100))])
+            writer.writerow([sim_id, loss_weight if weight is None else weight, int(round(payout * 100))])
 
-    total_weight = WEIGHT_SCALE * num_wins + loss_weight * num_losses
-    realized = WEIGHT_SCALE * win_payout_sum / total_weight
-    return {
+    if tickets is None:
+        total_weight = WEIGHT_SCALE * num_wins + loss_weight * num_losses
+        realized = WEIGHT_SCALE * win_payout_sum / total_weight
+    else:
+        total_weight = win_weight + loss_weight * num_losses
+        realized = weighted_win_sum / total_weight
+    result = {
         "mode": mode,
         "realized_rtp": realized,
         "num_wins": num_wins,
         "num_losses": num_losses,
         "loss_weight": loss_weight,
-        "hit_rate_1_in": total_weight / (WEIGHT_SCALE * num_wins),
+        "hit_rate_1_in": total_weight / win_weight,
         "rows": num_wins + num_losses,
         "seconds": time.perf_counter() - started,
     }
+    if tickets is not None:
+        swept = sum(by_ticket[value] * n for value, n in sampled.items())
+        result["ticket_shares"] = {value: by_ticket[value] * n / swept for value, n in sorted(sampled.items())}
+        result["ticket_1_in"] = total_weight / swept
+    return result
 
 
 def _reweight_job(args):
-    """Pool entry point: (game_dir, mode, target) -> result dict."""
-    game_dir, mode, target = args
-    return reweight_mode(game_dir, mode, target)
+    """Pool entry point: (game_dir, mode, target, library) -> result dict."""
+    return reweight_mode(*args)
 
 
-def reweight_all(game_dir: str, target_rtp: float, on_mode=None, workers: int = 1) -> list:
+def reweight_all(
+    game_dir: str, target_rtp: float, on_mode=None, workers: int = 1, library: str = "library", modes=None
+) -> list:
     """
     Reweight every published mode's lookup table onto the common target.
 
@@ -143,15 +242,22 @@ def reweight_all(game_dir: str, target_rtp: float, on_mode=None, workers: int = 
     already scales its multipliers by cost for exactly this reason; this is the
     matching half, and without it the 2x families would be reweighted down to
     48% RTP and fail the RTP band outright.
+
+    `library` and `modes` exist for a scratch build (RTB_ONLY_MODES into
+    library_test/), which stops before publish: scratch_stats.py reweights
+    just its modes, in its own folder, to read their figures.
     """
     jobs = []
     for family, combo in all_published_modes():
+        name = mode_name(*combo, family=family)
+        if modes is not None and name not in modes:
+            continue
         cost = MODE_FAMILIES[family]["cost"]
-        jobs.append(((game_dir, mode_name(*combo, family=family), target_rtp * cost), cost))
+        jobs.append(((game_dir, name, target_rtp * cost, library), cost))
 
     results = []
     # on_mode is called after each table is rewritten, with (index, result).
-    # This loop is minutes of silence otherwise - 193 tables of up to 800k rows
+    # This loop is minutes of silence otherwise - 257 tables of up to 800k rows
     # each - so the build monitor uses it for per-mode progress. It stays
     # optional: nothing here depends on anyone watching.
     if workers and workers > 1 and len(jobs) > 1:

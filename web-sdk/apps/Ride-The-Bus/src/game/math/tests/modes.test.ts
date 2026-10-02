@@ -71,7 +71,7 @@ describe('allPlayableModes', () => {
     const fixed = MODE_FAMILIES.filter((family) => FAMILY_RULES[family].fixedChoices !== null);
     assert.deepEqual(fixed, ['tr'], 'Three of a Kind is the one family with no guesses');
     assert.equal(all.length, 64 * fourGuess.length + fixed.length);
-    assert.equal(all.length, 193);
+    assert.equal(all.length, 257);
     assert.equal(new Set(all).size, all.length, 'no duplicates');
 
     for (const family of fourGuess) {
@@ -138,7 +138,7 @@ describe('allPlayableModes', () => {
     for (const name of allPlayableModes()) {
       if (familyOf(name) !== 'base') continue;
       assert.ok(
-        !name.startsWith('sc_') && !name.startsWith('hs_'),
+        !name.startsWith('sc_') && !name.startsWith('hs_') && !name.startsWith('ls_'),
         `${name} must keep its original unprefixed name`,
       );
     }
@@ -263,7 +263,7 @@ describe('parity with the published math', () => {
 });
 
 describe('parseModeName', () => {
-  test('round-trips every one of the 193 published modes', () => {
+  test('round-trips every one of the 257 published modes', () => {
     for (const name of allPlayableModes()) {
       const parsed = parseModeName(name);
       assert.ok(parsed, `${name} did not parse`);
@@ -285,6 +285,7 @@ describe('parseModeName', () => {
       suit: 'spade',
     });
     assert.equal(parseModeName('hs_black_lower_outside_club')?.family, 'hs');
+    assert.equal(parseModeName('ls_black_lower_outside_club')?.family, 'ls');
     assert.equal(parseModeName('black_lower_outside_club')?.family, 'base');
   });
 
@@ -298,7 +299,7 @@ describe('parseModeName', () => {
     }
   });
 
-  test('a plain four-part split silently drops 128 of the 193 modes, and misreads one', () => {
+  test('a plain four-part split silently drops 192 of the 257 modes, and misreads one', () => {
     // The cost of getting this wrong, in numbers, because the failure is silent.
     //
     // Restoring the four guess squares from a mode name happens in three places:
@@ -310,18 +311,18 @@ describe('parseModeName', () => {
     //
     // Anything reading a mode name must go through parseModeName.
     const all = allPlayableModes();
-    assert.equal(all.length, 193);
+    assert.equal(all.length, 257);
 
     const naive = all.filter((name) => name.split('_').length === 4);
     // Four parts: the 64 unprefixed Classic modes - and tr_any_equal_equal,
     // whose prefix plus three tokens also makes four. A part count was never
     // the right test, which is the point.
     assert.equal(naive.length, 65, 'a four-part split sees Classic, plus the three-token trips slug');
-    assert.equal(all.length - naive.length, 128, 'sc_ and hs_ modes a naive split drops');
+    assert.equal(all.length - naive.length, 192, 'sc_, hs_ and ls_ modes a naive split drops');
     assert.ok(naive.every((name) => familyOf(name) === 'base' || name === 'tr_any_equal_equal'));
 
     // parseModeName loses none of them.
-    assert.equal(all.filter((name) => parseModeName(name) !== null).length, 193);
+    assert.equal(all.filter((name) => parseModeName(name) !== null).length, 257);
   });
 
   // The SECOND half of the same bug. Once parseModeName was in place all three

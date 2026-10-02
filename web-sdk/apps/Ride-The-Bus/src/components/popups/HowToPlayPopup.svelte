@@ -21,7 +21,15 @@
 	import { ranks } from '../../game/round/roundContract';
 	// Derived from payout.ts rather than written out, so the paytable a player
 	// reads cannot drift from what the RGS credits - see payoutTable.ts.
-	import { bustRowsFor, exampleRoundFor, oddsExampleFor, payoutColumnFor, payoutRowsFor } from '../../game/math/payoutTable';
+	import {
+		bustRowsFor,
+		exampleRoundFor,
+		classicEndingFor,
+		oddsExampleFor,
+		payoutColumnFor,
+		payoutRowsFor,
+		ticketStackFor,
+	} from '../../game/math/payoutTable';
 	import { winTiersFor } from '../../game/math/winTiers';
 	import { FAMILY_BLURB, FAMILY_RULES, MODE_FAMILIES, allPlayableModes, type ModeFamily } from '../../game/math/modes';
 	import { FAMILIES_BY_VOLATILITY } from '../../game/math/volatility';
@@ -31,6 +39,7 @@
 	import MarkIcon from '../icons/MarkIcon.svelte';
 	import SuitIcon from '../icons/SuitIcon.svelte';
 	import ControlGlyph from '../icons/ControlGlyph.svelte';
+	import TicketFace from '../cards/TicketFace.svelte';
 
 	/** The biggest figure any mode can pay, and WHICH mode, for the RTP
 	 *  statement below. The mode is derived rather than written into the
@@ -106,6 +115,14 @@
 
 	/** The dealt example for the tab on screen - see exampleRoundFor. */
 	const example = $derived(viewingFixed ? [] : exampleRoundFor(viewingRules));
+	/**
+	 * Last Stop's stack, and where the example's cards end on Classic, or null
+	 * on every other tab. The stack is every value a ticket can take and how
+	 * many of the 20 carry it - Stake asks for every obtainable value of a
+	 * multiplier to be listed, and the reweight deals them at exactly these odds.
+	 */
+	const ticketStack = $derived(ticketStackFor(viewingRules));
+	const classicEnding = $derived(classicEndingFor(viewingRules));
 	const PICK_LABEL: Record<string, string> = {
 		red: 'Red',
 		black: 'Black',
@@ -278,6 +295,24 @@
           <p class="mode-panel-picked">{t('Only some combinations reach the mode’s maximum. Once your four are picked, the most they can pay is shown above.')}</p>
         {/if}
 
+        <!-- LAST STOP'S TICKET, drawn: the stack a clean sweep draws from, one
+             of each value with how many of the 20 carry it, printed by the same
+             TicketFace the board and the takeover use. The ticket multiplies
+             the RUNNING TOTAL, so it is written "×5" and never beside a bet
+             multiple - one unit per list. -->
+        {#if ticketStack}
+          <h5 class="info-sub">{t('The ticket')}</h5>
+          <p>{t('Drawn only when all four are right, from a stack of 20. It multiplies your running total.')}</p>
+          <ul class="ticket-stack">
+            {#each ticketStack as row (row.value)}
+              <li>
+                <span class="ticket-mini"><TicketFace value={row.value} /></span>
+                <span class="ticket-count">{t('%n of %t').replace('%n', String(row.count)).replace('%t', String(row.of))}</span>
+              </li>
+            {/each}
+          </ul>
+        {/if}
+
         <!-- Approval requires payout amounts stated for every pick. There is no
              fixed paytable to print - each stage pays its true odds against the
              remaining deck - so what is stated is the range each pick can pay,
@@ -285,6 +320,13 @@
              differs per mode, so every figure here moves with the tab. -->
 
         <h5 class="info-sub">{t('Payout table')}</h5>
+        <!-- Why Last Stop's suit row reads 2.00x - 10.00x (the table's own
+             notation - a factor on the running total, like every row - where
+             the stack above prints each ticket "x5"): said once, before the
+             figures, so the row is read as the ticket and not as a price. -->
+        {#if ticketStack}
+          <p>{t('Cards 1 to 3 are priced exactly as on Classic. A right suit draws the ticket in place of a price.')}</p>
+        {/if}
         <table class="pay-table">
           <thead>
             <tr>
@@ -356,10 +398,20 @@
                 </span>
                 <span class="ex-pick">{pickLabel(step.choice)}<span class="ex-tick"><MarkIcon name="check" /></span></span>
                 <span class="ex-odds">{t('%n of %t').replace('%n', String(step.hits)).replace('%t', String(step.total))}</span>
-                <span class="ex-total">{formatMultiplier(step.runningTotal)}</span>
+                <!-- A ticket family's last step is the range the ticket
+                     decides - see ExampleStep.upTo. -->
+                <span class="ex-total">{step.upTo === null
+                  ? formatMultiplier(step.runningTotal)
+                  : `${formatMultiplier(step.runningTotal)} – ${formatMultiplier(step.upTo)}`}</span>
               </li>
             {/each}
           </ol>
+          <!-- The trade, on the cards this tab just dealt: the range above,
+               set beside what the same four come to on Classic - see
+               classicEndingFor. -->
+          {#if classicEnding !== null}
+            <p>{t('On Classic the same cards end at %s.').replace('%s', formatMultiplier(classicEnding))}</p>
+          {/if}
         {/if}
 
         <!-- Computed per mode. This was once a single fixed list saying both
@@ -394,6 +446,12 @@
           <p>{t('Three of a kind pays %m your bet, about one round in %n.')
             .replace('%m', formatMultiplier(viewingRules.maxWin))
             .replace('%n', String(viewingOneIn))}</p>
+        {:else if ticketStack}
+          <!-- On Last Stop the maximum needs the top ticket as well as the two
+               Equals, and the sentence says so rather than implying two Equals
+               alone get there. -->
+          <p>{t('A full game win pays more the harder your picks were, and the ticket multiplies it. Two Equal picks and a ×10 ticket reach this mode’s maximum: %m your bet.')
+            .replace('%m', formatMultiplier(viewingRules.maxWin))}</p>
         {:else}
           <p>{t('A full game win pays more the harder your picks were. Equal is the rarest guess, so it pays the most, and two Equal picks reach this mode’s maximum: %m your bet.')
             .replace('%m', formatMultiplier(viewingRules.maxWin))}</p>
@@ -425,6 +483,9 @@
         <li><ControlGlyph name="autoplay" /><span>{t('The circular arrows open autoplay: the same bet, dealt again for a set number of rounds or without limit. The button counts down the rounds left.')} {t('It can stop by itself on a full game win, a loss limit or one big win.')}</span></li>
         <li><ControlGlyph name="sound" /><span>{t('The speaker opens the sound settings. Music and game sounds mute separately.')}</span></li>
         <li><ControlGlyph name="info" /><span>{t('The i button opens this screen.')}</span></li>
+        <!-- The table die. One guide for the whole game, like every line
+             above; on Three of a Kind there are no guesses and no die. -->
+        <li><ControlGlyph name="die" /><span>{t('The die beside the guesses picks all four at random. Nothing is played until you deal.')}</span></li>
       </ul>
       <!-- Not on a phone, which has no keys. Space is in the deal line above. -->
       {#if !phoneBar}<p>{t('On a keyboard, keys 1 to 4 change the four guesses.')}</p>{/if}

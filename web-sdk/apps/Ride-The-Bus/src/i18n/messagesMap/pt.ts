@@ -297,4 +297,24 @@ export default {
 		'× significa vezes a sua aposta base.',
 	'Times your base bet':
 		'Vezes a sua aposta base',
+	'Last Stop':
+		'Última Parada',
+	'A wrong first card ends the round. Later misses keep 30% of your running total. A right suit draws a ticket that multiplies it by 2 to 10.':
+		'Errar a primeira carta termina a rodada. Erros seguintes mantêm 30% do seu total corrente. Acertar o naipe tira um bilhete que o multiplica de 2 a 10 vezes.',
+	'Ticket':
+		'Bilhete',
+	'The ticket':
+		'O bilhete',
+	'Drawn only when all four are right, from a stack of 20. It multiplies your running total.':
+		'Tirado só quando as quatro estão certas, de uma pilha de 20. Ele multiplica seu total corrente.',
+	'Cards 1 to 3 are priced exactly as on Classic. A right suit draws the ticket in place of a price.':
+		'As cartas 1 a 3 valem exatamente o mesmo que no Clássico. Acertar o naipe tira o bilhete em vez de um valor.',
+	'On Classic the same cards end at %s.':
+		'No Clássico, as mesmas cartas terminam em %s.',
+	'A full game win pays more the harder your picks were, and the ticket multiplies it. Two Equal picks and a ×10 ticket reach this mode’s maximum: %m your bet.':
+		'Um jogo completo paga mais quanto mais difíceis foram seus palpites, e o bilhete o multiplica. Dois Igual e um bilhete ×10 atingem o máximo deste modo: %m sua aposta.',
+	'Roll the die for random guesses':
+		'Lance o dado para palpites aleatórios',
+	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
+		'O dado ao lado dos palpites escolhe os quatro ao acaso. Nada é jogado até você distribuir.',
 };

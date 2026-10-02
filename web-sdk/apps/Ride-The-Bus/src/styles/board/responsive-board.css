@@ -81,3 +81,12 @@
 .running-win-mult { display: none; }
 .card-mult { min-height: 0; }
 }
+
+/* ---- Last Stop's ticket on a phone ----------------------------------------
+   The same place as every size - under card 4, below the last stop - a size
+   smaller, because the readout band is narrower beside it here. */
+@media (max-width: 620px) and (orientation: portrait) {
+  .card-row {
+    --ticket-w: calc(var(--card-w) * 0.46);
+  }
+}

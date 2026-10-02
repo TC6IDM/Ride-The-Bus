@@ -37,7 +37,8 @@ No recapture from a live session is needed.
 | Big win | The smallest payout worth at least **a quarter of that mode's cap**, so it is clearly large but still a different round from the cap. |
 | Win cap | The highest payout the mode can produce. |
 | Bust + win | The first drawable round that **busted and still paid enough to fire a celebration** - the family's Big Win floor. A round does not have to be a full game win to take the screen over: a bust on the last card keeps its retention of a multiplier that may already be large. Shown as `-` where the mode has none. |
-| 2nd chance | **Second Chance only.** The first drawable round that spent its forgiveness, survived, and still finished above the celebration floor. `-` in the other two families, and `-` in a Second Chance mode that has none. |
+| 2nd chance | **Second Chance only.** The first drawable round that spent its forgiveness, survived, and still finished above the celebration floor. `-` in the other families, and `-` in a Second Chance mode that has none. |
+| Ticket ×2 … ×10 | **Last Stop only.** The first drawable round that swept and drew each ticket value, so every face the ticket can show has a replay. A bust never carries a ticket. |
 
 ## The table
 
@@ -186,6 +187,77 @@ Cost **1x** the bet. **64** modes, **256** required event IDs. Highest cap **585
 | `sc_black_equal_equal_club` | 1 | 5 (1.80x) | 26214 (549.10x) | 2616 (585.20x) | - (-) | 151 (19.10x) |
 | `sc_black_equal_equal_spade` | 1 | 21 (1.80x) | 2454 (549.10x) | 283 (585.20x) | - (-) | 5 (19.10x) |
 
+### Last Stop — `ls`
+
+Cost **1x** the bet. **64** modes, **256** required event IDs. Highest cap **4301.90x**, lowest **200.30x**.
+
+| Bet mode | Loss | Normal win | Big win | Win cap | Bust + win | 2nd chance | Ticket ×2 | Ticket ×3 | Ticket ×5 | Ticket ×10 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `ls_red_higher_inside_heart` | 0 | 59 (1.20x) | 26076 (113.90x) | 10427 (453.90x) | 1801 (13.60x) | - (-) | 64 (4.50x) | 205 (19.20x) | 676 (34.90x) | 1136 (72.60x) |
+| `ls_red_higher_inside_diamond` | 0 | 59 (1.20x) | 16303 (231.70x) | 62984 (853.90x) | 1801 (13.60x) | - (-) | 87 (22.10x) | 206 (6.80x) | 403 (19.80x) | 1541 (34.10x) |
+| `ls_red_higher_inside_club` | 0 | 59 (1.20x) | 3298 (213.90x) | 14113 (853.90x) | 2269 (25.60x) | - (-) | 39 (6.40x) | 137 (64.10x) | 467 (12.90x) | 48 (96.70x) |
+| `ls_red_higher_inside_spade` | 0 | 59 (1.20x) | 92571 (93.60x) | 49262 (373.90x) | 1801 (13.60x) | - (-) | 42 (5.60x) | 299 (21.20x) | 278 (51.40x) | 56 (32.00x) |
+| `ls_red_higher_outside_heart` | 0 | 82 (1.10x) | 14027 (51.50x) | 9426 (200.30x) | - (-) | - (-) | 91 (10.90x) | 7 (11.70x) | 41 (35.50x) | 162 (28.00x) |
+| `ls_red_higher_outside_diamond` | 0 | 7 (1.10x) | 13279 (51.50x) | 7104 (200.30x) | - (-) | - (-) | 1 (5.10x) | 123 (8.40x) | 152 (34.90x) | 2 (24.30x) |
+| `ls_red_higher_outside_club` | 0 | 7 (1.10x) | 39569 (51.50x) | 7422 (200.30x) | - (-) | - (-) | 72 (9.70x) | 63 (21.30x) | 367 (12.90x) | 144 (22.60x) |
+| `ls_red_higher_outside_spade` | 0 | 7 (1.10x) | 728 (51.50x) | 7772 (200.30x) | - (-) | - (-) | 9 (15.20x) | 90 (7.20x) | 49 (15.00x) | 573 (28.00x) |
+| `ls_red_higher_equal_heart` | 0 | 72 (1.20x) | 26764 (289.30x) | 81368 (1121.00x) | 31 (33.60x) | - (-) | 59 (50.60x) | 381 (43.50x) | 331 (78.50x) | 319 (157.00x) |
+| `ls_red_higher_equal_diamond` | 0 | 72 (1.20x) | 37799 (289.30x) | 141694 (1121.00x) | 31 (33.60x) | - (-) | 875 (50.60x) | 176 (40.50x) | 345 (108.60x) | 17 (135.10x) |
+| `ls_red_higher_equal_club` | 0 | 72 (1.20x) | 14569 (289.30x) | 33977 (1121.00x) | 31 (33.60x) | - (-) | 524 (27.00x) | 2005 (40.50x) | 2754 (67.50x) | 494 (157.00x) |
+| `ls_red_higher_equal_spade` | 0 | 72 (1.20x) | 9415 (289.30x) | 26762 (1121.00x) | 298 (9.20x) | - (-) | 551 (79.60x) | 31 (336.30x) | 168 (153.80x) | 631 (307.60x) |
+| `ls_red_lower_inside_heart` | 0 | 10 (1.20x) | 12850 (234.50x) | 25805 (853.90x) | 425 (9.10x) | - (-) | 60 (11.50x) | 71 (12.70x) | 102 (15.00x) | 366 (30.70x) |
+| `ls_red_lower_inside_diamond` | 0 | 10 (1.20x) | 42046 (151.70x) | 36490 (587.30x) | 425 (9.10x) | - (-) | 434 (20.50x) | 160 (10.90x) | 484 (16.00x) | 135 (64.00x) |
+| `ls_red_lower_inside_club` | 0 | 10 (1.20x) | 35403 (213.90x) | 22005 (853.90x) | 425 (9.10x) | - (-) | 65 (10.90x) | 191 (30.80x) | 181 (19.30x) | 4 (45.10x) |
+| `ls_red_lower_inside_spade` | 0 | 10 (1.20x) | 61582 (226.90x) | 48423 (853.90x) | 552 (17.60x) | - (-) | 174 (16.40x) | 16 (7.30x) | 83 (12.90x) | 425 (303.40x) |
+| `ls_red_lower_outside_heart` | 0 | 36 (1.10x) | 10148 (51.50x) | 2732 (200.30x) | - (-) | - (-) | 53 (10.50x) | 6 (20.90x) | 228 (19.40x) | 486 (35.70x) |
+| `ls_red_lower_outside_diamond` | 0 | 136 (1.10x) | 13305 (51.50x) | 24550 (200.30x) | - (-) | - (-) | 199 (7.80x) | 52 (9.70x) | 36 (19.80x) | 55 (30.10x) |
+| `ls_red_lower_outside_club` | 0 | 36 (1.10x) | 29427 (51.50x) | 33044 (200.30x) | - (-) | - (-) | 11 (8.70x) | 46 (14.80x) | 18 (24.60x) | 295 (42.40x) |
+| `ls_red_lower_outside_spade` | 0 | 36 (1.10x) | 15091 (51.50x) | 24196 (200.30x) | - (-) | - (-) | 34 (4.80x) | 15 (14.50x) | 68 (29.40x) | 314 (32.00x) |
+| `ls_red_lower_equal_heart` | 0 | 89 (1.20x) | 22873 (289.30x) | 94182 (1121.00x) | 76 (9.20x) | - (-) | 1016 (29.00x) | 1358 (38.00x) | 180 (78.50x) | 464 (307.60x) |
+| `ls_red_lower_equal_diamond` | 0 | 89 (1.20x) | 112085 (289.30x) | 184135 (1121.00x) | 464 (9.20x) | - (-) | 1367 (34.40x) | 1061 (65.10x) | 10 (126.70x) | 76 (307.60x) |
+| `ls_red_lower_equal_club` | 0 | 89 (1.20x) | 43083 (289.30x) | 7643 (1121.00x) | 76 (9.20x) | - (-) | 451 (27.00x) | 214 (43.50x) | 836 (108.60x) | 27 (217.30x) |
+| `ls_red_lower_equal_spade` | 0 | 89 (1.20x) | 21757 (289.30x) | 195246 (1121.00x) | 76 (9.20x) | - (-) | 128 (38.30x) | 1298 (76.00x) | 487 (560.50x) | 3633 (157.00x) |
+| `ls_red_equal_outside_heart` | 0 | 85 (7.40x) | 397 (74.60x) | 172 (248.90x) | - (-) | - (-) | 167 (49.70x) | 397 (74.60x) | 1177 (124.40x) | 172 (248.90x) |
+| `ls_red_equal_outside_diamond` | 0 | 85 (7.40x) | 590 (74.60x) | 1438 (248.90x) | - (-) | - (-) | 116 (49.70x) | 590 (74.60x) | 2040 (124.40x) | 1438 (248.90x) |
+| `ls_red_equal_outside_club` | 0 | 116 (7.40x) | 931 (74.60x) | 848 (248.90x) | - (-) | - (-) | 461 (49.70x) | 931 (74.60x) | 85 (124.40x) | 848 (248.90x) |
+| `ls_red_equal_outside_spade` | 0 | 85 (7.40x) | 197 (74.60x) | 1229 (248.90x) | - (-) | - (-) | 373 (49.70x) | 197 (74.60x) | 895 (124.40x) | 1229 (248.90x) |
+| `ls_red_equal_equal_heart` | 0 | 85 (7.20x) | 3584 (1290.50x) | 20751 (4301.90x) | 1393 (129.00x) | - (-) | 975 (860.30x) | 3584 (1290.50x) | 57219 (2150.90x) | 20751 (4301.90x) |
+| `ls_red_equal_equal_diamond` | 0 | 85 (7.20x) | 7434 (1290.50x) | 129603 (4301.90x) | 975 (129.00x) | - (-) | 13297 (860.30x) | 7434 (1290.50x) | 53237 (2150.90x) | 129603 (4301.90x) |
+| `ls_red_equal_equal_club` | 0 | 85 (7.20x) | 5469 (1290.50x) | 42290 (4301.90x) | 975 (129.00x) | - (-) | 4383 (860.30x) | 5469 (1290.50x) | 3698 (2150.90x) | 42290 (4301.90x) |
+| `ls_red_equal_equal_spade` | 0 | 85 (7.20x) | 35783 (1290.50x) | 1393 (4301.90x) | 975 (129.00x) | - (-) | 4350 (860.30x) | 35783 (1290.50x) | 3818 (2150.90x) | 1393 (4301.90x) |
+| `ls_black_higher_inside_heart` | 1 | 103 (1.20x) | 3085 (151.70x) | 11129 (587.30x) | 24 (9.10x) | - (-) | 50 (8.30x) | 67 (27.00x) | 79 (19.30x) | 178 (32.00x) |
+| `ls_black_higher_inside_diamond` | 1 | 50 (1.20x) | 32206 (213.90x) | 76721 (853.90x) | 24 (9.10x) | - (-) | 139 (7.10x) | 1034 (8.40x) | 318 (26.20x) | 324 (22.60x) |
+| `ls_black_higher_inside_club` | 1 | 50 (1.20x) | 57340 (112.10x) | 72069 (426.90x) | 628 (13.60x) | - (-) | 24 (60.60x) | 483 (8.60x) | 365 (16.00x) | 1472 (45.10x) |
+| `ls_black_higher_inside_spade` | 1 | 50 (1.20x) | 12901 (151.70x) | 21650 (587.30x) | 24 (9.10x) | - (-) | 22 (6.80x) | 226 (21.70x) | 33 (80.60x) | 769 (82.30x) |
+| `ls_black_higher_outside_heart` | 1 | 12 (1.10x) | 35744 (51.50x) | 15882 (200.30x) | - (-) | - (-) | 45 (6.50x) | 410 (9.70x) | 32 (17.10x) | 77 (41.50x) |
+| `ls_black_higher_outside_diamond` | 1 | 12 (1.10x) | 10106 (51.50x) | 1469 (200.30x) | - (-) | - (-) | 19 (6.80x) | 51 (7.30x) | 235 (21.70x) | 591 (66.50x) |
+| `ls_black_higher_outside_club` | 1 | 12 (1.10x) | 776 (51.50x) | 77984 (200.30x) | - (-) | - (-) | 40 (7.70x) | 23 (6.80x) | 145 (27.40x) | 260 (34.10x) |
+| `ls_black_higher_outside_spade` | 1 | 40 (1.10x) | 7711 (51.50x) | 31376 (200.30x) | - (-) | - (-) | 12 (7.30x) | 173 (10.90x) | 320 (51.70x) | 29 (39.70x) |
+| `ls_black_higher_equal_heart` | 1 | 103 (1.20x) | 4356 (289.30x) | 134928 (1121.00x) | 21 (9.20x) | - (-) | 74 (61.50x) | 224 (47.10x) | 115 (78.50x) | 97 (135.10x) |
+| `ls_black_higher_equal_diamond` | 1 | 103 (1.20x) | 11763 (145.00x) | 13544 (578.70x) | 74 (9.20x) | - (-) | 21 (61.50x) | 796 (336.30x) | 883 (289.30x) | 2057 (172.10x) |
+| `ls_black_higher_equal_club` | 1 | 103 (1.20x) | 1753 (289.30x) | 27476 (1121.00x) | 21 (9.20x) | - (-) | 594 (43.40x) | 1206 (43.50x) | 414 (67.50x) | 2731 (126.90x) |
+| `ls_black_higher_equal_spade` | 1 | 103 (1.20x) | 41170 (289.30x) | 64393 (1121.00x) | 21 (9.20x) | - (-) | 5 (27.00x) | 1581 (43.50x) | 659 (67.50x) | 3802 (217.30x) |
+| `ls_black_lower_inside_heart` | 1 | 8 (1.20x) | 84649 (110.50x) | 37483 (426.90x) | 95 (17.60x) | - (-) | 377 (10.30x) | 833 (8.40x) | 765 (28.70x) | 1359 (76.00x) |
+| `ls_black_lower_inside_diamond` | 1 | 8 (1.20x) | 14074 (93.60x) | 53912 (373.90x) | 95 (17.60x) | - (-) | 94 (10.50x) | 112 (10.70x) | 201 (82.80x) | 387 (41.50x) |
+| `ls_black_lower_inside_club` | 1 | 8 (1.20x) | 17067 (151.70x) | 97829 (587.30x) | 2338 (9.60x) | - (-) | 95 (117.40x) | 131 (7.30x) | 140 (12.90x) | 669 (26.30x) |
+| `ls_black_lower_inside_spade` | 1 | 8 (1.20x) | 44818 (113.90x) | 6531 (453.90x) | 95 (17.60x) | - (-) | 88 (7.20x) | 321 (13.50x) | 118 (17.00x) | 815 (165.60x) |
+| `ls_black_lower_outside_heart` | 1 | 127 (1.10x) | 53496 (51.50x) | 34743 (200.30x) | - (-) | - (-) | 130 (16.50x) | 44 (9.20x) | 120 (28.70x) | 327 (58.90x) |
+| `ls_black_lower_outside_diamond` | 1 | 134 (1.10x) | 17744 (51.50x) | 454 (200.30x) | - (-) | - (-) | 0 (5.10x) | 156 (16.40x) | 127 (19.30x) | 30 (30.70x) |
+| `ls_black_lower_outside_club` | 1 | 127 (1.10x) | 33282 (51.50x) | 8950 (200.30x) | - (-) | - (-) | 177 (5.70x) | 194 (9.70x) | 170 (20.70x) | 155 (34.10x) |
+| `ls_black_lower_outside_spade` | 1 | 127 (1.10x) | 14499 (51.50x) | 17206 (200.30x) | - (-) | - (-) | 8 (10.50x) | 134 (11.90x) | 80 (22.50x) | 827 (48.50x) |
+| `ls_black_lower_equal_heart` | 1 | 8 (1.20x) | 65862 (289.30x) | 28 (1121.00x) | 204 (17.30x) | - (-) | 164 (25.30x) | 523 (38.00x) | 37 (86.00x) | 28 (1121.00x) |
+| `ls_black_lower_equal_diamond` | 1 | 8 (1.20x) | 105586 (289.30x) | 63319 (1121.00x) | 28 (33.60x) | - (-) | 57 (31.40x) | 543 (40.50x) | 1013 (63.40x) | 800 (217.30x) |
+| `ls_black_lower_equal_club` | 1 | 8 (1.20x) | 204 (289.30x) | 20367 (1121.00x) | 28 (33.60x) | - (-) | 249 (50.60x) | 1284 (76.00x) | 204 (289.30x) | 151 (217.30x) |
+| `ls_black_lower_equal_spade` | 1 | 8 (1.20x) | 18690 (289.30x) | 93361 (1121.00x) | 28 (33.60x) | - (-) | 604 (25.30x) | 357 (40.50x) | 951 (72.50x) | 347 (172.10x) |
+| `ls_black_equal_outside_heart` | 1 | 13 (7.40x) | 166 (74.60x) | 14 (248.90x) | - (-) | - (-) | 468 (49.70x) | 166 (74.60x) | 453 (124.40x) | 14 (248.90x) |
+| `ls_black_equal_outside_diamond` | 1 | 14 (7.40x) | 339 (74.60x) | 229 (248.90x) | - (-) | - (-) | 748 (49.70x) | 339 (74.60x) | 13 (124.40x) | 229 (248.90x) |
+| `ls_black_equal_outside_club` | 1 | 13 (7.40x) | 407 (74.60x) | 2844 (248.90x) | - (-) | - (-) | 767 (49.70x) | 407 (74.60x) | 1218 (124.40x) | 2844 (248.90x) |
+| `ls_black_equal_outside_spade` | 1 | 13 (7.40x) | 1080 (74.60x) | 86 (248.90x) | - (-) | - (-) | 212 (49.70x) | 1080 (74.60x) | 1544 (124.40x) | 86 (248.90x) |
+| `ls_black_equal_equal_heart` | 1 | 13 (7.20x) | 1641 (1290.50x) | 18206 (4301.90x) | 283 (129.00x) | - (-) | 10771 (860.30x) | 1641 (1290.50x) | 69800 (2150.90x) | 18206 (4301.90x) |
+| `ls_black_equal_equal_diamond` | 1 | 13 (7.20x) | 5480 (1290.50x) | 11038 (4301.90x) | 283 (129.00x) | - (-) | 12057 (860.30x) | 5480 (1290.50x) | 6934 (2150.90x) | 11038 (4301.90x) |
+| `ls_black_equal_equal_club` | 1 | 13 (7.20x) | 18770 (1290.50x) | 21969 (4301.90x) | 283 (129.00x) | - (-) | 3320 (860.30x) | 18770 (1290.50x) | 2616 (2150.90x) | 21969 (4301.90x) |
+| `ls_black_equal_equal_spade` | 1 | 13 (7.20x) | 3758 (1290.50x) | 11434 (4301.90x) | 1641 (129.00x) | - (-) | 2454 (860.30x) | 3758 (1290.50x) | 283 (2150.90x) | 11434 (4301.90x) |
+
 ### High Stakes — `hs`
 
 Cost **1x** the bet. **64** modes, **256** required event IDs. Highest cap **2237.30x**, lowest **95.40x**.
@@ -268,7 +340,7 @@ Cost **250x** the bet. **1** modes, **4** required event IDs. Highest cap **4583
 
 ## Notes
 
-- **193** bet modes across **4** families, **772** event IDs, all four distinct within every mode.
+- **257** bet modes across **5** families, **1028** event IDs, all four distinct within every mode.
 - The highest cap across all modes is **4583.30x**, on Three of a Kind - the game's overall maximum win, matching the figure stated in How to Play. Each family's own ceiling is stated above its table.
 - The lowest per-mode cap is **39.50x**. Caps differ by mode because the ceiling depends on how unlikely the guesses were.
 - Every mode has a drawable loss, so no mode is missing a scenario.

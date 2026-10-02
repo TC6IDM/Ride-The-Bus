@@ -42,6 +42,7 @@
 	import MarkIcon from '../icons/MarkIcon.svelte';
 	import SuitIcon from '../icons/SuitIcon.svelte';
 	import CardFace from '../cards/CardFace.svelte';
+	import TicketFace from '../cards/TicketFace.svelte';
 	import type { Card } from '../../game/round/roundContract';
 	import { t } from '../../i18n/i18nDerived';
 	import { sound } from '../../game/audio/sound';
@@ -92,6 +93,12 @@
 		bustedIndex: number | null;
 		forgivenIndex: number | null;
 		/**
+		 * The ticket a Last Stop sweep drew, or null. When there is one it is the
+		 * last piece of the hand - after the cards, in the fan's own geometry,
+		 * drawn by TicketFace like the board's slot.
+		 */
+		ticket: number | null;
+		/**
 		 * Autoplay: show the finished figure, hold briefly, then leave on its own.
 		 * Counting up through a 100-round run would make autoplay unusable, and a
 		 * partial count cut off mid-climb looks broken - so this snaps straight to
@@ -128,8 +135,17 @@
 	/** Name and colours currently displayed. */
 	const activeTier = $derived<WinTier>(segments[segmentIndex]?.tier ?? props.tier);
 
+	/** How many cards the round dealt - see `family` in Props. */
+	const dealt = $derived(stageCount(FAMILY_RULES[props.family]));
 	/** The fan, sized to the cards the round dealt - see `family` in Props. */
-	const fan = $derived(fanFor(stageCount(FAMILY_RULES[props.family])));
+	const fan = $derived(fanFor(dealt));
+	/**
+	 * A Last Stop ticket is laid ON the hand rather than dealt into it: the
+	 * cards fan exactly as on every family, and the ticket sits over the middle
+	 * of them, lower, arriving after the last card (the owner's call,
+	 * 2026-09-30 - as a fifth place in the fan it read as a fifth card).
+	 */
+	const ticketDelay = $derived(fanFor(dealt)[dealt - 1]!.delay + 0.14);
 
 	/** Multiplier matching what is on screen, so it never runs ahead of the title. */
 	const shownMultiplier = $derived(perX > 0 ? shown / perX : props.multiplier);
@@ -540,6 +556,15 @@
 					{/if}
 				</div>
 			{/each}
+			{#if props.ticket !== null}
+				<!-- The ticket the round ended on, laid over the middle of the hand
+				     and lower than the cards, so their indices stay in sight: the
+				     board's own drawing (TicketFace). Not a .wc-fan-card, so
+				     shoot.mjs's fan line still counts the cards alone. -->
+				<div class="wc-fan-ticket" style={`animation-delay: ${ticketDelay}s`}>
+					<TicketFace value={props.ticket} />
+				</div>
+			{/if}
 		</div>
 
 		<!-- NOT keyed on the tier. Keying it destroys and recreates the element,

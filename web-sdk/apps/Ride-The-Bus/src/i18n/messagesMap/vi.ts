@@ -298,4 +298,24 @@ export default {
 		'× nghĩa là bội số tiền cược cơ bản.',
 	'Times your base bet':
 		'Bội số tiền cược cơ bản',
+	'Last Stop':
+		'Trạm Cuối',
+	'A wrong first card ends the round. Later misses keep 30% of your running total. A right suit draws a ticket that multiplies it by 2 to 10.':
+		'Sai lá bài đầu tiên là kết thúc vòng. Các lần sai sau giữ lại 30% tổng đang chạy. Đoán đúng chất sẽ rút một vé nhân tổng đó từ 2 đến 10 lần.',
+	'Ticket':
+		'Vé',
+	'The ticket':
+		'Tấm vé',
+	'Drawn only when all four are right, from a stack of 20. It multiplies your running total.':
+		'Chỉ được rút khi đúng cả bốn, từ một xấp 20 vé. Vé nhân tổng đang chạy của bạn.',
+	'Cards 1 to 3 are priced exactly as on Classic. A right suit draws the ticket in place of a price.':
+		'Lá 1 đến lá 3 được định giá y như ở chế độ Cổ điển. Đoán đúng chất sẽ rút vé thay cho giá.',
+	'On Classic the same cards end at %s.':
+		'Ở chế độ Cổ điển, cùng các lá bài đó kết thúc ở %s.',
+	'A full game win pays more the harder your picks were, and the ticket multiplies it. Two Equal picks and a ×10 ticket reach this mode’s maximum: %m your bet.':
+		'Thắng toàn ván trả càng cao khi các lựa chọn của bạn càng khó, và vé sẽ nhân nó lên. Hai lựa chọn Bằng nhau và vé ×10 đạt mức tối đa của chế độ này: %m tiền cược của bạn.',
+	'Roll the die for random guesses':
+		'Gieo xúc xắc để chọn dự đoán ngẫu nhiên',
+	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
+		'Xúc xắc cạnh các dự đoán chọn ngẫu nhiên cả bốn. Không có gì được chơi cho đến khi bạn chia bài.',
 };

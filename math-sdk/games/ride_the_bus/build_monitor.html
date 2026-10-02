@@ -28,8 +28,9 @@
     --warn: #ff6b6b;
     --sc: rgb(61, 220, 132);    /* --vol-sc   */
     --base: rgb(255, 201, 60);  /* --vol-base */
+    --ls: rgb(255, 146, 64);    /* --vol-ls   */
     --hs: rgb(255, 92, 92);     /* --vol-hs   */
-    --tr: rgb(176, 106, 232);   /* --vol-tr   */
+    --tr: rgb(178, 124, 200);   /* --vol-tr   */
     --mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", monospace;
   }
   * { box-sizing: border-box; }
@@ -206,8 +207,8 @@
 </main>
 
 <script>
-  const FAMILY_LABEL = { sc: 'Second Chance', base: 'Classic', hs: 'High Stakes', tr: 'Three of a Kind' };
-  const FAMILY_ORDER = ['sc', 'base', 'hs', 'tr'];
+  const FAMILY_LABEL = { sc: 'Second Chance', base: 'Classic', ls: 'Last Stop', hs: 'High Stakes', tr: 'Three of a Kind' };
+  const FAMILY_ORDER = ['sc', 'base', 'ls', 'hs', 'tr'];
   const TOKEN = {
     red: 'R', black: 'B', higher: '↑', lower: '↓', equal: '=', inside: '><', outside: '<>',
     heart: '♥', diamond: '♦', club: '♣', spade: '♠', any: '·',
@@ -236,7 +237,7 @@
   /** "hs_red_higher_inside_heart" -> "R ↑ >< ♥", which fits a 128px box. */
   function slugTokens(name) {
     const parts = name.split('_');
-    if (['sc', 'hs', 'tr'].includes(parts[0])) parts.shift();
+    if (['sc', 'ls', 'hs', 'tr'].includes(parts[0])) parts.shift();
     return parts.map((p) => TOKEN[p] || p).join(' ');
   }
 

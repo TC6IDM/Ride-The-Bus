@@ -105,7 +105,7 @@ class GameConfig(Config):
         # guesses before pressing Play, so one bet mode = one full 4-stage
         # choice combination (2 * 3 * 3 * 4 = 72 modes), each resolved fully
         # in a single atomic play() call.
-        # Three families x 64 combinations + Three of a Kind = 193 published
+        # Four families x 64 combinations + Three of a Kind = 257 published
         # modes. The base family keeps its unprefixed names, so every replay
         # event ID already recorded against it stays valid.
         self.bet_modes = [

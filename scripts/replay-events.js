@@ -63,6 +63,7 @@ const idx = JSON.parse(fs.readFileSync(path.join(PUBLISH, 'index.json'), 'utf8')
 const FAMILY_LABELS = {
   base: 'Classic',
   sc: 'Second Chance',
+  ls: 'Last Stop',
   hs: 'High Stakes',
   tr: 'Three of a Kind',
 };
@@ -70,8 +71,13 @@ const FAMILY_LABELS = {
 const FAMILY_PREFIXES = [
   ['tr_', 'tr'],
   ['sc_', 'sc'],
+  ['ls_', 'ls'],
   ['hs_', 'hs'],
 ];
+
+/** Last Stop's ticket values - one replay ID each, so a reviewer can open every
+ *  face the ticket can show. Mirrors TICKET_STACK in game_calculations.py. */
+const TICKET_VALUES = [2, 3, 5, 10];
 const familyOf = (name) =>
   FAMILY_PREFIXES.find(([prefix]) => name.startsWith(prefix))?.[1] ?? 'base';
 
@@ -161,7 +167,7 @@ async function analyseMode(mode) {
   const analysed = analyseTable(mode);
   if (!analysed) return null;
   const shapes = await scanShapes(mode, analysed.eligible);
-  return { ...analysed.row, bustwin: shapes.bustwin, forgiven: shapes.forgiven };
+  return { ...analysed.row, bustwin: shapes.bustwin, forgiven: shapes.forgiven, tickets: shapes.tickets };
 }
 
 async function main() {
@@ -268,7 +274,8 @@ No recapture from a live session is needed.
 | Big win | The smallest payout worth at least **a quarter of that mode's cap**, so it is clearly large but still a different round from the cap. |
 | Win cap | The highest payout the mode can produce. |
 | Bust + win | The first drawable round that **busted and still paid enough to fire a celebration** - the family's Big Win floor. A round does not have to be a full game win to take the screen over: a bust on the last card keeps its retention of a multiplier that may already be large. Shown as \`-\` where the mode has none. |
-| 2nd chance | **Second Chance only.** The first drawable round that spent its forgiveness, survived, and still finished above the celebration floor. \`-\` in the other two families, and \`-\` in a Second Chance mode that has none. |
+| 2nd chance | **Second Chance only.** The first drawable round that spent its forgiveness, survived, and still finished above the celebration floor. \`-\` in the other families, and \`-\` in a Second Chance mode that has none. |
+| Ticket ×2 … ×10 | **Last Stop only.** The first drawable round that swept and drew each ticket value, so every face the ticket can show has a replay. A bust never carries a ticket. |
 
 ## The table
 
@@ -287,18 +294,31 @@ is meant to demonstrate.
     const mine = rows.filter((r) => r.family === family);
     if (!mine.length) continue;
     const myCaps = mine.map((r) => (r.cap ? r.cap.payout : 0));
+    // Last Stop's table carries four more columns, one per ticket value, AFTER
+    // the columns every table shares - so replay-server.mjs, which reads the
+    // first eight cells of any row, reads this one the same way.
+    const tickets = family === 'ls';
 
     md += `### ${FAMILY_LABELS[family]} — \`${family}\`\n\n`;
     md += `Cost **${mine[0].cost}x** the bet. **${mine.length}** modes, `;
     md += `**${mine.length * 4}** required event IDs. `;
     md += `Highest cap **${(Math.max(...myCaps) / 100).toFixed(2)}x**, `;
     md += `lowest **${(Math.min(...myCaps) / 100).toFixed(2)}x**.\n\n`;
-    md += `| Bet mode | Loss | Normal win | Big win | Win cap | Bust + win | 2nd chance |\n|---|---|---|---|---|---|---|\n`;
+    md += `| Bet mode | Loss | Normal win | Big win | Win cap | Bust + win | 2nd chance |`;
+    md += tickets ? ` ${TICKET_VALUES.map((v) => `Ticket ×${v}`).join(' | ')} |` : '';
+    md += `\n|---|---|---|---|---|---|---|${tickets ? '---|'.repeat(TICKET_VALUES.length) : ''}\n`;
     for (const r of mine) {
       md +=
         `| \`${r.mode}\` | ${r.loss ?? '-'} | ${id(r.normal)} (${x(r.normal)}) ` +
         `| ${id(r.big)} (${x(r.big)}) | ${id(r.cap)} (${x(r.cap)}) ` +
-        `| ${id(r.bustwin)} (${x(r.bustwin)}) | ${id(r.forgiven)} (${x(r.forgiven)}) |\n`;
+        `| ${id(r.bustwin)} (${x(r.bustwin)}) | ${id(r.forgiven)} (${x(r.forgiven)}) |`;
+      if (tickets) {
+        for (const v of TICKET_VALUES) {
+          const t = r.tickets ? r.tickets[v] : null;
+          md += ` ${id(t)} (${x(t)}) |`;
+        }
+      }
+      md += '\n';
     }
     md += '\n';
   }
@@ -393,7 +413,17 @@ is meant to demonstrate.
  */
 // Three of a Kind's ladder is one rung at its 4,583.3x ceiling (458,330 raw):
 // its only win IS the floor, so the "bust + win" column is `-` by construction.
-const CELEBRATION_FLOOR = { base: 1000, sc: 1100, hs: 1200, tr: 458330 };
+// Last Stop's is 8x: a wrong suit keeps 30% of a run no suit price has
+// multiplied, so its small wins run smaller and the ladder starts lower. WITHOUT an
+// entry here every Last Stop row reported no bust-win - `payout >= undefined` is
+// false - silently.
+const CELEBRATION_FLOOR = { base: 1000, sc: 1100, ls: 800, hs: 1200, tr: 458330 };
+
+/** A ticket event inside a book line, and the line's payout, read off the raw
+ *  text - a ticket can sit on a round far below the celebration floor, so these
+ *  lines are matched before the eligibility filter and never JSON-parsed. */
+const TICKET_IN = /"type":\s*"ticket",\s*"value":\s*(\d+)/;
+const PAYOUT_HEAD = /"payoutMultiplier":\s*(\d+)/;
 
 /** The `id` field at the head of every book line, without parsing the line. */
 const ID_HEAD = /^\{"id":\s*(\d+)/;
@@ -446,7 +476,11 @@ async function scanShapes(mode, precomputed) {
 
   const want = family === 'sc' ? ['bustwin', 'forgiven'] : ['bustwin'];
   const found = {};
-  if (eligible.size) {
+  // Last Stop: the first round with each ticket value, from ANY drawable row -
+  // every sweep is drawable (its ticket tier carries positive weight).
+  const tickets = family === 'ls' ? {} : null;
+  const ticketsDone = () => !tickets || TICKET_VALUES.every((v) => tickets[v]);
+  if (eligible.size || tickets) {
     const stream = fs
       .createReadStream(path.join(PUBLISH, mode.events))
       .pipe(zlib.createZstdDecompress());
@@ -459,7 +493,17 @@ async function scanShapes(mode, precomputed) {
         // of rows are eligible - 1110 of 215k in sc_red_lower_outside_heart -
         // so parsing every line to look at its id was almost all of the cost.
         const head = ID_HEAD.exec(line);
-        if (!head || !eligible.has(Number(head[1]))) continue;
+        if (!head) continue;
+        if (tickets) {
+          const ticket = TICKET_IN.exec(line);
+          if (ticket && !tickets[Number(ticket[1])]) {
+            tickets[Number(ticket[1])] = { id: Number(head[1]), payout: Number(PAYOUT_HEAD.exec(line)?.[1] ?? 0) };
+          }
+        }
+        if (!eligible.has(Number(head[1]))) {
+          if (ticketsDone() && want.every((k) => found[k])) break;
+          continue;
+        }
         const book = JSON.parse(line);
         const shape = shapeOf(book, family);
         if (!found.bustwin && shape.busted) {
@@ -468,7 +512,7 @@ async function scanShapes(mode, precomputed) {
         if (!found.forgiven && family === 'sc' && shape.forgivenessSpent && !shape.busted) {
           found.forgiven = { id: book.id, payout: Number(book.payoutMultiplier) };
         }
-        if (want.every((k) => found[k])) break;
+        if (want.every((k) => found[k]) && ticketsDone()) break;
       }
     } finally {
       lines.close();
@@ -482,6 +526,7 @@ async function scanShapes(mode, precomputed) {
   return {
     bustwin: found.bustwin ?? null,
     forgiven: family === 'sc' ? (found.forgiven ?? null) : null,
+    tickets,
   };
 }
 

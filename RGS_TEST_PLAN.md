@@ -1,6 +1,6 @@
 # RGS verification test plan
 
-103 checks to run against the **uploaded** build on a Developer-page session,
+115 checks to run against the **uploaded** build on a Developer-page session,
 not against localhost.
 
 That distinction is the whole reason this document exists. Locally the game
@@ -63,7 +63,7 @@ pass in a browser", not as done.
 | `CMP-07` Mode description and cost | 3 tabs, cost and ceiling on each |
 | `CMP-08` UI guide | Controls section names every bar button |
 | `CMP-09` Sound can be disabled | both buses mute independently and survive a reload |
-| `CMP-10` Spacebar bound to the bet button | plays with nothing focused; refuses on a focused INPUT and on a focused BUTTON |
+| `CMP-10` Spacebar bound to the bet button | plays with nothing focused AND with a guess square, the die or a bar button focused (keydown and keyup both taken); refuses only on a focused INPUT, an open panel, the intro and the takeover |
 | `CMP-10b` Spacebar refused behind a panel | How to Play open, all four guesses picked, Space: no `/wallet/play` (it used to buy one behind the panel); with the panel closed the same press does |
 | `CMP-11` Frame never scrolls | all seven target sizes, idle / bet menu open / How to Play open |
 | `CMP-12` Double-tap zoom off, pinch intact | `touch-action: manipulation`, no `user-scalable=no` |
@@ -311,6 +311,27 @@ one.
   version predates the three-card build.
 
 ---
+
+- [ ] **RND-08 · A Last Stop sweep settles with its ticket** — *Blocker*
+  On a Last Stop mode (`ls_`, an easy pick such as Red / Higher / Outside /
+  Heart), play until all four land and the ticket turns.
+  **Expect:** the credited payout equals the book's `payoutMultiplier` - the
+  full-precision run to card 3 times the ticket, floored once to 0.1×, which
+  is NOT card 3's chip times the ticket (the chip is already floored: event
+  1136 of `ls_red_higher_inside_heart` reads 7.2× on card 3 and pays 72.6×,
+  not 72.0×) - and it is the figure card 4's chip and the readout land on when
+  the ticket turns, with one `/wallet/end-round`. The book's card-4 reveal says
+  `payout: 1.0`, and it carries one `ticket` event, between the reveals and
+  `finalWin`.
+
+- [ ] **RND-09 · A Last Stop miss keeps Classic's share, and no ticket** — *Major*
+  Miss card 2, 3 or 4 on Last Stop. A live session cannot deal the same cards
+  twice, so compare by replay: the two families share the deal, and a bust ID
+  is the same round on both (e.g. 1801 is 13.60x on `red_higher_inside_heart`
+  and on `ls_red_higher_inside_heart` - REPLAY_EVENTS.md).
+  **Expect:** the bust card's chip is the same figure Classic shows for the
+  same miss (about 30%), and the book has **no** `ticket` event. The ticket
+  stays face down and dims with the dead cards.
 
 ## 04 · Autoplay endurance
 
@@ -604,6 +625,22 @@ on nearly every round. It still celebrates on size.
 
 ---
 
+- [ ] **WIN-14 · The ticket counts up and joins the fan** — *Major*
+  Land any Last Stop sweep - every one celebrates, down to the 4.5× minimum,
+  through the full-game-win floor.
+  **Expect:** card 4 turns with no chip, the ticket turns after one uniform
+  pause - the same length whatever it shows - and card 4's chip and the readout
+  land together on the ticketed figure. The takeover fans the four cards as on
+  every family and lays the ticket over the middle of them, lower - and on a
+  win that climbs a tier, the ticket hops with the hand.
+
+- [ ] **WIN-15 · No correct pick ever reads under 1×** — *Major*
+  On Last Stop, pick near-certain guesses (Higher on an Ace, Outside on a pair)
+  and watch the chips, then play the same picks on Classic.
+  **Expect:** every chip after a right guess is at least the one before it,
+  and cards 1-3 read exactly what they read on Classic. The owner's rule;
+  `ticket.test.ts` and `test_model.py` pin both.
+
 ## 08 · Replay
 
 Reviewers use replay to audit specific rounds, so it gets looked at closely.
@@ -703,6 +740,15 @@ being logged, so this must not become a production-visible flag.
 
 ---
 
+- [ ] **REP-10 · A Last Stop replay shows its ticket** — *Major*
+  Open a replay from `REPLAY_EVENTS.md`'s Last Stop table, one per ticket column.
+  **Expect:** the round details list the ticket (×2 / ×3 / ×5 / ×10) beside the
+  payout, the reveal turns that ticket, and the payout matches the table.
+
+- [ ] **REP-11 · A Last Stop bust replays with no ticket** — *Minor*
+  Open a Last Stop "Bust + win" replay.
+  **Expect:** no ticket row in the details, and the ticket stays face down.
+
 ## 09 · Localisation
 
 Sixteen languages: `ar de en es fi fr hi id ja ko pl pt ru tr vi zh`. Only
@@ -754,6 +800,13 @@ English is required for approval; the rest are shipped.
   proves they exist and differ from English, not that they read well.
 
 ---
+
+- [ ] **LNG-07 · Last Stop reads in every language** — *Minor*
+  Switch to `?lang=de`, `ar`, `ja` on Last Stop.
+  **Expect:** the tab, the blurb, the ticket's band ("LAST STOP" in the
+  language), the stack's "N of 20" counts, the example's range and its Classic
+  line are all translated; in Arabic the route runs right to left, the ticket
+  hangs under card 4, and "×2 – ×10" still reads low to high.
 
 ## 10 · Compliance surface
 
@@ -1026,6 +1079,39 @@ badge taking a bite out of their inner edge.
 
 ---
 
+- [ ] **DEV-07 · The ticket on the small sizes** — *Major*
+  Last Stop at Popout S, Mobile S, M and L, idle and after a sweep.
+  **Expect:** the ticket is whole on screen, hanging under card 4 at every size,
+  and touches neither the readout, the Suit label nor a prop.
+
+- [ ] **DEV-08 · The deal goes INTO the deck, at every size** — *Minor*
+  Start rounds at all seven sizes (and Last Stop for the ticket).
+  **Expect:** the last round's cards shrink onto the deck and disappear into
+  it, a short rest, then deal back out; the ticket does the same into its
+  stack. Nothing hovers over the deck or the stack at any size.
+
+- [ ] **DEV-09 · Fast slams never strew the board** — *Major*
+  With the skip button, slam rounds over and over, early in the deal.
+  **Expect:** every card and the ticket land in their places at once, every
+  time; the bus is at its stop immediately. Locally: 40 slammed rounds, worst
+  displacement 0.2 px, no deal animation left running (2026-10-01).
+
+- [ ] **DEV-10 · The table die picks, and only the deal plays** — *Major*
+  (Also: click the die with the mouse, then press Space - it must DEAL, not
+  roll again; the same after clicking a guess square. Space always deals on
+  the board - CMP-10.)
+  Roll the die beside the guesses a few times, then deal; try it mid-round, in
+  autoplay, in replay and on Three of a Kind; and in `?lang=ar`.
+  **Expect:** each roll changes the four picks to a playable set (never Equal
+  then Inside), the bet mode in the deal request is the one shown, and nothing
+  is placed until the deal. Mid-round, in autoplay and in replay it is dimmed
+  with the squares and does nothing; Three of a Kind shows no die. It sits on
+  the wood right of the Suit square (under the Color square on a portrait
+  phone) and stays on the RIGHT in Arabic. One roll sound, no click under it.
+  Locally (2026-10-01) it was on screen, on top, fully opaque and on the wood
+  at all seven sizes and at 667x375, 844x390 and 932x430 landscape - 18 px at
+  Popout S, 30-35 px on a landscape phone, where its touch target grows to 44.
+
 ## 12 · Regression watch
 
 Bugs already found and fixed. Every one reached a build, so each is worth a
@@ -1094,6 +1180,11 @@ Run every check here with `&social=true` on the URL.
   replay UI is a different set of strings that is easy to miss.
 
 ---
+
+- [ ] **SOC-06 · Last Stop's copy in social mode** — *Major*
+  `?social=true` on Last Stop: the picker and How to Play.
+  **Expect:** no "pay", "bet", "fund" or "buy" anywhere in the family's copy.
+  (The idle readout's "Wins up to" line was removed on 2026-10-01.)
 
 ## 14 · Performance
 

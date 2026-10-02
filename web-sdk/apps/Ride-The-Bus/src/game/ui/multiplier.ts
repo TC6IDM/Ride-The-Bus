@@ -35,3 +35,23 @@ export function multiplierString(value: number, format?: NumberFormatter): strin
   }
   return `${figure}×`;
 }
+
+/**
+ * A Last Stop ticket, printed: "×5". The sign LEADS here, and that is the
+ * point - a ticket is not a payout but an instruction to multiply the running
+ * total, the same reading the replay panel's "(×250)" cost gives. A payout
+ * reads "406.0×"; a ticket reading "5.0×" beside it would look like a second,
+ * tiny payout. Whole numbers, in the player's digits.
+ */
+export const TICKET_DIGITS = { maximumFractionDigits: 0 } as const;
+
+export function ticketString(value: number, format?: NumberFormatter): string {
+  const safe = Number.isFinite(value) ? value : 0;
+  let figure: string;
+  try {
+    figure = format ? format(safe, TICKET_DIGITS) : new Intl.NumberFormat('en-US', TICKET_DIGITS).format(safe);
+  } catch {
+    figure = new Intl.NumberFormat(undefined, TICKET_DIGITS).format(safe);
+  }
+  return `×${figure}`;
+}

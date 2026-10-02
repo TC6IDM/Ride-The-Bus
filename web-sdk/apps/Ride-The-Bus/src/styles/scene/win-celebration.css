@@ -470,7 +470,12 @@
 		calc(var(--ui) * -0.1) calc(var(--ui) * 0.15) calc(var(--ui) * 0.3) rgba(var(--shadow-rgb), 0.5),
 		calc(var(--ui) * -0.5) calc(var(--ui) * 0.9) calc(var(--ui) * 2.2) rgba(var(--shadow-rgb), 0.45);
 	transition: box-shadow 0.45s var(--ease-out);
+}
 
+/* A piece's place in the hand - every card, and Last Stop's ticket after them.
+   ONE rule for both, so the ticket can never be dealt to a different fan. */
+.wc-fan-card,
+.wc-fan-ticket {
 	/* --wc-fan-spread is the tier. --tilt and --shift are the card's place in
 	   the hand; multiplying both means a higher tier opens the SAME fan wider
 	   rather than dealing a different one.
@@ -486,6 +491,29 @@
 	transform: translate(var(--fan-x), var(--fan-y)) rotate(var(--fan-tilt));
 	transform-origin: 50% 130%;
 	animation: wc-fan-deal 0.72s var(--ease-pop) both;
+}
+
+/* LAST STOP'S TICKET, laid ON the hand: over the middle of the four cards and
+   lower than them, so it covers their lower halves and none of their corner
+   indices, and in front of them. Its own element rather than a .wc-fan-card -
+   it is paper, not a card, so none of the card's back, rim or glint - dealt
+   with the same animation after the last card. It takes no --tilt, --shift or
+   --drop, so the shared geometry below leaves it square in the middle at every
+   tier. A bus ticket's 3:5; the shadow is a drop-shadow so it follows the
+   notches and the punched hole - the cards' two drops, down and left, and
+   nothing in the tier colour: a blurred drop-shadow of it was a halo, which
+   "lettered, not lit" refuses (found in review, 2026-10-01). */
+.wc-fan-ticket {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 3;
+	width: calc(var(--ui) * 4.6);
+	height: calc(var(--ui) * 7.67);
+	margin: calc(var(--ui) * -6.4) 0 0 calc(var(--ui) * -2.3);
+	filter:
+		drop-shadow(calc(var(--ui) * -0.1) calc(var(--ui) * 0.15) calc(var(--ui) * 0.3) rgba(var(--shadow-rgb), 0.5))
+		drop-shadow(calc(var(--ui) * -0.5) calc(var(--ui) * 0.9) calc(var(--ui) * 2.2) rgba(var(--shadow-rgb), 0.45));
 }
 
 /* The glint. A narrow diagonal highlight in the tier colour, laid over whatever
@@ -1117,7 +1145,8 @@
 		margin-bottom: calc(var(--ui) * -3);
 		scale: 0.74;
 	}
-	.wc-fan-card {
+	.wc-fan-card,
+	.wc-fan-ticket {
 		--fan-tilt: calc(var(--tilt, 0deg) * min(var(--wc-fan-spread, 1), 1.35) * var(--wc-hand, 1));
 		--fan-x: calc(
 			var(--ui) * var(--shift, 0) * min(var(--wc-fan-spread, 1), 1.35) * var(--wc-hand, 1)
@@ -1157,6 +1186,7 @@
 	.wc-overlay,
 	.wc-beam,
 	.wc-fan-card,
+	.wc-fan-ticket,
 	.wc-title,
 	.wc-amount,
 	.wc-amount.is-holding,
@@ -1168,7 +1198,8 @@
 
 	/* animation: none drops the `both` fill that was holding the dealt state, so
 	   the fan has to be told where it landed. */
-	.wc-fan-card {
+	.wc-fan-card,
+	.wc-fan-ticket {
 		opacity: 1;
 	}
 

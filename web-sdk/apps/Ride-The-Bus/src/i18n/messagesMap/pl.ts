@@ -296,4 +296,24 @@ export default {
 		'× oznacza wielokrotność twojego zakładu bazowego.',
 	'Times your base bet':
 		'Wielokrotność twojego zakładu bazowego',
+	'Last Stop':
+		'Ostatni przystanek',
+	'A wrong first card ends the round. Later misses keep 30% of your running total. A right suit draws a ticket that multiplies it by 2 to 10.':
+		'Błąd przy pierwszej karcie kończy rundę. Późniejsze pomyłki zachowują 30% sumy bieżącej. Trafiony symbol losuje bilet, który mnoży ją od 2 do 10 razy.',
+	'Ticket':
+		'Bilet',
+	'The ticket':
+		'Bilet',
+	'Drawn only when all four are right, from a stack of 20. It multiplies your running total.':
+		'Losowany tylko wtedy, gdy trafisz wszystkie cztery, ze stosu 20. Mnoży twoją sumę bieżącą.',
+	'Cards 1 to 3 are priced exactly as on Classic. A right suit draws the ticket in place of a price.':
+		'Karty 1–3 są wyceniane dokładnie tak jak w trybie Klasycznym. Trafiony symbol losuje bilet zamiast wyceny.',
+	'On Classic the same cards end at %s.':
+		'W trybie Klasycznym te same karty kończą się na %s.',
+	'A full game win pays more the harder your picks were, and the ticket multiplies it. Two Equal picks and a ×10 ticket reach this mode’s maximum: %m your bet.':
+		'Pełna wygrana płaci tym więcej, im trudniejsze były twoje typy, a bilet ją mnoży. Dwa typy Równo i bilet ×10 osiągają maksimum tego trybu: %m twojego zakładu.',
+	'Roll the die for random guesses':
+		'Rzuć kością, by wylosować typy',
+	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
+		'Kość obok typów losuje wszystkie cztery. Nic nie jest grane, dopóki nie rozdasz.',
 };

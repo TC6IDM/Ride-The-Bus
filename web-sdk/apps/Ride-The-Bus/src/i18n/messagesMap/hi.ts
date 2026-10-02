@@ -296,4 +296,24 @@ export default {
 		'× का अर्थ है आपकी बेस बेट का गुणक।',
 	'Times your base bet':
 		'आपकी बेस बेट का गुणक',
+	'Last Stop':
+		'आखिरी स्टॉप',
+	'A wrong first card ends the round. Later misses keep 30% of your running total. A right suit draws a ticket that multiplies it by 2 to 10.':
+		'पहला कार्ड गलत होने पर राउंड खत्म। बाद की गलतियाँ आपके चलते योग का 30% रखती हैं। सही सूट एक टिकट निकालता है जो इसे 2 से 10 गुना कर देता है।',
+	'Ticket':
+		'टिकट',
+	'The ticket':
+		'टिकट',
+	'Drawn only when all four are right, from a stack of 20. It multiplies your running total.':
+		'यह 20 टिकटों के ढेर से केवल तब निकाला जाता है जब चारों सही हों। यह आपके चलते योग को गुणा करता है।',
+	'Cards 1 to 3 are priced exactly as on Classic. A right suit draws the ticket in place of a price.':
+		'कार्ड 1 से 3 की कीमत बिल्कुल क्लासिक जैसी है। सही सूट पर कीमत की जगह टिकट निकलता है।',
+	'On Classic the same cards end at %s.':
+		'क्लासिक पर यही कार्ड %s पर खत्म होते हैं।',
+	'A full game win pays more the harder your picks were, and the ticket multiplies it. Two Equal picks and a ×10 ticket reach this mode’s maximum: %m your bet.':
+		'आपके चयन जितने कठिन थे, पूरी जीत उतना अधिक भुगतान करती है, और टिकट उसे गुणा करता है। दो बराबर चयन और ×10 टिकट इस मोड के अधिकतम तक पहुँचते हैं: आपके दांव का %m।',
+	'Roll the die for random guesses':
+		'यादृच्छिक अनुमानों के लिए पासा फेंकें',
+	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
+		'अनुमानों के पास रखा पासा चारों को यादृच्छिक रूप से चुनता है। जब तक आप बाँटते नहीं, कुछ भी खेला नहीं जाता।',
 };

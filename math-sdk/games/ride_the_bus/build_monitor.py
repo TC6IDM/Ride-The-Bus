@@ -1,12 +1,12 @@
 """
 A live view of the math build, in a browser, for the 40 minutes it runs.
 
-WHY. `run.py` is ~44M simulations across 193 bet modes and prints a scrolling
+WHY. `run.py` is ~58M simulations across 257 bet modes and prints a scrolling
 wall of text: which mode it is on, eight workers starting, eight finishing with
 their own RTP, files being written, then a reweight, a verification and two
 scans. All of it is there, none of it is legible - there is no way to see how
 far in it is, which modes are done, how long is left, or whether a worker is
-wedged. This serves the same run as 193 boxes, four stage bars and an ETA, and
+wedged. This serves the same run as 257 boxes, four stage bars and an ETA, and
 keeps every line of output beside them.
 
 HOW IT ATTACHES. `run.py` re-executes ITSELF as a child process when the
@@ -332,7 +332,7 @@ class BuildState:
 
 
 def _family_of(mode: str) -> str:
-    for prefix in ("sc", "hs", "tr"):
+    for prefix in ("sc", "ls", "hs", "tr"):
         if mode.startswith(prefix + "_"):
             return prefix
     return "base"
@@ -844,7 +844,7 @@ def _demo_child() -> None:
     # RTB_DEMO_PACE scales every sleep: 1 is a ~45s replay, 4 is slow enough
     # to watch a worker strip fill and empty.
     pace = float(os.environ.get("RTB_DEMO_PACE", "1"))
-    families = [("base", ""), ("sc", "sc_"), ("hs", "hs_"), ("tr", "tr_")]
+    families = [("base", ""), ("sc", "sc_"), ("ls", "ls_"), ("hs", "hs_"), ("tr", "tr_")]
     colours = ["red", "black"]
     hl = ["higher", "lower", "equal"]
     io = ["inside", "outside", "equal"]
@@ -877,6 +877,7 @@ def _demo_child() -> None:
         families=[
             {"key": "base", "label": "Classic"},
             {"key": "sc", "label": "Second Chance"},
+            {"key": "ls", "label": "Last Stop"},
             {"key": "hs", "label": "High Stakes"},
             {"key": "tr", "label": "Three of a Kind"},
         ],
@@ -927,7 +928,7 @@ def _demo_child() -> None:
         )
         emit("reweight", mode=name, index=index, rtp=rtp)
         time.sleep(0.05 * pace)
-    print("Reweighted 193 modes to 0.9600: realized RTP 96.0000%-96.0000% (spread 0.0000%)")
+    print("Reweighted 257 modes to 0.9600: realized RTP 96.0000%-96.0000% (spread 0.0000%)")
     print("\nWriting configuration files...")
     for label in ("frontend config", "backend config", "math config", "index manifest"):
         print(f"  {label}...")

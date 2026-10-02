@@ -138,7 +138,9 @@ the container's; the face is what is printed on it.
 caps and joins, ~2.2 on a 24 grid — `MarkIcon.svelte`'s voice. A mark that is
 read (the bolt meter) is filled. The spin button is the stated exception: its
 marks are shapes (two cards, a stop square, two chevrons) and it is the hero
-control. Glyphs are drawn only where the font does not own them; card ranks
+control. The table die is the other: it is not a mark but an OBJECT on the
+table, drawn as one - the card back's reds, the scene's camera, the room's
+light catching the top's far edge and the table's two-part shadow under it. Glyphs are drawn only where the font does not own them; card ranks
 stay ASCII.
 
 ## The primary action

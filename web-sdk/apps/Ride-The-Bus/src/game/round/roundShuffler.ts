@@ -25,7 +25,16 @@ export type RoundContract = {
 	roundId: string;
 	seed: string;
 	deck: Card[];
+	/**
+	 * Which of Last Stop's 20 tickets this round would draw on a clean sweep -
+	 * from a stream of its own, so the deal is the same with or without it.
+	 * The math side does the same (ticket_slot in game_calculations.py).
+	 */
+	ticketSlot: number;
 };
+
+/** The number of tickets in Last Stop's stack. */
+const TICKET_SLOTS = 20;
 
 const hashSeed = (seed: string) => {
 	let hash = 2166136261;
@@ -70,5 +79,6 @@ export const createRoundContract = (seed: string, deck: DeckSpecLike = null): Ro
 		roundId: normalizedSeed,
 		seed: normalizedSeed,
 		deck: shuffleDeck(createDeck(deck), normalizedSeed),
+		ticketSlot: Math.floor(createRandomNumberGenerator(`${normalizedSeed}:ticket`)() * TICKET_SLOTS),
 	};
 };

@@ -311,13 +311,18 @@ const SPACE_HOLD_MS = 400;
 let spaceDown = false;
 let spaceHoldTimer: ReturnType<typeof setTimeout> | null = null;
 
-// Don't hijack Space while the player is typing a bet / round count, or
-// operating a focused button (Space is that button's own activation key).
+// Space DEALS, whatever has focus on the board - the owner's call (2026-10-02).
+// It used to yield to a focused button as that button's own activation key,
+// and a mouse click focuses a button: "pick a suit, press Space" toggled the
+// pick off, and "roll the die, press Space" rolled again. Only TYPING keeps
+// it - a bet or round count in a field. An open panel, the intro and the
+// takeover are gated in onKeyDown itself, and keep Space for their own
+// controls.
 function spaceIsForUs(target: EventTarget | null) {
   const el = target as HTMLElement | null;
   if (!el) return true;
   if (el.isContentEditable) return false;
-  return !['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A'].includes(el.tagName);
+  return !['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName);
 }
 
 function onKeyDown(event: KeyboardEvent) {
@@ -333,6 +338,9 @@ function onKeyDown(event: KeyboardEvent) {
   // spaceIsForUs() below lets through. Without this line, pressing Space while
   // reading How to Play bought a round behind the panel.
   if (chromeInert) return;
+  // The start screen and the replay's details own their buttons, and Space
+  // presses the focused one there (Tap to continue, Play).
+  if (introPhase !== 'playing') return;
   // Regulator has barred the shortcut - leave Space to the browser.
   if (jurisdiction.spacebarDisabled()) return;
   if (!spaceIsForUs(event.target)) return;
@@ -363,9 +371,8 @@ function onKeyDown(event: KeyboardEvent) {
 // board's own setters. Here rather than in GameBoard because this is where the
 // gates already are: a panel open, the takeover up, the intro or replay screen.
 // NOT the regulator's disabledSpacebar flag: that bars the key that BUYS a
-// round, and a digit only changes a pick. Only a focused FIELD is exempt -
-// unlike Space, a digit is not a button's own activation key, so a focused
-// guess square does not stop it.
+// round, and a digit only changes a pick. Only a focused FIELD is exempt, as
+// it is for Space.
 const GUESS_STAGE = { color: 0, hl: 1, io: 2, suit: 3 } as const;
 
 function typingInto(target: EventTarget | null) {
@@ -399,6 +406,10 @@ function onGuessKey(event: KeyboardEvent) {
 
 function onKeyUp(event: KeyboardEvent) {
   if (event.code !== 'Space' && event.key !== ' ') return;
+  // The press was ours: a focused button activates on Space's KEYUP, so the
+  // keyup is taken too, or a focused square or die would still fire under
+  // the deal.
+  if (spaceDown) event.preventDefault();
   releaseSpace();
 }
 

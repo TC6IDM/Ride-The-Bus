@@ -297,4 +297,24 @@ export default {
 		'× tarkoittaa peruspanoksesi kerrannaista.',
 	'Times your base bet':
 		'Peruspanoksesi kerrannainen',
+	'Last Stop':
+		'Pääteasema',
+	'A wrong first card ends the round. Later misses keep 30% of your running total. A right suit draws a ticket that multiplies it by 2 to 10.':
+		'Väärä ensimmäinen kortti päättää kierroksen. Myöhemmät virheet säilyttävät 30% juoksevasta summastasi. Oikea maa nostaa lipun, joka kertoo sen luvulla 2–10.',
+	'Ticket':
+		'Lippu',
+	'The ticket':
+		'Lippu',
+	'Drawn only when all four are right, from a stack of 20. It multiplies your running total.':
+		'Nostetaan vain, kun kaikki neljä osuvat oikein, 20 lipun pinosta. Se kertoo juoksevan summasi.',
+	'Cards 1 to 3 are priced exactly as on Classic. A right suit draws the ticket in place of a price.':
+		'Kortit 1–3 on hinnoiteltu täsmälleen kuten Klassisessa. Oikea maa nostaa lipun hinnan sijaan.',
+	'On Classic the same cards end at %s.':
+		'Klassisessa samat kortit päättyvät arvoon %s.',
+	'A full game win pays more the harder your picks were, and the ticket multiplies it. Two Equal picks and a ×10 ticket reach this mode’s maximum: %m your bet.':
+		'Täysi voitto maksaa sitä enemmän, mitä vaikeampia valintasi olivat, ja lippu kertoo sen. Kaksi Yhtä suuri -valintaa ja ×10-lippu yltävät tämän tilan enimmäisvoittoon: %m panoksestasi.',
+	'Roll the die for random guesses':
+		'Heitä noppaa satunnaisiin arvauksiin',
+	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
+		'Arvausten vieressä oleva noppa valitsee kaikki neljä satunnaisesti. Mitään ei pelata ennen kuin jaat.',
 };

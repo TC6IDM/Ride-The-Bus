@@ -8,7 +8,7 @@
  * amount from one round to the next. What CAN be stated exactly is the range
  * each pick can pay, and that is what this produces.
  *
- * Computed from partialMultiplier rather than typed out, so the rules cannot
+ * Computed from guessPrice rather than typed out, so the rules cannot
  * drift from the maths. A hardcoded table would be a slow-motion version of the
  * worst bug this game can have: showing the player one number while the RGS
  * credits another.
@@ -23,7 +23,7 @@
  * allowImportingTsExtensions for exactly this reason, and Vite resolves them
  * unchanged. Drop an extension here and the whole test file fails to load.
  */
-import { decayFor, partialMultiplier, quantizeMultiplier, stageRetention } from './payout.ts';
+import { guessPrice, quantizeMultiplier, ticketValues } from './payout.ts';
 import { createDeck, ranks, rankValue, type Card } from '../round/roundContract.ts';
 import { FAMILY_RULES, FREE_CHOICE, type FamilyRules } from './modes.ts';
 import { stageNeed, stagePrice } from './stageOdds.ts';
@@ -92,10 +92,11 @@ const range = (multipliers: number[]) => ({
 export function payoutRowsFor(rules: FamilyRules = FAMILY_RULES.base): PayoutRow[] {
 	if (rules.fixedChoices) return fixedPayoutRows(rules);
 
-	const retentionAt = (stage: number) => stageRetention(rules, stage, false);
+	// Every price through guessPrice, exactly as the book prices it.
+	const price = (stage: number, probability: number) => guessPrice(rules, stage, probability);
 
 	/* Stage 1: always 26 of 52, so red and black are one fixed figure. */
-	const colour = partialMultiplier(0.5, 0, retentionAt(0));
+	const colour = price(0, 0.5);
 
 	/* Stage 2: 51 cards remain. Higher and lower swing on card 1's rank; equal
 	   is always the 3 remaining cards of that rank, so it is a constant. */
@@ -111,9 +112,9 @@ export function payoutRowsFor(rules: FamilyRules = FAMILY_RULES.base): PayoutRow
 		const equal = 51 - higher - lower;
 		// An ace is never beaten downwards nor a king upwards - unreachable
 		// rather than free, so those are skipped instead of recorded as zero.
-		if (higher > 0) s2.higher.push(partialMultiplier(higher / 51, 1, retentionAt(1)));
-		if (lower > 0) s2.lower.push(partialMultiplier(lower / 51, 1, retentionAt(1)));
-		s2.equal.push(partialMultiplier(equal / 51, 1, retentionAt(1)));
+		if (higher > 0) s2.higher.push(price(1, higher / 51));
+		if (lower > 0) s2.lower.push(price(1, lower / 51));
+		s2.equal.push(price(1, equal / 51));
 	}
 
 	/* Stage 3: 50 remain, and both bounds move - the widest-swinging stage. */
@@ -134,16 +135,19 @@ export function payoutRowsFor(rules: FamilyRules = FAMILY_RULES.base): PayoutRow
 			const equal = 50 - inside - outside;
 			// Adjacent or equal references leave nothing strictly between them -
 			// the combination isCombinationPlayable already bars.
-			if (inside > 0) s3.inside.push(partialMultiplier(inside / 50, 2, retentionAt(2)));
-			if (outside > 0) s3.outside.push(partialMultiplier(outside / 50, 2, retentionAt(2)));
-			if (equal > 0) s3.equal.push(partialMultiplier(equal / 50, 2, retentionAt(2)));
+			if (inside > 0) s3.inside.push(price(2, inside / 50));
+			if (outside > 0) s3.outside.push(price(2, outside / 50));
+			if (equal > 0) s3.equal.push(price(2, equal / 50));
 		}
 	}
 
-	/* Stage 4: 49 remain, of which 10-13 share any given suit. */
-	const s4: number[] = [];
-	for (let left = 10; left <= 13; left += 1) {
-		s4.push(partialMultiplier(left / 49, 3, retentionAt(3)));
+	/* Stage 4: 49 remain, of which 10-13 share any given suit. On a ticket
+	   family a right suit has no price of its own and multiplies the running
+	   total by the ticket instead, so its row is the stack's range - the same
+	   unit as every row above it, a factor on the running total. */
+	const s4: number[] = ticketValues(rules) ?? [];
+	if (!rules.ticket) {
+		for (let left = 10; left <= 13; left += 1) s4.push(price(3, left / 49));
 	}
 
 	const kind = 'factor' as const;
@@ -181,7 +185,6 @@ export function payoutRowsFor(rules: FamilyRules = FAMILY_RULES.base): PayoutRow
  */
 function fixedPayoutRows(rules: FamilyRules): PayoutRow[] {
 	const choices = rules.fixedChoices!;
-	const decay = decayFor(rules);
 	const deck = createDeck(rules.deck);
 	const perRank = deck.filter((card) => card.rank === deck[0]!.rank).length;
 	const label = (stage: number): PayoutRow['label'] =>
@@ -194,7 +197,7 @@ function fixedPayoutRows(rules: FamilyRules): PayoutRow[] {
 	// exactly as roundReveal.svelte.ts builds the chip for each card.
 	let running = 1;
 	return choices.map((_, stage) => {
-		running *= partialMultiplier(probability(stage), stage, stageRetention(rules, stage, false), decay);
+		running *= guessPrice(rules, stage, probability(stage));
 		const total = quantizeMultiplier(running * rules.cost);
 		return { stage: stage + 1, label: label(stage), kind: 'total', min: total, max: total };
 	});
@@ -228,8 +231,7 @@ export type OddsExample = {
 };
 
 export function oddsExampleFor(rules: FamilyRules = FAMILY_RULES.base): OddsExample {
-	const retention = stageRetention(rules, 1, false);
-	const at = (cards: number) => round2(partialMultiplier(cards / 51, 1, retention));
+	const at = (cards: number) => round2(guessPrice(rules, 1, cards / 51));
 	return {
 		lowerOn3: at(8),
 		higherOn3: at(40),
@@ -250,14 +252,23 @@ export function oddsExampleFor(rules: FamilyRules = FAMILY_RULES.base): OddsExam
  * chosen so every stage reads at a glance and the round lands; the figures move with
  * the family, which is the point of drawing it on every tab. The guess
  * families only: Three of a Kind's table already IS its one round.
+ *
+ * On a ticket family the last step is a RANGE: a right suit is paid by the
+ * ticket, so the running total after it is the run to card 3 times anything
+ * from the lowest ticket to the highest - the board's card-4 chip lands on one
+ * of them when the ticket turns.
  */
 export type ExampleStep = {
 	card: Card;
 	choice: string;
 	hits: number;
 	total: number;
-	/** Rounded down to 0.1x at each step, exactly as the board's chips are. */
+	/** Rounded down to 0.1x at each step, exactly as the board's chips are -
+	 *  with the lowest ticket, on a ticket family's last step. */
 	runningTotal: number;
+	/** The same with the highest ticket, on a ticket family's last step; null
+	 *  on every other step. */
+	upTo: number | null;
 };
 
 export const EXAMPLE_DEAL: readonly { card: Card; choice: string }[] = [
@@ -268,14 +279,54 @@ export const EXAMPLE_DEAL: readonly { card: Card; choice: string }[] = [
 ];
 
 export function exampleRoundFor(rules: FamilyRules = FAMILY_RULES.base): ExampleStep[] {
+	const tickets = ticketValues(rules);
+	const last = EXAMPLE_DEAL.length - 1;
 	let running = 1;
 	const dealt: Card[] = [];
 	return EXAMPLE_DEAL.map(({ card, choice }, stage) => {
 		const need = stageNeed(rules, stage, choice, dealt);
 		running *= stagePrice(rules, stage, need, false);
 		dealt.push(card);
-		return { card, choice, hits: need.hits, total: need.total, runningTotal: quantizeMultiplier(running * rules.cost) };
+		// The ticket multiplies the full-precision running total, then the one
+		// floor - computeFinalMultiplier's order.
+		const settle = (ticket: number) => quantizeMultiplier(running * ticket * rules.cost);
+		const ranged = tickets !== null && stage === last;
+		return {
+			card,
+			choice,
+			hits: need.hits,
+			total: need.total,
+			runningTotal: settle(ranged ? Math.min(...tickets) : 1),
+			upTo: ranged ? settle(Math.max(...tickets)) : null,
+		};
 	});
+}
+
+/**
+ * Where the example's four cards end on Classic, for a ticket family's tab to
+ * set beside its own range - null on every other family. The trade the ticket
+ * makes is the suit card's fixed price for a spread of 2x to 10x, and this
+ * shows it on the cards the tab already dealt rather than arguing it.
+ */
+export function classicEndingFor(rules: Pick<FamilyRules, 'ticket'>): number | null {
+	if (!rules.ticket) return null;
+	return exampleRoundFor(FAMILY_RULES.base).at(-1)!.runningTotal;
+}
+
+/**
+ * A ticket family's stack, for How to Play to draw: each value and how many of
+ * the 20 carry it, lowest first. Stake asks for every obtainable value of a
+ * multiplier to be listed, and the reweight makes the published tables deal
+ * the tickets at exactly these odds. Null on a family with no ticket.
+ */
+export function ticketStackFor(
+	rules: Pick<FamilyRules, 'ticket'>,
+): { value: number; count: number; of: number }[] | null {
+	if (!rules.ticket) return null;
+	const of = rules.ticket.reduce((sum, [, count]) => sum + count, 0);
+	return [...rules.ticket]
+		.sort((a, b) => a[0] - b[0])
+		.map(([value, count]) => ({ value, count, of }));
 }
 
 /* FULL_WIN_ROWS used to live here: a three-row breakdown of what a full win

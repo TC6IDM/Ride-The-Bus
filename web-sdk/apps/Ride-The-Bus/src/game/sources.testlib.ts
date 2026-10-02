@@ -83,6 +83,9 @@ export const MARKUP_COMPONENT_PATHS: string[] = [
   // GameBoard's markup 2026-09-26.
   at('../components/cards/CardFace.svelte'),
   at('../components/board/SessionReadouts.svelte'),
+  // The table die and its drawing, out of GameBoard's guess row (2026-10-01).
+  at('../components/board/TableDie.svelte'),
+  at('../components/cards/DieFace.svelte'),
 ];
 
 /** Every path this manifest claims, for sources.test.ts to verify. */

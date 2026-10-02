@@ -676,3 +676,187 @@
     transform: none;
   }
 }
+
+/* ---- Last Stop: the ticket, and the route --------------------------------
+   Both are LAID OVER the card row rather than placed in it, which is the whole
+   design: the row keeps its width and its four cards stand exactly where they
+   stand on every other family, so neither switching to Last Stop nor a ticket
+   turning moves anything (the board is measured by its slots, and a transform
+   on a laid-over box moves no slot). Logical properties throughout, so Arabic
+   mirrors the route and puts the ticket past card 4 on the left without a
+   second set of rules. */
+.card-row {
+  position: relative;
+  /* One stop per card: the distance between two cards' centres. */
+  --stop-pitch: calc(var(--card-w) + var(--gap));
+  --ticket-w: calc(var(--card-w) * 0.5);
+}
+
+/* A bus ticket's proportions (TicketFace draws it in 120 x 200), hung UNDER
+   THE LAST STOP: below card 4's outer half, just clear of the route line, in
+   the corner of the readout band. Anywhere past card 4 met something - level
+   with the cards it sat on the top-right chip stacks, lower it sat on the left
+   cup in Arabic (the table's props do not mirror), and on a portrait phone
+   there is no "past card 4" at all. Under the card it is clear at every size
+   and in both directions, right of the readout's lines and above the Suit
+   label. The angle is the `rotate` property rather than a transform, so the
+   deal's transform animation (GameBoard.svelte) leaves it alone. */
+.ticket-slot {
+  position: absolute;
+  inset-inline-end: 0;
+  top: calc(100% + var(--gap) / 2 + var(--ui) * 1.2);
+  width: var(--ticket-w);
+  height: calc(var(--ticket-w) * 5 / 3);
+  perspective: 700px;
+  rotate: -6deg;
+}
+
+/* The same flip as a card: two faces back to back, turned by --flip-dur. */
+.ticket-inner {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transition: transform var(--flip-dur, 0.5s) var(--ease-out);
+}
+
+.ticket-inner.flipped {
+  transform: rotateY(180deg);
+}
+
+/* The table's two-part shadow - a tight contact patch and a wide soft one -
+   as a drop-shadow, so it follows the notches and the punched hole rather
+   than casting a rectangle under them. */
+.ticket-back,
+.ticket-front {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  filter:
+    drop-shadow(0 1px 1px rgba(var(--shadow-rgb), 0.5))
+    drop-shadow(0 calc(var(--ui) * 0.35) calc(var(--ui) * 0.6) rgba(var(--shadow-rgb), 0.38));
+}
+
+.ticket-front {
+  transform: rotateY(180deg);
+}
+
+/* A bust: the ticket the round will never reach steps back with the cards it
+   will never reach, after the bust card has turned (as .card-slot.is-dead). */
+.ticket-slot.is-dead .ticket-back {
+  opacity: 0.5;
+  filter: saturate(0.3) brightness(0.72) drop-shadow(0 1px 1px rgba(var(--shadow-rgb), 0.5));
+  transition: opacity 0.3s var(--ease-out), filter 0.3s var(--ease-out);
+  transition-delay: calc(var(--flip-dur, 0.5s) * 0.9);
+}
+
+/* The route, halfway down the gap between the cards and the readout: from
+   card 1's centre to the last card's. On Last Stop the ticket hangs under that
+   last stop, and the bus waits there when it turns. */
+.route-line {
+  position: absolute;
+  inset-inline-start: calc(var(--card-w) / 2);
+  top: calc(100% + var(--gap) / 2);
+  width: calc((var(--stops) - 1) * var(--stop-pitch));
+  height: 0;
+  /* Where the bus waits once the ticket is up: the last stop. */
+  --bus-end: calc((var(--stops) - 1) * var(--stop-pitch));
+  --stop: calc(var(--ui) * 0.72);
+  pointer-events: none;
+}
+
+.route-line::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: max(1px, calc(var(--ui) * 0.16));
+  margin-top: max(-0.5px, calc(var(--ui) * -0.08));
+  border-radius: 999px;
+  background: rgba(var(--ink-rgb), 0.22);
+}
+
+/* A stop. Hollow ahead of the round; filled as its card lands - the win's
+   green for a right guess, the loss red where the round busted, the forgiven
+   amber where a Second Chance carried on. Filled after the card has turned
+   (0.9 of the flip, as the chip and the cross), cleared at once on a new deal:
+   the delay is on the entering rules only. */
+.route-stop {
+  position: absolute;
+  top: 0;
+  width: var(--stop);
+  height: var(--stop);
+  margin-top: calc(var(--stop) / -2);
+  margin-inline-start: calc(var(--stop) / -2);
+  border-radius: 50%;
+  background: rgba(var(--shadow-rgb), 0.35);
+  box-shadow: inset 0 0 0 max(1px, calc(var(--ui) * 0.14)) rgba(var(--ink-rgb), 0.42);
+  transition: background-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+}
+
+.route-stop {
+  inset-inline-start: calc(var(--i) * var(--stop-pitch));
+}
+
+.route-stop.is-right,
+.route-stop.is-bust,
+.route-stop.is-forgiven {
+  box-shadow: 0 1px 2px rgba(var(--shadow-rgb), 0.6);
+  transition-delay: calc(var(--flip-dur, 0.5s) * 0.9);
+}
+
+.route-stop.is-right { background: var(--win-soft); }
+.route-stop.is-bust { background: var(--loss-soft); }
+.route-stop.is-forgiven { background: var(--forgiven); }
+
+/* The bus, riding the line to the furthest stop reached - after the card has
+   turned, like everything else a card sets off. Hidden before the first card
+   of a round. Drawn facing the way the route runs, so Arabic turns it round. */
+.route-bus {
+  position: absolute;
+  top: 0;
+  /* Over the cards: a held last card is lifted to z-index 4 (.card-slot.is-lit)
+     and keeps it until the next deal, and the bus parked at its stop was drawn
+     under the card's lower edge once it had been thrown back down. */
+  z-index: 5;
+  inset-inline-start: var(--bus-x);
+  width: calc(var(--ui) * 2);
+  height: calc(var(--ui) * 1.17);
+  margin-top: calc(var(--ui) * -1.7);
+  margin-inline-start: calc(var(--ui) * -1);
+  opacity: 0;
+  /* On the flip's clock (0.45s and 0.25s at normal speed), so turbo shortens
+     the ride and a slam lands the bus at once - at a fixed 0.45s it was still
+     driving while a slammed round had already settled (2026-10-01). */
+  transition:
+    inset-inline-start calc(var(--flip-dur, 0.5s) * 0.9) var(--ease-out),
+    opacity calc(var(--flip-dur, 0.5s) * 0.5) var(--ease-out);
+}
+
+.route-bus.is-moving {
+  opacity: 1;
+  transition-delay: calc(var(--flip-dur, 0.5s) * 0.9);
+}
+
+.route-bus svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: var(--gold);
+  filter: drop-shadow(0 1px 1px rgba(var(--shadow-rgb), 0.6));
+}
+
+.route-bus .bus-glass {
+  fill: rgba(var(--shadow-rgb), 0.55);
+}
+
+:global([dir='rtl']) .route-bus svg {
+  transform: scaleX(-1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticket-inner,
+  .route-bus {
+    transition: none;
+  }
+}

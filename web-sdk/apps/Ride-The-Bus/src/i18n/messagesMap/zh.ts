@@ -291,4 +291,24 @@ export default {
 		'× 表示基础投注额的倍数。',
 	'Times your base bet':
 		'基础投注额的倍数',
+	'Last Stop':
+		'终点站',
+	'A wrong first card ends the round. Later misses keep 30% of your running total. A right suit draws a ticket that multiplies it by 2 to 10.':
+		'第一张牌猜错即结束本局。之后猜错保留累计金额的30%。猜中花色即可抽一张车票，将累计金额变为原来的 2 至 10 倍。',
+	'Ticket':
+		'车票',
+	'The ticket':
+		'车票',
+	'Drawn only when all four are right, from a stack of 20. It multiplies your running total.':
+		'仅在四项全中时，从 20 张车票中抽取一张。它会乘以你的累计金额。',
+	'Cards 1 to 3 are priced exactly as on Classic. A right suit draws the ticket in place of a price.':
+		'第 1 至 3 张牌的定价与经典模式完全相同。猜中花色时，以车票代替定价。',
+	'On Classic the same cards end at %s.':
+		'同样的牌在经典模式下结束于 %s。',
+	'A full game win pays more the harder your picks were, and the ticket multiplies it. Two Equal picks and a ×10 ticket reach this mode’s maximum: %m your bet.':
+		'全中的赔付取决于你的选择有多难，再乘以车票的倍数。两次选择相同并抽到 ×10 车票，即可达到本模式的最高赔付：投注额的 %m。',
+	'Roll the die for random guesses':
+		'掷骰子随机选择预测',
+	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
+		'预测旁边的骰子会随机选择全部四项。在你发牌之前，不会进行任何游戏。',
 };

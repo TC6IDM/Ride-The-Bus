@@ -16,6 +16,8 @@
   import MarkIcon from '../icons/MarkIcon.svelte';
   import SuitIcon from '../icons/SuitIcon.svelte';
   import CardFace from '../cards/CardFace.svelte';
+  import TicketFace from '../cards/TicketFace.svelte';
+  import TableDie from './TableDie.svelte';
   import {
     familyRules,
     guesses,
@@ -32,10 +34,10 @@
   import type { Card } from '../../game/platform/typesBookEvent';
   import { t } from '../../i18n/i18nDerived';
   import { numberToCurrencyString } from 'utils-shared/amount';
-  import { formatMultiplier } from '../../game/ui/formatMultiplier';
+  import { formatMultiplier, formatTicket } from '../../game/ui/formatMultiplier';
 
   import { choicesLocked } from '../../game/round/roundState.svelte';
-  import { flipDurSec } from '../../game/round/revealPacing.svelte';
+  import { DEAL_REST_MS, flipDurSec, paceMs, pacing } from '../../game/round/revealPacing.svelte';
   import { reducedMotion } from '../../game/celebration/celebrationGestures';
   import { sound } from '../../game/audio/sound';
   import { untrack } from 'svelte';
@@ -129,12 +131,16 @@
     multipliers: (number | null)[];
     busted: number | null;
     forgiven: number | null;
+    /** Last Stop's ticket, face up - held like a card, so it turns back over
+     *  with its value still printed rather than a blank front. */
+    ticket: number | null;
   };
   let heldBoard: ShownBoard = {
     cards: [null, null, null, null],
     multipliers: [null, null, null, null],
     busted: null,
     forgiven: null,
+    ticket: null,
   };
   const shown = $derived.by(() => {
     // One condition for the whole row: a chip only ever exists under a card
@@ -145,6 +151,7 @@
         multipliers: round.stageMultipliers.slice(),
         busted: round.bustedIndex,
         forgiven: round.forgivenIndex,
+        ticket: round.ticketShown,
       };
     }
     return heldBoard;
@@ -178,6 +185,11 @@
    * Presentation only. The round's own figures move on cue; settleRound, the
    * credit and the takeover never read this. Reduced motion has no flip, so
    * nothing waits.
+   *
+   * Last Stop's ticket is a landing too: it turns on the same --flip-dur, and
+   * the total it brings - two to ten times the run - would otherwise print
+   * while the ticket still showed its back, telling the player which ticket
+   * before the ticket did (found in review, 2026-10-01).
    */
   type Readout = {
     state: typeof round.state;
@@ -199,16 +211,19 @@
   });
   let readout = $state<Readout>(untrack(() => live));
   let dealtBefore = 0;
+  let ticketBefore: number | null = null;
   let landsAt = 0;
   $effect(() => {
     const next = live;
     const dealt = round.revealedCards.filter((c) => c !== null).length;
-    if (dealt > dealtBefore) {
+    const ticket = round.ticketShown;
+    if (dealt > dealtBefore || (ticket !== null && ticketBefore === null)) {
       landsAt = reducedMotion() ? 0 : performance.now() + Number(flipDurSec()) * 900;
     } else if (dealt < dealtBefore) {
       landsAt = 0;
     }
     dealtBefore = dealt;
+    ticketBefore = ticket;
     const wait = landsAt - performance.now();
     if (wait <= 0) {
       readout = next;
@@ -270,6 +285,197 @@
   const isDead = (index: number) => round.bustedIndex !== null && index > round.bustedIndex;
 
   /**
+   * Last Stop's ticket slot - present for every round on the family, face
+   * down until a clean sweep turns it, so nothing arrives mid-round and the
+   * board never moves (it is laid over the row, not in it).
+   */
+  const hasTicket = $derived(familyRules().ticket !== null);
+
+  /**
+   * THE ROUTE. Four stops under the four cards (three on Three of a Kind),
+   * and on Last Stop the ticket under the last stop: the bus the game is named
+   * for, drawn as the line the round travels. A stop lights as its card lands
+   * right, a busted stop takes the loss colour, a forgiven one the amber, and
+   * on Last Stop the ticket hangs under the last stop, where the bus waits
+   * when it turns. Drawn only - the words for the
+   * result are the readout's, and saying them twice would be two voices for
+   * one fact. Laid over the gap under the cards, so it moves nothing.
+   */
+  const stopState = (index: number): 'right' | 'bust' | 'forgiven' | null => {
+    if (round.revealedCards[index] === null) return null;
+    if (index === round.bustedIndex) return 'bust';
+    if (index === round.forgivenIndex) return 'forgiven';
+    return 'right';
+  };
+  /** Where the bus is: the furthest stop reached, or at the ticket once it is up. */
+  const busAt = $derived.by(() => {
+    if (round.ticketShown !== null) return slots;
+    let at = -1;
+    for (let i = 0; i < slots; i += 1) if (round.revealedCards[i] !== null) at = i;
+    return at;
+  });
+
+  /**
+   * THE DEAL. The cards used to be there already and simply turn; now each
+   * one comes off the deck on the table at the top of a round - the moment
+   * sound.playDeal() has always filled with four riffles - gathering the last
+   * round's cards back to the deck on the way. A transform on .card-block
+   * only, through the Web Animations API, so the SLOT never moves (the board
+   * is measured by its slots) and a replayed round restarts it cleanly. Scaled
+   * by the flip's own duration, so turbo shrinks it with everything else and a
+   * slam or turbo at the top of its range skips it; reduced motion has none.
+   * Last Stop's ticket goes back to its stack the same way.
+   *
+   * Two legs with a REST between them (DEAL_REST_MS, the owner's call on
+   * 2026-10-01): each card is swept onto the deck, sits there a beat, and is
+   * dealt back out. The legs keep the split the single curve used to make -
+   * that curve passed the deck about 17% of the way through - and each eases
+   * out, because both now end at rest. The reveal holds card 1's turn back by
+   * the same beat.
+   *
+   * ON THE PILE, NOT OVER IT (2026-10-01). A fixed scale(0.62) fitted the deck
+   * at one size and hovered over it at others, and a full-brightness card on a
+   * deck sunk to 60% reads as floating however well it fits. So each piece is
+   * fitted to the prop it goes to - its centre, its angle, its foreshortened
+   * width and height, measured off the prop - and fades into it as it lands,
+   * staying out of sight for the rest and fading back as it leaves: the deck
+   * is what the player sees take the cards back.
+   *
+   * MEASURED AT REST. getBoundingClientRect includes whatever transform is
+   * running - a deal still in flight, the held card's lift easing back, the
+   * bust knock - and a deal measured from a displaced card sent it to the
+   * wrong place: under fast slams the cards ended up strewn over the board.
+   * So the last deal is cancelled first, and what is left of any transform is
+   * taken back out of the centre (restCentre). The ticket slot's own `rotate`
+   * is applied BEFORE `transform`, so its offset is turned into the slot's
+   * frame (it used to be aimed in screen space and land 6deg off its stack).
+   *
+   * A SLAM FINISHES IT. The skip button already makes every flip instant; the
+   * deal is a Web Animation the flip duration does not reach once it has
+   * started, so a slam finishes it outright (the $effect below) and every
+   * piece is where it belongs at once.
+   */
+  let ticketEl = $state<HTMLElement | undefined>();
+  let dealtFresh = false;
+  let dealAnimations: Animation[] = [];
+  $effect(() => {
+    const fresh = round.state === 'playing' && round.revealedCards.every((c) => c === null);
+    if (fresh && !dealtFresh) untrack(dealFromDeck);
+    dealtFresh = fresh;
+  });
+  $effect(() => {
+    if (pacing.slamRequested) untrack(() => settleDeal('finish'));
+  });
+
+  /** End the deal in flight: `finish` to put everything where it belongs, `cancel` to clear it before a new one. */
+  function settleDeal(how: 'finish' | 'cancel') {
+    for (const animation of dealAnimations) animation[how]();
+    dealAnimations = [];
+  }
+
+  /** An element's `transform` as it stands this frame - animations and transitions included. */
+  function matrixOf(element: Element) {
+    const transform = getComputedStyle(element).transform;
+    return new DOMMatrixReadOnly(transform === 'none' ? undefined : transform);
+  }
+
+  /** An element's own `rotate`, in radians - the ticket slot's tilt; 0 for a card. */
+  function ownTurn(element: Element) {
+    const turn = getComputedStyle(element).rotate;
+    return turn && turn !== 'none' ? (parseFloat(turn) * Math.PI) / 180 : 0;
+  }
+
+  /** Where an element's centre sits when nothing is moving it - see MEASURED AT REST. */
+  function restCentre(element: Element) {
+    const box = element.getBoundingClientRect();
+    const moved = matrixOf(element);
+    const turn = ownTurn(element);
+    return {
+      x: box.left + box.width / 2 - (moved.e * Math.cos(turn) - moved.f * Math.sin(turn)),
+      y: box.top + box.height / 2 - (moved.e * Math.sin(turn) + moved.f * Math.cos(turn)),
+    };
+  }
+
+  /**
+   * The face a piece lands on: its centre on screen, its angle (the prop's own
+   * rotation) and its size as drawn - the ticket stack's face is squashed by
+   * --flat in its own transform, so its height is read through that.
+   */
+  function pileFace(face: Element, prop: Element) {
+    const box = face.getBoundingClientRect();
+    const own = matrixOf(face);
+    const turned = matrixOf(prop);
+    const sized = face as HTMLElement;
+    return {
+      x: box.left + box.width / 2,
+      y: box.top + box.height / 2,
+      turn: Math.atan2(turned.b, turned.a),
+      width: sized.offsetWidth * Math.hypot(own.a, own.b),
+      height: sized.offsetHeight * Math.hypot(own.c, own.d),
+    };
+  }
+
+  function dealFromDeck() {
+    settleDeal('cancel');
+    const seconds = Number(flipDurSec());
+    if (!(seconds > 0) || reducedMotion()) return;
+    const travel = seconds * 1300;
+    const gather = travel * 0.17;
+    const rest = paceMs(DEAL_REST_MS, 0);
+    const duration = travel + rest;
+    const landed = gather / duration;
+    const leaves = (gather + rest) / duration;
+    const ease = 'cubic-bezier(0.3, 0.7, 0.3, 1)';
+    /** Onto the pile's face, a beat there out of sight, and back out to where it stands. */
+    const viaPile = (element: HTMLElement, pile: ReturnType<typeof pileFace>, delay: number) => {
+      const at = restCentre(element);
+      const turn = ownTurn(element);
+      // The offset in the element's own frame, which its `rotate` turns.
+      const dx = pile.x - at.x;
+      const dy = pile.y - at.y;
+      const x = dx * Math.cos(-turn) - dy * Math.sin(-turn);
+      const y = dx * Math.sin(-turn) + dy * Math.cos(-turn);
+      const atPile =
+        `translate(${x}px, ${y}px) rotate(${pile.turn - turn}rad) ` +
+        `scale(${pile.width / element.offsetWidth}, ${pile.height / element.offsetHeight})`;
+      dealAnimations.push(
+        element.animate(
+          [
+            { transform: 'none', easing: ease },
+            { transform: atPile, offset: landed },
+            { transform: atPile, offset: leaves, easing: ease },
+            { transform: 'none' },
+          ],
+          { duration, delay },
+        ),
+        element.animate(
+          [
+            { opacity: 1 },
+            { opacity: 1, offset: landed * 0.45 },
+            { opacity: 0, offset: landed },
+            { opacity: 0, offset: leaves },
+            { opacity: 1, offset: leaves + (1 - leaves) * 0.3 },
+            { opacity: 1 },
+          ],
+          { duration, delay },
+        ),
+      );
+    };
+    const deck = document.querySelector('.p-deck');
+    const deckFace = deck?.querySelector('.deck-face');
+    if (deck && deckFace) {
+      const pile = pileFace(deckFace, deck);
+      slotEls.slice(0, slots).forEach((slot, index) => {
+        const block = slot?.querySelector<HTMLElement>('.card-block');
+        if (block) viaPile(block, pile, index * seconds * 90);
+      });
+    }
+    const stack = document.querySelector('.p-tickets');
+    const stackFace = stack?.querySelector('.tickets-face');
+    if (stack && stackFace && ticketEl) viaPile(ticketEl, pileFace(stackFace, stack), slots * seconds * 90);
+  }
+
+  /**
    * Tunnel vision on the held last card: where the card is, so the dark can
    * close in on it. Measured once as the hold begins, with the card still at
    * rest, and kept after it so the tunnel opens from the same place it closed.
@@ -323,7 +529,7 @@
   <!-- As many slots as the family deals. roundState keeps four always; a
        three-card family simply never fills the fourth, and drawing it would
        show a card that never turns. -->
-  <div class="card-row">
+  <div class="card-row" class:has-ticket={hasTicket}>
     {#each round.revealedCards.slice(0, slots) as card, index}
       <!-- `card` is the LIVE round - it decides whether this slot is face up.
            `face` is what the slot draws, which outlives the round by one
@@ -383,6 +589,52 @@
         </div>
       </div>
     {/each}
+
+    {#if hasTicket}
+      <!-- Last Stop's ticket, hung under the last stop (card 4) and laid over
+           the row rather than in it, so the four cards stand exactly where they
+           stand on every other family and the row's width never changes.
+           Face down all round, turned only by a clean sweep - a bust never
+           shows what it would have won. -->
+      <div
+        class="ticket-slot"
+        class:is-dead={round.bustedIndex !== null}
+        bind:this={ticketEl}
+        role="img"
+        aria-label={round.ticketShown !== null ? `${t('Ticket')} ${formatTicket(round.ticketShown)}` : t('Last Stop')}
+      >
+        <div class="ticket-inner" class:flipped={round.ticketShown !== null}>
+          <div class="ticket-back"><TicketFace value={null} /></div>
+          <div class="ticket-front">
+            {#if shown.ticket !== null}<TicketFace value={shown.ticket} />{/if}
+          </div>
+        </div>
+      </div>
+    {/if}
+
+    <!-- The route: see stopState. One stop per card slot; on Last Stop the
+         ticket hangs under the last one. -->
+    <div class="route-line" aria-hidden="true" style:--stops={slots}>
+      {#each Array(slots) as _, index (index)}
+        <span class="route-stop is-{stopState(index) ?? 'ahead'}" style:--i={index}></span>
+      {/each}
+      <!-- The bus: a filled mark, because it is read (where the round has
+           got to) rather than pressed - design.md's lines-and-fills rule. -->
+      <span
+        class="route-bus"
+        class:is-moving={busAt >= 0}
+        style:--bus-x={busAt >= slots ? 'var(--bus-end)' : `calc(${Math.max(busAt, 0)} * var(--stop-pitch))`}
+      >
+        <svg viewBox="0 0 24 14" aria-hidden="true" focusable="false">
+          <rect x="1" y="1" width="22" height="9.5" rx="2.4" />
+          <rect class="bus-glass" x="3.4" y="3" width="4.2" height="3.2" rx="0.6" />
+          <rect class="bus-glass" x="9" y="3" width="4.2" height="3.2" rx="0.6" />
+          <rect class="bus-glass" x="14.6" y="3" width="6" height="3.2" rx="0.6" />
+          <circle cx="6.5" cy="11" r="2.2" />
+          <circle cx="17.5" cy="11" r="2.2" />
+        </svg>
+      </span>
+    </div>
   </div>
 {/snippet}
 
@@ -405,6 +657,9 @@
          text left in the readout would be read back by anything that reads
          the readout's text. -->
     {#if showHint}<span class="running-win-hint">{t('Pick all 4 guesses')}</span>{/if}
+    <!-- No ceiling figure here before the first deal: "Pays up to X your bet"
+         sat in this slot from 2026-09-27 and came out on the owner's call
+         (2026-10-01). The picks' ceiling is stated in How to Play. -->
     <span class="running-win-amount">{numberToCurrencyString(readout.runningWin)}</span>
     <!-- Always rendered (a non-breaking space when there is nothing to say) so
          the multiplier appearing at the end of a round never grows the bar and
@@ -512,6 +767,9 @@
       <button type="button" class="quad-btn red-suit" class:selected={guesses.suit === 'diamond'} onclick={() => pick(setSuitChoice, 'diamond')} aria-disabled={choicesLocked()} aria-label={t('Diamond')}><SuitIcon suit="diamond" /></button>
     </div>
   </div>
+  <!-- The table die: all four picks at random, dealt only when the player
+       deals. In the row, so the row's lock and dimming are its own. -->
+  <TableDie />
 </div>
 {/if}
 

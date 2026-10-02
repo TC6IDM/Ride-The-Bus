@@ -477,6 +477,7 @@ describe('every cue actually makes a sound', () => {
 		['playForgiven', () => sound.playForgiven()],
 		['playDeal', () => sound.playDeal()],
 		['playBlocked', () => sound.playBlocked()],
+		['playDiceRoll', () => sound.playDiceRoll([0, 0.2])],
 		['playAutoStart', () => sound.playAutoStart()],
 		['playAutoStop', () => sound.playAutoStop()],
 		['playLastCardHold', () => sound.playLastCardHold(1.2)()],

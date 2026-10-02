@@ -42,12 +42,16 @@ export function popAmount(amountEl: HTMLElement | undefined) {
  *
  * Staggered left to right, and by a hair - the hand should read as one
  * object catching a bump, not as four cards taking turns.
+ *
+ * Last Stop's ticket is laid ON the hand, so it rides the same bump (the
+ * owner's call, 2026-10-01 - left behind, it read as something the win had
+ * not reached). It hops with the middle of the hand, which is where it sits,
+ * and through the same composite, which leaves its own deal untouched.
  */
 export function hopFan(fanEl: HTMLElement | undefined) {
 	if (!fanEl || reducedMotion()) return;
-	const cards = fanEl.querySelectorAll<HTMLElement>('.wc-fan-card');
-	cards.forEach((card, i) => {
-		card.animate(
+	const hop = (element: HTMLElement, delay: number) =>
+		element.animate(
 			[
 				{ transform: 'translateY(0)' },
 				{ transform: `translateY(calc(var(--ui) * -1.6))`, offset: 0.34 },
@@ -55,12 +59,15 @@ export function hopFan(fanEl: HTMLElement | undefined) {
 			],
 			{
 				duration: 620,
-				delay: i * 55,
+				delay,
 				easing: easePop(),
 				composite: 'add',
 			},
 		);
-	});
+	const cards = fanEl.querySelectorAll<HTMLElement>('.wc-fan-card');
+	cards.forEach((card, i) => hop(card, i * 55));
+	const ticket = fanEl.querySelector<HTMLElement>('.wc-fan-ticket');
+	if (ticket) hop(ticket, ((cards.length - 1) / 2) * 55);
 }
 
 /**

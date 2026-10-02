@@ -69,6 +69,9 @@ const MODES = new Map(index.modes.map((m) => [m.name, m]));
  * is the difference between telling someone a round does not exist and letting
  * them build a link that 404s.
  */
+/** Last Stop's ticket scenarios, one per value - read out of REPLAY_EVENTS.md. */
+const TICKET_ALIASES = ['ticket2', 'ticket3', 'ticket5', 'ticket10'];
+
 const SCENARIOS = (() => {
   // Overridable so the parser can be exercised against a fixture without
   // touching the generated file, which is never hand-edited.
@@ -105,6 +108,11 @@ const SCENARIOS = (() => {
       // round" - one is fixed by regenerating, the other never will be.
       bustwin: cells.length >= 9 ? cell(cells[6]) : undefined,
       forgiven: cells.length >= 9 ? cell(cells[7]) : undefined,
+      // Last Stop's four ticket columns, after the shared eight. Absent
+      // (undefined) on every other family's rows and on an older table.
+      ...Object.fromEntries(
+        TICKET_ALIASES.map((alias, i) => [alias, cells.length >= 13 ? cell(cells[8 + i]) : undefined]),
+      ),
     });
   }
   console.log(`Scenarios for ${byMode.size} modes, from REPLAY_EVENTS.md`);
@@ -116,6 +124,7 @@ const SCENARIOS = (() => {
 const FAMILY_PREFIXES = [
   ['tr_', 'tr'],
   ['sc_', 'sc'],
+  ['ls_', 'ls'],
   ['hs_', 'hs'],
 ];
 const familyOf = (name) =>
@@ -156,7 +165,7 @@ const ALIASES = ['max', 'big', 'win', 'loss'];
    mode with no such round pay for a full 215k-row pass to discover that. The
    answer belongs in the build that produced the books, not in the tool that
    reads them. See SCENARIOS at the top of this file. */
-const BOOK_ALIASES = ['bustwin', 'forgiven'];
+const BOOK_ALIASES = ['bustwin', 'forgiven', ...TICKET_ALIASES];
 
 /**
  * The music candidates, read out of the app rather than duplicated here.
@@ -325,7 +334,10 @@ function landingPage() {
 
   // The four-guess families only: Three of a Kind has one mode, and its
   // ceiling is the family figure by definition, so it has nothing to list here.
-  const ceilings = ['base', 'sc', 'hs']
+  // Filtered on what the build has: a family added to the client before its
+  // first build (Last Stop, for a while) has no ceiling to list yet.
+  const ceilings = ['base', 'sc', 'ls', 'hs']
+    .filter((f) => familyCeiling[f])
     .map((f) => {
       const c = familyCeiling[f];
       return `<li><code>${c.mode}</code> &mdash; ${(c.cap / 100).toFixed(2)}x</li>`;
@@ -386,6 +398,7 @@ function landingPage() {
      yellow, Second Chance green, High Stakes red, Three of a Kind purple. */
   button.pick.fam-base{--pick-c:#ffc93c}
   button.pick.fam-sc{--pick-c:#3ddc84}
+  button.pick.fam-ls{--pick-c:#ff9240}
   button.pick.fam-hs{--pick-c:#ff5c5c}
   button.pick.fam-tr{--pick-c:#b27cc8}
 
@@ -452,7 +465,7 @@ function landingPage() {
 <a class=out id=out target=_blank></a>
 
 <p class=note style="margin-top:1.7rem"><b>&ldquo;Max&rdquo; is that MODE's cap, not the family's.</b>
-   Each mode is one guess combination and most stop well short. Only these three
+   Each mode is one guess combination and most stop well short. Only these
    reach their family ceiling, so only these fire the <b>MAX WIN</b> tier:</p>
 <ul class=note>${ceilings}</ul>
 
@@ -502,6 +515,7 @@ const state = { fam:'hs_', color:'red', hl:'equal', io:'equal', suit:'heart',
                 ev:'max', cur:'USD', lang:'en' };
 
 const FAM  = [['','Classic','fam-base'],['sc_','Second Chance','fam-sc'],
+              ['ls_','Last Stop','fam-ls'],
               ['hs_','High Stakes','fam-hs'],['tr_','Three of a Kind','fam-tr']];
 /* Three of a Kind has no guesses and only three cards: its one mode is
    any_equal_equal, so the pickers are forced to that combination (the suit
@@ -518,12 +532,13 @@ const SUIT = [['heart','♥ Heart','suit-red'],['diamond','♦ Diamond','suit-re
               ['club','♣ Club','suit-blk'],['spade','♠ Spade','suit-blk']];
 
 const EV   = [['max','Max'],['big','Big'],['win','Win'],['loss','Loss'],
-              ['bustwin','Bust + win'],['forgiven','2nd chance']];
+              ['bustwin','Bust + win'],['forgiven','2nd chance'],
+              ['ticket2','Ticket ×2'],['ticket3','Ticket ×3'],['ticket5','Ticket ×5'],['ticket10','Ticket ×10']];
 // The two scenarios that come from REPLAY_EVENTS.md rather than from a lookup
 // table. Same shape as the other four here - the server has already read them -
 // so the only thing this list is for is telling apart "no such round in this
 // mode" (grey the button out) from "the table predates these columns".
-const SCAN_EV = ['bustwin', 'forgiven'];
+const SCAN_EV = ['bustwin', 'forgiven', 'ticket2', 'ticket3', 'ticket5', 'ticket10'];
 /* Every currency the RGS can send, in the Stake Engine dashboard's own order,
    with its dashboard name. This page had fourteen of them, which meant the
    shapes that actually break a layout - a weak unit with a twelve-figure
@@ -569,6 +584,8 @@ const insideBlocked = () => state.hl === 'equal';
 // Leaving it selectable produced a URL the server answers with a 404, which is
 // a worse way to learn this than a greyed-out button.
 const forgivenBlocked = () => state.fam !== 'sc_';
+// And only Last Stop draws a ticket.
+const ticketBlocked = (v) => v.startsWith('ticket') && state.fam !== 'ls_';
 
 // A guess picker on a family that has no guesses.
 const guessesFixed = () => Boolean(FIXED[state.fam]);
@@ -594,6 +611,7 @@ function fill(id, items, key, multFor) {
     if (id === 'io' && val === 'inside' && insideBlocked()) b.disabled = true;
     if (['color', 'hl', 'io', 'suit'].includes(id) && guessesFixed()) b.disabled = true;
     if (id === 'ev' && val === 'forgiven' && forgivenBlocked()) b.disabled = true;
+    if (id === 'ev' && ticketBlocked(val)) b.disabled = true;
     if (id === 'ev' && scenarioMissing(val)) b.disabled = true;
     const mult = multFor ? multFor(val) : null;
     b.textContent = label;
@@ -624,6 +642,7 @@ function render() {
   // Same for a forgiven round on a family that cannot forgive: switching away
   // from Second Chance must not leave a dead scenario selected.
   if (forgivenBlocked() && state.ev === 'forgiven') state.ev = 'max';
+  if (ticketBlocked(state.ev)) state.ev = 'max';
   // And for a scenario the newly-picked mode has no round for. This fires on a
   // GUESS change as well as a family change - "Bust + win" exists in one mode
   // and not the next, so the pick has to be re-checked every render.
@@ -639,6 +658,7 @@ function render() {
   fill('suit', SUIT, 'suit');
   fill('ev', EV, 'ev', (v) => {
     if (v === 'forgiven' && forgivenBlocked()) return 'sc only';
+    if (ticketBlocked(v)) return 'ls only';
     const s = sc && sc[v];
     if (s === undefined && SCAN_EV.indexOf(v) >= 0) return 'rebuild';
     if (!s) return 'none';
@@ -812,7 +832,9 @@ createServer(async (req, res) => {
                   'regenerate it with: node scripts/replay-events.js'
                 : rawEvent === 'forgiven' && familyOf(mode) !== 'sc'
                   ? `"forgiven" only exists in Second Chance - try sc_${mode}`
-                  : `no drawable "${rawEvent}" round in ${mode} above the celebration floor`,
+                  : rawEvent.startsWith('ticket') && familyOf(mode) !== 'ls'
+                    ? `"${rawEvent}" only exists in Last Stop - try ls_${mode}`
+                    : `no drawable "${rawEvent}" round in ${mode}`,
           });
         }
       } else {

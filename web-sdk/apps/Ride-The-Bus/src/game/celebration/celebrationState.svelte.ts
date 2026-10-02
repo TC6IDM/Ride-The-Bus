@@ -32,6 +32,12 @@ export type Celebration = {
   bustedIndex: number | null;
   forgivenIndex: number | null;
   /**
+   * The ticket a Last Stop sweep turned over, or null. The takeover is made of
+   * the round, and on Last Stop the round ends on the ticket - so it joins the
+   * fan, snapshotted with the cards for the same reason they are.
+   */
+  ticket: number | null;
+  /**
    * The family the round was played on. The takeover's tier palettes are the
    * bolt colours in ladder order, and a one-rung family (Three of a Kind) has
    * no ladder to climb - its single tier wears the FAMILY's colour instead.
@@ -81,6 +87,7 @@ export function showWinCelebration(
     cards: [...round.revealedCards],
     bustedIndex: round.bustedIndex,
     forgivenIndex: round.forgivenIndex,
+    ticket: round.ticketShown,
     family,
   };
   return new Promise((resolve) => {

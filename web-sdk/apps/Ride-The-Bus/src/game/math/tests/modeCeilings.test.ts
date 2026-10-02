@@ -35,13 +35,26 @@ const published = allPlayableModes();
 const LADDER_FAMILIES = MODE_FAMILIES.filter((family) => FAMILY_RULES[family].fixedChoices === null);
 
 describe('the generated ceilings table', () => {
-  test('covers exactly the modes the client can play', () => {
+  // The table is WRITTEN FROM the build, so on a build that predates the
+  // client's families (Last Stop, before its first build) it cannot cover the
+  // modes the client offers yet. Both coverage checks skip then, with the same
+  // message as the parity tests; the table's own shape is checked regardless.
+  const tableCurrent = mathBuildIsCurrent();
+
+  test('covers exactly the modes the client can play', { skip: !tableCurrent }, () => {
     assert.deepEqual(Object.keys(MODE_CEILINGS).sort(), [...published].sort());
   });
 
-  test('has 193 entries - three families of 64, and Three of a Kind', () => {
-    assert.equal(published.length, 193);
-    assert.equal(Object.keys(MODE_CEILINGS).length, 193);
+  test('has 257 entries - four families of 64, and Three of a Kind', { skip: !tableCurrent }, () => {
+    assert.equal(published.length, 257);
+    assert.equal(Object.keys(MODE_CEILINGS).length, 257);
+  });
+
+  test('never lists a mode the client does not offer', () => {
+    // The half of coverage that holds even on a stale build: a table row for
+    // a mode the client no longer plays is a ceiling quoted for nothing.
+    const offered = new Set(published);
+    assert.deepEqual(Object.keys(MODE_CEILINGS).filter((mode) => !offered.has(mode)), []);
   });
 
   test('Three of a Kind has one mode, and its ceiling IS the family figure', () => {
@@ -75,8 +88,9 @@ describe('ceilings against their family', () => {
 
   test('no mode can pay more than its family says it can', () => {
     // The family figure is the headline and has to remain an upper bound, or
-    // the two numbers on screen contradict each other.
-    for (const mode of published) {
+    // the two numbers on screen contradict each other. Over the modes the
+    // table has - coverage is the test above.
+    for (const mode of Object.keys(MODE_CEILINGS)) {
       const family = familyOf(mode);
       assert.ok(
         MODE_CEILINGS[mode]! <= FAMILY_RULES[family].maxWin,
@@ -126,9 +140,11 @@ describe('ceilings against their family', () => {
 });
 
 describe('ceilingFor', () => {
-  test('returns the table entry for every published mode', () => {
+  test('returns the table entry for every published mode, or null before its build', () => {
+    // null, not undefined, for a mode the table does not hold yet: the caller
+    // falls back to the family figure on null.
     for (const mode of published) {
-      assert.equal(ceilingFor(mode), MODE_CEILINGS[mode]);
+      assert.equal(ceilingFor(mode), MODE_CEILINGS[mode] ?? null);
     }
   });
 

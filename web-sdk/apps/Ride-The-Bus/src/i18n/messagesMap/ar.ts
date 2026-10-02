@@ -297,4 +297,24 @@ export default {
 		'× تعني مضاعفات رهانك الأساسي.',
 	'Times your base bet':
 		'مضاعفات رهانك الأساسي',
+	'Last Stop':
+		'المحطة الأخيرة',
+	'A wrong first card ends the round. Later misses keep 30% of your running total. A right suit draws a ticket that multiplies it by 2 to 10.':
+		'خطأ في البطاقة الأولى ينهي الجولة. الأخطاء اللاحقة تحتفظ بنسبة 30% من إجماليك الجاري. وإصابة النوع تسحب تذكرة تضربه في 2 إلى 10.',
+	'Ticket':
+		'تذكرة',
+	'The ticket':
+		'التذكرة',
+	'Drawn only when all four are right, from a stack of 20. It multiplies your running total.':
+		'تُسحب فقط عندما تصيب في الأربعة، من رزمة من 20 تذكرة. وتضرب إجماليك الجاري.',
+	'Cards 1 to 3 are priced exactly as on Classic. A right suit draws the ticket in place of a price.':
+		'البطاقات من 1 إلى 3 مسعّرة تمامًا كما في الوضع الكلاسيكي. وإصابة النوع تسحب التذكرة بدلًا من سعر.',
+	'On Classic the same cards end at %s.':
+		'في الوضع الكلاسيكي تنتهي البطاقات نفسها عند %s.',
+	'A full game win pays more the harder your picks were, and the ticket multiplies it. Two Equal picks and a ×10 ticket reach this mode’s maximum: %m your bet.':
+		'يزداد ما يدفعه الفوز الكامل كلما كانت اختياراتك أصعب، والتذكرة تضاعفه. اختياران «متساوٍ» وتذكرة ×10 يبلغان الحد الأقصى لهذا الوضع: %m من رهانك.',
+	'Roll the die for random guesses':
+		'ارمِ النرد لتخمينات عشوائية',
+	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
+		'النرد بجانب التخمينات يختار الأربعة عشوائيًا. لا يُلعب شيء حتى توزّع.',
 };

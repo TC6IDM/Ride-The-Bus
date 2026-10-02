@@ -44,7 +44,8 @@ export async function settleRound() {
   await revealWait(300, 120);
   // Prefer the server's authoritative payout on engine rounds; fall back to
   // the local formula (identical maths) when there's no RGS session.
-  const multiplier = round.engineFinalMultiplier ?? computeFinalMultiplier(round.revealEvents, familyRules());
+  const multiplier =
+    round.engineFinalMultiplier ?? computeFinalMultiplier(round.revealEvents, familyRules(), round.ticket);
   round.wonAmount = multiplier * round.initialBet;
   round.runningWin = round.wonAmount;
   if (stateUrlDerived.replay()) {

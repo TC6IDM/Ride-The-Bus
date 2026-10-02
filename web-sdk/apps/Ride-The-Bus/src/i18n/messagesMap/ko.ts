@@ -296,4 +296,24 @@ export default {
 		'×는 기본 베팅액의 배수입니다.',
 	'Times your base bet':
 		'기본 베팅액의 배수',
+	'Last Stop':
+		'라스트 스톱',
+	'A wrong first card ends the round. Later misses keep 30% of your running total. A right suit draws a ticket that multiplies it by 2 to 10.':
+		'첫 카드를 틀리면 라운드가 끝납니다. 이후 실수는 누적 금액의 30%를 남깁니다. 무늬를 맞히면 티켓을 뽑아 누적 금액이 2~10배가 됩니다.',
+	'Ticket':
+		'티켓',
+	'The ticket':
+		'티켓',
+	'Drawn only when all four are right, from a stack of 20. It multiplies your running total.':
+		'네 가지를 모두 맞혔을 때만 20장 묶음에서 뽑습니다. 누적 금액에 곱해집니다.',
+	'Cards 1 to 3 are priced exactly as on Classic. A right suit draws the ticket in place of a price.':
+		'1~3번째 카드의 가격은 클래식과 똑같습니다. 무늬를 맞히면 가격 대신 티켓을 뽑습니다.',
+	'On Classic the same cards end at %s.':
+		'클래식에서는 같은 카드가 %s로 끝납니다.',
+	'A full game win pays more the harder your picks were, and the ticket multiplies it. Two Equal picks and a ×10 ticket reach this mode’s maximum: %m your bet.':
+		'풀 게임 성공의 배당은 예측이 어려울수록 커지고, 티켓이 여기에 곱해집니다. 이퀄 두 개와 ×10 티켓으로 이 모드의 최대 배당인 베팅의 %m에 도달합니다.',
+	'Roll the die for random guesses':
+		'주사위를 굴려 예측을 무작위로 고르기',
+	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
+		'예측 옆의 주사위는 네 가지를 모두 무작위로 고릅니다. 딜하기 전에는 아무것도 플레이되지 않습니다.',
 };

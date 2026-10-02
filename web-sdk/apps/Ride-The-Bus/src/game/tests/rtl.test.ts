@@ -95,6 +95,13 @@ describe('figures are laid out left to right whatever the locale', () => {
     // .cb-val and inherits from it, so covering .cb-val covers both.
     assert.ok(block.includes('.cb-val'), '.cb-val must be in the list');
   });
+
+  test('the example round’s totals are covered - Last Stop’s last one is a range', () => {
+    // Found in Arabic on 2026-09-30: the example's "9.8× – 49.4×" printed with
+    // 49.4 on the left, the page's direction reordering the figures round the
+    // dash - the defect the ticket's own range had on 2026-09-27.
+    assert.ok(block.includes('.ex-total'), '.ex-total must be in the list');
+  });
 });
 
 describe('the guess squares keep their own corners in both directions', () => {
