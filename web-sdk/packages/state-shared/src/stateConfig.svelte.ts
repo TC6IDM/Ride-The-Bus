@@ -32,4 +32,11 @@ export const stateConfig = $state({
 	 * and cannot drift. 0 means "not supplied" - treat as unconstrained.
 	 */
 	betLimits: { minBet: 0, maxBet: 0, stepBet: 0 },
+	/**
+	 * LOCAL ADDITION, same reason. authenticate also returns
+	 * `defaultBetLevel`, the amount the operator wants a fresh session to open
+	 * on. The stock SDK ignores it. Divided down like betAmountOptions (units,
+	 * not micro-units); 0 means "not supplied".
+	 */
+	defaultBetAmount: 0,
 });

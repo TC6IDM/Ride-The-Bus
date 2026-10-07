@@ -1,0 +1,293 @@
+/**
+ * Put a round that already exists back on the board.
+ *
+ * Three paths in, and none places a bet:
+ *
+ *   restoreReplay()          ?replay=true - Stake's Fairness view. Authenticate
+ *                            has already fetched the settled round via /bet/replay.
+ *   restoreResume()          a round the RGS still has OPEN on this session,
+ *                            handed over by /wallet/authenticate.
+ *   restoreRememberedPicks() the player's own last family and picks, from this
+ *                            device (game/bet/rememberedPicks.ts) - never in a
+ *                            replay, and never over a round being resumed.
+ *
+ * ALL THREE MUST APPLY parsed.family, not just the four guesses. That has
+ * shipped broken twice - a High Stakes replay restored as Classic shows the
+ * wrong retention rule and the wrong win ladder over a payout the RGS already
+ * decided - and modes.test.ts asserts there are EXACTLY THREE restore blocks and
+ * that each applies it. Keeping them in one file is what makes that countable.
+ *
+ * Called from $effect in Game.svelte rather than being effects themselves,
+ * because $effect only runs inside a component. The guards below are what stop
+ * a re-run doing it twice.
+ */
+import { stateBet, stateUrlDerived } from 'state-shared';
+
+import { FAMILY_RULES, FREE_CHOICE, modeChoices, modeName, parseModeName } from '../math/modes';
+import { bet, guesses } from '../bet/betState.svelte';
+import { readRememberedPicks, writeRememberedPicks } from '../bet/rememberedPicks';
+import { engineRound, round } from './roundState.svelte';
+import { animateRoundFromEvents, waitForIntroGone, waitForLoaderGone } from './roundReveal.svelte';
+
+/**
+ * Put a parsed mode's four guesses back on the board - unless the family has
+ * no guesses. Three of a Kind's slug carries `any` for card 1, which is
+ * not a pick a player can make: its board is a preset drawn from
+ * FAMILY_RULES.fixedChoices, and the guesses left from the last four-guess
+ * mode are deliberately kept so they are still there on the way back.
+ */
+function restoreGuesses(parsed: NonNullable<ReturnType<typeof parseModeName>>) {
+  if (FAMILY_RULES[parsed.family].fixedChoices) return;
+  guesses.color = parsed.color as Exclude<typeof parsed.color, typeof FREE_CHOICE>;
+  guesses.hl = parsed.higherLower;
+  guesses.io = parsed.insideOutside;
+  guesses.suit = parsed.suit as Exclude<typeof parsed.suit, typeof FREE_CHOICE>;
+}
+
+/**
+ * What the replay path learns before the reveal is allowed to start.
+ *
+ * The board waits on `ready`: the reveal must not begin until the player has
+ * clicked through the start screen AND the replay-info popup, or it plays out
+ * behind the overlay - which is what Stake's own replay view showed.
+ */
+export const replay = $state({
+  ready: false,
+  /** The payout multiplier off the replay response, for the details panel. */
+  payoutMultiplier: null as number | null,
+  /** A Last Stop round's ticket, for the same panel - null on every round that
+   *  drew none, which is every bust and every other family. */
+  ticket: null as number | null,
+});
+
+// Replay (Stake's Fairness view, ?replay=true). Authenticate.svelte has
+// already fetched the settled round via /bet/replay and parked it in
+// stateBet.betToResume, so this must render THAT round — it must never place a
+// bet.
+//
+// The data is parked here and the reveal only starts once the player has
+// clicked through the start screen AND the replay-info popup. Before this
+// change the reveal auto-fired as soon as the loader cleared, which played
+// behind the overlay on Stake's replay view.
+let replayStarted = false;
+
+export function restoreReplay() {
+  if (replayStarted || !stateUrlDerived.replay()) return;
+  const resume = stateBet.betToResume as any;
+  if (!resume?.state) return;
+  replayStarted = true;
+
+  // ?currency= is applied by Authenticate.svelte's handleReplay, through
+  // stateUrlDerived.currency(), which only accepts three letters. A copy of
+  // that here used to read the RAW parameter and overwrite it, so
+  // ?currency=ab made Intl.NumberFormat throw and took every amount on screen
+  // down with it - the same failure the ?lang= resolver exists to prevent. Do
+  // not read the parameter here; the validated path is the only one.
+
+  // Restore the guess squares to the combination the round was originally
+  // played with, so the viewer sees which choices were made. The bet mode
+  // IS the four guesses (see math-sdk mode_name).
+  //
+  // Must go through parseModeName, which strips the family prefix BEFORE
+  // splitting: "sc_red_higher_equal_spade" has five underscore-separated
+  // parts, not four. Splitting first and counting second reads every Second
+  // Chance and High Stakes mode as malformed - 128 of the 193 - and silently
+  // left the board showing guesses that did not match the round being
+  // replayed. See the note atop parseModeName in game/math/modes.ts.
+  // The FAMILY has to come across too, not just the four guesses. It is the
+  // half of the mode that is not a guess square, and everything downstream
+  // reads it: the MODE button, the volatility bolts, the rules popup, the
+  // retention percentage the board prints - and winTiers(), which is why
+  // getting this wrong was not merely cosmetic. A High Stakes replay left on
+  // the Classic ladder measures a 1400x win against Classic's 1354.2 ceiling
+  // and announces MAX WIN over a round that paid well under High Stakes'
+  // real 2237.3 max. parseModeName has always returned the family; both this
+  // path and the resume path below simply dropped it.
+  const parsed = parseModeName(String(resume.mode ?? stateUrlDerived.mode() ?? ''));
+  if (parsed) {
+    bet.family = parsed.family;
+    restoreGuesses(parsed);
+  }
+
+  // The replay URL carries the original stake, so the multipliers shown
+  // resolve to the same cash amounts the player originally saw.
+  round.initialBet = stateBet.wageredBetAmount || stateBet.betAmount || 0;
+  bet.input = String(round.initialBet);
+  round.hasPlayed = true;
+
+  // REP-02 probe. A replay opened on the Stake Engine site once showed a bet
+  // amount of 1000 where the game rendered 1 - an exact 1000x gap, which is a
+  // units convention rather than a rounding bug. Stake documents ?amount= as
+  // "bet amount in units" and the RGS speaks micro-units (1_000_000 = 1.00),
+  // so Authenticate.svelte divides by API_AMOUNT_MULTIPLIER - but only the raw
+  // parameter from a real replay URL can say which convention Stake actually
+  // sends. This prints every value in the chain, so one replay settles it.
+  //
+  // HOW TO CAPTURE, given this is dev-only and the symptom is on the uploaded
+  // build: a replay needs no session ("player session is not required for
+  // viewing bet replay"), so copy the whole query string off the Stake replay
+  // URL onto localhost:3001 and the same data loads here, with this line. Do
+  // not reach for a production-visible flag instead - approval checks the
+  // network tab for game information being logged.
+  //
+  // import.meta.env.DEV written out literally so Vite proves the branch dead
+  // and drops it from the production bundle.
+  if (import.meta.env.DEV && typeof window !== 'undefined') {
+    const rawAmount = new URLSearchParams(window.location.search).get('amount');
+    console.log('[RideTheBus] REP-02 replay amount chain:', {
+      rawAmountParam: rawAmount,
+      parsedAmount: stateUrlDerived.amount(),
+      wageredBetAmount: stateBet.wageredBetAmount,
+      betAmount: stateBet.betAmount,
+      initialBet: round.initialBet,
+      currency: stateBet.currency,
+    });
+  }
+
+  // Read the payout multiplier from the book's finalWin event for the info
+  // popup (amount is multiplier × 100 — see math-sdk events.py:final_win_event).
+  const finalWin = resume.state.find((e: any) => e.type === 'finalWin') as any;
+  replay.payoutMultiplier = finalWin ? Number(finalWin.amount) / 100 : null;
+  // The ticket, read leniently for the panel: the reveal itself goes through
+  // bookTicket and refuses a ticket the game would never have written.
+  const ticket = resume.state.find((e: any) => e.type === 'ticket') as any;
+  replay.ticket = ticket ? Number(ticket.value) : null;
+
+  // Park the data. The reveal starts when the player clicks "Play" on the
+  // replay-info popup (onReplayPlay below), not here.
+  replay.ready = true;
+}
+
+// Resume a round the player was in the middle of. /wallet/authenticate
+// returns the session's round, which per the RGS docs "may represent a
+// currently active or the last completed round" - and frontends "should
+// continue the round if it remains active".
+//
+// Authenticate.svelte parks it in betToResume whenever it has `state`,
+// REGARDLESS of `active`, so that has to be checked here: re-animating an
+// already-settled round would show a result the player has been paid for as
+// though it were live.
+//
+// Previously an interrupted round was just closed by the defensive
+// end-round in startGameEngineFlow. The player was still paid, but never saw
+// the outcome of a round they had bought.
+let resumeStarted = false;
+
+export function restoreResume() {
+  if (resumeStarted || stateUrlDerived.replay()) return;
+  const resume = stateBet.betToResume as any;
+  if (!resume?.state || !resume.active) return;
+  resumeStarted = true;
+  round.resumeInProgress = true;
+  // authenticate only parks a round here when it is still active, so the RGS
+  // has one open and the defensive settle should be allowed to run.
+  engineRound.open = true;
+
+  // Put the guess squares back to the combination the round was bought with,
+  // so the board the player returns to matches what they actually bet on.
+  // The bet mode IS the four guesses (see math-sdk mode_name).
+  //
+  // parseModeName for the same reason as the replay path above: the prefix
+  // has to come off before the split, or every resumed sc_/hs_ round comes
+  // back with the wrong guesses on the board.
+  // Family too - see the replay path above. This one matters more, not less:
+  // a resumed round is real money mid-flight, and finishing it on the wrong
+  // family shows the wrong retention rule and the wrong win ladder over a
+  // payout the RGS has already decided.
+  const parsed = parseModeName(String(resume.mode ?? ''));
+  if (parsed) {
+    bet.family = parsed.family;
+    restoreGuesses(parsed);
+  }
+
+  // Authenticate populates these from round.amount, so the multipliers
+  // resolve to the cash the player actually staked.
+  round.initialBet = stateBet.wageredBetAmount || stateBet.betAmount || 0;
+  // And the bar's Bet readout has to say the same number. This line was only
+  // in the replay path above; here bet.input stayed at its '1' default (nudged
+  // to the nearest level by Game.svelte), so a player returning to a 25.00
+  // round watched it finish beside a readout claiming 1.00. Stake's checklist
+  // names this case: "active rounds restore the bet amount from the
+  // authenticate response".
+  if (round.initialBet > 0) {
+    bet.input = String(round.initialBet);
+    // The opening-bet effect in Game.svelte must not re-seed over this.
+    bet.defaulted = true;
+  }
+  round.hasPlayed = true;
+  // Same hold as replay: a resumed round must not reveal behind the loader -
+  // nor behind the intro that comes up after it. It waits for Tap to continue.
+  waitForLoaderGone()
+    .then(waitForIntroGone)
+    .then(() =>
+      animateRoundFromEvents(
+        resume.state,
+        `${resume.roundID ?? resume.betID ?? 'resumed'}`,
+        'engine-auth',
+        'Resumed round contained no state.',
+      ),
+    )
+    .catch((err) => {
+      // Don't trap the player on a broken resume - log it, mark the round
+      // failed, and let the defensive end-round clear it on the next spin.
+      console.error('[RideTheBus] resume failed', err);
+      round.error = true;
+    })
+    .finally(() => {
+      round.resumeInProgress = false;
+    });
+}
+
+// --- The player's own last picks, from this device -------------------------
+
+let rememberedRestored = false;
+
+/** localStorage, or null where it is unavailable or throws on access. */
+function picksStorage(): Storage | null {
+  try {
+    return typeof localStorage === 'undefined' ? null : localStorage;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Put the family and picks the player left with back on the board, once.
+ *
+ * Never in a replay - the round's own picks are what it shows - and never over
+ * a round the RGS is resuming: that round's picks are the truth, and its
+ * restore (above) applies them. The bet amount is not remembered; it comes from
+ * authenticate. A slug that no longer names a published mode was already
+ * dropped by readRememberedPicks, leaving the family alone.
+ */
+export function restoreRememberedPicks() {
+  if (rememberedRestored) return;
+  rememberedRestored = true;
+  if (stateUrlDerived.replay()) return;
+  if ((stateBet.betToResume as any)?.active) return;
+  const saved = readRememberedPicks(picksStorage());
+  if (!saved) return;
+  if (!saved.mode) {
+    bet.family = saved.family;
+    return;
+  }
+  const parsed = parseModeName(saved.mode);
+  if (parsed) {
+    bet.family = parsed.family;
+    restoreGuesses(parsed);
+  }
+}
+
+/**
+ * Remember the family and, once all four are picked, the mode - as they change.
+ * Runs as an $effect in Game.svelte; it reads its dependencies before anything
+ * can return early, so it re-runs on every pick. Not in a replay, and not
+ * before the restore above has had its turn (it would overwrite what it is
+ * about to read).
+ */
+export function rememberPicks() {
+  const family = bet.family;
+  const choices = modeChoices(family, guesses);
+  if (!rememberedRestored || stateUrlDerived.replay()) return;
+  writeRememberedPicks(picksStorage(), family, choices ? modeName(choices, family) : null);
+}

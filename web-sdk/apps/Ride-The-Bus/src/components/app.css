@@ -1,5 +1,5 @@
 /* The shared colour + motion vocabulary. MUST be first: a CSS @import is only
-   legal before any other rule, and this file opens with @font-face blocks.
+   legal before any other rule.
 
    It lives here rather than in a Svelte <style> block because Game.svelte
    imports app.css from its script block, so Vite emits it WITHOUT Svelte
@@ -7,132 +7,72 @@
    :root.svelte-HASH and matches nothing. See styles/tokens.css. */
 @import '../styles/tokens.css';
 
-/* Poppins, self-hosted.
+/* Overpass, self-hosted - the body face (since 2026-10-05).
  *
- * The stylesheet asked for 'Poppins' and nothing ever loaded it: there was no
- * @font-face and no font link, and the commented-out @fontsource import above
- * refers to a package that is not a dependency. Every player was therefore
- * seeing the generic sans-serif fallback - Segoe UI, Helvetica or Roboto
- * depending on their device - which is also why the control bar had to measure
- * its own text to fit (styles/control-bar.css).
+ * WHY THIS FACE. Overpass is drawn from Highway Gothic, the lettering of US
+ * road signs - a transit voice for a game about riding a bus, and kin to Big
+ * Shoulders, the Chicago-signage display face beside it. It replaced Geist on
+ * the owner's call after a side-by-side on the board: an Impeccable audit
+ * flagged Geist as an overused default, and Stake names "standard fonts" first
+ * among the causes of a one-star rating. Nothing the readouts relied on was
+ * given up:
  *
- * The old <link> to use.typekit.net served proxima-nova and brandon-grotesque,
- * the SDK sample's fonts, which this game never names. It was a third-party
- * request on every load that bought nothing, and it is gone.
+ *   - TABULAR FIGURES. The latin subset ships `tnum`; every digit prints at
+ *     0.616em at weight 800 (fontTools, off the shipped file), so the bar's
+ *     readouts, the card multipliers, the running win, the takeover's count-up
+ *     and the session clock hold still as their digits change. That was the
+ *     reason Poppins (no GSUB features at all) gave way to Geist in 2026-09,
+ *     and typeFit.ts's width table is re-measured for this face.
+ *   - COVERAGE. Latin, latin-ext, Vietnamese and Cyrillic - the same four
+ *     subsets Geist shipped, on the same unicode-ranges - and MORE of the
+ *     currency signs: the rupee, the peso and the sheqel as before, and now
+ *     the won and the dong, which no face tried before carried (KRW and VND
+ *     used to print them from the OS font beside the game's own digits).
+ *   - ONE VARIABLE FILE PER SUBSET (wght 100-900): latin 39.4KB, latin-ext
+ *     46.1KB, vietnamese 8.5KB, cyrillic 27.4KB. Only latin is preloaded;
+ *     the others download when a locale's characters need them.
  *
- * Files live in src/fonts rather than static/ ON PURPOSE. The game is served
- * from {team}.cdn.stake-engine.com/{GameID}/{GameVersion}/, so a root-relative
- * url(/fonts/...) would resolve to the wrong place; going through Vite's asset
- * pipeline gets the path rewritten for wherever the build is mounted.
+ * Barlow was tried in 2026-09 for the same signage kinship and set aside: a
+ * static family, no Cyrillic, no rupee. Geist's neutrality was the reason it
+ * won then; the owner judged the table carries enough character to take a
+ * face with some of its own.
  *
- * LATIN ONLY, four weights - which is every weight the game uses (400 for body,
- * 700/800/900 in the UI). Google also publishes a Devanagari cut, and it was
- * here until a build showed what config-svelte's bundleStrategy:"inline" does:
- * every asset Vite processes is base64-inlined into the page, so nothing is
- * fetched on demand and unicode-range stops being a download optimisation.
- * Devanagari was 160KB of a 224KB total, inlined into every single load, to
- * serve one of sixteen languages. Hindi now falls back to the system sans-serif
- * exactly as Arabic, Cyrillic and CJK already do - Poppins has no cut for those
- * scripts either, so this is the consistent treatment rather than a special case.
+ * THE @font-face RULES ARE IN src/app.html, AND THE FILES IN static/fonts/.
+ * They used to be here, with the files in src/fonts going through Vite - and
+ * config-vite's assetsInlineLimit: Infinity base64'd every one of them into
+ * the page. Stake Engine's CDN sends `font-src 'self' https://fonts.gstatic.com`,
+ * which refuses a data: font, so on the live site every face failed and the
+ * game drew in fallback fonts (found 2026-10-05; no local server sends that
+ * header). app.html references the files through %sveltekit.assets%, a path
+ * relative to the page - the game is served from {team}.../{game}/v{N}/, so a
+ * root-relative /fonts/... would miss. unicode-range is a real download
+ * optimisation again: a subset is fetched only when a locale needs it.
+ * game/ui/displayFace.ts is transcribed from those rules (its test parses
+ * app.html).
  *
- * The unicode-range lines are kept as Google emits them: they still tell the
- * browser which face to pick per character, they just no longer gate a network
- * request.
+ * Hindi, Arabic, Japanese, Korean and Chinese still fall back to the system
+ * sans-serif: neither self-hosted face has a cut for those scripts, and the
+ * bundle budget will not take one.
  *
- * Poppins is by the Indian Type Foundry, Copyright 2020 The Poppins Project
- * Authors (https://github.com/itfoundry/Poppins), under the SIL Open Font
- * License 1.1. The licence permits self-hosting and redistribution, and it
+ * Overpass is Copyright 2021 The Overpass Project Authors
+ * (https://github.com/RedHatOfficial/Overpass), under the SIL Open Font
+ * License 1.1. The licence permits self-hosting and redistribution and
  * requires the notice and licence text to travel with the files - they are in
- * src/fonts/OFL.txt, and that file must ship with any copy of these fonts.
- *
- * The family keeps its real name. Poppins declares no Reserved Font Name, so
- * the OFL would allow renaming it, but it is not our typeface and calling it
- * anything else would only mislead whoever reads this next.
+ * static/fonts/OFL-Overpass.txt, and that file must ship with any copy of these
+ * fonts. The family keeps its real name.
  */
-@font-face {
-  font-family: 'Poppins';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('../fonts/poppins-latin-400.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: 'Poppins';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('../fonts/poppins-latin-ext-400.woff2') format('woff2');
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-
-@font-face {
-  font-family: 'Poppins';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('../fonts/poppins-latin-700.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: 'Poppins';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('../fonts/poppins-latin-ext-700.woff2') format('woff2');
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-
-@font-face {
-  font-family: 'Poppins';
-  font-style: normal;
-  font-weight: 800;
-  font-display: swap;
-  src: url('../fonts/poppins-latin-800.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: 'Poppins';
-  font-style: normal;
-  font-weight: 800;
-  font-display: swap;
-  src: url('../fonts/poppins-latin-ext-800.woff2') format('woff2');
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-
-@font-face {
-  font-family: 'Poppins';
-  font-style: normal;
-  font-weight: 900;
-  font-display: swap;
-  src: url('../fonts/poppins-latin-900.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: 'Poppins';
-  font-style: normal;
-  font-weight: 900;
-  font-display: swap;
-  src: url('../fonts/poppins-latin-ext-900.woff2') format('woff2');
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-
-
 /* Big Shoulders, self-hosted, for the two places this game sets DISPLAY type:
  * its own name, and the rank on a card.
  *
  * WHY A SECOND FACE AT ALL
  *
- * Poppins was the only typeface here, and it was carrying the wordmark as well
- * as the body. Hallmark names Poppins on its banned-defaults list, and its
- * slop-test gate reads "is the DISPLAY font Inter, Roboto, Open Sans, Poppins,
- * Lato, or a system default?" - display specifically. Stake says the same thing
- * from the other end, naming "standard fonts" first among the causes of a
- * one-star rating. A pairing is also just the normal answer: one display face,
+ * Poppins, the body face at the time, was the only typeface here, and it was
+ * carrying the wordmark as well as the body. Hallmark names Poppins on its
+ * banned-defaults list, and its slop-test gate reads "is the DISPLAY font
+ * Inter, Roboto, Open Sans, Poppins, Lato, or a system default?" - display
+ * specifically. Stake says the same thing from the other end, naming "standard
+ * fonts" first among the causes of a one-star rating. A pairing is also just
+ * the normal answer: one display face,
  * one body face.
  *
  * WHY THIS ONE
@@ -141,8 +81,8 @@
  * index on a card is width-constrained, and 10 is the one rank that is two
  * glyphs wide - a condensed face is the reason it can sit at the same size as
  * every other rank instead of being squeezed. The industrial-signage voice also
- * happens to suit a game called Ride The Bus, which is more than Poppins was
- * doing.
+ * happens to suit a game called Ride The Bus, which is more than the body face
+ * of the time was doing.
  *
  * WHY THE 24pt CUT
  *
@@ -153,43 +93,24 @@
  *
  * WHY TWO STATIC WEIGHTS RATHER THAN THE VARIABLE FONT
  *
- * Size. Subset to the same latin range as Poppins, the variable font is 56.6KB
- * and these two together are 26.7KB - and bundleStrategy:"inline" base64s
- * everything in this folder into index.html, where it costs about 1.37x that
- * again. The variable font's optical-size axis is not worth 30KB on a page that
+ * Size. Subset to the same latin range as the body face, the variable font is 56.6KB
+ * and these two together are 26.7KB - downloaded as files from static/fonts/
+ * (see the note on the body-face block above for why they are never inlined). The variable font's optical-size axis is not worth 30KB on a page that
  * uses the face at two sizes.
  *
  * THE LATIN RANGE IS DELIBERATE, AND IT LIMITS WHERE THIS CAN BE USED
  *
- * Same range as Poppins, so the two faces cover the same characters. But NOT
- * latin-ext: this face is applied only to the wordmark and the card ranks, both
+ * Same range as the body face's latin block, so the two faces cover the same
+ * characters there. But NOT latin-ext, vietnamese or cyrillic: this face is
+ * applied only to the wordmark and the card ranks, both
  * of which are fixed ASCII in every locale. Do not put it on a TRANSLATED
  * string without adding a latin-ext cut first - Polish and Turkish would fall
  * through mid-word, which is worse than not using it at all.
  *
  * Copyright 2019 The Big Shoulders Project Authors, designed by Patric King
  * (XOtype Co.), under the SIL Open Font License 1.1. The licence travels with
- * the files in fonts/OFL-BigShoulders.txt and must keep doing so.
+ * the files in static/fonts/OFL-BigShoulders.txt and must keep doing so.
  */
-@font-face {
-  font-family: 'Big Shoulders';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('../fonts/bigshoulders-latin-700.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: 'Big Shoulders';
-  font-style: normal;
-  font-weight: 900;
-  font-display: swap;
-  src: url('../fonts/bigshoulders-latin-900.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-
 * {
 	margin: 0;
 	padding: 0;
@@ -199,6 +120,35 @@
 	   maximum-scale=1.0 / user-scalable=no, which met the same Stake checklist
 	   item by removing pinch-zoom too. See the note in app.html. */
 	touch-action: manipulation;
+}
+
+/* ---- Two things a touch browser does on its own that this game should not let
+       it do ------------------------------------------------------------------
+ *
+ * TAP HIGHLIGHT. iOS paints a translucent grey RECTANGLE over whatever was
+ * tapped. Half the controls here are circles - the spin disc, every popup close
+ * disc, the bet chips - so the flash is the wrong shape on them, and it lands on
+ * top of press states that were designed deliberately (see the :active notes in
+ * control-bar.css and choices.css). Suppressing it is only safe because every
+ * pressable thing in the game now HAS an :active state of its own; do not remove
+ * one without restoring this.
+ *
+ * NOTE FOR THE NEXT EDITOR: betChips.test.ts locates the form-control font
+ * reset further down by searching this file for the word button followed by a
+ * comma, and takes everything up to the next brace as the rule. So prose above
+ * that rule must not contain that pair. An earlier draft of this comment listed
+ * "the spin b-u-t-t-o-n, every popup close b-u-t-t-o-n" and the test failed with
+ * "the reset does not cover <input>" - pointing at a rule nobody had touched.
+ *
+ * SELECTION. A long press on a <button> starts a text selection and, on iOS,
+ * raises the copy callout - so holding the spacebar's equivalent on a phone, or
+ * just pressing a guess square a little too long, selects its label instead of
+ * registering. Buttons only, so the error dialog's support text and the money
+ * readouts in the rules screen stay copyable. */
+button {
+	-webkit-tap-highlight-color: transparent;
+	-webkit-touch-callout: none;
+	user-select: none;
 }
 
 html,
@@ -230,11 +180,11 @@ html body {
  *
  * The damage was everywhere and invisible in the source. Measured in the
  * running game: the control bar's bet display and mode name (.cb-val,
- * .cb-cap, .cb-mode-word, .cb-bet-mode - on screen at all times), all three
+ * .cb-cap and the MODE button's lettering - on screen at all times), all three
  * mode-picker rows, How to Play's tabs, the autoplay pills, the panel action
  * button and every bet chip's value were drawing in Arial while the panel
- * around them drew in Poppins. This game self-hosts a typeface and then set
- * its most-read numbers in the system sans.
+ * around them drew in the body face. This game self-hosts a typeface and then
+ * set its most-read numbers in the system sans.
  *
  * start-screen.css:408 already worked this out for one button and said so
  * ("a real <button>, so padding and font-family need resetting"); it was never
@@ -299,10 +249,17 @@ textarea {
 .bet-entry,
 .bet-chip-face,
 .pay-amount,
+.ex-total,
 .ss-stat-val,
 .ss-detail-val,
 .wc-amount,
-.wc-mult {
+.wc-mult,
+.limit-input,
+.history-cost-figure,
+.history-card,
+.history-ticket,
+.history-amount,
+.history-mult {
 	direction: ltr;
 	unicode-bidi: isolate;
 }
@@ -351,7 +308,7 @@ textarea {
 	background-clip: padding-box;
 }
 
-@media (hover: hover) {
+@media (any-hover: hover) {
 	::-webkit-scrollbar-thumb:hover {
 		background: rgba(var(--scroll-thumb-rgb, var(--gold-rgb)), 0.62);
 		background-clip: padding-box;

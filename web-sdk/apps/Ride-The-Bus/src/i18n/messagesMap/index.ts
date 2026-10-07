@@ -1,6 +1,8 @@
 import { mergeMessagesMaps, type MessagesMap } from 'utils-shared/i18n';
-import { messagesMap as messagesMapUiPixi } from 'components-ui-pixi';
-import { messagesMap as messagesMapUiHtml } from 'components-ui-html';
+// Deep imports rather than the package barrels - see i18nDerived.ts for why:
+// the pixi barrel drags PixiJS into the bundle.
+import messagesMapUiPixi from 'components-ui-pixi/src/i18n/messagesMap';
+import messagesMapUiHtml from 'components-ui-html/src/i18n/messagesMap';
 
 // All sixteen languages the RGS can request (docs/rgs_docs/RGS.md, "Language").
 //

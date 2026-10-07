@@ -1,0 +1,260 @@
+/* Game loader: the branded screen shown after Stake's own loader hands over.
+   Drawn in CSS rather than shipped as a GIF, for the same reasons as the rest
+   of the art - no download, sharp at any resolution, and it scales with the
+   viewport instead of being letterboxed. */
+
+.game-loader {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-loader); /* under Stake's loader (999), over the game */
+  /* Nothing in here is interactive, and it leaves on a 320ms fade - so without
+     this it spends that third of a second as an invisible full-viewport tap
+     blocker over a board that is already live. Visible on the replay and resume
+     paths, where .ss-overlay is not mounted above it to absorb the taps. */
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--lu) * 2.4);
+  overflow: hidden;
+  /* Same felt as the game, so the handover is not a colour jump. It did not
+     used to be: this matched the gradient on .game-layout, which .scene covers
+     completely and nothing can ever see. Both now come from tokens.css. */
+  background: radial-gradient(
+    ellipse at 50% 42%,
+    var(--felt-lit) 0%,
+    var(--felt-mid) 45%,
+    var(--felt-deep) 100%
+  );
+
+  /* Self-contained sizing unit - the loader mounts before .game-layout exists,
+     so it can't inherit --ui. Tracks both axes for short landscape popouts. */
+  --lu: clamp(4px, min(2vw, 1.6vh), 12px);
+}
+
+/* ---- logo + title ---- */
+
+/* The brand mark, front and centre. Sized off the shorter axis so a wide
+   desktop doesn't blow it up past the cards below it. */
+.gl-logo {
+  width: min(calc(var(--lu) * 17), 46vh);
+  aspect-ratio: 1;
+  background: var(--logo-url) center / contain no-repeat;
+  filter: drop-shadow(0 calc(var(--lu) * 0.8) calc(var(--lu) * 1.6) rgba(var(--shadow-rgb), 0.55));
+  animation: gl-logo-in 0.55s var(--ease-out) backwards;
+}
+
+@keyframes gl-logo-in {
+  from { opacity: 0; transform: scale(0.88); }
+  to { opacity: 1; transform: none; }
+}
+
+/* The same lockup as the board's .game-title, and it has to STAY the same -
+   the loader hands straight over to the board, so any difference between the
+   two shows as the title changing shape at the handover. Both dropped the
+   gradient plate, the border and the glow together. */
+.gl-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* The board's scrim at the loader's scale - the two lockups have to match.
+     See the note on .game-title in base.css. */
+  padding: calc(var(--lu) * 1.2) calc(var(--lu) * 3.4);
+  background: radial-gradient(
+    ellipse 58% 54% at 50% 50%,
+    rgba(var(--shadow-rgb), 0.52) 0%,
+    transparent 74%
+  );
+}
+
+.gl-title-main {
+  font-family: var(--font-display);
+  /* Matches .game-title-main's step up - the loader hands straight over to the
+     board and the two lockups have to be the same. */
+  font-size: calc(var(--lu) * 4.2);
+  font-weight: 900;
+  /* Negative, matching .game-title-main. See the note there for why opening a
+     900 weight out is the tell this is undoing. */
+  letter-spacing: -0.015em;
+  line-height: 1;
+  color: var(--gold-bright);
+  text-shadow: 0 calc(var(--lu) * 0.18) calc(var(--lu) * 0.9) rgba(var(--shadow-rgb), 0.85);
+}
+
+/* Matches .game-title-sub in base.css, so the loader and the board read as the
+   same lockup. Change one, change both. */
+.gl-title-sub {
+  margin-top: calc(var(--lu) * 0.42);
+  font-size: calc(var(--lu) * 1.05);
+  /* See .game-title-sub in base.css - 600 was drawing as 700. */
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: var(--ink-lockup-sub);
+  text-shadow: 0 calc(var(--lu) * 0.15) calc(var(--lu) * 0.7) rgba(var(--shadow-rgb), 0.85);
+}
+
+
+/* ---- the four cards ---- */
+
+.gl-cards {
+  display: flex;
+  gap: calc(var(--lu) * 1.36);
+}
+
+/* The dealer is on the other side in Arabic.
+   .gl-cards is flex, so dir="rtl" already lays the four out right to left and
+   the nth-child stagger deals them in that order - but loader-deal's own
+   offset and angle are physical, so the hand still flew in from the left and
+   crossed the row it was being dealt into. --gl-hand negates both.
+   Same shape as --wc-hand on the win takeover's fan, and the same reason the
+   progress bar needs :global() below: [dir] is set on <html>. */
+:global([dir='rtl']) .gl-cards {
+  --gl-hand: -1;
+}
+
+/* Same face-down back as the dealt cards (cards.css .card-back), so the loader
+   is showing the very deck the game is about to deal from. */
+.gl-card {
+  position: relative;
+  width: calc(var(--lu) * 6.4);
+  aspect-ratio: 5 / 7;
+  border-radius: calc(var(--lu) * 0.64);
+  background:
+    repeating-linear-gradient(
+      45deg,
+      rgba(var(--ink-rgb), 0.12) 0 calc(var(--lu) * 0.19),
+      transparent calc(var(--lu) * 0.19) calc(var(--lu) * 0.55)
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(var(--ink-rgb), 0.12) 0 calc(var(--lu) * 0.19),
+      transparent calc(var(--lu) * 0.19) calc(var(--lu) * 0.55)
+    ),
+    linear-gradient(160deg, var(--brand-red-lit) 0%, var(--brand-red) 55%, var(--brand-red-deep) 100%);
+  box-shadow:
+    inset 0 0 0 calc(var(--lu) * 0.3) var(--brand-paper),
+    inset 0 0 0 calc(var(--lu) * 0.42) var(--brand-chrome),
+    0 calc(var(--lu) * 0.55) calc(var(--lu) * 1) rgba(var(--shadow-rgb), 0.45);
+  /* Where the hand comes in from. Read by loader-deal, which cannot compute it
+     itself: a keyframe is shared by all four cards and --gl-hand is inherited
+     per element, so the direction has to arrive as a custom property. */
+  --gl-deal-x: calc(var(--lu) * -5 * var(--gl-hand, 1));
+  --gl-deal-tilt: calc(-16deg * var(--gl-hand, 1));
+  /* Deal in once, then breathe on a loop while we wait. `backwards` holds the
+     first keyframe during the stagger delay so cards don't flash in first. */
+  animation:
+    loader-deal 0.52s var(--ease-out) backwards,
+    loader-breathe 1.9s var(--ease-in-out) 0.52s infinite;
+}
+
+/* Keyline and centre mark, matching .card-back's pseudo-elements. */
+.gl-card::before {
+  content: '';
+  position: absolute;
+  inset: calc(var(--lu) * 0.8);
+  border: 1px solid rgba(var(--ink-rgb), 0.34);
+  border-radius: calc(var(--lu) * 0.36);
+}
+
+.gl-card::after {
+  content: var(--brand-wordmark);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  white-space: pre;
+  text-align: center;
+  font-family: var(--font-body);
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: 0.24em;
+  /* On a plain label, so the crosshatch never runs through the letters
+     (tokens.css). Tracking pads the END of each line, so the start is padded
+     by the same 0.24em more to keep the two words optically centred. */
+  padding: 0.45em 0.75em 0.45em calc(0.75em + 0.24em);
+  background: var(--brand-wordmark-ground);
+  border: 1px solid var(--brand-wordmark-edge);
+  border-radius: 0.3em;
+  color: var(--brand-wordmark-ink);
+  pointer-events: none;
+  font-size: calc(var(--lu) * 6.4 * 0.078);
+  transform: translate(-50%, -50%);
+}
+
+.gl-card:nth-child(1) { animation-delay: 0s, 0.52s; }
+.gl-card:nth-child(2) { animation-delay: 0.11s, 0.63s; }
+.gl-card:nth-child(3) { animation-delay: 0.22s, 0.74s; }
+.gl-card:nth-child(4) { animation-delay: 0.33s, 0.85s; }
+
+@keyframes loader-deal {
+  from {
+    opacity: 0;
+    /* dealt from the leading edge, off the top of the table */
+    transform: translate(var(--gl-deal-x), calc(var(--lu) * -3.4)) rotate(var(--gl-deal-tilt))
+      scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes loader-breathe {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(calc(var(--lu) * -0.55)); }
+}
+
+/* ---- progress ---- */
+
+.gl-bar {
+  width: calc(var(--lu) * 30);
+  max-width: 72vw;
+  height: calc(var(--lu) * 0.64);
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(var(--shadow-rgb), 0.38);
+  box-shadow: inset 0 0 0 1px rgba(var(--ink-rgb), 0.09);
+}
+
+/* Scaled, not resized. Animating `width` is a layout property: every frame
+   re-runs layout on the bar and its parent, where a transform is composited on
+   its own. The element is full width at rest and scaled down to the progress
+   figure, which is why the inline style sets scaleX rather than a percentage. */
+.gl-bar-fill {
+  height: 100%;
+  width: 100%;
+  transform-origin: left;
+  border-radius: inherit;
+  /* Solid gold with the panel's lit top edge. This was a green-to-gold
+     gradient with a bloom - and the green was #2ecc71, which is
+     --choice-higher, a BET colour, on a loading bar before any bet exists.
+     A gradient sweeping into a glow is the generic progress bar; a bar of the
+     game's own gold, lit like everything else in the room, belongs to it. */
+  background: var(--gold);
+  box-shadow: inset 0 1px 0 var(--panel-lit);
+  transition: transform 0.25s var(--ease-out);
+}
+
+/* Arabic is the one right-to-left language the RGS can request, and a bar that
+   empties from the wrong edge reads as broken rather than as loading.
+   transform-origin has no logical keyword, so this is the explicit flip. */
+:global([dir='rtl']) .gl-bar-fill {
+  transform-origin: right;
+}
+
+/* Respect a reduced-motion preference: the loader still shows and still
+   progresses, it just stops dealing and breathing. */
+@media (prefers-reduced-motion: reduce) {
+  /* The logo belongs here too - it scales and rotates in, and it was the one
+     animated element on this screen the block had missed. */
+  .gl-logo,
+  .gl-card {
+    animation: none;
+  }
+
+  .gl-bar-fill {
+    transition: none;
+  }
+}

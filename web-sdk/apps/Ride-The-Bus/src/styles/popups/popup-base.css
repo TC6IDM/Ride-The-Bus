@@ -1,0 +1,307 @@
+/* The popup shell: the panel itself, its header and its close button.
+ *
+ * Split out of popups.css because two components render popups and Svelte
+ * scopes a stylesheet to whichever component IMPORTS it - so both have to
+ * import their own copy, and each then gets an unused-selector warning for
+ * every rule it does not use. popups.css is nearly all bet-menu, turbo,
+ * autoplay and advanced controls that How to Play has no markup for, which was
+ * 46 warnings on its own.
+ *
+ * What lives here is only what BOTH use, so neither reports anything:
+ *   - Game.svelte, for the bet / turbo / autoplay / sound popups
+ *   - HowToPlayPopup.svelte
+ *
+ * .popup-backdrop is deliberately NOT here: Game.svelte renders the backdrop
+ * for every popup including this one, so How to Play never uses it.
+ *
+ * Sizes are multiples of --ui-bar so the box and its text scale together with
+ * the window, instead of the box shrinking around fixed-size text.
+ */
+/* ==== The tint contract ====================================================
+ * Every menu wears the colour of the control that OPENED it. Turbo's panel is
+ * amber, autoplay's is green, sound's is white, How to Play's is the
+ * accent blue its icon lights, and the bet and mode panels take the live
+ * volatility colour their two controls on the bar already burn.
+ *
+ * Before this, every panel in the game highlighted in accent blue whichever
+ * button you had pressed to reach it - so the one thing the bar spends five
+ * hues telling you apart was thrown away the moment a panel opened. The hues
+ * are WAYFINDING (see --ctl-* in tokens.css); a menu that drops them makes the
+ * player re-read the header to know where they are.
+ *
+ * Four properties, declared here as the accent-blue default so a panel only
+ * has to name what differs, and so nothing inside a panel ever has to know
+ * which panel it is in:
+ *
+ *   --tint         lines, glows, sliders, small type
+ *   --tint-rgb     the SAME colour as a triplet, for washes and glows
+ *   --tint-strong  the fill under text - blue needs a darker step than its
+ *                  line colour; the other four fill with --tint itself
+ *   --tint-ink     text that sits ON a --tint-strong fill
+ *
+ * The overrides live in popups.css (the four Game.svelte panels) rather than
+ * here, because Svelte scopes a stylesheet to whichever component imports it
+ * and this file is imported by How to Play as well - a `.popup-turbo` rule in
+ * here would be an unused selector in that component and a CSS warning in the
+ * gate. .popup-bet and .popup-mode set theirs INLINE from Game.svelte: their
+ * colour is the live rating, which only the component knows.
+ */
+.popup {
+  --tint: var(--accent);
+  --tint-rgb: var(--accent-rgb);
+  --tint-strong: var(--accent-strong);
+  --tint-ink: var(--ink);
+  position: fixed;
+  z-index: var(--z-popup);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  /* The viewport inset has a PIXEL FLOOR as well as a proportional value.
+     2.55 --ui-bar is 16.7px at 320px, so this panel came within 12.4px of each
+     edge - and .popup-backdrop fills everything outside it, so a tap that
+     missed the panel by a few pixels closed it instead. The proportional term
+     still wins at every larger size; 32px only binds on a phone. */
+  width: min(calc(var(--ui-bar) * 32.73), calc(100vw - max(32px, var(--ui-bar) * 2.55)));
+  max-height: calc(100vh - calc(var(--ui-bar) * 3.64));
+  overflow-y: auto;
+  /* Scrolling to the end of the panel stops there, rather than carrying on
+     into the page - on Android that is a pull-to-refresh of the game. */
+  overscroll-behavior: contain;
+  /* Every menu wears the colour of the control that opened it, and its
+     scrollbar is part of the menu. app.css draws the bar; this is the one line
+     that tells it which colour to be. */
+  --scroll-thumb-rgb: var(--tint-rgb);
+  box-sizing: border-box;
+  padding: calc(var(--ui-bar) * 1.27);
+  border-radius: calc(var(--ui-bar) * 1.09);
+  border: 1px solid var(--panel-edge);
+  /* THE MATERIAL, from tokens.css. It was built here first - a lit FACE (the
+     short gradient, so the fall-off from the one light at the upper right runs
+     down and left without reading as a gradient) over the table's two-part
+     shadow (a tight contact patch plus a wide soft one, because "a single
+     blurred blob reads as a sticker, not an object") with the inset pair that
+     gives the slab a lit top edge and a shaded bottom one. The argument for
+     each stays in tokens.css beside the values; what changed is that the bar,
+     the RG plate, the error dialog and the replay panel now read the SAME
+     three values rather than each drawing a shadow of their own. */
+  background: var(--panel-face), var(--panel);
+  box-shadow: var(--panel-elevation);
+  color: var(--ink-strong);
+  /* ARRIVES, rather than appearing. Every panel used to be mounted by an {#if}
+     with no animation at all, so the biggest surfaces in the game snapped in
+     cold - in a game whose win takeover has a tuned 440ms arrival. 220ms from
+     0.96 scale, on the same curve every hover in the app uses. The translate
+     is the panel's own centring and has to be in the keyframe, or the
+     animation's first frame would plant the panel at the top-left corner.
+
+     NO EXIT, deliberately. A leaving animation needs a Svelte out: directive
+     in seven components plus a reduced-motion-aware transition in JS, for a
+     menu that every OS closes instantly anyway. Arrival is the moment that
+     carries information ("this came from that button"); leaving carries none. */
+  animation: popup-in 220ms var(--ease-out) both;
+}
+
+@keyframes popup-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* The panel's OWN focus ring. Game.svelte focuses .popup when it opens, and
+   nothing here said what that should look like - so a player who opened a menu
+   from the keyboard got the browser's default: a white-and-black double ring
+   drawn around the whole dialog, the one focus indicator in the game that was
+   not --focus-ring (measured off a screenshot at 2px of #fff over 4px of
+   #101010, all the way round). A rectangle around a dialog is also a poor
+   indicator - it says "this whole thing", which the player already knows.
+
+   The device win-celebration.css uses instead: the ring goes on the part of the
+   panel that names it. The header's rule thickens to 2px in the panel's own
+   tint. Every --tint clears 3:1 on --panel, it costs no layout (an inset shadow,
+   not a border), and it is never transitioned - a ring that fades in leaves a
+   keyboard player with no indicator for the length of the fade. */
+.popup:focus-visible {
+  outline: none;
+}
+
+.popup:focus-visible .popup-head {
+  box-shadow: inset 0 -2px 0 var(--tint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Still arrives - a panel that is simply there one frame reads as a glitch,
+     and 120ms of opacity is under the threshold anyone reports as motion. The
+     scale goes. */
+  .popup {
+    animation: popup-fade 120ms var(--ease-out) both;
+  }
+}
+
+@keyframes popup-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* The header, given some structure.
+ *
+ * It used to be accent-blue, weight 800, with a bare 12px gap under it and
+ * nothing else - which is the shape of a bootstrap modal title, and it made
+ * every panel in the game announce itself in the same colour the buttons
+ * inside it use for "this one is selected". A heading is not an action.
+ *
+ * White type, one weight down, and a rule beneath it: the rule is what
+ * actually separates the header from the body, and it lets the title stop
+ * shouting. The 12px was also the last hardcoded pixel gap in the shell, so
+ * the header no longer stays put while the box around it scales. */
+/* THE HEADER STAYS WHEN THE PANEL SCROLLS. The panel is its own scroller
+   (overflow-y above), so on the one long panel - How to Play - the title and
+   the close disc scrolled away with the first screen of prose, and the only
+   ways out were Escape, the backdrop, or scrolling all the way back. Every
+   panel promises the same header (design.md); now it keeps it.
+
+   Pinned flush from the first pixel: the negative margin lifts the header's
+   box into the panel's top padding and its own padding puts the text back
+   where it was, so at rest nothing moves and once scrolled the header covers
+   the strip the padding used to leave open. `top` is the padding NEGATED
+   because a sticky box pins inside its scroller's padding, not at the edge -
+   at `top: 0` a band of scrolled prose showed above the header. It is opaque
+   - prose passes under it - in the face's own top slice (--panel-head-face). */
+.popup-head {
+  position: sticky;
+  top: calc(var(--ui-bar) * -1.27);
+  z-index: 2;
+  margin-top: calc(var(--ui-bar) * -1.27);
+  padding-top: calc(var(--ui-bar) * 1.27);
+  background: var(--panel-head-face), var(--panel);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--ui-bar) * 0.9);
+  margin-bottom: calc(var(--ui-bar) * 1.09);
+  padding-bottom: calc(var(--ui-bar) * 0.82);
+  border-bottom: 1px solid var(--panel-edge);
+  font-size: calc(var(--ui-bar) * 1.36);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--ink-strong);
+}
+
+.popup-close {
+  width: calc(var(--ui-bar) * 2.36);
+  height: calc(var(--ui-bar) * 2.36);
+  flex: 0 0 auto;
+  padding: 0;
+  /* Round, like every other icon button that floats rather than sits in a row
+     - the turbo button in the bar is a circle for the same
+     reason. It was a rounded square, which made it the only control of its
+     kind in the game with corners. */
+  border-radius: 50%;
+  border: 1px solid var(--panel-edge);
+  background: rgba(var(--ink-rgb), 0.06);
+  color: var(--ink-dim);
+  --mark-size: calc(var(--ui-bar) * 0.8);
+  cursor: pointer;
+  text-transform: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--dur-control) var(--ease-out), border-color var(--dur-control) var(--ease-out), color var(--dur-control) var(--ease-out);
+}
+
+@media (any-hover: hover) {
+  /* Lit, not haloed. This carried `box-shadow: 0 0 10px rgba(--tint-rgb, 0.5)`
+     - a coloured bloom around a coloured control on a dark panel, which is the
+     shadow-glow tell that popup-mode.css names and refuses one file over:
+     "a green halo around a green button on a dark panel". The wash and the
+     border already say the button is under the cursor; the lit top edge is the
+     same device .popup itself uses to stand off the table. */
+  .popup-close:hover {
+    color: var(--ink);
+    border-color: var(--tint);
+    background: rgba(var(--tint-rgb), 0.16);
+    box-shadow: inset 0 1px 0 var(--panel-lit);
+  }
+}
+
+/* Keyboard focus on the close button. Shared by every popup and by How to
+   Play, which is why it lives in the shell rather than beside either. */
+.popup-close:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Pressed. See the note on .cb-icon:active in control-bar.css - a finger
+   cannot hover, so the close button needs a state a tap can produce. */
+.popup-close:active {
+  background: rgba(var(--shadow-rgb), 0.28);
+  transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popup-close:active {
+    transform: none;
+  }
+}
+/* ---- Touch targets -------------------------------------------------------
+ * These panels postdate the pass that set the board's and the bar's floors, so
+ * they were never measured against one. At 320px --ui-bar is 6.56px, which put
+ * every control below under the 24px WCAG 2.2 AA minimum.
+ *
+ * The house has three floors already and they disagree on purpose:
+ * responsive-bar.css argues 36px over 44px because 44 breaks the bar onto a
+ * third row, and popup-sound.css takes 32px because a range track has to keep
+ * painting thin. So: 44px for a control that is alone or primary, 36px in a
+ * dense row, 32px where the paint must stay small. The board's own numbers are
+ * left exactly as responsive-board.css derived them.
+ *
+ * pointer: coarse, NOT (max-width) and NOT portrait - a phone held sideways
+ * needs this as much as one held upright, and Popout S is a 400px mouse window
+ * whose unit is deliberately tiny and must not be floored.
+ */
+@media (pointer: coarse) {
+  /* 36px, not 44, and this one was settled by looking at it: at 44 the disc is
+     four times the height of the header text beside it on a 320px phone and
+     reads as the most important thing in the panel, which a close button is
+     not. It also costs 8px of a 568px screen before any content. 36 is the
+     figure responsive-bar.css settles on for the bar icons, for a version of
+     the same reason, and still clears the 24px WCAG 2.2 AA floor by half again.
+     It was 15.5px square at 320px, across all seven panels.
+
+     --mark-size grows WITH it now, to keep the proportion the desktop disc has
+     (0.8 of 2.36 units, about a third). It was left at the size it was drawn
+     at, so it could gain room around it - but "drawn at" was 0.8 of a unit
+     that bottoms out near 3px on a 320px phone: a 5px cross in a 36px disc,
+     which on every panel read as a speck, not a way out (UI review,
+     2026-09-27). 11px is a third of 36, rounded down. */
+  .popup-close {
+    min-width: 36px;
+    min-height: 36px;
+    --mark-size: max(calc(var(--ui-bar) * 0.8), 11px);
+  }
+}
+
+/* ---- Popout S: the panels take the type floor ------------------------------
+   Popout S restores base.css's unit over the bar's two-row one (responsive.css,
+   the same media query as this), which puts --ui-bar at 3.85px - and every
+   size in a panel is a multiple of it, so the prose inside came out at 3.2 to
+   5px: How to Play's paragraphs, the mode blurbs, autoplay's field labels
+   (measured, 2026-09-27). The game's surfaces took --type-floor one rule at a
+   time; a panel is built from one unit, so it takes the floor as ONE unit -
+   6px here, the base formula everywhere it is already more - and the whole
+   panel scales together, type and layout alike. It is wider and taller for
+   it; it scrolls, and its header stays (above). Phones and every larger
+   window already sit at or over 6px, so this binds on Popout S alone. */
+@media (orientation: landscape) and (max-height: 320px) and (max-width: 520px) {
+  .popup {
+    --ui-bar: max(6px, clamp(3px, min(calc((100vw - 30px) / 96), 2.4vh), 11px));
+  }
+}

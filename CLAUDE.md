@@ -3,6 +3,14 @@
 A four-guess card game built for Stake Engine: a Python math package that
 generates the published books, and a Svelte 5 client that replays them.
 
+**New to the codebase? Read [WALKTHROUGH.md](WALKTHROUGH.md).** It is a guided
+read of the whole system - the martingale the payouts are solved from, what the
+math build produces, the four RGS endpoints, and the client's three-file round
+- written to be followed with the files open. This file is the RULES; the
+walkthrough is the EXPLANATION. [REFACTOR_LOG.md](REFACTOR_LOG.md) records the
+2026-09 readability passes and, more usefully, the four classes of thing that
+broke in them that no compiler catches.
+
 ---
 
 ## Standing rules
@@ -17,8 +25,12 @@ These override default behaviour. Follow them every time.
 3. **Cheap verification, run freely**, from `web-sdk/apps/Ride-The-Bus/`:
    ```
    npm run test          # node --test
-   npm run check         # tsc; ignore the ~258 vendored-SDK errors
-   npm run check:svelte  # must be 0 errors AND 0 CSS warnings
+   npm run check         # tsc; 0 vendored errors. The 2 it still prints are
+                         # named type imports from .svelte, which tsc cannot
+                         # resolve and svelte-check reports none of.
+   npm run check:svelte  # must be 0 errors AND 0 CSS warnings. 0 in the
+                         # vendored SDK too now; the "No Lingui config found"
+                         # line it sometimes prints is a pnpm dlx artefact.
    ```
    ```
    npm run lint          # now a gate; must be clean
@@ -27,6 +39,28 @@ These override default behaviour. Follow them every time.
    app in the vendored SDK still ships only `.eslintrc.cjs`. This app now has a
    flat config, so lint runs and must pass. The dead `.eslintrc.cjs` beside it
    is ignored by ESLint 9 and kept only so the app still matches its siblings.
+
+   ```
+   npm run audio         # capture the REAL audio graph and draw it
+   ```
+   `npm run audio` exists because I cannot hear. It taps the running game's
+   output, writes a WAV, and renders a spectrogram and a waveform I can look at,
+   plus metrics (RMS, crest, level movement, centroid, flatness, band split).
+   **Use it for any change to the `audio*.ts` modules / `music.ts` / `sound.ts`** — the
+   same rule as "if a change is visual, drive it and look", and for the same
+   reason: `sound.test.ts` pins what gets SCHEDULED and says in its own header
+   that it cannot tell you whether the result sounds good. Details are in
+   `.claude/skills/rtb-audio-lab/`.
+
+   **Browser work defaults to `playwright-cli`** (the global `@playwright/cli`,
+   not a project dependency; skill in `.claude/skills/playwright-cli`). Use it
+   for any ad-hoc look, click, computed-style read or console check, ahead of the
+   chrome-devtools MCP or a throwaway CDP script: a command answers in a few
+   hundred bytes and its page snapshot goes to a file, not into context.
+   **Phones need `open --mobile` before `resize`.** A bare resize is a narrow
+   desktop with hover and a fine pointer, and the bar came out 11-20px short at
+   all three phone sizes. The scenario sweeps stay on `npm run shots`. Timings
+   and a recipe are in status.md.
 
 ---
 
@@ -46,11 +80,13 @@ If the client's arithmetic drifts from the Python, the game shows a player one
 number while the RGS credits another. That is the worst bug this project can
 have, and `payout.test.ts` guards it by replaying every published book.
 
-Everything below is on **`main`** as of the `ui-art-pass` merge — the three
-bet families, the 192-mode math build and the UI pass all landed together.
-Note that local `main` tracks `origin/monorepo-restructure`, not `origin/main`,
-so a bare `git push` from it goes somewhere unexpected; push `main:main`
-explicitly or re-point the upstream.
+**`main` is behind.** It stops at the `ui-art-pass` merge; everything since -
+Three of a Kind, High Stakes at 15%, the direct book writer, the readability
+passes, the 2026-09-22 audit fixes and the 2026-09-26 card faces - is on
+`refactor/readability-passes`, 26+ commits ahead, until that branch is merged. Merge it before building
+anything for submission. Note that local `main` tracks
+`origin/monorepo-restructure`, not `origin/main`, so a bare `git push` from it
+goes somewhere unexpected; push `main:main` explicitly or re-point the upstream.
 
 ---
 
@@ -61,20 +97,66 @@ Guess four cards: **colour → higher/lower/equal → inside/outside/equal → s
 All four guesses are picked *before* the round, so **each guess combination is
 its own RGS bet mode**.
 
-**192 published modes = 3 families × 64 playable combinations.**
+**257 published modes = 4 families × 64 playable combinations, plus one.**
 (`equal` then `inside` is impossible — nothing falls strictly between two cards
 of the same rank — so 64, not the 72 the four lists multiply out to. A mode that
 loses 100% of the time also has zero variance, which the RGS rejects outright.)
 
-| Family | Prefix | Retention on a miss | Max win | Forgiveness |
-|---|---|---|---|---|
-| Classic | *(none)* | card 1 nothing, then 30% | 1354.2× | none |
-| Second Chance | `sc_` | card 1 nothing, then 30% | 585.2× | first miss from card 2 keeps 50%, play continues |
-| High Stakes | `hs_` | card 1 nothing, then 20% | 1910.2× | none |
+| Family | Prefix | Cost | Retention on a miss | Max win | Forgiveness |
+|---|---|---|---|---|---|
+| Classic | *(none)* | 1× | card 1 nothing, then 30% | 1354.2× | none |
+| Second Chance | `sc_` | 1× | card 1 nothing, then 30% | 585.2× | first miss from card 2 keeps 50%, play continues |
+| High Stakes | `hs_` | 1× | card 1 nothing, then 15% | 2237.3× | none |
+| Last Stop | `ls_` | 1× | card 1 nothing, then 30% | 4,301.9× | none - a right suit draws a 2-10× ticket in place of its price |
+| Three of a Kind | `tr_` | **250×** | nothing, ever | 4,583.3× base bet | none |
 
-**All three cost 1.0×.** That is forced, not chosen: `etl40b` is an absolute sum
-against a fixed 0.9 limit and is *not* divided by cost, so a 2× mode's figure
-doubles for the same shape. Even Classic's shape fails at 2×.
+**Last Stop is Classic until the suit** (redesigned 2026-09-30): cards 1-3 are
+Classic's to the bit, and the suit card has no price of its own - a right suit
+draws a bus ticket from a stack of 20 (ten 2×, five 3×, three 5×, two 10×) that
+multiplies the running total, and a wrong one keeps Classic's 30%. The book
+writes the suit card's `payout` as 1.0 (`TICKET_STAGE_PAYOUT`, both sides) and
+the ticket as its own event; card 4's chip lands WITH the ticket. **A correct
+pick never shows under 1×** (the owner's rule), and **no card is priced below
+Classic's** (the owner's call: the design before this took the ticket's price
+out of card 1 and the suit card, and card 1 read 1.28× against Classic's
+1.99× - "cutting their profit, and the profit comes back as the ticket").
+Modelled exactly by `model_families.py`: std 4.5-31.0, etl40b 0.585, CVaR 475,
+max 4,301.9×, between Classic and High Stakes by std on all 64 combinations -
+the fourth bolt, the orange (`--vol-ls`). The reweight publishes the ticket
+odds EXACTLY as the stack (`ticket_weights`), because How to Play draws the
+stack. A bust carries no ticket at all. **Built 2026-10-01**: parity replays
+all 257 modes; the built worst cases (std 31.4, etl40b 0.591, CVaR 483.5) sit
+within a few percent of the model. The parity replays go family by family
+(`currentFamilies()`), so a family whose rules move before a rebuild is the
+only one they skip. The argument is LAST STOP in `game_calculations.py`.
+
+**Three of a Kind is a different game on the same table**: a 12-card deck (A K
+Q of each suit), **three cards**, no guesses — card 1 is dealt, cards 2 and 3
+must match its rank — one mode (`tr_any_equal_equal`, three tokens: a slug's
+length is its stage count on both sides of the wire), one outcome, fair odds
+(1 × 11/3 × 5 = 18.333× cost, physical 1 in 18.3, recorded 1 in 19.1). It is
+**purely binary and 95% non-paying** — past the "90,000 of 100,000" example in
+Stake's guidelines though inside the 1-in-20 line; the submission's softest
+point, accepted. The whole derivation — why no all-or-nothing can exist on the
+four-guess ride (pay × chance = 0.96 caps a binary payout at 19.2× cost; a
+single outcome ≥ 40× cost puts 100% of the RTP in the tail), **why a binary
+win must stay under 5,000× the base bet** (Stake's tail-probability rows are
+written in base-bet multiples and never scale with cost; the first build, A K
+Q J at 1000× paying 25,000×, failed every one of them), why 250× and not more,
+the Graffiti Ways precedent and what its paytable actually showed — is THE
+ALL-OR-NOTHING BOUND in `game_calculations.py`. Read it before proposing a
+trips variant, a bigger prize or a token consolation.
+
+**The four-guess families cost 1.0×.** That is forced, not chosen: `etl40b` is
+an absolute sum against a fixed limit and is *not* divided by cost, so a 2× mode's
+figure doubles for the same shape. Even Classic's shape fails at 2×. Three of a
+Kind escapes it because its payout never reaches 40× its cost. The cost also
+sizes the bet ladder: bet cost is capped at $50,000 a round on the 2-star
+template, so 250× leaves the base bet at $200 where 1000× pushed it to $50.
+
+**Cost is per mode now and must be shown**: the picker row, the confirmation
+and the How to Play sentence all read `FAMILY_RULES[f].cost`, and the control
+bar's multiplied-bet readout is live again.
 
 ---
 
@@ -102,617 +184,460 @@ rounding it to 2.0× would wipe out the house edge.
 
 ## Invariants that must not drift
 
+The **rule** is here. The **argument** is in `.claude/skills/rtb-invariants/`,
+one reference file per group below — moved out verbatim because it was 45 KB
+loaded on every turn to be consulted a few times a week.
+
+Read the one file covering what you are changing, not all of them. Almost every
+rule below records a defect that already shipped once, and several say plainly
+that the obvious alternative was tried and rejected — which is the part worth
+reading before proposing it again.
+
 - `math game_calculations.py:MODE_FAMILIES` ↔ `web game/modes.ts:FAMILY_RULES`
 - `FAMILY_RULES[f].maxWin` is **data**, pinned by `payout.test.ts` to what the
   payout maths actually reaches.
 - Win-tier ladders are **per family** (`winTiers.ts:winTiersFor(family)`) — every
   band, not just Max. Each is solved to hit Classic's rarities
   (~1 in 70 / 305 / 3,093 / 15,561) with Max = that family's own ceiling.
-- **The Max band is matched on equality; every band below it on `>=`.** "Max Win"
-  is a claim about hitting a single reachable figure (1354.2 / 585.2 / 1910.2),
-  not about clearing the bottom of an open range — so a payout *above* a family's
-  ceiling falls to Epic rather than claiming the rarest screen in the game. The
-  published `max_win` bound is 1400 against a true Classic ceiling of 1354.2, so
-  the two are not the same number and the ladder must not treat them as one.
-  Understating is the safe direction; `winTiers.test.ts` pins both directions.
-- **The win takeover is made of the round, not of gradients.** Its centrepiece
-  is the four cards the player just played, fanned — the same warm paper,
-  crimson crosshatch and chrome edge as every other card in the game, drawn from
-  the shared tokens rather than by importing `cards.css` (a stylesheet imported
-  into a second component gets a second scope class). `revealedCards` is
-  **snapshotted** into `celebration` at `showWinCelebration`, not referenced: the
-  round-start resets would empty the fan under a still-open overlay during an
-  auto run. All four slots come out as faces in practice — the reveal loop deals
-  every card whether the round busted or not — so the face-down branch is a
-  fallback for a null slot, **not a behaviour to promise in copy or tests**.
-  What this replaced was a scrim gradient, a conic gradient, a radial gradient
-  and a text stack, which is item for item the list Stake's rating notes give
-  for a 1-star release. Gradients may light a celebration; they cannot be what
-  it is made of.
-  - **The fan marks what actually happened**, using the board's own two marks
-    rather than new ones — a red `--loss` cross on the card that ended the round,
-    an amber `--forgiven` return arrow on the one a Second Chance let off.
-    `cards.css` is careful that those differ ("a red cross says the round ended
-    here, and this one carried on") and the celebration must not undo it. The
-    busted card is desaturated and dimmed; **the forgiven card is not**, because
-    dimming it would read as a second bust. Showing only the winning cards was
-    the alternative and loses the round: which guess failed, and on what card.
-  - **Exactly three shapes reach the takeover**, at most one mark each: a clean
-    sweep (no marks), a bust (one cross — Classic and High Stakes only, since a
-    card-1 miss keeps nothing and pays zero), and a forgiven-then-finished Second
-    Chance round (one arrow). A fourth exists in the books and **cannot get
-    here**: forgiven *and then* busted takes both haircuts on one round — half
-    the multiplier, then 30% of the remainder — and never clears the entry tier.
-    Measured across every drawable round of `sc_red_equal_equal_heart`, the
-    family's highest-ceiling mode: 382,729 of them, best payout **2.6×** against
-    an 11× floor. The `{:else if}` is therefore defensive, not load-bearing.
-    A Max Win is always a clean sweep for the same arithmetic.
-- **One veil for the whole ladder.** `--wc-veil` is set on `.wc-overlay`, not
-  per tier. It used to climb 0.46 → 0.70, so the room got darker on every
-  promotion — the rarest screen was the murkiest, and the scene visibly
-  re-dimmed four times inside a single count-up. The takeover establishes a
-  place once and stays in it; what escalates is the light, the colour, the hand
-  and the burst.
-- **Every win tier draws the whole celebration. Escalation is intensity, never
-  presence.** All five tiers are full-bleed and draw every layer — veil, beam,
-  fan and suit burst; the `.tier-*` rules only turn them up (`--wc-beam-op`,
-  `--wc-fan-spread`, `--wc-throw`) and `winCelebration.test.ts`
-  fails if one of them sets anything that is not a custom property. Max alone
-  adds a layer: the deck's own crosshatch, sweeping once. **A tier that
-  withholds a layer was tried and rejected** — Big/Huge got a bounded "plate" and
-  rendered as a grey rectangle while the higher tiers looked untouched, so the
-  ladder read as two unfinished screens. If a tier should feel smaller, turn it
-  down; do not take the scene away.
-  - **`--wc-fan-spread` is the rung, because it is the only one anyone could
-    see.** The ladder used to move sheen opacity and bloom diameter by 30–60% on
-    layers already sitting at 34–72% behind a blur — under the just-noticeable
-    threshold, so the only real difference between Big and Epic was the word and
-    the hue. The hand opening wider reads at a glance and is still intensity: a
-    test pins it monotonic across the five.
-- **The burst is suit marks, not sparks, and it is a moment rather than a
-  loop.** Hearts, diamonds, clubs and spades through `SuitIcon`, thrown once per
-  promotion — `WinCelebration` keys the container on `activeTier.id` to re-fire
-  it. Sixteen marks on *independent infinite* loops with delays to 2.1s never
-  shared a `t=0`, so at any frame they sat at sixteen unrelated radii and read as
-  dust on the lens; several also ended up in the frame corners and over the
-  control bar. Ten larger marks, one origin, one instant, thrown off the fan
-  rather than the viewport centre, fading before they reach an edge. **Keying is
-  right here and wrong for `.wc-title`** — that is the bug `promoteTitle` exists
-  to replace, and both are now pinned by tests.
-- **The light is one beam, not a spinning cone**, aimed from the upper right
-  because that is where `table.css` puts the light for the whole game. Two
-  counter-rotating conic sweeps plus a radial bloom plus an elliptical vignette
-  under the text all centred on one point, and on screen they composed into a
-  soft-edged grey-brown disc that read as a smudge or a half-loaded asset.
-  **Three ambient circles on one centre is not depth.** The text's ground is an
-  **edge-to-edge shadow band** now — full viewport width, so it has no side edge
-  to read as the rejected "plate", and it reaches up over the bottom of the fan
-  so the title is never cream type on white card faces.
-- **The board's numeric readouts are hidden while the takeover counts.**
-  `.running-win`, the four `.card-mult` chips and `.cb-lastwin` all print the
-  *settled* figure, and the overlay is semi-transparent: the segmented count-up
-  ran from $0.00 with "Full Game Win! $1,354.20" legible behind it for the whole
-  climb. `Game.svelte` sets `takeover-open` on `.game-layout`; `cards.css`
-  consumes it. The **card row goes entirely** — the fan is those same four cards
-  brought forward, and dimming it to 0.16 was tried first and left a ghost row
-  reading through the veil, which is worse than either showing it or not. One
-  hand on screen at a time. The choice row only dims: nothing in the overlay
-  duplicates it, but the squares encode the bet and are the loudest thing in the
-  game. The table, rail, chips and cups stay lit: the scene stays, the interface
-  recedes. A fourth readout added later must join that list —
-  `winCelebration.test.ts` names all three individually for that reason.
-- **The win ramp IS the volatility ramp.** Big is `--vol-sc` green, Huge
-  `--vol-base` yellow, Mega `--vol-hs` red, Epic `--vol-overflow` purple — the
-  four stops the bolt meter already spends on the control bar, referenced from
-  the same triplets so the two ladders cannot drift. Max alone stays off the
-  scale and keeps its *inversion*: a cream core on brand crimson, the only tier
-  lighter in the middle than at the edge.
-  - This replaced a bespoke gold→amber→orange→ember heat climb, and it
-    deliberately reverses the old "no purple here" rule. That rule existed
-    because `--vol-overflow` already means *this bet passed its family's
-    volatility ceiling*; the call now is that both readings are the same idea —
-    near the top of a scale — rather than two meanings competing for one hue,
-    and that a player who has already learned green→yellow→red→purple on the bet
-    display should not be made to learn a second ramp for wins.
-  - **The cards carry it too**: a tier-coloured rim and bloom on every card in
-    the fan, plus a specular glint at the beam's own 118°, so the escalation
-    reaches the thing the eye is already on rather than only the word above it.
-  - **The hand hops on every promotion** (`hopFan`), driven through
-    `element.animate()` with `composite: 'add'`. Both halves of that matter: a
-    CSS class would replace the `wc-fan-deal` fill and drop each card back to its
-    undealt transform, and without `add` the keyframes would overwrite
-    `transform` outright and snap every card to the centre of the fan, because
-    the tilt and offset live in that same property.
-- **Which wins open the takeover**: `winTierFor`'s `fullGameWin` floor puts a
-  **clean sweep** on the ladder at the entry tier however little it pays, so a
-  6.6× opens it. Gating those to a board-level beat instead was tried and
-  reverted — the progression is the one players already learned. The cost is a
-  known cosmetic wart: a sub-10× full win is titled "Big Win" below the Big Win
-  floor. Fixing that needs its own label, which is a 17-locale change.
-  - **A clean sweep is `isCleanSweep(bustedIndex, forgivenIndex)`** — four right,
-    nothing forgiven — not "did not bust". That distinction exists only because
-    Second Chance survives a wrong guess, and it replaces a per-family
-    `celebrateEveryFullWin: false` on `sc` that was too blunt. The old flag was
-    half right: forgiveness makes "reached card 4" the ordinary case, and
-    flooring those fired the takeover on most rounds. But suppressing the whole
-    family also swallowed the case the floor exists for — a genuine 4/4 in Second
-    Chance, the same 1-in-70 event that takes the screen over in Classic, which
-    paid in silence below 11×. Classic and High Stakes have no forgiveness, so
-    `forgivenIndex` is structurally always null there and they are untouched.
-- **`FAMILY_RULES[f].maxWin` and `MODE_CEILINGS[mode]` are different numbers
-  and both are needed.** The family figure is the most that FAMILY can reach and
-  is the right headline for a mode a player is choosing between — some
-  combination in it really does pay that. But every four-guess combination is
-  its own published bet mode, and only **8 of each family's 64** reach the family
-  figure: Classic runs 68.2× to 1354.2× with a median of 268.8×, so the headline
-  alone overstated the typical bet about fivefold. Stake asks for the maximum win
-  to be stated per bet mode and to be realistically obtainable, so How to Play
-  and the mode-switch confirmation state both, the second suppressed when the two
-  are equal.
-  - **The ceilings come from the build, never from enumeration.** The
-    theoretical maximum of a combination IS derivable from `payout.ts`, and it is
-    the wrong number: the RGS can only pay what its lookup table holds, and the
-    published tables are *sampled*. That is measurable rather than assumed —
-    heart and diamond are both red, so for a fixed colour + higher/lower +
-    inside/outside they must share a theoretical ceiling, and **24 of the 48
-    groups disagree** (`base/red/higher/inside` is
-    `{heart: 290.9, diamond: 268.8, club: 268.8, spade: 268.8}`). An enumeration
-    would therefore print a figure ABOVE what the mode can pay on about half of
-    them, which is the exact overstatement being fixed.
-  - `scripts/mode-ceilings.js` writes `game/modeCeilings.ts` from
-    `stats_summary.json`; `run.py` calls it beside `replay-events.js` at the end
-    of every build. The generated `.ts` is **committed**, because the library is
-    not. `modeCeilings.test.ts` pins it against the build when one is present.
-  - **The win-tier ladder is deliberately NOT wired to it.** Max Win stays pinned
-    to `FAMILY_RULES[f].maxWin`, so it fires only on a round that reaches the
-    family's stated figure. A mode reaching its own lower ceiling is not a max
-    win — the claim is about one reachable number per family, and softening it
-    would make the rarest screen in the game routine.
+
+### The win takeover — `references/win-celebration.md`
+
+- **The Max band is matched on equality; every band below it on `>=`.** A payout
+  *above* a family's ceiling falls to Epic rather than claiming the rarest screen
+  in the game. `winTiers.test.ts` pins both directions.
+- **The takeover is made of the round, not of gradients** — its centrepiece is
+  the cards just played, fanned, each drawn by **`CardFace`** - the same
+  face the board turned over, not a lookalike - and, on a Last Stop sweep, the
+  ticket laid ON the hand: the four cards fan as on every family and the ticket
+  (**`TicketFace`**) sits over their middle, lower, in front, dealt after the
+  last card (owner's call, 2026-09-30 - as a fifth place in the fan it read as
+  a fifth card) - and it rides the hand's hop, with the middle of the hand
+  (`hopFan`, 2026-10-01). `revealedCards` is **snapshotted** into `celebration`,
+  not referenced. The fan marks what happened: a `--loss` cross on the busted
+  card (desaturated), a `--forgiven` arrow on a Second Chance one (**not**
+  dimmed). Exactly three shapes can reach it; the fourth is defensive only.
+- **One veil for the whole ladder.** `--wc-veil` on `.wc-overlay`, never per tier.
+- **Lettered, not lit: nothing on the takeover glows.** The title is a hard
+  block shadow in the tier's deep colour (`--wc-cool`), cast down and left; the
+  amount takes the same block while it holds; the fan's cards carry a thin rim
+  in the tier colour and no bloom; the burst marks cast shadows. The two-colour
+  neon title and the haloed hand were the stock slot "BIG WIN" look - the third
+  Hallmark audit's top finding (2026-09-26).
+- **Every tier draws the whole celebration. Escalation is intensity, never
+  presence.** `.tier-*` rules may set nothing but custom properties, and
+  `winCelebration.test.ts` fails if one does. `--wc-fan-spread` is the rung,
+  because it is the only one anyone could see; a test pins it monotonic.
+- **The burst is suit marks, not sparks, and a moment rather than a loop** — ten
+  one-shot marks off the fan, keyed on `activeTier.id`. Keying is right there and
+  **wrong for `.wc-title`**, which is what `promoteTitle` exists to replace.
+- **The light is one beam, not a spinning cone**, from the upper right, on an
+  edge-to-edge shadow band. Three ambient circles on one centre is not depth.
+- **The board's numeric readouts are hidden while the takeover counts** —
+  `.running-win`, the four `.card-mult` chips and `.cb-lastwin`, each named
+  individually in the test. The card row goes entirely; the choice row only dims
+  - to 0.16, and the rule names `.choice-row.locked`, because the lock (0.5)
+  has the same specificity, loads later, and is ALWAYS on under a takeover: it
+  silently won until 2026-09-27, and on phones the captions printed on the
+  same line as the win's multiplier. Its LABELS go outright (`.choice-label`,
+  choices-board.css): text beside the win figure, legible even at 0.16. The
+  table, rail, chips and cups stay lit.
+  A card's chip and the running total land after the card has turned (0.9 of
+  `--flip-dur`, like the bust cross), never during the flip.
+- **The win ramp IS the volatility ramp** — `--vol-sc` / `--vol-base` / `--vol-hs`
+  / `--vol-overflow`, referenced from the same triplets as the bolt meter. Max
+  alone is off the scale and keeps its cream-on-crimson inversion. The hand hops
+  through `element.animate()` with `composite: 'add'`; both halves matter.
+- **"A full game win" is `isCleanSweep(bustedIndex, forgivenIndex)`, never
+  "did not bust", and SIX decisions ask it.** A clean sweep is floored onto the
+  takeover ladder however little it pays; the same question also gates the
+  autoplay **Stop on full game win**, the `playFullWin()` sting, the
+  running-win bar's **"Full game win"** label, and (since 2026-09-23) the
+  **last-card hold's floor** - a card that would complete a clean sweep is held
+  at least the entry tier's length, and (since 2026-10-05) the **history
+  panel's** record of the round. Only the takeover was converted
+  when `isCleanSweep` landed, so a forgiven Second Chance round — three of four
+  right, no bust marker — stopped autoplay runs and called itself a full game
+  win for months. `modes.test.ts` greps all six sites and fails if
+  `bustedIndex === null` reappears anywhere in the game's own sources. The six
+  live in four files — the running-win label in `GameBoard.svelte`, the
+  takeover floor, the win sting and the history entry in `roundSettle.svelte.ts`, the autoplay stop
+  in `autoplayLoop.svelte.ts`, the hold in `roundReveal.svelte.ts` — which is
+  why the grep reads a MANIFEST rather than a path. All three names have already changed once under a split, and the
+  manifest is what kept the grep finding them. See `game/sources.testlib.ts`.
+
+### Bet modes, ceilings and volatility — `references/modes-and-volatility.md`
+
+- **`FAMILY_RULES[f].maxWin` and `MODE_CEILINGS[mode]` are different numbers and
+  both are needed.** Only 8 of each family's 64 modes reach the family figure, so
+  the headline alone overstates a typical bet about fivefold. **Ceilings come
+  from the build, never from enumeration** — the published tables are sampled,
+  and 24 of 48 groups disagree with theory. The win-tier ladder is deliberately
+  **not** wired to them.
 - **A `?lang=` value is resolved against the shipped locales BEFORE it is
-  activated.** An unknown-but-well-formed tag is harmless — `t()` falls back to
-  English and then to the key, which IS the English text. A **malformed** one is
-  not: `LoadI18n` activates whatever it is handed, Lingui passes that to
-  `Intl.NumberFormat` on every `i18n.number()`, and Intl throws a RangeError
-  rather than degrading. `numberToCurrencyString` draws the balance, the last
-  win, the bet display, the running win, the takeover amount and every bet chip,
-  so `?lang=en_US` emptied the whole board. `?lang=xx` is fine; `?lang=en_US`,
-  `?lang=zz!!` and `?lang=en;a` all throw. Stake's PreChecks name it directly.
-  - `utils-shared/language.ts` holds the resolver, beside `currency.ts` and for
-    the same reason: a node test can reach it without dragging state-shared and
-    SvelteKit's `$app/*` virtuals in behind it. `stateUrl.svelte.ts` imports it
-    by **relative path**, because utils-shared already depends on state-shared
-    and importing back by package name would put a cycle in the manifests.
-  - It also aliases **`po` → `pl`**. `po` is Stake's own code for Polish in its
-    supported-languages list; every catalogue in this repo is named `pl`, so
-    without the alias a Polish session silently got English number formatting.
-  - `numberToCurrencyString` keeps a `try`/`catch` around the format call
-    regardless. A formatter that throws must never be able to empty the board.
-- **Anything restoring a mode from a slug must apply `parsed.family`, not just
-  the four guesses.** `parseModeName` returns five fields; the replay and resume
-  effects in `Game.svelte` consumed four and dropped the family, which left a
-  High Stakes round on Classic's ladder — measuring a 1400× win against
-  Classic's 1354.2 ceiling and announcing MAX WIN over a round nowhere near High
-  Stakes' real 1910.2 max. The family also drives the MODE button, the bolts,
-  the rules popup and the printed retention rule. `modes.test.ts` greps both
-  call sites, because the failure is silent and has now happened twice.
-- The volatility rating (`game/volatility.ts`) is a **ranking of published
-  figures, not a marketing claim**. `volatility.test.ts` re-derives it from
-  `math-sdk/.../library/stats_summary.json` and fails if the bolts disagree.
-  Both rules it encodes hold in their *strict* form, not on average:
-  - `sc < base < hs` for every one of the 64 guess combinations individually.
-  - Grouping a family's 64 modes by Equal-pick count gives three bands with
-    **no overlap at all** — the calmest 1-Equal mode is wilder than the wildest
-    0-Equal mode, in every family. That is what licenses "one bolt per Equal".
-- **One ruler.** Every meter draws `VOLATILITY_BOLTS` (7) stops. The mode picker
-  lights the family's own rating (1/3/5); the bet display adds one per Equal
-  pick. A second meter counting to a different maximum would be bug class 1.
-- **The bar is coloured by the rating, not by the accent** — and by *two*
-  ratings, which are different numbers and must not be collapsed:
-  - `--mode-ink` / `--mode-rgb` — the **live** rating (family + one stop per
-    Equal pick), worn by the mode name, the `+/−` steppers and the bet button:
-    green / yellow / red, and `--vol-overflow-ink` purple once the guesses pass
-    `FAMILY_BOLT_CEILING`. In practice that is **High Stakes with one or two
-    Equals and nothing else**, because the families sit at 1/3/5 against a
-    ceiling of 5; `volatility.test.ts` asserts `hs` is the only family any guess
-    combination can push over.
-  - `--vol-color` / `--vol-rgb` — the **family's own** rating, worn by the MODE
-    button and the mode picker. Never purple: the Equal picks that overflow a
-    ceiling are a property of the bet, not of the mode being chosen.
+  activated.** A malformed tag makes `Intl` throw and empties the whole board.
+  `utils-shared/language.ts` holds the resolver; it also aliases **`po` → `pl`**.
+- **Anything restoring a mode from a slug must apply `parsed.family`**, not just
+  the four guesses. `modes.test.ts` greps both call sites; this has failed twice.
+- The volatility rating is a **ranking of published figures, not a marketing
+  claim**, re-derived from `stats_summary.json` by `volatility.test.ts` — and it
+  reads **two columns**. The four-guess families rank by std (1 / 3 / 4 / 5 -
+  Second Chance, Classic, Last Stop, High Stakes - per combination); Three of a Kind is drawn **full and purple** by its zero-rate
+  (1 in 19 pays anything, against 1 in 2 everywhere else), because by std alone
+  it is calmer than most Classic modes and the comment beside the rating says
+  so. The test pins both columns.
+- **One ruler.** Every meter draws `VOLATILITY_BOLTS` (7) stops.
+- **Purple is a family's colour, not an overflow.** `--vol-tr` is the purple -
+  a dusty amethyst (178, 124, 200) since 2026-09-26, where the saturated
+  #b06ae8 read as a generated palette's violet; the dead `--vol-overflow` hex
+  went with it;
+  High Stakes with two Equals draws **seven red bolts**. `FAMILY_BOLT_CEILING`
+  and `BoltMeter`'s `overflowAfter` are gone. `--vol-overflow*` survives only
+  as the win takeover's Epic tier, which is the same reading (past the top of
+  the family bands). The bar's `--mode-ink`/`--mode-rgb` and `--vol-color`/
+  `--vol-rgb` are the family's own colour and now always agree.
+- **The one-rung ladder, and the rung is Max.** `winTiersFor` returns a single
+  `max` tier sitting on Three of a Kind's ceiling: its only win IS the most the
+  mode pays, so it is called that, at 1 in 19 — the label says what the win is,
+  not how rare it is; rarity semantics are the ladder families'. The takeover
+  fans the cards the round dealt (`fanFor(stageCount)`), three there.
+- **A family with `fixedChoices` has no guesses, and its slug length is its
+  stage count.** `modeChoices()` is the only way a slug is built from the board;
+  `guesses` is neither read nor cleared on such a family, so a player's picks
+  survive the round trip; `restoreGuesses` skips them on the way back in;
+  `parseModeName` validates a slug against what the family publishes (length
+  included), so `any` exists only where a fixed combination puts it. The board
+  renders `stageCount()` slots and, on a fixed family, two read-only Equal
+  badges instead of the guess columns; `roundState` stays four wide.
+- **A switch that changes the card count turns the cards back over.** The
+  picker's Switch compares `stageCount()` before and after and calls
+  `clearBoard()` — three of a settled four-card round's faces under trips'
+  chips, or a fourth face-down slot beside three turned cards, both read as a
+  round that never happened. Between the four-guess families the board is
+  left alone. Last Win is the session's and is never cleared.
 
-  All four are published on the `<footer class="control-bar">`, not on a panel
-  inside it. They have to reach three groups sitting in different panels — the
-  bet display, its sibling steppers, and the MODE button over in the light pill
-  — so the bar is the nearest element that can carry them.
-- **Every menu wears the colour of the control that opened it.** Turbo's panel
-  is amber, autoplay's green, Advanced's purple, How to Play's the accent blue
-  its icon lights, and the bet and mode panels take the volatility colour their
-  two controls burn. One contract — `--tint` / `--tint-rgb` / `--tint-strong` /
-  `--tint-ink`, defaulted to accent blue on `.popup` in `popup-base.css` and
-  overridden per panel in `popups.css`; nothing inside a panel names a colour.
-  This is the same wayfinding argument as `--ctl-*` below: a menu that
-  highlights in blue whichever button you pressed to reach it throws away the
-  one thing the bar spends five hues saying. `--tint-ink` is **dark**
-  (`--on-vol-ink`) on every panel but the blue ones — white on the amber
-  measures 1.8:1.
-  - Each `--ctl-*` colour and its `-rgb` triplet **must be the same colour**.
-    `--ctl-turbo-rgb` was a different amber from `--ctl-turbo` and went unseen
-    while the triplet only ever painted a blur; it is derived from the triplet
-    now.
-- **The bet menu is CHIPS, and the chip palettes are tokens.** The felt is laid
-  with five sampled denominations and the bet picker used to be a 4-across grid
-  of grey rectangles sharing one rule with the autoplay picker
-  (`.bet-grid, .spin-grid` — the stylesheet said out loud that the two menus
-  were one artefact). The values moved from `table.css` to `tokens.css` because
-  they are used twice now; `table.css` keeps the sampling notes, which are a
-  measurement record about that scene.
-  - **A wrapping row, never a grid.** `betLevels()` is whatever the RGS sent.
-    A real one is not the tidy ten of the dev fallback: NOK ships ~40 levels
-    labelled `NOK 12,500.00`, and an earlier build's fixed four columns pushed
-    the fourth off the panel behind a horizontal scrollbar — so the highest
-    bets were unreachable, failing both "the main frame must not be scrollable"
-    and "min and max levels must be selectable". Verified at 40 levels on
-    Desktop, Mobile M and Popout S: no horizontal scroll, no text overflow,
-    every chip inside the panel. At 40 levels the row is ten deep and the
-    **panel** scrolls internally on Desktop, Popout L and Popout S — the main
-    frame never does, and the highest chip is reachable — so "min and max
-    selectable" holds by scrolling the panel, not by everything being in view
-    at once. That is height, which the original check did not measure.
-  - **A symbol rides with the figure; a code takes its own line.** `$1,000` is
-    what a chip in that currency says, so `splitChipLabel` keeps a
-    single-character symbol inline. `NOK 12,500.00` is thirteen characters and
-    has no legible size on a disc, so a multi-character CODE goes above the
-    number instead. Either way an all-zero fraction is dropped, and the disc is
-    what grows to fit — a chip you cannot read the value on is not a chip.
-    Nothing is hidden: the bet display, the entry field and each chip's
-    `aria-label` all keep the full formatted amount.
-  - **Telling a decimal separator from a grouping one is the hard part**, and
-    getting it wrong is not cosmetic: reading the comma in yen's `¥1,000` as a
-    decimal point saw three zeros and rendered a thousand-yen chip as **`1`**.
-    A trailing run of exactly three digits is a thousand, not a fraction.
-    `betChips.test.ts` pins every currency shape.
-  - **Colour by rank, not by amount** — sort, spread over the five chips.
-    A fixed $1-white table would be wrong the moment the currency changes.
-  - **The figure is fitted to the disc, not set at a constant.** The old flat
-    `0.87 × --ui-bar` claimed in its own comment to be "sized for the longest
-    level" and was not: measured in the running game it printed at **9.6 px on
-    desktop and 3.4 px at Popout S** — smaller, at every one of the seven target
-    sizes, than the "Quick Bets" caption above it — while leaving the longest
-    label at 67% of the face and the shortest at 24%. `labelEms()` publishes
-    each label's own width as `--ems` and the CSS solves the size from it, so
-    desktop now runs 13.3–21 px. **Weighted, not a character count**: Poppins
-    ships no `tnum`, so `font-variant-numeric: tabular-nums` is a no-op here and
-    the figures are proportional — `1` measures 0.387 em against `0` at 0.657 —
-    and counting characters would size `$1,111` and `$4,444` alike and overflow
-    one. The constants are the measured widths rounded **up**, so the estimate
-    runs 5–9% heavy and errs toward a smaller figure rather than one that spills
-    into the spot ring. The per-chip variation is the idiom, not a compromise: a
-    real chip sets its denomination to fill its printed centre.
-  - `--fit` is a fraction of the **disc**, and 0.74 is too big however natural it
-    looks — the face is inset 13% so it spans 0.74 of the disc, and the spot
-    ring's mask opens at 0.72 of the radius. A fit of 0.74 therefore runs the
-    figure exactly to the face edge and into the spots. 0.68, and 0.60 when a
-    currency code takes the upper line.
-- **The choice icons carry a keyline, and the fills do not move.** Two failed
-  WCAG 1.4.11 badly (Higher 2.10:1, Inside 2.30:1) and the pair that must read
-  as *opposites* was legible at wildly different levels. The repaint was tried
-  and rejected on the look — `tokens.css` records that as the owner's call — so
-  the fix is the one that note already named: a hard dark
-  `--choice-icon-keyline` under every icon, four zero-blur `drop-shadow`s in
-  `ChoiceIcon.svelte`. Four shadows rather than a stroke because half these
-  icons are stroked paths and half are filled shapes; zero blur because a soft
-  halo cannot be measured. All four now pass at 8.97 / 8.21 / 4.63 / 3.47.
-  - **Not on the equals badge** (`svg:not(.eq-icon)`). That glyph is two short
-    bars totalling 0.585 `--ui`, so a keyline sized for the arrows was a large
-    fraction of the gap between them — it closed up and the pair read as one
-    thick line. It never needed one: it sits on its own gold badge rather than
-    directly on a choice fill, so it has none of the contrast problem.
-- **The bet button deals, it does not reload.** Two circular arrows is the
-  universal refresh mark and it was the resting glyph on the primary action of
-  a game where nothing spins. Its other two states were already right — a
-  fast-forward for skip, a square for stop — so the icon family was three
-  metaphors deep. Two cards, the front one tilted off the deck.
-- **Colour lives in `styles/tokens.css`.** Any colour used in more than one
-  place is named there and referenced by name; 193 literals across 357
-  occurrences is what the absence of that rule produced (four unrelated felt
-  greens, three card reds, three golds, two blues). Two deliberate exemptions:
-  `table.css`, whose colours are sampled measurements with the sampling recorded
-  beside them, and closed one-screen palettes (the win-celebration tiers' cool
-  falloffs; their hot colours are `--vol-*` by reference).
-  - **The replay-info badges left that exemption**, and they are the argument
-    for keeping it narrow. Eleven hand-picked darks — `#1a5c1a` for Higher
-    against the board's `#2ecc71`, a brown for Outside against its magenta, an
-    olive for Equal against its gold — meant the one screen whose whole job is to
-    restate the bet restated it in colours the player had never seen. They are
-    `--choice-*` now, with `--on-choice-ink` for the three light fills. A palette
-    may be closed only when it is genuinely local; these were a second spelling
-    of the game's own data.
-  - The exemption covers the palette, **not the derivation**. `--wc-ray` was a
-    hand-copied `rgba()` of `--wc-hot` four lines below it — the same drift that
-    made `--ctl-turbo-rgb` a different amber from `--ctl-turbo`. Each tier is a
-    triplet now with both the fill and the wash derived from it. Colours that are
-    *not* tier colours have left the file: the amount's warm white and the
-    prompt's warm dim are `--ink-cream` and `--ink-warm-dim`, and the running-win
-    readout's three literals are `--ink-felt`, `--ink-spent` and `--loss-soft`
-    (`cards.css` was never one of the two exempt files).
-  - Colours that need an alpha are declared as **rgb triplets** with the hex
-    derived from them (`--gold`, `--vol-*`, `--ctl-turbo`), so a wash and a fill
-    cannot drift apart. `volatilityColorRgbVar` is the sibling of `volatilityColorVar` and a
-    test pins the two to the same family name.
-- **The accent rule is narrower than "one accent".** One accent (`--accent`,
-  blue) for anything **chosen** — a bet, a mode, a tab. A fixed identity colour
-  per control that **opens** something (`--ctl-turbo` amber, `--ctl-autospin`
-  green, `--ctl-advanced` purple) — and its menu wears that colour too. The live
-  difficulty for the bet group. The MODE button is the exception that proves the
-  rule: it was a fifth identity colour (gold), and it now carries the selected
-  family's **state** instead, with its pill **shape** carrying the identity no
-  other control in the bar has. These
-  are **wayfinding, not drift**: a pass collapsed all five into one gold accent
-  on general colour-theory grounds and it was rejected — five near-identical
-  round icons in a 40 px strip are found by colour, not by re-reading glyphs.
-  Do not collapse them again.
-- **Money is fitted to its box, everywhere.** Three surfaces size type from the
-  string rather than from a constant, because no constant is right for both
-  `$1.00` and `NGN 11,461,200,000.00`: the bet chips and the win takeover's
-  amount solve a font-size from `labelEms()` (`game/typeFit.ts`), and the
-  control bar's three readouts use `use:fitValue`, which measures the real box.
-  - **Estimate vs. measure is a deliberate split.** A chip or the takeover
-    amount holds one run of text, so an em estimate is exact enough and needs no
-    reflow. A control-bar readout can hold a value AND an inline multiplier chip
-    at a different size; summing two estimates at two scales is a ratio nobody
-    would maintain, so that one measures `scrollWidth` against `clientWidth`.
-  - **The reservations became ceilings.** `.cb-balance` and `.cb-lastwin` had
-    `min-width` measured from *dollar* strings (`$99,999,999.00`,
-    `$5,000,000.00`). They now carry `max-width` at the same figure, and that
-    half is load-bearing: without it a flex child simply widens, there is no
-    overflow for the fit to detect, and the bar wraps exactly as before.
-  - **`.cb-val` must be `white-space: nowrap`** for the same reason - a wrapped
-    line has no horizontal overflow to measure, so the fit sees nothing to do
-    while the readout silently doubles in height.
-  - **All THREE readouts need the cap, and `.cb-bet-display` was the one
-    missed.** With the balance and last win capped but the bet display still
-    free to widen, a weak-unit currency pushed the bar 2-14px over its row
-    budget and broke the Advanced button onto a second line at *every* landscape
-    width from 660 to 1100. Invisible in dollars, because the reservation was
-    measured in them. `currencies.test.ts` names all three.
-  - **`.cb-val` needs `max-width: 100%`, and that line is load-bearing.**
-    `.cb-lastwin` is a flex column with `align-items: flex-end`, and a flex
-    child under anything but `stretch` sizes to its own CONTENT - so the value
-    box grew straight past the readout's `max-width`. Two things then failed
-    silently at once: `overflow: hidden` clipped nothing, because the box was
-    never smaller than the text; and `fitToBox` saw `scrollWidth ===
-    clientWidth` and concluded there was nothing to shrink. The last-win figure
-    therefore never fitted and never clipped - it painted across the balance
-    beside it, 17-42px of overlap at every size. `.cb-balance` was fine
-    throughout, because it uses the default `stretch`: one readout worked and
-    its neighbour did not, for a reason nothing in either rule mentioned.
-  - **Re-fit on a MutationObserver, not on the framework calling back.** The
-    action's own `update` was the only trigger at first and the fit simply never
-    re-ran: the readout kept its mount-time size, and a settled figure long
-    enough to overflow painted leftward (it is `text-align: right`) straight
-    across the MODE and info buttons. Watch `characterData` + `childList` -
-    never `attributes`, or the `style.fontSize` the fit writes re-triggers it.
-    `.cb-val` also carries `overflow: hidden` as a hard guard: if the floor is
-    ever hit, clipping inside its own readout beats painting over a control.
-  - **On a phone the light pill is ONE line**: sound, info, MODE, Balance, Last
-    Win. The pill takes a bar row of its own (that wrap is by design and is the
-    only one on a phone); its own contents do not wrap, and
-    `.cb-panel-light` is pinned `flex-wrap: nowrap` to say so.
-    - This reverses an earlier pass that gave the two readouts a **second line
-      inside the pill**. That pass reserved them 16 units each, which is more
-      than three icon buttons leave, and let the existing `flex-wrap` drop them
-      down - buying the widest possible box for the worst currency and paying a
-      whole extra line of bar for it on every phone, in every currency, on
-      every round. A balance sitting under the buttons rather than beside them
-      reads as a layout that wrapped, not one that was drawn. **The owner's
-      call is the single row**; small type in the worst case is the accepted
-      cost, and shrinking a long figure is already what this bar does
-      everywhere else.
-    - **A share of the row, not a reservation.** `flex: 1 1 0` + `min-width: 0`
-      on `.cb-readouts` and on both readouts splits whatever the icons leave.
-      That matters because neither neighbour is a fixed width: the MODE button
-      is a translated word, and `.cb-icon` carries a flat **36px** floor under
-      `pointer: coarse` that does not scale with `--ui-bar`. The box is still
-      **bounded**, which is the property `use:fitValue` depends on - a
-      zero-basis flex item cannot grow past its share, so `scrollWidth` against
-      `clientWidth` stays meaningful. `max-width: none` alone would not be, and
-      `currencies.test.ts` fails if the cap is lifted without the flex bound.
-    - Measured at all seven sizes with the worst case in the supported set
-      (`TZS 2,578,770,000,000.00`) and with the widest `Mode` translations (ru,
-      vi): one pill row on all three phones, **nothing clipped anywhere**, no
-      horizontal scroll, and the four landscape sizes untouched at one bar row.
-      The balance bottoms at 6.02px on Mobile S against a 5.52px floor.
-    - **Popout S still opts out**, and must name `.cb-balance` and
-      `.cb-lastwin` - and now `.cb-readouts.solo .cb-lastwin` as well - setting
-      `max-width` as well as `min-width` each time. Left unrestated, the 620px
-      block's reset reaches into a window that has the room for the measured
-      widths and does not need the phone treatment.
-  - **Replay hides the balance, and that is a different layout.** `.cb-readouts`
-    is `space-between`, and one child under that sits at the START - so Last Win
-    ended up mid-pill with the balance's width doing nothing. `.solo` pushes it
-    right and hands it the freed width (26 units against 17).
-    - That 26-unit floor is **cleared on phones**, at `.cb-readouts.solo`'s own
-      specificity or it does not land. Once three 36px icons are paid for, 26
-      units is wider than a phone row has left: at Mobile S it pushed the pill
-      4.7px past the bar's padding on each side - the "hangs off both edges"
-      failure - through the one selector specific enough to outrank the reset.
-  - The floor is **relative** (0.55 of the breakpoint's own size), never an
-    absolute pixel count. An absolute 9px was tried and sat *above* the unfitted
-    5.9px size at Popout S, so the viewport that most needed the fit was the one
-    it refused to touch.
-  - **Shrinking, not abbreviating.** `NGN 11.46B` would fit easily; Stake's
-    checklist asks for final win amounts to be clearly shown, and an exact
-    figure in small type is a figure where a rounded one is not.
-- **High-denomination currencies are the stress case, and they are not exotic.**
-  The RGS supports units worth a thousandth of a dollar, and an operator sets
-  `maxBet` in those units. High Stakes' 1910.2x cap on a 2,000,000 NGN maximum
-  settles at `NGN 3,820,400,000.00`. The worst three across the supported set are
-  **TZS, UGX and XOF**, tied at 24 characters - `TZS 2,578,770,000,000.00`, and
-  XOF with a five-character `F CFA ` prefix. NGN is fourth; VND and IDR have
-  weaker units still but no minor unit, which saves them three characters.
-  (An earlier note here named COP as the worst. **COP is not a Stake currency** -
-  that figure came from a scratch list written before `currencies.ts` existed,
-  which also wrongly carried GBP, AUD, CHF, SEK and THB. `currencies.test.ts`
-  derives the worst three from the real list now, so the claim cannot drift
-  again.) Before this pass that figure ran off both
-  edges of a 375px viewport on the win screen, spilled the balance readout on
-  every phone, and broke the Advanced button onto a second bar row at Laptop and
-  Popout L. `game/currencies.ts` holds the full list and `currencies.test.ts`
-  walks it - **31 of 46 render as a bare code** in an English locale, so the
-  chip's two-line "CODE over number" layout is the common path, not the
+### Colour, menus and chips — `references/colour-and-menus.md`
+
+- **Every menu wears the colour of the control that opened it** — one contract,
+  `--tint` / `--tint-rgb` / `--tint-strong` / `--tint-ink`; nothing inside a panel
+  names a colour. `--tint-ink` is **dark** on every panel but the blue ones.
+  Each `--ctl-*` and its `-rgb` triplet must be the same colour.
+- **The bet menu is CHIPS, and the chip palettes are tokens.** A wrapping row,
+  never a grid. A symbol rides with the figure; a CODE takes its own line.
+  Telling a decimal separator from a grouping one is the hard part. Colour by
+  rank, not amount - and where a colour is shared (more levels than five
+  colours), its second chip wears the alternate edge inlay (`chipInlayAlt`), so
+  no two neighbours are the same chip printed twice. The figure is fitted to the disc via `labelEms()`; `--fit` is
+  0.68 of the disc, 0.60 with a code.
+- **The choice icons carry a keyline, and the fills do not move** — four zero-blur
+  `drop-shadow`s, **not** on the equals badge (`svg:not(.eq-icon)`).
+- **The bet button deals, it does not reload.**
+- **Colour lives in `styles/tokens.css`.** Two exemptions only: `table.css`
+  (sampled measurements) and closed one-screen palettes. The exemption covers the
+  palette, **not** the derivation — anything needing an alpha is an rgb triplet
+  with the hex derived from it.
+- **The accent rule is narrower than "one accent"**: one accent for anything
+  *chosen*; a fixed identity colour per control that *opens* something. These are
+  wayfinding, not drift — a pass collapsed all five and was rejected.
+- **One ink ramp, warm.** `--ink-strong` / `--ink-body` / `--ink-dim`;
+  `--ink-warm*` are aliases of the same three. The cool blue-grey ramp survived
+  the panels being warmed and printed icy type on every popup for a month —
+  the second Hallmark pass re-pointed it at parity of contrast (table in
+  `tokens.css`). Nothing cool goes on a warm panel.
+- **One panel material, as tokens.** `--panel-face` / `--panel-elevation` /
+  `--panel-elevation-low` over `--panel`. Every panel — popups, the bar's pills
+  and discs, the RG plate, the error dialog, the replay panel — reads those
+  three; no sheet spells its own shadow. A single blurred blob is "a sticker,
+  not an object" (`table.css`), and a uniform hairline all round is a box that
+  was drawn rather than lit. **Lit, not haloed:** no coloured bloom around a
+  coloured control, anywhere.
+- **Controls are lines, gauges are fills.** A pressable glyph is stroked in
+  `MarkIcon`'s voice (round caps, ~2.2 on a 24 grid); a glyph that is read
+  (the bolt meter) is filled. The turbo bolt and the meter share a silhouette
+  and differ by exactly this. The spin button's shapes are the stated
   exception.
+- **A panel opened from the keyboard shows its own ring, not the browser's** —
+  `.popup:focus-visible { outline: none }` plus the header's rule thickening in
+  `--tint`. Chrome's default double ring around a whole dialog was live on all
+  seven panels until a screenshot was pixel-sampled.
+- **The system is written down in `web-sdk/apps/Ride-The-Bus/design.md`**
+  (genre, material, ink, type, icons, CTA voice, motion, focus, what every panel
+  shares). It carries no values — `tokens.css` does — so it cannot drift. Read
+  it before any visual change; Hallmark reads it first.
+
+### Money and the control bar — `references/currency-and-control-bar.md`
+
+- **Money is fitted to its box, everywhere** — chips and the takeover amount
+  estimate via `labelEms()`; the bar's three readouts measure with `use:fitValue`.
+  **All three** need `max-width` (`.cb-bet-display` was the one missed), `.cb-val`
+  needs `nowrap` and `max-width: 100%`, and the re-fit runs on a
+  **MutationObserver** watching `characterData` + `childList`, never `attributes`.
+  The floor is relative, never an absolute pixel count.
+- **On a phone the light pill is ONE line** and takes a bar row of its own; a
+  share of the row (`flex: 1 1 0`), not a reservation. Popout S opts out and must
+  restate `.cb-balance`, `.cb-lastwin` and `.cb-readouts.solo`.
+- **Replay hides the balance, and that is a different layout** — `.solo` pushes
+  Last Win right; its 26-unit floor is cleared on phones. Under a replay's
+  takeover the pill KEEPS its width with Last Win faded out in place; it used
+  to collapse, which re-flowed the whole bar under the veil.
+- **A payout multiplier prints through `formatMultiplier`** (`game/ui/`): one
+  decimal, grouped like money. Payouts floor to 0.1, so ".20" was a false
+  place, and it was three formats for one number. How to Play's per-guess
+  PRICE keeps two decimals (not floored). `multiplier.test.ts` greps every
+  component for a hand-built `×`.
+- **High-denomination currencies are the stress case.** Worst three are TZS, UGX
+  and XOF at 24 characters. 31 of 46 render as a bare code, so the two-line chip
+  is the common path. COP is **not** a Stake currency.
 - **The bet is locked while autoplay runs, and the control says so rather than
-  going grey.** Autoplay stakes the same amount every round - that is the
-  contract the player confirmed - so the chips, the entry field and the steppers
-  cannot move it. The display button is **not disabled and not dimmed**: a
-  greyed primary control reads as "this is broken", where a live one that
-  answers back reads as "not right now, and here is why". The click is refused
-  and flashes `.cb-bet-tip`; hover shows it on a pointer device, and the flash
-  is the only route a phone has to it. Replay still disables the button
-  outright, where Stake's guidance asks for inert bet controls.
-  - `setBetLevel` and `formatBetInput` both check `betLockedReason()` too. The
-    menu is unreachable while locked, but a run can *start* with it already open
-    (the spacebar hold does not go through the popup at all), and those two
-    lines are what actually make the bet safe.
-- **Local dev now supplies bet limits** (`minBet`/`maxBet`/`stepBet`) in
-  `Game.svelte`'s dev bootstrap, beside the dev balance. Without them
-  `stateConfig.betLimits` is `{0,0,0}`, which every helper in `betLimits.ts`
-  correctly reads as *unconstrained* - so the clamp, the step snapping and the
-  spin button's range check were all no-ops locally and none of them could be
-  seen to work until the game was on a real session.
-- **A typed bet clamps DOWN to the maximum and never UP to the minimum.** The
-  asymmetry has been argued both ways and this is the settled form. Clamping
-  down stakes a player less than they asked and makes the maximum selectable,
-  which Stake's checklist requires. Clamping up stakes them **more** than the
-  figure they typed - the one thing the frontend must not do to a player's own
-  number - so a below-minimum bet stands exactly as typed and the spin button
-  explains it instead.
-  - **The step snap has to be guarded for the same reason.** `snapToStep` floors
-    onto the grid, so anything under one step floors to *zero*: with a 1,000
-    step, typing 500 came back as `0.00` and the button said "Enter a valid bet"
-    - true of zero, and silent about the 500 the player typed. If the snap
-    produces nothing, keep what they typed; it is unplayable either way, and a
-    figure snapped out of existence cannot be described.
-- **One reason per failure, not one boolean.** `betBlockedReason()` replaces a
-  `betIsValid()` that printed "Enter a valid bet" for a zero bet, a bet the
-  player cannot afford and a bet under the operator's floor alike - and only the
-  first of the three is something a player can act on by reading it. Now
-  "Insufficient funds", "Bet is below the minimum of %s" and "Bet is above the
-  maximum of %s", with the figure named. Affordability is checked BEFORE the
-  range: someone who cannot afford the round needs to hear that first, even if
-  the amount also sits under the minimum.
-- **A round in flight locks the bet and the mode, not just the guesses.**
-  `choicesLocked()` had covered the guess squares since the engine-flow window
-  was found, but the MODE button and the whole bet group were on
-  `autoRunning || replay` only - so the family and the amount could both still
-  be changed while a round was on the wire. Same failure class as the guesses,
-  for the same reason: you end up looking at a board that no longer describes
-  the round being settled. `roundInProgress()` is the shared predicate now, and
-  an `$effect` closes the bet or mode panel if one is open when a round starts -
-  a panel already up would otherwise stay there showing controls that silently
-  refuse, which reads worse than a greyed button.
-- **The card slot is pinned to the card's width**, not to the multiplier chip
-  above it. Without that the slot is as wide as its widest child, and the chip
-  becomes that child once the figure gets long: on a High Stakes maximum the
-  four slots measured 97 / 97 / 99 / 100px, so the cards sat at four different
-  pitches and shifted as each chip appeared.
-- **A `<button>` does not inherit `font-family`.** The UA stylesheet sets its
-  own `font: 400 13.333px Arial` on `button`, `input`, `select` and `textarea`,
-  and that beats inheritance — so `html body { font-family }` in `app.css`
-  reached every element in the game *except the ones the player clicks*. This
-  game self-hosts Poppins and then printed its most-read numbers in the system
-  sans, for the whole life of the code. Measured in the running page before the
-  fix: the control bar's bet display and mode name (`.cb-val`, `.cb-cap`,
-  `.cb-mode-word`, `.cb-bet-mode` — on screen at all times), all three
-  mode-picker rows, How to Play's tabs, the autoplay pills, the panel action
-  button and every bet chip's value. `start-screen.css:408` had already worked
-  this out for one button and said so; it was never generalised. It is a global
-  reset in `app.css` now, **family only** — the UA shorthand also sets size and
-  weight, and every control here declares its own.
-  - Invisible in the source and invisible in a stylesheet: it only shows in the
-    *computed* style of a running page, which is how it survived a full art
-    pass. `betChips.test.ts` pins the reset, and the way to check it is to walk
-    the live DOM for anything not drawing in Poppins — not to read CSS.
-  - Stake names "standard fonts" as a top cause of a 1-star rating.
-- **The logo is WebP, with the PNG as a real fallback, and the choice is made
-  in JS rather than in CSS.** `logo.webp` is 81 KB against the PNG's 743 KB and
-  is indistinguishable at the 310 CSS px the loader draws it at — the largest
-  size anywhere in the game. The obvious CSS spelling does not work here twice
-  over: the six call sites pass the URL through a custom property, and a `var()`
-  resolving to something unusable is invalid *at computed-value time*, which
-  resets the property to `none` instead of falling back to the declaration above
-  it — the logo would simply vanish. Wrapping it in `@supports` fixes that and
-  tests the wrong thing: **Safari 14–16 read WebP and do not support
-  `image-set()` with `type()`**, so three major versions would be handed the
-  743 KB file for nothing. `game/logoAsset.svelte.ts` probes a 34-byte WebP data
-  URI instead, defaults to the WebP so the saving is real, and only ever moves
-  downwards. **Not** a `canvas.toDataURL('image/webp')` probe, which is the usual
-  one-liner and is wrong for exactly the browsers it exists to protect: Safari
-  could decode WebP from 14 but could not encode it until 17.
-- **Glyphs are drawn when, and only when, the font does not own them.** Poppins
-  is self-hosted latin-only, and `✕` U+2715, `✓` U+2713, `→` U+2192 and the four
-  suits fall outside every declared `unicode-range` — they dropped to the system
-  font, which on Android and iOS means a colour emoji. `SuitIcon.svelte` and
-  `MarkIcon.svelte` draw those. The card **ranks are ASCII, inside U+0000–00FF,
-  and deliberately NOT drawn**: there is no fallback to fix, and hand-cutting
-  thirteen glyph outlines would trade a real typeface for a worse one.
+  going grey.** `setBetLevel` and `formatBetInput` check `betLockedReason()` too.
+- **MODE is the bar's outer-edge control, mirroring Turbo** (owner's call,
+  2026-09-26). The sliders button and its two-switch "Advanced" panel are gone;
+  both switches live in the autoplay panel. **MODE is a destination sign**
+  (2026-10-06, the owner's "too basic"): the live family's NAME lettered in its
+  colour on a recessed dark sign, the seven bolts (`liveBolts`) under it, no
+  coloured outline; it keeps its `.cb-icon` "toggle" press cue, and its
+  locked-state tip is hosted on `.cb-mode-slot` and anchored to the slot's inner
+  edge (it sits at the screen edge). FIXED width, paid for by the bet display,
+  which carries money only now: 8.42 / 11.6 units on the one-row bar (6.2 / 13.82
+  before), 7.4 on phones at a 36px-or-5-unit height; the name fits into it
+  (`fitBlock`, two lines then smaller), never the sign to the name; Popout S drops
+  the bolts. A family change ROLLS the name ({#key} + a transition, a crossfade
+  under reduced motion). Out of the light pill, so Balance and Last Win got its
+  width. **Row two of the phone bar is budgeted for every pointer** (tighter
+  gaps and side margin, the bet figure's trimmed reservation, a narrower MODE,
+  all in the 620px block and all restored for Popout S): with only the touch
+  trim, a narrow mouse window and Russian at 401-408px put MODE on a third row.
+  Swept every 4px from 320 to 620 in all 17 languages; `autoplayLimits.test.ts`
+  pins the rules.
+- **Autoplay only ever STOPS; it never changes the stake.** Its stops: a full
+  game win, a loss limit, a single-win limit. The two limits are **typed**, each
+  with a unit switch inside its field - **x, times the BASE bet** (the unit of
+  every other "your bet" in the game, the multiplier the takeover prints, and
+  what the Stake SDK multiplies), or **the player's currency**, by its real
+  symbol (never a hardcoded $: social mode's SC/GC print their codes) - and an
+  arm button to the field's right that stays pressed while armed. A field that
+  does not parse is no limit, never zero (`autoplayLimits.ts`; decimal commas and
+  lakh grouping accepted). Counting x in the round's COST was tried first and
+  was the two-units bug on Three of a Kind. The two switches sit one above the
+  other, directly above the panel's action. The panel stays openable DURING a run (count
+  locked, Stop offered), because the stops live there. The DEV-only martingale that used to sit behind
+  `ADVANCED_ENABLED` was deleted, and `autoplayLimits.test.ts` fails if bet
+  progression comes back.
+- **The table die fills the four picks; only the deal buys them** (owner's
+  call, 2026-10-01, chosen over a published random-picks mode).
+  `game/bet/dicePicks.ts` draws one of the 64 published combinations evenly,
+  never the one already on the board (so never Equal-then-Inside), and
+  `setAllGuesses` assigns it on the CLICK - the setters toggle, and a deal
+  pressed mid-tumble buys what the squares show. `TableDie.svelte` lives
+  inside `.choice-row`, so the row's lock and the takeover's dimming are its
+  own, and `choicesLocked()` refuses a keyboard roll; no die on Three of a
+  Kind. Physical `left`, never logical: the props do not mirror in Arabic,
+  and a mirrored die lands on the bottom-left chips. Drawn by `DieFace`
+  through `game/ui/dieGeometry.ts`, on table.css's `--flat` / `--upright`.
+  It sounds its own roll (`playDiceRoll`, knocks on `DIE_LANDINGS`) and
+  `pressCues`' `OWN_CUE` keeps the press cue off it. `dicePicks.test.ts`.
+- **Space always deals** (owner's call, 2026-10-02). `spaceIsForUs` yields it
+  only to a field being typed in; a focused guess square, the die or a bar
+  button no longer takes it as its own activation key (a mouse click focuses
+  a button, so "pick, then Space" toggled the pick off), and onKeyUp takes the
+  keyup of a press it handled, which is when a button would fire. An open
+  panel (`chromeInert`), the intro and the takeover still keep Space.
+  `launchGuards.test.ts` / `dicePicks.test.ts`.
+- **The ticket stack is on Last Stop's table only** (`TableScene`'s
+  `showTickets`, owner's call 2026-10-02): elsewhere it offered a multiplier
+  that could not be won. The cup it replaced stays gone.
+- **Keys 1-4 step the four guesses** (`game/bet/guessKeys.ts`), through the
+  board's own setters, gated beside the spacebar in `ControlBar.svelte` - never
+  under the intro, a panel or the takeover, never onto Inside after an Equal,
+  never clearing a pick. Not gated on `disabledSpacebar`: a digit buys nothing.
+- **The +/- buttons ARE grey at the ends of the ladder.** `nextBetLevel()` is
+  what a press lands on and what `canStepBet()` disables on, so the two cannot
+  disagree; a + with no level above it used to look pressable and do nothing.
+- **A typed bet clamps DOWN to the maximum and never UP to the minimum**, and the
+  step snap is guarded — anything under one step would floor to zero.
+- **One reason per failure, not one boolean** (`betBlockedReason()`), with
+  affordability checked BEFORE the range.
+- **A round in flight locks the bet and the mode, not just the guesses** —
+  `roundInProgress()`, plus an `$effect` that closes an open bet/mode panel.
+- **The card slot is pinned to the card's width**, not to the multiplier chip.
+- Local dev supplies `minBet`/`maxBet`/`stepBet`; without them every helper in
+  `betLimits.ts` correctly reads `{0,0,0}` as *unconstrained*.
 
-- **The audio is synthesised, and there are no audio assets.** `audioGraph.ts`
-  owns one `AudioContext`, one bus chain with a limiter on the end, and a
-  generated impulse response for the room; `sound.ts` is the cue book;
-  `music.ts` is the bed. **One context, deliberately** — music and cues share
-  the bus, because a second context is a second limiter that cannot see the
-  first, so a fanfare and a bed would each stay clean on their own meter and
-  clip against each other on the speakers. Browsers also cap contexts per page.
-  Nothing is downloaded: `bundleStrategy: "inline"` would base64 any Vite-processed
-  asset straight into `index.html`, which makes shipped audio disproportionately
-  expensive. If produced audio is ever commissioned it goes in `static/` behind
-  `${base}/…`, and only the bodies of `sound.ts`'s `play*` functions change —
-  `Game.svelte` touches nothing but that module's public API.
-  - **Muting returns before anything is scheduled**, rather than turning a gain
-    to zero, so a muted game builds no nodes at all. `sound.test.ts` pins that,
-    because it is a CPU claim as much as an audio one.
-  - **Two buses with `volume` and `muted` kept separate**, never collapsed into
-    "volume 0 means muted". That is what lets the speaker button and the slider
-    agree: the button toggles `muted` and leaves `volume` where it was, and
-    `setBusMuted` restores `lastAudible` when un-muting a bus parked at zero —
-    without which a slider dragged to 0 becomes a dead end with no way back up.
-  - **The bed has no foreground, and that took three attempts to accept.** A
-    sparkle and then a plucked arpeggio were both built and both removed:
-    anything with an attack and a pitch stops being background the moment the
-    player notices it once. Movement comes from re-voiced pad chords and from
-    room noise (chips settling, cards on felt) — never from another melodic
-    layer. Every cue is jittered per trigger, and every noise burst is a fresh
-    buffer, so four card flips in a round are not one sample four times.
+### Type, glyphs and assets — `references/typography-and-assets.md`
+
+- **A `<button>` does not inherit `font-family`.** A global reset in `app.css`,
+  **family only**. Invisible in source; check the computed style of a live page.
+- **The logo is WebP with the PNG as a real fallback, chosen in JS not CSS** —
+  `image-set()` with `type()` fails on Safari 14–16, and a `canvas.toDataURL`
+  probe is wrong for exactly those browsers.
+- **Glyphs are drawn when, and only when, the font does not own them.** Card
+  ranks are ASCII and deliberately NOT drawn; every suit mark is ONE drawing,
+  `game/ui/suitPaths.ts`, which `SuitIcon` and the card pips both read.
+- **Every dealt card wears one face: `components/cards/CardFace.svelte`** - the
+  board's four and the takeover's fan (the intro's and How to Play's minis are
+  glyph tokens, not faces). A casino deck's layout in a 200 x 298 SVG
+  (`game/ui/cardFaceLayout.ts`): 2-10 in pips on the standard grid with the
+  lower half inverted, the Ace of Spades as the house card, the English-pattern
+  courts. **One colour family per card** - red/maroon/rose or ink/slate/stone,
+  plus gold and paper - because card 1's guess is Red or Black; `cardFace.test.ts`
+  fails if a card mixes them or the sprite paints a literal colour. **Below 46px
+  on screen a number card goes compact** (one pip, larger index), measured by
+  `bind:clientWidth`, not a container query (iOS 16+). **In Arabic the face
+  mirrors and its text is turned back** (`rtl.test.ts`).
+- **The court figures are `static/cards/courts.svg`, generated, never
+  hand-edited.** `node scripts/court-art.mjs` rebuilds it from the CC0 masters in
+  `art-masters/courts/` (Dmitry Fomin, Wikimedia Commons; provenance, SHA-1s and
+  the rejected GPL/LGPL sources in its README) and fails if a rebuilt court
+  strays from its master. Fetched at start like the music bed, never imported
+  (`courtArt.svelte.ts`); until it lands a court draws its frame and pips round a
+  large rank letter.
+- **The lobby tile is photographed from the game, never painted.**
+  `node scripts/tile-art.mjs` (game + replay RGS running) writes
+  `submission/RideTheBus-FG.png` from `?dev_tile=fg` (`components/dev/DevTile.svelte`:
+  the real J Q K and house A, the deck's back, two chips, on a transparent
+  ground) and `-BG.jpg` from the live table with the board hidden, and refuses a
+  pair over Stake's 3 MB. The cups are left off unless `--cups`. The generated
+  pair it replaced (a mangled Jack, a droplet spade, a backyard party) is in git
+  history.
+- **The body face is Overpass (variable, one file per subset; Geist until
+  2026-10-05, the owner's pick from a compare sheet), and its metrics are
+  measured, never guessed.** It ships `tnum`, so every `tabular-nums` in
+  the app is live (they were inert for the whole life of Poppins).
+  `typeFit.ts`'s width table, `displayFace.ts`'s `unicode-range` transcription
+  and the currency ranking test are all measured off the shipped woff2 files
+  with fontTools; changing the face means re-measuring all three, and the
+  tests fail if the `@font-face` ranges and the transcription drift apart.
+  Known costs — no won or dong glyph; the 2025-default look — are in
+  `design.md`.
+
+### Audio and jurisdiction — `references/audio-and-jurisdiction.md`
+
+- **Every cue is synthesised; the music bed is one produced file.** One
+  `AudioContext`, one bus chain with a limiter, one generated room. Muting
+  returns before anything is scheduled. `volume` and `muted` stay separate
+  fields.
+- **The bed is fetched from `static/`, never imported, and its URL is injected.**
+  `bundleStrategy: "inline"` would base64 an imported asset into `index.html`;
+  `${base}` needs `$app/paths`, which no node test can import. So `bedAsset.ts`
+  owns the URL and `Game.svelte` hands it to `music.setBed`. The loader
+  downloads nothing for a muted player and falls back to no music on any
+  failure.
+- **The manifest is a manifest, and it holds ONE row.** `musicTracks.ts` maps ids
+  onto the files in `static/music/`; `ACTIVE_TRACK_ID` is the one line that
+  switches tracks and `?dev_music=<id>` auditions one without a restart. `trim`
+  level-matches them so switching does not change how loud the game is. **Every
+  file in `static/music/` ships** — `static/` is copied wholesale — and every one
+  needs a row in `ASSET_LICENCES.md`; `musicTracks.test.ts` enforces both.
+  **The track there is PAID-TIER Suno output, generated 2026-09-02 on v5.5 and
+  cleared to ship** — so MP3s are tracked normally now and `git add -f` is no
+  longer needed. Only `*.wav` stays ignored, because masters belong in the
+  repo-root `audio-masters/`, outside the app. A clone still runs on its cues
+  alone if the audio is absent, which the loader handles by design.
+  **The ten-candidate audition state is over.** `jazz-lounge-a1` (`A.mp3`) was
+  chosen by ear on 2026-09-06; the other nine are **benched in `audio-masters/`**
+  as MP3s beside their WAV masters — equally licensed, out of the build — and the
+  directory ceiling in `musicTracks.test.ts` is back to **9 MB** from 56 MB.
+  Their measured loop regions live in the `rtb-invariants` audio reference and
+  their provenance rows in a "Benched" table in `ASSET_LICENCES.md`, so
+  re-auditioning one is a file copy plus one manifest entry. **Copy it back OUT
+  of `static/music/` before staging.**
+- **The loop is overlapping passes, not `src.loop = true`.** A produced track
+  ends on a fade to silence, so a hard wrap plays that decay into a cold entry
+  forever. Each pass is its own source started `span − crossfade` after the last;
+  the seams are **equal-power** curves (two uncorrelated bars sum as powers, so a
+  linear pair dips 3 dB) while the arrival fade stays linear. `loopStart`/
+  `loopEnd` trim the outro off. `?dev_loop=<start>,<end>,<crossfade>` shortens the
+  region, because the shipping loop wraps every 154s and a capture that long is
+  not a practical way to look at a seam.
+- **The bed plays on the loading and start screens**, which needs `primeAudio`:
+  the cue book was the only thing that ever opened an `AudioContext`, and those
+  two screens have nothing to press, so they set a scene that could never sound.
+  It opens the graph immediately where autoplay is permitted (an
+  `allow="autoplay"` iframe, a trusted returning player) and otherwise on the
+  first gesture anywhere — capture phase, so the music starts on the same tap
+  rather than one interaction later. Permission is **asked**, not assumed:
+  `getAutoplayPolicy`, then `userActivation`, then a throwaway context that is closed
+  either way — measured through CDP with `Log.enable` to confirm a constructed and
+  closed context logs nothing. A cold load in a strict embed is still silent
+  until the first touch; that is a browser rule.
+- **The scene ladder is a DIP, not a climb.** Six scenes, one file, so level
+  and tone are all a scene can change: loudest at `idle`, ducked for `round`
+  (the busiest the cue book gets), further for `hold` (a held last card, under
+  the cue book's rising hum, until the round settles) - where the bed's lowpass
+  also closes to 700 Hz, so the band plays on as if through a wall - and
+  hardest and fastest for `celebration` — the bed and the fanfares share one
+  limiter, so a bed sitting on top of a win would duck the win. The fade time
+  belongs to the **destination**, which makes ducks fast and recoveries slow
+  for free, and the filter rides the same fade. A celebration outranks a round
+  in the derivation, because the round is still in flight underneath the
+  takeover.
+- **The last card is held only on a round with an Equal pick**
+  (`lastCardHolds`, from the choices the book was bet on - never the result).
+  Every clean run to the last card used to be held, about 1 round in 7 on the
+  easy picks, three in four of them missing: the moment wore thin. Now one
+  Equal on Classic / High Stakes holds ~1 in 33 rounds, two ~1 in 835, no Equal
+  never, Second Chance with an Equal ~1 in 11-15 (a forgiven Equal miss still
+  reaches card 4 with a Big stake), Three of a Kind (its two Equals are the
+  mode) 1 in 3.7. The owner's call, 2026-09-25.
+- **The last card's hum is the one HELD voice** (`swell()` in `audioVoices.ts`,
+  `playLastCardHold` in `sound.ts`): it hands back a release, and the reveal
+  calls it as the card turns however the wait ended - on time, slammed or cut
+  by turbo. Its shape is the owner's, after five listens: **up linearly, stay
+  at the top, then a crash** - a crowd's "ohhhh" (detuned sawtooths through
+  "oh" formants, with breath), a lightning strike on the turn - and the card
+  rises, sits and slams on the same clock (`holdClimbMs`), under a tunnel-vision
+  vignette - only when it could land Huge or bigger (`lastCardTunnels`) - that
+  **rises with the card** (one `--hold-rise` for both) and stops at the play
+  area, so the control bar stays lit. **It is tuned and scaled**: the climb
+  tops out two octaves under the chime the card plays if it lands
+  (`stageWinRoot`), and the tier it could land (`lastCardTier`) sizes it - a
+  few voices and a crack for Big, the crowd and a two-band thunder above, the
+  sub hit on Max (`HOLD_SHAPE`), so the strike never outshouts its fanfare.
+  A crowd answering the card after the turn (a cheer, an "awww") was built and
+  taken out the same day, by the owner's call - `sound.test.ts` fails if it
+  comes back. A short haptic buzz rides the strike (only after a tap, never
+  with game sounds off). The release rides a
+  gain stage of its own, never the swell's envelope; `sound.test.ts` fails if
+  the shape, the vowel, the tuning, the scaling or the strike drifts, or the
+  release moves after the flip.
+- **The board never moves under the player.** The card row, the readout and
+  the guess row hold their positions through picks, deals, holds and settles
+  (0.0 px, measured every frame across a session at three sizes). The
+  readout's third line is what used to break it: its empty state is a
+  NON-BREAKING space, written as `'\u00a0'`, plus `min-height: 1lh` - a plain
+  space collapses the line, and a rewrite once did exactly that, so the board
+  jumped at the fourth pick and at every settle. `boardStill.test.ts` pins both.
+- **The deal lands ON the pile, rests, and a slam finishes it** (2026-10-01).
+  Each card - and Last Stop's ticket - is fitted to the prop it goes back to
+  (centre, angle, foreshortened size, measured off the prop: a fixed scale
+  hovered over the deck at some sizes), fades into it, rests `DEAL_REST_MS`
+  out of sight and is dealt back; the reveal holds card 1 back by the same
+  beat. Every piece is measured AT REST - the running transform taken out,
+  the ticket slot's own `rotate` turned back - because a deal measured mid-
+  flight sent cards across the board under fast slams. A slam `finish()`es
+  the deal, and the bus rides on `--flip-dur`, so nothing is left travelling.
+  No idle "Pays up to" line: removed by the owner's call the same day.
+- **Card backs and the deck carry the house name, not the logo** - "TAKEOVER /
+  CASINO" in the body face at 400, 58% white on a plain label of the card's own red with
+  a faint hairline edge (set straight on the back, the crosshatch ran through
+  the letters), one token set (`--brand-wordmark*`) for the board's backs, the
+  deck prop, the loader's cards and the takeover's fan. On the deck it takes the
+  deck's own shade (`--deck-dim`, as a brightness) and its flat-on-the-table
+  squash (`--flat`) - a label is content, so the scrim in the face's background
+  never reached it. The
+  full-colour chip was five copies on the board before the first deal and the
+  loudest thing on the table; it still leads the loader and the start screen.
+- **No odds line on the board, by the owner's call (2026-09-25).** Two were
+  tried: "Needs 8-K · 24 of 51" before each card, and "Full ride: 1 in 28"
+  before a round; both are gone. If a frequency is ever shown again it must be
+  the published tables' weighted one, NEVER the deck's count - the reweight
+  deals paying rounds up to a third more often than the deck on the Inside
+  modes. A LUT's simulation number indexes `library/deals_standard52.bin`
+  (checked on every row of all 192 four-guess tables), so it can be counted
+  exactly from a build; status.md has the method.
 - **The jurisdiction block is the operator's, and every read must survive it
-  being absent.** `Authenticate.svelte` assigns
-  `stateConfig.jurisdiction = authenticateData?.config?.jurisdiction`
-  *unconditionally*, so a response without the block replaces the defaults
-  object with `undefined` and a bare property access throws. Every read goes
-  through `readFlag` in `jurisdictionRules.ts` (pure, unit-tested), and **the
-  fallback is always the permissive value** — a missing block never disables the
-  game, and never enables a restriction the regulator did not ask for.
-  `jurisdiction.svelte.ts` only wires that to `stateConfig`.
-  - Consumed: `disabledTurbo`, `disabledSuperTurbo` (caps the slider at
-    `TURBO_CAP_WITHOUT_SUPER` and relabels its end "Fast" rather than
-    "Instant"), `disabledAutoplay`, `disabledSpacebar`, `disabledSlamstop`,
-    `minimumRoundDuration` (gates the NEXT play rather than slowing the current
-    animation), the three responsible-gambling readouts, and `socialCasino`.
-    `disabledFullscreen` and `disabledBuyFeature` are declared and unconsumed
-    because this game has neither control — that is correct, not a gap.
-  - **Social mode is read from BOTH signals.** `?social=true` is the documented
-    one, and the jurisdiction block's `socialCasino` is the same fact by the
-    other route. `isSocialMode()` in `i18nDerived.ts` ORs them, and
-    `+layout.svelte` uses the same predicate to force English. The redundancy is
-    deliberate and one-directional: the cost of missing it is showing US players
-    the restricted gambling terms `socialMessages.ts` exists to remove.
-  - `devOverrides.ts` drives all of it from the address bar
-    (`?dev_disabledTurbo=1`, `?dev_displayRTP=1`, `?dev_minimumRoundDuration=2500`,
-    `?dev_minBet=1&dev_maxBet=100`), because localhost has no
-    `/wallet/authenticate` and none of this behaviour can otherwise be seen. It
-    is behind an `import.meta.env.DEV` literal, so Vite drops the module from a
-    production build.
-
----
+  being absent.** Every read goes through `readFlag`, and **the fallback is
+  always the permissive value**. Social mode is read from BOTH `?social=true`
+  and the block's `socialCasino`.
 
 ## Two bug classes that keep recurring
 
@@ -739,11 +664,281 @@ splitting on `_` — `sc_red_higher_equal_spade` has five parts, not four).
 
 ---
 
+## Where the client's logic lives
+
+`Game.svelte` was 3,789 lines — 2,738 of `<script>` — and held the popups, the
+round lifecycle, autoplay, the takeover handoff, bet formatting, audio wiring
+and dev-only URL seeding in one file. After four passes it is **709 lines**
+(563 script, 136 markup): the layout root, the intro phases, the popup
+switchboard, the audio wiring, the balance poll, and the effects that can only
+live in a component.
+
+### The directory layout
+
+`src/game/` was 80 files and 14,687 lines in one flat directory. It is now nine
+folders and three files:
+
+```
+src/game/
+  audio/  round/  bet/  math/  celebration/
+  ui/  dev/  jurisdiction/  platform/
+  tests/              rtl.test.ts, sources.test.ts
+  sources.testlib.ts
+```
+
+**Every `*.test.ts` lives in a `tests/` folder beside the code it covers** —
+`game/audio/tests/`, `game/math/tests/`, `i18n/messagesMap/tests/`, and so on.
+`npm run test` is `node --test "src/**/*.test.ts"`, a recursive glob, so the
+depth does not matter to the runner. `sources.testlib.ts` is NOT a test and
+stays at `game/` root: it is the manifest the grep tests read.
+
+**A test that moves takes its path strings with it, and they are the half no
+compiler checks.** Moving these 22 files broke ten anchors — `read()` bases,
+`import.meta.dirname` constants, a `readdirSync` of the catalogue directory,
+and both template-literal paths again. Two are worth naming:
+
+- **`rtl.test.ts`'s `SRC` anchor.** It was `resolve(import.meta.dirname, '..')`,
+  which meant `src/` at the old depth and `src/game/` at the new one. Prefixing
+  every path with `../` would also have "worked" and left a constant named `SRC`
+  pointing at `src/game`. It is `'../..'` now, and the paths are bare.
+- **`sound.test.ts`'s `reload()` cache-bust**, which had to become
+  `` `../audioMixer.ts?${tag}` ``. Re-proved the way it was proved originally:
+  `DEFAULT_VOLUME` sabotaged to 0, four tests fail, restore. A cache-bust that
+  names the wrong module does not error - it passes while testing nothing.
+
+`platform/` holds the twelve files that match the Stake template's own `game/`
+shape — `config`, `constants`, `context`, `eventEmitter`, the four `state*`, the
+three `types*`, `ready`. **Every sibling sample game (`cluster`, `lines`,
+`number-picker`, `price`, `scatter`, `ways`) keeps those at `game/` root and we
+no longer do**, so a future template update will not line up by path. That was a
+deliberate trade for a readable root; the twelve are still together and still
+named exactly as the template names them.
+
+The three files left at the root are there because they are *about* the others:
+the manifest, its check, and the one grep test that predates the manifest.
+
+`styles/` and `components/` are grouped the same way — `popups/ board/ intro/
+scene/` and `popups/ board/ intro/ icons/`, with `tokens.css`, `base.css`,
+`responsive.css` and `Game.svelte` staying at their roots.
+
+**Three things broke that no import rewrite could see, and all three were
+found by running something rather than by reading:**
+
+- **`scripts/mode-ceilings.js` WRITES `modeCeilings.ts`.** Moving the file
+  without repointing the generator would have left the next math build
+  regenerating it at the old path, with the moved copy silently going stale.
+  It is money-adjacent data. Same class as `replay-server.mjs`, which READS
+  `musicTracks.ts` and `currencies.ts` and answers `[]` when the path is wrong —
+  an empty music picker and no error.
+- **Paths built as template literals.** `sound.test.ts` read ten stylesheets as
+  `` `../styles/${name}.css` `` from a list of bare names, and `payoutTable.test.ts`
+  imported catalogues as `` `../i18n/messagesMap/${locale}.ts` ``. No literal-matching
+  pass resolves either. Both now carry their folder.
+- **Comments naming a file by path.** 24 of them pointed at paths that no longer
+  existed. A comment that names the wrong file is worse than no comment: it
+  sends the next reader somewhere real-looking and empty.
+
+**Rune modules use one `$state` object, not exported `let`s.** An exported `let`
+cannot be reassigned across a module boundary, so each of these exports a single
+object — `round.bustedIndex`, `bet.family`, `auto.running`. That is the shape
+`ready.svelte.ts` and `jurisdiction.svelte.ts` already used.
+
+The dependencies are a **DAG, deliberately**:
+
+```
+betState ─┐
+revealPacing ─┤
+autoplaySettings ─┼─→ roundPlace ─→ roundReveal ─→ roundSettle
+roundState ─┤          └─→ autoplayLoop
+celebrationState ─┘
+```
+
+**A round reads as three files, in that order.** The seams are exact: nothing
+crosses from the reveal into the settle (it reads `round.*` off state, never the
+loop's locals), and cutting anywhere else would have made a cycle —
+`startGameEngineFlow` needs `animateRoundFromEvents`, and the gate wraps
+`playRound`.
+
+| File | Owns |
+|---|---|
+| `game/round/roundState.svelte.ts` | the round's facts — what was dealt, what it paid, the session tallies, `roundInProgress()`, `resetForNewRound()` |
+| `game/bet/betState.svelte.ts` | what is being BET: the amount, the family, the four guesses, and every helper that reads or writes them |
+| `game/round/revealPacing.svelte.ts` | the turbo scale, the slam flag, and the reveal's own interruptible pause |
+| `game/round/autoplaySettings.svelte.ts` | what a run is configured to do — settings only |
+| `game/celebration/celebrationState.svelte.ts` | the takeover on screen, and the promise the round awaits |
+| `game/audio/soundSettings.svelte.ts` | the mixer mirror the sound panel writes through |
+| `game/round/roundPlace.svelte.ts` | buy a round: the defensive end-round, the mode slug, `/wallet/play`, the single-flight gate and the regulator's floor |
+| `game/round/roundReveal.svelte.ts` | turn the book into four cards on screen, with their cues |
+| `game/round/roundSettle.svelte.ts` | the payout, `end-round`, the credit, Last Win, the tier decision |
+| `game/round/roundRestore.svelte.ts` | put a round that already exists back on the board — replay, and resume |
+| `game/round/autoplayLoop.svelte.ts` | the loop that repeats it |
+| `game/dev/devSession.ts` | DEV: the URL standing in for `/wallet/authenticate` |
+| `game/ui/fitValue.ts`, `ui/pressCues.ts`, `bet/betFieldFont.ts`, `bet/currencySymbol.ts` | four leaves that close over nothing |
+
+### The board and the bar are components too
+
+`components/ControlBar.svelte` (the `<footer>`, the spin button and the spacebar
+that presses it), `components/GameBoard.svelte` (four cards, the running-win
+bar, the guess squares) and `components/SessionReadouts.svelte` (the
+jurisdiction-gated RG panel). `Game.svelte` keeps the layout root, the
+`<main class="play-area">` wrapper, the popup switchboard and the intro phases.
+
+This was ruled out once and became possible only after the state moved into
+modules: the bar needed **13 component-local names and 11 moved with it**, so
+what looked like a forty-prop interface is `openPopup` (bindable), `betRowEl`
+and `introPhase`. `GameBoard` takes **none**. The eight icon snippets split
+5 board / 3 bar with **zero overlap**, so nothing had to be duplicated.
+
+`choicesLocked()` went to `roundState` — both the bar and the board ask it.
+
+**`.cb-cap` and `.cb-val` are in `styles/readout.css`, not the bar's sheet.**
+`base.css` had `.rg-item .cb-val`: the RG panel renders the same caption/figure
+pair, so moving `control-bar.css` wholesale would have left it unstyled — and
+`currencies.test.ts` would have kept passing, because it asserts on the *rule*,
+not on who renders it. One definition, two importers; a copy was rejected
+because these carry the money-fitting contract `use:fitValue` depends on.
+Verified by reading computed styles off both panels in a browser: identical.
+
+`responsive.css` (326) split **16 bar / 8 board / 3 root, zero unassignable**,
+and `base.css`'s `.rg-*` rules went to `styles/session-readouts.css`.
+
+### The second pass: the four files that were biggest after Game.svelte
+
+`Game.svelte` stopped being the ceiling, so the next four went the same way.
+
+**`audioGraph.ts` (1,197) → five modules**, on the DAG its own sections already
+implied. `ensureContext` reaches IN to set `buses.<name>.gain` and `applyGain`
+reads it back, so context → mixer and nothing returns:
+
+```
+audioVariation (pure, imports nothing)
+audioMixer ──→ audioContext ──→ audioVoices ──→ audioLoop
+```
+
+| File | Owns |
+|---|---|
+| `game/audio/audioMixer.ts` | what the player has set: two buses, levels, mutes, `localStorage` |
+| `game/audio/audioContext.ts` | the one graph — `ctx`/`master`/the two sends, `ensureContext`, autoplay permission, `primeAudio`, `decode`. **The whole-graph argument lives at the top of this file.** |
+| `game/audio/audioVariation.ts` | `rand` / `drift` / `shuffler` — the randomness every cue borrows |
+| `game/audio/audioVoices.ts` | `tone` / `noise` / `thud`, and `openVoice`, the gate they pass through |
+| `game/audio/audioLoop.ts` | the bed's overlapping passes and their equal-power seams |
+
+**There is no barrel, deliberately** — a module that re-exported all five would
+hide which one owns what. And the reason matters beyond taste:
+`sound.test.ts`'s `reload(tag)` cache-busts a module to re-run `loadBus()` over
+empty storage, five times, because *"every player installing the game got
+silence"* once. **A query string only busts the module it names**, so pointed at
+a barrel Node would serve the cached mixer, `loadBus()` would never re-run, and
+all five would pass while testing nothing. `reload` names `audioMixer.ts`
+directly. Verified by sabotaging `DEFAULT_VOLUME` to 0 and watching four tests
+fail.
+
+**`StartScreen.svelte` (484) → three files.** It was two unrelated screens
+sharing a file, and they shared *nothing* but the phase that chose between them
+— not a snippet, not a helper, not a prop. `IntroPanels.svelte`,
+`ReplayDetails.svelte`, and `game/introDemo.ts` for the worked examples'
+lookup tables. `start-screen.css` (1,178) split with them into
+`start-screen-shell.css` / `intro-panels.css` / `replay-details.css`; the
+`@keyframes` were placed by which sheet references them, two of the three into
+more than one.
+
+That split also surfaced masked dead CSS, the same way the popup split did:
+`.ss-popup-close` and `.ss-detail-mode` are rendered by nothing at `HEAD`, and
+`choices.css`'s board-only wrappers (`.choice-row`, `.choice-column`,
+`.choice-label`, `.choice-tip`) are now `choices-board.css` — the reason
+`choice-unavailable.css` already gives, one step further along. **`.choice-square`
+stays in `choices.css`: the intro renders it.**
+
+**A round is three files: `roundPlace` → `roundReveal` → `roundSettle`.**
+`roundFlow.svelte.ts` no longer exists; it was 524 lines carrying all three.
+`settleRound()` came out first — `playRevealSequence` was 200 lines
+with an exact seam: the reveal animates, then the round settles. Nothing crosses
+it — the settle half reads `round.bustedIndex` / `round.forgivenIndex` off state,
+never the loop's `running` / `busted` / `forgivenessSpent` — so `settleRound()`
+takes no arguments. `engineRound` and `isEngineRound` moved to `roundState`,
+where they break the cycle and where `isEngineRound()` belongs anyway: it is a
+function of `round.source`.
+
+**`WinCelebration.svelte` (603 script → 413).** `game/celebrationScene.ts` (the
+`BURST` and `FAN` geometry, pure) and `game/celebrationGestures.ts` (`pop`,
+`easePop`, `hopFan`, `reducedMotion`). The geometry being a plain module means
+`winCelebration.test.ts` now **imports and asserts on it** — the fan's symmetry,
+its centre falling between cards, the outer pair riding lower, the burst's suit
+spread — instead of grepping the component for `length: 4 }`.
+
+**The count-up state machine deliberately stayed in the component.**
+`<WinCelebration>` is `{#key}`'d so it remounts per celebration; its state
+cannot be a module-level `$state` singleton the way `roundState` and `betState`
+are, and behind a factory it needs about six callbacks injected, which reads
+worse than the 200 lines do. Its pure half is already `countUpSegments` in
+`winTiers.ts`.
+
+**`sound.ts` (751) is deliberately NOT split.** It is a flat catalogue of 18
+independent cues in one object. Splitting a catalogue means looking in more
+places to find one cue, and every change costs an `npm run audio` pass. Size
+there is not complexity.
+
+**Autoplay is split in two on purpose.** `startAuto` calls the round flow, and
+the round flow reads `auto.running` / `stops.onFullWin` back out. In one module
+that is a cycle; with the settings on their own it is a DAG.
+
+**`$effect` only runs inside a component, so the effects stay in `Game.svelte`** —
+including the replay effect and the resume effect, which are also the two places
+that must apply `parsed.family` when restoring a mode from a slug. Keeping them
+side by side is what lets `modes.test.ts` check there are exactly two.
+
+**`bet` means betState's bet. The RGS resume payload is `resume`.** All three
+restore blocks used to call it `bet`; once the bet state became an object of
+that name, `bet.family = parsed.family` assigned to the *payload* and the family
+was silently never restored — the third near-miss on the invariant that has
+shipped broken twice. `modes.test.ts` now fails on any local `bet` declaration.
+
+### Each popup is its own component, with its own stylesheet
+
+`components/popups/` — `ModePopup`, `BetPopup`, `TurboPopup`, `SoundPopup`,
+`AutospinPopup`, `AdvancedPopup`. The `{#if openPopup === 'x'}` switchboard
+stays in `Game.svelte`; which panel is open is the component's own state.
+
+`popups.css` (1,032 lines) became **`styles/popup-<panel>.css`**, plus
+`popup-backdrop.css` for the one dimmer the parent renders. That split is
+**required, not tidiness**: svelte-check reports an unused selector as a
+WARNING, and `check:svelte` must come back at zero — so a rule in a sheet whose
+importing component does not render it is a build failure. There is no shared
+sheet for the same reason; `.action-button` and `.popup-sub` are *copied* into
+the panels that use them.
+
+- **A rule's home is decided by the markup, not by eye.** A grouped selector
+  spanning panels is split per selector rather than duplicated whole.
+- **`iconInfinity` / `iconPlus` / `iconMinus` are duplicated into
+  `AutospinPopup`**, six lines of SVG each. That is what lets the sizing travel
+  with the markup — the bar's copies sized by `control-bar.css`, the panel's by
+  `popup-autospin.css` — and it retires the import-order hazard the old
+  `popups.css` complained about, because the two are now different scopes.
+- **`.cb-val-multiplied` is copied into `popup-bet.css`.** It lives in
+  `control-bar.css`, which `BetPopup` does not import, so the chip lost it
+  silently. Both copies must keep saying the same thing.
+
+### The grep tests read a manifest, not a path
+
+Eight test files assert on the game's source as TEXT, because what each guards
+fails *silently* — a forgiven card that sounds like a bust, a mode restored
+without its family, a class renamed out from under `pressKindFor`. They now read
+**`game/sources.testlib.ts`**, which lists every file the component was split
+into and concatenates them, so counting assertions still count and negative ones
+still mean "nowhere".
+
+**When a split moves code out of a listed file, add the new file to that
+manifest in the same commit.** There is no glob and no `existsSync` filter: a
+listed path must exist, which `sources.test.ts` checks, because a filter would
+turn a typo into a grep test that quietly stopped looking at anything.
+
+---
+
 ## Client conventions worth knowing
 
 - **Svelte scoping bites child components.** A stylesheet is scoped to the
   component that imports it, and a child's elements never carry the parent's
-  scope class — so a `.bolt` rule in `popups.css` compiles to
+  scope class — so a `.bolt` rule in the parent's stylesheet compiles to
   `.bolt.svelte-<parent>` and matches nothing. Child components style themselves
   and take **custom properties** from the parent, which inherit through the DOM
   normally. See the notes atop `ChoiceIcon.svelte` and `BoltMeter.svelte`.
@@ -777,7 +972,13 @@ Every layout change is checked at all seven. The first four are **exactly
 so a row of four that fits a 16:9 window cannot be assumed to fit, and the
 control bar breaks onto extra rows there by design. From Popout S up to
 Desktop the arrangement must be **identical** and only the scale changes —
-Popout S is Popout L at exactly half size, and is laid out that way.
+Popout S is Popout L at exactly half size, and is laid out that way. **Type is
+the one exception**: it stops at `--type-floor` (6px) / `--type-floor-figure`
+(9px) in `tokens.css`, as `max(own calc, floor)`, because at half size the
+balance printed at 5.9px and the bar's captions at 3.4px. The floor binds on
+Popout S alone, and `fitValue` can still shrink a figure below it. A panel
+takes the floor as one unit instead - `--ui-bar` itself floors at 6px there
+(`popup-base.css`), so the whole panel scales up and scrolls under its header.
 
 That is a constraint on the *clamp floors*, not on the media queries: whenever
 `--ui` or `--ui-bar` bottoms out, the layout stops scaling and starts
@@ -807,303 +1008,296 @@ between a one-row bar and a two-row one.
 
 ---
 
-## Current state
+## Current state and outstanding work
 
-680/680 tests, 0 type errors, 0 CSS warnings, lint clean, and the
-client reproduces all 76,800 published books exactly. The published math build
-(192 modes, RTP 96.0000% everywhere, spread 0.000000%, zero volatility
-violations) is generated.
+**2026-10-06: three live passes on Stake; the uploaded build is front v72 +
+math v13** (v72 = this working tree built 2026-10-06 15:26). `RGS_TEST_PLAN.md`
+holds 132 checks, **122 ticked live**. Of the ten open, five need the owner's
+hardware or judgement (CMP-12, CMP-14, DEV-04, DEV-05, PRF-03) and CMP-18 a real
+screen reader; SES-03 waits for a genuine session lapse; WIN-16, DEV-11 and
+DEV-12 failed on v72 and are FIXED LOCALLY, not yet uploaded (below). The method,
+its scripts and its pitfalls are the `rtb-live-audit` skill. 974 tests pass; 0
+type errors, 0 CSS warnings, lint clean. Last Stop's volatility tie with High Stakes (three near-ties) was
+accepted by the owner on 2026-10-05; `volatility.test.ts` allows a 5% sampled
+tolerance on that one pair. The ticket cue was measured with `npm run audio`
+(no clipping, adds no level; its parts sit at about a third of a card chime -
+a listen is the owner's). **Nothing from 2026-10-05/06 is committed; the next
+upload needs a production build from the owner first.**
 
-**It is NOT committed**, and the note here used to say it was. `math-sdk/.gitignore`
-line 9 is `**/library/**`, so `git ls-files` on the library returns nothing: the
-1.6 GB of books, lookup tables and `stats_summary.json` exist only on the machine
-that built them. Two things follow. A fresh clone cannot reproduce the books
-without a 40-minute rebuild, and every test that reads the math tree
-(`payout.test.ts`, `volatility.test.ts`, `modeCeilings.test.ts`) silently skips
-there rather than failing — which is deliberate, but only safe while it is
-written down.
+**What changed in the client on 2026-10-05/06** (each rule has its own note in
+the code; the test that pins it is named):
 
-`npm run lint` works again — `eslint.config.js` (flat) was added because ESLint 9
-ignores the `.eslintrc.cjs` every app in the vendored SDK still ships. The old
-`.eslintrc.cjs` is now dead and only kept so the app still matches its siblings.
+- **Fonts are same-origin FILES** in `static/fonts/`, declared in `app.html` via
+  `%sveltekit.assets%`. The Stake CDN sends `font-src 'self'
+  https://fonts.gstatic.com`, which blocked every `data:` font the build used to
+  inline (F-5) - the live game drew in system fonts. `displayFace.test.ts` fails
+  on any `@font-face` in a stylesheet or a font path that is not a file.
+- **The error dialog is the top layer** (`--z-error`, above the loader and the
+  intro, F-4). A launch failure (authenticate or the replay fetch) offers Reload;
+  ERR_IS / ERR_ATE offer Reload; a failure it cannot name offers Reload beside
+  Close (a forged session gets a bare `400 Bad Request`); a recognised code shows
+  its translated sentence and the code, never the RGS's English statusMessage.
+  `errorModal.test.ts`.
+- **Money is exact everywhere**: `displayFractionDigits` widens past the
+  currency's places until the amount is exact (to 6), so $0.017 never reads
+  $0.02; the takeover counts in the final amount's own places (F-2/8/9).
+- **Three restore paths, not two**: replay, resume and REMEMBERED PICKS
+  (`rememberedPicks.ts`: the family and four picks under `ride-the-bus:picks`,
+  never the amount, never in a replay, a resume wins). `modes.test.ts` counts
+  three blocks that apply `parsed.family`.
+- **Recent rounds** open from Last Win (a button except in replay):
+  `HistoryPopup.svelte`, ten rounds, session-only, snapshotted at settle.
+- **The result words**: Full game win / Won (a forgiven ride that finished) /
+  Kept (a bust that kept a share - no percentage, it would not add up after the
+  decay and the floor) / Busted. A missed card's chip is neutral ink; a bust that
+  kept nothing shows no chip; Three of a Kind's live total is "At stake" (social
+  "In play"). Screen readers get `aria-pressed` picks, named cards and the bust
+  card in the announcement. `announce.test.ts`.
+- **The count-up starts at the board's last figure** (`countUpSegments`'
+  `startMultiplier`) and its progress is clamped - the live build opened on
+  "-$0.00001". A leg whose ceiling the board had already passed is DROPPED, so
+  the count opens on the board's figure under that figure's tier: v72 kept those
+  legs as holds and opened a max win on "Big Win $40.00" over a $430.10 board
+  (after v72, not uploaded; `winTiers.test.ts`).
+- **The board and the bar are inert behind the loader, the intro and Round
+  details** (`behindIntro`): Tab went from Continue onto the board's Black square
+  under the intro (after v72, not uploaded; `launchGuards.test.ts`).
+- **Three of a Kind's "$1.00 x 250" line is floored** like every other line of
+  the bar - it printed at 3.3px on Popout S and 5.6px on a 320px phone (after
+  v72, not uploaded). It still makes that family's bar 6px taller on Popout S and
+  2.6px on Mobile S - open for the owner (DEV-11).
+- **Owner's calls, 2026-10-06** (memory: feedback_deal_button_equal_seam): the
+  deal button stays the blue disc with no caption; the Equal "=" stays on the
+  seam at every size; picking a guess dims nothing.
+- Also: phones floor type at 9 / 11 px (`--type-floor`, portrait <= 620px);
+  desktop bar captions >= 10px; the guess palette is "Felt & brass" (palette A);
+  prompts say Click with a mouse and Tap on touch (`pointerWords.ts`); Second
+  Chance's How to Play says forgiven rounds price later cards as on Classic
+  (`payoutTable.test.ts`); the intro's demo squares are out of the Tab order;
+  `/index.html` launch URLs are rerouted (`hooks.ts`); `npm run build` prunes
+  unreferenced files (`scripts/prune-build.mjs`).
 
-The math clears the **2-star** risk limits, not merely the 3-star ones: worst
-std 32.938 (limit 0.6–50.0), worst ETL 0.695 (limit 0.8), worst CVaR 568.8
-(limit 700), worst non-zero hit rate 1 in 2.03 (limit 1 in 20), P(≥5000×) zero.
+Before Last Stop: 861/861 tests (none skipped), 0 type errors, 0 CSS warnings, lint clean, and
+the client reproduces the published books of all **193** modes exactly — the
+parity test replays a 400-book slice of every mode off `index.json`, three-card
+trips books included. The build on disk is the **2026-09-22 02:30** one: High
+Stakes at 15% (ceiling 2237.3×, wincap 2300), Three of a Kind as
+`tr_any_equal_equal` (three cards, 250×, 4,583.3×), and `modeCeilings.ts` is
+what its generator wrote. `library/build_rules.json` records the family rules a
+build was made with, so a client whose `FAMILY_RULES` have moved since reads it
+as **stale** - the parity tests skip and say what differs - rather than as
+hundreds of failed assertions about arithmetic that did not change. It is **NOT
+committed** — `math-sdk/.gitignore` line 9 is `**/library/**`, so the books and
+`stats_summary.json` exist only on the machine that built them, and the tests
+that read them skip on an absent or stale build (`game/mathBuild.testlib.ts`).
 
-### Seeing the game, rather than reasoning about it
+**What that build measured.** The four-guess families clear the **2-star**
+limits: worst std 38.401 (limit 0.6–50.0), worst etl40b 0.769 on
+`hs_red_equal_outside_club` (limit 0.8), worst CVaR 639.0 on
+`hs_red_equal_equal_heart` (limit 700), worst non-zero hit rate 1 in 2.039
+(limit 1 in 20), worst max-win hit rate 1 in 193,283, P(≥5,000×) zero. Every
+one of those worst cases is a High Stakes mode, and ETL is the binding metric -
+0.769 against 0.8 is 4% of headroom, where 0.16 had 9%. Three of a Kind: RTP 96.0000%,
+non-zero hit rate 1 in 19.10 (94.8% pay nothing), max 458330 raw, P(≥5,000×) 0,
+etl40b 0, etl10k 0, CVaR 4,583.3 absolute = 18.3 per stake — as predicted.
 
-Two things landed together and are worth knowing about before touching anything
-visual, because between them they turn "this should look right" into "this does".
+**The local verifier used to print one warning on it, and the warning was the
+verifier's, not the mode's.** `utils/rgs_verification.py:verify_mode_volatility`
+checked every mode against one flat table — the **3-star** figures, with `cvar`
+compared to 800 — and `conditional_value_at_risk` never divides by cost, so a
+250× mode's 4,583.3 base-bet CVaR was held against a limit written for 1×
+modes: `Mode [tr_any_equal_equal] fails 3-star volatility limits: VIOLATED:
+cvar VALUE:4583.3 --- LIMIT: 800`, on a build Stake's own console passed. Stake
+reads **both** rows — the normalised figure (4,583.3 / 250 = 18.3, against 700)
+and the un-normalised one (4,583.3, against 20,000 at 2 star / 50,000 at 3
+star, the row the first trips build failed at 25,000). The verifier now reads
+both too: it takes the mode's cost, divides for the per-stake check and holds
+the raw figure against the absolute ceiling. All 193 modes pass it silently.
+**The mode was never the thing to change** — do not tune it to satisfy a
+limit, and do not restore the un-normalised comparison.
 
-**A local replay RGS** (`scripts/replay-server.mjs`) serves any of the 192 modes
-out of the real published books.
+**A build watches itself.** `run.py` re-executes itself under
+`games/ride_the_bus/build_monitor.py`, which serves
+**http://127.0.0.1:8765** for the life of the run: 193 mode boxes by family,
+four pass bars, the eight workers with their RTPs, an ETA, and the whole
+transcript. The terminal still gets every line. `RTB_BUILD_MONITOR=0` turns it
+off, a broken monitor cannot fail a build, and `build_monitor.py --demo`
+replays a synthetic build in ~45 seconds - which is how the page is changed
+without spending 40 minutes. Structured facts reach it as `##RTB {json}` lines
+(`emit()`); everything else is parsed off the SDK's own prints, so **a reworded
+print in `src/state/run_sims.py` or `utils/rgs_verification.py` silently stops
+a parser** - the demo transcript is the copy of those lines to fix first.
 
-`npm run dev` / `pnpm run dev` is now the whole thing: it **reclaims ports 3001
-and 3010 first** (so a second run is a restart, not a second pair — vite used to
-slide to 3002 while the browser tab kept showing an hour-old build on 3001,
-which looks exactly like everything working), starts both, and opens the link
-builder. `--no-open` skips the tab; `dev:game` is raw vite if you want only that.
+**The build works through the families in `FAMILY_BUILD_ORDER`** (
+`game_calculations.py`): Second Chance, Classic, High Stakes, Three of a Kind -
+volatility order, calmest first. It sets the order of the simulation, the
+reweight, the verification, the scan, `index.json`, `stats_summary.json` and
+the monitor's boxes, so those generated files reorder on the first build after
+this landed. Nothing reads a mode by position, and `ordered_families()` refuses
+to run if a family in `MODE_FAMILIES` is missing from it rather than quietly
+publishing 129 modes. The client's picker order is separate and still lists
+Classic first.
 
-**The dev port travels by environment variable, never on the command line**, and
-that is not a style preference. dev-all used to append `-- --port N
---strictPort` to the inner script; npm *strips* the `--` separator before
-handing the rest to the script, pnpm passes it through as a literal argument. So
-under pnpm vite received `--host "--" "--port" "3021"`, ignored an argument list
-it could not parse, and came up on its own default 5173 while the builder went
-on linking to 3021 — silently, which is the same failure the port reclamation
-exists to prevent, arriving by a different route. `vite.config.js` reads
-`GAME_PORT` and sets `server.port` + `strictPort` from it. dev-all also spawns
-the inner script with whatever package manager started it, read off
-`npm_config_user_agent`.
+**The three passes after the simulation run in parallel, and `num_threads`
+sizes all of them** — the reweight and the verification over a
+`ProcessPoolExecutor`, `replay-events.js` over `worker_threads` (it gets
+`REPLAY_SCAN_WORKERS`). Measured 8-against-1 on the 2026-09-22 build: reweight
+60.6s → 13.3s, verify 59.0s → 12.2s, scan 61.0s → 17.8s. **All three are
+idempotent and were proved byte-identical** — the reweighter reads the
+segmented tables and writes the published ones (193/193 md5s unchanged on a
+re-run), the verifier only reads, and both `stats_summary.json` and
+`REPLAY_EVENTS.md` came back identical. So any of the three can be re-run on
+its own against an existing build, which is also how they are tested without
+spending 40 minutes.
 
-Six scenario aliases, not four — and **the server does no scanning of any kind.
-It reads every one of them out of `REPLAY_EVENTS.md`.**
+**The books are no longer simulated through the SDK: `direct_books.py` scores
+every mode straight off one shared deal, and the published files are
+byte-identical.** All 192 four-guess modes deal the same cards for a given
+simulation index (`run_spin` seeds on it), and what a round pays is a pure
+function of those cards and the mode's rules. So `run.py` deals the 800,000
+shuffles once (`library/deals_standard52.bin`, ~2s), then each mode is scored
+against them through `GameState.score_round` - **the same function `run_spin`
+calls, so the rules exist once** - and its book, both lookup tables, force
+record, verification sidecar and event config are written in one pass, with no
+temp files and no decompress-and-recompress merge (zstd's output does not
+depend on how its input is chunked; checked). What CANNOT be shared is the
+output: every mode's book carries its own choices, flags and payouts, so all
+44M lines are still written.
 
-`max`/`big`/`win`/`loss` were read from the 192 lookup CSVs at boot, which cost
-**33 seconds** on the first landing-page load. `bustwin` and `forgiven` describe
-the SHAPE of a round rather than its size — whether it busted, whether it spent
-a Second Chance — which lives in the book events, and those were resolved by
-streaming a 215k-round book file on demand. Both are gone: the generator writes
-all six into `REPLAY_EVENTS.md` and the server parses that. First load is
-**0.11 s**, and the four table-derived figures were checked against the old
-CSV-derived ones mode for mode.
+- **Proved in full against the 2026-09-22 build: all 193 modes, 1,352 files,
+  every byte identical**, `force.json` included. `RTB_DIRECT_BOOKS=0` goes back
+  to `create_books` (so does `profiling`).
+- **Time: the simulate stage went from 1,980s to ~68s** (65.5s writing + ~2s
+  dealing), across `os.cpu_count()` workers - 12 on this 6-core/12-thread
+  machine, where 12 beat 8 (83.4s) and 6 (94.1s). `RTB_BOOK_WORKERS`
+  overrides; `num_threads` (8) still defines create_books' split and must
+  divide every sim count (12 and 5 silently drop simulations there).
+- **Inside a mode**: every stage but the last is memoised by the cards turned
+  so far (`score_stage`: 52 / 2,652 / 132,600 prefixes against 800,000
+  rounds); a reveal's JSON and everything that depends only on the payout are
+  rendered once per distinct value by the same encoder the SDK uses.
+- **It checks itself on every build**: the first 2,000 rounds of each mode are
+  re-scored through plain `score_round` and re-rendered from a full book dict,
+  and every distinct payout's tail is re-rendered too; a mismatch fails the
+  build.
+- **The event config is `event_config_<mode>.json`'s one example per event
+  type.** create_books let every worker write it, so the LAST worker's first
+  round won - in practice always the first round of the mode's final slice
+  (87,500 / 175,000 / 750,000 at 8 threads). direct_books writes that round
+  deliberately; it depends on `num_threads`, not on the pool size.
 
-- `bustwin` — busted and still paid enough to take the screen over. A round does
-  not have to be a full game win to celebrate.
-- `forgiven` — Second Chance only: spent its forgiveness, survived, finished big
-  enough to celebrate. The case `isCleanSweep` deliberately does not floor.
+The SDK path is still there and still faster than it was (one process pool,
+arithmetic pricing, the shared deal, overlapped output with line-atomic stdout,
+`copy_event`, a reused JSON encoder) - it is the fallback, and the test
+reference. **`make_be_config` runs across the workers (31.8s -> 6.6s) and the
+configs are now written AFTER the reweight**: before, `config.json` hashed the
+tables and THEN the reweight rewrote them, so the first build after a rule
+change recorded the previous build's hashes. It is not an uploaded file.
 
-**Regenerate after a math build** — `run.py` already calls
-`scripts/replay-events.js` at the end of every one, and that script now scans
-the books for those two columns. It can also be run on its own against an
-existing build: `node scripts/replay-events.js` (a few minutes, almost all of it
-the book scan).
+**Guarding it**: `games/ride_the_bus/tests/` (13, `.venv/Scripts/python.exe -m
+pytest games/ride_the_bus/tests -q` from `math-sdk/`) - direct_books against
+create_books-with-no-cache on a mode per family (every file), run_spin's events
+against score_round, pricing against the full tables, the shuffle against
+`random.shuffle`, the deal cache against a cold deal and its loader refusing
+bad caches. Sabotages were caught every time. **Those tests compare the two
+current paths with each other; a change to `score_stage` moves both.** The
+guard against that is the published build: `payout.test.ts` on the client, and
+rebuilding modes into a scratch library and byte-comparing them with
+`library/` - which is how every change here was checked. `RTB_ONLY_MODES=<mode>`
+builds just those modes into `library_test/` and stops before publish
+(`MATH_LIBRARY_DIR` picks the folder; it never writes into `library/`).
 
-Three states on a round button, and they are different problems:
+**`run.py` does not sweep `publish_files/`.** A superseded build's books and
+LUT (`*_tr_any_equal_equal_any_*`, 19:13) sat beside the current ones, which is
+why the parity test reads the mode list off `index.json` rather than listing
+the directory. They are gone (the rest of that build's files in `library/`
+went on 2026-09-27), but re-count the folder after any rebuild and delete
+leftovers before uploading it to Stake.
 
-| Shows | Means |
-|---|---|
-| `129.00x #1393` | resolved |
-| `none` | scanned, and this mode has no such round — **button greyed out** |
-| `rebuild` | the table predates these columns — run the generator |
-| `sc only` | `forgiven` off Second Chance — **button greyed out** |
+**Not yet submitted to Stake** — math, bet modes and mechanics are all still
+changeable until the user says otherwise.
 
-A greyed-out button is the point. `sc_red_lower_outside_heart` has zero drawable
-bust-win rounds (0 of 1110 eligible), and the page used to let you build that
-link anyway — the game then opened an error modal reading `RGS responded 404`.
-Showing the answer is not the same as refusing the pick, which is the lesson
-Equal-then-Inside already taught this page. Switching mode also repairs a
-now-impossible selection.
+**The full picture — what is built, what was measured, every open item and every
+approval-checklist gap — is `.claude/skills/rtb-invariants/references/status.md`.**
+Read it when planning work. It also carries the local dev tooling: the replay
+RGS, `npm run dev`, the six scenario aliases, the headless CDP driver
+(`npm run shots`) that every visual judgement in this repo has been made with,
+and the `playwright-cli` recipe for looking at one screen by hand.
 
-**The round-details panel shows the ID the RGS served, not the URL parameter.**
-The server returns `bookId` (a local extension Stake does not send) and
-`replayEventId()` in `Game.svelte` prefers it, falling back to `?event=` — which
-is the production path, since a real replay URL always carries the ID. Without
-that, `event=bustwin` printed "Event #bustwin".
+The single biggest open item: **`RGS_TEST_PLAN.md` holds 115 live-session checks
+and none has been run.** They need a real Stake session and cannot be done
+locally.
 
-The builder also has a **game-port field**, defaulting to 3001 and remembered in
-`localStorage`, because vite does not always land there.
+## The knowledge graph maps the maths, not the components
 
-It carries **all 49 currencies** with their dashboard names (it had fourteen),
-and its guess buttons wear **the game's own choice colours** - Higher green,
-Lower red, Inside cyan, Outside magenta, Equal gold, hearts/diamonds red - copied
-by name from `tokens.css`. Red and Black were already painted that way and the
-other three rows were not, so half the picker spoke the game's language and half
-spoke the page's generic green. The ink there stays **light**, unlike the app:
-these fills are a 26% wash over near-black, not the app's full-strength colour,
-so `--on-choice-ink` dark-on-dark was unreadable. Same colour, different ground,
-opposite answer.
-
-**Headless browser driving over CDP** — `scripts/shoot.mjs`, `npm run shots`.
-Node 22+ ships a `WebSocket` client and Playwright's chromium is already on disk
-under `%LOCALAPPDATA%\ms-playwright`, so it can launch Chrome, open a replay
-URL, click through the round details, poll for each tier promotion and
-screenshot at any viewport — with **no new dependency in the project**, which
-matters because the bundle is inlined and bundle size is a 3-star criterion.
+`.claude/skills/graphify/` builds a queryable graph of the repo into the
+gitignored `graphify-out/` (`graph.html`, `GRAPH_REPORT.md`, and a ~6k-note
+`obsidian/` vault). Rebuild with:
 
 ```
-npm run shots              # five tiers, desktop
-npm run shots -- --sizes   # a max win at each of the seven target sizes
-npm run shots -- --intro   # the intro fan and the replay details panel
-npm run shots -- --reduced # prefers-reduced-motion
-npm run shots -- --mode sc_red_equal_equal_heart --event forgiven
+npm run graph         # scripts/graph-build.mjs — the whole rebuild
 ```
 
-**Shots are a working surface, not an archive.** `scripts/.shots/` is
-git-ignored and every run overwrites what it finds. Re-shoot after a visual
-change rather than reasoning about a stale image, and delete anything that no
-longer shows what it claims to - a screenshot of a screen that has since moved
-on is worse than none, because it looks like evidence. Nothing outside that
-directory should link to a file inside it.
+Then ask it things:
 
-**The repo-root `scripts/.shots/` is the only place they go.** `shoot.mjs`
-anchors there correctly; an ad-hoc capture script run from inside
-`web-sdk/apps/Ride-The-Bus/` once wrote 18 PNGs into *that* app's `scripts/`
-directory, where the anchored ignore pattern did not reach them and `git status`
-offered them for commit. `.gitignore` now carries a bare `.shots/` as well, so a
-stray one at any depth is still ignored — but a capture script must resolve the
-directory from the repo root, never from `pwd`.
+```
+python -m graphify affected "FAMILY_RULES"      # what breaks if I change this
+python -m graphify explain "stageRetention()"   # what is this, what touches it
+python -m graphify path "Game.svelte" "payout.ts"
+```
 
-This is how the win takeover was actually looked at, and every defect fixed in
-that pass was invisible in the source and obvious in a screenshot: three ambient
-circles that composed into a lens smudge, sixteen suit marks that never shared a
-start, the settled payout legible behind the blur, a fan that covered its own
-headline on a phone, and an intro fan that split into two half-fans leaning off
-opposite sides when it wrapped 2-per-row. **If a change is visual, drive it and
-look.**
+**Never `graphify extract .` at the monorepo root**, which is why the build is a
+script. Rooting at `.` gives 5,603 nodes of which only ~11% are this game — the
+rest is the vendored SDK and the other sample games — so `god-nodes` returns
+`eslint`, `node_modules` and `BetMode`, and the >5,000-node ceiling silently
+degrades `graph.html` to an aggregated blob. Scoped it is 929 nodes whose hubs
+are `FAMILY_RULES`, `partialMultiplier()`, `familyOf()` and `stageRetention()`.
 
-## Outstanding
+**Components are graphed through a line-preserving shadow tree.** Graphify maps
+`.svelte` onto the JS/TS grammar, and markup is not valid JS, so the parser
+emits one top-level ERROR node and every symbol is lost — most of this app's
+Svelte is `<script>`, and `Game.svelte` still carries ~1,140 lines of it (it was
+2,724 before the split described above). The script
+rewrites each component to a `.svelte.ts` holding only its script blocks, with
+markup and style lines **blanked rather than deleted** so every line keeps its
+original number; `bolts` reports `BoltMeter.svelte:L45` and that is genuinely
+L45 of the component. Do not "simplify" that into stripping the lines, and do
+not blanket-replace the `.svelte.ts` suffix afterwards — `stateGame.svelte.ts`
+and `jurisdiction.svelte.ts` are real rune modules and renaming them points
+every symbol they own at a phantom file. Both mistakes were made and fixed once.
 
-- **Win takeover: still wants real hardware, but the perf risk is mostly
-  spent.** The blur is `blur(2px) saturate(0.86)` and is dropped entirely under
-  `@media (pointer: coarse)` — that was the pre-emptive fix this list used to
-  defer, and it is free now that the text sits on its own shadow band rather
-  than depending on the blur for legibility. The burst is ten one-shot marks
-  instead of sixteen on infinite loops. What remains for a device: the fan's
-  four `box-shadow`ed cards and the `drop-shadow` on the marks. If it still
-  drops frames, take the marks' `filter` first; do not go back to blacking out
-  the table.
-  - All five tiers **have** now been eyeballed at Desktop, Laptop, Popout L,
-    Popout S, Mobile M and Mobile L, on Classic and High Stakes, including a
-    busted-but-paying round and `prefers-reduced-motion`. Driven headless over
-    CDP against the local replay RGS, not by hand — see the note on browser
-    automation below. Mobile S (320×568) and a real device are still open.
-  - Two responsive traps are recorded in the CSS because both cost a pass:
-    `.wc-fan` is a **child of `.wc-body`**, not a viewport-anchored sibling —
-    anchored to the viewport it sized in `--ui` while the title is capped in
-    `vw`, so on a 375px phone (title 41px, `--ui` 7.5px) the word landed across
-    the middle of the cards. And the deck sweep's mask percentages are measured
-    against an element inset `-60%`, i.e. 220% of the viewport, so every value
-    there lands 2.2× wider on screen than it reads.
-- **B2 — art pass. Half done; the remaining half is assets, not treatment.**
-  Stake names "over-reliance on generic AI-generated assets — standard fonts,
-  gradients, emoji icons and border effects" as a top cause of a 1-star rating,
-  and 1 star is **not published**.
+The remaining 36% — markup and `<style>` — is out of reach. That is what
+`npm run shots` and `npm run check:svelte` are for; a graph is the wrong
+instrument for asking how something looks. The merge also co-locates Python and
+TypeScript without drawing **any edge between them** — `MODE_FAMILIES` and
+`FAMILY_RULES` are name-mirrors, not imports. The graph is a map, not a drift
+check; `payout.test.ts` is still the only thing guarding that.
 
-  **Done** (branch `ui-art-pass`): the emoji-substitution risk is gone (drawn
-  marks); the gradient-plus-border-plus-glow title plate is gone, replaced by a
-  two-stop scrim; the four-equal-panels intro grid is now a dealt fan on the
-  real table; the popup shell is a lit material rather than the default dark
-  modal; the 999 px multiplier badges are gone; the card face has warm paper,
-  the back's own edge and a real corner index. The audit that drove it found
-  5 critical / 10 major / 5 minor.
+**A component's degree UNDER-REPORTS, and does so silently.** `explain
+BoltMeter.svelte` returns `Degree: 1` — one import from `Game.svelte`. The real
+figure is five: `--vol-sc`, `--vol-base`, `--vol-hs` and `--mode-ink` couple it
+to `Game.svelte`, `base.css`, `control-bar.css`, `tokens.css` and
+`win-celebration.css`. Custom properties ARE the parent→child contract here (see
+the notes atop `ChoiceIcon.svelte` and `BoltMeter.svelte`) and no stylesheet is
+in the graph, so the answer is not "unknown" but a confident number that is 5×
+too low. Never read a low degree on a component as "safe to change" — grep the
+custom properties. The graph does not know they exist.
 
-  **Assets, done:** `static/` holds `logo.webp` (81 KB) with `logo.png`
-  (743 KB) kept only as the fallback, plus `favicon.png` at 10 KB. A cold load
-  now fetches **90 KB of images against 743 KB before** — the favicon used to be
-  the full 710×710 logo, three quarters of a megabyte for a 16 px tab icon,
-  fetched before anything a player can see. Whether the game needs any
-  *bitmap* art at all is still a judgement call: the table scene is hand-sampled
-  CSS and is the best work in the repo, so the honest risk is not "no assets" but
-  "does a reviewer read CSS art as art". Note the tension before adding any:
-  `config-svelte` sets `bundleStrategy: "inline"`, so anything Vite processes is
-  base64'd into `index.html`, and bundle size is itself a 3-star criterion —
-  ship art from `static/` via `${base}/…` like `logo.png` does, not through Vite.
-- **REP-02 — deliberately deferred, not forgotten.** A replay on the Stake site
-  showed bet amount 1000 where the game rendered 1 — an exact 1000× gap pointing at a units convention. Stake documents
-  `?amount=` as "bet amount in units" and the RGS speaks micro-units, which is
-  what `Authenticate.svelte:121-122` assumes. Capturing the answer is now one
-  console line: paste a Stake replay query string onto `localhost:3001` (replay
-  needs no session) and read `[RideTheBus] REP-02 replay amount chain`.
-- **Volatility, next step:** the meter rates Inside and Outside identically,
-  which the published figures say is a real (if secondary) simplification —
-  Classic's `inside` band is 4.34–5.22 against `outside` at 3.31–3.51. Splitting
-  it needs an eighth stop. `volatility.test.ts` asserts the current behaviour so
-  the choice is on the record. No board-level meter yet: the rating shows in the
-  mode picker and on the bet display only.
-- B3–B8 optional polish: round history strip, session stats, quick-bet ½/2×,
-  round ID surface, keyboard shortcuts for guesses, near-miss reveal.
-- Open naming question: "High Stakes" implies a cost premium it no longer
-  charges.
-- **Approval-checklist gaps still open** (all from the verbatim criteria below):
-  - ~~Replay "Play Again" button~~ — **closed.** The spin button already
-    re-ran the round; it now says so. `replayFinished()` drives both the
-    accessible name and a visible gold caption under the button. A caption
-    rather than a label inside the disc: the button is 44 px and the words do
-    not fit, and the deal glyph is still the right picture — it deals the same
-    four cards again. Positioned out of flow like the tooltip, so it cannot add
-    a row to a bar whose height budget is the tightest thing in the layout.
-    Verified at Desktop, Popout S and Mobile M.
-  - Touch targets: guess segments **paint** 29/35/39 px at 320/375/425,
-    equal-badge tap area `min(32px, 45% of the square)`, bar icons 36 px,
-    sound sliders 32 px on coarse pointers. The badge's ceiling is tied to the
-    square rather than flat at 32 px because a flat 32 px reaches past a
-    segment's own centre on a 320 px screen and steals it. Nothing reaches the
-    44 px *comfortable* target: four cards across cap `--ui` at 2.265vw, and
-    44 px bar icons overflowed a 375 px viewport. Table in
-    `RGS_TEST_PLAN.md` §11. "Popout S/L" is still a named responsive check.
-    - **This used to claim the 24 px floor was cleared "everywhere", and that
-      is not true on Mobile S.** The claim measured the segments' PAINT. The
-      badge is centred on the seam and its `::before` overlays them, so what a
-      thumb can actually reach — probed with `elementFromPoint`, which is the
-      only way to see a pseudo-element hit area — is **21 px** on
-      `.third-btn.higher-third` and **22 px** on the two `.io-square` halves at
-      320×568. Mobile M and Mobile L are genuinely clear (badge hit 32/33 px,
-      segments unobstructed).
-    - **It cannot be tuned out, and the arithmetic is why.** At 320 the square
-      is 58.9 px; two 24 px halves plus a 24 px badge needs 72 px, i.e. `--ui`
-      8.61 against the 7.04 available. Shrinking the badge instead makes it
-      worse — for the halves to keep 24 px the badge would have to drop to
-      10.9 px, below even its current 13.7 px paint, which is the unhittable
-      state the `::before` exists to fix. And `--ui` is bound at 320 by
-      **2.2vw** (the four-card row), not by height — `1.55vh` would allow 8.80.
-      So the only real fixes are a narrower card row or moving the badge off
-      the seam, and both are the owner's call, not a tuning pass.
-    - Do not "fix" this by restating the paint figure. That is what hid it.
-  - Tile assets: **done, and they live in `submission/`, not `static/`.** All
-    three fixed names are present — `RideTheBus-BG.jpg` (1536×1024, 499 KB),
-    `RideTheBus-FG.png` (1254×1254, 1.50 MB) and `TakeoverCasino-Logo.png`
-    (710×710, 726 KB). BG+FG is **1.99 MB against the 3 MB cap**, with a megabyte
-    of headroom; there is no documented cap on the provider logo.
-    - They were in `static/`, which is copied wholesale into the build output,
-      so every deployed build carried 2.7 MB of artwork no player ever fetches.
-      `static/` is 726 KB now — just `logo.png`, the only one the game loads.
-      **Do not move them back**; they go up through the Tile Editor.
-    - `TakeoverCasino-Logo.png` is byte-identical to `logo.png`, which is
-      correct rather than sloppy: the chip on the card backs, the loader and the
-      table's deck prop *is* the Takeover Casino mark. Kept as two files because
-      they have different owners — one is resolved through `${base}/logo.png`,
-      the other's filename is dictated by Stake.
-    - `logo.png` is now the WebP's fallback rather than the file the game
-      loads, so it stays at 710×710 and byte-identical to the tile asset.
-      README's older 4-layer Tile Editor description has been corrected.
-  - **The live-session checks in `RGS_TEST_PLAN.md` remain unrun — now 94, not
-    52.** The plan was strong on this project's own regression history and thin
-    on the criteria Stake publishes; 33 were added covering the spacebar binding,
-    the mute control, autoplay confirmation, an invalid `rgs_url`, a malformed
-    `?lang=`, min/max bet selectability, the paytable and UI guide, double-tap
-    zoom, the frame never scrolling, Play Again, replay in Popout S, and two new
-    sections — **13 · Stake.US and social mode** and **14 · Performance** — that
-    had no coverage at all.
-  - **Closed on `ui-art-pass`, listed so they are not re-opened by accident:**
-    - *"High cost bet modes require confirmation before activation."* The mode
-      picker now proposes rather than applies: picking a different family shows
-      a confirmation restating its blurb, ceiling and volatility, read from the
-      same `FAMILY_RULES` / `FAMILY_BLURB` the list rows use. Every close path
-      runs through one `closePopup()` that discards an unconfirmed pick.
-    - *"Double tap to zoom is disabled on mobile."* Now `touch-action:
-      manipulation`, **not** `maximum-scale=1.0, user-scalable=no`. The old pair
-      met the checklist by disabling pinch zoom too, which fails WCAG 1.4.4. If
-      the viewport meta looks under-specified, this is why — do not add them back.
-    - Keyboard focus. There was no `:focus-visible` anywhere on the board, and
-      `.choice-square` is `overflow: hidden`, so the browser's own outline on the
-      four primary controls was **clipped away entirely**. Segments use inset
-      rings for the same reason `.selected` does; everything unclipped uses an
-      offset outline. Never transition a focus ring.
-    - `prefers-reduced-motion` now covers the board (`cards.css`, `choices.css`,
-      `control-bar.css`, `popups.css`), not just the loader, intro and
-      celebration. The card flip still *happens* — it is how the game says a card
-      was revealed — it just stops being a rotation.
-- ~~Promo blurb for submission~~ — **written**, at three lengths, in
-  `PROMO_BLURB.md`. The **standard** one is the default to submit. Its Second
-  Chance sentence used to say the family "forgives your first wrong call
-  outright", which is wrong twice over — forgiveness keeps **half** the running
-  multiplier, and only from **card 2**. Stake reads the blurb against the game,
-  so every claim in that file has to be checkable against `FAMILY_RULES`.
-- **Not yet submitted to Stake** — math, bet modes and mechanics are all still
-  changeable until the user says otherwise.
+**`--code-only` is deliberate, not a shortcut.** Without it the 122 docs — this
+file, the `rtb-invariants` references, `stake-approval` — get a semantic pass
+through a third-party LLM, shipping unreleased game math and compliance text off
+the machine.
 
+**It reads `.svelte` at the import level ONLY.** Graphify maps `.svelte` to the
+JS/TS grammar, so the markup makes the parser emit one top-level ERROR node and a
+regex pass recovers the imports. You get which component imports which, never a
+function, prop or symbol inside one — `BoltMeter.svelte` and `ChoiceIcon.svelte`
+extract zero symbols. The 352 "syntax errors" a build prints are expected output,
+and installing `tree-sitter-svelte` does **not** help because graphify never looks
+for it. So trust the graph for the Python↔TypeScript mirror — the worst bug class
+in this repo — and use `npm run shots` and `check:svelte` for anything inside a
+component. `styles/tokens.css` is absent too, skipped as "potentially sensitive"
+on its filename alone.
 
 ---
 

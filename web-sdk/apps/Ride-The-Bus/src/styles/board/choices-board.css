@@ -1,0 +1,238 @@
+/* The guess row as the BOARD lays it out.
+ *
+ * WHY THIS IS NOT IN choices.css
+ *
+ * Exactly the reason choice-unavailable.css gives, one step further along.
+ * choices.css is shared by the board and the intro screen, and the intro draws
+ * the four squares on their own - inside its own step panels, with its own
+ * headings, and with nothing that can be unavailable. So the board's row, its
+ * columns, its labels and its "why is Inside off" tip are all dead weight in
+ * IntroPanels.svelte, and Svelte reports each one as an unused selector.
+ *
+ * Keeping them here, imported only by Game.svelte, is what keeps that quiet.
+ * This was masked until StartScreen was split into three components: a dynamic
+ * class elsewhere in the old file made svelte-check skip its unused-selector
+ * pass entirely, so all five rules looked used.
+ *
+ * .choice-square is NOT here - the intro renders it, so it stays with the
+ * buttons it contains.
+ */
+
+/* Guesses stay on screen between rounds; lock them (no clicks, dimmed) while
+   a round is revealing or an auto run is live. */
+.choice-row.locked { pointer-events: none; opacity: 0.5; }
+
+/* Three of a Kind's row: two Equal squares and their labels, nothing else.
+   The four-guess families' controls do not appear on this mode at all -
+   GameBoard renders a different row - rather than sitting greyed with a
+   caption, which read as a broken control. Each "square" is the Equal badge
+   the four-guess squares carry at their seam - in its selected state, and
+   nothing but that badge, upscaled - so the mode is recognisably "the Equal
+   pick, twice, made", and it is read-only: the round is one bet mode, so
+   nothing a press could do.
+
+   Half a choice square across, and placed under the GAPS between the three
+   cards rather than under cards 2 and 3: the two sit at +/-(card + gap)/2
+   from the row's centre, which is where those gaps are, so the row's gap is
+   that distance less one badge. */
+/* Compound, because the plain .choice-row rule below this one sets the gap
+   too and would win on order at the same specificity. */
+.choice-row.trips-row {
+  gap: calc(var(--card-w) + var(--gap) - var(--choice-size) * 0.5);
+}
+
+.trips-row .choice-column {
+  width: calc(var(--choice-size) * 0.5);
+}
+
+/* --equal-size lives on the slot, not the badge, so the slot and the badge
+   inside it are one size read from one place - the missed-guess ring below
+   draws round the SLOT and has to follow the badge's corners exactly. */
+.equal-slot {
+  --equal-size: calc(var(--choice-size) * 0.5);
+  position: relative;
+  width: var(--equal-size);
+  height: var(--equal-size);
+}
+
+/* THE BADGE, UPSCALED - nothing else. This is the seam badge the other modes
+   draw between Higher and Lower, in its SELECTED state (choices.css:
+   .equal-btn.selected - the 3px white ring, the brightness lift), at four
+   times its size. Every dimension of that badge is a ratio of --equal-size,
+   so the one property (set on .equal-slot above, and inherited) scales the
+   face, the edge, the radius and the ring together; the "=" is scaled to the
+   same ratio it holds on the small badge (0.61 x 0.3 of the badge) through
+   the properties ChoiceIcon reads.
+   It is not wrapped in a .choice-square: the square's own ring and clip made
+   it read as an unselected control with a badge inside, which is exactly
+   what it is not. Static rather than absolute because there is no seam to
+   centre on, and the select-state scale is dropped - the size is the size. */
+.equal-btn.equal-full {
+  --eq-icon-w: calc(var(--choice-size) * 0.305);
+  --eq-icon-h: calc(var(--choice-size) * 0.15);
+  position: static;
+  transform: none;
+  cursor: default;
+}
+
+/* Inert under a pointer as well: choices.css lifts a badge on hover as a
+   preview of picking it, and there is nothing to pick here. */
+@media (any-hover: hover) {
+  .equal-btn.equal-full:hover {
+    transform: none;
+  }
+}
+
+/* Choice squares. Positioned so the table die (TableDie.svelte) can sit
+   beside the row - or under it on a phone - without being in its flex flow. */
+.choice-row {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--gap);
+  margin: 0;
+}
+
+/* Pin the column to the square's width. Otherwise the longest labels
+   ("INSIDE / OUTSIDE") are wider than their square and drive the column, which
+   pushes the four columns past the viewport and wraps the row on phones. */
+/* position:relative so the "why is Inside off" box can be placed against the
+   column. It cannot live inside .choice-square - that is overflow:hidden and
+   would clip it to the rounded box. */
+.choice-column {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: var(--choice-size);
+  gap: calc(var(--ui) * 0.73);
+}
+
+/* SENTENCE CASE, at body size. These were spaced small caps - HIGHER over
+   LOWER - which design.md keeps for a two-word caption over a FIGURE (the
+   bar's BALANCE, BET, LAST WIN) and rules out on a control's label. They are
+   the labels of the four guess controls, and the intro and How to Play already
+   name the same four in sentence case with a slash; the board was the one
+   screen spelling them a third way. */
+.choice-label {
+  font-size: max(calc(var(--ui) * 1.05), var(--type-floor)); /* 11.5px */
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  /* The two-word labels wrap to two lines, so reserve two lines for ALL of them
+     - otherwise COLOR / SUIT sit a line higher and the four squares do not line
+     up. And CENTRE the text in that reservation: a one-line label left at the
+     top of a two-line box sat level with HIGHER and INSIDE, with an empty line
+     under it, and read as a label that had slipped up rather than one that was
+     level with its neighbours. The text is in an inner span (GameBoard.svelte)
+     so it wraps as one run of text: laid out directly by this flex container,
+     each piece of it would become an item of its own. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.4em;
+  /* Was #fff6df, a fifth warm white kept in no token. --ink-cream is the warm
+     near-white the takeover prints its amount in; a hair lighter here, and one
+     value instead of two. */
+  color: var(--ink-cream);
+  text-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.7);
+}
+
+/* ---- Why a pick is unavailable -------------------------------------------
+   Only ever shown for Inside after Equal. The button carries aria-disabled
+   rather than disabled precisely so it still receives hover and focus and can
+   raise this - a `disabled` button fires no mouse events at all, which is why
+   the old native `title` never appeared either. */
+/* ABOVE the column, not below it. Below, it ran off the bottom of the play
+   area - which clips - and on Desktop the explanation was cut off mid-sentence
+   behind the control bar ("...Nothing can fall"). Nothing had ever shot it
+   (`npm run shots -- --tips` does now). Above is the readout's slot, which has
+   room at every size and is empty before a deal; the first-deal hint that
+   also lives there steps aside while this is up (GameBoard.svelte). */
+.choice-tip {
+  position: absolute;
+  bottom: calc(100% + var(--ui) * 0.5);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  width: max(calc(var(--ui) * 20), 160px);
+  max-width: 60vw;
+  padding: calc(var(--ui) * 0.8) calc(var(--ui) * 1);
+  border-radius: calc(var(--ui) * 0.6);
+  background: var(--tip-bed);
+  border: 1px solid var(--tip-edge);
+  color: var(--ink-warm);
+  font-size: calc(var(--ui) * 1.05);
+  /* 400: body weight for a sentence of explanation. (It once asked for a 500
+     the body face of the time did not ship; the body face is variable now, and
+     400 is the intent rather than the fallback.) */
+  font-weight: 400;
+  line-height: 1.35;
+  text-align: center;
+  text-transform: none;
+  letter-spacing: 0;
+  box-shadow: 0 calc(var(--ui) * 0.6) calc(var(--ui) * 1.4) rgba(var(--shadow-rgb), 0.55);
+  pointer-events: none;
+}
+
+/* ---- The guess that missed ------------------------------------------------
+   After a bust, the square of the guess that failed takes a ring in the loss
+   red; a guess Second Chance forgave takes one in the forgiven amber - the same
+   pair as the card marks (.bust-x / .forgiven-mark in cards.css). The card says
+   the round ended; the ring says which call ended it. An outline, not a
+   box-shadow, so it cannot fight the square's own lit material, and it clears
+   the moment the next round deals (round.bustedIndex resets). */
+.choice-column .choice-square,
+.choice-column .equal-slot {
+  outline: calc(var(--ui) * 0.28) solid transparent;
+  outline-offset: calc(var(--ui) * 0.3);
+}
+
+/* Three of a Kind's badge takes the same ring, fitted to the badge rather
+   than to the box it sits in. An outline follows its element's border-radius,
+   and the slot had none: the ring came out a square-cornered box round a
+   rounded badge. It also has to clear more than a square does - the badge's
+   selected state is a 3px white ring outside its edge (.equal-btn.selected in
+   choices.css; keep the two figures together), and at the squares' offset the
+   red landed on top of the white. So: the badge's own corner, and the
+   squares' gap measured from the white ring rather than from the face. */
+.choice-column .equal-slot {
+  border-radius: calc(var(--equal-size) * 0.22);
+  outline-offset: calc(3px + var(--ui) * 0.3);
+}
+
+/* The ring arrives once the card that decided it has turned, not the instant
+   the book says so - a ring during the flip calls the miss before the player
+   has seen the card. The delay sits on the ENTERING rule only, so it clears
+   at once when the next round deals. */
+.choice-column.is-missed .choice-square,
+.choice-column.is-missed .equal-slot {
+  outline-color: var(--loss);
+  transition: outline-color 200ms var(--ease-out) calc(var(--flip-dur, 0.5s) * 0.9);
+}
+
+.choice-column.is-forgiven .choice-square,
+.choice-column.is-forgiven .equal-slot {
+  outline-color: var(--forgiven);
+  transition: outline-color 200ms var(--ease-out) calc(var(--flip-dur, 0.5s) * 0.9);
+}
+
+/* ---- Under the win takeover the labels go; the squares stay ---------------
+   The row steps back to 0.16 (cards.css), and the squares can: they are the
+   bet, and dimmed they read as the table's. Their LABELS are text, and on a
+   portrait phone the takeover's text stack lands on exactly this line - the
+   win's multiplier printed between "Higher / Lower" and "Inside / Outside",
+   faint but legible, even at 0.16. Words beside the win's figure are the one
+   thing the takeover cannot share the screen with, so these leave with the
+   readouts, on their timing. */
+:global(.takeover-open) .choice-label {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.3s var(--ease-out),
+    visibility 0s linear 0.3s;
+}
+
+.choice-column.is-missed .choice-label { color: var(--loss-soft); }
+.choice-column.is-forgiven .choice-label { color: var(--forgiven); }

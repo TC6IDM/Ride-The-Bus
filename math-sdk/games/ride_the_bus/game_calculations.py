@@ -1,6 +1,7 @@
 """Card-odds helper functions for Ride The Bus."""
 
 import math
+import random
 
 from src.executables.executables import Executables
 
@@ -18,6 +19,12 @@ COLOR_CHOICES = ["red", "black"]
 HIGHER_LOWER_CHOICES = ["higher", "lower", "equal"]
 INSIDE_OUTSIDE_CHOICES = ["inside", "outside", "equal"]
 SUIT_CHOICES = ["heart", "diamond", "club", "spade"]
+
+# A stage with no guess at all. The card is dealt and shown, it is always
+# "correct", and it pays exactly decay - p = 1 in the martingale - so with a
+# pricing target of 1.0 the running multiplier is untouched. Only the
+# fixed-combo family uses it; see MODE_FAMILIES["tr"].
+FREE_CHOICE = "any"
 
 SUIT_NAME_TO_SYMBOL = {"heart": "♥", "diamond": "♦", "club": "♣", "spade": "♠"}
 
@@ -45,16 +52,38 @@ SUIT_NAME_TO_SYMBOL = {"heart": "♥", "diamond": "♦", "club": "♣", "spade":
 #            it refuses outright rather than emit a non-compliant table.
 #            Keeping the first card lethal preserves the ~50% zero rate the
 #            reweighter needs, and it leaves the opening card its tension.
-#   hs       High Stakes. Misses keep 20% instead of 30%, so wins are worth
+#   hs       High Stakes. Misses keep 16% instead of 30%, so wins are worth
 #            more - the ceiling is above base's, at the same roughly-one-in-two
 #            chance of a round paying nothing.
+#   tr       Three of a Kind. A different game on the same table: a 12-card
+#            deck (the Ace, King and Queen of each suit), THREE cards, no
+#            guesses at all - card 1 is dealt, cards 2 and 3 must MATCH ITS
+#            RANK - and nothing back on any miss. One mode, at cost 250x,
+#            paying 4,583.3x the base bet. See THE ALL-OR-NOTHING BOUND below
+#            for why it is this shape and no other.
+#   ls       Last Stop. Classic's first three cards, to the bit, and a suit
+#            card with no price of its own: a right suit draws a bus ticket
+#            from a stack of 20 (ten 2x, five 3x, three 5x, two 10x) and the
+#            ticket multiplies the running total. Every miss from card 2 keeps
+#            30%, as on Classic. See LAST STOP below.
 #
 # The retention numbers are not free choices. Stake measures CVaR and Expected
 # Tail Liability as the worst value across all modes, and a failed class shrinks
-# the game's bet-level template. High Stakes at 0.20 gives CVaR 648 against a
-# 700 limit; at 0.15 it is 730 and over. That is why it is 0.20.
+# the game's bet-level template. The two enumerations this repo has run
+# disagree about the step below 0.16: the exhaustive model said 682 at 0.16
+# where the build then MEASURED 624.6 (the model runs hot on the tail), and
+# put 0.15 at 722; the README's enumeration (which ran cold - 551 at 0.20
+# against a measured 568.8) put 0.15 at CVaR 618 / ETL 0.764. Extrapolating
+# the measured builds (CVaR ~0.29x the family ceiling at both 0.20 and 0.16)
+# lands 0.15 near 650-660 / 0.77 - and that is the estimate that held: the
+# 2026-09-22 build MEASURES CVaR 639.0, etl40b 0.769 and std 38.401, inside
+# 700 / 0.8 / 50 on roughly half the margin 0.16 had. ETL is the binding one
+# at 4% of headroom, so read etl40b first in stats_summary.json after any
+# change here; a rebuild that pushes it past 0.8 goes back to 0.16 (wincap
+# 2200, ceiling 2169.2x). 0.10 fails on ETL whatever cap is put on it. Note that at 0.15 a card-2 bust shows 0.2x (1.995 x 0.15 x 0.995 =
+# 0.298, floored) where 0.16 still showed 0.3x.
 #
-# EVERY FAMILY COSTS 1.0x, AND THAT IS A CONSTRAINT, NOT A DEFAULT
+# THE FOUR-GUESS FAMILIES COST 1.0x, AND THAT IS A CONSTRAINT, NOT A DEFAULT
 #
 # Second Chance and High Stakes were 2.0x. Both had to come down, because
 # etl40b - the expected payout from wins of at least 40x the cost - is summed as
@@ -76,9 +105,129 @@ SUIT_NAME_TO_SYMBOL = {"heart": "♥", "diamond": "♦", "club": "♣", "spade":
 # At 1.0x the three modes are a volatility ladder at one price: survive a miss,
 # play it straight, or make every miss hurt for a higher ceiling. Base is still
 # 1.0x and nothing is cheaper, which is what Stake requires.
+#
+# THE ALL-OR-NOTHING BOUND (why Three of a Kind is what it is)
+#
+# "Nothing on a miss, more for the full ride" was asked for and cannot exist on
+# the four-guess ride, for two reasons that are not a matter of tuning:
+#
+#   1. pay x chance = RTP. Only the sweep pays, so its recorded frequency must
+#      clear Stake's "better than 1 in 20" hit-rate line, which caps a binary
+#      payout at 19.2x the cost. The BEST four-guess combination (higher/lower
+#      + outside) sweeps 1 in 26.8; colour->equal->equal->suit sweeps 1 in
+#      3,500 and fails hit rate, std (57 > 50), CVaR (960 > 700) and ETL at
+#      once. A shorter deck makes it WORSE: fewer ranks means more ties, and
+#      ties eat the higher/lower probability, while the suit stage (x1/4) is
+#      untouched by any rank change.
+#   2. etl40b: a single outcome at or above 40x cost puts 100% of the RTP in
+#      the tail against an 80% limit. So a zero-on-miss mode is capped under
+#      40x cost before the hit-rate line even applies, and a big trips payout
+#      (600x+) is only reachable with a consolation on the pair - a different
+#      product, declined.
+#
+# What escapes both is a cost multiple: the ride pays under 40x its cost, so
+# its etl40b is 0 at any cost, and the cost turns a small multiple into a large
+# base-bet figure. But the SAME reading that frees it caps it, because Stake's
+# tail rules are written in base-bet multiples and never scale with cost:
+#
+#   P(>= 5,000x base)  <= 1%     P(>= 10,000x) <= 0.5%    P(>= 25,000x) <= 0.2%
+#   CVaR absolute <= 20,000x base   etl10k (RTP share above 10,000x) <= 0.6
+#
+# A binary win at or above 10,000x base would have to land rarer than 1 in
+# 200, i.e. pay >= 192x its cost - which etl40b forbids (a single outcome at
+# or above 40x cost is 100% of the RTP). One step down, a win at or above
+# 5,000x needs 1 in 100, i.e. >= 96x cost: same wall. So a binary mode's win
+# MUST STAY UNDER 5,000x THE BASE BET (10,000x at 3-star), and the first
+# build of this family - A K Q J, cost 1000x, 25,000x - failed every tail row
+# at once. No consolation rescues that figure either: the tail rows count how
+# OFTEN a >= 10,000x win lands, not how much RTP it carries.
+#
+# Under 5,000x with the win under 40x cost puts the cost at a few hundred, and
+# the deck sets the multiple. A K Q, one of each, three cards: card 2 matches
+# 3 of 11, card 3 matches 2 of 10 - fair odds 1 x 11/3 x 5 = 18.333x at a
+# physical 1 in 18.3, recorded 1 in 19.1 once reweighted to 96%. Cost 250x
+# lands that on 4,583.3x the base bet, with every hard row clear: P(>= 5,000x)
+# 0, etl40b 0, etl10k 0, CVaR 4,583 absolute / 18.3 per stake, and a hit rate
+# INSIDE the soft 1-in-20 line. Fair pricing throughout: the published table
+# deals what the deck deals.
+#
+# WHY 250x AND NOT MORE. The win must stay under 5,000x base, and at fair odds
+# the win is 18.333 x cost, so cost < 272.7: at 273x the mode's only win
+# crosses 5,000x and P(>= 5,000x) jumps from 0 to the whole hit rate (5.2%
+# against a 1% limit) - a cliff, not a slope. 250 is the last round figure
+# under it. The cost also sizes the bet ladder, which is the other reason it
+# stays there: bet cost is capped at $50,000 per round on the 2-star template
+# and exposure at $5,000,000, so 250x leaves the base bet at $200 and the win
+# at $916,660 (272x would take the base bet to $183 for a 1% bigger prize). At
+# 1000x the same caps pushed the whole game's base bet to $50.
+#
+# Decks considered and declined: A K Q J (16 cards) fair 35x / 1 in 36.5 -
+# only fits under 5,000x by pricing it down to 24x, dealing trips 45% more
+# often than the deck and sitting past 1 in 20; A K Q J x 2 (32 cards) 22.1x /
+# 1 in 23 - "two of each" is harder to explain and also past the line.
+#
+# Precedent: Graffiti Ways (Colorful Play) ships a 1000x-cost mode paying
+# 25,000x base. Its paytable is a wide slot distribution with token line hits
+# of 0.1x-16x BASE on a 1000x round, so its 25,000x is a rare corner of a
+# spread, not a 1-in-26 binary - which is how it clears the tail rows this
+# mode cannot. This mode stays PURELY binary; 94.8% of its rounds pay nothing,
+# which is past the "90,000 of 100,000" example in Stake's guidelines even
+# though the hit rate itself clears 1 in 20. If review objects, the first fix
+# is a token pair payout (retention ~2e-3 on the card-3 miss returns 1x base on
+# a pair: hit rate 1 in 5, RTP cost ~0.06%, trips unchanged).
+#
+# LAST STOP (why the suit card pays a ticket instead of a price)
+#
+# Cards 1-3 are Classic's to the bit: the same decay, the same 30% banked on a
+# miss from card 2 and decayed for the cards never played. The suit card has
+# no price of its own. A right suit draws a ticket and the ticket multiplies
+# the running total; a wrong suit keeps 30%, as it does on Classic. So nothing
+# a player sees on cards 1-3 differs from Classic, and the least a right guess
+# can multiply the total by anywhere is Classic's own 1.03x (Outside on a
+# pair). The suit card's least is the 2x ticket.
+#
+# The ticket REPLACES the suit card's price; nothing else pays for it. A right
+# suit on Classic pays 2.9x to 3.7x (13 down to 10 of the 49 cards left); the
+# ticket averages 3.5x, so the trade is one fixed figure for a spread of 2x to
+# 10x at much the same mean. Two designs came before it, both rejected:
+#
+#   * The ticket's price spread over all four cards (decay (0.99 / 3.5) **
+#     0.25 per card). A price falls as its odds rise, so near-certain picks
+#     priced under 1x: a right Higher on an Ace read x0.76. A right guess that
+#     shrinks the total loses the player money - the owner ruled it out
+#     (2026-09-27).
+#   * The price taken from card 1 and the suit card only (decays 0.64, D, D,
+#     D*D/3.5/0.64, and a flat 50% on a miss). Every chip stayed over 1x, but
+#     a right first card read 1.28x where Classic reads 1.99x: a mode that cut
+#     the player's profit and handed it back as a ticket. Rejected 2026-09-30.
+#
+# The martingale does NOT hold on the suit card: its expected factor is
+# p x 3.5 + (1 - p) x 0.3, about 1.10 at 12 in 49, where every priced card
+# returns 0.9975. So a Last Stop mode's raw RTP sits a few percent above the
+# same combination's Classic figure (0.81-1.02 against 0.77-0.94 on the
+# lowest and highest), and reweight_luts.py pins it to 0.96 by loss weight like
+# every other mode - and weights the sweeps so the published ticket odds are
+# exactly the stack's.
+#
+# Modelled exactly (model_families.py, every ordered deal) on 2026-09-30:
+# std 4.5-31.0, worst etl40b 0.585, worst CVaR 475, max 4,301.9x (Classic's
+# best run to card 3, 430.19x, times the 10x ticket), a ticket 1 round in 29
+# (the easiest picks) to 1 in 3,539 (two Equals), and between Classic and High
+# Stakes by std on all 64 combinations. The ticket is drawn only on a clean
+# sweep; a bust never carries one, not even a hidden one.
 # ---------------------------------------------------------------------------
 
 BASE_RETENTION = (0.0, 0.3, 0.3, 0.3)
+
+# Three of a Kind's deck and combo. Only ranks in RANKS order, so rank_value is
+# untouched (it is never asked for here anyway - "equal" is the only rank test).
+# THREE stages: a combination's length is its stage count, and run_spin deals
+# that many cards. The four-guess families are the only ones with a suit stage.
+TRIPS_DECK = {"ranks": ["Q", "K", "A"], "copies": 1}
+TRIPS_COMBO = (FREE_CHOICE, "equal", "equal")
+
+# Last Stop's ticket stack: (multiplier, how many of the 20). Mean 3.5 exactly.
+TICKET_STACK = ((2, 10), (3, 5), (5, 3), (10, 2))
 
 MODE_FAMILIES = {
     "base": {
@@ -109,15 +258,48 @@ MODE_FAMILIES = {
     "hs": {
         "prefix": "hs_",
         "cost": 1.0,
-        "retention": (0.0, 0.2, 0.2, 0.2),
+        "retention": (0.0, 0.15, 0.15, 0.15),
         "forgive": None,
         "forgive_from": 0,
-        # Reaches 1910.2x - still above Classic's 1354.2x, because a miss keeps
+        # Reaches 2237.3x - still above Classic's 1354.2x, because a miss keeps
         # less here and so every correct guess is priced higher. The shared 1400
         # cap CLIPPED this family, which the frontend's book-parity test caught
-        # as "client 3820.5 vs book 1400" back when it cost 2x. 2000 clears the
-        # real ceiling, and is 250x under Stake's 500,000x payout limit.
-        "wincap": 2000,
+        # as "client 3820.5 vs book 1400" back when it cost 2x. 2300 clears the
+        # real ceiling (it was 2200 over 2169.2x at 0.16, and 2000 over 1910.2x
+        # at 0.20) - it must sit ABOVE the ceiling, see the note on base.
+        "wincap": 2300,
+    },
+    "tr": {
+        "prefix": "tr_",
+        # The only family not at 1.0x - see THE ALL-OR-NOTHING BOUND above.
+        "cost": 250.0,
+        "retention": (0.0, 0.0, 0.0),
+        "forgive": None,
+        "forgive_from": 0,
+        # Reaches 4,583.3x the base bet (18.333x the cost, floored to 0.1x).
+        # Under the 5,000x tail line; 4700 never binds.
+        "wincap": 4700,
+        # The three fields below default for the other families: config
+        # target_rtp, the full 52-card deck, and the 64 combinations.
+        # A pricing target of 1.0 (decay = 1) so the free card pays exactly
+        # 1.00x rather than 0.9975 - which the client's 0.1x floor would
+        # display as 0.9x on a card that was never a guess.
+        "target_rtp": 1.0,
+        "deck": TRIPS_DECK,
+        "combos": [TRIPS_COMBO],
+    },
+    "ls": {
+        "prefix": "ls_",
+        "cost": 1.0,
+        "retention": BASE_RETENTION,
+        "forgive": None,
+        "forgive_from": 0,
+        # Reaches 4,301.9x (modelled exactly; the build confirms it). Under the
+        # 5,000x line, and 4400 never binds.
+        "wincap": 4400,
+        # (value, count) - the stack of 20 a right suit draws from. It pays the
+        # last card in place of a price; see LAST STOP above.
+        "ticket": TICKET_STACK,
     },
 }
 
@@ -136,7 +318,7 @@ def family_of(mode: str) -> str:
     return "base"
 
 
-def all_mode_combinations():
+def all_mode_combinations(family: str = "base"):
     """
     Every (color, higher_lower, inside_outside, suit) choice combination that
     can actually be won. Excludes higher_lower="equal" + inside_outside="inside":
@@ -145,7 +327,14 @@ def all_mode_combinations():
     them - "inside" is mathematically impossible, not just rare. A bet mode
     with a 100% loss rate has zero variance, which Stake's RGS rejects
     outright ("failed to obtain distribution statistics from lookup table").
+
+    A family that publishes a fixed list ("combos") yields that list instead -
+    Three of a Kind is one combination, not 64.
     """
+    fixed = MODE_FAMILIES[family].get("combos")
+    if fixed is not None:
+        yield from fixed
+        return
     for color in COLOR_CHOICES:
         for higher_lower in HIGHER_LOWER_CHOICES:
             for inside_outside in INSIDE_OUTSIDE_CHOICES:
@@ -155,43 +344,123 @@ def all_mode_combinations():
                     yield (color, higher_lower, inside_outside, suit)
 
 
-def mode_name(
-    color: str, higher_lower: str, inside_outside: str, suit: str, family: str = "base"
-) -> str:
+def mode_name(*choices: str, family: str = "base") -> str:
     """
-    Bet mode name: one full pre-selected 4-stage choice combination, prefixed
-    with its family.
+    Bet mode name: one full pre-selected choice combination - four stages on
+    the four-guess families, three on Three of a Kind - prefixed with its
+    family.
 
     The base family carries NO prefix, deliberately. Its 64 names are already
     published and every replay event ID recorded against them stays valid.
     """
     prefix = MODE_FAMILIES[family]["prefix"]
-    return f"{prefix}{color}_{higher_lower}_{inside_outside}_{suit}"
+    return prefix + "_".join(choices)
 
 
 def parse_mode_name(name: str) -> tuple:
-    """Inverse of mode_name(): -> (family, color, higher_lower, inside_outside, suit)."""
+    """
+    Inverse of mode_name(): -> (family, choice, choice, ...) - the family and
+    then ONE ENTRY PER STAGE, so a caller that wants the stage count reads the
+    length. Four-guess modes come back as (family, color, higher_lower,
+    inside_outside, suit); Three of a Kind as (family, any, equal, equal).
+    """
     family = family_of(name)
     body = name[len(MODE_FAMILIES[family]["prefix"]) :]
-    color, higher_lower, inside_outside, suit = body.split("_")
-    return family, color, higher_lower, inside_outside, suit
+    return (family, *body.split("_"))
+
+
+# The order the build works through the families - and so the order of every
+# list it writes: the simulation, the reweight, the verification, the book
+# scan, publish_files/index.json and stats_summary.json, and the mode boxes in
+# build_monitor.py's page.
+#
+# Volatility order, calmest first, which is how the families are listed
+# everywhere they are read: Second Chance keeps half of a first miss, Classic
+# keeps 30%, High Stakes 15%, and Three of a Kind is its own game. It is a
+# READING ORDER ONLY - no family's cost, retention or payout depends on where
+# it sits here, and a simulation's outcome is a function of its global index
+# (reset_seed(sim)), never of when its mode was run.
+FAMILY_BUILD_ORDER = ("sc", "base", "ls", "hs", "tr")
+
+
+def ordered_families() -> list:
+    """MODE_FAMILIES' keys in FAMILY_BUILD_ORDER, all of them, checked.
+
+    A family added to MODE_FAMILIES and forgotten here would simply stop being
+    published - 257 modes would quietly become 193 - so this refuses rather
+    than dropping it.
+    """
+    missing = [family for family in MODE_FAMILIES if family not in FAMILY_BUILD_ORDER]
+    if missing:
+        raise RuntimeError(
+            f"FAMILY_BUILD_ORDER does not list {missing}. Every family in MODE_FAMILIES "
+            "must appear in it, or its modes are never published."
+        )
+    return [family for family in FAMILY_BUILD_ORDER if family in MODE_FAMILIES]
 
 
 def all_published_modes():
-    """Every (family, combo) pair the game publishes - 3 families x 64 = 192."""
-    for family in MODE_FAMILIES:
-        for combo in all_mode_combinations():
+    """Every (family, combo) pair the game publishes - 4 x 64 + 1 = 257."""
+    for family in ordered_families():
+        for combo in all_mode_combinations(family):
             yield family, combo
+
+
+# Ace-low rank values, built once from RANKS.
+#
+# This is the hottest line in the whole build. rank_value() is called for every
+# remaining card at two of the four stages - about 240 times per simulation,
+# 10.5 BILLION times across a 44M-simulation build - and it used to be
+# RANKS.index(rank) + 1, a linear scan of a 13-element list. A profile of one
+# mode put it and the list.index under it at 25% of the entire simulation pass.
+# The map holds exactly the same values; nothing about an outcome changes.
+_RANK_VALUES = {rank: index + 1 for index, rank in enumerate(RANKS)}
 
 
 def rank_value(rank: str) -> int:
     """Ace-low rank value, matching the frontend's rankValue map."""
-    return RANKS.index(rank) + 1
+    return _RANK_VALUES[rank]
 
 
-def build_deck() -> list:
-    """Return an unshuffled standard 52-card deck as (rank, suit) tuples."""
-    return [(rank, suit) for suit in SUITS for rank in RANKS]
+def build_deck(family: str = "base") -> list:
+    """
+    Return the family's unshuffled deck as (rank, suit) tuples: the standard 52
+    unless the family declares its own ("deck": ranks + copies). Ranks keep
+    RANKS order so rank_value never changes meaning.
+    """
+    spec = MODE_FAMILIES[family].get("deck")
+    if spec is None:
+        return [(rank, suit) for suit in SUITS for rank in RANKS]
+    ranks = [rank for rank in RANKS if rank in spec["ranks"]]
+    return [(rank, suit) for _ in range(spec["copies"]) for suit in SUITS for rank in ranks]
+
+
+def family_target_rtp(family: str, default: float) -> float:
+    """The pricing target decay**4 is solved from - the config value unless the family overrides it."""
+    return MODE_FAMILIES[family].get("target_rtp", default)
+
+
+def ticket_values(family: str):
+    """The family's ticket stack laid out as its 20 values, or None if it has no ticket."""
+    stack = MODE_FAMILIES[family].get("ticket")
+    if stack is None:
+        return None
+    return tuple(value for value, count in stack for _ in range(count))
+
+
+def ticket_slot(sim: int) -> int:
+    """
+    Which of the 20 tickets simulation `sim` draws, if it sweeps.
+
+    A stream of its own, seeded on the simulation index and nothing else: the
+    shared deal (deals_standard52.bin) and every other family's book are
+    untouched by it, and run_spin and direct_books get the same ticket for the
+    same round without either having to carry RNG state. A string seed goes
+    through SHA-512, so it is the same on every machine and interpreter build.
+    """
+    return random.Random(f"rtb-ticket-{sim}").randrange(20)
+
+
 
 
 class GameCalculations(Executables):
@@ -218,7 +487,7 @@ class GameCalculations(Executables):
     and an impossible guess - p<=0, chiefly "inside" on rank-adjacent
     references - pays 0 and so escapes the martingale, dragging those modes
     low). The EXACT common RTP and Stake's Cross-Mode RTP Consistency check
-    (all 192 modes within 0.5%) are delivered afterwards by reweight_luts.py,
+    (all 257 modes within 0.5%) are delivered afterwards by reweight_luts.py,
     which reweights each mode's lookup table onto config.rtp precisely; the
     martingale's job is just to get close enough that that reweight stays a
     gentle nudge rather than a distortion.
@@ -232,12 +501,17 @@ class GameCalculations(Executables):
     # across every mode, costing nothing on cross-mode consistency.
     STAGE_RETENTION = (0.0, 0.3, 0.3, 0.3)
 
-    def target_rtp_decay(self) -> float:
-        """Per-stage decay constant such that decay**4 == config.target_rtp."""
-        return self.config.target_rtp**0.25
+    def target_rtp_decay(self, family: str = "base") -> float:
+        """
+        Per-stage decay constant: decay**4 == the family's pricing target
+        (config.target_rtp unless overridden). Solved as a fourth root even on
+        the three-stage family, whose target is exactly 1.0 - so decay is 1
+        there and the exponent is moot.
+        """
+        return family_target_rtp(family, self.config.target_rtp) ** 0.25
 
     def partial_multiplier(
-        self, probability: float, stage_index: int, retention: float = None
+        self, probability: float, stage_index: int, retention: float = None, decay: float = None
     ) -> float:
         """
         Win-multiplier for stage `stage_index` at true win-probability
@@ -256,12 +530,16 @@ class GameCalculations(Executables):
         two agree - pay a stage as though a miss kept 0.3 while the miss really
         keeps 0.5 and the mode's RTP drifts off target.
         Defaults to the base table so existing callers are unaffected.
+
+        `decay` likewise: the config-derived constant unless the caller prices
+        a family with its own target (Three of a Kind prices at exactly 1.0).
         """
         if probability <= 0:
             return 0.0
         if retention is None:
             retention = self.STAGE_RETENTION[stage_index]
-        decay = self.target_rtp_decay()
+        if decay is None:
+            decay = self.target_rtp_decay()
         return (decay - (1 - probability) * retention) / probability
 
     def quantize_multiplier(self, raw: float) -> float:
@@ -278,48 +556,63 @@ class GameCalculations(Executables):
         quantized = math.floor(raw * 10) / 10
         return quantized if quantized > 0 else 0.1
 
-    def color_payouts(self, remaining: list, retention: float = None) -> dict:
+    def color_payouts(self, remaining: list, retention: float = None, decay: float = None) -> dict:
         total = len(remaining)
         red = sum(1 for _, suit in remaining if suit in RED_SUITS)
         black = total - red
         return {
-            "red": self.partial_multiplier(red / total, 0, retention),
-            "black": self.partial_multiplier(black / total, 0, retention),
+            "red": self.partial_multiplier(red / total, 0, retention, decay),
+            "black": self.partial_multiplier(black / total, 0, retention, decay),
         }
 
-    def higher_lower_payouts(self, remaining: list, ref_value: int, retention: float = None) -> dict:
+    def higher_lower_payouts(self, remaining: list, ref_value: int, retention: float = None, decay: float = None) -> dict:
+        # ONE pass, and one rank lookup per card. This used to be two sum()
+        # generators over the same ~50 cards, each calling rank_value on every
+        # one of them; the counts are identical, there is just half as much of
+        # it. Same for inside_outside_payouts below, which managed three passes
+        # and looked a card's rank up twice in one of them.
         total = len(remaining)
-        higher = sum(1 for rank, _ in remaining if rank_value(rank) > ref_value)
-        lower = sum(1 for rank, _ in remaining if rank_value(rank) < ref_value)
+        higher = 0
+        lower = 0
+        for rank, _suit in remaining:
+            value = _RANK_VALUES[rank]
+            if value > ref_value:
+                higher += 1
+            elif value < ref_value:
+                lower += 1
         equal = total - higher - lower
         return {
-            "higher": self.partial_multiplier(higher / total, 1, retention),
-            "lower": self.partial_multiplier(lower / total, 1, retention),
-            "equal": self.partial_multiplier(equal / total, 1, retention),
+            "higher": self.partial_multiplier(higher / total, 1, retention, decay),
+            "lower": self.partial_multiplier(lower / total, 1, retention, decay),
+            "equal": self.partial_multiplier(equal / total, 1, retention, decay),
         }
 
-    def inside_outside_payouts(self, remaining: list, val_a: int, val_b: int, retention: float = None) -> dict:
+    def inside_outside_payouts(self, remaining: list, val_a: int, val_b: int, retention: float = None, decay: float = None) -> dict:
         total = len(remaining)
         min_val, max_val = min(val_a, val_b), max(val_a, val_b)
-        inside = sum(1 for rank, _ in remaining if min_val < rank_value(rank) < max_val)
-        outside = sum(
-            1 for rank, _ in remaining if rank_value(rank) < min_val or rank_value(rank) > max_val
-        )
+        inside = 0
+        outside = 0
+        for rank, _suit in remaining:
+            value = _RANK_VALUES[rank]
+            if min_val < value < max_val:
+                inside += 1
+            elif value < min_val or value > max_val:
+                outside += 1
         equal = total - inside - outside
         return {
-            "inside": self.partial_multiplier(inside / total, 2, retention),
-            "outside": self.partial_multiplier(outside / total, 2, retention),
-            "equal": self.partial_multiplier(equal / total, 2, retention),
+            "inside": self.partial_multiplier(inside / total, 2, retention, decay),
+            "outside": self.partial_multiplier(outside / total, 2, retention, decay),
+            "equal": self.partial_multiplier(equal / total, 2, retention, decay),
         }
 
-    def suit_payouts(self, remaining: list, retention: float = None) -> dict:
+    def suit_payouts(self, remaining: list, retention: float = None, decay: float = None) -> dict:
         total = len(remaining)
         counts = {suit: 0 for suit in SUITS}
         for _, suit in remaining:
             counts[suit] += 1
         return {
-            "heart": self.partial_multiplier(counts["♥"] / total, 3, retention),
-            "diamond": self.partial_multiplier(counts["♦"] / total, 3, retention),
-            "club": self.partial_multiplier(counts["♣"] / total, 3, retention),
-            "spade": self.partial_multiplier(counts["♠"] / total, 3, retention),
+            "heart": self.partial_multiplier(counts["♥"] / total, 3, retention, decay),
+            "diamond": self.partial_multiplier(counts["♦"] / total, 3, retention, decay),
+            "club": self.partial_multiplier(counts["♣"] / total, 3, retention, decay),
+            "spade": self.partial_multiplier(counts["♠"] / total, 3, retention, decay),
         }

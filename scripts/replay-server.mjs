@@ -69,6 +69,9 @@ const MODES = new Map(index.modes.map((m) => [m.name, m]));
  * is the difference between telling someone a round does not exist and letting
  * them build a link that 404s.
  */
+/** Last Stop's ticket scenarios, one per value - read out of REPLAY_EVENTS.md. */
+const TICKET_ALIASES = ['ticket2', 'ticket3', 'ticket5', 'ticket10'];
+
 const SCENARIOS = (() => {
   // Overridable so the parser can be exercised against a fixture without
   // touching the generated file, which is never hand-edited.
@@ -105,14 +108,27 @@ const SCENARIOS = (() => {
       // round" - one is fixed by regenerating, the other never will be.
       bustwin: cells.length >= 9 ? cell(cells[6]) : undefined,
       forgiven: cells.length >= 9 ? cell(cells[7]) : undefined,
+      // Last Stop's four ticket columns, after the shared eight. Absent
+      // (undefined) on every other family's rows and on an older table.
+      ...Object.fromEntries(
+        TICKET_ALIASES.map((alias, i) => [alias, cells.length >= 13 ? cell(cells[8 + i]) : undefined]),
+      ),
     });
   }
   console.log(`Scenarios for ${byMode.size} modes, from REPLAY_EVENTS.md`);
   return byMode;
 })();
 
+// Longest prefix first, like game_calculations.py:_PREFIXES. A fourth family
+// added here also needs a row in FAM in the page below.
+const FAMILY_PREFIXES = [
+  ['tr_', 'tr'],
+  ['sc_', 'sc'],
+  ['ls_', 'ls'],
+  ['hs_', 'hs'],
+];
 const familyOf = (name) =>
-  name.startsWith('sc_') ? 'sc' : name.startsWith('hs_') ? 'hs' : 'base';
+  FAMILY_PREFIXES.find(([prefix]) => name.startsWith(prefix))?.[1] ?? 'base';
 
 /* ---- Scenarios -----------------------------------------------------------
    `event` is normally a simulation ID straight out of REPLAY_EVENTS.md, but
@@ -149,7 +165,31 @@ const ALIASES = ['max', 'big', 'win', 'loss'];
    mode with no such round pay for a full 215k-row pass to discover that. The
    answer belongs in the build that produced the books, not in the tool that
    reads them. See SCENARIOS at the top of this file. */
-const BOOK_ALIASES = ['bustwin', 'forgiven'];
+const BOOK_ALIASES = ['bustwin', 'forgiven', ...TICKET_ALIASES];
+
+/**
+ * The music candidates, read out of the app rather than duplicated here.
+ *
+ * This is a standalone dev script with no build step, so it cannot import from
+ * the app - the same constraint that gives CUR its own copy of the currency
+ * list. A regex over the manifest is the cheap half-measure: it means a fifth
+ * candidate shows up on this page without anyone remembering to add it, and if
+ * musicTracks.ts is ever reshaped the worst case is an empty picker and a link
+ * with no dev_music on it, which is just the default track.
+ */
+function musicTracks() {
+  const file = path.join(
+    ROOT,
+    "web-sdk/apps/Ride-The-Bus/src/game/audio/musicTracks.ts",
+  );
+  if (!existsSync(file)) return [];
+  const src = readFileSync(file, "utf8");
+  const out = [];
+  const re = /id:\s*'([a-z0-9-]+)',[\s\S]{0,400}?label:\s*'([^']+)'/g;
+  let m;
+  while ((m = re.exec(src)) !== null) out.push([m[1], m[2]]);
+  return out;
+}
 
 function scenariosFor(mode) {
   return SCENARIOS.get(mode) ?? {};
@@ -158,7 +198,7 @@ function scenariosFor(mode) {
 /**
  * Every mode's four scenarios, and which mode carries each FAMILY's ceiling.
  *
- * Lazy, and cached after the first call. The scan reads all 192 lookup tables
+ * Lazy, and cached after the first call. The scan reads all 193 lookup tables
  * and takes about ten seconds; only the landing page needs it, and replaying a
  * round by ID does not, so paying for it at boot would delay the server coming
  * up for the common case.
@@ -196,7 +236,11 @@ function resolveAlias(mode, alias) {
    payout.test.ts. */
 async function findBook(mode, id) {
   const file = path.join(PUBLISH, MODES.get(mode).events);
-  const stream = createReadStream(file).pipe(createZstdDecompress());
+  // The FILE stream is kept as well as the decompressor: .pipe() returns the
+  // decompressor, and destroying that never closes the file under it, so every
+  // lookup leaked a handle until a long scan died on EMFILE (2026-10-06).
+  const file$ = createReadStream(file);
+  const stream = file$.pipe(createZstdDecompress());
   const lines = createInterface({ input: stream, crlfDelay: Infinity });
   try {
     for await (const line of lines) {
@@ -210,11 +254,69 @@ async function findBook(mode, id) {
   } finally {
     lines.close();
     stream.destroy();
+    file$.destroy();
   }
   return null;
 }
 
 /* ---- HTTP ---------------------------------------------------------------- */
+/* ---- Forced failures -----------------------------------------------------
+   This server exists to rehearse the real RGS, and a real RGS sometimes says
+   no. ErrorModal maps eight documented response codes onto eight different
+   sentences, and two of them (ERR_IS, ERR_ATE) swap the dialog's only action
+   from Close to Reload - so "the error dialog" is really four or five different
+   screens, and until this existed none of them could be looked at. The game
+   could not reach any of them in dev either: devSession.ts supplies the balance
+   and the limits, so nothing calls /wallet/authenticate, and a dead rgs_url
+   therefore raises nothing until a round is actually bought.
+
+   It answers the way the LIVE RGS does: HTTP 400 with `{ error, message }`.
+   Measured on Stake Engine (live pass, 2026-10-06): an off-ladder amount came
+   back `400 {"error":"ERR_VAL","message":"invalid amount"}`, and a session
+   token it would not accept came back a bare `400 Bad Request` with no body at
+   all. This used to answer 200 with `status.statusCode`, on the belief that
+   the RGS did; the client reads both (rgsFetcher throws "RGS responded 400:
+   ..." and ErrorModal digs the code out of it), so the change only means dev
+   now rehearses the path the live game actually takes.
+
+   Armed over HTTP rather than by a flag, because the game is already running by
+   the time a test knows which failure it wants:
+
+     GET /__force-error/ERR_IS     arm
+     GET /__force-error/off        disarm
+     GET /__force-error            report
+
+   Dev-only by construction: nothing ships this file. */
+let forcedError = null;
+
+/* ---- A round to resume ---------------------------------------------------
+   /wallet/authenticate returns the session's round, and a round still ACTIVE
+   there is one the player left mid-flight: the game finishes it on load
+   (roundRestore.svelte.ts, restoreResume). This server answered `round: null`
+   every time, so the resume screen - the one Stake's checklist names, "active
+   rounds restore the bet amount" - had never been seen outside a live session.
+
+     GET /__force-resume/<mode>/<event>   arm (event: an ID, or an alias)
+     GET /__force-resume/off              disarm
+     GET /__force-resume                  report
+
+   ONE-SHOT: the next authenticate carries the round and disarms, so a reload
+   afterwards opens a normal session instead of replaying the resume forever.
+   Needs a sessionID in the game's URL - without one, dev never authenticates
+   (see /__force-error above). */
+let forcedResume = null;
+
+const FORCED_MESSAGES = {
+  ERR_VAL: 'Bet amount is not a valid level for this mode.',
+  ERR_IPB: 'Insufficient player balance.',
+  ERR_IS: 'Invalid session.',
+  ERR_ATE: 'Authentication token expired.',
+  ERR_GLE: 'Gambling limit exceeded.',
+  ERR_LOC: 'Location not permitted.',
+  ERR_GEN: 'General error.',
+  ERR_MAINTENANCE: 'Game is under maintenance.',
+};
+
 const json = (res, status, body) => {
   res.writeHead(status, {
     'content-type': 'application/json',
@@ -224,7 +326,7 @@ const json = (res, status, body) => {
 };
 
 /* ---- The link builder ----------------------------------------------------
-   Modelled on the game's own guess row rather than on a dropdown of 192 slugs:
+   Modelled on the game's own guess row rather than on a dropdown of 193 slugs:
    pick a family, then a colour, a higher/lower, an inside/outside and a suit,
    exactly as a player does. The mode name is assembled from the picks, which is
    what modeName() does on the client and mode_name does in the math.
@@ -239,7 +341,12 @@ const json = (res, status, body) => {
 function landingPage() {
   const { byMode, familyCeiling } = scenarios();
 
-  const ceilings = ['base', 'sc', 'hs']
+  // The four-guess families only: Three of a Kind has one mode, and its
+  // ceiling is the family figure by definition, so it has nothing to list here.
+  // Filtered on what the build has: a family added to the client before its
+  // first build (Last Stop, for a while) has no ceiling to list yet.
+  const ceilings = ['base', 'sc', 'ls', 'hs']
+    .filter((f) => familyCeiling[f])
     .map((f) => {
       const c = familyCeiling[f];
       return `<li><code>${c.mode}</code> &mdash; ${(c.cap / 100).toFixed(2)}x</li>`;
@@ -269,9 +376,11 @@ function landingPage() {
      page's generic green. Every value below is copied from the app's
      styles/tokens.css by name, so a change there has one place to be mirrored:
 
-       --choice-higher  #2ecc71   --choice-lower   #c0392b
-       --choice-inside  #00bcd4   --choice-outside #d81ce0
-       --choice-equal   #f1c40f   --suit-red       #e74c3c
+       --choice-higher  #4fae72   --choice-lower   #b3263a
+       --choice-inside  #2f9d9a   --choice-outside #9b4f9a
+       --choice-equal   #d6a733   --suit-red       #e74c3c
+       (the 2026-10-05 "Felt & brass" set; this page had still been on the
+       pre-2026-09-27 stock hues)
        --card-red       #b3252b
 
      Same treatment as the replay-info badges inside the game, and for the same
@@ -294,21 +403,23 @@ function landingPage() {
        box-shadow:0 0 0 1px var(--pick-c) inset}
   button.pick[aria-pressed=true][data-c] .mult{color:#ffe08a;opacity:.9}
 
-  /* The three families take their own volatility rating's colour - the same
-     --vol-base / --vol-sc / --vol-hs the MODE button and the mode picker wear
-     in the game, and the same ramp the bolt meters spend. Classic yellow,
-     Second Chance green, High Stakes red. */
+  /* The four families take their own volatility rating's colour - the same
+     --vol-base / --vol-sc / --vol-hs / --vol-tr the MODE button and the mode
+     picker wear in the game, and the same ramp the bolt meters spend. Classic
+     yellow, Second Chance green, High Stakes red, Three of a Kind purple. */
   button.pick.fam-base{--pick-c:#ffc93c}
   button.pick.fam-sc{--pick-c:#3ddc84}
+  button.pick.fam-ls{--pick-c:#ff9240}
   button.pick.fam-hs{--pick-c:#ff5c5c}
+  button.pick.fam-tr{--pick-c:#b27cc8}
 
   button.pick.red{--pick-c:#b3252b}
   button.pick.blk{--pick-c:#cfd6e4}
-  button.pick.higher{--pick-c:#2ecc71}
-  button.pick.lower{--pick-c:#c0392b}
-  button.pick.inside{--pick-c:#00bcd4}
-  button.pick.outside{--pick-c:#d81ce0}
-  button.pick.equal{--pick-c:#f1c40f}
+  button.pick.higher{--pick-c:#4fae72}
+  button.pick.lower{--pick-c:#b3263a}
+  button.pick.inside{--pick-c:#2f9d9a}
+  button.pick.outside{--pick-c:#9b4f9a}
+  button.pick.equal{--pick-c:#d6a733}
   /* The four suits take the card face's own two inks: hearts and diamonds
      red, clubs and spades the dark the pips are printed in. */
   button.pick.suit-red{--pick-c:#e74c3c}
@@ -331,9 +442,14 @@ function landingPage() {
   .note{font-size:13px;color:#8b9488} .note b{color:#c8d0c4}
   ul.note{margin:.2rem 0 0 1.1rem}
   .modeline{font:12.5px ui-monospace,monospace;color:#7cffb2;margin:.2rem 0 .1rem}
+  hr.sep{border:0;border-top:1px solid #2a312a;margin:2.6rem 0 1.7rem}
+  h2{font-size:1.15rem;margin:0 0 .2rem}
 </style>
 <h1>Ride The Bus &mdash; local replay</h1>
-<p>Build a replay link the way the game builds a bet: pick a mode, then four guesses.</p>
+<p>Build a replay link the way the game builds a bet: pick a mode, then its guesses
+   (none on Three of a Kind, whose one combination is filled in for you).
+   For the ordinary game with no round to replay, skip to
+   <a href="#plain" style="color:#7cffb2">Regular game</a> at the bottom.</p>
 
 <div class=grid>
   <span class=lab>Mode</span><div class=row id=fam></div>
@@ -360,9 +476,46 @@ function landingPage() {
 <a class=out id=out target=_blank></a>
 
 <p class=note style="margin-top:1.7rem"><b>&ldquo;Max&rdquo; is that MODE's cap, not the family's.</b>
-   Each mode is one guess combination and most stop well short. Only these three
+   Each mode is one guess combination and most stop well short. Only these
    reach their family ceiling, so only these fire the <b>MAX WIN</b> tier:</p>
 <ul class=note>${ceilings}</ul>
+
+<hr class=sep>
+
+<h2 id=plain>Regular game &mdash; no replay</h2>
+<p>The ordinary game, with <b>no RGS behind it at all</b>. Nothing below touches this
+   server: with no <code>sessionID</code> the client deals its own cards from
+   <code>game/localRound.ts</code> and prices its own stages, and the bet is set on the
+   bar rather than in the link. That is a DEV-only path &mdash; Game.svelte imports it
+   from inside an <code>import.meta.env.DEV</code> branch, so it is dropped from a
+   production build.</p>
+
+<div class=grid>
+  <span class=lab>Currency</span>
+  <div class=row>
+    <select id=pcur title="currency code"></select>
+    <select id=plang title="language"></select>
+  </div>
+  <span class=lab>Social mode</span><div class=row id=psocial></div>
+  <span class=lab>Music</span><div class=row id=pmusic></div>
+</div>
+
+<a class=out id=pout target=_blank></a>
+
+<p class=note style="margin-top:1.2rem"><b>Social mode</b> is Stake.US: it forces English
+   whatever the language picker says, and swaps the restricted gambling terms out. The
+   three <code>X</code> currencies (Gold Coins, Stake Cash, Stake Euro Cash) are the ones
+   that go with it.</p>
+<p class=note><b>Music</b> picks a candidate from <code>game/musicTracks.ts</code> without
+   editing <code>ACTIVE_TRACK_ID</code>. Add <code>&amp;dev_loop=40,70,4</code> by hand to
+   shorten the loop region so the seam comes round every 26s instead of every five
+   minutes.</p>
+<p class=note>Any other <code>dev_*</code> override can be appended by hand &mdash;
+   <code>dev_minBet</code>, <code>dev_maxBet</code>, <code>dev_stepBet</code>,
+   <code>dev_disabledTurbo</code>, <code>dev_disabledAutoplay</code>,
+   <code>dev_minimumRoundDuration</code>, <code>dev_displayRTP</code>. Without bet limits
+   every helper in <code>betLimits.ts</code> correctly reads
+   <code>{0,0,0}</code> as unconstrained.</p>
 
 <script>
 const SC = ${JSON.stringify(byMode)};
@@ -373,7 +526,14 @@ const state = { fam:'hs_', color:'red', hl:'equal', io:'equal', suit:'heart',
                 ev:'max', cur:'USD', lang:'en' };
 
 const FAM  = [['','Classic','fam-base'],['sc_','Second Chance','fam-sc'],
-              ['hs_','High Stakes','fam-hs']];
+              ['ls_','Last Stop','fam-ls'],
+              ['hs_','High Stakes','fam-hs'],['tr_','Three of a Kind','fam-tr']];
+/* Three of a Kind has no guesses and only three cards: its one mode is
+   any_equal_equal, so the pickers are forced to that combination (the suit
+   picker to nothing at all) while it is selected and restored when the player
+   leaves it. Mirrors fixedChoices in modes.ts. */
+const FIXED = { 'tr_': { color: 'any', hl: 'equal', io: 'equal', suit: null } };
+let parked = null;
 /* Third entry is the colour class - see the button.pick rules in the stylesheet
    above, which take their values from the game's own tokens.css. */
 const COL  = [['red','Red','red'],['black','Black','blk']];
@@ -383,19 +543,20 @@ const SUIT = [['heart','♥ Heart','suit-red'],['diamond','♦ Diamond','suit-re
               ['club','♣ Club','suit-blk'],['spade','♠ Spade','suit-blk']];
 
 const EV   = [['max','Max'],['big','Big'],['win','Win'],['loss','Loss'],
-              ['bustwin','Bust + win'],['forgiven','2nd chance']];
+              ['bustwin','Bust + win'],['forgiven','2nd chance'],
+              ['ticket2','Ticket ×2'],['ticket3','Ticket ×3'],['ticket5','Ticket ×5'],['ticket10','Ticket ×10']];
 // The two scenarios that come from REPLAY_EVENTS.md rather than from a lookup
 // table. Same shape as the other four here - the server has already read them -
 // so the only thing this list is for is telling apart "no such round in this
 // mode" (grey the button out) from "the table predates these columns".
-const SCAN_EV = ['bustwin', 'forgiven'];
+const SCAN_EV = ['bustwin', 'forgiven', 'ticket2', 'ticket3', 'ticket5', 'ticket10'];
 /* Every currency the RGS can send, in the Stake Engine dashboard's own order,
    with its dashboard name. This page had fourteen of them, which meant the
    shapes that actually break a layout - a weak unit with a twelve-figure
    settled win, a three-letter code where a symbol is expected - could not be
    reached from here at all.
 
-   Kept in step with web-sdk/apps/Ride-The-Bus/src/game/currencies.ts, which is
+   Kept in step with web-sdk/apps/Ride-The-Bus/src/game/bet/currencies.ts, which is
    the copy the game's own tests walk. This file is a standalone dev script with
    no build step, so it cannot import from the app - hence a second list rather
    than one. currencies.test.ts pins the app's; this comment is the pointer. */
@@ -420,19 +581,25 @@ const CUR = [
 ];
 const LANG = ['en','ar','de','es','fi','fr','hi','id','ja','ko','pl','pt','ru','tr','vi','zh'];
 
+// One token per stage; a null token is a stage the family does not have.
 const modeName = () =>
-  state.fam + state.color + '_' + state.hl + '_' + state.io + '_' + state.suit;
+  state.fam + [state.color, state.hl, state.io, state.suit].filter((t) => t !== null).join('_');
 
 // Equal-then-Inside is not a published mode: nothing falls strictly between two
 // cards of the same rank.
 const insideBlocked = () => state.hl === 'equal';
 
-// Only Second Chance can produce a forgiven round - the other two families bust
-// on the first miss. Disabled rather than merely labelled, for the same reason
+// Only Second Chance can produce a forgiven round - the other families bust on
+// the first miss. Disabled rather than merely labelled, for the same reason
 // Inside is: a pick that cannot be honoured must not be buildable into a link.
 // Leaving it selectable produced a URL the server answers with a 404, which is
 // a worse way to learn this than a greyed-out button.
 const forgivenBlocked = () => state.fam !== 'sc_';
+// And only Last Stop draws a ticket.
+const ticketBlocked = (v) => v.startsWith('ticket') && state.fam !== 'ls_';
+
+// A guess picker on a family that has no guesses.
+const guessesFixed = () => Boolean(FIXED[state.fam]);
 
 /* A scanned scenario this mode has no round for.
    sc_red_lower_outside_heart has no drawable bust-win, for instance: in
@@ -453,7 +620,9 @@ function fill(id, items, key, multFor) {
     if (cls) b.setAttribute('data-c', '');
     b.setAttribute('aria-pressed', String(state[key] === val));
     if (id === 'io' && val === 'inside' && insideBlocked()) b.disabled = true;
+    if (['color', 'hl', 'io', 'suit'].includes(id) && guessesFixed()) b.disabled = true;
     if (id === 'ev' && val === 'forgiven' && forgivenBlocked()) b.disabled = true;
+    if (id === 'ev' && ticketBlocked(val)) b.disabled = true;
     if (id === 'ev' && scenarioMissing(val)) b.disabled = true;
     const mult = multFor ? multFor(val) : null;
     b.textContent = label;
@@ -472,9 +641,19 @@ function render() {
   // Repair an impossible pick rather than let it build an unpublished mode -
   // the same guard the game applies when Equal takes Inside away.
   if (insideBlocked() && state.io === 'inside') state.io = 'equal';
+  // Three of a Kind carries its own three tokens; park the player's picks on
+  // the way in and put them back on the way out.
+  if (guessesFixed()) {
+    if (!parked) parked = { color: state.color, hl: state.hl, io: state.io, suit: state.suit };
+    Object.assign(state, FIXED[state.fam]);
+  } else if (parked) {
+    Object.assign(state, parked);
+    parked = null;
+  }
   // Same for a forgiven round on a family that cannot forgive: switching away
   // from Second Chance must not leave a dead scenario selected.
   if (forgivenBlocked() && state.ev === 'forgiven') state.ev = 'max';
+  if (ticketBlocked(state.ev)) state.ev = 'max';
   // And for a scenario the newly-picked mode has no round for. This fires on a
   // GUESS change as well as a family change - "Bust + win" exists in one mode
   // and not the next, so the pick has to be re-checked every render.
@@ -490,6 +669,7 @@ function render() {
   fill('suit', SUIT, 'suit');
   fill('ev', EV, 'ev', (v) => {
     if (v === 'forgiven' && forgivenBlocked()) return 'sc only';
+    if (ticketBlocked(v)) return 'ls only';
     const s = sc && sc[v];
     if (s === undefined && SCAN_EV.indexOf(v) >= 0) return 'rebuild';
     if (!s) return 'none';
@@ -542,6 +722,9 @@ portInput.addEventListener('input', () => {
     localStorage.setItem('rtb-game-port', portInput.value);
   } catch (e) { /* nothing to do - the field still works for this session */ }
   render();
+  // Both links carry the port. Missing this left the plain-game link pointing at
+  // whatever vite had last time while the replay link followed the field.
+  renderPlain();
 });
 
 const cur = document.getElementById('cur');
@@ -555,7 +738,66 @@ lang.value = state.lang;
 lang.onchange = () => { state.lang = lang.value; render(); };
 
 document.getElementById('amt').addEventListener('input', render);
+
+/* ---- the plain-game link -------------------------------------------------
+   Deliberately its own state rather than sharing the replay builder's. The two
+   are used for different things - a replay in JPY while checking a layout, and
+   a plain game in Arabic to look at the RTL board - and making one picker drive
+   both meant every switch between the two workflows retyped the other's
+   settings. Two selects is the cheaper duplication. The CUR and LANG lists ARE
+   shared; only the DOM is not. */
+const plain = { cur:'USD', lang:'en', social:'off', music:'' };
+
+const SOCIAL = [['off','Off'],['on','On']];
+/* Read out of musicTracks.ts at server start rather than hardcoded here, so a
+   fifth candidate appears without this file being touched. Empty value means
+   "whatever ACTIVE_TRACK_ID says", which is what a link with no dev_music does. */
+const MUSIC = [['','Default']].concat(${JSON.stringify(musicTracks())});
+
+function fillPlain(id, items, key) {
+  const host = document.getElementById(id);
+  host.textContent = '';
+  for (const [val, label] of items) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pick';
+    b.setAttribute('aria-pressed', String(plain[key] === val));
+    b.textContent = label;
+    b.onclick = () => { plain[key] = val; renderPlain(); };
+    host.appendChild(b);
+  }
+}
+
+function renderPlain() {
+  fillPlain('psocial', SOCIAL, 'social');
+  fillPlain('pmusic', MUSIC, 'music');
+
+  // No replay, no game/version/mode/event, and NO rgs_url: handing the client a
+  // URL it cannot authenticate against is what produces the error modal this
+  // path exists to avoid. Game.svelte suppresses that modal in DEV only when
+  // there is neither a sessionID nor a replay, which is exactly this shape.
+  const q = new URLSearchParams({ currency: plain.cur, lang: plain.lang });
+  if (plain.social === 'on') q.set('social', 'true');
+  if (plain.music) q.set('dev_music', plain.music);
+
+  const url = 'http://localhost:' + gamePort() + '/?' + q;
+  const a = document.getElementById('pout');
+  a.href = url;
+  a.textContent = url;
+}
+
+const pcur = document.getElementById('pcur');
+CUR.forEach(([code, name]) => pcur.add(new Option(code + ' (' + name + ')', code)));
+pcur.value = plain.cur;
+pcur.onchange = () => { plain.cur = pcur.value; renderPlain(); };
+
+const plang = document.getElementById('plang');
+LANG.forEach((l) => plang.add(new Option(l, l)));
+plang.value = plain.lang;
+plang.onchange = () => { plain.lang = plang.value; renderPlain(); };
+
 render();
+renderPlain();
 </script>`;
 }
 
@@ -601,7 +843,9 @@ createServer(async (req, res) => {
                   'regenerate it with: node scripts/replay-events.js'
                 : rawEvent === 'forgiven' && familyOf(mode) !== 'sc'
                   ? `"forgiven" only exists in Second Chance - try sc_${mode}`
-                  : `no drawable "${rawEvent}" round in ${mode} above the celebration floor`,
+                  : rawEvent.startsWith('ticket') && familyOf(mode) !== 'ls'
+                    ? `"${rawEvent}" only exists in Last Stop - try ls_${mode}`
+                    : `no drawable "${rawEvent}" round in ${mode}`,
           });
         }
       } else {
@@ -656,13 +900,151 @@ createServer(async (req, res) => {
       });
     }
 
+    // ---- Arm / disarm / report a forced failure ----
+    if (parts[0] === '__force-error') {
+      const want = parts[1];
+      if (want === undefined) {
+        return json(res, 200, { forcedError });
+      }
+      if (want === 'off' || want === 'none' || want === 'clear') {
+        forcedError = null;
+        console.log('  forced error CLEARED');
+        return json(res, 200, { forcedError: null });
+      }
+      forcedError = want;
+      console.log(`  forced error ARMED: ${want}`);
+      return json(res, 200, { forcedError });
+    }
+
+    // ---- Arm / disarm / report a round to resume ----
+    if (parts[0] === '__force-resume') {
+      const [, mode, rawEvent] = parts;
+      if (mode === undefined) return json(res, 200, { forcedResume });
+      if (mode === 'off' || mode === 'none' || mode === 'clear') {
+        forcedResume = null;
+        console.log('  forced resume CLEARED');
+        return json(res, 200, { forcedResume: null });
+      }
+      if (!MODES.has(mode)) return json(res, 404, { error: `unknown mode "${mode}"` });
+      const id = ALIASES.includes(rawEvent)
+        ? resolveAlias(mode, rawEvent)
+        : BOOK_ALIASES.includes(rawEvent)
+          ? (scenariosFor(mode)[rawEvent]?.id ?? null)
+          : Number.isInteger(Number(rawEvent))
+            ? Number(rawEvent)
+            : null;
+      if (id === null) return json(res, 404, { error: `no "${rawEvent}" round in ${mode}` });
+      const book = await findBook(mode, id);
+      if (!book) return json(res, 404, { error: `no simulation ${id} in ${mode}` });
+      forcedResume = { mode, id, book };
+      console.log(`  forced resume ARMED: ${mode} #${id}`);
+      return json(res, 200, { forcedResume: { mode, id } });
+    }
+
+    // ---- /wallet/authenticate ----
+    // Needed before ANY of the above can be exercised, and its absence is why
+    // "point rgs_url at a dead port" never produced an error dialog: the SDK
+    // calls this on load, the 404 left the session unestablished, and the spin
+    // button then bought nothing to fail. game/dev/devSession.ts fills in the
+    // balance and the limits when they arrive as zero, which made it look as
+    // though nothing was calling the wallet at all.
+    //
+    // Amounts are RAW MICRO-UNITS - constants-shared/bet.ts: "amount 1000000 is
+    // 1 dollar" - so these are $1,000,000 of balance, a $0.10 floor and step,
+    // and a $10,000 ceiling. The three limits sit inside `config` beside
+    // betLevels, which is the shape RGS.md's worked example documents and the
+    // one every helper in betLimits.ts reads.
+    if (parts[0] === 'wallet' && parts[1] === 'authenticate') {
+      const DOLLAR = 1_000_000;
+      // An armed resume rides on this one response, in the shape
+      // Authenticate.svelte documents ({ betID, amount, payout,
+      // payoutMultiplier, active, state, mode, event }), then disarms.
+      let round = null;
+      if (forcedResume) {
+        const { mode, id, book } = forcedResume;
+        forcedResume = null;
+        const payoutMultiplier = Number(book.payoutMultiplier) / 100;
+        const amount = MODES.get(mode).cost * DOLLAR;
+        round = {
+          betID: id,
+          amount,
+          payout: Math.round(payoutMultiplier * DOLLAR),
+          payoutMultiplier,
+          active: true,
+          state: book.events,
+          mode,
+          event: null,
+        };
+        console.log(`  /wallet/authenticate -> SUCCESS, resuming ${mode} #${id}`);
+      } else {
+        console.log('  /wallet/authenticate -> SUCCESS (local stand-in session)');
+      }
+      return json(res, 200, {
+        status: { statusCode: 'SUCCESS', statusMessage: '' },
+        balance: { amount: 1_000_000 * DOLLAR, currency: 'USD' },
+        config: {
+          minBet: 0.1 * DOLLAR,
+          maxBet: 10_000 * DOLLAR,
+          stepBet: 0.1 * DOLLAR,
+          betLevels: [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100].map((d) => d * DOLLAR),
+        },
+        round,
+      });
+    }
+
+    // ---- /wallet/balance ----
+    // The game polls this so a deposit made on Stake with the game open is not
+    // left stale on the bar. Answering it keeps that poll quiet.
+    if (parts[0] === 'wallet' && parts[1] === 'balance') {
+      return json(res, 200, {
+        status: { statusCode: 'SUCCESS', statusMessage: '' },
+        balance: { amount: 1_000_000 * 1_000_000, currency: 'USD' },
+      });
+    }
+
+    // ---- /wallet/end-round ----
+    // Never reached while /wallet/play only ever refuses, but a round that got
+    // as far as settling would hang without it.
+    if (parts[0] === 'wallet' && parts[1] === 'end-round') {
+      return json(res, 200, {
+        status: { statusCode: 'SUCCESS', statusMessage: '' },
+        balance: { amount: 1_000_000 * 1_000_000, currency: 'USD' },
+      });
+    }
+
+    // ---- /wallet/play ----
+    // Only ever answers a FAILURE. This server cannot play a real round - it
+    // serves published books by simulation ID and has no wallet - so an
+    // unarmed call says so plainly instead of 404ing into the client's generic
+    // "no round state" message, which reads like a math problem rather than a
+    // missing endpoint.
+    if (parts[0] === 'wallet' && parts[1] === 'play') {
+      if (forcedError) {
+        const code = forcedError;
+        console.log(`  /wallet/play -> forced ${code}`);
+        return json(res, 400, {
+          error: code,
+          message: FORCED_MESSAGES[code] || `Forced ${code} from the replay RGS.`,
+        });
+      }
+      console.log('  /wallet/play -> not implemented (replay server serves books only)');
+      return json(res, 200, {
+        status: {
+          statusCode: 'ERR_GEN',
+          statusMessage:
+            'The local replay RGS serves published books only and cannot buy a round. ' +
+            'Arm a specific failure with /__force-error/<CODE>.',
+        },
+      });
+    }
+
   json(res, 404, { error: `no route for ${url.pathname}` });
 }).listen(PORT, () => {
   console.log("");
   console.log(`Local replay RGS   http://localhost:${PORT}`);
   console.log(`Game expected on   http://localhost:${GAME_PORT}   (npm run dev)`);
   console.log("");
-  console.log("Open the replay RGS in a browser to build links for any of the 192");
+  console.log("Open the replay RGS in a browser to build links for any of the 193");
   console.log("modes. If the game is on a different port, change it in the Game");
   console.log("port field on that page - it is remembered per browser. This");
   console.log("server does not need restarting for that.");

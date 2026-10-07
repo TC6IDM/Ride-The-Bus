@@ -1,0 +1,82 @@
+/* The responsible-gambling readouts.
+ *
+ * Split out of base.css when the panel became SessionReadouts.svelte. base.css
+ * is the layout ROOT's sheet - .game-layout, .game-title, .play-area - and a
+ * stylesheet is scoped to whichever component imports it, so these rules had
+ * to travel with the markup that renders them.
+ *
+ * `.rg-item .cb-val` is why readout.css exists: the caption/figure pair is
+ * shared with the control bar, and copying it would have meant two definitions
+ * of the money-fitting contract. See that file's header.
+ */
+
+/* Responsible-gambling readouts (net position / RTP / session clock), pinned
+   to the top-right. Only rendered where the player's jurisdiction asks for
+   them - see game/jurisdiction.svelte.ts.
+
+   Overlaid rather than placed in the control bar: in the bar these pushed it
+   to five rows and 40% of viewport height on a 400x225 popout, squeezing the
+   play area. They are reference information, not controls, so they belong out
+   of the way. Absolutely positioned so they cost the flex column no height at
+   all, and pointer-events:none so they can never intercept a click meant for
+   the table. */
+/* Warmed with the bar's panels - see the note on --panel-light in tokens.css.
+   This plate floats over the same wood and was the coolest thing on the board:
+   blue caps on a blue-slate ground, top right, over a mahogany table. */
+.rg-panel {
+  position: absolute;
+  top: calc(var(--ui) * 0.9);
+  right: calc(var(--ui) * 0.9);
+  z-index: var(--z-rg-panel); /* above the title plate, below popups */
+  display: flex;
+  align-items: flex-start;
+  gap: calc(var(--ui-bar) * 1.45);
+  padding: calc(var(--ui-bar) * 0.64) calc(var(--ui-bar) * 1.09);
+  border-radius: calc(var(--ui-bar) * 1.09);
+  /* The bar's own light pill, not a colour of its own. This was
+     rgba(32, 13, 11, 0.72) written out - a fourth spelling of the warm panel,
+     kept in step with --panel-light by hand - and it sat on the single blurred
+     blob the popups were rebuilt to get rid of. Same material, same low
+     elevation as the bar it echoes (tokens.css). */
+  background: var(--panel-light);
+  border: 1px solid rgba(var(--ink-rgb), 0.1);
+  /* No blur, like the bar it echoes - see .cb-panel in control-bar.css. */
+  box-shadow: var(--panel-elevation-low);
+  pointer-events: none;
+}
+
+.rg-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  white-space: nowrap;
+  line-height: 1.15;
+}
+
+/* LIVE, and load-bearing here: the session clock ticks once a second and this
+   plate is pinned to the RIGHT, so a digit that changed width would move the
+   plate's left edge every tick. Overpass ships tnum, so every digit is 0.616em
+   and the plate holds still. Under Poppins this declaration was inert (no
+   tnum; a "1" measured 0.387em against 0.657em for a "0") and the plate
+   breathed with the clock - which is worth knowing if the face ever changes
+   again. */
+.rg-item .cb-val {
+  font-variant-numeric: tabular-nums;
+}
+
+.rg-item.up .cb-val { color: var(--win-soft); }
+
+.rg-item.down .cb-val { color: var(--loss-soft); }
+
+/* Too narrow for the panel to sit beside the centred title without covering
+   it (measured: the title plate and the panel collide below ~700px). Drop it
+   into normal flow instead, where it takes its own centred row above the
+   title. It precedes .game-title in the DOM, so no reordering is needed. */
+@media (max-width: 700px) {
+  .rg-panel {
+    position: static;
+    align-self: center;
+    flex: 0 0 auto;
+    margin-top: calc(var(--ui) * 0.9);
+  }
+}

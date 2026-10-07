@@ -6,3 +6,14 @@
 # offered them up for commit.
 scripts/.shots/
 .shots/
+
+# Graphify knowledge graph output (regenerable: npm run graph)
+graphify-out/
+# Shadow-tree intermediates. graph-build.mjs removes these itself; a build
+# killed mid-run does not, and a stray shadow tree must never be committed.
+.graph-*/
+
+# playwright-cli writes a page snapshot after every command, and any screenshot
+# not given a --filename, into .playwright-cli/ under whatever directory it was
+# run from. Snapshots carry the whole URL, sessionID included.
+.playwright-cli/

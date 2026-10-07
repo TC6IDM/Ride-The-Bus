@@ -1,4 +1,11 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(python -m graphify --version)",
+      "mcp_chrome-devtools",
+      "Plugin Chrome-devtools-mcp"
+    ]
+  },
   "enabledPlugins": {
     "chrome-devtools-mcp@claude-plugins-official": true
   }

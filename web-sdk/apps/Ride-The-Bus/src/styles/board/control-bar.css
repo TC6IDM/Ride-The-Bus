@@ -1,0 +1,1123 @@
+/* Bottom control bar: info/sound icons, balance + last win, the bet display
+   with steppers, the round spin / autoplay buttons, and Turbo and MODE at the
+   two outer edges.
+   Each control that OPENS something wears its own identity colour - a border,
+   a wash and its ink, never a glow; see "LIT, NOT HALOED" further down. */
+
+/* ==== Floating control bar ====
+   The bar itself is transparent and sits over the table; the controls are
+   grouped into detached rounded panels that cluster toward the centre, with
+   Turbo and MODE floating free at the outer edges. */
+.control-bar {
+  /* Above .scene (the CSS backdrop). */
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap; /* lets the readouts take their own row on narrow viewports */
+  gap: calc(var(--ui-bar) * 0.91);
+  padding: 0 calc(var(--ui-bar) * 1.27) calc(var(--ui-bar) * 1.27);
+  /* CLEAR OF THE HOME INDICATOR AND THE NOTCH. app.html asks for
+     viewport-fit=cover - draw under the rounded corners, edge to edge - and
+     until this nothing read the safe-area insets back, so a replay link opened
+     straight on an iPhone put the bar's bottom row under the home indicator.
+     max(), so where there is no inset (every desktop, and Stake's iframe, where
+     the insets are 0) the bar is exactly where it was. The phone rules in
+     responsive-bar.css override padding-inline only, so the bottom holds
+     there; a portrait phone has no side inset to lose. */
+  padding-bottom: max(calc(var(--ui-bar) * 1.27), env(safe-area-inset-bottom, 0px));
+  padding-left: max(calc(var(--ui-bar) * 1.27), env(safe-area-inset-left, 0px));
+  padding-right: max(calc(var(--ui-bar) * 1.27), env(safe-area-inset-right, 0px));
+  background: none;
+  pointer-events: none;
+}
+.control-bar > * { pointer-events: auto; }
+
+/* A grouped pill of controls. Light = readouts, dark = bet / actions. */
+.cb-panel {
+  box-sizing: border-box; /* so flex-basis:100% on narrow rows includes padding */
+  display: flex;
+  align-items: center;
+  gap: calc(var(--ui-bar) * 0.91);
+  padding: calc(var(--ui-bar) * 0.64) calc(var(--ui-bar) * 1.09);
+  border-radius: calc(var(--ui-bar) * 1.45);
+  /* No backdrop-filter. It was blur(6px) - frosted glass, which design.md's
+     genre refuses - and the bar sits over the table's dark apron and the
+     night beyond it, where the blur had nothing to soften: the pill looked the
+     same without it and the phone still re-rendered its backdrop every frame.
+     The 0.82 fill is unchanged, so the composited colour is too. Same for the
+     floating discs below and the RG plate (session-readouts.css). */
+  /* The panel material at the bar's height (tokens.css). This was a single
+     0 6px 20px blob - the popups had been rebuilt on the table's two-part
+     shadow with a lit top edge, and the bar, the surface a player looks at for
+     the whole session, still wore the sticker. One material now; the low
+     variant because a pill an inch off the felt does not cast a popup's
+     shadow. */
+  box-shadow: var(--panel-elevation-low);
+}
+.cb-panel-light {
+  background: var(--panel-light);
+  border: 1px solid rgba(var(--ink-rgb), 0.1);
+}
+.cb-panel-dark {
+  background: var(--panel-dark);
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
+}
+
+/* Balance pinned left / last win pinned right inside the light panel, with a
+   flexible gap between them. */
+.cb-readouts {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--ui-bar) * 2);
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/* Replay hides the balance, so this row has ONE child - and one child under
+   space-between sits at the start, which put Last Win in the middle of the pill
+   with the width the balance used to take doing nothing at all. Pushed right,
+   and given that freed width: a replay's whole job is to show what the round
+   paid, and it is the one mode where the figure has room to be shown whole. */
+.cb-readouts.solo {
+  justify-content: flex-end;
+}
+
+.cb-readouts.solo .cb-lastwin {
+  min-width: calc(var(--ui-bar) * 26);
+  max-width: calc(var(--ui-bar) * 26);
+}
+
+/* The free-floating disc at the outer edge (Turbo). MODE is the other edge,
+   and a sign rather than a disc - see .cb-mode-slot. */
+.cb-float {
+  width: calc(var(--ui-bar) * 4.18) /* 46px */;
+  height: calc(var(--ui-bar) * 4.18);
+  flex: 0 0 auto;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(var(--ink-rgb), 0.14);
+  background: var(--panel-float);
+  /* Same material as .cb-panel, for the same reason - and, like it, no blur. */
+  box-shadow: var(--panel-elevation-low);
+  color: var(--ink-body);
+  cursor: pointer;
+  text-transform: none;
+  transition: box-shadow var(--dur-control) var(--ease-out), border-color var(--dur-control) var(--ease-out), background var(--dur-control) var(--ease-out), color var(--dur-control) var(--ease-out);
+}
+
+/* Small square icon buttons (info / sound) */
+.cb-icon {
+  width: calc(var(--ui-bar) * 3.27) /* 36px */;
+  height: calc(var(--ui-bar) * 3.27);
+  flex: 0 0 auto;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: calc(var(--ui-bar) * 1);
+  border: 1px solid rgba(var(--ink-rgb), 0.12);
+  background: rgba(var(--ink-rgb), 0.06);
+  color: var(--ink-body);
+  cursor: pointer;
+  text-transform: none;
+  transition: box-shadow var(--dur-control) var(--ease-out), border-color var(--dur-control) var(--ease-out), background var(--dur-control) var(--ease-out), color var(--dur-control) var(--ease-out);
+}
+
+.cb-svg { width: calc(var(--ui-bar) * 1.82) /* 20px */; height: calc(var(--ui-bar) * 1.82); display: block; }
+
+.cb-autospin-svg { width: calc(var(--ui-bar) * 2.73) /* 30px */; height: calc(var(--ui-bar) * 2.73); }
+
+.cb-turbo .cb-svg { width: calc(var(--ui-bar) * 2.36) /* 26px */; height: calc(var(--ui-bar) * 2.36); }
+
+/* Tilt the spin arrows and scale them up so they fill the big play button. */
+.cb-spin-svg { width: calc(var(--ui-bar) * 5.27) /* 58px */; height: calc(var(--ui-bar) * 5.27); display: block; transform: rotate(45deg); }
+
+/* The info mark, sized to match .cb-svg so the three icons in the light pill
+   are one set. It used to be a lowercase i in italic Georgia - a system-font
+   fallback chain in an app that self-hosts its typeface precisely to avoid
+   one. See MarkIcon.svelte. */
+.cb-info { --mark-size: calc(var(--ui-bar) * 1.82); }
+
+/* Balance / bet text stacks */
+/* .cb-cap and .cb-val are in readout.css: the responsible-gambling panel
+   renders them too, so they cannot live in the bar's own sheet. */
+
+/* Reserved widths were measured from the widest value each field can ever show
+   at 800 16.8px in Poppins, the body face at the time - Overpass's tabular digits
+   (0.616em; Geist's were 0.648) sit inside Poppins' 0.606-0.691 range, so every reservation below
+   still holds and none needed re-measuring - IN DOLLARS: balance up to
+   $99,999,999.00 =
+   140px; last win up to maxBet x the 5000x wincap ($5,000,000.00 = 129px) plus
+   the multiplier chip - 220px measured; bet up to $1,000,000.00 = 129px + 16px
+   padding. That way a win landing or the bet stepping never re-flows the bar.
+
+   THE DOLLAR IS THE PART THAT WAS WRONG. The RGS supports currencies whose unit
+   is worth a thousandth of one, and an operator sets the cap in those units: at
+   a 2,000,000 NGN maximum the settled High Stakes figure is
+   "NGN 11,461,200,000.00". Measured, that wanted 152px of a 119px box on Mobile
+   L and spilled straight out of it, and on Laptop and Popout L it widened the
+   readouts until the whole bar broke onto a second row.
+
+   So the widths are now a RESERVATION AND A CEILING - min-width and max-width
+   at the same value - and the type inside gives instead. `use:fitValue` in
+   Game.svelte shrinks .cb-val until its content fits, down to a floor. The
+   max-width is the load-bearing half: without it a flex child simply widens,
+   there is no overflow for the fit to detect, and the bar wraps exactly as
+   before. */
+.cb-balance {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  min-width: calc(var(--ui-bar) * 13.09) /* 144px */;
+  max-width: calc(var(--ui-bar) * 13.09);
+}
+
+/* "Last Win" readout: the most recently settled round's cash + multiplier. */
+.cb-lastwin {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.15;
+  /* 17, down from 20. The 20 was sized to hold "$5,000,000.00" plus the
+     multiplier chip WITHOUT shrinking, and holding the worst case is no longer
+     this reservation's job - the fit above does that. What it still has to do
+     is be wide enough that an ordinary round does not visibly resize the type
+     between spins, and 17 units clears a seven-figure win plus the chip.
+
+     The three units matter. Measured with the bar on one row: Laptop demanded
+     1004px of a 998px row and Popout L 780px of 780px, so both broke the
+     Advanced button onto a second line - alone, floating over the table - while
+     Desktop and Popout S fitted. CLAUDE.md's rule is that the arrangement is
+     identical from Popout S to Desktop and only the scale changes; two of the
+     four were quietly failing it. Three units off this readout is 31px at
+     Laptop and 24px at Popout L, and both come back onto one row. */
+  min-width: calc(var(--ui-bar) * 17);
+  max-width: calc(var(--ui-bar) * 17);
+  /* Logical, so the readout still hugs the edge it is aligned to when the
+     board mirrors for Arabic. */
+  text-align: end;
+}
+
+.cb-lastwin .cb-cap { color: var(--ink-dim); }
+
+.cb-lastwin .cb-val { color: var(--ink-dim); }
+
+.cb-lastwin.won .cb-val { color: var(--win); }
+
+/* Last Win as a BUTTON (outside replay): it opens the session's recent rounds.
+   It looks exactly like the readout it was - same box, same type - plus one
+   small stroked glyph beside the caption that says "a list opens here", in the
+   controls' line voice (MarkIcon: round caps, ~2.2 on a 24 grid). */
+.cb-lastwin-btn {
+  appearance: none;
+  background: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border-radius: calc(var(--ui-bar) * 0.5);
+}
+
+.cb-lastwin-glyph {
+  display: inline-block;
+  width: 1.15em;
+  height: 1.15em;
+  margin-inline-start: 0.35em;
+  vertical-align: -0.22em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  opacity: 0.8;
+}
+
+@media (any-hover: hover) {
+  .cb-lastwin-btn:hover .cb-cap { color: var(--ink-body); }
+  .cb-lastwin-btn:hover .cb-lastwin-glyph { opacity: 1; }
+}
+
+/* Open: the caption takes the panel's brass, the way every other control that
+   opens a panel wears that panel's colour while it is open. */
+.cb-lastwin-btn.active .cb-cap { color: var(--ctl-history-ink); }
+
+/* Pressed: in, not brighter - the language every control on the bar speaks. */
+.cb-lastwin-btn:active { transform: translateY(1px); }
+
+.cb-lastwin-mult { font-size: max(calc(var(--ui-bar) * 1.05), var(--type-floor)) /* 11.5px */; font-weight: 800; color: var(--gold-bright); margin-inline-start: calc(var(--ui-bar) * 0.27); }
+
+/* position: relative so .cb-bet-tip below has a positioning context - .cb-panel
+   sets none, and the tip is absolutely placed against this panel. */
+.cb-bet { gap: calc(var(--ui-bar) * 0.73); position: relative; }
+
+.cb-bet-display {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  /* Capped as well as reserved, exactly like .cb-balance and .cb-lastwin - and
+     it was the one of the three that got missed.
+
+     The reservation was measured from "$1,000,000.00". A weak-unit currency
+     runs past it, and because nothing stopped this panel WIDENING, the bar went
+     over its row budget by 2-14px and broke the Advanced button onto a second
+     line - at every landscape width from 660 to 1100. Two pixels short at 660,
+     fourteen at 1024: consistently just over, which is what an uncapped
+     reservation looks like.
+
+     The .cb-val inside is already fitted (use:fitValue), so capping this makes
+     the figure shrink instead of shoving the bar. */
+  min-width: calc(var(--ui-bar) * 11.6); /* 128px - see WIDTH BUDGET on the MODE sign */
+  max-width: calc(var(--ui-bar) * 11.6);
+  padding: calc(var(--ui-bar) * 0.36) calc(var(--ui-bar) * 0.73);
+  border-radius: calc(var(--ui-bar) * 0.82);
+  border: 1px solid transparent;
+  background: none;
+  cursor: pointer;
+  text-transform: none;
+  transition: box-shadow var(--dur-control) var(--ease-out), border-color var(--dur-control) var(--ease-out), background var(--dur-control) var(--ease-out);
+}
+
+.cb-bet-display .cb-cap { text-align: end; }
+
+/* The bet group tints with the DIFFICULTY, not with the interface accent.
+   Green on Second Chance, yellow on Classic, red on High Stakes, purple once
+   the Equal picks push the rating past what any family reaches alone - the
+   same ruler the bolts and the mode name are already reading.
+
+   The fallbacks matter: these controls exist in the markup before a mode has
+   been resolved, and --accent is what they were. */
+/* .active is the menu-open state and has to stay reachable on touch, so it
+   sits OUTSIDE the hover gate - only the pointer half is gated. */
+.cb-bet-display.active {
+  border-color: var(--mode-ink, var(--accent));
+  background: rgba(var(--mode-rgb, var(--accent-rgb)), 0.12);
+  box-shadow: inset 0 1px 0 var(--panel-lit);
+}
+
+@media (any-hover: hover) {
+  .cb-bet-display:hover {
+    border-color: var(--mode-ink, var(--accent));
+    background: rgba(var(--mode-rgb, var(--accent-rgb)), 0.12);
+    box-shadow: inset 0 1px 0 var(--panel-lit);
+  }
+}
+
+.cb-betstep { display: flex; flex-direction: column; gap: calc(var(--ui-bar) * 0.36) /* 4px */; }
+
+.cb-step {
+  width: calc(var(--ui-bar) * 2.73) /* 30px */;
+  height: calc(var(--ui-bar) * 2.27);
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: calc(var(--ui-bar) * 0.64);
+  border: 1px solid rgba(var(--ink-rgb), 0.16);
+  background: rgba(var(--ink-rgb), 0.07);
+  color: var(--ink);
+  font-size: calc(var(--ui-bar) * 1.6);
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  transition: box-shadow var(--dur-control) var(--ease-out), border-color var(--dur-control) var(--ease-out), color var(--dur-control) var(--ease-out);
+}
+
+/* ~14px in a 25px button (56%), matching the stepper chevrons' weight. Drawn
+   rather than typed as "+" and U+2212 so both steppers share one icon set. */
+.cb-step .step-icon {
+  display: block;
+  width: calc(var(--ui-bar) * 1.8);
+  height: calc(var(--ui-bar) * 1.8);
+}
+
+@media (any-hover: hover) {
+  .cb-step:hover:not(:disabled) {
+    border-color: var(--mode-ink, var(--accent));
+    box-shadow: inset 0 1px 0 var(--panel-lit);
+  }
+}
+
+.cb-step:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.cb-actions { gap: calc(var(--ui-bar) * 1.09); padding: calc(var(--ui-bar) * 0.64) calc(var(--ui-bar) * 1.27); }
+
+/* ==== Minimum-round-duration cooldown ====
+   Host for the spin button plus its cooldown ring and tooltip. Sized to the
+   button so it is invisible in the flex row. */
+.cb-spin-wrap {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ring around the spin button, filling clockwise from 12 o'clock. Sits just
+   outside the button's edge, and never intercepts a click. */
+.cb-cooldown {
+  position: absolute;
+  inset: calc(var(--ui-bar) * -0.55);
+  pointer-events: none;
+  /* -90deg puts the sweep's start at the top instead of 3 o'clock. */
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+
+.cb-cooldown-track,
+.cb-cooldown-fill {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.cb-cooldown-track { stroke: rgba(var(--shadow-rgb), 0.45); }
+
+.cb-cooldown-fill {
+  stroke: var(--accent);
+  /* No bloom. A 5-unit accent stroke on a dark track is visible on its own;
+     the drop-shadow that was here was the shadow-glow tell in miniature. */
+}
+
+/* Tooltip above the button. Shown on hovering the WRAPPER, because the button
+   underneath is disabled for the whole cooldown and so fires no mouse events
+   of its own. */
+.cb-cooldown-tip {
+  position: absolute;
+  bottom: calc(100% + var(--ui-bar) * 1.2);
+  left: 50%;
+  transform: translateX(-50%) translateY(calc(var(--ui-bar) * 0.36));
+  z-index: var(--z-bar-tip);
+  padding: calc(var(--ui-bar) * 0.6) calc(var(--ui-bar) * 1);
+  border-radius: calc(var(--ui-bar) * 0.64);
+  border: 1px solid rgba(var(--ink-rgb), 0.14);
+  background: rgba(var(--panel-dark-rgb), 0.96);
+  box-shadow: 0 6px 18px rgba(var(--shadow-rgb), 0.55);
+  color: var(--ink-strong);
+  font-size: calc(var(--ui-bar) * 1.05);
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--dur-control) var(--ease-out), transform var(--dur-control) var(--ease-out);
+}
+
+/* The hover route waits; the tap and keyboard routes below do not.
+   transition-delay is read from the state being ENTERED, so 700ms here delays
+   the tip appearing under a resting pointer - a mouse crossing the bar does not
+   pop explanations - and leaving takes the base rule's 0s, so it clears at
+   once. A refused tap (.is-shown) and keyboard focus reached the control
+   deliberately and get the answer immediately. */
+@media (any-hover: hover) {
+  .cb-spin-wrap:hover .cb-cooldown-tip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    transition-delay: 700ms;
+  }
+}
+
+/* Flashed by a refused tap, and shown while the blocked button holds focus.
+   A phone has no hover, so the flash is the only route this explanation has to
+   the player who actually tried to spin; focus-within is the keyboard's, and it
+   only became possible once the button stopped being `disabled` while blocked.
+   Same contract as .cb-bet-tip.is-shown below. */
+.cb-cooldown-tip.is-shown,
+.cb-spin-wrap:focus-within .cb-cooldown-tip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ---- "you cannot change the bet right now" -------------------------------
+   Autoplay stakes the same amount every round, so while a run is going the
+   whole bet group is dead: the display cannot open its menu and the steppers
+   cannot step.
+
+   The tip is hosted on the PANEL, not on either control, because a disabled
+   button receives no pointer events at all - a tooltip on it would be shown by
+   every state except the one it exists to explain.
+
+   Same material as .cb-cooldown-tip deliberately: one shape for "this control
+   is dead, and here is why". */
+.cb-bet-tip {
+  position: absolute;
+  bottom: calc(100% + var(--ui-bar) * 0.8);
+  left: 50%;
+  transform: translateX(-50%) translateY(calc(var(--ui-bar) * 0.36));
+  z-index: var(--z-bar-tip);
+  padding: calc(var(--ui-bar) * 0.6) calc(var(--ui-bar) * 1);
+  border-radius: calc(var(--ui-bar) * 0.64);
+  border: 1px solid rgba(var(--ink-rgb), 0.14);
+  background: rgba(var(--panel-dark-rgb), 0.96);
+  box-shadow: 0 6px 18px rgba(var(--shadow-rgb), 0.55);
+  color: var(--ink-strong);
+  font-size: calc(var(--ui-bar) * 1.05);
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--dur-control) var(--ease-out), transform var(--dur-control) var(--ease-out);
+}
+
+@media (any-hover: hover) {
+  .cb-bet.bet-locked:hover .cb-bet-tip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    /* Delayed on hover only - see .cb-cooldown-tip. */
+    transition-delay: 700ms;
+  }
+}
+
+/* The keyboard's route to the same explanation.
+   .cb-cooldown-tip and .cb-mode-tip - the two rules this one is otherwise
+   byte-identical to - each carry a :focus-within alongside their hover, and
+   this one did not. A player tabbing onto a locked bet button therefore got
+   silence where the same player gets a reason on the spin button and on the
+   mode button. Hosted on the panel, not the button, for the reason the note
+   above the markup gives: a disabled button receives no events. */
+.cb-bet.bet-locked:focus-within .cb-bet-tip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Flashed by a refused tap. A phone has no hover, so this is the only way the
+   explanation reaches the player who actually tried to change the bet. */
+.cb-bet-tip.is-shown {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.cb-bet-tip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: calc(var(--ui-bar) * 0.45) solid transparent;
+  border-top-color: rgba(var(--panel-dark-rgb), 0.96);
+}
+
+/* The locked display is NOT dimmed. Greying the game's biggest control reads
+   as "this is broken"; leaving it lit and having it answer back when tapped
+   reads as "not right now, and here is why". The +/- steppers beside it stay
+   disabled and keep their own :disabled opacity - they have no text to answer
+   with. */
+
+/* Little arrow pointing down at the button. */
+/* "Play Again" under the spin button in a finished replay.
+   Out of flow for the same reason the tooltip is: the control bar's height is
+   solved from a real width budget and a caption in flow would push it into a
+   second row at the narrow sizes. Sits BELOW the button rather than above,
+   where the tooltip lives, so the two can never overlap - a replay can be both
+   finished and hovered. */
+.cb-spin-caption {
+  position: absolute;
+  top: calc(100% + var(--ui-bar) * 0.3);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-bar-caption);
+  color: var(--gold-bright);
+  font-size: max(calc(var(--ui-bar) * 0.95), var(--type-floor));
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow: 0 1px 3px rgba(var(--shadow-rgb), 0.8);
+}
+
+.cb-cooldown-tip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: calc(var(--ui-bar) * 0.45) solid transparent;
+  border-top-color: rgba(var(--panel-dark-rgb), 0.96);
+}
+
+/* Round icon buttons (autospin, and the floating turbo) */
+.cb-round {
+  width: calc(var(--ui-bar) * 4) /* 44px */;
+  height: calc(var(--ui-bar) * 4);
+  flex: 0 0 auto;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(var(--ink-rgb), 0.16);
+  background: rgba(var(--ink-rgb), 0.06);
+  color: var(--ink-body);
+  cursor: pointer;
+  text-transform: none;
+  transition: box-shadow var(--dur-control) var(--ease-out), border-color var(--dur-control) var(--ease-out), background var(--dur-control) var(--ease-out), color var(--dur-control) var(--ease-out);
+}
+
+.cb-round:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* The big Spin button */
+/* ---- LIT, NOT HALOED -----------------------------------------------------
+ * The fourteen coloured glows this file used to carry are gone, replaced by the
+ * lit top edge popup-base.css:157-168 defines for exactly this job. Both that
+ * file and popup-mode.css:38-41 remove the effect by name - "a green halo around
+ * a green button on a dark panel is the shadow-glow tell" - and the bar then
+ * shipped it on every control it has.
+ *
+ * Nothing about the WAYFINDING changed: border-color, colour and the tinted wash
+ * all stay, so an open menu is still found by its hue rather than by re-reading
+ * four identical icons. Only the bloom went.
+ *
+ * THE SPIN BUTTON'S OWN PALETTE. Four radial gradients and three glows were raw
+ * hex on the one control the whole game exists to press - including a fourth
+ * blue with no relation to --accent, and a third red matching neither --loss nor
+ * the #ff5d5d on the line beside it. The seven --spin-* colours are tokens now
+ * (tokens.css): they were declared here as a closed set for one control until
+ * How to Play's controls guide drew the same button. The three pairs keep their
+ * shipped values; the red border and the amber border name the tokens they were
+ * already equal to. */
+.cb-spin {
+  width: calc(var(--ui-bar) * 5.82) /* 64px */;
+  height: calc(var(--ui-bar) * 5.82);
+  flex: 0 0 auto;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: max(2px, calc(var(--ui-bar) * 0.27)) solid rgba(var(--ink-rgb), 0.85);
+  background: radial-gradient(circle at 50% 35%, var(--spin-lit), var(--spin-deep) 75%);
+  color: var(--ink);
+  cursor: pointer;
+  text-transform: none;
+  transition: box-shadow var(--dur-control) var(--ease-out), border-color var(--dur-control) var(--ease-out), transform 0.1s var(--ease-out);
+}
+
+@media (any-hover: hover) {
+  .cb-spin:not(:disabled):not(.blocked):hover { box-shadow: inset 0 1px 0 var(--panel-lit); transform: scale(1.04); }
+}
+
+.cb-spin:not(:disabled):not(.blocked):active { transform: scale(0.97); }
+
+/* .blocked carries what :disabled used to, because the button is no longer
+   disabled while it has a reason to give - see spinInert() in ControlBar.svelte.
+   It has to look identical: the change is about what a TAP can reach, not about
+   how available the control appears. Both selectors, so the two inert states
+   (the takeover and the replay intro) still grey out too.
+
+   A blocked button keeps a press state on purpose, and a different one - it
+   shrinks less far and dims, rather than taking the live 0.97 scale. Something
+   has to acknowledge the finger, and it must not feel like the press that buys a
+   round. */
+.cb-spin:disabled,
+.cb-spin.blocked { opacity: 0.5; cursor: not-allowed; }
+
+.cb-spin.blocked:active { transform: scale(0.99); filter: brightness(0.9); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cb-spin.blocked:active { transform: none; }
+}
+
+.cb-spin.stopping { border-color: var(--loss-soft); background: radial-gradient(circle at 50% 35%, var(--spin-stop-lit), var(--spin-stop-deep) 75%); }
+
+/* Skip-the-reveal state. Amber rather than the spin blue or the stop red: it is
+   neither starting nor ending anything, just hurrying the current round along. */
+.cb-spin.slammable { border-color: var(--ctl-turbo); background: radial-gradient(circle at 50% 35%, var(--spin-slam-lit), var(--spin-slam-deep) 75%); }
+
+@media (any-hover: hover) {
+  .cb-spin.slammable:not(.blocked):hover { box-shadow: inset 0 1px 0 var(--panel-lit); }
+}
+
+.cb-slam-svg { width: calc(var(--ui-bar) * 3.45); height: calc(var(--ui-bar) * 3.45); transform: none; color: var(--gold-bright); }
+
+@media (any-hover: hover) {
+  .cb-spin.stopping:not(.blocked):hover { box-shadow: inset 0 1px 0 var(--panel-lit); }
+}
+
+.cb-spin { position: relative; /* anchors the autoplay count over the square */ }
+
+/* The stop square. A thick red outline round a dark centre, rather than the
+   small solid red block it used to be - the count sits INSIDE it now, so it
+   has to be big enough to enclose the digits and open enough to read them
+   against. Sized to about two thirds of the 64px button, which leaves the ring
+   clearly visible around it. */
+.cb-spin-square {
+  width: calc(var(--ui-bar) * 3.8) /* 42px */;
+  height: calc(var(--ui-bar) * 3.8);
+  box-sizing: border-box;
+  /* The floor is 2px, not 3. A fixed 3px does not shrink with the button, so on
+     a short popout - where the whole control is 31px and the square about 20 -
+     the border ate six of those pixels and "999" overflowed it by a pixel.
+     Keeping the border proportional holds the interior wide enough at every
+     size, and 2px is still a visible outline on the smallest one. */
+  border: max(2px, calc(var(--ui-bar) * 0.38)) solid var(--loss);
+  border-radius: calc(var(--ui-bar) * 0.64);
+  background: var(--spin-well);
+  /* The 2px red border on a dark well already says STOP; the 10px red bloom
+     that sat around it was the one halo left on the bar after the pass that
+     removed the other fourteen, and it went for the same reason they did. */
+}
+
+/* Rounds left in an auto run, centred inside the stop square. Still positioned
+   against the whole button rather than the square - they share a centre, and
+   this keeps the digits off the square's border box so a wide number cannot
+   push the border around. Non-interactive so it never swallows a click meant
+   for Stop.
+   Tabular numerals matter here: the count changes every round, and
+   proportional digits would make it jitter as 111 becomes 110. */
+.cb-spin-count {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  font-size: calc(var(--ui-bar) * 1.30) /* 14px */;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--ink);
+  text-shadow: 0 1px 3px rgba(var(--shadow-rgb), 0.9), 0 0 6px rgba(var(--shadow-rgb), 0.8);
+}
+
+/* Nothing caps the rounds a player can enter, so the type steps down to keep
+   long counts within the square's ~31px interior instead of overrunning the
+   red border. */
+.cb-spin-count.is-long { font-size: calc(var(--ui-bar) * 1.00) /* 11px */; }
+.cb-spin-count.is-longer { font-size: calc(var(--ui-bar) * 0.78) /* 8.5px */; }
+
+/* The drawn lemniscate replaces the digits on an unlimited run. Sized a touch
+   larger than the cap-height of the numerals so it reads with the same weight,
+   and given the same shadow so it stays legible on the red square. */
+.cb-spin-count .inf-icon {
+  width: calc(var(--ui-bar) * 1.95); /* 21px wide, 10.5px tall - the cap height
+                                        of the 15px digits it stands in for,
+                                        and inside the square's ~31px interior */
+  height: calc(var(--ui-bar) * 0.98);
+  filter: drop-shadow(0 1px 2px rgba(var(--shadow-rgb), 0.9));
+}
+
+/* Distinct hover glow per control: info blue, turbo amber, autoplay green,
+   mode in its family's colour. Plus an active (popup-open) highlight in the
+   same colour, so a control that has a menu open looks like it.
+ *
+ * The five hues are WAYFINDING and not decoration - see the note beside
+ * --ctl-* in tokens.css for why an attempt to collapse them into one accent
+ * was undone. These are five near-identical round icons in a 40px strip;
+ * colour is how a player finds the one they opened last time without reading
+ * every glyph again. */
+.cb-icon.active { border-color: var(--accent); color: var(--ink); background: rgba(var(--accent-rgb), 0.16); box-shadow: inset 0 1px 0 var(--panel-lit); }
+
+/* The sound button opens a panel, so it wears that panel's identity rather than
+   the accent blue every other .cb-icon lights with. (0,3,0) against the (0,2,0)
+   rule above, which is the specificity note further down this file made
+   concrete: .cb-icon.active sets border-color, background AND color, so a
+   single-class override would lose two of the three and leave a half-blue
+   button. Its neighbour .cb-info keeps the blue - two controls in one pill
+   opening two differently-coloured panels is the whole point. */
+.cb-icon.cb-sound.active {
+  border-color: var(--ctl-sound);
+  color: var(--ctl-sound-ink);
+  background: rgba(var(--ctl-sound-rgb), 0.16);
+  box-shadow: inset 0 1px 0 var(--panel-lit);
+}
+
+@media (any-hover: hover) {
+  .cb-icon.cb-sound:hover {
+    border-color: var(--ctl-sound);
+    color: var(--ctl-sound-ink);
+    background: rgba(var(--ctl-sound-rgb), 0.16);
+    box-shadow: inset 0 1px 0 var(--panel-lit);
+  }
+}
+
+@media (any-hover: hover) {
+  .cb-icon:hover { border-color: var(--accent); color: var(--ink); background: rgba(var(--accent-rgb), 0.16); box-shadow: inset 0 1px 0 var(--panel-lit); }
+}
+
+.cb-turbo.active { border-color: var(--ctl-turbo); color: var(--ctl-turbo-ink); background: rgba(var(--ctl-turbo-rgb), 0.16); box-shadow: inset 0 1px 0 var(--panel-lit); }
+
+@media (any-hover: hover) {
+  .cb-turbo:hover { border-color: var(--ctl-turbo); color: var(--ctl-turbo-ink); background: rgba(var(--ctl-turbo-rgb), 0.16); box-shadow: inset 0 1px 0 var(--panel-lit); }
+}
+
+.cb-autospin.active { border-color: var(--ctl-autospin); color: var(--ctl-autospin-ink); background: rgba(var(--ctl-autospin-rgb), 0.14); box-shadow: inset 0 1px 0 var(--panel-lit); }
+
+@media (any-hover: hover) {
+  .cb-autospin:hover:not(:disabled) { border-color: var(--ctl-autospin); color: var(--ctl-autospin-ink); background: rgba(var(--ctl-autospin-rgb), 0.14); box-shadow: inset 0 1px 0 var(--panel-lit); }
+}
+
+.cb-float:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* The bet figure when the mode multiplies it. Blue says "this is not the plain
+   bet" without needing a sentence; the arithmetic sits underneath for anyone
+   who wants it.
+
+   Compound selector on purpose. readout.css sets `.cb-val { color: var(--ink) }`
+   and is imported AFTER this sheet, so a bare `.cb-val-multiplied` at the same
+   specificity lost on order and the figure stayed white on the first mode that
+   ever multiplied - which is exactly what was seen the day Three of a Kind
+   arrived. The bet menu's chips do NOT take this colour: they are coloured by
+   rank (tokens.css), and a rule that turned the value blue on four of five
+   chip faces and left it black on the white one read as an inconsistency, not
+   a signal. The bar is where the signal lives. */
+.cb-val.cb-val-multiplied { color: var(--accent); }
+
+/* .bet-cell-base used to be grouped in here and matched nothing - see the
+   commit that split the popups out, which is where svelte-check first got a
+   clear enough view of this component to say so. */
+.cb-bet-base {
+  display: block;
+  /* Floored like every other line of the bar. It was the one left bare, and
+     Three of a Kind's "$1.00 × 250" printed at 3.3px on Popout S and 5.6px on
+     a 320px phone (front v72, 2026-10-06). */
+  font-size: max(calc(var(--ui-bar) * 0.86), var(--type-floor));
+  /* 700: the label weight every readout uses. (This was 600, which the body
+     face of the time did not ship and which resolved to 700; the body face is
+     variable now, and 700 is the intent rather than the fallback.) */
+  font-weight: 700;
+  color: var(--ink-dim);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ==== The MODE button: a destination blind ==================================
+ * The one control in the bar that changes what a round IS, and it now SHOWS
+ * which one: the live family's name, lettered in the family's colour on a
+ * recessed sign, the way the blind on the front of a bus names its route. It
+ * was a pill that said "MODE" while the family's name printed in the bet
+ * display across the bar - a control naming its category instead of its value,
+ * with the family split between two places (Hallmark's MODE audit, 2026-10-05:
+ * two majors, three minors; the owner called the old one "too basic"). One
+ * place now: the sign carries the name and the bolts, the bet display money.
+ *
+ * LETTERED, NOT LIT. The colour is in the letters. The sign is the bar's own
+ * material - a bezel of --panel-float with the bar's lit top edge and an ink
+ * hairline like every other control - and inside it a dark well, shaded at its
+ * top lip and lit at its bottom one, because the room's light comes from above
+ * and a recess is lit on its far side. No coloured outline: a full-strength
+ * family-colour hairline all the way round was the ghost-button tell, the one
+ * control drawn rather than lit. No bloom (design.md, "Lit, not haloed").
+ *
+ * --mode-ink / --mode-rgb are the FAMILY's colour, published on the whole
+ * .control-bar (Game.svelte); the bolts burn --vol-color, the LIVE rating for
+ * the picks (liveBolts) - the picker's ruler, seven stops.
+ *
+ * WIDTH BUDGET. Fixed, never sized to its word: a sign as wide as whichever
+ * family it named would move the bar every time the family changed. It is paid
+ * for by the bet display, which no longer carries the family line: that
+ * reservation came down 13.82 -> 11.6 units and this went 6.2 -> 8.42, so the
+ * one-row bar is the width it was (Popout S included). The name is fitted INTO
+ * the sign - two lines, then smaller (fitBlock) - never the sign to the name.
+ *
+ * 5 units tall, between Turbo's 4.18 disc and the panels beside it, so the bar
+ * is no taller: at 4.18 a two-word name fitted to 4.4px on Popout S and shrank
+ * on Desktop too. Measured in every language and family, 2026-10-06.
+ */
+.cb-mode-slot {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+}
+
+.cb-mode-slot .cb-mode-btn {
+  width: calc(var(--ui-bar) * 8.42);
+  min-width: calc(var(--ui-bar) * 8.42);
+  max-width: calc(var(--ui-bar) * 8.42);
+  height: calc(var(--ui-bar) * 5);
+  padding: calc(var(--ui-bar) * 0.36);
+  border-radius: calc(var(--ui-bar) * 1);
+  border: 1px solid rgba(var(--ink-rgb), 0.12);
+  background: var(--panel-float);
+  color: var(--mode-ink, var(--gold));
+  box-shadow: var(--panel-elevation-low), inset 0 1px 0 var(--panel-lit), inset 0 -1px 0 var(--panel-shade);
+}
+
+/* The window. Two rows: the name, and the bolts under it. */
+.cb-blind {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  justify-items: center;
+  align-items: center;
+  row-gap: calc(var(--ui-bar) * 0.12);
+  width: 100%;
+  height: 100%;
+  padding: calc(var(--ui-bar) * 0.2) calc(var(--ui-bar) * 0.3) calc(var(--ui-bar) * 0.32);
+  border-radius: calc(var(--ui-bar) * 0.66);
+  background: linear-gradient(180deg, var(--blind-glass-top), var(--blind-glass-bottom));
+  box-shadow:
+    inset 0 1px 2px rgba(var(--shadow-rgb), 0.85),
+    inset 0 -1px 0 rgba(var(--panel-lit-rgb), 0.16);
+  overflow: hidden;
+  /* BoltMeter styles itself and takes its size from here (the Svelte scoping
+     note in CLAUDE.md). */
+  --bolt-size: calc(var(--ui-bar) * 0.62);
+}
+
+/* The roller: the name's own cell, which clips it as it rolls. The leaving
+   and the arriving name share it (grid-area 1 / 1), so a change of family
+   never changes its height. */
+.cb-blind-roll {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.cb-blind-name {
+  grid-area: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: max(calc(var(--ui-bar) * 1.36), var(--type-floor));
+  line-height: 0.95;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--mode-ink, var(--gold));
+}
+
+/* The faces the name falls back to, per string - titleFaceFor() in
+   game/ui/displayFace.ts, the takeover title's rule. Big Shoulders is Latin
+   only, so a Cyrillic, Vietnamese or Turkish name is set whole in the body
+   face, and a script neither face draws goes to the OS.
+
+   Not in capitals. Capitals are the condensed face's signage voice; in the
+   wide body face they cost a third more width, and "КЛАССИКА" fitted to 4.4px
+   on Popout S and 6.7px on a 320px phone where "Классика" has the room. */
+.cb-blind-name.face-body {
+  font-family: var(--font-body);
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.cb-blind-name.face-system {
+  font-family: sans-serif;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Hover: the well lifts its light. Restated in full because .cb-icon:hover
+   (the foot of this file's accent rules) sets border, background AND colour. */
+@media (any-hover: hover) {
+  .cb-mode-slot .cb-mode-btn:hover:not(:disabled) {
+    border-color: rgba(var(--ink-rgb), 0.2);
+    background: var(--panel-float);
+    color: var(--mode-ink, var(--gold));
+    box-shadow: var(--panel-elevation-low), inset 0 1px 0 var(--panel-lit), inset 0 -1px 0 var(--panel-shade);
+  }
+
+  .cb-mode-slot .cb-mode-btn:hover:not(:disabled) .cb-blind {
+    background: linear-gradient(180deg, var(--blind-glass-top), var(--blind-glass-lit));
+  }
+}
+
+/* Open: a wash of the family's colour in the well - the panel it opened wears
+   the same colour (popup-mode.css). Outside the hover gate, so a finger
+   reaches it. */
+.cb-mode-slot .cb-mode-btn.active {
+  border-color: rgba(var(--ink-rgb), 0.2);
+  background: var(--panel-float);
+  color: var(--mode-ink, var(--gold));
+  box-shadow: var(--panel-elevation-low), inset 0 1px 0 var(--panel-lit), inset 0 -1px 0 var(--panel-shade);
+}
+
+.cb-mode-slot .cb-mode-btn.active .cb-blind {
+  background:
+    linear-gradient(180deg, rgba(var(--mode-rgb, var(--gold-rgb)), 0.18), rgba(var(--mode-rgb, var(--gold-rgb)), 0.06)),
+    linear-gradient(180deg, var(--blind-glass-top), var(--blind-glass-bottom));
+}
+
+/* Pressed: in, not brighter - the language every control here speaks. The
+   shared .cb-icon:active (foot of this file) swaps the background for a dark
+   wash; the bezel keeps its material and is pushed in 1px instead. */
+.cb-mode-slot .cb-mode-btn:active:not(:disabled) {
+  background: var(--panel-float);
+  transform: translateY(1px);
+  box-shadow: inset 0 1px 0 var(--panel-lit), inset 0 -1px 0 var(--panel-shade);
+}
+
+.cb-mode-btn:disabled,
+.cb-mode-btn.blocked { opacity: 0.5; cursor: not-allowed; }
+
+/* A blocked press still gets acknowledged, and differently from a live one:
+   no push, a dim. Something has to answer the finger without feeling like the
+   press that opens the picker. */
+.cb-mode-btn.blocked:active { filter: brightness(0.9); transform: none; }
+
+/* ---- Keyboard focus -------------------------------------------------------
+ * Every control in the bar. None of these had any focus style at all, so the
+ * whole bottom row was invisible to a keyboard user - including the spin
+ * button, which is the one control the spacebar is bound to.
+ *
+ * An outline rather than the choice row's inset ring: nothing here is clipped,
+ * and an offset outline follows border-radius, so it fits the round buttons
+ * without a second rule. Never transitioned - see the note in choices.css.
+ */
+.cb-icon:focus-visible,
+.cb-round:focus-visible,
+.cb-float:focus-visible,
+.cb-spin:focus-visible,
+.cb-step:focus-visible,
+.cb-bet-display:focus-visible,
+.cb-lastwin-btn:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ---- Reduced motion ----
+   Every glow and colour change stays and simply lands instantly; what goes is
+   the spin button growing under the pointer and the cooldown tip sliding up.
+   See the note in cards.css. */
+@media (prefers-reduced-motion: reduce) {
+  .cb-icon,
+  .cb-round,
+  .cb-float,
+  .cb-spin,
+  .cb-step,
+  .cb-bet-display,
+  .cb-cooldown-tip {
+    transition: none;
+  }
+
+  .cb-spin:not(:disabled):hover,
+  .cb-spin:not(:disabled):active {
+    transform: none;
+  }
+
+  .cb-cooldown-tip,
+  .cb-spin-wrap:hover .cb-cooldown-tip {
+    transform: translateX(-50%);
+  }
+}
+
+/* ---- Pressed -------------------------------------------------------------
+ * The touch-reachable half of every hover above. A finger cannot hover, so
+ * without these a tap on the mute, info, mode, autoplay or turbo button
+ * produced no acknowledgement at all between finger-down and whatever
+ * happened next - and on this bar "whatever happened next" is often a menu
+ * opening somewhere else on the screen.
+ *
+ * A press pushes IN rather than lighting up: it is the same surface the hover
+ * rules brighten, moved the other way, so the two never read as the same
+ * state. The spin button already had its own :active and keeps it.
+ */
+.cb-icon:active,
+.cb-round:active:not(:disabled),
+.cb-float:active:not(:disabled),
+.cb-step:active:not(:disabled) {
+  background: rgba(var(--shadow-rgb), 0.28);
+  transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cb-icon:active,
+  .cb-round:active:not(:disabled),
+  .cb-float:active:not(:disabled),
+  .cb-step:active:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* ---- Hidden while the win takeover counts --------------------------------
+   .takeover-open is set on the LAYOUT ROOT, in Game.svelte - not on anything
+   this component renders - so it has to be :global() or Svelte scopes it to a
+   class that is not here and the rule matches nothing. That is exactly what
+   happened when the bar became its own component: these three moved out of
+   cards.css with the readouts they hide, and svelte-check reported them as
+   unused selectors, which is the only reason it was caught.
+
+   The board's own share of this - .card-mult, .running-win, .card-row and
+   .choice-row - stays in cards.css with GameBoard. */
+
+/* REPLAY: THE PILL KEEPS ITS SHAPE. A replay has no balance (.solo), so under
+   a replay's takeover Last Win is the only thing in the readouts box and it
+   goes (the rule below). This used to collapse the box as well - display:none,
+   and the light pill shrunk to its icons via :has(.solo) - so an empty panel
+   would not sit under the win screen. The price was the whole bar re-flowing
+   under the veil the moment the takeover opened and again when it closed: the
+   pill shrank, everything re-centred, and on a phone the spin button left its
+   corner for the middle of the second row (UI review, 2026-09-27). The board's
+   rule is that nothing moves under the player; the bar keeps it too. Last Win
+   fades out where it stands, and a dimmed, empty pill under a veil is the
+   quieter of the two. */
+
+/* The last-win readout goes with them: the takeover is counting up to that very
+   figure, and printing the answer beside it spoils the only suspense the game
+   has. Same timing as the rest, so they leave together. */
+:global(.takeover-open) .cb-lastwin {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.3s var(--ease-out),
+    visibility 0s linear 0.3s;
+}
+
+/* ---- "you cannot change the mode right now" ------------------------------
+ * Third instance of one shape: .cb-cooldown-tip, .cb-bet-tip and this. Same
+ * material deliberately - "this control is dead, and here is why" should look
+ * the same wherever it happens.
+ *
+ * Hosted on .cb-mode-slot rather than on the button, because replay disables
+ * the button outright and a disabled button receives no pointer events. Shown on
+ * hover for a mouse, FLASHED by a refused tap for a finger, and on focus for the
+ * keyboard - the last two are new, and before them this explanation existed in
+ * the source but could not be reached by any phone.
+ */
+.cb-mode-tip {
+  position: absolute;
+  bottom: calc(100% + var(--ui-bar) * 0.8);
+  /* Pinned to the slot's INNER edge and opening toward the middle of the bar:
+     the slot sits at the screen's edge, and a tip centred on it ran half off
+     the screen. Logical, so it opens the right way in Arabic too, where the bar
+     mirrors and MODE is at the left. */
+  inset-inline-end: 0;
+  transform: translateY(calc(var(--ui-bar) * 0.36));
+  z-index: var(--z-bar-tip);
+  padding: calc(var(--ui-bar) * 0.6) calc(var(--ui-bar) * 1);
+  border-radius: calc(var(--ui-bar) * 0.64);
+  border: 1px solid rgba(var(--ink-rgb), 0.14);
+  background: rgba(var(--panel-dark-rgb), 0.96);
+  box-shadow: 0 6px 18px rgba(var(--shadow-rgb), 0.55);
+  color: var(--ink-strong);
+  font-size: calc(var(--ui-bar) * 1.05);
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--dur-control) var(--ease-out), transform var(--dur-control) var(--ease-out);
+}
+
+@media (any-hover: hover) {
+  .cb-mode-slot.mode-locked:hover .cb-mode-tip {
+    opacity: 1;
+    transform: translateY(0);
+    /* Delayed on hover only - see .cb-cooldown-tip. */
+    transition-delay: 700ms;
+  }
+}
+
+.cb-mode-tip.is-shown,
+.cb-mode-slot.mode-locked:focus-within .cb-mode-tip {
+  opacity: 1;
+  transform: translateY(0);
+}

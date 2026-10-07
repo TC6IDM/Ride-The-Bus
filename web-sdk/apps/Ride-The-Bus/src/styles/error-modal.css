@@ -4,13 +4,49 @@
 .err-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 90;
+  z-index: var(--z-error-backdrop);
   background: rgba(var(--shadow-rgb), 0.66);
 }
 
+/* THIS DIALOG RENDERS OUTSIDE .game-layout - see the long note in Game.svelte
+   above <ErrorModal />, which is mounted after the layout div closes so that an
+   RGS failure can outrank whatever menu was open. --ui-bar is declared ONLY on
+   .game-layout (base.css, and again for Popout S in responsive.css), so every
+   calc(var(--ui-bar) * n) in this file was invalid at computed-value time: the
+   dialog drew at its unstyled fallback size and its only button came out around
+   40x19px with no padding and no background, because * { padding: 0 } in app.css
+   is all that was left. That button is the sole way out of an auth or bet
+   failure, so on a phone the failure was unrecoverable.
+
+   WinCelebration and StartScreen are outside .game-layout too and each solves
+   this the same way, by carrying its own copy of the unit. BOTH branches are
+   reproduced here, because the phone override is the half that makes the unit
+   usable: the desktop formula alone resolves to 3.02px at 320px, which would
+   draw a 115px-wide dialog. Keep them in step with base.css:46 and
+   responsive.css:55.
+
+   The tint contract comes with it. .action-button is defined below rather than
+   inherited, for the same Svelte-scoping reason every panel copies it - and it
+   reads --tint-rgb / --tint-ink, which only .popup declares. */
 .err-modal {
+  --ui-bar: clamp(3px, min(calc((100vw - 30px) / 96), 2.4vh), 11px);
+  /* GOLD, not the accent blue this used to take.
+     Every other panel wears the colour of the control that opened it; this one
+     has no opener, so it opted out of the contract and hardcoded --accent -
+     which left the single brightest object in the dialog as a cool blue pill on
+     a warm table, and made this the last piece of the dark-SaaS chrome the
+     token file was written to remove. It was invisible in review for a plain
+     reason: nothing could reach this dialog in dev until `npm run shots
+     -- --errors` existed, so nobody had looked at it.
+
+     Gold is what the game already uses for a primary affordance - the MODE
+     button, the intro's continue button - and it is the one identity colour not
+     spent on a bar control, so it carries no wayfinding meaning to confuse
+     here. --on-gold-ink is the dark ink those same gold surfaces print on. */
+  --tint-rgb: var(--gold-rgb);
+  --tint-ink: var(--on-gold-ink);
   position: fixed;
-  z-index: 91;
+  z-index: var(--z-error);
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
@@ -20,11 +56,78 @@
   box-sizing: border-box;
   padding: calc(var(--ui-bar) * 1.82);
   border-radius: calc(var(--ui-bar) * 1.27);
-  border: 1px solid rgba(255, 120, 120, 0.4);
-  background: var(--panel);
-  box-shadow: 0 14px 44px rgba(var(--shadow-rgb), 0.7);
+  /* THE SAME MATERIAL AS EVERY OTHER PANEL (tokens.css). This dialog had a
+     flat fill, a single 0 14px 44px blob for a shadow, and a red hairline all
+     the way round - three things no other panel in the game does, on the one
+     that appears when something has gone wrong and the player is least
+     inclined to forgive a foreign-looking box. The red belongs to the code line
+     below, which is the thing that is actually red. */
+  border: 1px solid var(--panel-edge);
+  background: var(--panel-face), var(--panel);
+  box-shadow: var(--panel-elevation);
   color: var(--ink-strong);
   text-align: center;
+  /* Arrives like every other panel - see popup-base.css. Same keyframe shape,
+     restated here because this sheet is scoped to ErrorModal alone. */
+  animation: err-in 220ms var(--ease-out) both;
+}
+
+@keyframes err-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* The dialog takes focus when it opens (see the effect in ErrorModal.svelte)
+   and had no rule for what that looks like, so a keyboard player got the
+   browser's default double ring. An alert has no header rule to carry the
+   panel's own device (popup-base.css), so it takes the game's standard ring. */
+.err-modal:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .err-modal {
+    animation: err-fade 120ms var(--ease-out) both;
+  }
+}
+
+@keyframes err-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* The phone half of the unit, mirroring responsive.css:55. Width-scoped, not
+   portrait-scoped, exactly as that block is: a narrow landscape window needs
+   the larger unit for the same reason a phone does. */
+@media (max-width: 620px) {
+  .err-modal {
+    --ui-bar: clamp(6px, min(2.05vw, 2.4vh), 11px);
+  }
+}
+
+.err-backdrop {
+  /* With the panel, like .popup-backdrop. */
+  animation: err-backdrop-in 200ms var(--ease-out) both;
+}
+
+@keyframes err-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .err-title {
@@ -33,6 +136,12 @@
   font-weight: 800;
   line-height: 1.3;
   color: var(--ink);
+  /* These messages are whole sentences and they are centred, so the default
+     greedy wrap strands the last word on a line of its own - "Please reload the
+     / game." was the shipped result for ERR_IS. balance evens the lines instead;
+     browsers without it fall back to the greedy wrap, which is what was there
+     before. Safe on a heading: the cap is a few lines, not a paragraph. */
+  text-wrap: balance;
 }
 
 /* The underlying payload. Kept quiet - it is for support, not the player -
@@ -48,17 +157,99 @@
 .err-code {
   margin: 0 0 calc(var(--ui-bar) * 1.27);
   font-size: calc(var(--ui-bar) * 0.95);
-  letter-spacing: 0.08em;
+  /* A code, not a caption: no tracking. Set wide and bold in red it was the
+     loudest thing in the dialog after the title, for a string that exists so
+     support can search for it. The red stays, because it IS the error. */
   font-weight: 700;
   color: var(--loss-soft);
 }
 
 .err-actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
+  gap: calc(var(--ui-bar) * 0.73);
 }
 
+/* The way out beside Reload on a failure the dialog cannot name: a hairline,
+   quiet, as every Cancel in the game is (design.md, The primary action; the
+   mode panel's .mode-confirm-cancel - keep the two in step). */
+.err-actions .err-secondary {
+  padding: calc(var(--ui-bar) * 1.27) calc(var(--ui-bar) * 1.6);
+  border-radius: calc(var(--ui-bar) * 0.91);
+  border: 1px solid rgba(var(--ink-rgb), 0.2);
+  background: none;
+  color: var(--ink-body);
+  font-size: calc(var(--ui-bar) * 1.53);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--dur-control) var(--ease-out), border-color var(--dur-control) var(--ease-out);
+}
+
+@media (any-hover: hover) {
+  .err-actions .err-secondary:hover {
+    background: rgba(var(--ink-rgb), 0.1);
+    border-color: rgba(var(--ink-rgb), 0.32);
+  }
+}
+
+.err-actions .err-secondary:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* The whole button, not just its width.
+ *
+ * The base .action-button rule lives in popup-mode.css and popup-autospin.css,
+ * both of which Svelte scopes to OTHER components - so this file naming only
+ * `width` and `min-width` left the button with no padding, no background, no
+ * radius and no font size. Copied rather than shared for the reason the popup
+ * split records: a sheet's rules have to travel with the markup that renders
+ * them. Keep it in step with popup-mode.css.
+ */
 .err-actions .action-button {
   width: auto;
   min-width: calc(var(--ui-bar) * 12);
+  padding: calc(var(--ui-bar) * 1.27) calc(var(--ui-bar) * 2);
+  font-size: calc(var(--ui-bar) * 1.53);
+  font-weight: 800;
+  border: none;
+  border-radius: calc(var(--ui-bar) * 0.91);
+  cursor: pointer;
+  background: linear-gradient(180deg, rgba(var(--tint-rgb), 1), rgba(var(--tint-rgb), 0.76));
+  color: var(--tint-ink);
+  letter-spacing: 0.03em;
+  box-shadow:
+    inset 0 1px 0 var(--panel-lit),
+    0 1px 2px rgba(var(--shadow-rgb), 0.5),
+    0 calc(var(--ui-bar) * 0.55) calc(var(--ui-bar) * 1.09) rgba(var(--shadow-rgb), 0.42);
+}
+
+@media (any-hover: hover) {
+  .err-actions .action-button:hover { filter: brightness(1.08); }
+}
+
+/* A finger cannot hover, so the press needs a state a tap can produce - and one
+   that is not only motion, since reduced motion takes the transform away. */
+.err-actions .action-button:active {
+  transform: translateY(1px);
+  filter: brightness(0.94);
+}
+
+.err-actions .action-button:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .err-actions .action-button:active { transform: none; }
+}
+
+/* The one way out of a failure, so it gets the comfortable target rather than
+   the 24px WCAG floor. Not portrait-scoped: a phone held sideways needs it too.
+   pointer: coarse keeps it off Popout S, whose unit is deliberately tiny. */
+@media (pointer: coarse) {
+  .err-actions .action-button {
+    min-height: 44px;
+  }
 }

@@ -1,6 +1,6 @@
 ---
 name: rtb-compliance
-description: Read-only auditor that checks Ride The Bus against Stake Engine's published approval criteria and drives RGS_TEST_PLAN sections. Use before a submission, when a change touches anything player-facing or money-facing, and to work through the 94 unrun live-session checks.
+description: Read-only auditor that checks Ride The Bus against Stake Engine's published approval criteria and drives RGS_TEST_PLAN sections. Use before a submission, when a change touches anything player-facing or money-facing, and to work through the unrun live-session checks (101 at the last count).
 tools: Read, Grep, Glob, Bash, Skill
 model: opus
 ---
@@ -44,27 +44,42 @@ blocks a submission.
 ## Facts you must not get wrong
 
 - **The binding risk tier is 2-star, not 3-star**: ETL 0.8 and CVaR 700. The
-  0.9 / 800 figures are the 3-star tier. This build clears 2-star — worst std
-  32.938, worst ETL 0.695, worst CVaR 568.8, worst non-zero hit rate 1 in 2.03,
-  P(≥5000×) zero.
+  0.9 / 800 figures are the 3-star tier. The 2026-09-22 build (High Stakes at
+  15%) clears 2-star on the four-guess families — worst std 38.401, worst ETL
+  0.769 (`hs_red_equal_outside_club`), worst CVaR 639.0
+  (`hs_red_equal_equal_heart`), worst non-zero hit rate 1 in 2.039, P(≥5000×)
+  zero. Three of a Kind: ETL 0, CVaR 4,583.3 absolute = 18.3 per stake, hit
+  rate 1 in 19.1 with 94.8% of rounds paying nothing (the submission's softest
+  point, accepted). `rgs_verification.py` used to warn on that CVaR because it
+  held the un-normalised 250× figure to a 1× limit; it now checks the per-stake
+  figure against 800 and the raw one against the absolute ceiling, as Stake's
+  console does, and passes. Do not re-tune the mode, and do not read a silent
+  verifier as a weaker one.
 - **One star is not a publication.** A 1-star game is returned to the developer
   to resubmit. Any claim that it ships at the bottom of New Releases is wrong.
 - **RTP must be 90.0%–96.70%**, and across modes within 0.5% variation. This
-  build is 96.0000% everywhere, spread 0.000000%.
-- **All three families cost 1.0×.** That is forced, not chosen: `etl40b` is an
-  absolute sum against a fixed limit and is *not* divided by cost, so a 2× mode's
-  figure doubles for the same shape.
+  build is 96.0000% on all 193 modes, spread 0.000000%.
+- **The three four-guess families cost 1.0×; Three of a Kind costs 250×.** The
+  1.0× is forced, not chosen: `etl40b` is an absolute sum against a fixed limit
+  and is *not* divided by cost, so a 2× mode's figure doubles for the same
+  shape. The 250× escapes that sum because the mode's payout never reaches 40×
+  its cost, and is capped from the other side by the tail rows, which are
+  written in base-bet multiples: a binary win must stay under 5,000× the base
+  bet (THE ALL-OR-NOTHING BOUND in `game_calculations.py`). Every payout figure
+  is a multiple of the BASE bet, never of the cost - 4,583.3×, not 18.33×.
 - **Max win must be realistically obtainable** and stated **per bet mode**.
   Family figure ≠ mode ceiling; only 8 of each family's 64 modes reach the
-  family figure, and Classic's median mode is 268.8× against a 1354.2× headline.
+  family figure (1354.2 / 585.2 / 2237.3), and Classic's median mode is 268.8×
+  against a 1354.2× headline. Three of a Kind's only win IS its ceiling.
 - The published math build is **not committed** — `math-sdk/.gitignore` line 9 is
   `**/library/**`. Tests that read the math tree skip rather than fail when it is
   absent. Check whether it is present before trusting a "0 skipped" result.
 
-## The 94 unrun checks
+## The unrun checks
 
-`RGS_TEST_PLAN.md` holds 94 live-session checks across 14 sections. As of the
-last audit **0 were ticked**. Sections 06 (Currency), 07 (Win presentation),
+`RGS_TEST_PLAN.md` holds 101 live-session checks across 14 sections (BET-14/15,
+RND-07, REP-09, LNG-06 and DEV-06 are Three of a Kind's). As of the last audit
+**0 were ticked**. Sections 06 (Currency), 07 (Win presentation),
 09 (Localisation), 11 (Devices) and 14 (Performance) are mutually independent.
 
 Many checks begin "look at" — those need a real browser. You do not drive one;
@@ -83,8 +98,9 @@ category each unticked check falls into.
 - Volatility rates Inside and Outside identically; splitting it needs an eighth
   stop. `volatility.test.ts` asserts the current behaviour so the choice is on
   the record.
-- "High Stakes" implies a cost premium it no longer charges. Open naming
-  question.
+- "High Stakes" keeps its name (owner's call, 2026-09-25): it names what a
+  miss keeps - 15% against Classic's 30% - not a price. All three four-guess
+  families cost 1×. Not a finding.
 
 ## How to report
 

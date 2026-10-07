@@ -9,8 +9,22 @@
 	const PREVENT_DEFAULT_KEYS = ['Space', 'ArrowUp', 'ArrowDown'];
 	const EXCLUDED_TAGS = ['input', 'textarea', 'select'];
 
+	/**
+	 * LOCAL ADDITION to the Stake SDK - re-apply if this package is updated from
+	 * upstream. A cast; the logic is unchanged.
+	 *
+	 * `KeyboardEvent.target` is `EventTarget | null`, which has no `tagName` -
+	 * only Element does. The optional chaining meant this never threw, so the
+	 * bug was purely that the type lied; svelte-check reported it.
+	 *
+	 * Element rather than HTMLElement because the cast should claim no more than
+	 * it needs: `tagName` is on Element, and a keydown can land on an SVG node,
+	 * which is an Element but not an HTMLElement. The `?.` chain stays, so a
+	 * target that is neither still falls through to `undefined` and the
+	 * includes() check correctly says "not excluded".
+	 */
 	const getValidElement = (e: KeyboardEvent) =>
-		!EXCLUDED_TAGS.includes(e?.target?.tagName?.toLowerCase());
+		!EXCLUDED_TAGS.includes((e?.target as Element | null)?.tagName?.toLowerCase());
 
 	function handleKeydown(e: KeyboardEvent) {
 		if (getValidElement(e)) {

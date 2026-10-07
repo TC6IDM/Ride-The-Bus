@@ -54,21 +54,28 @@ export const currencyDecimals = (currency: string): number =>
 export const RGS_DECIMALS = 6;
 
 /**
- * How many decimals to actually render, widened when the currency's own
- * precision would swallow the amount entirely.
+ * How many decimals to actually render: as many as the amount really has.
  *
  * Money on the RGS carries six decimal places, so a payout can legitimately
- * land below one cent - this game refunds 0.5x on a card-2 miss and retains 30%
- * of the built-up multiplier later, both of which go sub-cent at small bets.
- * At the currency's default precision Intl renders those as "$0.00", which
- * reads as "you won nothing" for a round that actually paid. Stake's submission
- * checklist calls this out directly ("Game displays sub-cent payouts
- * correctly").
+ * land between cents - this game refunds 0.5x on a card-2 miss and retains 30%
+ * of the built-up multiplier later, and at small bets those payouts are worth
+ * fractions of a cent. Stake's submission checklist names the case directly
+ * ("Game displays sub-cent payouts correctly").
  *
- * So: keep the currency's own precision whenever the amount survives rounding
- * at it, and only widen - one decimal at a time, capped at the RGS's own six -
- * when it does not. Every ordinary amount formats exactly as before; only
- * amounts that would otherwise display as zero change.
+ * The rule USED to be "keep the currency's precision unless the amount would
+ * round to zero". That cleared the zero case and missed the rest: measured over
+ * every paying round in the published tables (2026-10-05), at a $0.01 bet 58%
+ * of payouts displayed a figure different from the one credited - mostly
+ * HIGHER, because Intl rounds half away from zero: the common 0.5x miss paid
+ * $0.005 and showed $0.01; a 1.7x win paid $0.017 and showed $0.02. The owner's
+ * call that day: show every amount exactly.
+ *
+ * So: the currency's own precision as a floor (an amount in whole cents looks
+ * exactly as it always did), widened one decimal at a time, capped at the
+ * RGS's six, until the figure is exact. 0.017 -> 3, 997.468 -> 3, 0.0004 -> 4.
+ * Only amounts that carry sub-unit digits change. Callers formatting a figure
+ * that is animating towards a total (a count-up) should pass the TOTAL's
+ * digits instead, so in-between frames do not flash six decimals.
  *
  * Never returns less than `currencyPlaces`, which is what lets callers pass the
  * result as `maximumFractionDigits` while leaving `minimumFractionDigits` to
@@ -77,10 +84,11 @@ export const RGS_DECIMALS = 6;
 export const displayFractionDigits = (value: number, currencyPlaces: number): number => {
 	if (!Number.isFinite(value) || value === 0) return currencyPlaces;
 	const magnitude = Math.abs(value);
-	// Half a unit of the last shown decimal is the rounding threshold: at or
-	// above it the amount still displays, below it the amount reads as zero.
 	for (let digits = currencyPlaces; digits < RGS_DECIMALS; digits++) {
-		if (magnitude >= 0.5 / 10 ** digits) return digits;
+		const scaled = magnitude * 10 ** digits;
+		// Exact at this precision, allowing for binary floating-point noise
+		// (0.017 * 1000 === 17.000000000000004) and its growth on large values.
+		if (Math.abs(scaled - Math.round(scaled)) <= 1e-9 + scaled * 1e-12) return digits;
 	}
 	return RGS_DECIMALS;
 };

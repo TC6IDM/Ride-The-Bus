@@ -50,8 +50,6 @@
   --card-w: calc(var(--ui) * 9.27); /* 102px */
   --card-h: calc(var(--ui) * 13.8); /* 152px */
   --card-radius: calc(var(--ui) * 0.9); /* 10px */
-  --rank-fs: calc(var(--ui) * 1.55); /* 17px */
-  --suit-fs: calc(var(--ui) * 4.18); /* 46px */
   --choice-size: calc(var(--ui) * 8.36); /* 92px */
   --choice-fs: calc(var(--ui) * 2.04); /* 22.4px */
   --quad-fs: calc(var(--ui) * 2.33); /* 25.6px */
@@ -64,7 +62,10 @@
      would drift apart - which is exactly the argument tokens.css makes for
      every other shared colour, so it belongs there with them. */
   height: 100vh;
-  width: 100vw;
+  /* 100%, not 100vw: 100vw counts the scrollbar gutter, so on any platform that
+     shows one this box is wider than the space it has. overflow: hidden below
+     was hiding that rather than preventing it. */
+  width: 100%;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -79,72 +80,18 @@
   position: relative;
 }
 
+/* The responsible-gambling readouts are in session-readouts.css, scoped to
+   SessionReadouts.svelte - a sheet is scoped to whoever imports it. */
+
 /* Game title / branding, overlaid at the top-centre of the table. The rounded
    dark plate keeps it legible instead of blending into the felt. */
-/* Responsible-gambling readouts (net position / RTP / session clock), pinned
-   to the top-right. Only rendered where the player's jurisdiction asks for
-   them - see game/jurisdiction.svelte.ts.
-
-   Overlaid rather than placed in the control bar: in the bar these pushed it
-   to five rows and 40% of viewport height on a 400x225 popout, squeezing the
-   play area. They are reference information, not controls, so they belong out
-   of the way. Absolutely positioned so they cost the flex column no height at
-   all, and pointer-events:none so they can never intercept a click meant for
-   the table. */
-.rg-panel {
-  position: absolute;
-  top: calc(var(--ui) * 0.9);
-  right: calc(var(--ui) * 0.9);
-  z-index: 6; /* above the title plate, below popups */
-  display: flex;
-  align-items: flex-start;
-  gap: calc(var(--ui-bar) * 1.45);
-  padding: calc(var(--ui-bar) * 0.64) calc(var(--ui-bar) * 1.09);
-  border-radius: calc(var(--ui-bar) * 1.09);
-  background: rgba(10, 18, 28, 0.72);
-  border: 1px solid rgba(var(--ink-rgb), 0.1);
-  backdrop-filter: blur(6px);
-  box-shadow: 0 6px 20px rgba(var(--shadow-rgb), 0.45);
-  pointer-events: none;
-}
-
-.rg-item {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  white-space: nowrap;
-  line-height: 1.15;
-}
-
-/* tabular-nums so the session clock ticking doesn't jitter the panel width. */
-.rg-item .cb-val {
-  font-variant-numeric: tabular-nums;
-}
-
-.rg-item.up .cb-val { color: var(--win-soft); }
-
-.rg-item.down .cb-val { color: var(--loss-soft); }
-
-/* Too narrow for the panel to sit beside the centred title without covering
-   it (measured: the title plate and the panel collide below ~700px). Drop it
-   into normal flow instead, where it takes its own centred row above the
-   title. It precedes .game-title in the DOM, so no reordering is needed. */
-@media (max-width: 700px) {
-  .rg-panel {
-    position: static;
-    align-self: center;
-    flex: 0 0 auto;
-    margin-top: calc(var(--ui) * 0.9);
-  }
-}
-
 .game-title {
   /* In normal flow (not absolutely positioned) so it RESERVES its space - when
      it overlaid the table it sat on top of the cards on short windows. */
   flex: 0 0 auto;
   align-self: center;
   margin-top: calc(var(--ui) * 0.9);
-  z-index: 5;
+  z-index: var(--z-title);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -210,10 +157,12 @@
    line was saying it a second time and louder. */
 .game-title-sub {
   margin-top: calc(var(--ui) * 0.42);
-  font-size: calc(var(--ui) * 0.95); /* 10.5px */
-  /* 500, not the 600 this asked for: Poppins ships 400/700/800/900 here, so
-     600 was silently rendering at 700 - the opposite of the demotion this
-     line exists to make. 500 resolves to 400, which is the intent. */
+  font-size: max(calc(var(--ui) * 0.95), var(--type-floor)); /* 10.5px */
+  /* 400: the lightest weight the game sets anywhere, because this is a credit
+     line and the demotion IS the design. It once asked for 600, which the body
+     face of the time did not ship and which resolved upward to 700 - the
+     opposite of the intent. The body face is variable now and would honour any
+     weight; 400 is still the answer. */
   font-weight: 400;
   letter-spacing: 0.22em;
   text-transform: uppercase;

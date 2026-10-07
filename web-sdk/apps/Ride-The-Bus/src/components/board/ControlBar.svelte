@@ -1,0 +1,892 @@
+<!-- The floating control bar: the money, the mode, and the button that buys a
+     round.
+
+     Game.svelte's largest single piece. Splitting it became possible only after
+     the state moved into modules - the bar reads betState, autoplaySettings,
+     roundState, revealPacing and roundPlace's gate directly, so what would have
+     been a forty-prop interface is one bindable `openPopup` and two callbacks.
+
+     THE COLOURS ARE PUBLISHED ON THE FOOTER, and there are deliberately TWO
+     rulers - the note below the script says which is which and why collapsing
+     them was rejected. Nothing inside this file names a colour.
+
+     Styles: control-bar.css, plus readout.css for the caption/figure pair that
+     SessionReadouts renders too, plus responsive-bar.css last so its overrides
+     win. -->
+<script lang="ts">
+  import BoltMeter from '../icons/BoltMeter.svelte';
+  import ChoiceIcon from '../icons/ChoiceIcon.svelte';
+  import MarkIcon from '../icons/MarkIcon.svelte';
+  import SoundIcon from '../icons/SoundIcon.svelte';
+  import { startAuto, stopAuto } from '../../game/round/autoplayLoop.svelte';
+  import { auto, countDigits } from '../../game/round/autoplaySettings.svelte';
+  import {
+    allChoicesMade,
+    bet,
+    betBlockedReason,
+    betIsValid,
+    betLockedReason,
+    modeLockedReason,
+    betValue,
+    familyRules,
+    guesses,
+    liveBolts,
+    modeNameColor,
+    modeRgb,
+    roundCost,
+    stepBet,
+    canStepBet,
+    volatilityLabel,
+    setColorChoice,
+    setHlChoice,
+    setIoChoice,
+    setSuitChoice,
+  } from '../../game/bet/betState.svelte';
+  import { GUESS_COLUMNS, guessColumnFor, nextGuess } from '../../game/bet/guessKeys';
+  import { isCombinationPlayable } from '../../game/math/modes';
+  import { celebration } from '../../game/celebration/celebrationState.svelte';
+  import { fitBlock, fitValue } from '../../game/ui/fitValue';
+  import { titleFaceFor } from '../../game/ui/displayFace';
+  import { reducedMotion } from '../../game/celebration/celebrationGestures';
+  import { cubicInOut } from 'svelte/easing';
+  import { jurisdiction } from '../../game/jurisdiction/jurisdiction.svelte';
+  import { collapseRevealWaitToInstant, pacing } from '../../game/round/revealPacing.svelte';
+  import { cooldownSecondsLabel, gate, resolveRoundSeed, runRound } from '../../game/round/roundPlace.svelte';
+  import { replay } from '../../game/round/roundRestore.svelte';
+  import { playRevealSequence } from '../../game/round/roundReveal.svelte';
+  import { resetForNewRound, round } from '../../game/round/roundState.svelte';
+  import { sound } from '../../game/audio/sound';
+  import { allSilent } from '../../game/audio/soundSettings.svelte';
+  import {
+    VOLATILITY_BOLTS,
+    volatilityColorRgbVar,
+    volatilityColorVar,
+  } from '../../game/math/volatility';
+  import { t } from '../../i18n/i18nDerived';
+  import { stateBet, stateUrlDerived } from 'state-shared';
+  import { numberToCurrencyString } from 'utils-shared/amount';
+  import { formatMultiplier } from '../../game/ui/formatMultiplier';
+
+  import { choicesLocked } from '../../game/round/roundState.svelte';
+
+  let {
+    openPopup = $bindable(),
+    betRowEl = $bindable(),
+    introPhase,
+    chromeInert,
+  }: {
+    /** Which panel is open. The switchboard that renders them is the parent's. */
+    openPopup:
+      | null
+      | 'bet'
+      | 'mode'
+      | 'turbo'
+      | 'autospin'
+      | 'info'
+      | 'sound'
+      | 'history';
+    /** The bet row, so the parent's fit effects can still measure it. */
+    betRowEl: HTMLElement | undefined;
+    /** The intro phase, so the spin button can refuse before the board is up. */
+    introPhase: 'loading' | 'start' | 'replay-info' | 'playing';
+    /**
+     * True while a dialog is up, so the bar can take itself out of the tab
+     * order. The parent owns this rather than deriving it from openPopup here,
+     * because the error dialog renders outside the layout root and openPopup
+     * does not know about it.
+     */
+    chromeInert: boolean;
+  } = $props();
+
+  const IS_PROD = Boolean((import.meta as any).env?.PROD);
+
+// --- Bottom control-bar handlers ---
+function togglePopup(name: NonNullable<typeof openPopup>) {
+  openPopup = openPopup === name ? null : name;
+  // Leaving the picker abandons an unconfirmed pick. Without this, reopening
+  // it would land straight back on a confirmation the player had already
+  // walked away from once.
+  bet.pending = null;
+}
+
+// The big spin button: acts as Stop while an auto run is live, otherwise
+// plays exactly one round. Disabled (greyed) until a bet + all 4 guesses are
+// valid.
+// Can the button cut the current reveal short right now?
+//
+// Not offered during an auto run: there the button is Stop, and overloading a
+// single control with "skip this round" and "end the whole run" would make
+// the destructive one easy to hit by accident.
+const canSlam = () =>
+  round.state === 'playing' &&
+  !pacing.slamRequested &&
+  !auto.running &&
+  !jurisdiction.slamstopDisabled();
+
+const spinDisabled = () =>
+  auto.running
+    ? false
+    : canSlam()
+      ? false // it is a Skip button for the duration of the reveal
+      : round.state === 'playing' ||
+      round.isProcessing ||
+      // The big-win takeover is covering the board.
+      celebration.active !== null ||
+      // An interrupted round is being replayed onto the board - the player
+      // must not be able to buy a new one on top of it.
+      round.resumeInProgress ||
+      // Held open to satisfy the regulator's minimum round duration.
+      gate.held ||
+      // Replay: block while the intro sequence is still showing, and during
+      // the initial reveal. Once the round has finished once, the spin
+      // button replays it (see onSpin).
+      (stateUrlDerived.replay() && !replay.ready) ||
+      (stateUrlDerived.replay() && introPhase !== 'playing') ||
+      // Normal (non-replay) mode guards.
+      (!stateUrlDerived.replay() && (!betIsValid() || !allChoicesMade())) ||
+      (!stateUrlDerived.replay() && IS_PROD && resolveRoundSeed().source === 'none');
+
+// Why the spin button is dead right now, or null when it's live. Shown as a
+// tooltip on hovering the wrapper, so a greyed button always explains itself
+// instead of leaving the player guessing.
+//
+// Deliberately mirrors spinDisabled()'s conditions in the same order, so the
+// two can't disagree - a disabled button with no reason (or a reason on a
+// live button) would be worse than no tooltip at all. Ordered most-specific
+// first: transient states before "you haven't finished setting up".
+function spinBlockedReason(): string | null {
+  if (auto.running) return null; // it's a Stop button; always live
+  // Mid-reveal but slammable: the button is live as Skip, so there is no
+  // blocked reason to explain. Without this it claimed "Round in progress"
+  // over an enabled button.
+  if (canSlam()) return null;
+  if (stateUrlDerived.replay() && !replay.ready) return t('Loading replay…');
+  if (stateUrlDerived.replay() && introPhase !== 'playing') return null; // button hidden behind overlay
+  // Replay is view-only — these non-replay checks don't apply.
+  if (stateUrlDerived.replay()) return null;
+  if (gate.held) {
+    return t('Rounds must be %s seconds apart').replace('%s', cooldownSecondsLabel());
+  }
+  if (round.state === 'playing' || round.isProcessing || round.resumeInProgress) return t('Round in progress');
+  if (!allChoicesMade()) return t('Pick all 4 guesses');
+  const betReason = betBlockedReason();
+  if (betReason) return betReason;
+  if (IS_PROD && resolveRoundSeed().source === 'none') return t('No active game session');
+  return null;
+}
+
+/**
+ * Whether the button is truly INERT, as opposed to merely blocked.
+ *
+ * spinDisabled() used to drive the `disabled` attribute directly, and that made
+ * every one of spinBlockedReason()'s seven strings unreachable on a phone: a
+ * disabled button fires no pointer events, so nothing could raise the tip, and
+ * .cb-cooldown-tip is only shown by :hover - which a finger does not have. The
+ * result was the worst feedback in the game. A player taps the one button the
+ * whole game is about, and gets no sound (pressCues skips disabled buttons), no
+ * press state, and no explanation.
+ *
+ * So the button stays LIVE wherever there is something to say, and onSpin()
+ * answers the tap. Exactly the trade .cb-bet-display already makes, with the
+ * same reasoning: a greyed control tells a player the game is broken, where a
+ * live one that answers back tells them why. It still LOOKS unavailable -
+ * .cb-spin.blocked carries what :disabled used to.
+ *
+ * Inert is reserved for the two states with no reason to give, and in both the
+ * board is behind a full-screen overlay anyway: the win takeover, and the replay
+ * intro. spinDisabled() itself is unchanged and is still what onSpin() and the
+ * spacebar guard test, so nothing can be bought in a blocked state.
+ */
+const spinInert = () => spinDisabled() && spinBlockedReason() === null;
+
+/**
+ * The blocked tip, flashed by a refused tap - the phone's only route to it.
+ * Same shape and duration as flashBetTip() above; see the note there.
+ */
+let spinTipVisible = $state(false);
+let spinTipTimer: ReturnType<typeof setTimeout> | null = null;
+function flashSpinTip() {
+  spinTipVisible = true;
+  if (spinTipTimer) clearTimeout(spinTipTimer);
+  spinTipTimer = setTimeout(() => { spinTipVisible = false; }, BET_TIP_MS);
+}
+
+/**
+ * Replay mode, with the round already played through once.
+ *
+ * Stake's Bet Replay section asks for a "Play Again" button once a replay
+ * finishes, and that is what the spin button becomes here - it already
+ * re-runs the round (see onSpin), so this is the label catching up with the
+ * behaviour rather than new behaviour. Kept as a predicate because three
+ * things read it: the accessible name, the visible caption, and nothing else
+ * may drift from either.
+ */
+const replayFinished = () =>
+  stateUrlDerived.replay() && (round.state === 'won' || round.state === 'lost');
+
+function onSpin() {
+  // No playPress() here - the delegated click listener below already sounds
+  // every button. The spacebar path, which isn't a click, sounds its own.
+  if (auto.running) { stopAuto(); return; }
+  // Mid-reveal: cut the animation short rather than starting a new round.
+  // Every remaining pause drops to instant via paceMs, and the one already in
+  // flight is re-timed to match - so a slam finishes the round on exactly the
+  // maximum-turbo timeline, never quicker than the player could get by moving
+  // the slider.
+  if (canSlam()) {
+    pacing.slamRequested = true;
+    collapseRevealWaitToInstant();
+    return;
+  }
+  // Replay mode: pressing the spin button after the round has finished (or
+  // during the reveal) replays the same round from the start. The book events
+  // are still in round.revealEvents from the first play-through.
+  if (stateUrlDerived.replay() && (round.state === 'won' || round.state === 'lost')) {
+    sound.playPress('primary');
+    // Reset the board and replay the same events.
+    pacing.slamRequested = false;
+    resetForNewRound();
+    playRevealSequence();
+    return;
+  }
+  if (spinDisabled()) {
+    // Refused, not ignored. The tip is the answer; the blocked cue is only what
+    // says the press was heard. Both are reachable by tap now, which is the
+    // whole point - see spinInert() above.
+    if (spinBlockedReason()) { sound.playBlocked(); flashSpinTip(); }
+    return;
+  }
+  runRound().catch((err) => console.error('[RideTheBus] play failed', err));
+}
+// Bet menu: choose a preset level then close.
+
+/**
+ * The tip is shown on hover on a pointer device, and FLASHED on a refused
+ * tap - which is the only route a phone has to it.
+ */
+let betTipVisible = $state(false);
+let betTipTimer: ReturnType<typeof setTimeout> | null = null;
+const BET_TIP_MS = 2400;
+function flashBetTip() {
+  betTipVisible = true;
+  if (betTipTimer) clearTimeout(betTipTimer);
+  betTipTimer = setTimeout(() => { betTipVisible = false; }, BET_TIP_MS);
+}
+
+/**
+ * The MODE button's blocked tip. The button used to be `disabled` outright on
+ * choicesLocked(), which made it the one control in the bar that went grey with
+ * no explanation on ANY pointer type - the bet group beside it has had
+ * .cb-bet-tip for exactly this since it was written. Same trade as
+ * .cb-bet-display and .cb-spin: live so a tap can be answered, and it still
+ * looks unavailable.
+ *
+ * Replay keeps the hard `disabled`, where Stake's guidance asks for the bet
+ * controls to be inert rather than merely talkative.
+ */
+let modeTipVisible = $state(false);
+let modeTipTimer: ReturnType<typeof setTimeout> | null = null;
+function flashModeTip() {
+  modeTipVisible = true;
+  if (modeTipTimer) clearTimeout(modeTipTimer);
+  modeTipTimer = setTimeout(() => { modeTipVisible = false; }, BET_TIP_MS);
+}
+
+/** The family's name, as the MODE sign letters it. */
+const familyName = $derived(t(familyRules().label));
+
+/**
+ * The sign ROLLS when the family changes: the old name winds up and out of the
+ * window as the new one comes up from below, the way a destination blind
+ * turns to the next route. {#key} only transitions on a CHANGE, so first paint
+ * is still. Reduced motion: a short crossfade, the arrivals rule in design.md.
+ */
+function roll(_node: Element, { leaving }: { leaving: boolean }) {
+  if (reducedMotion()) return { duration: 120, css: (t: number) => `opacity: ${t}` };
+  return {
+    duration: 340,
+    easing: cubicInOut,
+    css: (_t: number, u: number) => `transform: translateY(${(leaving ? -u : u) * 100}%)`,
+  };
+}
+
+function onModeClick() {
+  if (modeLockedReason()) { sound.playBlocked(); flashModeTip(); return; }
+  togglePopup('mode');
+}
+
+function onBetDisplayClick() {
+  // The tip is the answer; the cue is only what says a press was HEARD and
+  // refused. On a phone the flash is the only route to the tip at all, so
+  // without this a locked bet answers a tap with nothing for ~0 frames.
+  if (betLockedReason()) { sound.playBlocked(); flashBetTip(); return; }
+  togglePopup('bet');
+}
+
+
+// --- Spacebar: tap to spin, hold to keep spinning -------------------------
+// Same shape as the SDK's EnableSpaceHold / OnHotkey pair: keydown spins once
+// immediately, and if the key is still down after HOLD_MS the run continues
+// until it is released. The hold run is bounded by the key being physically
+// held, so it is not an unattended unlimited autoplay.
+const SPACE_HOLD_MS = 400;
+let spaceDown = false;
+let spaceHoldTimer: ReturnType<typeof setTimeout> | null = null;
+
+// Space DEALS, whatever has focus on the board - the owner's call (2026-10-02).
+// It used to yield to a focused button as that button's own activation key,
+// and a mouse click focuses a button: "pick a suit, press Space" toggled the
+// pick off, and "roll the die, press Space" rolled again. Only TYPING keeps
+// it - a bet or round count in a field. An open panel, the intro and the
+// takeover are gated in onKeyDown itself, and keep Space for their own
+// controls.
+function spaceIsForUs(target: EventTarget | null) {
+  const el = target as HTMLElement | null;
+  if (!el) return true;
+  if (el.isContentEditable) return false;
+  return !['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName);
+}
+
+function onKeyDown(event: KeyboardEvent) {
+  if (event.code !== 'Space' && event.key !== ' ') return;
+  // The big-win takeover is up and owns the keyboard - it binds Space on
+  // window in the capture phase, so this should already be unreachable. Kept
+  // as a belt-and-braces guard: Space reaching the spin button from behind a
+  // full-screen overlay would buy a round the player never asked for.
+  if (celebration.active) return;
+  // A panel or the error dialog is up. The footer is `inert` so the spin
+  // button cannot be clicked, but this listener is on window and inert does
+  // nothing to it - and the open panel takes focus onto its own DIV, which
+  // spaceIsForUs() below lets through. Without this line, pressing Space while
+  // reading How to Play bought a round behind the panel.
+  if (chromeInert) return;
+  // The start screen and the replay's details own their buttons, and Space
+  // presses the focused one there (Tap to continue, Play).
+  if (introPhase !== 'playing') return;
+  // Regulator has barred the shortcut - leave Space to the browser.
+  if (jurisdiction.spacebarDisabled()) return;
+  if (!spaceIsForUs(event.target)) return;
+  // Space scrolls the page by default.
+  event.preventDefault();
+  // Held keys auto-repeat; only the first keydown counts.
+  if (event.repeat || spaceDown) return;
+  spaceDown = true;
+
+  // A live auto run treats Space like the Stop button.
+  if (auto.running) { sound.playPress('primary'); onSpin(); return; }
+  if (spinDisabled()) return;
+
+  // Keyboard activation isn't a click, so it never reaches the delegated
+  // handler - sound it here, as the primary control Space stands in for.
+  sound.playPress('primary');
+  onSpin(); // the tap: one round, straight away
+  spaceHoldTimer = setTimeout(() => {
+    spaceHoldTimer = null;
+    // Still held, and the tap's round is done or nearly so — keep going.
+    // Never start a hold-auto run during replay (view-only mode).
+    if (spaceDown && !auto.running && !stateUrlDerived.replay()) startAuto({ hold: true });
+  }, SPACE_HOLD_MS);
+}
+
+// --- Keys 1 to 4: the four guesses -----------------------------------------
+// Each steps its column to the next pick (game/bet/guessKeys.ts), through the
+// board's own setters. Here rather than in GameBoard because this is where the
+// gates already are: a panel open, the takeover up, the intro or replay screen.
+// NOT the regulator's disabledSpacebar flag: that bars the key that BUYS a
+// round, and a digit only changes a pick. Only a focused FIELD is exempt, as
+// it is for Space.
+const GUESS_STAGE = { color: 0, hl: 1, io: 2, suit: 3 } as const;
+
+function typingInto(target: EventTarget | null) {
+  const el = target as HTMLElement | null;
+  return !!el && (el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName));
+}
+
+function onGuessKey(event: KeyboardEvent) {
+  const column = guessColumnFor(event);
+  if (!column || event.repeat || event.ctrlKey || event.metaKey || event.altKey) return;
+  if (celebration.active || chromeInert || introPhase !== 'playing') return;
+  if (typingInto(event.target)) return;
+  // Three of a Kind asks nothing; its Equal badges are not picks.
+  if (familyRules().fixedChoices !== null) return;
+  event.preventDefault();
+  if (choicesLocked()) { sound.playBlocked(); return; }
+  const current = guesses[column];
+  const next =
+    column === 'io'
+      ? nextGuess(GUESS_COLUMNS.io, guesses.io, (o) => isCombinationPlayable(guesses.hl, o))
+      : nextGuess(GUESS_COLUMNS[column] as readonly string[], current);
+  // The setters toggle, so re-setting the current pick would CLEAR it.
+  if (next === null || next === current) return;
+  if (column === 'color') setColorChoice(next as typeof guesses.color & string);
+  else if (column === 'hl') setHlChoice(next as typeof guesses.hl & string);
+  else if (column === 'io') setIoChoice(next as typeof guesses.io & string);
+  else setSuitChoice(next as typeof guesses.suit & string);
+  // A key is not a click, so the delegated press cue never hears it.
+  sound.playPress('choice', GUESS_STAGE[column]);
+}
+
+function onKeyUp(event: KeyboardEvent) {
+  if (event.code !== 'Space' && event.key !== ' ') return;
+  // The press was ours: a focused button activates on Space's KEYUP, so the
+  // keyup is taken too, or a focused square or die would still fire under
+  // the deal.
+  if (spaceDown) event.preventDefault();
+  releaseSpace();
+}
+
+function releaseSpace() {
+  spaceDown = false;
+  if (spaceHoldTimer !== null) {
+    clearTimeout(spaceHoldTimer);
+    spaceHoldTimer = null;
+  }
+  // Ends the hold run after the in-flight round settles (a placed bet can't
+  // be cancelled).
+  auto.spaceHoldRunning = false;
+}
+
+// Space is the spin button being pressed, so its listeners live with the
+// button. A lost focus or hidden tab never delivers the keyup, which would
+// otherwise leave a hold run going with nobody holding anything.
+$effect(() => {
+  window.addEventListener('keydown', onKeyDown);
+  window.addEventListener('keydown', onGuessKey);
+  window.addEventListener('keyup', onKeyUp);
+  window.addEventListener('blur', releaseSpace);
+  return () => {
+    window.removeEventListener('keydown', onKeyDown);
+    window.removeEventListener('keydown', onGuessKey);
+    window.removeEventListener('keyup', onKeyUp);
+    window.removeEventListener('blur', releaseSpace);
+    releaseSpace();
+  };
+});
+</script>
+
+<!-- Lemniscate: two symmetric loops crossing at the centre. The viewBox hugs
+     the drawing (2:1) rather than padding it into a square, so the CSS width
+     maps straight onto the glyph's real size and it can be weighted against
+     adjacent numerals. -->
+{#snippet iconInfinity()}
+  <svg class="inf-icon" viewBox="0 0 24 12" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path
+      d="M12 6C10.5 3.6 8.7 2 6.6 2 4.1 2 2.6 3.8 2.6 6s1.5 4 4 4c2.1 0 3.9-1.6 5.4-4 1.5-2.4 3.3-4 5.4-4 2.5 0 4 1.8 4 4s-1.5 4-4 4c-2.1 0-3.9-1.6-5.4-4Z"
+    />
+  </svg>
+{/snippet}
+
+<!-- Bet nudge +/-, drawn to match rather than typed as "+" and U+2212. -->
+{#snippet iconPlus()}
+  <svg class="step-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true">
+    <path d="M12 4.5v15" />
+    <path d="M4.5 12h15" />
+  </svg>
+{/snippet}
+{#snippet iconMinus()}
+  <svg class="step-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true">
+    <path d="M4.5 12h15" />
+  </svg>
+{/snippet}
+
+<!-- Floating control bar: detached pill groups pulled toward the centre,
+     with Turbo and MODE floating free at the outer edges (slot-style). -->
+<!-- The live mode's colours are published on the WHOLE bar, not just on the
+     bet panel that used to carry them. Two groups read them now - the bet
+     display with its steppers, and the MODE button over in the light pill -
+     and those two are in different panels, so the nearest element that can
+     reach both is the bar itself. Inheritance does the rest.
+
+     Two rulers, deliberately, and they are not the same number:
+       --vol-color / --vol-rgb   the FAMILY's own rating. What the MODE
+                                 button and the mode picker wear, because
+                                 they are about the mode being chosen.
+       --mode-ink / --mode-rgb   the LIVE rating, family plus one stop per
+                                 Equal pick, which can overflow to purple.
+                                 What the bet group wears, because that is
+                                 the round about to be bought.
+     See the volatility notes in CLAUDE.md before collapsing them. -->
+<footer
+  class="control-bar"
+  inert={chromeInert || introPhase !== 'playing'}
+  style={`--vol-color: ${volatilityColorVar(bet.family)}; --vol-rgb: ${volatilityColorRgbVar(bet.family)}; --mode-ink: ${modeNameColor()}; --mode-rgb: ${modeRgb()}`}
+>
+  <!-- Removed, not just disabled, when the regulator bars Turbo: a greyed
+       control still advertises a feature the player may not have. -->
+  <!-- CONTROLS ARE LINES, GAUGES ARE FILLS.
+       This bolt is the same silhouette the volatility meter burns under the
+       bet amount (BoltMeter.svelte), and it used to be the same FILL too - so
+       one glyph meant "speed" at this end of the bar and "risk" three inches
+       away, and nothing separated the two but position. Drawn as an outline
+       it is still unmistakably the bolt (Stake's own turbo mark), and the
+       reading is now the one every other icon on this bar already gives: a
+       stroked mark is something you press, a filled one is something you
+       read. The spin button is the stated exception - its marks are SHAPES
+       (two cards, a stop square, two chevrons) and it is the hero control.
+
+       Round caps and joins, 2.2 wide: MarkIcon's voice. It was a Material
+       glyph, like the two the autoplay and advanced buttons used to carry,
+       beside an info mark, steppers and a lemniscate that were all drawn by
+       hand - three icon sets on one 40px strip.
+
+       THE SILHOUETTE CHANGED WITH THE TREATMENT, and the meter changed with
+       it. Material's bolt has a three-unit stem down its left side; outlined
+       at 2.2 the stroke fills the stem and the shape read as a zigzag glyph,
+       not a bolt. This is the symmetric bolt every icon set draws - a point,
+       two shoulders, a tail - which outlines cleanly, and BoltMeter fills the
+       same path so the two are still one silhouette. -->
+  {#if !jurisdiction.turboDisabled()}
+    <button class="cb-float cb-turbo" class:active={pacing.turboSpeed > 0 || openPopup === 'turbo'} onclick={() => togglePopup('turbo')} aria-label={t('Turbo speed')}>
+      <svg class="cb-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M13.5 2.2 4.5 13.4h7.3l-1.3 8.4 9-11.2h-7.3Z" />
+      </svg>
+    </button>
+  {/if}
+
+  <div class="cb-panel cb-panel-light">
+    <!-- Opens the mixer rather than toggling. Muting is two actions now
+         instead of one, which is the price of having separate music and cue
+         levels at all; the panel's two speaker buttons are what satisfy
+         "an option to disable sounds". -->
+    <button
+      class="cb-icon cb-sound"
+      class:active={openPopup === 'sound'}
+      onclick={() => togglePopup('sound')}
+      aria-haspopup="dialog"
+      aria-expanded={openPopup === 'sound'}
+      aria-label={t('Sound settings')}
+    >
+      <SoundIcon muted={allSilent()} />
+    </button>
+    <button class="cb-icon cb-info" class:active={openPopup === 'info'} onclick={() => togglePopup('info')} aria-label={t('How to play')}>
+      <MarkIcon name="info" />
+    </button>
+
+    <!-- `solo` when the balance is hidden (replay). One child under
+         space-between sits at the START, so the Last Win readout ended up
+         mid-pill with the freed width doing nothing, and the settled figure
+         overflowed leftward across the MODE and info buttons. See
+         .cb-readouts.solo. -->
+    <div class="cb-readouts" class:solo={stateUrlDerived.replay()}>
+      <!-- Hidden in replay. A replay is viewable without a session - the URL
+           can be shared publicly - so there is no player whose balance this
+           would be, and Stake's replay guidance asks for it to go. The Last
+           Win beside it stays: the payout IS what a replay is showing. -->
+      {#if !stateUrlDerived.replay()}
+        <div class="cb-balance">
+          <span class="cb-cap">{t('Balance')}</span>
+          <!-- use:fitValue - the reservation beside this in control-bar.css
+               was measured from "$99,999,999.00", and a high-denomination
+               currency runs far past it. See fitToBox. -->
+          <span class="cb-val" use:fitValue={stateBet.balanceAmount}>
+            {numberToCurrencyString(stateBet.balanceAmount)}
+          </span>
+        </div>
+      {/if}
+      <!-- Always rendered (even before the first spin) so it can't pop into
+           existence mid-session and shove the rest of the bar sideways.
+
+           A BUTTON outside replay: it opens the session's recent rounds
+           (HistoryPopup). Last Win already answers "what happened last", so it
+           is the way in to "and before that" - and the board and the bar gain
+           nothing to carry it. In replay there is no session to look back
+           over, so it stays the plain readout it was. -->
+      {#snippet lastWinFigure(opens: boolean)}
+        <span class="cb-cap">{t('Last Win')}{#if opens}<svg class="cb-lastwin-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h9" /></svg>{/if}</span>
+        <!-- The multiplier chip is INSIDE the fitted box on purpose: the two
+             shrink together, so the pair either both fit or both scale, and
+             the chip can never be the thing that pushes the cash out. -->
+        <span class="cb-val" use:fitValue={`${round.lastWinAmount}|${round.lastWinMultiplier}`}>
+          {numberToCurrencyString(round.lastWinAmount)}
+          <!-- Only once a round has paid: before the first one, and after a
+               bust that kept nothing, "$0.00 0.0x" said zero twice. -->
+          {#if round.lastWinAmount > 0}<span class="cb-lastwin-mult">{formatMultiplier(round.lastWinMultiplier)}</span>{/if}
+        </span>
+      {/snippet}
+      {#if stateUrlDerived.replay()}
+        <div class="cb-lastwin" class:won={round.lastWinNet}>{@render lastWinFigure(false)}</div>
+      {:else}
+        <button
+          type="button"
+          class="cb-lastwin cb-lastwin-btn"
+          class:won={round.lastWinNet}
+          class:active={openPopup === 'history'}
+          aria-haspopup="dialog"
+          aria-label={`${t('Last Win')} ${numberToCurrencyString(round.lastWinAmount)}. ${t('Show recent rounds')}`}
+          onclick={() => togglePopup('history')}
+        >{@render lastWinFigure(true)}</button>
+      {/if}
+    </div>
+  </div>
+
+  <!-- The live rating is published to the whole bet panel, not just to the
+       mode line inside it: the +/- steppers are SIBLINGS of the bet display,
+       so a custom property set on the display could never reach them. Every
+       control in this group now tints with the difficulty of the round it is
+       about to buy. -->
+  <!-- The tooltip lives on the PANEL rather than the button, for the same
+       reason .cb-cooldown-tip lives on .cb-spin-wrap: a disabled button
+       receives no pointer events, so a tooltip hosted on it would never be
+       shown by the one state it exists to explain. The panel also spans the
+       steppers, which are disabled by the same condition. -->
+  <div class="cb-panel cb-panel-dark cb-bet" class:bet-locked={betLockedReason() !== null}>
+    <!-- NOT disabled while autoplay runs, and that is deliberate: a greyed
+         control tells a player the game is broken, where a live one that
+         answers back tells them why. Only replay disables it outright, where
+         Stake's own guidance asks for the bet controls to be inert. -->
+    <button
+      class="cb-bet-display"
+      class:active={openPopup === 'bet'}
+      onclick={onBetDisplayClick}
+      disabled={stateUrlDerived.replay()}
+      aria-label={t('Choose bet amount')}
+    >
+      <span class="cb-cap">{t('Bet')}</span>
+      <!-- The figure shown IS what leaves the balance, so it is the round's
+           cost rather than the base bet. On a multiplied mode it turns blue
+           and the base bet moves to a line underneath: one number to read,
+           coloured to say "this is not the plain bet", with the arithmetic
+           available for anyone who wants it. -->
+      <span
+        class="cb-val"
+        class:cb-val-multiplied={familyRules().cost !== 1}
+        use:fitValue={roundCost()}
+      >
+        {numberToCurrencyString(roundCost() > 0 ? roundCost() : 0)}
+      </span>
+      {#if familyRules().cost !== 1}
+        <span class="cb-bet-base">
+          {numberToCurrencyString(betValue() > 0 ? betValue() : 0)} × {familyRules().cost}
+        </span>
+      {/if}
+      <!-- The family's name and its bolts used to print here, under the bet;
+           they are the MODE sign's now (below), so the family is said in one
+           place and this display is money only. -->
+    </button>
+    <div class="cb-betstep">
+      <!-- Same condition as the display beside them, so the whole bet group
+           locks and unlocks together. They were on auto.running || replay
+           only, which left them live while a round was in flight. -->
+      <!-- Grey at the end of the ladder as well as when the bet is locked:
+           a + with no level above it would otherwise look pressable and do
+           nothing. canStepBet folds both reasons into one. -->
+      <button class="cb-step" onclick={() => stepBet(1)} disabled={!canStepBet(1)} aria-label={t('Increase bet')}>{@render iconPlus()}</button>
+      <button class="cb-step" onclick={() => stepBet(-1)} disabled={!canStepBet(-1)} aria-label={t('Decrease bet')}>{@render iconMinus()}</button>
+    </div>
+    {#if betLockedReason()}
+      <span class="cb-bet-tip" class:is-shown={betTipVisible} role="tooltip" aria-live="polite">
+        {betLockedReason()}
+      </span>
+    {/if}
+  </div>
+
+  <div class="cb-panel cb-panel-dark cb-actions">
+    {#if !jurisdiction.autoplayDisabled()}
+      <!-- Two arcs with open heads, stroked - the repeat mark in the same
+           voice as the info mark and the steppers - with an A for Autoplay
+           inside them. The A is small - 4.2 units tall, a third of the ring -
+           and stroked lighter than the arcs (1.2 against 2.2): at the ring's
+           own weight its counter closes and it reads as a wedge. The arcs
+           were once
+           Material's filled sync glyph with a play triangle in the middle; the
+           triangle went with the fill for the same reason. See the note above
+           the turbo button. -->
+      <!-- Live during a run: the stops are in this panel now, and a player
+           watching a run is exactly who wants to change one - the sliders
+           button that used to hold two of them stayed live for that reason.
+           The panel itself locks the count and offers Stop mid-run. -->
+      <button class="cb-round cb-autospin" class:active={openPopup === 'autospin'} onclick={() => togglePopup('autospin')} disabled={stateUrlDerived.replay()} aria-label={t('Autoplay settings')}>
+        <svg class="cb-svg cb-autospin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <!-- The arcs are turned 45deg so the two heads sit at 3 and 9
+               o'clock. Unturned, their arms reach in toward the centre at
+               exactly the height of the A's feet, and the letter had to be
+               squeezed to about four units wide to miss them - at which point
+               its counter closed and it read as a wedge. With the heads at the
+               sides the A's narrowest part is what passes them. The heads are
+               3.6 units a side, not 5: turned, a 5-unit inner arm reached four
+               units from the centre and grazed the A's legs, and the outer tip
+               ran past the 24-unit box. -->
+          <g transform="rotate(45 12 12)">
+            <path d="M4.6 12a7.4 7.4 0 0 1 12.7-5.2L19.4 8.9" />
+            <path d="M19.6 5.4v3.6h-3.6" />
+            <path d="M19.4 12a7.4 7.4 0 0 1-12.7 5.2L4.6 15.1" />
+            <path d="M4.4 18.6v-3.6h3.6" />
+          </g>
+          <path d="M10.6 14.1 12 9.9l1.4 4.2M11.2 12.8h1.6" stroke-width="1.2" />
+        </svg>
+      </button>
+    {/if}
+
+    <!-- Wraps the spin button so the cooldown ring and tooltip have a host
+         that still receives hover while the button itself is disabled. -->
+    <div class="cb-spin-wrap">
+    <button
+      class="cb-spin"
+      class:stopping={auto.running}
+      class:slammable={canSlam()}
+      class:blocked={spinBlockedReason() !== null}
+      onclick={onSpin}
+      disabled={spinInert()}
+      aria-label={auto.running
+        ? t('Stop autoplay')
+        : canSlam()
+          ? t('Skip the reveal')
+          : replayFinished()
+            ? t('Play Again')
+            : t('Deal')}
+    >
+      {#if auto.running}
+        <span class="cb-spin-square" aria-hidden="true"></span>
+        <!-- Rounds left, inside the stop square. An unlimited run shows the
+             infinity mark instead of a number; a space-hold run shows
+             nothing, since it lasts only as long as the key is held.
+             It also disappears the moment Stop is pressed: the bet already
+             placed has to play out, so the button cannot stop instantly, and
+             emptying the square is what tells the player the run is ending
+             rather than leaving a count sitting there looking ignored. -->
+        {#if !auto.spaceHoldRunning && !auto.stopRequested}
+          <span
+            class="cb-spin-count"
+            class:is-long={countDigits() === 4}
+            class:is-longer={countDigits() > 4}
+          >
+            {#if auto.infinite}{@render iconInfinity()}{:else}{auto.remaining}{/if}
+          </span>
+        {/if}
+      {:else if canSlam()}
+        <!-- Skip-to-end: two chevrons into a bar. Distinct from the spin
+             arrows so the button's job is readable at a glance. -->
+        <svg class="cb-spin-svg cb-slam-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M4 5.5 12 12 4 18.5z" />
+          <path d="M11 5.5 19 12l-8 6.5z" />
+          <rect x="19.6" y="5" width="2.4" height="14" rx="1.2" />
+        </svg>
+      {:else}
+        <!-- A card coming off the deck, not two circular arrows.
+             The arrows are the universal RELOAD mark, and they were the
+             resting glyph on the primary bet button of a game where nothing
+             rotates and nothing reels - four cards are dealt. Its two other
+             states were already right: a fast-forward for skip and a square
+             for stop, so the icon family was three metaphors deep.
+
+             Two rounded rects: the deck square-on, and the card being dealt
+             off it, tilted. Reads at 36px, which is the floor this button
+             hits on a 320px phone. -->
+        <svg class="cb-spin-svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <rect
+            x="2.6" y="7.4" width="9.2" height="12.6" rx="1.6"
+            fill="currentColor" opacity="0.55"
+          />
+          <rect
+            x="11.4" y="3.2" width="9.2" height="12.6" rx="1.6"
+            fill="currentColor"
+            transform="rotate(19 16 9.5)"
+          />
+        </svg>
+      {/if}
+    </button>
+
+    <!-- Ring and tooltip live on the WRAPPER, not the button: the button is
+         disabled whenever either is relevant, and a disabled button receives
+         no mouse events, so :hover on it would never fire. -->
+    {#if gate.held}
+      <svg class="cb-cooldown" viewBox="0 0 100 100" aria-hidden="true">
+        <circle class="cb-cooldown-track" cx="50" cy="50" r="46" />
+        <!-- Rotated -90deg so the sweep starts at 12 o'clock; dashoffset
+             shrinks from the full circumference to 0 as it fills clockwise.
+             2*pi*46 = 289.03 -->
+        <circle
+          class="cb-cooldown-fill"
+          cx="50"
+          cy="50"
+          r="46"
+          style={`stroke-dasharray: 289.03; stroke-dashoffset: ${(289.03 * (1 - gate.progress)).toFixed(2)}`}
+        />
+      </svg>
+    {/if}
+    <!-- "Play Again", which Stake's replay section asks for by name once a
+         replay has finished. A CAPTION rather than a label inside the button:
+         the button is a 44px disc and the words do not fit in it, and the
+         deal glyph is still the right picture - it deals the same four cards
+         again. Positioned like the tooltip above, on the wrapper and out of
+         flow, so it cannot add a row to a bar whose height budget is already
+         the tightest thing in the layout. -->
+    {#if replayFinished()}
+      <span class="cb-spin-caption">{t('Play Again')}</span>
+    {/if}
+    <!-- Any reason the button is dead, not just the cooldown. -->
+    {#if spinBlockedReason()}
+      <span class="cb-cooldown-tip" class:is-shown={spinTipVisible} role="tooltip" aria-live="polite"
+        >{spinBlockedReason()}</span>
+    {/if}
+    </div>
+  </div>
+
+  <!-- Reachable during a replay. Every switch inside is autoplay-scoped and
+       so cannot do anything there, but a dead button gives no feedback at
+       all: the popup opens and says why instead. Stake's replay guidance is
+       to hide AUTOPLAY SETTINGS, which the rows below honour by disabling
+       themselves - the button itself is how a reviewer finds that out. -->
+  <!-- MODE, at the right edge, where the sliders button was.
+
+       That button opened a whole panel for two autoplay switches, which now
+       live in the autoplay panel itself (AutospinPopup.svelte). MODE took its
+       place on the owner's suggestion, 2026-09-26, and it earns the slot: it
+       changes what a round IS, where everything else in the light pill is a
+       readout or a setting, and it now mirrors Turbo at the other edge. Its
+       reading stays beside the bet, because the bet display prints the family's
+       name in the family's colour. Taking it out of the light pill also gives
+       Balance and Last Win the width a translated word used to hold - the pill
+       is one line on a phone, in every currency (CLAUDE.md).
+
+       A DESTINATION BLIND (2026-10-06): the sign on the front of a bus that
+       names its route, naming the family the next round rides on, lettered in
+       the family's colour, with the same seven bolts the picker draws. It used
+       to be a pill that said "MODE" while the name printed in the bet display
+       across the bar - the control named its category rather than its value.
+       It keeps .cb-icon, so it keeps the "toggle" press cue (pressCues.ts)
+       rather than the heavier one the floating discs play.
+
+       Locked during an auto run and in replay, like the bet itself: the run
+       was started on one mode's odds, and a replay is a record of a round
+       already played on one. The slot hosts the tip rather than the button,
+       because replay disables the button outright and a disabled button
+       receives no pointer events. -->
+  <div class="cb-mode-slot" class:mode-locked={modeLockedReason() !== null}>
+    <button
+      class="cb-icon cb-mode-btn"
+      class:active={openPopup === 'mode'}
+      class:blocked={modeLockedReason() !== null}
+      onclick={onModeClick}
+      disabled={stateUrlDerived.replay()}
+      aria-label={`${t('Choose game mode')}, ${familyName}, ${volatilityLabel(liveBolts())}`}
+      title={familyName}
+    >
+      <!-- aria-hidden: the button's name already says all of it. -->
+      <span class="cb-blind" aria-hidden="true">
+        <span class="cb-blind-roll">
+          {#key bet.family}
+            <span
+              class="cb-blind-name face-{titleFaceFor(familyName)}"
+              use:fitBlock={familyName}
+              in:roll={{ leaving: false }}
+              out:roll={{ leaving: true }}
+            >{familyName}</span>
+          {/key}
+        </span>
+        <BoltMeter lit={liveBolts()} total={VOLATILITY_BOLTS} label={volatilityLabel(liveBolts())} />
+      </span>
+    </button>
+    {#if modeLockedReason()}
+      <span class="cb-mode-tip" class:is-shown={modeTipVisible} role="tooltip" aria-live="polite"
+        >{modeLockedReason()}</span>
+    {/if}
+  </div>
+</footer>
+
+<style>
+  @import '../../styles/board/control-bar.css';
+  /* The caption/figure pair, shared with SessionReadouts. */
+  @import '../../styles/board/readout.css';
+  @import '../../styles/board/responsive-bar.css';
+</style>

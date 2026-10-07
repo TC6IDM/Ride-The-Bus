@@ -30,12 +30,15 @@ class GameConfig(Config):
         # simulating that mode.
         #
         # Per family because the families reach different ceilings. Classic tops
-        # out at 1354.2x and Second Chance at 1170.4x, but High Stakes reaches
-        # 3820.5x - a miss there keeps less, so every correct guess is priced
-        # higher. A single 1400 cap silently CLIPPED High Stakes' biggest wins,
+        # out at 1354.2x and Second Chance at 585.2x, but High Stakes reaches
+        # 2169.2x - a miss there keeps less, so every correct guess is priced
+        # higher - and Three of a Kind pays 4,583.3x the base bet at cost 250x.
+        # A single 1400 cap silently CLIPPED High Stakes' biggest wins,
         # which the frontend's book-parity test caught as "client 3820.5 vs book
         # 1400": the client computed the real figure while the book carried the
-        # clipped one.
+        # clipped one. (3820.5 is that same ceiling back when High Stakes cost
+        # 2x, which doubled every payout; see MODE_FAMILIES on why the cost had
+        # to come down to 1.0x. The figures here are the CURRENT, 1.0x ones.)
         #
         # Each family's cap sits just ABOVE what it can reach, so it never
         # binds. That matters twice over: payouts go through
@@ -47,6 +50,7 @@ class GameConfig(Config):
         # ordered 4-card draws against partial_multiplier() reaches exactly
         # those figures. NB: they follow from target_rtp and each family's
         # retention. If either changes, re-derive before trusting them.
+        # Three of a Kind's is arithmetic: 1 x 11/3 x 5 = 18.333, x cost 250.
         self.wincap = 1400
         self.win_type = "other"
         # Common RTP every bet mode is reweighted to land on exactly (see
@@ -63,7 +67,7 @@ class GameConfig(Config):
         # The maths allows far more than the band does: the reweighter's real
         # limit is each mode's win-conditional mean payout (where the loss weight
         # would fall below 1 and it raises rather than emit a bad table), and the
-        # lowest of those across the 192 modes is 1.457x, i.e. ~146% RTP (High
+        # lowest of those across the four-guess modes is 1.457x, i.e. ~146% RTP (High
         # Stakes, whose thinner retention makes its wins rarer but larger). At 0.96
         # the smallest loss weight is still ~554,400, so there is no risk of that
         # guard tripping.
@@ -101,9 +105,9 @@ class GameConfig(Config):
         # guesses before pressing Play, so one bet mode = one full 4-stage
         # choice combination (2 * 3 * 3 * 4 = 72 modes), each resolved fully
         # in a single atomic play() call.
-        # Three families x 64 combinations = 192 published modes. The base
-        # family keeps its unprefixed names, so every replay event ID already
-        # recorded against it stays valid.
+        # Four families x 64 combinations + Three of a Kind = 257 published
+        # modes. The base family keeps its unprefixed names, so every replay
+        # event ID already recorded against it stays valid.
         self.bet_modes = [
             BetMode(
                 name=mode_name(*combo, family=family),

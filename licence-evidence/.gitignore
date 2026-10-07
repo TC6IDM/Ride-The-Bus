@@ -1,0 +1,24 @@
+# DEFAULT-DENY. Nothing here is committed unless it is named below.
+#
+# This directory holds the evidence behind ASSET_LICENCES.md, and it mixes two
+# kinds of document with very different handling:
+#
+#   terms/    Suno's Terms of Service, as captured on the generation date.
+#             Public documents, no personal data, and the load-bearing evidence:
+#             the 26 Mar 2026 text is the one the music was licensed under and
+#             was replaced on the site on 3 Sep 2026. TRACKED, on purpose.
+#
+#   private/  Invoice and payment receipt. These carry a billing name, a home
+#             address, an email and a partial card number, and THIS REPOSITORY
+#             IS PUBLIC. Never committed. ASSET_LICENCES.md records only their
+#             invoice and receipt numbers, which is all a reviewer needs to ask
+#             the account holder for the originals.
+#
+# The rule is inverted - ignore everything, then re-admit - so that a file
+# dropped in the wrong place is silently ignored rather than silently committed.
+# That is the failure worth engineering against here.
+*
+!.gitignore
+!README.md
+!terms/
+!terms/*.pdf

@@ -1,6 +1,6 @@
 ---
 name: stake-approval
-description: Stake Engine submission, approval and compliance reference for Ride The Bus. Covers the submission checklist and PreChecks, RGS/wallet requirements, frontend and responsive requirements, quality star tiers and risk limits (ETL/CVaR/std), math verification limits, bet replay spec, game tile assets, the general disclaimer, and the restricted-terms table for Stake.US social mode. Use when working on submission readiness, RGS_TEST_PLAN checks, compliance wording, promo blurb, math risk limits, replay URLs, or any question about what Stake actually requires.
+description: Stake Engine submission and compliance reference for Ride The Bus: the approval checklist and PreChecks, RGS/wallet and frontend requirements, star tiers and risk limits (ETL/CVaR/std), math verification limits, bet replay spec, tile assets, the general disclaimer, and Stake.US restricted terms. Use for submission readiness, RGS_TEST_PLAN checks, compliance wording, promo blurb or replay URLs.
 ---
 
 # Stake Engine approval & compliance
@@ -31,7 +31,8 @@ Stake-specific claim in this repo traces to `references/approval-guidelines.md`.
   files over the web for file formats and RGS endpoints.
 - **The binding risk tier is 2-star, not 3-star.** ETL 0.8 and CVaR 700. The
   0.9 / 800 figures that appear elsewhere are the 3-star tier. This project's
-  build clears the 2-star limits (worst ETL 0.695, worst CVaR 568.8).
+  build clears the 2-star limits (2026-10-01 build: worst ETL 0.769, worst
+  CVaR 639.0, both High Stakes; Last Stop's worst 0.591 / 483.5).
 - **One star is not a publication.** A 1-star game is returned to the developer to
   resubmit. Any claim that 1 star ships at the bottom of New Releases is wrong.
 - When reporting completion, keep the three categories distinct: **hard
@@ -41,7 +42,7 @@ Stake-specific claim in this repo traces to `references/approval-guidelines.md`.
 
 ## Live state
 
-`RGS_TEST_PLAN.md` holds 94 live-session checks across 14 sections. As of the last
+`RGS_TEST_PLAN.md` holds 115 live-session checks across 14 sections. As of the last
 audit, **0 are ticked** — the whole plan is unrun. Sections 06 (Currency),
 07 (Win presentation), 09 (Localisation), 11 (Devices) and 14 (Performance) are
 mutually independent and can be worked in parallel against the local replay RGS.
