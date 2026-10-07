@@ -15,7 +15,6 @@ export default {
 
 	Winning: 'Tiền thắng',
 	'Full game win': 'Thắng toàn ván',
-	Banked: 'Đã giữ',
 	Busted: 'Thua',
 	'Revealing…': 'Đang lật bài…',
 
@@ -162,6 +161,56 @@ export default {
 	'Not enough balance for that bet.': 'Số dư không đủ cho mức cược đó.',
 	'Your session has expired. Please reload the game.':
 		'Phiên của bạn đã hết hạn. Vui lòng tải lại trò chơi.',
+	'Could not reach the game server. Check your connection, then reload.':
+		'Không thể kết nối tới máy chủ trò chơi. Vui lòng kiểm tra kết nối rồi tải lại.',
+	'Recent rounds':
+		'Các vòng gần đây',
+	'No rounds yet this session.':
+		'Chưa có vòng nào trong phiên này.',
+	'Show recent rounds':
+		'Xem các vòng gần đây',
+	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
+		'Cộng và trừ đặt tiền cược. Nhấp vào số tiền để mở menu cược nhanh.',
+	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
+		'Tia sét cho thấy mỗi chế độ trước các lựa chọn Bằng nhau của bạn. Mỗi lựa chọn Bằng nhau thêm một.',
+	'Click to continue':
+		'Nhấp để tiếp tục',
+	'Click to skip':
+		'Nhấp để bỏ qua',
+	'Click the amount for the quick-bet menu.':
+		'Nhấp vào số tiền để mở menu cược nhanh.',
+	'These prices assume your forgiveness is unused. After a forgiven miss, the cards that follow are priced as on Classic, a little higher.':
+		'Các mức giá này giả định bạn chưa dùng lượt bỏ qua. Sau một lần đoán sai được bỏ qua, các lá tiếp theo được định giá như ở Cổ điển, cao hơn một chút.',
+	'The sign at the end of the bar names your game mode. Press it to choose another; switching asks you to confirm first.':
+		'Biển ở cuối thanh hiển thị chế độ chơi của bạn. Nhấn vào đó để chọn chế độ khác; việc chuyển đổi sẽ yêu cầu xác nhận trước.',
+	'Kept':
+		'Giữ lại',
+	'Won':
+		'Thắng',
+	'At stake':
+		'Đang cược',
+	'Right':
+		'Đúng',
+	'Ace':
+		'Át',
+	'King':
+		'Già',
+	'Queen':
+		'Đầm',
+	'Jack':
+		'Bồi',
+	'Hearts':
+		'Cơ',
+	'Diamonds':
+		'Rô',
+	'Clubs':
+		'Chuồn',
+	'Spades':
+		'Bích',
+	'%r of %s':
+		'%r %s',
+	'Card %n: %c':
+		'Lá %n: %c',
 	'A gambling limit on your account has been reached.':
 		'Tài khoản của bạn đã đạt đến một giới hạn cá cược.',
 	'This game is not available from your location.':
@@ -193,7 +242,6 @@ export default {
 	'Tap to continue': 'Chạm để tiếp tục',
 	'Round details': 'Chi tiết vòng chơi',
 	'Play amount': 'Số tiền cược',
-	Mode: 'Chế độ',
 	'Game mode': 'Chế độ chơi',
 	Guesses: 'Dự đoán',
 	Cards: 'Lá bài',
@@ -215,8 +263,6 @@ export default {
 		'Mũi tên vòng tròn mở tự động chơi: cùng một mức cược, chia lại trong số vòng đã đặt hoặc không giới hạn. Nút sẽ đếm ngược số vòng còn lại.',
 	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
 		'Nút tròn lớn chia bài. Phím cách cũng vậy: nhấn để chơi một vòng, giữ để chia tiếp. Khi tự động chơi, nút này trở thành Dừng và vòng đang chơi sẽ kết thúc trước.',
-	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
-		'Chế độ mở bảng chọn chế độ chơi. Việc chuyển đổi sẽ yêu cầu xác nhận trước khi áp dụng.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
 		'Trò chơi này không có vòng quay miễn phí, vòng thưởng, jackpot hay tính năng kích hoạt lại. Mỗi vòng là một lần chia bài độc lập: bốn lá ở các chế độ dự đoán, ba lá ở Bộ ba.',
 	'Big Win': 'Thắng Lớn',

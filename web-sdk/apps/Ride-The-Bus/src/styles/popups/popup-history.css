@@ -1,0 +1,154 @@
+/* The recent-rounds panel - HistoryPopup.svelte, opened from Last Win.
+ *
+ * Scoped to that component, which is the only thing that renders these
+ * classes (the Svelte scoping note in CLAUDE.md). Sizes are multiples of
+ * --ui-bar; colour comes in through the --tint contract and the ink/money
+ * tokens. Nothing here names a colour.
+ *
+ * Brass, like the Equal pick and the chips' inlay: a ledger's colour, distinct
+ * from the four panels it sits beside (turbo amber, autoplay green, sound
+ * cream, info blue). A light tint, so its ink is the dark one.
+ */
+.popup-history {
+  --tint: var(--ctl-history);
+  --tint-rgb: var(--ctl-history-rgb);
+  --tint-strong: var(--ctl-history);
+  --tint-ink: var(--on-vol-ink);
+}
+
+.history-empty {
+  margin: 0;
+  padding: calc(var(--ui-bar) * 1.1) calc(var(--ui-bar) * 0.4);
+  font-size: max(calc(var(--ui-bar) * 1.16), var(--type-floor));
+  color: var(--ink-dim);
+}
+
+/* A list, not a table: a row is one round read left to right - what it was,
+   what it cost, what was dealt, what it paid. */
+.history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.history-row {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ui-bar) * 0.36);
+  padding: calc(var(--ui-bar) * 0.8) calc(var(--ui-bar) * 0.3);
+}
+
+/* Rows divided by a hairline, never boxed: a box per round would be a card
+   inside the panel's card. */
+.history-row + .history-row {
+  border-top: 1px solid rgba(var(--ink-rgb), 0.08);
+}
+
+.history-head,
+.history-hand {
+  display: flex;
+  align-items: baseline;
+  gap: calc(var(--ui-bar) * 0.6);
+}
+
+.history-family {
+  font-size: max(calc(var(--ui-bar) * 1.09), var(--type-floor));
+  font-weight: 800;
+  color: var(--fam);
+}
+
+.history-cost {
+  margin-inline-start: auto;
+  font-size: max(calc(var(--ui-bar) * 1.05), var(--type-floor));
+  color: var(--ink-body);
+  font-variant-numeric: tabular-nums;
+}
+
+.history-cap { color: var(--ink-dim); }
+
+/* The dealt cards as compact index tokens on paper - the same reading as How
+   to Play's example round, not full faces. Red and black are the card's own
+   inks. */
+.history-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.08em;
+  padding: 0.12em 0.34em;
+  border-radius: calc(var(--ui-bar) * 0.3);
+  background: var(--card-paper);
+  color: var(--card-ink);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: max(calc(var(--ui-bar) * 1.2), var(--type-floor-figure));
+  line-height: 1;
+}
+
+.history-card.is-red { color: var(--card-red); }
+
+/* The card the round ended on: struck through and dimmed, like the board's
+   bust - but legible, because what it was is the point of looking back. */
+.history-card.is-bust {
+  opacity: 0.6;
+  text-decoration: line-through;
+  text-decoration-thickness: 0.12em;
+}
+
+/* A forgiven miss is not a bust: outlined, not dimmed (the board's own rule). */
+.history-card.is-forgiven {
+  outline: 2px solid var(--forgiven, var(--gold-bright));
+  outline-offset: 1px;
+}
+
+.history-ticket {
+  font-weight: 800;
+  font-size: max(calc(var(--ui-bar) * 1.09), var(--type-floor));
+  color: var(--gold-bright);
+}
+
+.history-paid {
+  margin-inline-start: auto;
+  font-size: max(calc(var(--ui-bar) * 1.24), var(--type-floor-figure));
+  font-weight: 800;
+  color: var(--ink-body);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Win colour only for a round that paid more than it cost. */
+.history-row.is-net .history-paid { color: var(--win); }
+
+.history-mult {
+  font-size: 0.82em;
+  color: var(--gold-bright);
+}
+
+.history-picks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 0.45em;
+  font-size: max(calc(var(--ui-bar) * 1.0), var(--type-floor));
+  color: var(--ink-dim);
+}
+
+/* A drawn dot, not a typed one: Overpass's U+00B7 sits off-centre in its own
+   advance, so "Red · Higher" printed as "Red ·Higher". */
+.history-sep {
+  flex: none;
+  width: 0.24em;
+  height: 0.24em;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

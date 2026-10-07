@@ -9,6 +9,7 @@
  */
 import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
+import { readFileSync } from 'node:fs';
 
 import {
   MAX_WIN_MULTIPLIER,
@@ -191,6 +192,45 @@ describe('countUpSegments', () => {
       assert.equal(segments[0]!.tier.id, 'big', `${multiplier}x should open on big`);
       assert.equal(segments[0]!.fromMultiplier, 0, `${multiplier}x should start the count at 0`);
     }
+  });
+
+  test("opens on the board's last figure, clipped to the first leg", () => {
+    // The board showed 20x before the last card; the round paid 68.2x.
+    const fromBoard = countUpSegments(68.2, winTierFor(68.2, true)!, WIN_TIERS, 20);
+    assert.deepEqual(fromBoard.map((s) => [s.tier.id, s.fromMultiplier, s.toMultiplier]), [
+      ['big', 20, 40],
+      ['huge', 40, 68.2],
+    ]);
+    // Past the first ceiling already: the legs the board passed are dropped and
+    // the count opens on the board's figure, never on a lower ceiling ("Big Win
+    // $40.00" over a board at $430.10, front v72).
+    const past = countUpSegments(200, winTierFor(200, true)!, WIN_TIERS, 90);
+    assert.deepEqual(past.map((s) => [s.tier.id, s.fromMultiplier, s.toMultiplier, s.isHold]), [
+      ['huge', 90, 120, false],
+      ['mega', 120, 200, false],
+    ]);
+    const maxFromBoard = countUpSegments(MAX_WIN_MULTIPLIER, winTierFor(MAX_WIN_MULTIPLIER, true)!, WIN_TIERS, 430.1);
+    assert.deepEqual(maxFromBoard.map((s) => [s.tier.id, s.fromMultiplier, s.isHold]), [
+      ['epic', 430.1, false],
+      ['max', MAX_WIN_MULTIPLIER, true],
+    ]);
+    // Exactly on a ceiling: that leg is passed too.
+    assert.deepEqual(countUpSegments(68.2, winTierFor(68.2, true)!, WIN_TIERS, 40).map((s) => [s.tier.id, s.fromMultiplier]), [['huge', 40]]);
+    // Whatever the board showed, the first frame is never below it and the
+    // figure never falls from one leg to the next.
+    for (const [final, board] of [[68.2, 20], [200, 90], [MAX_WIN_MULTIPLIER, 430.1], [500, 299.9], [500, 300], [15, 50]] as const) {
+      const legs = countUpSegments(final, winTierFor(final, true)!, WIN_TIERS, board);
+      assert.ok(legs[0]!.fromMultiplier >= Math.min(board, final), `${final} from ${board} opens below the board`);
+      for (let k = 1; k < legs.length; k++) assert.ok(legs[k]!.fromMultiplier >= legs[k - 1]!.toMultiplier, `${final} from ${board} falls at leg ${k}`);
+    }
+    // A bust that celebrated on size after the board showed more: one held leg.
+    const dropped = countUpSegments(15, winTierFor(15, true)!, WIN_TIERS, 50);
+    assert.deepEqual(dropped.map((s) => [s.fromMultiplier, s.toMultiplier, s.isHold]), [[15, 15, true]]);
+  });
+
+  test('a hold leg that is not the last moves on rather than settling', () => {
+    const body = readFileSync(new URL('../../../components/board/WinCelebration.svelte', import.meta.url), 'utf8');
+    assert.match(body, /segment\.isHold && !isLast\)\s*\{[^}]*holdThenAdvance\(index\)/);
   });
 
   test('walks every tier up to the one earned, in order', () => {

@@ -15,7 +15,6 @@ export default {
 
 	Winning: '당첨금',
 	'Full game win': '풀 게임 성공',
-	Banked: '확보',
 	Busted: '실패',
 	'Revealing…': '공개 중…',
 
@@ -162,6 +161,56 @@ export default {
 	'Not enough balance for that bet.': '해당 베팅을 위한 잔액이 부족합니다.',
 	'Your session has expired. Please reload the game.':
 		'세션이 만료되었습니다. 게임을 새로 고쳐 주세요.',
+	'Could not reach the game server. Check your connection, then reload.':
+		'게임 서버에 연결할 수 없습니다. 연결을 확인한 후 새로 고쳐 주세요.',
+	'Recent rounds':
+		'최근 라운드',
+	'No rounds yet this session.':
+		'이번 세션에는 아직 라운드가 없습니다.',
+	'Show recent rounds':
+		'최근 라운드 보기',
+	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
+		'플러스와 마이너스로 베팅액을 정합니다. 금액을 클릭하면 빠른 베팅 메뉴가 열립니다.',
+	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
+		'번개는 이퀄 선택 전의 각 모드를 보여 줍니다. 이퀄을 하나 고를 때마다 하나씩 늘어납니다.',
+	'Click to continue':
+		'클릭하여 계속',
+	'Click to skip':
+		'클릭하여 건너뛰기',
+	'Click the amount for the quick-bet menu.':
+		'금액을 클릭하면 빠른 베팅 메뉴가 열립니다.',
+	'These prices assume your forgiveness is unused. After a forgiven miss, the cards that follow are priced as on Classic, a little higher.':
+		'이 배당은 면제를 아직 쓰지 않았을 때 기준입니다. 면제된 실수 뒤에는 이어지는 카드가 클래식과 같이, 조금 더 높게 책정됩니다.',
+	'The sign at the end of the bar names your game mode. Press it to choose another; switching asks you to confirm first.':
+		'바 끝의 표지판에 현재 게임 모드가 표시됩니다. 눌러서 다른 모드를 고르세요. 전환 전에 확인을 요청합니다.',
+	'Kept':
+		'보존',
+	'Won':
+		'승리',
+	'At stake':
+		'걸린 금액',
+	'Right':
+		'정답',
+	'Ace':
+		'에이스',
+	'King':
+		'킹',
+	'Queen':
+		'퀸',
+	'Jack':
+		'잭',
+	'Hearts':
+		'하트',
+	'Diamonds':
+		'다이아몬드',
+	'Clubs':
+		'클로버',
+	'Spades':
+		'스페이드',
+	'%r of %s':
+		'%s %r',
+	'Card %n: %c':
+		'카드 %n: %c',
 	'A gambling limit on your account has been reached.': '계정의 베팅 한도에 도달했습니다.',
 	'This game is not available from your location.': '현재 위치에서는 이 게임을 이용할 수 없습니다.',
 	'The game server had a problem. Please try again shortly.':
@@ -191,7 +240,6 @@ export default {
 	'Tap to continue': '탭하여 계속',
 	'Round details': '라운드 상세',
 	'Play amount': '베팅 금액',
-	Mode: '모드',
 	'Game mode': '게임 모드',
 	Guesses: '예측',
 	Cards: '카드',
@@ -213,8 +261,6 @@ export default {
 		'원형 화살표는 자동 플레이를 엽니다. 같은 베팅을 정해진 라운드 수 또는 무제한으로 다시 딜하며, 버튼에 남은 라운드 수가 표시됩니다.',
 	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
 		'큰 원형 버튼으로 딜합니다. 스페이스바도 마찬가지로, 한 번 누르면 한 라운드, 누르고 있으면 계속 진행됩니다. 자동 플레이 중에는 중지로 바뀌며, 진행 중인 라운드가 먼저 끝납니다.',
-	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
-		'모드는 게임 모드 선택창을 엽니다. 전환 시 적용 전에 확인을 요청합니다.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
 		'이 게임에는 무료 스핀, 보너스 라운드, 잭팟 또는 재발동 기능이 없습니다. 각 라운드는 독립적인 한 번의 딜입니다: 예측 모드에서는 4장, 트리플에서는 3장.',
 	'Big Win': '빅 윈',

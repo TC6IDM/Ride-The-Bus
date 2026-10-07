@@ -29,10 +29,10 @@
     allChoicesMade,
   } from '../../game/bet/betState.svelte';
   import { FREE_CHOICE, isCleanSweep, stageCount } from '../../game/math/modes';
-  import { isNetWin } from '../../game/math/winTiers';
   import { round } from '../../game/round/roundState.svelte';
   import type { Card } from '../../game/platform/typesBookEvent';
-  import { t } from '../../i18n/i18nDerived';
+  import { t, type MessageKey } from '../../i18n/i18nDerived';
+  import { suitName } from '../../game/ui/suitPaths';
   import { numberToCurrencyString } from 'utils-shared/amount';
   import { formatMultiplier, formatTicket } from '../../game/ui/formatMultiplier';
 
@@ -109,9 +109,10 @@
    * next one is bought. Anything drawn straight off the live state therefore
    * changes in the middle of its own exit animation:
    *
-   *   - a busted 0.00x chip lost its dim class (then `.is-zero`, now
-   *     `.is-short`) and flicked back to win green on its way out, which is a
-   *     loss recoloured as a win for the length of the fade (reported);
+   *   - a busted 0.00x chip lost its dim class (then `.is-zero`, then
+   *     `.is-short`, now `.is-miss`) and flicked back to win green on its way
+   *     out, which is a loss recoloured as a win for the length of the fade
+   *     (reported);
    *   - a winning chip's figure snapped to 0.00x behind the same fade;
    *   - the card face and the bust cross vanished on the frame the flip
    *     started, so what turned back over was a blank white front.
@@ -158,16 +159,55 @@
   });
 
   /**
-   * Whether a card's chip prints a LOSS: 0.00x on a bust that kept nothing, or
-   * the share a later bust banked when it is under the round's cost - 0.70x on
-   * a 1x round is 30 cents down, and it used to print in win green. Only the
-   * bust card's chip is a result; the ones before it are the streak climbing
-   * and stay green. Read off `shown`, never live state, for the reason above.
+   * Whether a card's chip sits over a MISS - the bust, or the miss a Second
+   * Chance forgave. Neutral ink, never win green: a green figure over a red
+   * cross read as a win for the wrong guess, even when the share it kept beat
+   * the round's cost (the critique, 2026-10-05). Whether the ROUND came out
+   * ahead is the readout's to say (isNetWin); the chip only marks the guess.
+   * Read off `shown`, never live state, for the reason above.
    */
-  const chipIsShort = (index: number) => {
-    const multiplier = shown.multipliers[index];
-    if (multiplier === 0) return true;
-    return index === shown.busted && multiplier !== null && !isNetWin(multiplier, familyRules().cost);
+  const chipIsMiss = (index: number) => index === shown.busted || index === shown.forgiven;
+
+  /**
+   * Whether a card's chip is on screen. Not on a free card (see isFreeSlot), and
+   * not on a bust that kept NOTHING: a card-1 miss, or any Three of a Kind miss,
+   * printed "0.0x" over the cross - zero said twice, once by the cross and once
+   * by a figure design.md says should not be there. Live state, because whether
+   * a chip shows must happen on cue.
+   */
+  const chipShows = (index: number) => {
+    const multiplier = round.stageMultipliers[index];
+    return multiplier !== null && multiplier !== 0 && !isFreeSlot(index);
+  };
+
+  /** Three of a Kind keeps nothing on a miss: its running total is at stake, not kept. */
+  const keepsNothing = $derived(familyRules().retention.every((share) => share === 0));
+
+  /*
+   * THE CARDS, SAID. The face is a drawing (CardFace is aria-hidden), so a
+   * screen reader heard the four slots as nothing at all. Each dealt card is
+   * named and judged - "Card 2: King of Clubs, Right" - off `shown`, so the
+   * label leaves with the card like everything else on the row.
+   */
+  const RANK_KEY: Record<string, MessageKey> = { A: 'Ace', K: 'King', Q: 'Queen', J: 'Jack' };
+  const SUIT_KEY: Record<string, MessageKey> = { heart: 'Hearts', diamond: 'Diamonds', club: 'Clubs', spade: 'Spades' };
+  const cardName = (card: Card) => {
+    const rank = RANK_KEY[card.rank];
+    const suit = SUIT_KEY[suitName(card.suit)];
+    return t('%r of %s')
+      .replace('%r', rank ? t(rank) : card.rank)
+      .replace('%s', suit ? t(suit) : card.suit);
+  };
+  /** "Card 2: King of Clubs" - empty for a slot with nothing on it. */
+  const cardTitle = (index: number | null) => {
+    const face = index === null ? null : shown.cards[index];
+    return face && index !== null ? t('Card %n: %c').replace('%n', String(index + 1)).replace('%c', cardName(face)) : '';
+  };
+  /** ...and how its guess went. A free card had no guess to judge. */
+  const cardLabel = (index: number) => {
+    const verdict =
+      index === shown.busted ? t('Busted') : index === shown.forgiven ? t('Forgiven') : isFreeSlot(index) ? null : t('Right');
+    return verdict ? `${cardTitle(index)}, ${verdict}` : cardTitle(index);
   };
 
   /**
@@ -235,13 +275,27 @@
 
   /** The settled round's name for itself - the bar's label and the
    *  announcement below both read it, so the clean-sweep question is asked
-   *  once here (modes.test.ts counts the sites that ask it). */
+   *  once here (modes.test.ts counts the sites that ask it).
+   *
+   *  Four words, one per way a round ends (the critique, 2026-10-05: "Banked"
+   *  covered both a 19.1x Second Chance ride and $1.10 kept off a bust):
+   *    Full game win - every guess right
+   *    Won           - reached the end with a miss forgiven
+   *    Kept          - busted after card 1 and kept a share. The SHARE is not
+   *                    printed: it is the rule's 30% times the decay term,
+   *                    floored to 0.1x, so "30%" over $3.90 -> $1.10 invites a
+   *                    sum that does not come out - and it would be a second
+   *                    unit beside the multiplier. The rule is stated where
+   *                    the family is named.
+   *    Busted        - kept nothing */
   const cleanSweep = $derived(isCleanSweep(round.bustedIndex, round.forgivenIndex));
   const resultLabel = $derived(
     readout.state === 'won'
       ? cleanSweep
         ? t('Full game win')
-        : t('Banked')
+        : shown.busted === null
+          ? t('Won')
+          : t('Kept')
       : readout.state === 'lost'
         ? t('Busted')
         : null,
@@ -261,9 +315,15 @@
   const announcement = $derived(
     resultLabel === null
       ? ''
-      : readout.state === 'lost'
-        ? resultLabel
-        : [resultLabel, numberToCurrencyString(readout.runningWin), formatMultiplier(readout.wonAmount / readout.initialBet)].join(', '),
+      : [
+          resultLabel,
+          // The card that ended it, by name - "Busted" alone never said which.
+          cardTitle(shown.busted),
+          readout.state === 'lost' ? '' : numberToCurrencyString(readout.runningWin),
+          readout.state === 'lost' ? '' : formatMultiplier(readout.wonAmount / readout.initialBet),
+        ]
+          .filter((part) => part !== '')
+          .join(', '),
   );
 
   /**
@@ -551,18 +611,18 @@
         class:is-dead={isDead(index)}
         class:is-bust={round.bustedIndex === index}
       >
-        <!-- is-short: a bust that kept nothing (Three of a Kind, or any card-1
-             miss) prints 0.00x, and a later bust can bank less than the round
-             cost; printing either in win green colours a loss like a win.
-             See chipIsShort. -->
+        <!-- is-miss: the chip over a bust or a forgiven miss, in neutral ink.
+             See chipIsMiss and chipShows. Hidden from a screen reader until it
+             shows: four "0.0x" were read out before the first deal. -->
         <div
           class="card-mult"
-          class:show={round.stageMultipliers[index] !== null && !isFreeSlot(index)}
-          class:is-short={chipIsShort(index)}
+          class:show={chipShows(index)}
+          class:is-miss={chipIsMiss(index)}
+          aria-hidden={!chipShows(index)}
         >
           {formatMultiplier(shown.multipliers[index] ?? 0)}
         </div>
-        <div class="card-block">
+        <div class="card-block" role={card ? 'img' : undefined} aria-label={card ? cardLabel(index) : undefined} aria-hidden={card ? undefined : true}>
           <div class="card-inner" class:flipped={card}>
             <div class="card-back" aria-hidden="true"></div>
             <div class="card-front">
@@ -648,9 +708,13 @@
     class:is-win={readout.state === 'won' && readout.lastWinNet}
     class:is-partial={readout.state === 'won' && !readout.lastWinNet}
     class:is-loss={readout.state === 'lost'}
+    class:is-at-stake={readout.state === 'playing' && keepsNothing}
   >
+    <!-- "At stake" on a family that keeps nothing on a miss: Three of a Kind's
+         $916.60 after card 2 read as money won, in win green, when a miss on
+         card 3 forfeits all of it. -->
     <span class="running-win-label">
-      {#if resultLabel !== null}{resultLabel}{:else if readout.state === 'playing'}{readout.held ? t('Last card') : t('Revealing…')}{:else}{t('Winning')}{/if}
+      {#if resultLabel !== null}{resultLabel}{:else if readout.state === 'playing'}{readout.held ? t('Last card') : keepsNothing ? t('At stake') : t('Revealing…')}{:else}{t('Winning')}{/if}
     </span>
     <!-- Laid over the three lines rather than in them, so it arriving or
          going moves nothing (cards.css). Mounted only while it shows: hidden
@@ -712,8 +776,8 @@
          high. See .choice-label in choices-board.css. -->
     <span class="choice-label"><span>{t('Color')}</span></span>
     <div class="choice-square color-square" role="group" aria-label={t('Pick a color')}>
-      <button type="button" class="half-btn black-half" class:selected={guesses.color === 'black'} onclick={() => pick(setColorChoice, 'black')} aria-disabled={choicesLocked()} aria-label={t('Black')}></button>
-      <button type="button" class="half-btn red-half" class:selected={guesses.color === 'red'} onclick={() => pick(setColorChoice, 'red')} aria-disabled={choicesLocked()} aria-label={t('Red')}></button>
+      <button type="button" class="half-btn black-half" class:selected={guesses.color === 'black'} aria-pressed={guesses.color === 'black'} onclick={() => pick(setColorChoice, 'black')} aria-disabled={choicesLocked()} aria-label={t('Black')}></button>
+      <button type="button" class="half-btn red-half" class:selected={guesses.color === 'red'} aria-pressed={guesses.color === 'red'} onclick={() => pick(setColorChoice, 'red')} aria-disabled={choicesLocked()} aria-label={t('Red')}></button>
     </div>
   </div>
 
@@ -723,9 +787,9 @@
          reads "Higher /" over "Lower", never "Higher" over "/ Lower". -->
     <span class="choice-label"><span>{t('Higher')}&nbsp;/ {t('Lower')}</span></span>
     <div class="choice-square hl-square" role="group" aria-label={t('Higher, lower, or equal')}>
-      <button type="button" class="third-btn higher-third" class:selected={guesses.hl === 'higher'} onclick={() => pick(setHlChoice, 'higher')} aria-disabled={choicesLocked()} aria-label={t('Higher')}>{@render iconTriangleUp()}</button>
-      <button type="button" class="third-btn lower-third" class:selected={guesses.hl === 'lower'} onclick={() => pick(setHlChoice, 'lower')} aria-disabled={choicesLocked()} aria-label={t('Lower')}>{@render iconTriangleDown()}</button>
-      <button type="button" class="equal-btn" class:selected={guesses.hl === 'equal'} onclick={() => pick(setHlChoice, 'equal')} aria-disabled={choicesLocked()} aria-label={t('Equal')}>{@render iconEquals()}</button>
+      <button type="button" class="third-btn higher-third" class:selected={guesses.hl === 'higher'} aria-pressed={guesses.hl === 'higher'} onclick={() => pick(setHlChoice, 'higher')} aria-disabled={choicesLocked()} aria-label={t('Higher')}>{@render iconTriangleUp()}</button>
+      <button type="button" class="third-btn lower-third" class:selected={guesses.hl === 'lower'} aria-pressed={guesses.hl === 'lower'} onclick={() => pick(setHlChoice, 'lower')} aria-disabled={choicesLocked()} aria-label={t('Lower')}>{@render iconTriangleDown()}</button>
+      <button type="button" class="equal-btn" class:selected={guesses.hl === 'equal'} aria-pressed={guesses.hl === 'equal'} onclick={() => pick(setHlChoice, 'equal')} aria-disabled={choicesLocked()} aria-label={t('Equal')}>{@render iconEquals()}</button>
     </div>
   </div>
 
@@ -735,7 +799,7 @@
       <button
         type="button"
         class="half-btn inside-half"
-        class:selected={guesses.io === 'inside'}
+        class:selected={guesses.io === 'inside'} aria-pressed={guesses.io === 'inside'}
         class:unavailable={!insideIsPossible()}
         onclick={onInsideClick}
         aria-disabled={choicesLocked() || !insideIsPossible()}
@@ -745,8 +809,8 @@
         onfocus={() => (insideBlockedHover = true)}
         onblur={() => (insideBlockedHover = false)}
       >{@render iconInside()}</button>
-      <button type="button" class="half-btn outside-half" class:selected={guesses.io === 'outside'} onclick={() => pick(setIoChoice, 'outside')} aria-disabled={choicesLocked()} aria-label={t('Outside')}>{@render iconOutside()}</button>
-      <button type="button" class="equal-btn" class:selected={guesses.io === 'equal'} onclick={() => pick(setIoChoice, 'equal')} aria-disabled={choicesLocked()} aria-label={t('Equal')}>{@render iconEquals()}</button>
+      <button type="button" class="half-btn outside-half" class:selected={guesses.io === 'outside'} aria-pressed={guesses.io === 'outside'} onclick={() => pick(setIoChoice, 'outside')} aria-disabled={choicesLocked()} aria-label={t('Outside')}>{@render iconOutside()}</button>
+      <button type="button" class="equal-btn" class:selected={guesses.io === 'equal'} aria-pressed={guesses.io === 'equal'} onclick={() => pick(setIoChoice, 'equal')} aria-disabled={choicesLocked()} aria-label={t('Equal')}>{@render iconEquals()}</button>
     </div>
     <!-- Why Inside is off, in words. Rendered here rather than inside the
          square because .choice-square is overflow:hidden and would clip it
@@ -761,10 +825,10 @@
   <div class="choice-column" class:is-missed={round.bustedIndex === 3} class:is-forgiven={round.forgivenIndex === 3}>
     <span class="choice-label"><span>{t('Suit')}</span></span>
     <div class="choice-square suit-square" role="group" aria-label={t('Pick a suit')}>
-      <button type="button" class="quad-btn red-suit" class:selected={guesses.suit === 'heart'} onclick={() => pick(setSuitChoice, 'heart')} aria-disabled={choicesLocked()} aria-label={t('Heart')}><SuitIcon suit="heart" /></button>
-      <button type="button" class="quad-btn" class:selected={guesses.suit === 'spade'} onclick={() => pick(setSuitChoice, 'spade')} aria-disabled={choicesLocked()} aria-label={t('Spade')}><SuitIcon suit="spade" /></button>
-      <button type="button" class="quad-btn" class:selected={guesses.suit === 'club'} onclick={() => pick(setSuitChoice, 'club')} aria-disabled={choicesLocked()} aria-label={t('Club')}><SuitIcon suit="club" /></button>
-      <button type="button" class="quad-btn red-suit" class:selected={guesses.suit === 'diamond'} onclick={() => pick(setSuitChoice, 'diamond')} aria-disabled={choicesLocked()} aria-label={t('Diamond')}><SuitIcon suit="diamond" /></button>
+      <button type="button" class="quad-btn red-suit" class:selected={guesses.suit === 'heart'} aria-pressed={guesses.suit === 'heart'} onclick={() => pick(setSuitChoice, 'heart')} aria-disabled={choicesLocked()} aria-label={t('Heart')}><SuitIcon suit="heart" /></button>
+      <button type="button" class="quad-btn" class:selected={guesses.suit === 'spade'} aria-pressed={guesses.suit === 'spade'} onclick={() => pick(setSuitChoice, 'spade')} aria-disabled={choicesLocked()} aria-label={t('Spade')}><SuitIcon suit="spade" /></button>
+      <button type="button" class="quad-btn" class:selected={guesses.suit === 'club'} aria-pressed={guesses.suit === 'club'} onclick={() => pick(setSuitChoice, 'club')} aria-disabled={choicesLocked()} aria-label={t('Club')}><SuitIcon suit="club" /></button>
+      <button type="button" class="quad-btn red-suit" class:selected={guesses.suit === 'diamond'} aria-pressed={guesses.suit === 'diamond'} onclick={() => pick(setSuitChoice, 'diamond')} aria-disabled={choicesLocked()} aria-label={t('Diamond')}><SuitIcon suit="diamond" /></button>
     </div>
   </div>
   <!-- The table die: all four picks at random, dealt only when the player

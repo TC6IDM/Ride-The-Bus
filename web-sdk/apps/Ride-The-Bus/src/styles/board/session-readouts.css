@@ -55,7 +55,7 @@
 
 /* LIVE, and load-bearing here: the session clock ticks once a second and this
    plate is pinned to the RIGHT, so a digit that changed width would move the
-   plate's left edge every tick. Geist ships tnum, so every digit is 0.648em
+   plate's left edge every tick. Overpass ships tnum, so every digit is 0.616em
    and the plate holds still. Under Poppins this declaration was inert (no
    tnum; a "1" measured 0.387em against 0.657em for a "0") and the plate
    breathed with the clock - which is worth knowing if the face ever changes

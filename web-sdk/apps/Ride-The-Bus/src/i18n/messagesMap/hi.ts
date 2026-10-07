@@ -15,7 +15,6 @@ export default {
 
 	Winning: 'जीत',
 	'Full game win': 'पूरी जीत',
-	Banked: 'सुरक्षित',
 	Busted: 'हार',
 	'Revealing…': 'खोला जा रहा है…',
 
@@ -162,6 +161,56 @@ export default {
 	'Not enough balance for that bet.': 'उस दांव के लिए पर्याप्त बैलेंस नहीं है।',
 	'Your session has expired. Please reload the game.':
 		'आपका सत्र समाप्त हो गया है। कृपया गेम पुनः लोड करें।',
+	'Could not reach the game server. Check your connection, then reload.':
+		'गेम सर्वर तक नहीं पहुँचा जा सका। कृपया अपना कनेक्शन जाँचें, फिर पुनः लोड करें।',
+	'Recent rounds':
+		'हाल के राउंड',
+	'No rounds yet this session.':
+		'इस सत्र में अभी कोई राउंड नहीं हुआ है।',
+	'Show recent rounds':
+		'हाल के राउंड दिखाएँ',
+	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
+		'प्लस और माइनस आपका दांव तय करते हैं। त्वरित दांव मेनू के लिए राशि पर क्लिक करें।',
+	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
+		'बिजली के निशान हर मोड को आपके बराबर चुनावों से पहले दिखाते हैं। हर बराबर चुनाव एक जोड़ता है।',
+	'Click to continue':
+		'जारी रखने के लिए क्लिक करें',
+	'Click to skip':
+		'छोड़ने के लिए क्लिक करें',
+	'Click the amount for the quick-bet menu.':
+		'त्वरित दांव मेनू के लिए राशि पर क्लिक करें।',
+	'These prices assume your forgiveness is unused. After a forgiven miss, the cards that follow are priced as on Classic, a little higher.':
+		'ये कीमतें मानती हैं कि आपकी माफी अभी इस्तेमाल नहीं हुई है। माफ की गई गलती के बाद, आगे के कार्ड क्लासिक की तरह, थोड़ी ऊँची कीमत पर तय होते हैं।',
+	'The sign at the end of the bar names your game mode. Press it to choose another; switching asks you to confirm first.':
+		'बार के सिरे पर लगा बोर्ड आपका गेम मोड दिखाता है। दूसरा चुनने के लिए उसे दबाएँ; बदलने से पहले पुष्टि माँगी जाती है।',
+	'Kept':
+		'बचाया',
+	'Won':
+		'जीत',
+	'At stake':
+		'दांव पर',
+	'Right':
+		'सही',
+	'Ace':
+		'इक्का',
+	'King':
+		'बादशाह',
+	'Queen':
+		'बेगम',
+	'Jack':
+		'गुलाम',
+	'Hearts':
+		'पान',
+	'Diamonds':
+		'ईंट',
+	'Clubs':
+		'चिड़ी',
+	'Spades':
+		'हुकुम',
+	'%r of %s':
+		'%s का %r',
+	'Card %n: %c':
+		'कार्ड %n: %c',
 	'A gambling limit on your account has been reached.': 'आपके खाते की एक जुआ सीमा तक पहुंच गई है।',
 	'This game is not available from your location.': 'यह गेम आपके स्थान से उपलब्ध नहीं है।',
 	'The game server had a problem. Please try again shortly.':
@@ -191,7 +240,6 @@ export default {
 	'Tap to continue': 'जारी रखने के लिए टैप करें',
 	'Round details': 'राउंड विवरण',
 	'Play amount': 'दांव राशि',
-	Mode: 'मोड',
 	'Game mode': 'गेम मोड',
 	Guesses: 'अनुमान',
 	Cards: 'कार्ड',
@@ -213,8 +261,6 @@ export default {
 		'गोल तीर ऑटोप्ले खोलते हैं: वही दांव, तय संख्या के राउंड तक या असीमित दोबारा बाँटा जाता है। बटन बचे हुए राउंड गिनता है।',
 	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
 		'बड़ा गोल बटन बाँटता है। स्पेसबार भी: एक राउंड के लिए दबाएँ, बाँटते रहने के लिए दबाए रखें। ऑटोप्ले के दौरान यह रोकें बन जाता है, और चल रहा राउंड पहले पूरा होता है।',
-	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
-		'मोड गेम-मोड चयनकर्ता खोलता है। बदलने से पहले पुष्टि माँगी जाती है।',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
 		'इस गेम में कोई फ्री स्पिन, बोनस राउंड, जैकपॉट या री-ट्रिगर फीचर नहीं है। हर राउंड एक अकेली, स्वतंत्र डील है: अनुमान वाले मोड में चार कार्ड, तीन एक जैसे में तीन।',
 	'Big Win': 'बड़ी जीत',

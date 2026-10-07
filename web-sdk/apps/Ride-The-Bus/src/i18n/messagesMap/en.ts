@@ -28,7 +28,6 @@ export default {
 	// Win readout above the guesses
 	Winning: 'Winning',
 	'Full game win': 'Full game win',
-	Banked: 'Banked',
 	Busted: 'Busted',
 	'Revealing…': 'Revealing…',
 
@@ -202,6 +201,56 @@ export default {
 	'Not enough balance for that bet.': 'Not enough balance for that bet.',
 	'Your session has expired. Please reload the game.':
 		'Your session has expired. Please reload the game.',
+	'Could not reach the game server. Check your connection, then reload.':
+		'Could not reach the game server. Check your connection, then reload.',
+	'Recent rounds':
+		'Recent rounds',
+	'No rounds yet this session.':
+		'No rounds yet this session.',
+	'Show recent rounds':
+		'Show recent rounds',
+	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
+		'Plus and minus set your bet. Click the amount for the quick-bet menu.',
+	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
+		'Bolts show each mode before your Equal picks. Each Equal pick adds one.',
+	'Click to continue':
+		'Click to continue',
+	'Click to skip':
+		'Click to skip',
+	'Click the amount for the quick-bet menu.':
+		'Click the amount for the quick-bet menu.',
+	'These prices assume your forgiveness is unused. After a forgiven miss, the cards that follow are priced as on Classic, a little higher.':
+		'These prices assume your forgiveness is unused. After a forgiven miss, the cards that follow are priced as on Classic, a little higher.',
+	'The sign at the end of the bar names your game mode. Press it to choose another; switching asks you to confirm first.':
+		'The sign at the end of the bar names your game mode. Press it to choose another; switching asks you to confirm first.',
+	'Kept':
+		'Kept',
+	'Won':
+		'Won',
+	'At stake':
+		'At stake',
+	'Right':
+		'Right',
+	'Ace':
+		'Ace',
+	'King':
+		'King',
+	'Queen':
+		'Queen',
+	'Jack':
+		'Jack',
+	'Hearts':
+		'Hearts',
+	'Diamonds':
+		'Diamonds',
+	'Clubs':
+		'Clubs',
+	'Spades':
+		'Spades',
+	'%r of %s':
+		'%r of %s',
+	'Card %n: %c':
+		'Card %n: %c',
 	'A gambling limit on your account has been reached.':
 		'A gambling limit on your account has been reached.',
 	'This game is not available from your location.':
@@ -235,7 +284,6 @@ export default {
 	'Tap to continue': 'Tap to continue',
 	'Round details': 'Round details',
 	'Play amount': 'Play amount',
-	Mode: 'Mode',
 	'Game mode': 'Game mode',
 	Guesses: 'Guesses',
 	// The replay panel's caption on a family with no guesses (Three of a Kind:
@@ -264,8 +312,6 @@ export default {
 		'The circular arrows open autoplay: the same bet, dealt again for a set number of rounds or without limit. The button counts down the rounds left.',
 	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
 		'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.',
-	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
-		'Mode opens the game-mode picker. Switching asks you to confirm before it applies.',
 
 	// Big-win takeover. Tier names are ordered by rarity - see game/math/winTiers.ts.
 	// "Max Win" is deliberately reused from the start screen's stat row: it is

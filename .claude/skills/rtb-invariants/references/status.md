@@ -10,6 +10,68 @@ rather than on every turn. Nothing here is reworded.
 
 ## Current state
 
+**2026-10-06, later: the third live pass, on front v72.** v72 is the working
+tree built 2026-10-06 15:26 (math v13); USD and XSC social Studio sessions.
+`RGS_TEST_PLAN.md`: 122 of 132 ticked.
+- PASSED on v72 (were open or failing on v71): SES-05 and REG-01 / REG-02 /
+  PRF-04 (F-4 and F-5 fixed: the error dialog is on top with Reload, the fonts
+  load as files and the console is clean over 100 autoplay rounds), SES-07,
+  SES-08, BET-16 (incl. a resumed round beating remembered picks), BET-17,
+  RND-10, RND-11, CUR-06, REP-12, CMP-13, CMP-17, CMP-19, CMP-20, LNG-08; LNG-01
+  and SOC-01 re-run over the new strings (history panel, result words, card
+  names) in all 15 languages and in social mode - clean.
+- FAILED on v72, FIXED LOCALLY (not uploaded): WIN-16 - the count-up held each
+  tier the board had passed at its ceiling, so the max win #975 opened on "Big
+  Win $40.00" over a $430.10 board (now "Epic Win $430.10"); DEV-12 - Three of a
+  Kind's "$1.00 x 250" line was unfloored (3.3px on Popout S, 5.6-7.5px on
+  phones); CMP-20's follow-on - Tab left the intro for the board under it (now
+  inert until play starts).
+- OPEN for the owner: whether Three of a Kind's bar may stay 6px taller than the
+  other families' on Popout S (2.6px on Mobile S) or every family reserves that
+  height (DEV-11); a production build and upload, then WIN-16 / DEV-11 / DEV-12 /
+  CMP-20 again; the NVDA/VoiceOver listen (CMP-18); a genuine session lapse
+  (SES-03); real phones; CMP-14; commits.
+- Pitfall: remembered picks persist across tabs of one session, so a script that
+  leaves the session on Three of a Kind stalls the next one looking for guess
+  buttons - set the family first in every script.
+
+**2026-10-06: the second live pass on Stake, the MODE sign, and fixes not yet
+uploaded.** Front v71 + math v13, Studio demo sessions (USD, JPY, IDR, a $3
+balance, XSC social). `RGS_TEST_PLAN.md`: 132 checks (17 added for this
+session's work), 105 ticked. Method, scripts and pitfalls: the `rtb-live-audit`
+skill.
+- Found live and FIXED LOCALLY: the count-up opened on a negative frame
+  ("-$0.00001": the first rAF timestamp precedes the leg's start - progress is
+  clamped); the error dialog printed the RGS's English statusMessage under the
+  translated sentence in all 15 other languages (hidden for recognised codes); a
+  forged session gets a bare 400 with no code, so an unnamed failure now offers
+  Reload beside Close; Second Chance's How to Play now says forgiven rounds price
+  later cards as on Classic (a forgiven round's card 4 paid 3.41x against the
+  table's 2.38-2.94x).
+- The live RGS's failure shape is HTTP 400 `{error, message}`; the local replay
+  server now answers that way, and its book lookup no longer leaks a file handle
+  per request (it died on EMFILE during a scan).
+- The `/bet/replay` endpoint rate-limits after ~300 rapid fetches (no CORS on the
+  refusal); find IDs locally with `scanlocal.mjs`.
+- Studio's risk summary for math v13: Valid; every 2-star and 3-star row passes
+  (max bet cost 75,000 / 100,000 on `300max_1cent`: a $300 base x 250).
+- PRF-01 on v71: 473 KB on Fast 3G, the start screen ready at 6.0 s.
+- MODE became a destination sign (the family's name + bolts; CLAUDE.md has the
+  widths). The deal-button gold state, "=" off the seam on phones and dimming of
+  unpicked segments were built and REVERTED the same day on the owner's call.
+- Also landed: result words (Full game win / Won / Kept / Busted), neutral miss
+  chips, screen-reader labels, the count-up from the board's figure, a 9 / 11 px
+  phone type floor, Tap/Click by pointer, the intro's Tab order, How to Play's
+  heading sizes, the mode panel's bolt note, Russian Classic = "Классика".
+- The ticket cue measured: no clipping, no added level, its parts at about a
+  third of a card chime - the owner should listen.
+- OPEN for the owner: a production build and upload, then re-run the smoke set
+  and the 17 new checks plus SES-03/05, CMP-13, PRF-04, REG-01; CMP-14 (title
+  clearance in Stake's catalogue); CMP-12 / DEV-04 / DEV-05 / PRF-03 on real
+  phones; the takeover ticket over cards 2-3 (the owner placed it there on
+  2026-09-30; a critique asked to move it); where a one-line miss rule could go
+  now that the family name is on the MODE sign; commits.
+
 **2026-10-02: Space always deals; the ticket stack on Last Stop only.** The
 owner's calls on two review items. Space is taken from every focused button on
 the board (squares, the die, the bar) on keydown AND keyup, and kept only by a

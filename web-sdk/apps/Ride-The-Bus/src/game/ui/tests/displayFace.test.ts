@@ -16,7 +16,7 @@
  */
 import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
-import { readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import {
@@ -50,14 +50,14 @@ describe('the title face covers the whole string', () => {
   test('Vietnamese drops to the body face, which ships a vietnamese subset', () => {
     // U+1EAF and U+1EDB sit in the gap between latin-ext's U+1E00-1E9F and
     // U+1EF2-1EFF. Under Poppins that gap reached no webfont and these needed
-    // the system stack; Geist serves the block as its own subset, so the whole
+    // the system stack; Overpass serves the block as its own subset, so the whole
     // string comes from one file of the game's own face.
     assert.equal(titleFaceFor('Thắng Lớn'), 'body');
     assert.equal(titleFaceFor('Thắng Khổng Lồ'), 'body');
   });
 
   test('Cyrillic drops to the body face; the scripts it lacks take the system stack', () => {
-    assert.equal(titleFaceFor('Крупный'), 'body'); // ru - Geist ships cyrillic
+    assert.equal(titleFaceFor('Крупный'), 'body'); // ru - Overpass ships cyrillic
     assert.equal(titleFaceFor('大当たり'), 'system'); // ja
     assert.equal(titleFaceFor('大奖'), 'system'); // zh
   });
@@ -99,8 +99,10 @@ describe('the title face covers the whole string', () => {
 
 /* ---- The ranges match the font files they were copied from -------------- */
 
-describe('the subsets still match app.css', () => {
-  const css = read('../../../components/app.css');
+describe('the subsets still match app.html', () => {
+  // The @font-face rules live in src/app.html, not app.css - see the note there:
+  // Stake's CDN refuses data: fonts, so the files must ship from static/fonts.
+  const css = read('../../../app.html');
 
   /** Every @font-face block, as { family, weight, range }. */
   const faces = [...css.matchAll(/@font-face\s*\{([^}]*)\}/g)].map(([, body]) => ({
@@ -123,13 +125,13 @@ describe('the subsets still match app.css', () => {
   const same = (a: ReadonlyArray<readonly [number, number]>, b: ReadonlyArray<readonly [number, number]>) =>
     JSON.stringify(a.map((r) => [...r])) === JSON.stringify(b.map((r) => [...r]));
 
-  test('app.css still declares the faces this module assumes', () => {
+  test('app.html still declares the faces this module assumes', () => {
     // Four body-face subsets (variable, one file each) plus two Big Shoulders
     // weights. It was ten while the body face shipped as eight static cuts.
     assert.ok(faces.length >= 6, `only found ${faces.length} @font-face blocks`);
     assert.ok(
       faces.some((f) => f.family === 'Big Shoulders'),
-      'no Big Shoulders @font-face - the display face moved',
+      'no Big Shoulders @font-face in app.html - the display face moved',
     );
   });
 
@@ -198,5 +200,44 @@ describe('the takeover title is wired to it', () => {
     const css = read('../../../styles/scene/win-celebration.css');
     assert.match(css, /\.wc-title\.face-body\s*\{/, 'no .face-body rule');
     assert.match(css, /\.wc-title\.face-system\s*\{/, 'no .face-system rule');
+  });
+});
+
+/* ---- The fonts ship as same-origin FILES, never as data: URIs ------------- */
+
+describe("fonts load under the live CDN's CSP", () => {
+  const SRC = resolve(import.meta.dirname, '../../..');
+  const html = read('../../../app.html');
+
+  /** Every .css and .svelte file under src/, recursively. */
+  const sheets = (dir: string): string[] =>
+    readdirSync(dir).flatMap((name) => {
+      const full = resolve(dir, name);
+      if (statSync(full).isDirectory()) return name === 'tests' ? [] : sheets(full);
+      return /\.(css|svelte)$/.test(name) ? [full] : [];
+    });
+
+  test('no stylesheet declares an @font-face (config-vite would base64 it)', () => {
+    // config-vite sets assetsInlineLimit: Infinity. A font url() in any sheet Vite
+    // processes becomes a data: URI, and Stake's `font-src 'self'` refuses it -
+    // the game then renders in fallback fonts on the live site and nowhere else.
+    const offenders = sheets(SRC).filter((file) => /@font-face\s*\{/.test(readFileSync(file, 'utf8')));
+    assert.deepEqual(offenders, []);
+  });
+
+  test('app.html points every face at a real file through %sveltekit.assets%', () => {
+    const srcs = [...html.matchAll(/src:\s*url\('([^']+)'\)/g)].map((m) => m[1]);
+    assert.ok(srcs.length >= 6, `only ${srcs.length} font sources in app.html`);
+    for (const url of srcs) {
+      assert.match(url, /^%sveltekit\.assets%\/fonts\/[a-z0-9-]+\.woff2$/, `${url} is not a same-origin file path`);
+      const file = resolve(SRC, '..', 'static', url.replace('%sveltekit.assets%/', ''));
+      assert.ok(existsSync(file), `${url} names a file that is not in static/fonts`);
+    }
+  });
+
+  test('the OFL licences ship beside the fonts', () => {
+    for (const name of ['OFL-Overpass.txt', 'OFL-BigShoulders.txt']) {
+      assert.ok(existsSync(resolve(SRC, '..', 'static', 'fonts', name)), `static/fonts/${name} is missing`);
+    }
   });
 });

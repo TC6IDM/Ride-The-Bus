@@ -56,12 +56,18 @@
  * shown. An exact figure in small type is a figure; a rounded one is not.
  */
 const FIT_FLOOR_RATIO = 0.55;
-export function fitToBox(el: HTMLElement) {
+/**
+ * `wrap`: the box may hold more than one line, so it overflows DOWNWARD as
+ * well as sideways - the MODE sign's family name, which takes two lines
+ * before it takes a smaller size. The readouts are one line and check width.
+ */
+export function fitToBox(el: HTMLElement, wrap = false) {
   if (typeof document === 'undefined') return;
+  const over = () => el.scrollWidth > el.clientWidth + 0.5 || (wrap && el.scrollHeight > el.clientHeight + 0.5);
   // Reset first: the previous fit must not be the baseline for this one, or
   // the type ratchets down and never comes back when the value shortens.
   el.style.fontSize = '';
-  if (el.scrollWidth <= el.clientWidth + 0.5) return;
+  if (!over()) return;
   const base = parseFloat(getComputedStyle(el).fontSize) || 0;
   if (!base) return;
   const floor = base * FIT_FLOOR_RATIO;
@@ -70,7 +76,7 @@ export function fitToBox(el: HTMLElement) {
   // viewport with the least room to give.
   const step = Math.max(base * 0.02, 0.1);
   let size = base;
-  while (size > floor && el.scrollWidth > el.clientWidth + 0.5) {
+  while (size > floor && over()) {
     size -= step;
     el.style.fontSize = `${size}px`;
   }
@@ -82,7 +88,16 @@ export function fitToBox(el: HTMLElement) {
  * a fixed value (a breakpoint, a rotation).
  */
 export function fitValue(node: HTMLElement, _deps: unknown) {
-  const run = () => fitToBox(node);
+  return fitAction(node, false);
+}
+
+/** fitValue for a box that may wrap - see `wrap` on fitToBox. */
+export function fitBlock(node: HTMLElement, _deps: unknown) {
+  return fitAction(node, true);
+}
+
+function fitAction(node: HTMLElement, wrap: boolean) {
+  const run = () => fitToBox(node, wrap);
   run();
   // THREE triggers, and the MutationObserver is the one that matters.
   //
@@ -104,8 +119,13 @@ export function fitValue(node: HTMLElement, _deps: unknown) {
   // re-flowing onto another row.
   const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(run) : null;
   ro?.observe(node);
+  // And the FACE arriving: a fixed box over fixed text measures differently
+  // once the webfont lands (the fonts are files now, not inlined - app.html),
+  // and neither observer above sees a font swap.
+  const fonts = typeof document !== 'undefined' ? document.fonts : undefined;
+  fonts?.addEventListener?.('loadingdone', run);
   return {
     update() { run(); },
-    destroy() { mo?.disconnect(); ro?.disconnect(); },
+    destroy() { mo?.disconnect(); ro?.disconnect(); fonts?.removeEventListener?.('loadingdone', run); },
   };
 }

@@ -5,7 +5,7 @@
 	 * This is the same argument SuitIcon.svelte makes, applied to the glyphs it
 	 * did not cover, and it is a correctness fix rather than a taste one. The
 	 * self-hosted body face's latin block declares this unicode-range (Google's
-	 * standard latin subset; it was the same under Poppins and is under Geist):
+	 * standard latin subset; it was the same under Poppins and Geist and is under Overpass):
 	 *
 	 *   U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
 	 *   U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,

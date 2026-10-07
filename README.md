@@ -11,27 +11,31 @@ independent, stateless outcome, so the four choices are encoded in the bet
 mode instead. Everything after the bet is
 animation of an already-determined result.
 
-A fourth mode, **Three of a Kind**, is a different game on the same table:
+A fifth mode, **Three of a Kind**, is a different game on the same table:
 three cards from a twelve-card deck of Aces, Kings and Queens, no guesses,
 cards 2 and 3 must match card 1, nothing on a miss. It costs 250× the bet and
 pays 4583.3× the bet about one round in nineteen.
 
 ## Bet modes
 
-The same four guesses can be bought three ways. Only what a **miss** keeps
-differs, and because every mode is reweighted onto the same 96.00% RTP, a mode
-that forgives more cannot also pay more — the two are one dial seen from
-opposite ends. The fourth row is the all-or-nothing mode, priced at fair odds
-on its own deck.
+The same four guesses can be bought four ways. On three of them only what a
+**miss** keeps differs, and because every mode is reweighted onto the same
+96.00% RTP, a mode that forgives more cannot also pay more — the two are one
+dial seen from opposite ends. **Last Stop** is Classic until the suit: cards 1-3
+are priced exactly as Classic's, and a right suit draws a bus ticket from a
+visible stack of 20 (ten 2×, five 3×, three 5×, two 10×) that multiplies the
+running total in place of the suit's price. The fifth row is the all-or-nothing
+mode, priced at fair odds on its own deck.
 
 | Mode | Cost | A miss keeps | Max win (× base bet) | Pays something |
 |---|---|---|---|---|
 | Classic | 1.0× | nothing on card 1, 30% after | 1354.2× | ~1 in 2 |
 | Second Chance | 1.0× | card 1 still ends it; after that the first miss keeps 50% and **play continues** | 585.2× | ~1 in 2 |
+| Last Stop | 1.0× | nothing on card 1, 30% after; a right suit draws a 2-10× ticket | 4301.9× | ~1 in 2 |
 | High Stakes | 1.0× | nothing on card 1, 15% after | 2237.3× | ~1 in 2 |
 | Three of a Kind | **250×** | nothing, ever | 4583.3× | 1 in 19.1 |
 
-The three guess modes are a volatility ladder at one price, rather than paid
+The four guess modes are a volatility ladder at one price, rather than paid
 feature modes. That is forced, not chosen: `etl40b` — the expected payout from
 wins of at least 40× the cost — is summed as an **absolute** figure against a
 fixed limit and is not divided by cost. A 2× mode must average 1.92× to return
@@ -45,9 +49,10 @@ the base bet. THE ALL-OR-NOTHING BOUND in `game_calculations.py` is the
 derivation, including the first build (A K Q J at 1000× paying 25,000×) that
 failed every tail row.
 
-That is 3 families × 64 guess combinations, plus one = **193 published modes**.
+That is 4 families × 64 guess combinations, plus one = **257 published modes**.
 The Classic family keeps its original unprefixed names, so replay event IDs
-recorded against it stay valid; the others are prefixed `sc_`, `hs_` and `tr_`.
+recorded against it stay valid; the others are prefixed `sc_`, `ls_`, `hs_`
+and `tr_`.
 
 Two numbers here are not free choices:
 
@@ -152,7 +157,7 @@ python -m venv .venv
 .venv\Scripts\python.exe games\ride_the_bus\run.py
 ```
 
-This is a long run - simulations across all 193 bet modes, on 8 worker
+This is a long run - simulations across all 257 bet modes, on 8 worker
 processes - and it writes everything under
 `math-sdk\games\ride_the_bus\library\`.
 
@@ -170,10 +175,10 @@ already produced valid files.
 
 **Upload the contents of `math-sdk\games\ride_the_bus\library\publish_files\`**
 to Stake Engine's Files page, under the Math/RGS section for this game. That is
-387 files: one `books_<mode>.jsonl.zst` and one `lookUpTable_<mode>_0.csv` per
-bet mode (193 of each), plus a single `index.json`. The build does not sweep
+515 files: one `books_<mode>.jsonl.zst` and one `lookUpTable_<mode>_0.csv` per
+bet mode (257 of each), plus a single `index.json`. The build does not sweep
 the folder, so a superseded build's files can sit beside the current ones -
-the count is the check that none did. Around 1.6 GB in total -
+the count is the check that none did. Around 2.1 GB in total -
 well inside Stake's limits, which cap a single events file at 4.2 GB and a
 single mode at 10,000,000 events (the largest book here is ~15 MB, and the
 biggest mode simulates 800,000 rounds).
@@ -267,22 +272,22 @@ fallback.
 
 ## Submitting for approval
 
-### Read this first: four modes, 193 bet modes
+### Read this first: five modes, 257 bet modes
 
-A reviewer opening the dashboard sees **193 bet modes** and should know why
+A reviewer opening the dashboard sees **257 bet modes** and should know why
 before counting them.
 
-A player sees **four**: Classic, Second Chance, High Stakes and Three of a
-Kind. On the first three, all four guesses are committed before the round is
-bought, so the guesses are part of the wager rather than decisions taken during
-it - which is what keeps every round a single, independent, stateless bet with
-no continuation and no cash-out. Each distinct set of guesses is therefore its
-own bet mode:
+A player sees **five**: Classic, Second Chance, Last Stop, High Stakes and
+Three of a Kind. On the first four, all four guesses are committed before the
+round is bought, so the guesses are part of the wager rather than decisions
+taken during it - which is what keeps every round a single, independent,
+stateless bet with no continuation and no cash-out. Each distinct set of
+guesses is therefore its own bet mode:
 
-> 3 families x 2 colours x (3 x 3 - 1) higher/lower x inside/outside pairs x 4 suits = **192**
+> 4 families x 2 colours x (3 x 3 - 1) higher/lower x inside/outside pairs x 4 suits = **256**
 
 plus Three of a Kind, which has no guesses and is one mode
-(`tr_any_equal_equal`) - **193**.
+(`tr_any_equal_equal`) - **257**.
 
 The `- 1` is Equal-then-Inside, which is impossible rather than merely unlikely:
 nothing falls strictly between two cards of the same rank, so that mode would
@@ -291,19 +296,26 @@ The client bars the same combination in the UI.
 
 Consequences worth knowing:
 
-- **192 cost 1.0x; Three of a Kind costs 250x.** No four-guess mode is a
+- **256 cost 1.0x; Three of a Kind costs 250x.** No four-guess mode is a
   purchase or a premium. The 250x mode states its cost in the picker, in the
   confirmation that precedes activating it, and in the rules.
-- **All 193 return 96.00%**, with a spread of 0.000000%.
-- **Each has its own maximum win**, from 39.5x to 2237.3x on the four-guess
-  modes. The three headline ceilings (1354.2x / 585.2x / 2237.3x) are the most
-  each *family* can reach, and exactly 8 of each family's 64 combinations reach
-  them. How to Play states the family ceiling **and** what the four guesses
-  currently picked top out at, because Stake asks for the maximum win per bet
-  mode and every combination is one. Three of a Kind's ceiling, 4583.3x the
-  base bet, is its only win and the game's overall maximum.
+- **All 257 return 96.00%**, with a spread of 0.000000%.
+- **Each has its own maximum win**, from 39.5x to 4301.9x on the four-guess
+  modes. The four headline ceilings (1354.2x / 585.2x / 4301.9x / 2237.3x for
+  Classic / Second Chance / Last Stop / High Stakes) are the most each *family*
+  can reach. How to Play states the family ceiling **and** what the four
+  guesses currently picked top out at, because Stake asks for the maximum win
+  per bet mode and every combination is one. Three of a Kind's ceiling, 4583.3x
+  the base bet, is its only win and the game's overall maximum.
+- **Last Stop's ticket is drawn by the book, not the client.** A right suit
+  draws one ticket from the visible stack of 20, and the published lookup tables
+  carry the ticket odds exactly as the stack shows them (10/5/3/2 in 20). The
+  book writes the suit card's own payout as 1.0 and the ticket as its own event.
+- **The only client-side randomness is the table die**, which fills the four
+  picks with one of the 64 published combinations before a bet
+  (`crypto.getRandomValues`). It buys nothing; the deal does.
 - **[REPLAY_EVENTS.md](REPLAY_EVENTS.md) is the index.** It carries a loss, a
-  normal win, a big win and a win-cap simulation ID for all 193, plus two
+  normal win, a big win and a win-cap simulation ID for all 257, plus two
   round-shape scenarios, so any mode can be replayed without hunting for an ID.
 
 ### What has been checked, and what has not
@@ -312,12 +324,12 @@ Verified against Stake's math, RGS and frontend approval criteria:
 
 | | |
 | --- | --- |
-| RTP 90-96.70%, all modes within 0.5% | 96.00% on every one of the 193 modes, spread 0.000000% |
+| RTP 90-96.70%, all modes within 0.5% | 96.00% on every one of the 257 modes, spread 0.000000% |
 | Simulations per bet mode | 100k minimum, asserted in `run.py` |
-| Non-zero win hit rate, target better than 1 in 20 | 1 in 1.40 to 1 in 2.04 across the four-guess modes; 1 in 19.1 on Three of a Kind (94.8% of its rounds pay nothing - past the "90,000 of 100,000" example in the guidelines, accepted as the submission's softest point) |
-| Max win obtainable, target better than 1 in 10,000,000 | 1354.2x / 585.2x / 2237.3x per four-guess family, worst case 1 in 193,283 (`sc_red_lower_equal_spade`); 4583.3x on Three of a Kind at 1 in 19.1 |
-| Max win stated per BET MODE | each of the 193 has its own ceiling; How to Play names the one for the guesses on the board |
-| 2-star risk limits (ETL 0.8, CVaR 700, std 0.6-50, P(>=5,000x) 1%) | worst etl40b 0.769, CVaR 639.0, std 38.401, P(>=5,000x) zero - all three on High Stakes at 15%. Three of a Kind: etl40b 0, CVaR 4,583.3 absolute = 18.3 per stake, which `rgs_verification.py` now checks against the limit written for each read (per-stake and absolute) instead of holding the raw figure to a 1x limit |
+| Non-zero win hit rate, target better than 1 in 20 | 1 in 1.40 to 1 in 2.17 across the four-guess modes; 1 in 19.1 on Three of a Kind (94.8% of its rounds pay nothing - past the "90,000 of 100,000" example in the guidelines, accepted as the submission's softest point) |
+| Max win obtainable, target better than 1 in 10,000,000 | 1354.2x / 585.2x / 4301.9x / 2237.3x per four-guess family, worst case 1 in 228,002 (`ls_red_higher_equal_heart`); 4583.3x on Three of a Kind at 1 in 19.1 |
+| Max win stated per BET MODE | each of the 257 has its own ceiling; How to Play names the one for the guesses on the board |
+| 2-star risk limits (ETL 0.8, CVaR 700, std 0.6-50, P(>=5,000x) 1%) | worst etl40b 0.769, CVaR 639.0, std 38.401, P(>=5,000x) zero - all three on High Stakes at 15%. Last Stop's worst: etl40b 0.591, CVaR 483.5, std 31.4. Three of a Kind: etl40b 0, CVaR 4,583.3 absolute = 18.3 per stake, which `rgs_verification.py` now checks against the limit written for each read (per-stake and absolute) instead of holding the raw figure to a 1x limit |
 | No jackpot, gamble or cash-out | none - the single-bet design rules them out |
 | Static files only, no external requests | the only network call is the RGS itself |
 | Bet levels, `stepBet`, min/max from `authenticate` | honoured; nothing hardcoded |
@@ -360,7 +372,7 @@ the verbatim criteria in
 ### Replay event IDs
 
 Approval requires replay event IDs **per bet mode**, covering normal win, big
-win, win cap and loss. With 193 bet modes that is 772 IDs, so they are derived
+win, win cap and loss. With 257 bet modes that is 1,028 IDs, so they are derived
 from the published lookup tables rather than collected by hand, into
 [REPLAY_EVENTS.md](REPLAY_EVENTS.md) - the full table, with the payout
 multiplier beside each ID so a reviewer can see what the round is meant to
@@ -414,10 +426,11 @@ reproduced in
 - `web-sdk/apps/Ride-The-Bus` keeps its own commit history from before this
   repo was restructured (see `git log` — the "Add 'web-sdk/apps/Ride-The-Bus/'
   from commit ..." merge commit and its second parent chain).
-- Round model: the math backend generates one full book per bet — the fixed
-  4-card sequence plus each stage's fair-odds payout table (based on true
-  remaining-deck probability minus a 2% house edge, quantized to 0.1x steps
-  per Stake's RGS requirements). The client resolves each guess against that
-  data locally, matching how Stake Engine's documented RGS API works (one
-  `/wallet/play` call returns the whole round; there's no live per-decision
-  endpoint).
+- Round model: the math backend generates one full book per bet - the dealt
+  cards and each stage's payout. Every stage is priced so the expected change
+  in the running multiplier is the same constant whatever the odds of the
+  guess (a martingale on `decay`), which pulls every mode toward the target
+  RTP before `reweight_luts.py` pins it at exactly 96%; the final payout floors
+  to 0.1x and never rounds. The client replays that book locally, matching how
+  Stake Engine's documented RGS API works (one `/wallet/play` call returns the
+  whole round; there's no live per-decision endpoint).

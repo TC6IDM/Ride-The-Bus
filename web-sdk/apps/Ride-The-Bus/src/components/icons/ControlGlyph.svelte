@@ -16,11 +16,14 @@
 	import MarkIcon from './MarkIcon.svelte';
 	import SoundIcon from './SoundIcon.svelte';
 	import DieFace from '../cards/DieFace.svelte';
+	import { titleFaceFor } from '../../game/ui/displayFace';
 
 	type Props = {
 		name: 'deal' | 'mode' | 'bet' | 'chip' | 'turbo' | 'autoplay' | 'sound' | 'info' | 'die';
-		/** The MODE pill's word, already translated - the bar prints it too. */
+		/** The MODE sign's lettering - the family's name, already translated. */
 		label?: string;
+		/** The colour the sign is lettered in: the family's (volatilityColorVar). */
+		ink?: string;
 	};
 
 	const props: Props = $props();
@@ -41,7 +44,11 @@
 			<rect x="11.4" y="3.2" width="9.2" height="12.6" rx="1.6" fill="currentColor" transform="rotate(19 16 9.5)" />
 		</svg>
 	{:else if props.name === 'mode'}
-		<span class="ctl-mode-word">{props.label}</span>
+		<!-- The destination blind, small: the family's name on the dark sign,
+		     as the bar letters it (control-bar.css). -->
+		<span class="ctl-mode-sign" style:color={props.ink}>
+			<span class="ctl-mode-word face-{titleFaceFor(props.label ?? '')}">{props.label}</span>
+		</span>
 	{:else if props.name === 'bet'}
 		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
 			<path d="M12 4.5v15" />
@@ -129,9 +136,25 @@
 		height: calc(var(--size) * 0.44);
 	}
 
+	/* MODE is a sign, not a pill: the bar's bezel and a dark well inside it,
+	   no coloured outline (control-bar.css, the destination blind). */
 	.ctl-glyph.is-mode {
-		border-color: var(--gold);
+		padding: calc(var(--size) * 0.08);
+		border-radius: calc(var(--size) * 0.24);
 		color: var(--gold);
+	}
+
+	.ctl-mode-sign {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 100%;
+		padding: 0 calc(var(--size) * 0.18);
+		border-radius: calc(var(--size) * 0.16);
+		background: linear-gradient(180deg, var(--blind-glass-top), var(--blind-glass-bottom));
+		box-shadow:
+			inset 0 1px 2px rgba(var(--shadow-rgb), 0.85),
+			inset 0 -1px 0 rgba(var(--panel-lit-rgb), 0.16);
 	}
 
 	/* The table die is an object on the wood, not a control on the bar, so
@@ -148,10 +171,26 @@
 	}
 
 	.ctl-mode-word {
-		font-size: calc(var(--size) * 0.34);
-		font-weight: 900;
-		letter-spacing: var(--track-label);
+		font-family: var(--font-display);
+		font-size: calc(var(--size) * 0.4);
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		line-height: 1;
 		text-transform: uppercase;
 		white-space: nowrap;
+	}
+
+	/* Big Shoulders is Latin only - titleFaceFor, as on the bar. */
+	.ctl-mode-word.face-body {
+		font-family: var(--font-body);
+		font-weight: 800;
+		letter-spacing: 0;
+		text-transform: none;
+	}
+
+	.ctl-mode-word.face-system {
+		font-family: sans-serif;
+		letter-spacing: 0;
+		text-transform: none;
 	}
 </style>

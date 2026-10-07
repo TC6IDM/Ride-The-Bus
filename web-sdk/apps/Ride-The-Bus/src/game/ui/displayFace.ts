@@ -34,7 +34,7 @@
  * rather than a swap. Falling back from display to body fixes Polish, because
  * the body face covers the whole string. Under Poppins it did NOT fix
  * Vietnamese, and only dropping to the generic stack rendered that one in a
- * single face; the body face is Geist now, which ships a vietnamese subset and
+ * single face; the body face is Overpass now, which ships a vietnamese subset and
  * a cyrillic one, so vi and ru resolve to `body` and `system` is left for the
  * scripts neither face has a cut for.
  *

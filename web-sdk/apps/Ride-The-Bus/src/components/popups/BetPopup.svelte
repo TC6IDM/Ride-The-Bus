@@ -82,7 +82,12 @@
         inputmode="decimal"
         bind:value={bet.input}
         onblur={formatBetInput}
-        onkeydown={oncommit}
+        onkeydown={(event) => {
+          // A bet has no spaces. Space here used to type one ("0.01 "), which
+          // the blur trims but the field showed until then.
+          if (event.key === ' ') return event.preventDefault();
+          oncommit(event);
+        }}
         placeholder="0.00"
         aria-label={t('Custom bet amount')}
       />

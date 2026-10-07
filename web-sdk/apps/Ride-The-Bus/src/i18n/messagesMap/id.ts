@@ -15,7 +15,6 @@ export default {
 
 	Winning: 'Kemenangan',
 	'Full game win': 'Menang penuh',
-	Banked: 'Diamankan',
 	Busted: 'Gagal',
 	'Revealing…': 'Membuka…',
 
@@ -162,6 +161,56 @@ export default {
 	'Not enough balance for that bet.': 'Saldo tidak cukup untuk taruhan itu.',
 	'Your session has expired. Please reload the game.':
 		'Sesi Anda telah berakhir. Silakan muat ulang permainan.',
+	'Could not reach the game server. Check your connection, then reload.':
+		'Tidak dapat terhubung ke server permainan. Silakan periksa koneksi Anda, lalu muat ulang.',
+	'Recent rounds':
+		'Ronde terbaru',
+	'No rounds yet this session.':
+		'Belum ada ronde di sesi ini.',
+	'Show recent rounds':
+		'Tampilkan ronde terbaru',
+	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
+		'Plus dan minus mengatur taruhan Anda. Klik jumlahnya untuk membuka menu taruhan cepat.',
+	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
+		'Petir menunjukkan tiap mode sebelum pilihan Sama Anda. Setiap pilihan Sama menambah satu.',
+	'Click to continue':
+		'Klik untuk melanjutkan',
+	'Click to skip':
+		'Klik untuk melewati',
+	'Click the amount for the quick-bet menu.':
+		'Klik jumlahnya untuk membuka menu taruhan cepat.',
+	'These prices assume your forgiveness is unused. After a forgiven miss, the cards that follow are priced as on Classic, a little higher.':
+		'Harga ini berlaku selama pengampunan Anda belum terpakai. Setelah satu kesalahan diampuni, kartu berikutnya dihargai seperti di Klasik, sedikit lebih tinggi.',
+	'The sign at the end of the bar names your game mode. Press it to choose another; switching asks you to confirm first.':
+		'Papan di ujung bilah menunjukkan mode permainan Anda. Tekan untuk memilih yang lain; berganti mode meminta konfirmasi terlebih dahulu.',
+	'Kept':
+		'Disimpan',
+	'Won':
+		'Menang',
+	'At stake':
+		'Dipertaruhkan',
+	'Right':
+		'Benar',
+	'Ace':
+		'As',
+	'King':
+		'Raja',
+	'Queen':
+		'Ratu',
+	'Jack':
+		'Pangeran',
+	'Hearts':
+		'Hati',
+	'Diamonds':
+		'Wajik',
+	'Clubs':
+		'Keriting',
+	'Spades':
+		'Sekop',
+	'%r of %s':
+		'%r %s',
+	'Card %n: %c':
+		'Kartu %n: %c',
 	'A gambling limit on your account has been reached.':
 		'Batas permainan pada akun Anda telah tercapai.',
 	'This game is not available from your location.':
@@ -193,7 +242,6 @@ export default {
 	'Tap to continue': 'Ketuk untuk melanjutkan',
 	'Round details': 'Detail ronde',
 	'Play amount': 'Jumlah taruhan',
-	Mode: 'Mode',
 	'Game mode': 'Mode permainan',
 	Guesses: 'Tebakan',
 	Cards: 'Kartu',
@@ -215,8 +263,6 @@ export default {
 		'Panah melingkar membuka main otomatis: taruhan yang sama, dibagikan lagi untuk sejumlah ronde tertentu atau tanpa batas. Tombolnya menghitung mundur ronde yang tersisa.',
 	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
 		'Tombol bulat besar membagikan kartu. Begitu juga tombol spasi: ketuk untuk satu ronde, tahan untuk terus membagikan. Saat main otomatis, tombol ini menjadi Berhenti, dan ronde yang sedang berjalan diselesaikan dulu.',
-	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
-		'Mode membuka pemilih mode permainan. Berganti mode meminta konfirmasi sebelum diterapkan.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
 		'Permainan ini tidak memiliki putaran gratis, ronde bonus, jackpot, atau fitur pemicu ulang. Setiap ronde adalah satu pembagian kartu yang berdiri sendiri: empat kartu di mode tebakan, tiga di Tiga Sejenis.',
 	'Big Win': 'Kemenangan Besar',

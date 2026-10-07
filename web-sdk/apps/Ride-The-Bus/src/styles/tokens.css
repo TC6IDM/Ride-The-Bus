@@ -71,12 +71,12 @@
      have the SAME specificity, so which one won came down to whichever Vite
      happened to emit last. app.css now selects "html body" (0,0,2) so the
      question cannot be reopened by a bundle reshuffle. See the note there. */
-  --font-body: 'Geist', sans-serif;
+  --font-body: 'Overpass', sans-serif;
   /* The display face. Two slots only - the wordmark and the card ranks - which
      is what keeps it a register rather than a third body font. Its subset is
      latin, NOT latin-ext, so it must not be put on a translated string. See the
      long note beside the @font-face block in components/app.css. */
-  --font-display: 'Big Shoulders', 'Geist', sans-serif;
+  --font-display: 'Big Shoulders', 'Overpass', sans-serif;
 
   /* The micro-label track.
      Six values - 0.16em, 0.09em, 0.08em, 0.08em, 0.08em and 0.09em - were doing
@@ -400,6 +400,12 @@
   --ctl-sound-rgb: 255, 253, 245;
   --ctl-sound: rgb(var(--ctl-sound-rgb));
   --ctl-sound-ink: var(--ink);
+  /* The recent-rounds panel, opened from Last Win (2026-10-05). Brass - the
+     Equal pick's and the chips' inlay colour - a ledger's colour, distinct from
+     the four panels beside it. */
+  --ctl-history-rgb: 214, 167, 51;
+  --ctl-history: rgb(var(--ctl-history-rgb));
+  --ctl-history-ink: var(--gold-bright);
 
   /* The deal button's own palette: resting blue, the stop red while autoplay
      ends, the slam amber mid-reveal, and the well its ring sits in. Lived on
@@ -414,6 +420,13 @@
   --spin-slam-deep: #221a06;
   --spin-well: #0d0d10;
 
+  /* The MODE sign's window (control-bar.css, the destination blind): the
+     dark glass a bus's route name is lettered on, a shade warmer than the
+     panel so the family colour reads off it. -lit is the hover lift. */
+  --blind-glass-top: #070605;
+  --blind-glass-bottom: #16130e;
+  --blind-glass-lit: #221d15;
+
   /* ==== Stacking ===========================================================
      The page's layers, bottom to top, named so a new overlay is placed by
      what it is rather than by reaching for a bigger number. Every value is the
@@ -426,12 +439,18 @@
   --z-popup: 50;
   --z-bar-caption: 55; /* "Play Again" under the deal button */
   --z-bar-tip: 60; /* the bar's tooltips, over an open panel's edge */
-  --z-error-backdrop: 90;
-  --z-error: 91;
   --z-loader: 998; /* under Stake's own loader (999), over the game */
   --z-intro: 1000; /* the intro, and the replay's round details */
   --z-intro-popup: 1001; /* the round-details dimmer over the intro's table */
-  --z-takeover: 1200; /* the win takeover, over everything */
+  --z-takeover: 1200; /* the win takeover, over the game */
+  /* The error dialog is the TOP layer, over the loader, the intro and the
+     takeover. It sat at 90/91 - under the loader and the intro - so a launch
+     that failed to authenticate (a bad rgs_url, which is a Stake PreCheck)
+     showed the normal intro, and the error only surfaced after Tap to
+     continue. Found on the live site 2026-10-05. An error is the one thing that
+     must never be behind something else. */
+  --z-error-backdrop: 1300;
+  --z-error: 1301;
 
   /* ==== Translucency =====================================================
      Three colours the app paints at many different alphas: white hairlines and
@@ -584,27 +603,49 @@
        Inside   #00bcd4 -> #4cb8cb   oklch(72.9% 0.126 -> 0.101 211)   keyline 8.10:1
        Outside  #d81ce0 -> #c552c9   oklch(63.0% 0.281 -> 0.203 326)   keyline 4.87:1
 
-     THE BACKUP IS KEPT. The fills that shipped until now stay here as the
-     -original tokens. To go back, point the three live tokens below at them:
-     `var(--choice-higher-original)` and so on - three words, nothing else
-     moves - and put the same three values back in betChips.test.ts, which
-     pins the live set and checks the backup is still here. */
+     FELT & BRASS, 2026-10-05, on the owner's call. Two audits (Hallmark and an
+     Impeccable critique) named the squares the least authored thing on the
+     board - app-icon tiles in screen colours on a sampled table - and
+     design.md no longer exempts them as "data". Three candidate sets were
+     shown side by side under normal, deuteranopic and protanopic vision
+     (scripts/.shots/palette-compare.png); the owner picked this one. Each hue
+     comes from the table: felt green, the card's crimson, a deep teal, plum,
+     and brass for Equal. Within each pair the lighter/darker split is kept, so
+     the pairs still separate when hue does not (both colour-blind views).
+
+       Higher   #4fae72   white 2.75:1   keyline 6.85:1
+       Lower    #b3263a   white 6.45:1   keyline 2.92:1
+       Inside   #2f9d9a   white 3.28:1   keyline 5.75:1
+       Outside  #9b4f9a   white 5.28:1   keyline 3.57:1
+       Equal    #d6a733   (dark glyph)   keyline 8.47:1
+
+     Every glyph clears 3:1 through one of its two edges: the keyline carries
+     Higher and Equal, the white carries Lower, and both carry Inside and
+     Outside. Lower's keyline dips under 3:1, which is why the WHITE is the one
+     that has to stay - do not darken that glyph.
+
+     THE BACKUPS ARE KEPT: -soft (2026-09-27) and -original (the shipped stock
+     hues). To go back, point the live tokens below at one of them and put the
+     same values in betChips.test.ts, which pins the live set and checks the
+     backups are still here. */
   --choice-higher-original: #2ecc71;
   --choice-inside-original: #00bcd4;
   --choice-outside-original: #d81ce0;
   --choice-higher-soft: #5dc680;
   --choice-inside-soft: #4cb8cb;
   --choice-outside-soft: #c552c9;
+  --choice-lower-soft: #c0392b;
+  --choice-equal-soft: #f1c40f;
 
   --choice-black: #16181c;
   --choice-red: #c0392b;
-  --choice-higher: var(--choice-higher-soft);
-  --choice-lower: #c0392b;
-  --choice-inside: var(--choice-inside-soft);
-  --choice-outside: var(--choice-outside-soft);
-  --choice-equal-lit: #ffe680;
-  --choice-equal: #f1c40f;
-  --choice-equal-deep: #d29d05;
+  --choice-higher: #4fae72;
+  --choice-lower: #b3263a;
+  --choice-inside: #2f9d9a;
+  --choice-outside: #9b4f9a;
+  --choice-equal-lit: #f2d27a;
+  --choice-equal: #d6a733;
+  --choice-equal-deep: #a87b16;
   --choice-equal-edge: rgba(74, 48, 2, 0.62);
   --suit-red: #e74c3c;
   /* The keyline under every choice icon - see the note above. Near-black

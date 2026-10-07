@@ -16,7 +16,6 @@ export default {
 
 	Winning: 'الربح',
 	'Full game win': 'فوز كامل',
-	Banked: 'محفوظ',
 	Busted: 'خسارة',
 	'Revealing…': 'جارٍ الكشف…',
 
@@ -163,6 +162,56 @@ export default {
 	'Not enough balance for that bet.': 'الرصيد غير كافٍ لهذا الرهان.',
 	'Your session has expired. Please reload the game.':
 		'انتهت صلاحية جلستك. يُرجى إعادة تحميل اللعبة.',
+	'Could not reach the game server. Check your connection, then reload.':
+		'تعذّر الوصول إلى خادم اللعبة. يُرجى التحقق من اتصالك ثم إعادة التحميل.',
+	'Recent rounds':
+		'الجولات الأخيرة',
+	'No rounds yet this session.':
+		'لا توجد جولات في هذه الجلسة بعد.',
+	'Show recent rounds':
+		'عرض الجولات الأخيرة',
+	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
+		'زرا الزائد والناقص يحددان رهانك. انقر على المبلغ لفتح قائمة الرهانات السريعة.',
+	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
+		'تُظهر الصواعق كل وضع قبل اختيارات «متساوٍ». كل اختيار «متساوٍ» يضيف صاعقة.',
+	'Click to continue':
+		'انقر للمتابعة',
+	'Click to skip':
+		'انقر للتخطي',
+	'Click the amount for the quick-bet menu.':
+		'انقر على المبلغ لفتح قائمة الرهانات السريعة.',
+	'These prices assume your forgiveness is unused. After a forgiven miss, the cards that follow are priced as on Classic, a little higher.':
+		'تفترض هذه الأسعار أن السماح لم يُستخدم بعد. بعد خطأ مُتسامَح عنه، تُسعَّر البطاقات التالية كما في الوضع الكلاسيكي، أعلى قليلاً.',
+	'The sign at the end of the bar names your game mode. Press it to choose another; switching asks you to confirm first.':
+		'اللافتة في طرف الشريط تعرض وضع اللعبة الحالي. اضغط عليها لاختيار وضع آخر؛ يطلب التبديل تأكيدك أولاً.',
+	'Kept':
+		'احتُفظ به',
+	'Won':
+		'فوز',
+	'At stake':
+		'على المحك',
+	'Right':
+		'صحيح',
+	'Ace':
+		'آس',
+	'King':
+		'ملك',
+	'Queen':
+		'ملكة',
+	'Jack':
+		'ولد',
+	'Hearts':
+		'قلوب',
+	'Diamonds':
+		'ديناري',
+	'Clubs':
+		'سباتي',
+	'Spades':
+		'بستوني',
+	'%r of %s':
+		'%r %s',
+	'Card %n: %c':
+		'البطاقة %n: %c',
 	'A gambling limit on your account has been reached.': 'تم بلوغ أحد حدود المقامرة في حسابك.',
 	'This game is not available from your location.': 'هذه اللعبة غير متاحة من موقعك.',
 	'The game server had a problem. Please try again shortly.':
@@ -192,7 +241,6 @@ export default {
 	'Tap to continue': 'اضغط للمتابعة',
 	'Round details': 'تفاصيل الجولة',
 	'Play amount': 'مبلغ الرهان',
-	Mode: 'الوضع',
 	'Game mode': 'وضع اللعبة',
 	Guesses: 'التخمينات',
 	Cards: 'الأوراق',
@@ -214,8 +262,6 @@ export default {
 		'السهمان الدائريان يفتحان اللعب التلقائي: الرهان نفسه يُوزَّع مجددًا لعدد محدد من الجولات أو بلا حد. ويعدّ الزر الجولات المتبقية تنازليًا.',
 	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
 		'الزر الدائري الكبير يوزّع. ومفتاح المسافة كذلك: اضغطه لجولة واحدة أو اضغطه باستمرار لمواصلة التوزيع. أثناء اللعب التلقائي يتحول إلى إيقاف، وتُكمَل الجولة الجارية أولًا.',
-	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
-		'زر الوضع يفتح قائمة أوضاع اللعبة. يطلب التبديل تأكيدك قبل تطبيقه.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
 		'لا تحتوي هذه اللعبة على لفات مجانية أو جولات مكافأة أو جوائز كبرى أو ميزات إعادة التفعيل. كل جولة هي توزيع مستقل واحد: أربع أوراق في أوضاع التخمين، وثلاث في ثلاث متشابهة.',
 	'Big Win': 'فوز كبير',

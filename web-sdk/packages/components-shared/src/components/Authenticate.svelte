@@ -143,7 +143,9 @@
 			// approval checks the console for "game information being logged", and
 			// the error modal already shows the player everything they need.
 			console.error('[RideTheBus] request failed:', (error as any)?.message ?? String(error));
-			stateModal.modal = { name: 'error', error };
+			// LOCAL ADDITION: `launch` marks a failure with no session behind it, so
+			// the dialog offers Reload rather than Close (see stateModal's ModalError).
+			stateModal.modal = { name: 'error', error, launch: true };
 		}
 	};
 
@@ -185,7 +187,9 @@
 			// approval checks the console for "game information being logged", and
 			// the error modal already shows the player everything they need.
 			console.error('[RideTheBus] request failed:', (error as any)?.message ?? String(error));
-			stateModal.modal = { name: 'error', error };
+			// LOCAL ADDITION: `launch` marks a failure with no session behind it, so
+			// the dialog offers Reload rather than Close (see stateModal's ModalError).
+			stateModal.modal = { name: 'error', error, launch: true };
 		}
 	};
 

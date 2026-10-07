@@ -871,9 +871,9 @@
 	   body face for the number. That split is the lockup's own rule - the
 	   wordmark is display, the credit line under it is body.
 
-	   STABLE DIGIT WIDTHS COME FROM THE FACE, and that has to stay true. Geist
+	   STABLE DIGIT WIDTHS COME FROM THE FACE, and that has to stay true. Overpass
 	   ships `tnum`, so the tabular-nums declared below holds every digit at
-	   0.648em and the count-up turns its cents over without the figure moving.
+	   0.616em and the count-up turns its cents over without the figure moving.
 	   Under Poppins that declaration was inert (measured: no tnum, "1" at
 	   0.387em against "0" at 0.657em) and this note claimed the opposite; for
 	   one commit the game boxed each digit in a component (Figure.svelte,

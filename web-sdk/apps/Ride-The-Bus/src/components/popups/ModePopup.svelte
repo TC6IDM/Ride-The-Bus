@@ -22,10 +22,11 @@
     FAMILIES_BY_VOLATILITY,
     FAMILY_BOLTS,
     VOLATILITY_BOLTS,
+    equalGuessCount,
     volatilityColorRgbVar,
     volatilityColorVar,
   } from '../../game/math/volatility';
-  import { bet, selectedCeiling, volatilityLabel } from '../../game/bet/betState.svelte';
+  import { bet, guesses, selectedCeiling, volatilityLabel } from '../../game/bet/betState.svelte';
 
   let { onclose }: { onclose: () => void } = $props();
 
@@ -203,6 +204,14 @@
          up, and the live one otherwise - it read the live family only, so a
          player confirming High Stakes from Three of a Kind was told "this mode
          costs 250x" about the mode they were leaving. -->
+    <!-- Why these bolts and the MODE sign's can disagree. Each row is the
+         family on its own; the sign adds one stop per Equal pick on the board
+         (boltsFor). With two Equals, Classic read 3 of 7 here and 5 of 7 on the
+         bar, side by side and unexplained (the critique, 2026-10-05). Said
+         only when it is true - with no Equal picked, the two agree. -->
+    {#if !bet.pending && equalGuessCount(guesses.hl, guesses.io) > 0}
+      <p class="mode-note">{t('Bolts show each mode before your Equal picks. Each Equal pick adds one.')}</p>
+    {/if}
     <p class="mode-note">
       {t('This mode costs %c× your bet. Every mode returns the same %s over many rounds; what changes is how often a round pays and how much it can pay.')
         .replace('%c', String(FAMILY_RULES[bet.pending ?? bet.family].cost))

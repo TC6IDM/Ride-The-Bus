@@ -36,6 +36,7 @@
   import BetPopup from './popups/BetPopup.svelte';
   import ModePopup from './popups/ModePopup.svelte';
   import SoundPopup from './popups/SoundPopup.svelte';
+  import HistoryPopup from './popups/HistoryPopup.svelte';
   import TurboPopup from './popups/TurboPopup.svelte';
   import BoltMeter from './icons/BoltMeter.svelte';
   import WinCelebration from './board/WinCelebration.svelte';
@@ -114,8 +115,8 @@
   } from '../game/round/roundPlace.svelte';
   import { animateRoundFromEvents, waitForLoaderGone } from '../game/round/roundReveal.svelte';
   import { startAuto, stopAuto } from '../game/round/autoplayLoop.svelte';
-  import { replay, restoreReplay, restoreResume } from '../game/round/roundRestore.svelte';
-  import { gameReady, loaderGone } from '../game/platform/ready.svelte';
+  import { rememberPicks, replay, restoreRememberedPicks, restoreReplay, restoreResume } from '../game/round/roundRestore.svelte';
+  import { gameReady, introGone, loaderGone } from '../game/platform/ready.svelte';
   import { jurisdiction } from '../game/jurisdiction/jurisdiction.svelte';
   // Sourced from the shared config rather than retyped, so a displayed RTP can
   // never drift from the one the math is actually built and reweighted to.
@@ -238,7 +239,7 @@
   });
 
   // Bottom control-bar UI: which popup (if any) is open, plus mute state.
-  let openPopup = $state<null | 'bet' | 'mode' | 'turbo' | 'autospin' | 'info' | 'sound'>(null);
+  let openPopup = $state<null | 'bet' | 'mode' | 'turbo' | 'autospin' | 'info' | 'sound' | 'history'>(null);
   /**
    * The simulation ID to print on the round-details panel.
    *
@@ -358,6 +359,14 @@
    * .game-layout and openPopup knows nothing about it.
    */
   const chromeInert = $derived(openPopup !== null || stateModal.modal?.name === 'error');
+  /**
+   * The loader, the intro and the replay's Round details cover the whole screen
+   * (fixed, inset 0), so the board and the bar behind them are inert as well:
+   * Tab went from Continue straight onto the board's Black square, out of sight
+   * under the intro (front v72, 2026-10-06). Kept apart from chromeInert, which
+   * the bar's Space handler also reads - the intro's own guard covers Space.
+   */
+  const behindIntro = $derived(introPhase !== 'playing');
 
   let popupReturnFocus: HTMLElement | null = null;
 
@@ -434,13 +443,17 @@
   //
   // The two $effects that restore an interrupted or replayed round stay here,
   // below: $effect only runs inside a component, and keeping the pair side by
-  // side is what lets modes.test.ts check there are exactly two of them and
-  // that both apply parsed.family.
+  // side is what lets modes.test.ts check there are exactly three of them and
+  // that each applies parsed.family.
 
   // Both restore paths live in game/round/roundRestore.svelte.ts. $effect only runs
   // inside a component, so the two effects stay here and the bodies do not.
   $effect(() => restoreReplay());
   $effect(() => restoreResume());
+  // The player's own last family and picks, from this device - after the two
+  // above, and skipped by them: never in a replay, never over a resumed round.
+  $effect(() => restoreRememberedPicks());
+  $effect(() => rememberPicks());
 
   // --- Intro / start-screen transitions ------------------------------------
   // Called when the player clicks "Tap to Continue" on the start screen, which
@@ -448,6 +461,7 @@
   function onStartContinue() {
     introPhase = 'playing';
     introDismissed = true;
+    introGone.value = true;
   }
 
   // Called when the player clicks "Play" on the replay-info popup.
@@ -456,6 +470,7 @@
   function onReplayPlay() {
     introPhase = 'playing';
     introDismissed = true;
+    introGone.value = true;
     const resume = stateBet.betToResume as any;
     if (!resume?.state) {
       // /bet/replay failed at launch. Authenticate.svelte showed the error
@@ -724,6 +739,7 @@
       forgivenIndex={celebration.active.forgivenIndex}
       ticket={celebration.active.ticket}
       family={celebration.active.family}
+      startMultiplier={celebration.active.startMultiplier}
       autoSkipMs={celebrationAutoSkipMs()}
       ondismiss={dismissCelebration}
     />
@@ -754,12 +770,16 @@
   <!-- Game name over the casino's, stacked. The logo deliberately stays out of
        this plate - it is the hero on the loader and sits on every card back,
        which is enough branding once play has started. -->
-  <div class="game-title" aria-hidden="true">
+  <!-- The page's one heading. It was a div with aria-hidden, so the board had
+       no heading at all and a screen reader never heard the game's name - an
+       Impeccable audit finding (2026-10-05). The spans set their own sizes, so
+       the h1's default font-size changes nothing on screen. -->
+  <h1 class="game-title">
     <span class="game-title-main">Ride The Bus</span>
     <span class="game-title-sub">by Takeover Casino</span>
-  </div>
+  </h1>
 
-  <main class="play-area" inert={chromeInert}>
+  <main class="play-area" inert={chromeInert || behindIntro}>
     <GameBoard />
   </main>
   <ControlBar bind:openPopup bind:betRowEl {introPhase} {chromeInert} />
@@ -790,6 +810,11 @@
        everywhere, so this panel is the one that must always be reachable. -->
   {#if openPopup === 'sound'}
     <SoundPopup onclose={closePopup} />
+  {/if}
+
+  <!-- The session's recent rounds, opened from Last Win. Display only. -->
+  {#if openPopup === 'history'}
+    <HistoryPopup onclose={closePopup} />
   {/if}
 
   {#if openPopup === 'autospin' && !jurisdiction.autoplayDisabled()}

@@ -110,14 +110,13 @@
   transition-delay: calc(var(--flip-dur, 0.5s) * 0.9);
 }
 
-/* A bust card's chip that prints less than the round cost: 0.00x on a bust
-   that kept nothing - Three of a Kind's only kind, and a card-1 miss on every
-   family - or the share a later bust banked, 0.70x on a 1x round. The dim ink,
-   not the win green: the figure is a loss, and the red cross on the card beside
-   it is already saying so. Colour is the one property, so the scrim and shadow
-   that hold the figure against the felt are untouched. */
-.card-mult.is-short {
-  color: var(--ink-dim);
+/* The chip over a MISS - the bust, or a Second Chance's forgiven card - in
+   neutral ink, whatever the share it kept: a green figure over a red cross read
+   as a win for the wrong guess. A bust that kept nothing has no chip at all
+   (GameBoard.svelte, chipShows). Colour is the one property, so the scrim and
+   shadow that hold the figure against the felt are untouched. */
+.card-mult.is-miss {
+  color: var(--ink-body);
 }
 
 /* ---- Hidden while the win takeover counts -------------------------------
@@ -225,8 +224,10 @@
   visibility: visible;
   font-size: max(calc(var(--ui) * 1.15), var(--type-floor));
   font-weight: 600;
-  color: var(--ink-dim);
-  text-shadow: 0 1px 6px rgba(var(--shadow-rgb), 0.7);
+  /* Strong ink: the one instruction on the board measured about 3:1 against
+     the wood in the dim ink (pixel-sampled, the critique 2026-10-05). */
+  color: var(--ink-strong);
+  text-shadow: 0 1px 6px rgba(var(--shadow-rgb), 0.85);
   pointer-events: none;
 }
 
@@ -287,8 +288,13 @@
    net loss, so it takes the loss's ink and its settle below rather than the
    win's green - 40-64% of all four-guess rounds end this way, and they used
    to look and sound exactly like a win (see isNetWin). The label keeps its
-   neutral ink and still says Banked, which is true. */
+   neutral ink and says Kept, which is true. */
 .running-win.is-partial .running-win-amount { color: var(--ink-spent); }
+
+/* In play on a family that keeps nothing on a miss (Three of a Kind): the
+   figure is what rides on the next card, not money won, so it is not in the
+   win green until the round has paid it. */
+.running-win.is-at-stake .running-win-amount { color: var(--ink-strong); }
 
 /* ---- The bust, acknowledged ------------------------------------------------
    Not a celebration and not an apology - one beat so the round has an ending.

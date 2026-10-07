@@ -23,3 +23,16 @@ export const gameReady = $state({ value: false });
  * screen cleared.
  */
 export const loaderGone = $state({ value: false });
+
+/**
+ * The intro has been dismissed (Tap to continue, or a replay's Play), so the
+ * board is what the player is looking at.
+ *
+ * The loader was not the only thing a resumed round could reveal behind. Once
+ * it cleared, the intro came up over the table - and the resumed round turned
+ * its cards and settled underneath it, so a returning player tapped through to
+ * a round that had already finished (found on the live site 2026-10-05). The
+ * tap is also the gesture that lets audio start, so waiting for it means the
+ * resumed reveal plays with its sound as well as in sight.
+ */
+export const introGone = $state({ value: false });

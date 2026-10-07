@@ -107,6 +107,37 @@ export function betDecimals(
 }
 
 /**
+ * What the bet field should read once the player leaves it, or null to leave
+ * it alone (empty, not a number, or not positive).
+ *
+ * Clamped DOWN to the maximum, then snapped onto the step grid (see
+ * clampToMaximum and snapToStep). The one exception is a figure under ONE step:
+ * snapToStep floors it to zero, and a figure snapped out of existence cannot be
+ * described - the spin button said "Enter a valid bet" about a 0.004 the player
+ * had typed. So such a figure is kept EXACTLY as typed, and betBlockedReason
+ * names the minimum instead.
+ *
+ * That exception was in formatBetInput already, and was undone on the very next
+ * line: the kept value went through toFixed(2), which turned 0.004 back into
+ * "0.00". Found on the live site 2026-10-05; this function is the fix, pure so
+ * it can be tested.
+ */
+export function tidyTypedBet(
+  raw: string,
+  limits: BetLimits | null | undefined,
+  amountMultiplier: number,
+  currencyPlaces: number,
+): string | null {
+  const text = raw.trim();
+  const value = Number(text);
+  if (text === '' || Number.isNaN(value) || value <= 0) return null;
+  const clamped = clampToMaximum(value, limits, amountMultiplier);
+  const stepped = snapToStep(clamped, limits, amountMultiplier);
+  if (stepped > 0) return stepped.toFixed(betDecimals(limits, amountMultiplier, currencyPlaces));
+  return text;
+}
+
+/**
  * Bring `value` down to `maxBet`. Never up to `minBet`.
  *
  * THE ASYMMETRY IS THE POINT, and it has been settled twice in opposite

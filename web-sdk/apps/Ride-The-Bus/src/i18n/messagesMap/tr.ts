@@ -15,7 +15,6 @@ export default {
 
 	Winning: 'Kazanç',
 	'Full game win': 'Tam oyun kazancı',
-	Banked: 'Güvence altında',
 	Busted: 'Kaybettiniz',
 	'Revealing…': 'Açılıyor…',
 
@@ -162,6 +161,56 @@ export default {
 	'Not enough balance for that bet.': 'Bu bahis için yeterli bakiye yok.',
 	'Your session has expired. Please reload the game.':
 		'Oturumunuzun süresi doldu. Lütfen oyunu yeniden yükleyin.',
+	'Could not reach the game server. Check your connection, then reload.':
+		'Oyun sunucusuna ulaşılamadı. Lütfen bağlantınızı kontrol edip yeniden yükleyin.',
+	'Recent rounds':
+		'Son turlar',
+	'No rounds yet this session.':
+		'Bu oturumda henüz tur yok.',
+	'Show recent rounds':
+		'Son turları göster',
+	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
+		'Artı ve eksi bahsinizi belirler. Hızlı bahis menüsü için tutara tıklayın.',
+	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
+		'Şimşekler her modu Eşit seçimlerinizden önceki hâliyle gösterir. Her Eşit seçimi bir tane ekler.',
+	'Click to continue':
+		'Devam etmek için tıklayın',
+	'Click to skip':
+		'Atlamak için tıklayın',
+	'Click the amount for the quick-bet menu.':
+		'Hızlı bahis menüsü için tutara tıklayın.',
+	'These prices assume your forgiveness is unused. After a forgiven miss, the cards that follow are priced as on Classic, a little higher.':
+		'Bu fiyatlar affınızın kullanılmadığını varsayar. Affedilen bir hatadan sonra gelen kartlar Klasik’teki gibi, biraz daha yüksek fiyatlanır.',
+	'The sign at the end of the bar names your game mode. Press it to choose another; switching asks you to confirm first.':
+		'Çubuğun ucundaki tabela oyun modunuzu gösterir. Başka birini seçmek için ona basın; değiştirmek önce onay ister.',
+	'Kept':
+		'Korundu',
+	'Won':
+		'Kazandınız',
+	'At stake':
+		'Ortada',
+	'Right':
+		'Doğru',
+	'Ace':
+		'As',
+	'King':
+		'Papaz',
+	'Queen':
+		'Kız',
+	'Jack':
+		'Vale',
+	'Hearts':
+		'Kupa',
+	'Diamonds':
+		'Karo',
+	'Clubs':
+		'Sinek',
+	'Spades':
+		'Maça',
+	'%r of %s':
+		'%s %r',
+	'Card %n: %c':
+		'Kart %n: %c',
 	'A gambling limit on your account has been reached.': 'Hesabınızdaki bir oyun limitine ulaşıldı.',
 	'This game is not available from your location.': 'Bu oyun bulunduğunuz konumda kullanılamıyor.',
 	'The game server had a problem. Please try again shortly.':
@@ -191,7 +240,6 @@ export default {
 	'Tap to continue': 'Devam etmek için dokunun',
 	'Round details': 'Tur ayrıntıları',
 	'Play amount': 'Bahis tutarı',
-	Mode: 'Mod',
 	'Game mode': 'Oyun modu',
 	Guesses: 'Tahminler',
 	Cards: 'Kartlar',
@@ -213,8 +261,6 @@ export default {
 		'Dairesel oklar otomatik oyunu açar: aynı bahis, belirli sayıda tur boyunca veya sınırsız yeniden dağıtılır. Düğme kalan turları geri sayar.',
 	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
 		'Büyük yuvarlak düğme dağıtır. Boşluk tuşu da öyle: bir tur için dokunun, dağıtmaya devam etmek için basılı tutun. Otomatik oyun sırasında Durdur olur ve oynanan tur önce tamamlanır.',
-	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
-		'Mod, oyun modu seçicisini açar. Değiştirmek, uygulanmadan önce onay ister.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
 		'Bu oyunda ücretsiz dönüş, bonus turu, ikramiye veya yeniden tetikleme özelliği yoktur. Her tur tek ve bağımsız bir dağıtımdır: tahmin modlarında dört kart, Üçlü modunda üç kart.',
 	'Big Win': 'Büyük Kazanç',

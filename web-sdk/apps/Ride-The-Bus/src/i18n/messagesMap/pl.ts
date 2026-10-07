@@ -15,7 +15,6 @@ export default {
 
 	Winning: 'Wygrana',
 	'Full game win': 'Pełna wygrana',
-	Banked: 'Zabezpieczone',
 	Busted: 'Przegrana',
 	'Revealing…': 'Odkrywanie…',
 
@@ -161,6 +160,56 @@ export default {
 		'Ten zakład został odrzucony. Zmień kwotę i spróbuj ponownie.',
 	'Not enough balance for that bet.': 'Za mało środków na ten zakład.',
 	'Your session has expired. Please reload the game.': 'Twoja sesja wygasła. Odśwież grę.',
+	'Could not reach the game server. Check your connection, then reload.':
+		'Nie można połączyć się z serwerem gry. Sprawdź połączenie, a potem odśwież.',
+	'Recent rounds':
+		'Ostatnie rundy',
+	'No rounds yet this session.':
+		'W tej sesji nie było jeszcze rund.',
+	'Show recent rounds':
+		'Pokaż ostatnie rundy',
+	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
+		'Plus i minus ustawiają zakład. Kliknij kwotę, by otworzyć menu szybkich zakładów.',
+	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
+		'Pioruny pokazują każdy tryb przed twoimi typami Równo. Każdy typ Równo dodaje jeden.',
+	'Click to continue':
+		'Kliknij, aby kontynuować',
+	'Click to skip':
+		'Kliknij, aby pominąć',
+	'Click the amount for the quick-bet menu.':
+		'Kliknij kwotę, by otworzyć menu szybkich zakładów.',
+	'These prices assume your forgiveness is unused. After a forgiven miss, the cards that follow are priced as on Classic, a little higher.':
+		'Te ceny zakładają, że wybaczenie nie zostało użyte. Po wybaczonym błędzie kolejne karty są wyceniane jak w trybie Klasycznym, nieco wyżej.',
+	'The sign at the end of the bar names your game mode. Press it to choose another; switching asks you to confirm first.':
+		'Tablica na końcu paska pokazuje twój tryb gry. Naciśnij ją, aby wybrać inny; zmiana najpierw wymaga potwierdzenia.',
+	'Kept':
+		'Zachowane',
+	'Won':
+		'Wygrana',
+	'At stake':
+		'W grze',
+	'Right':
+		'Trafione',
+	'Ace':
+		'As',
+	'King':
+		'Król',
+	'Queen':
+		'Dama',
+	'Jack':
+		'Walet',
+	'Hearts':
+		'Kier',
+	'Diamonds':
+		'Karo',
+	'Clubs':
+		'Trefl',
+	'Spades':
+		'Pik',
+	'%r of %s':
+		'%r %s',
+	'Card %n: %c':
+		'Karta %n: %c',
 	'A gambling limit on your account has been reached.': 'Osiągnięto limit gry na Twoim koncie.',
 	'This game is not available from your location.':
 		'Ta gra nie jest dostępna w Twojej lokalizacji.',
@@ -191,7 +240,6 @@ export default {
 	'Tap to continue': 'Dotknij, aby kontynuować',
 	'Round details': 'Szczegóły rundy',
 	'Play amount': 'Kwota zakładu',
-	Mode: 'Tryb',
 	'Game mode': 'Tryb gry',
 	Guesses: 'Typy',
 	Cards: 'Karty',
@@ -213,8 +261,6 @@ export default {
 		'Okrągłe strzałki otwierają autogrę: ten sam zakład, rozdawany ponownie przez ustaloną liczbę rund lub bez limitu. Przycisk odlicza pozostałe rundy.',
 	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
 		'Duży okrągły przycisk rozdaje. Spacja też: naciśnij dla jednej rundy, przytrzymaj, by rozdawać dalej. Podczas autogry staje się przyciskiem Zatrzymaj, a trwająca runda kończy się najpierw.',
-	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
-		'Tryb otwiera wybór trybu gry. Zmiana wymaga potwierdzenia, zanim zacznie obowiązywać.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
 		'Ta gra nie zawiera darmowych spinów, rund bonusowych, jackpotów ani funkcji ponownego wyzwalania. Każda runda to pojedyncze, niezależne rozdanie: cztery karty w trybach z typowaniem, trzy w trybie Trójka.',
 	'Big Win': 'Duża Wygrana',

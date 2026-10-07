@@ -1,8 +1,11 @@
 # Design — Ride The Bus
 
-The locked design system for this app, written by the second Hallmark pass
-(2026-09-12; the type decision amended 2026-09-13). Every later visual change
-reads this first. It is deliberately
+The design system for this app, written by the second Hallmark pass
+(2026-09-12; amended since, most recently 2026-10-06). Every later visual
+change reads this first. It is a LIVING record, not a locked spec (the owner,
+2026-10-05): a better design is proposed against it and, when the owner agrees,
+written into it - an audit finding is never dismissed because this file says
+otherwise. It is deliberately
 short and carries **no values**: the numbers live in `src/styles/tokens.css`,
 the rules in the repo-root `CLAUDE.md`, and the arguments in
 `.claude/skills/rtb-invariants/`. A hex restated here would be a hex that
@@ -36,8 +39,9 @@ parity of contrast against the three panel grounds (the table is in
 ## Colour
 
 - **One accent for anything chosen; a fixed identity colour per control that
-  opens something.** Turbo amber, autoplay green, sound cream, info blue, and
-  MODE in the live family's own colour. These are wayfinding, not decoration
+  opens something.** Turbo amber, autoplay green, sound cream, info blue, the
+  recent-rounds panel brass, and MODE's lettering in the live family's own
+  colour. These are wayfinding, not decoration
   (`--ctl-*`).
 - **Purple is Three of a Kind's**, and the Epic tier's: a dusty amethyst, not
   the saturated screen violet every generated palette reaches for.
@@ -46,13 +50,18 @@ parity of contrast against the three panel grounds (the table is in
   `popup-base.css`. Nothing inside a panel names a colour.
 - **The volatility ruler** (`--vol-*`, seven stops) is the one scale both the
   bet display and the mode picker read; the bet and mode panels tint with it.
-- **Colour that is data is not art-directed**: the choice-row fills, the chip
-  denominations, the card reds and blacks. The fills are the owner's; the
-  LIGHT on them is the table's - the squares take the lit top edge, the shaded
-  bottom and the two-part shadow like every other object on it. Higher, Inside
-  and Outside were softened on 2026-09-27 - same hue and lightness, less
-  chroma - on the owner's call; the fills that shipped before are kept in
-  `tokens.css` as the `-original` tokens, one edit away.
+- **The guess squares are art-directed from the table** ("Felt & brass", the
+  owner's pick from a compare sheet, 2026-10-05): Higher a felt green, Lower the
+  card crimson, Inside a deep teal, Outside a plum, Equal the brass the chips'
+  inlay uses - where they were stock Flat-UI fills. The pairs keep their
+  brightness gaps and their arrow and shape cues, so they hold under simulated
+  deuteranopia and protanopia. Earlier fills are kept in `tokens.css` as the
+  `-soft` and `-original` tokens, one edit away. The chip denominations and the
+  card reds and blacks stay data, not art. The LIGHT on the squares is the
+  table's - lit top edge, shaded bottom, two-part shadow.
+- **A pick is shown by the picked segment alone.** Selecting one never dims the
+  others, and the Equal badge stays on the seam at every size (owner's calls,
+  2026-10-06).
 - Two files are exempt from tokens: `table.css` (sampled measurements) and
   `win-celebration.css`'s tier palette (a closed one-screen set). The deal
   button's `--spin-*` palette was a third until the controls guide drew the same
@@ -66,13 +75,15 @@ parity of contrast against the three panel grounds (the table is in
 - Display: **Big Shoulders** 700/900 — the wordmark, the card ranks, the win
   title. Latin only; never on a translated string without reading
   `game/ui/displayFace.ts`.
-- Body and UI: **Geist**, variable (one file per subset covers every weight),
-  self-hosted in latin, latin-ext, vietnamese and cyrillic. The game sets it
-  at 400/700/800/900. Chosen after measuring three faces with fontTools:
-  Poppins (no tabular figures, a banned default) and Barlow (kin to Big
-  Shoulders, but static, no Cyrillic, no rupee) — the argument is at the top
-  of `components/app.css`. Geist's neutrality is the point: the wordmark and
-  the table carry the character, the type stays out of the way.
+- Body and UI: **Overpass**, variable (one file per subset covers every
+  weight), self-hosted in latin, latin-ext, vietnamese and cyrillic, as FILES in
+  `static/fonts/` declared in `app.html` - the Stake CDN's
+  `font-src 'self' https://fonts.gstatic.com` blocks inlined `data:` fonts. The
+  game sets it at 400/700/800/900. It replaced Geist on 2026-10-05, the owner's
+  pick from a side-by-side compare: Highway Gothic's descendant, so it sits with
+  the bus and the transit-sign wordmark where Geist read as dashboard chrome, and
+  it covers the won and the dong Geist lacked. The argument is at the top of
+  `components/app.css`.
 - Small caps: `--track-label`, uppercase, only on a two-word caption over a
   figure (the bar's BALANCE, BET, LAST WIN). Never on a sentence, never on a
   field's label and never on a section heading - those are sentence case at
@@ -87,9 +98,18 @@ parity of contrast against the three panel grounds (the table is in
   a false 0. A guess's PRICE (How to Play's pay table) is the one exception,
   and keeps two places because it is not floored. A round that paid nothing
   prints no multiplier at all - "$0.00 0.0×" said zero twice.
+- **The result has four words**: "Full game win" (every guess right), "Won"
+  (a Second Chance ride that finished with a miss forgiven), "Kept" (a bust that
+  kept a share - the share is NOT printed as a percentage: after the decay and
+  the floor it does not add up, and it would be a second unit beside the
+  multiplier) and "Busted". A missed card's chip is neutral ink, never win green;
+  a bust that kept nothing has no chip; Three of a Kind's live total reads "At
+  stake" in neutral ink until it is paid. Win colour means the ROUND came out
+  ahead (`isNetWin`).
 - **The result is said as well as shown**: one polite status line per settled
-  round ("Banked, $1.20, 1.2×"), off the same latched readout as the bar, so a
-  screen reader hears it when the card has turned and not before.
+  round ("Kept, Card 4: 2 of Clubs, $1.10, 1.1×"), off the same latched readout
+  as the bar, so a screen reader hears it when the card has turned and not
+  before; the picks report `aria-pressed` and every dealt card is named.
 - **Before the first deal, the readout's empty slot says the one thing to do**
   ("Pick all 4 guesses"), in sentence case at body size, laid over the slot so
   nothing moves - and goes the moment the four are picked.
@@ -97,9 +117,13 @@ parity of contrast against the three panel grounds (the table is in
   Popout L at half size - so at half size the balance was 5.9px. Type now takes
   `max(its own size, --type-floor | --type-floor-figure)`: 6px for a label, 9px
   for money, a win and the one action on screen. The arrangement still halves.
-- **Figures are tabular** — Geist ships `tnum`, so `font-variant-numeric:
+  A portrait PHONE floors at 9 / 11 px - it is the device most players hold and
+  has height to spare - and a desktop caption is never under 10px.
+- **Prompts name the pointer**: "Click to continue" with a mouse, "Tap to
+  continue" on touch (`pointerWords.ts`).
+- **Figures are tabular** — Overpass ships `tnum`, so `font-variant-numeric:
   tabular-nums` is live and a figure keeps its width as its digits change.
-  `typeFit.labelEms()` is measured against Geist 800 (every digit 0.65 em);
+  `typeFit.labelEms()` is measured against Overpass 800 (every digit 0.62 em);
   its test table is the record. If the face ever changes, that table, the
   `unicode-range` transcription in `displayFace.ts` and the two fitting
   contracts are what must be re-measured — not guessed.
@@ -149,7 +173,25 @@ One voice, everywhere: the `.action-button` recipe — a shallow two-stop fill
 in the panel's tint, the lit top edge, the table's contact shadow, dark ink on
 a light fill, weight 800, sentence case. The mode confirmation, autoplay's
 Start, the error dialog's Reload, the replay's Play and the intro's Tap to
-continue are all this. The way out (Cancel) is a hairline outline, quiet.
+continue are all this. The way out (Cancel) is a hairline outline, quiet -
+and the error dialog's Close beside Reload, on a failure it cannot name, is
+that same hairline.
+
+**The deal button is the stated exception**: the blue disc with its two-card
+mark, no caption, its states (Skip amber, Stop red) changing the fill. An armed
+gold state and a "Deal" caption were tried on 2026-10-06 and taken out the same
+day on the owner's call - "the deal button was fine as is".
+
+## MODE, the destination sign
+
+MODE names the round's FAMILY the way a bus's blind names its route: the
+family's name, lettered in its colour (Big Shoulders where the string is Latin,
+`titleFaceFor` otherwise, and no capitals in the fallback faces), on a recessed
+dark sign in the bar's own material, with the seven volatility bolts under it.
+Lettered, not lit: no coloured outline and no bloom. Hover lifts the well's
+light, an open picker washes it in the family colour, a press pushes the bezel
+in. The width is fixed and the name is fitted into it; a family change rolls
+the name.
 
 ## Motion
 
@@ -203,13 +245,11 @@ width, where prose needs the measure.
 
 ## Known deviations, recorded
 
-- Geist is the 2025 scaffold default, and on a warm table a neutral grotesque
-  can read as dashboard chrome. Accepted with eyes open: it was chosen for
-  coverage (Vietnamese, Cyrillic, the rupee, the peso, the sheqel) and for
-  tabular figures, and the rest of the system — the sampled table, the
-  drawn glyphs, the material, the wordmark — is what carries the character.
-- Neither face ships the won (U+20A9) or the dong (U+20AB); KRW and VND
-  print those from the OS font beside Geist digits, as they did under Poppins.
+- Big Shoulders is Latin only, so a Cyrillic, Vietnamese or Turkish family
+  name on the MODE sign and a translated win title set in Overpass instead; the
+  longest single words (Finnish "mahdollisuus", Portuguese "Oportunidade") fit
+  the sign at about 4.3px on Popout S and 6.4px on a 320px phone - fitted, never
+  clipped. Russian's Classic is "Классика" so it fits at all.
 - Arabic, Hindi, Japanese, Korean and Chinese fall back to the OS sans-serif
   wholesale; neither face has a cut for those scripts and the inlined bundle
   will not take one.

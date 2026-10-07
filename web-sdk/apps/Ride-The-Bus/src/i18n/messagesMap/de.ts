@@ -15,7 +15,6 @@ export default {
 
 	Winning: 'Gewinn',
 	'Full game win': 'Komplettgewinn',
-	Banked: 'Gesichert',
 	Busted: 'Verloren',
 	'Revealing…': 'Wird aufgedeckt…',
 
@@ -162,6 +161,56 @@ export default {
 	'Not enough balance for that bet.': 'Nicht genügend Guthaben für diesen Einsatz.',
 	'Your session has expired. Please reload the game.':
 		'Deine Sitzung ist abgelaufen. Bitte lade das Spiel neu.',
+	'Could not reach the game server. Check your connection, then reload.':
+		'Der Spielserver ist nicht erreichbar. Prüfe deine Verbindung und lade dann neu.',
+	'Recent rounds':
+		'Letzte Runden',
+	'No rounds yet this session.':
+		'In dieser Sitzung noch keine Runden.',
+	'Show recent rounds':
+		'Letzte Runden anzeigen',
+	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
+		'Plus und Minus legen deinen Einsatz fest. Klicke auf den Betrag für das Schnelleinsatz-Menü.',
+	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
+		'Die Blitze zeigen jeden Modus vor deinen Gleich-Tipps. Jeder Gleich-Tipp fügt einen hinzu.',
+	'Click to continue':
+		'Zum Fortfahren klicken',
+	'Click to skip':
+		'Zum Überspringen klicken',
+	'Click the amount for the quick-bet menu.':
+		'Klicke auf den Betrag für das Schnelleinsatz-Menü.',
+	'These prices assume your forgiveness is unused. After a forgiven miss, the cards that follow are priced as on Classic, a little higher.':
+		'Diese Preise gelten, solange dein Verzeihen ungenutzt ist. Nach einem verziehenen Fehler werden die folgenden Karten wie bei Klassisch bepreist, etwas höher.',
+	'The sign at the end of the bar names your game mode. Press it to choose another; switching asks you to confirm first.':
+		'Das Schild am Ende der Leiste zeigt deinen Spielmodus. Drück es, um einen anderen zu wählen; ein Wechsel muss erst bestätigt werden.',
+	'Kept':
+		'Behalten',
+	'Won':
+		'Gewonnen',
+	'At stake':
+		'Im Einsatz',
+	'Right':
+		'Richtig',
+	'Ace':
+		'Ass',
+	'King':
+		'König',
+	'Queen':
+		'Dame',
+	'Jack':
+		'Bube',
+	'Hearts':
+		'Herz',
+	'Diamonds':
+		'Karo',
+	'Clubs':
+		'Kreuz',
+	'Spades':
+		'Pik',
+	'%r of %s':
+		'%s %r',
+	'Card %n: %c':
+		'Karte %n: %c',
 	'A gambling limit on your account has been reached.':
 		'Ein Spiellimit deines Kontos wurde erreicht.',
 	'This game is not available from your location.':
@@ -193,7 +242,6 @@ export default {
 	'Tap to continue': 'Zum Fortfahren tippen',
 	'Round details': 'Rundendetails',
 	'Play amount': 'Einsatz',
-	Mode: 'Modus',
 	'Game mode': 'Spielmodus',
 	Guesses: 'Tipps',
 	Cards: 'Karten',
@@ -215,8 +263,6 @@ export default {
 		'Die Kreispfeile öffnen Autoplay: derselbe Einsatz, erneut ausgeteilt für eine festgelegte Anzahl Runden oder unbegrenzt. Die Schaltfläche zählt die verbleibenden Runden herunter.',
 	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
 		'Die große runde Schaltfläche teilt aus. Die Leertaste ebenso: kurz drücken für eine Runde, gedrückt halten, um weiter auszuteilen. Während Autoplay wird sie zu Stopp, und die laufende Runde wird zuerst beendet.',
-	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
-		'Modus öffnet die Spielmodus-Auswahl. Ein Wechsel muss bestätigt werden, bevor er gilt.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
 		'Dieses Spiel hat keine Freispiele, Bonusrunden, Jackpots oder Wiederauslöse-Funktionen. Jede Runde ist eine einzelne, unabhängige Ausgabe: vier Karten in den Tippmodi, drei bei Drilling.',
 	'Big Win': 'Großer Gewinn',

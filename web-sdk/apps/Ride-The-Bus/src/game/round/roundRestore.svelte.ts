@@ -1,18 +1,21 @@
 /**
  * Put a round that already exists back on the board.
  *
- * Two paths in, and neither places a bet:
+ * Three paths in, and none places a bet:
  *
- *   restoreReplay()  ?replay=true - Stake's Fairness view. Authenticate has
- *                    already fetched the settled round via /bet/replay.
- *   restoreResume()  a round the RGS still has OPEN on this session, handed
- *                    over by /wallet/authenticate.
+ *   restoreReplay()          ?replay=true - Stake's Fairness view. Authenticate
+ *                            has already fetched the settled round via /bet/replay.
+ *   restoreResume()          a round the RGS still has OPEN on this session,
+ *                            handed over by /wallet/authenticate.
+ *   restoreRememberedPicks() the player's own last family and picks, from this
+ *                            device (game/bet/rememberedPicks.ts) - never in a
+ *                            replay, and never over a round being resumed.
  *
- * BOTH MUST APPLY parsed.family, not just the four guesses. That has shipped
- * broken twice - a High Stakes replay restored as Classic shows the wrong
- * retention rule and the wrong win ladder over a payout the RGS already
- * decided - and modes.test.ts asserts there are EXACTLY TWO restore blocks and
- * that both apply it. Keeping the pair in one file is what makes that countable.
+ * ALL THREE MUST APPLY parsed.family, not just the four guesses. That has
+ * shipped broken twice - a High Stakes replay restored as Classic shows the
+ * wrong retention rule and the wrong win ladder over a payout the RGS already
+ * decided - and modes.test.ts asserts there are EXACTLY THREE restore blocks and
+ * that each applies it. Keeping them in one file is what makes that countable.
  *
  * Called from $effect in Game.svelte rather than being effects themselves,
  * because $effect only runs inside a component. The guards below are what stop
@@ -20,10 +23,11 @@
  */
 import { stateBet, stateUrlDerived } from 'state-shared';
 
-import { FAMILY_RULES, FREE_CHOICE, parseModeName } from '../math/modes';
+import { FAMILY_RULES, FREE_CHOICE, modeChoices, modeName, parseModeName } from '../math/modes';
 import { bet, guesses } from '../bet/betState.svelte';
+import { readRememberedPicks, writeRememberedPicks } from '../bet/rememberedPicks';
 import { engineRound, round } from './roundState.svelte';
-import { animateRoundFromEvents, waitForLoaderGone } from './roundReveal.svelte';
+import { animateRoundFromEvents, waitForIntroGone, waitForLoaderGone } from './roundReveal.svelte';
 
 /**
  * Put a parsed mode's four guesses back on the board - unless the family has
@@ -211,8 +215,10 @@ export function restoreResume() {
     bet.defaulted = true;
   }
   round.hasPlayed = true;
-  // Same hold as replay: a resumed round must not reveal behind the loader.
+  // Same hold as replay: a resumed round must not reveal behind the loader -
+  // nor behind the intro that comes up after it. It waits for Tap to continue.
   waitForLoaderGone()
+    .then(waitForIntroGone)
     .then(() =>
       animateRoundFromEvents(
         resume.state,
@@ -230,4 +236,58 @@ export function restoreResume() {
     .finally(() => {
       round.resumeInProgress = false;
     });
+}
+
+// --- The player's own last picks, from this device -------------------------
+
+let rememberedRestored = false;
+
+/** localStorage, or null where it is unavailable or throws on access. */
+function picksStorage(): Storage | null {
+  try {
+    return typeof localStorage === 'undefined' ? null : localStorage;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Put the family and picks the player left with back on the board, once.
+ *
+ * Never in a replay - the round's own picks are what it shows - and never over
+ * a round the RGS is resuming: that round's picks are the truth, and its
+ * restore (above) applies them. The bet amount is not remembered; it comes from
+ * authenticate. A slug that no longer names a published mode was already
+ * dropped by readRememberedPicks, leaving the family alone.
+ */
+export function restoreRememberedPicks() {
+  if (rememberedRestored) return;
+  rememberedRestored = true;
+  if (stateUrlDerived.replay()) return;
+  if ((stateBet.betToResume as any)?.active) return;
+  const saved = readRememberedPicks(picksStorage());
+  if (!saved) return;
+  if (!saved.mode) {
+    bet.family = saved.family;
+    return;
+  }
+  const parsed = parseModeName(saved.mode);
+  if (parsed) {
+    bet.family = parsed.family;
+    restoreGuesses(parsed);
+  }
+}
+
+/**
+ * Remember the family and, once all four are picked, the mode - as they change.
+ * Runs as an $effect in Game.svelte; it reads its dependencies before anything
+ * can return early, so it re-runs on every pick. Not in a replay, and not
+ * before the restore above has had its turn (it would overwrite what it is
+ * about to read).
+ */
+export function rememberPicks() {
+  const family = bet.family;
+  const choices = modeChoices(family, guesses);
+  if (!rememberedRestored || stateUrlDerived.replay()) return;
+  writeRememberedPicks(picksStorage(), family, choices ? modeName(choices, family) : null);
 }

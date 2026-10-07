@@ -191,7 +191,9 @@
    one screen" bug this project keeps hitting. */
 .mode-panel-picked {
 	margin: calc(var(--ui-bar) * 0.2) 0 0;
-	font-size: calc(var(--ui-bar) * 1.02);
+	/* Body size: it is a sentence the player reads, not a caption - at 1.02 it
+	   printed 11.2px on a desktop (the detector's tiny-text, 2026-10-05). */
+	font-size: calc(var(--ui-bar) * 1.24);
 	color: var(--ink-dim);
 	font-variant-numeric: tabular-nums;
 }
@@ -202,7 +204,10 @@
    from .info-h is colour and size, not a switch into spaced capitals. */
 .info-sub {
 	margin: calc(var(--ui-bar) * 1.1) 0 calc(var(--ui-bar) * 0.27);
-	font-size: calc(var(--ui-bar) * 1.16);
+	/* AT body size, as the note above says - it was 1.16 against the body's 1.24,
+	   a heading 6% smaller than the text under it (Impeccable's detector,
+	   flat-type-hierarchy, 2026-10-05). Weight and ink carry the step. */
+	font-size: calc(var(--ui-bar) * 1.24);
 	font-weight: 700;
 	color: var(--ink-strong);
 }

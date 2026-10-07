@@ -3,6 +3,11 @@ type ModalEmpty = null;
 type ModalError = {
 	name: 'error';
 	error: any;
+	// LOCAL ADDITION to the Stake SDK - re-apply if this package is updated from
+	// upstream. True when the failure happened while LAUNCHING (authenticate, or
+	// fetching a replay), so no playable session exists and the only way back is a
+	// reload. The game's ErrorModal offers Reload instead of Close for these.
+	launch?: boolean;
 };
 
 type ModalBetMenu = {

@@ -14,6 +14,7 @@ import {
   snapBetToGrid,
   snapToStep,
   type BetLimits,
+  tidyTypedBet,
 } from '../betLimits.ts';
 
 /** Micro-units, as the RGS sends them: 1_000_000 === 1.00 */
@@ -363,5 +364,45 @@ describe('the bet menu only offers levels the operator will accept', () => {
     const rack = [1, 5, 25, 50, 75, 100, 200, 500, 800, 1000];
     const none: BetLimits = { minBet: 0, maxBet: 0, stepBet: 0 };
     assert.deepEqual(rack.filter((v) => betWithinRange(v, none, M)), rack);
+  });
+});
+
+describe('tidyTypedBet: what the bet field reads after the player leaves it', () => {
+  // The live session's own limits (USD, 2026-10-05): $0.01 minimum and step, $1,000 maximum.
+  const LIVE = { minBet: 10_000, maxBet: 1_000_000_000, stepBet: 10_000 };
+  const M = 1_000_000;
+
+  test('a figure on the grid is formatted to the currency precision', () => {
+    assert.equal(tidyTypedBet('2.5', LIVE, M, 2), '2.50');
+    assert.equal(tidyTypedBet(' 1 ', LIVE, M, 2), '1.00');
+  });
+
+  test('an off-grid figure snaps down onto the step', () => {
+    assert.equal(tidyTypedBet('1.234', LIVE, M, 2), '1.23');
+  });
+
+  test('a figure over the maximum clamps DOWN to it', () => {
+    assert.equal(tidyTypedBet('5000', LIVE, M, 2), '1000.00');
+  });
+
+  test('a figure under one step is kept exactly as typed, never zeroed', () => {
+    // Live, 0.004 used to come back as "0.00" - the guard kept the value and
+    // then toFixed(2) threw it away - and the button said "Enter a valid bet".
+    assert.equal(tidyTypedBet('0.004', LIVE, M, 2), '0.004');
+    assert.equal(tidyTypedBet('0.0099', LIVE, M, 2), '0.0099');
+  });
+
+  test('a trailing space (Space typed into the field) is trimmed', () => {
+    assert.equal(tidyTypedBet('0.01 ', LIVE, M, 2), '0.01');
+  });
+
+  test('nothing to tidy: empty, not a number, zero or negative', () => {
+    for (const raw of ['', '   ', 'abc', '0', '-1']) assert.equal(tidyTypedBet(raw, LIVE, M, 2), null, raw);
+  });
+
+  test('a zero-decimal currency keeps no decimals', () => {
+    const YEN = { minBet: 1_000_000, maxBet: 100_000_000_000, stepBet: 1_000_000 };
+    assert.equal(tidyTypedBet('25', YEN, M, 0), '25');
+    assert.equal(tidyTypedBet('0.5', YEN, M, 0), '0.5');
   });
 });

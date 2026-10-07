@@ -15,7 +15,6 @@ export default {
 
 	Winning: 'Выигрыш',
 	'Full game win': 'Полная победа',
-	Banked: 'Сохранено',
 	Busted: 'Проигрыш',
 	'Revealing…': 'Открываем…',
 
@@ -50,7 +49,7 @@ export default {
 	Autoplay: 'Автоигра',
 
 	'Choose game mode': 'Выбрать режим игры',
-	Classic: 'Классический',
+	Classic: 'Классика',
 	'Second Chance': 'Второй шанс',
 	'High Stakes': 'Высокие ставки',
 	'This mode costs %c× your bet. Every mode returns the same %s over many rounds; what changes is how often a round pays and how much it can pay.':
@@ -161,6 +160,56 @@ export default {
 		'Ставка отклонена. Измените сумму и попробуйте ещё раз.',
 	'Not enough balance for that bet.': 'Недостаточно средств для этой ставки.',
 	'Your session has expired. Please reload the game.': 'Сессия истекла. Перезагрузите игру.',
+	'Could not reach the game server. Check your connection, then reload.':
+		'Не удалось связаться с игровым сервером. Проверьте подключение и перезагрузите.',
+	'Recent rounds':
+		'Последние раунды',
+	'No rounds yet this session.':
+		'В этой сессии ещё не было раундов.',
+	'Show recent rounds':
+		'Показать последние раунды',
+	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
+		'Плюс и минус задают ставку. Щёлкните по сумме, чтобы открыть меню быстрых ставок.',
+	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
+		'Молнии показывают каждый режим до ваших выборов «Равно». Каждый выбор «Равно» добавляет одну.',
+	'Click to continue':
+		'Щёлкните, чтобы продолжить',
+	'Click to skip':
+		'Щёлкните, чтобы пропустить',
+	'Click the amount for the quick-bet menu.':
+		'Щёлкните по сумме, чтобы открыть меню быстрых ставок.',
+	'These prices assume your forgiveness is unused. After a forgiven miss, the cards that follow are priced as on Classic, a little higher.':
+		'Эти цены действуют, пока прощение не использовано. После прощённой ошибки следующие карты оцениваются как в режиме «Классика», чуть выше.',
+	'The sign at the end of the bar names your game mode. Press it to choose another; switching asks you to confirm first.':
+		'Табличка в конце панели показывает ваш режим игры. Нажмите её, чтобы выбрать другой; смена сначала требует подтверждения.',
+	'Kept':
+		'Сохранено',
+	'Won':
+		'Выигрыш',
+	'At stake':
+		'На кону',
+	'Right':
+		'Верно',
+	'Ace':
+		'Туз',
+	'King':
+		'Король',
+	'Queen':
+		'Дама',
+	'Jack':
+		'Валет',
+	'Hearts':
+		'червей',
+	'Diamonds':
+		'бубен',
+	'Clubs':
+		'треф',
+	'Spades':
+		'пик',
+	'%r of %s':
+		'%r %s',
+	'Card %n: %c':
+		'Карта %n: %c',
 	'A gambling limit on your account has been reached.': 'Достигнут игровой лимит вашего аккаунта.',
 	'This game is not available from your location.': 'Эта игра недоступна в вашем регионе.',
 	'The game server had a problem. Please try again shortly.':
@@ -190,7 +239,6 @@ export default {
 	'Tap to continue': 'Нажмите, чтобы продолжить',
 	'Round details': 'Детали раунда',
 	'Play amount': 'Сумма ставки',
-	Mode: 'Режим',
 	'Game mode': 'Режим игры',
 	Guesses: 'Прогнозы',
 	Cards: 'Карты',
@@ -212,8 +260,6 @@ export default {
 		'Круговые стрелки открывают автоигру: та же ставка сдаётся снова заданное число раундов или без ограничения. Кнопка отсчитывает оставшиеся раунды.',
 	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
 		'Большая круглая кнопка сдаёт карты. Пробел делает то же самое: нажмите для одного раунда, удерживайте, чтобы сдавать дальше. Во время автоигры она становится «Стоп», а текущий раунд сначала доигрывается.',
-	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
-		'Режим открывает выбор режима игры. Смена требует подтверждения, прежде чем вступит в силу.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
 		'В этой игре нет бесплатных вращений, бонусных раундов, джекпотов и функций повторного запуска. Каждый раунд — одна независимая раздача: четыре карты в режимах с прогнозами, три в режиме «Тройка».',
 	'Big Win': 'Крупный выигрыш',
@@ -307,9 +353,9 @@ export default {
 	'Drawn only when all four are right, from a stack of 20. It multiplies your running total.':
 		'Вытягивается только при четырёх верных прогнозах, из стопки в 20 билетов. Умножает вашу текущую сумму.',
 	'Cards 1 to 3 are priced exactly as on Classic. A right suit draws the ticket in place of a price.':
-		'Карты 1–3 оценены точно так же, как в Классическом режиме. Угаданная масть вытягивает билет вместо цены.',
+		'Карты 1–3 оценены точно так же, как в режиме «Классика». Угаданная масть вытягивает билет вместо цены.',
 	'On Classic the same cards end at %s.':
-		'В Классическом режиме те же карты дают %s.',
+		'В режиме «Классика» те же карты дают %s.',
 	'A full game win pays more the harder your picks were, and the ticket multiplies it. Two Equal picks and a ×10 ticket reach this mode’s maximum: %m your bet.':
 		'Полная победа платит тем больше, чем сложнее были ваши выборы, и билет её умножает. Два «Равно» и билет ×10 дают максимум этого режима: %m вашей ставки.',
 	'Roll the die for random guesses':

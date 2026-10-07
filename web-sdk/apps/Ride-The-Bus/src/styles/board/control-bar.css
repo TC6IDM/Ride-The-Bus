@@ -94,7 +94,7 @@
 }
 
 /* The free-floating disc at the outer edge (Turbo). MODE is the other edge,
-   and a pill rather than a disc - see .cb-mode-slot. */
+   and a sign rather than a disc - see .cb-mode-slot. */
 .cb-float {
   width: calc(var(--ui-bar) * 4.18) /* 46px */;
   height: calc(var(--ui-bar) * 4.18);
@@ -152,8 +152,8 @@
    renders them too, so they cannot live in the bar's own sheet. */
 
 /* Reserved widths were measured from the widest value each field can ever show
-   at 800 16.8px in Poppins, the body face at the time - Geist's tabular digits
-   (0.648em) sit inside Poppins' 0.606-0.691 range, so every reservation below
+   at 800 16.8px in Poppins, the body face at the time - Overpass's tabular digits
+   (0.616em; Geist's were 0.648) sit inside Poppins' 0.606-0.691 range, so every reservation below
    still holds and none needed re-measuring - IN DOLLARS: balance up to
    $99,999,999.00 =
    140px; last win up to maxBet x the 5000x wincap ($5,000,000.00 = 129px) plus
@@ -213,6 +213,47 @@
 
 .cb-lastwin.won .cb-val { color: var(--win); }
 
+/* Last Win as a BUTTON (outside replay): it opens the session's recent rounds.
+   It looks exactly like the readout it was - same box, same type - plus one
+   small stroked glyph beside the caption that says "a list opens here", in the
+   controls' line voice (MarkIcon: round caps, ~2.2 on a 24 grid). */
+.cb-lastwin-btn {
+  appearance: none;
+  background: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border-radius: calc(var(--ui-bar) * 0.5);
+}
+
+.cb-lastwin-glyph {
+  display: inline-block;
+  width: 1.15em;
+  height: 1.15em;
+  margin-inline-start: 0.35em;
+  vertical-align: -0.22em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  opacity: 0.8;
+}
+
+@media (any-hover: hover) {
+  .cb-lastwin-btn:hover .cb-cap { color: var(--ink-body); }
+  .cb-lastwin-btn:hover .cb-lastwin-glyph { opacity: 1; }
+}
+
+/* Open: the caption takes the panel's brass, the way every other control that
+   opens a panel wears that panel's colour while it is open. */
+.cb-lastwin-btn.active .cb-cap { color: var(--ctl-history-ink); }
+
+/* Pressed: in, not brighter - the language every control on the bar speaks. */
+.cb-lastwin-btn:active { transform: translateY(1px); }
+
 .cb-lastwin-mult { font-size: max(calc(var(--ui-bar) * 1.05), var(--type-floor)) /* 11.5px */; font-weight: 800; color: var(--gold-bright); margin-inline-start: calc(var(--ui-bar) * 0.27); }
 
 /* position: relative so .cb-bet-tip below has a positioning context - .cb-panel
@@ -235,8 +276,8 @@
 
      The .cb-val inside is already fitted (use:fitValue), so capping this makes
      the figure shrink instead of shoving the bar. */
-  min-width: calc(var(--ui-bar) * 13.82); /* 152px */
-  max-width: calc(var(--ui-bar) * 13.82);
+  min-width: calc(var(--ui-bar) * 11.6); /* 128px - see WIDTH BUDGET on the MODE sign */
+  max-width: calc(var(--ui-bar) * 11.6);
   padding: calc(var(--ui-bar) * 0.36) calc(var(--ui-bar) * 0.73);
   border-radius: calc(var(--ui-bar) * 0.82);
   border: 1px solid transparent;
@@ -737,7 +778,10 @@
    clear enough view of this component to say so. */
 .cb-bet-base {
   display: block;
-  font-size: calc(var(--ui-bar) * 0.86);
+  /* Floored like every other line of the bar. It was the one left bare, and
+     Three of a Kind's "$1.00 × 250" printed at 3.3px on Popout S and 5.6px on
+     a 320px phone (front v72, 2026-10-06). */
+  font-size: max(calc(var(--ui-bar) * 0.86), var(--type-floor));
   /* 700: the label weight every readout uses. (This was 600, which the body
      face of the time did not ship and which resolved to 700; the body face is
      variable now, and 700 is the intent rather than the fallback.) */
@@ -747,68 +791,38 @@
   white-space: nowrap;
 }
 
-/* ==== The MODE button =======================================================
- * The one control in the bar that changes what a round IS rather than how it
- * looks, and it now says WHICH one: it wears the selected family's own
- * volatility colour - green on Second Chance, yellow on Classic, red on High
- * Stakes, purple on Three of a Kind - the same four the picker's rows, the
- * bolts and the bet display are already burning. --vol-color / --vol-rgb are
- * the FAMILY's rating, published on the whole .control-bar (see Game.svelte).
- * Deliberately not the live one: the Equal picks that push a four-guess rating
- * up the ruler are a property of the bet, not of the mode. Purple here means
- * one thing only - the fourth family is in play.
+/* ==== The MODE button: a destination blind ==================================
+ * The one control in the bar that changes what a round IS, and it now SHOWS
+ * which one: the live family's name, lettered in the family's colour on a
+ * recessed sign, the way the blind on the front of a bus names its route. It
+ * was a pill that said "MODE" while the family's name printed in the bet
+ * display across the bar - a control naming its category instead of its value,
+ * with the family split between two places (Hallmark's MODE audit, 2026-10-05:
+ * two majors, three minors; the owner called the old one "too basic"). One
+ * place now: the sign carries the name and the bolts, the bet display money.
  *
- * That replaces a gold identity, and the trade is worth naming. Gold said
- * "this is the mode control" and nothing else; the bar has five controls that
- * open something and gold was the fifth hue among them. Colour here now
- * carries STATE instead of identity, and the shape carries the identity - see
- * the pill below, which no other control in the bar has.
+ * LETTERED, NOT LIT. The colour is in the letters. The sign is the bar's own
+ * material - a bezel of --panel-float with the bar's lit top edge and an ink
+ * hairline like every other control - and inside it a dark well, shaded at its
+ * top lip and lit at its bottom one, because the room's light comes from above
+ * and a recess is lit on its far side. No coloured outline: a full-strength
+ * family-colour hairline all the way round was the ghost-button tell, the one
+ * control drawn rather than lit. No bloom (design.md, "Lit, not haloed").
  *
- * Three defects this fixes, and they compounded:
+ * --mode-ink / --mode-rgb are the FAMILY's colour, published on the whole
+ * .control-bar (Game.svelte); the bolts burn --vol-color, the LIVE rating for
+ * the picks (liveBolts) - the picker's ruler, seven stops.
  *
- * 1. IT WAS NOT ACTUALLY GOLD WHEN IT MATTERED. `.cb-icon:hover` and
- *    `.cb-icon.active` are (0,2,0) and set border-color, background AND color
- *    to the accent; the old rules declared only `box-shadow`, so the moment a
- *    player pointed at the button - or opened its menu - it turned blue like
- *    the two beside it. Every state below restates border/background/colour so
- *    the accent can never reach it.
+ * WIDTH BUDGET. Fixed, never sized to its word: a sign as wide as whichever
+ * family it named would move the bar every time the family changed. It is paid
+ * for by the bet display, which no longer carries the family line: that
+ * reservation came down 13.82 -> 11.6 units and this went 6.2 -> 8.42, so the
+ * one-row bar is the width it was (Popout S included). The name is fitted INTO
+ * the sign - two lines, then smaller (fitBlock) - never the sign to the name.
  *
- * 2. IT WAS A WORD IN A GLYPH'S BOX. 36x36 is drawn for the 20px marks its
- *    neighbours carry. "MODE" at 900 measured about 30 of the 34px interior,
- *    leaving 2px a side - and that is ENGLISH. `Mode` is translated: Russian
- *    ships "Режим" and Vietnamese "Chế độ", both of which overflow a 36px box
- *    outright. It is a pill now: `width: auto` with real inline padding, a
- *    36px floor so the touch target never drops below the phone rule further
- *    down, and a 7-unit ceiling so no future string can push the bar apart.
- *
- * 3. IT READ AS THE THIRD OF THREE ICONS. The pill shape is most of the fix -
- *    a 50x36 among two 36x36 is a break in the rhythm, and shape is found
- *    faster than hue at this size.
- *
- * SHADED, NOT PLATED. What was too much here was a two-stop RADIAL with a
- * separate highlight gradient laid over it - a hotspot, which is a plate, and
- * at 36px it read as noise rather than as a material. What is right is a
- * single shallow fall-off down the button: the same light every inset edge in
- * this file is drawn by, so the lit top edge now terminates a gradient instead
- * of sitting on a flat wash. The two stops average 0.16 against the 0.14 the
- * flat wash was, so the button's overall weight is unchanged and only its
- * modelling differs - which is the test for whether shading is slight enough.
- * A hotspot, a second hue or a stop below the bottom edge would all be back to
- * a plate.
- *
- * WIDTH BUDGET. The bar is width-solved: --ui-bar is (100vw - 30px)/96 so the
- * whole row fits Popout S's 400px on ONE line, and anything that widens a
- * control spends from that. This costs ~1.7 units of ~97, which the row has -
- * `* { box-sizing: border-box }` means only the three panels' own borders sit
- * outside their declared widths, about 6px rather than the ~26px the divisor
- * was solved against. If a later change makes the row wrap at 400px, this is
- * one of the places to look, and the divisor is the number to move.
- */
-/* ---- MODE's slot, at the bar's outer edge ----------------------------------
- * Where the sliders button was (ControlBar.svelte has why). The slot is the
- * positioning context for .cb-mode-tip, for the reason the tip's own note
- * gives, and it is what the phone rows and Popout S lay out - one flex item at
- * the end of the row, exactly as the disc it replaced was.
+ * 5 units tall, between Turbo's 4.18 disc and the panels beside it, so the bar
+ * is no taller: at 4.18 a two-word name fitted to 4.4px on Popout S and shrank
+ * on Desktop too. Measured in every language and family, 2026-10-06.
  */
 .cb-mode-slot {
   position: relative;
@@ -816,172 +830,138 @@
   display: flex;
 }
 
-/* A peer of the Turbo disc at the other edge: the disc's height and material,
-   in the family colour - but a ROUNDED RECTANGLE, wider than tall (owner's
-   call, 2026-09-26): a word sits in it, and a pill that shrank to a circle on a
-   phone read as a second disc beside Turbo's. Corners in the same family as the
-   bar's panels and the bet steppers. The gradient is translucent (it was drawn
-   to sit on the light pill), so the float's own fill goes under it and it reads
-   as a solid control over the table rather than a tinted hole. */
 .cb-mode-slot .cb-mode-btn {
-  height: calc(var(--ui-bar) * 4.18);
-  min-width: calc(var(--ui-bar) * 6.2);
-  padding: 0 calc(var(--ui-bar) * 1.1);
-  border-radius: calc(var(--ui-bar) * 1.1);
-  background:
-    linear-gradient(180deg, rgba(var(--vol-rgb, var(--gold-rgb)), 0.22), rgba(var(--vol-rgb, var(--gold-rgb)), 0.1)),
-    var(--panel-float);
+  width: calc(var(--ui-bar) * 8.42);
+  min-width: calc(var(--ui-bar) * 8.42);
+  max-width: calc(var(--ui-bar) * 8.42);
+  height: calc(var(--ui-bar) * 5);
+  padding: calc(var(--ui-bar) * 0.36);
+  border-radius: calc(var(--ui-bar) * 1);
+  border: 1px solid rgba(var(--ink-rgb), 0.12);
+  background: var(--panel-float);
+  color: var(--mode-ink, var(--gold));
   box-shadow: var(--panel-elevation-low), inset 0 1px 0 var(--panel-lit), inset 0 -1px 0 var(--panel-shade);
 }
 
-.cb-mode-slot .cb-mode-btn.active {
-  background:
-    linear-gradient(180deg, rgba(var(--vol-rgb, var(--gold-rgb)), 0.34), rgba(var(--vol-rgb, var(--gold-rgb)), 0.2)),
-    var(--panel-float);
+/* The window. Two rows: the name, and the bolts under it. */
+.cb-blind {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  justify-items: center;
+  align-items: center;
+  row-gap: calc(var(--ui-bar) * 0.12);
+  width: 100%;
+  height: 100%;
+  padding: calc(var(--ui-bar) * 0.2) calc(var(--ui-bar) * 0.3) calc(var(--ui-bar) * 0.32);
+  border-radius: calc(var(--ui-bar) * 0.66);
+  background: linear-gradient(180deg, var(--blind-glass-top), var(--blind-glass-bottom));
+  box-shadow:
+    inset 0 1px 2px rgba(var(--shadow-rgb), 0.85),
+    inset 0 -1px 0 rgba(var(--panel-lit-rgb), 0.16);
+  overflow: hidden;
+  /* BoltMeter styles itself and takes its size from here (the Svelte scoping
+     note in CLAUDE.md). */
+  --bolt-size: calc(var(--ui-bar) * 0.62);
 }
 
+/* The roller: the name's own cell, which clips it as it rolls. The leaving
+   and the arriving name share it (grid-area 1 / 1), so a change of family
+   never changes its height. */
+.cb-blind-roll {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.cb-blind-name {
+  grid-area: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: max(calc(var(--ui-bar) * 1.36), var(--type-floor));
+  line-height: 0.95;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--mode-ink, var(--gold));
+}
+
+/* The faces the name falls back to, per string - titleFaceFor() in
+   game/ui/displayFace.ts, the takeover title's rule. Big Shoulders is Latin
+   only, so a Cyrillic, Vietnamese or Turkish name is set whole in the body
+   face, and a script neither face draws goes to the OS.
+
+   Not in capitals. Capitals are the condensed face's signage voice; in the
+   wide body face they cost a third more width, and "КЛАССИКА" fitted to 4.4px
+   on Popout S and 6.7px on a 320px phone where "Классика" has the room. */
+.cb-blind-name.face-body {
+  font-family: var(--font-body);
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.cb-blind-name.face-system {
+  font-family: sans-serif;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Hover: the well lifts its light. Restated in full because .cb-icon:hover
+   (the foot of this file's accent rules) sets border, background AND colour. */
 @media (any-hover: hover) {
   .cb-mode-slot .cb-mode-btn:hover:not(:disabled) {
-    background:
-      linear-gradient(180deg, rgba(var(--vol-rgb, var(--gold-rgb)), 0.34), rgba(var(--vol-rgb, var(--gold-rgb)), 0.2)),
-      var(--panel-float);
+    border-color: rgba(var(--ink-rgb), 0.2);
+    background: var(--panel-float);
+    color: var(--mode-ink, var(--gold));
+    box-shadow: var(--panel-elevation-low), inset 0 1px 0 var(--panel-lit), inset 0 -1px 0 var(--panel-shade);
+  }
+
+  .cb-mode-slot .cb-mode-btn:hover:not(:disabled) .cb-blind {
+    background: linear-gradient(180deg, var(--blind-glass-top), var(--blind-glass-lit));
   }
 }
 
-.cb-mode-btn {
-  width: auto;
-  min-width: calc(var(--ui-bar) * 3.27);
-  max-width: calc(var(--ui-bar) * 7);
-  padding: 0 calc(var(--ui-bar) * 0.85);
-  background: linear-gradient(
-    180deg,
-    rgba(var(--vol-rgb, var(--gold-rgb)), 0.22),
-    rgba(var(--vol-rgb, var(--gold-rgb)), 0.1)
-  );
-  border-color: var(--vol-color, var(--gold));
-  color: var(--vol-color, var(--gold));
-  /* Lit top edge, shaded bottom edge. table.css explains the light: one source
-     at the upper right, which everything in the scene is modelled by. */
-  box-shadow: inset 0 1px 0 var(--panel-lit), inset 0 -1px 0 var(--panel-shade);
+/* Open: a wash of the family's colour in the well - the panel it opened wears
+   the same colour (popup-mode.css). Outside the hover gate, so a finger
+   reaches it. */
+.cb-mode-slot .cb-mode-btn.active {
+  border-color: rgba(var(--ink-rgb), 0.2);
+  background: var(--panel-float);
+  color: var(--mode-ink, var(--gold));
+  box-shadow: var(--panel-elevation-low), inset 0 1px 0 var(--panel-lit), inset 0 -1px 0 var(--panel-shade);
 }
 
-/* .active is the menu-open state and has to stay reachable on touch, so it
-   sits OUTSIDE the hover gate - only the pointer half is gated. Same split the
-   bet display makes above, and for the same reason. */
-.cb-mode-btn.active {
-  border-color: var(--vol-color, var(--gold));
-  color: var(--ink);
-  background: linear-gradient(
-    180deg,
-    rgba(var(--vol-rgb, var(--gold-rgb)), 0.34),
-    rgba(var(--vol-rgb, var(--gold-rgb)), 0.2)
-  );
-  /* The lit and shaded edges only. This carried a 12px bloom in the mode's
-     colour on top of them - a coloured halo around a coloured control on a
-     dark bar, in the file whose own note above says the fourteen of those it
-     used to carry are gone. The deeper wash and the white ink already say
-     "open". */
-  box-shadow:
-    inset 0 1px 0 var(--panel-lit),
-    inset 0 -1px 0 var(--panel-shade);
+.cb-mode-slot .cb-mode-btn.active .cb-blind {
+  background:
+    linear-gradient(180deg, rgba(var(--mode-rgb, var(--gold-rgb)), 0.18), rgba(var(--mode-rgb, var(--gold-rgb)), 0.06)),
+    linear-gradient(180deg, var(--blind-glass-top), var(--blind-glass-bottom));
 }
 
-@media (any-hover: hover) {
-  .cb-mode-btn:hover:not(:disabled) {
-    border-color: var(--vol-color, var(--gold));
-    color: var(--ink);
-    background: linear-gradient(
-      180deg,
-      rgba(var(--vol-rgb, var(--gold-rgb)), 0.34),
-      rgba(var(--vol-rgb, var(--gold-rgb)), 0.2)
-    );
-    box-shadow:
-      inset 0 1px 0 var(--panel-lit),
-      inset 0 -1px 0 var(--panel-shade);
-  }
-}
-
-/* The pressed state comes from the shared .cb-icon:active at the foot of this
-   file - it replaces the background with a dark wash and pushes the button in
-   1px, the same "in, not brighter" language every control here speaks. Only
-   the inset edges need restating, so they do not vanish under the wash. */
-.cb-mode-btn:active {
+/* Pressed: in, not brighter - the language every control here speaks. The
+   shared .cb-icon:active (foot of this file) swaps the background for a dark
+   wash; the bezel keeps its material and is pushed in 1px instead. */
+.cb-mode-slot .cb-mode-btn:active:not(:disabled) {
+  background: var(--panel-float);
+  transform: translateY(1px);
   box-shadow: inset 0 1px 0 var(--panel-lit), inset 0 -1px 0 var(--panel-shade);
 }
 
 .cb-mode-btn:disabled,
 .cb-mode-btn.blocked { opacity: 0.5; cursor: not-allowed; }
 
-/* A blocked press still gets acknowledged, and differently from a live one: the
-   live :active above drops the lift, this also dims. Something has to answer the
-   finger without feeling like the press that opens the picker. */
-.cb-mode-btn.blocked:active { filter: brightness(0.9); }
-
-/* The label now has a pill to sit in, so it can take the tracking that a 10px
-   uppercase micro-label wants - the same register .cb-cap uses, and the
-   opposite of the negative tracking the WORDMARK takes. Different job,
-   different rule: tracking opens small caps out and closes display weights up.
-   nowrap because a two-line label inside a 36px-tall pill would clip, and
-   `Chế độ` contains a space. */
-.cb-mode-word {
-  font-size: max(calc(var(--ui-bar) * 0.95), var(--type-floor));
-  font-weight: 900;
-  letter-spacing: var(--track-label);
-  /* The tracking is added to the RIGHT of the last letter too, which would sit
-     the word a hair left of centre in its own padding. */
-  text-indent: 0.08em;
-  text-transform: uppercase;
-  line-height: 1;
-  white-space: nowrap;
-}
-
-/* The active mode, under the bet amount, in the line the cost multiplier used
-   to occupy. The MODE button now wears the same rating this line does, so the
-   two read as one thing - it used to say "same gold", back when both were gold
-   and neither said which mode.
-
-   Shown on every family now, Classic included. It was hidden there while the
-   line was only a name, which was right - but it carries the volatility meter
-   as well now, and that is the one thing distinguishing the three guess modes, which all
-   cost the same. It also means the bar no longer changes height when the mode
-   changes.
-
-   The bolts sit to the LEFT of the name and are sized at 1em, so they track this
-   line's own font rather than needing a second number kept in step with it. The
-   colour below applies to the text only - the meter paints itself from
-   --vol-color, published on the .control-bar (see Game.svelte). */
-.cb-bet-mode {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  /* Tight, because this line has to fit INSIDE the bet display's capped
-     width: seven bolts at 1em plus "Three of a Kind" ran 10px past the
-     panel's left edge, and the panel's hover border drew straight through
-     the meter. The bolts are 0.8em of this line rather than 1em; the count is
-     the ruler, not the size, and the picker's meter is its own size anyway. */
-  gap: calc(var(--ui-bar) * 0.25);
-  max-width: 100%;
-  font-size: max(calc(var(--ui-bar) * 0.86), var(--type-floor));
-  font-weight: 800;
-  /* The mode name is written in its own volatility colour - green for Second
-     Chance, yellow for Classic, red for High Stakes, and purple once the
-     guesses push the rating past what any family reaches on its own.
-
-     It was gold, which said "this line is the mode" but nothing about which
-     one. The bolts beside it were already carrying that, so the word was the
-     only part of the readout not participating in the rating it sits on.
-     Same ruler, said twice in one place - which is the opposite of the two-
-     rulers-on-one-screen mistake, because both halves are counting the same
-     thing.
-
-     --mode-ink is published on the .control-bar (see Game.svelte) so it reaches
-     the steppers, which are this line's SIBLINGS and could never inherit from
-     it, and the MODE button over in the light pill, which is in a different
-     panel again. The gold fallback is what shows if it fails to resolve. */
-  color: var(--mode-ink, var(--gold));
-  white-space: nowrap;
-  --bolt-size: 0.8em;
-}
+/* A blocked press still gets acknowledged, and differently from a live one:
+   no push, a dim. Something has to answer the finger without feeling like the
+   press that opens the picker. */
+.cb-mode-btn.blocked:active { filter: brightness(0.9); transform: none; }
 
 /* ---- Keyboard focus -------------------------------------------------------
  * Every control in the bar. None of these had any focus style at all, so the
@@ -997,7 +977,8 @@
 .cb-float:focus-visible,
 .cb-spin:focus-visible,
 .cb-step:focus-visible,
-.cb-bet-display:focus-visible {
+.cb-bet-display:focus-visible,
+.cb-lastwin-btn:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }

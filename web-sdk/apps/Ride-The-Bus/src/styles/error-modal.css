@@ -166,7 +166,36 @@
 
 .err-actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
+  gap: calc(var(--ui-bar) * 0.73);
+}
+
+/* The way out beside Reload on a failure the dialog cannot name: a hairline,
+   quiet, as every Cancel in the game is (design.md, The primary action; the
+   mode panel's .mode-confirm-cancel - keep the two in step). */
+.err-actions .err-secondary {
+  padding: calc(var(--ui-bar) * 1.27) calc(var(--ui-bar) * 1.6);
+  border-radius: calc(var(--ui-bar) * 0.91);
+  border: 1px solid rgba(var(--ink-rgb), 0.2);
+  background: none;
+  color: var(--ink-body);
+  font-size: calc(var(--ui-bar) * 1.53);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--dur-control) var(--ease-out), border-color var(--dur-control) var(--ease-out);
+}
+
+@media (any-hover: hover) {
+  .err-actions .err-secondary:hover {
+    background: rgba(var(--ink-rgb), 0.1);
+    border-color: rgba(var(--ink-rgb), 0.32);
+  }
+}
+
+.err-actions .err-secondary:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
 /* The whole button, not just its width.

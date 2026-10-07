@@ -20,13 +20,7 @@ import { stateBet, stateConfig, stateUrlDerived } from 'state-shared';
 import { API_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
 import { currencyDecimals, numberToCurrencyString } from 'utils-shared/amount';
 
-import {
-  betDecimals,
-  betWithinRange,
-  clampToMaximum,
-  snapBetToGrid,
-  snapToStep,
-} from './betLimits';
+import { betWithinRange, snapBetToGrid, tidyTypedBet } from './betLimits';
 import { currencySymbol } from './currencySymbol';
 import { FAMILY_RULES, isCombinationPlayable, modeChoices, modeName, type ModeFamily } from '../math/modes';
 import { MODE_CEILINGS } from '../math/modeCeilings';
@@ -237,24 +231,17 @@ export const betDisplay = () => `${currencySymbol()}${`${bet.input ?? ''}`.trim(
 // unplayable figure in the field.
 export function formatBetInput() {
   if (betLockedReason()) return;
-  const raw = `${bet.input ?? ''}`.trim();
-  const v = Number(raw);
-  if (raw === '' || isNaN(v) || v <= 0) return;
-  const clamped = clampToMaximum(v, stateConfig.betLimits, API_AMOUNT_MULTIPLIER);
-  const stepped = snapToStep(clamped, stateConfig.betLimits, API_AMOUNT_MULTIPLIER);
-  // snapToStep floors onto the grid, so anything under ONE step floors to
-  // zero: with a 1,000 step, typing 500 came back as 0.00 and the spin button
-  // said "Enter a valid bet" - which is true of zero and says nothing about
-  // the 500 the player actually typed. Below-minimum amounts are allowed to
-  // stand precisely so the button can name the floor, and a figure snapped
-  // out of existence cannot be described. Keep what they typed; it is
-  // unplayable either way, and betBlockedReason explains why.
-  const snapped = stepped > 0 ? stepped : v;
-  bet.input = snapped.toFixed(
-    // The currency's own precision is the floor, not 2 - a yen bet field has
-    // no decimals to offer.
-    betDecimals(stateConfig.betLimits, API_AMOUNT_MULTIPLIER, currencyDecimals(stateBet.currency)),
+  // Clamp down, snap to the grid - and keep a figure under one step exactly as
+  // typed, so the spin button can name the minimum rather than call a 0.004
+  // "not a valid bet". The currency's own precision is the floor, not 2: a yen
+  // bet field has no decimals to offer. See tidyTypedBet in betLimits.ts.
+  const tidied = tidyTypedBet(
+    `${bet.input ?? ''}`,
+    stateConfig.betLimits,
+    API_AMOUNT_MULTIPLIER,
+    currencyDecimals(stateBet.currency),
   );
+  if (tidied !== null) bet.input = tidied;
 }
 
 /**

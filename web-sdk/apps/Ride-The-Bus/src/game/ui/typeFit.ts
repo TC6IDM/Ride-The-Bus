@@ -27,14 +27,15 @@
  * WHY IT IS A WEIGHTED TABLE AND NOT A CHARACTER COUNT. A separator is a third
  * of a digit and a "W" is half as wide again as an "O"; a count would size
  * "$1,000" and "NOK" alike. The digits themselves ARE uniform now: the body
- * face is Geist, which ships `tnum`, and the value carries
+ * face is Overpass, which ships `tnum`, and the value carries
  * `font-variant-numeric: tabular-nums` - so every digit prints at the same
- * 0.648em at weight 800 (fontTools, off the shipped file). Under Poppins that
- * declaration was inert and "1" measured 0.387em against "4" at 0.691em, which
- * is why an earlier version of this table carried a narrow "1".
+ * 0.616em at weight 800 (fontTools, off the shipped file, 2026-10-05; it was
+ * 0.648 under Geist). Under Poppins that declaration was inert and "1"
+ * measured 0.387em against "4" at 0.691em, which is why an earlier version of
+ * this table carried a narrow "1".
  *
- * The constants are the measured widths rounded UP - digits 0.65 against
- * 0.648, caps 0.80 against a common range of 0.61-0.79 - so the estimate runs
+ * The constants are the measured widths rounded UP - digits 0.62 against
+ * 0.616, caps 0.74 against a common range of 0.30-0.73 - so the estimate runs
  * a few percent heavy on every real label and the fit errs toward a slightly
  * smaller figure rather than one that spills off the face. Understating the
  * space available is the safe direction; a chip you cannot read the value on
@@ -46,26 +47,34 @@
  * to be right to within the margin the face already leaves.
  */
 const EM_CHAR: Record<string, number> = {
-  // Separators, and the apostrophe some locales group with.
+  // Separators, and the apostrophe some locales group with (Overpass 800:
+  // 0.257, 0.249, 0.256).
   ',': 0.26,
   '.': 0.26,
-  "'": 0.22,
-  // Spaces are narrower than the separators (0.221 measured against 0.248),
-  // and a grouped label like "1 234,50" carries both.
-  ' ': 0.23,
-  '\u00a0': 0.23,
-  '\u202f': 0.23,
-  '\u2009': 0.23,
-  // The two capitals wider than the cap figure below.
-  M: 0.95,
-  W: 1.05,
+  "'": 0.26,
+  // Spaces: 0.255 measured, the no-break space the same. The narrow no-break
+  // space is not in the face (nor was it in Geist) and falls back to the OS
+  // font; 0.26 covers both.
+  ' ': 0.26,
+  '\u00a0': 0.26,
+  '\u202f': 0.26,
+  '\u2009': 0.26,
+  // The two capitals wider than the cap figure below (0.811, 0.851).
+  M: 0.82,
+  W: 0.86,
+  // The commonest symbols, measured (0.609, 0.640, 0.606, 0.621), so a dollar
+  // or euro chip is not sized for the widest sign in the set.
+  $: 0.62,
+  '\u20ac': 0.65,
+  '\u00a3': 0.62,
+  '\u00a5': 0.63,
 };
 
-/** Every digit, under `tnum`: 0.648 measured, rounded up. */
-const EM_DIGIT = 0.65;
-const EM_CAP = 0.8;
-/** Currency symbols, lowercase codes like "kr", and anything unmeasured. */
-const EM_OTHER = 0.72;
+/** Every digit, under `tnum`: 0.616 measured (Overpass 800), rounded up. */
+const EM_DIGIT = 0.62;
+const EM_CAP = 0.74;
+/** Other currency symbols (up to 0.742, the sheqel), lowercase codes like "kr", and anything unmeasured. */
+const EM_OTHER = 0.75;
 
 export function labelEms(text: string): number {
   let total = 0;

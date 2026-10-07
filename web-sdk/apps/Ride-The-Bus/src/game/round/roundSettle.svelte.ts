@@ -25,13 +25,15 @@ import { requestEndRound } from 'rgs-requests';
 import { pacedRequest } from './rgsPacing';
 import { sound } from '../audio/sound';
 import { computeFinalMultiplier } from '../math/payout';
-import { isCleanSweep } from '../math/modes';
+import { isCleanSweep, modeChoices, modeName } from '../math/modes';
 import { isNetWin, winTierFor } from '../math/winTiers';
 
-import { bet, familyRules, roundCost, winTiers } from '../bet/betState.svelte';
+import { bet, familyRules, guesses, roundCost, winTiers } from '../bet/betState.svelte';
 import { showWinCelebration } from '../celebration/celebrationState.svelte';
 import { revealWait } from './revealPacing.svelte';
 import { engineRound, isEngineRound, round } from './roundState.svelte';
+import { recordRound } from './roundHistory.svelte';
+import { snapshotCards } from './historyList';
 
 /**
  * Everything after the last card lands.
@@ -128,7 +130,32 @@ export async function settleRound() {
   // Net position for this session: payout minus the stake actually placed.
   // Against the round's COST, not the bet - a 2x mode takes twice the bet,
   // and a net position that ignored that would read as a steady profit.
-  round.sessionNet = Math.round((round.sessionNet + (round.wonAmount - roundCost(round.initialBet))) * 100) / 100;
+  // Rounded to the RGS's micro-unit, not to cents: money is shown exactly now
+  // (displayFractionDigits), and a net position rounded to the cent would
+  // disagree with the sub-cent wins beside it.
+  round.sessionNet =
+    Math.round((round.sessionNet + (round.wonAmount - roundCost(round.initialBet))) * API_AMOUNT_MULTIPLIER) /
+    API_AMOUNT_MULTIPLIER;
+
+  // The history panel's row for this round (Last Win opens it). Snapshotted,
+  // display only, and never in a replay - a replay is not this session's play.
+  if (!stateUrlDerived.replay()) {
+    const choices = modeChoices(bet.family, guesses);
+    recordRound({
+      family: bet.family,
+      mode: choices ? modeName(choices, bet.family) : null,
+      cards: snapshotCards(round.revealedCards),
+      bustedIndex: round.bustedIndex,
+      forgivenIndex: round.forgivenIndex,
+      ticket: round.ticket,
+      bet: round.initialBet,
+      cost: roundCost(round.initialBet),
+      won: round.wonAmount,
+      multiplier: round.lastWinMultiplier,
+      net: round.lastWinNet,
+      sweep: isCleanSweep(round.bustedIndex, round.forgivenIndex),
+    });
+  }
 
   // A win big enough to celebrate gets the takeover, which plays its own
   // escalating fanfare - so the ordinary win sting is suppressed rather than

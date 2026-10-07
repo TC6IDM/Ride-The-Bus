@@ -144,11 +144,11 @@ describe('the bar holds two rows on a phone with MODE at the edge', () => {
     assert.match(block, /\.control-bar\s*{[^}]*column-gap:\s*calc\(var\(--ui-bar\) \* 0\.55\)/, 'row two lost its tighter gaps');
     assert.match(block, /\.control-bar\s*{[^}]*padding-inline:\s*calc\(var\(--ui-bar\) \* 1\)/, 'row two lost its narrower side margin');
     assert.match(block, /\.cb-bet-display\s*{\s*min-width:\s*calc\(var\(--ui-bar\) \* 11\)/, 'the bet figure lost its trimmed reservation');
-    assert.match(block, /\.cb-mode-slot \.cb-mode-btn\s*{[^}]*min-width:\s*calc\(var\(--ui-bar\) \* 5\.4\)/, 'MODE lost its narrower two-row width');
+    assert.match(block, /\.cb-mode-slot \.cb-mode-btn\s*{[^}]*min-width:\s*calc\(var\(--ui-bar\) \* 7\.4\)/, 'the MODE sign lost its narrower two-row width');
   });
 
   test('Popout S puts all four back, so it stays Popout L at half size', () => {
-    for (const rule of [/column-gap:\s*calc\(var\(--ui-bar\) \* 0\.91\)/, /padding-inline:\s*calc\(var\(--ui-bar\) \* 1\.27\)/, /min-width:\s*calc\(var\(--ui-bar\) \* 13\.82\)/, /min-width:\s*calc\(var\(--ui-bar\) \* 6\.2\)/]) {
+    for (const rule of [/column-gap:\s*calc\(var\(--ui-bar\) \* 0\.91\)/, /padding-inline:\s*calc\(var\(--ui-bar\) \* 1\.27\)/, /min-width:\s*calc\(var\(--ui-bar\) \* 11\.6\)/, /min-width:\s*calc\(var\(--ui-bar\) \* 8\.42\)/]) {
       assert.match(popoutS, rule, `Popout S no longer restores ${rule}`);
     }
   });

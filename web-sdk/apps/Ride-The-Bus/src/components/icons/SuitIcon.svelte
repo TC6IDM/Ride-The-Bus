@@ -3,7 +3,7 @@
 	 * The four suits, drawn rather than typed.
 	 *
 	 * They used to be the Unicode characters U+2660..U+2666 set in the body face
-	 * (Poppins then, Geist now - neither ships them in its subsets). That is a
+	 * (Poppins, then Geist, now Overpass - none ships them in its subsets). That is a
 	 * font dependency for the most important glyphs in a card game, and the
 	 * font does not actually own them - they fall through to whatever the device
 	 * substitutes, which on many phones is a colour emoji. So the same card could

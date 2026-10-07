@@ -58,11 +58,11 @@
      came out 1.4px over and put MODE on a third row by itself:
        - the bet figure's reservation, measured from "$1,000,000.00", which is not
          a bet anyone places at this width (use:fitValue shrinks a long one);
-       - MODE's width: still a rectangle, a shade narrower than on the one-row
-         bar, so a longer translated word (MODUS, TILA) still fits beside it;
+       - MODE's width: the sign, a shade narrower than on the one-row bar - the
+         name inside it is fitted, so the sign never grows to its word;
        - the gaps BETWEEN the controls on a row (not between the two rows).
-         Russian is the tight case: its family name under the bet widens that
-         panel by ~23px, and with MODE beside it the row came out 9px over.
+         Russian was the tight case while the family name sat under the bet;
+         it is the MODE sign's now, and the bet display is money only.
      Measured across 320-620px in all 17 languages, mouse and touch: two rows. */
 .control-bar {
     column-gap: calc(var(--ui-bar) * 0.55);
@@ -74,8 +74,13 @@
     min-width: calc(var(--ui-bar) * 11);
   }
 .cb-mode-slot .cb-mode-btn {
-    min-width: calc(var(--ui-bar) * 5.4);
-    padding: 0 calc(var(--ui-bar) * 0.7);
+    width: calc(var(--ui-bar) * 7.4);
+    min-width: calc(var(--ui-bar) * 7.4);
+    max-width: calc(var(--ui-bar) * 7.4);
+    /* The touch floor's height for every pointer: the sign's name takes two
+       lines here, and at 4.18 units (27px on a 320px window) they fitted to
+       6.5px. Row two is taller than 36px anyway, so nothing moves. */
+    height: max(36px, calc(var(--ui-bar) * 5));
   }
 .cb-readouts { justify-content: space-between; }
 /* The multiplier chip used to be dropped here, because the readout reserved a
@@ -268,12 +273,20 @@
     padding-inline: calc(var(--ui-bar) * 1.27);
   }
 .cb-bet-display {
-    min-width: calc(var(--ui-bar) * 13.82);
+    min-width: calc(var(--ui-bar) * 11.6);
   }
 .cb-mode-slot .cb-mode-btn {
-    min-width: calc(var(--ui-bar) * 6.2);
-    padding: 0 calc(var(--ui-bar) * 1.1);
+    width: calc(var(--ui-bar) * 8.42);
+    min-width: calc(var(--ui-bar) * 8.42);
+    max-width: calc(var(--ui-bar) * 8.42);
+    height: calc(var(--ui-bar) * 5);
   }
+/* The sign is 19px tall here, and its bolts drew 2.4px high - a row nobody
+     can read, taken from the name, which fitted to 4.4px under it. The name
+     gets the whole window; the rating stays in the button's accessible name
+     and in the mode panel. */
+.cb-blind > :global(.bolt-meter) { display: none; }
+.cb-blind { grid-template-rows: minmax(0, 1fr); }
 }
 
 /* ---- Tap-target floors ----------------------------------------------------

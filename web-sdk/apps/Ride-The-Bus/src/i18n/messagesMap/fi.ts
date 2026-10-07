@@ -15,7 +15,6 @@ export default {
 
 	Winning: 'Voitto',
 	'Full game win': 'Täysi voitto',
-	Banked: 'Turvattu',
 	Busted: 'Meni ohi',
 	'Revealing…': 'Paljastetaan…',
 
@@ -162,6 +161,56 @@ export default {
 	'Not enough balance for that bet.': 'Saldo ei riitä tähän panokseen.',
 	'Your session has expired. Please reload the game.':
 		'Istuntosi on vanhentunut. Lataa peli uudelleen.',
+	'Could not reach the game server. Check your connection, then reload.':
+		'Pelipalvelimeen ei saatu yhteyttä. Tarkista yhteytesi ja lataa sitten uudelleen.',
+	'Recent rounds':
+		'Viimeisimmät kierrokset',
+	'No rounds yet this session.':
+		'Tällä istunnolla ei ole vielä kierroksia.',
+	'Show recent rounds':
+		'Näytä viimeisimmät kierrokset',
+	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
+		'Plus ja miinus asettavat panoksesi. Napsauta summaa avataksesi pikapanosvalikon.',
+	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
+		'Salamat näyttävät kunkin tilan ennen Yhtä suuri -valintojasi. Jokainen Yhtä suuri -valinta lisää yhden.',
+	'Click to continue':
+		'Jatka napsauttamalla',
+	'Click to skip':
+		'Ohita napsauttamalla',
+	'Click the amount for the quick-bet menu.':
+		'Napsauta summaa avataksesi pikapanosvalikon.',
+	'These prices assume your forgiveness is unused. After a forgiven miss, the cards that follow are priced as on Classic, a little higher.':
+		'Nämä hinnat olettavat, että anteeksianto on käyttämättä. Anteeksi annetun virheen jälkeen seuraavat kortit hinnoitellaan kuten Klassisessa, hieman korkeammiksi.',
+	'The sign at the end of the bar names your game mode. Press it to choose another; switching asks you to confirm first.':
+		'Palkin päässä oleva kyltti näyttää pelitilasi. Paina sitä valitaksesi toisen; vaihto pyytää ensin vahvistuksen.',
+	'Kept':
+		'Säilytetty',
+	'Won':
+		'Voitto',
+	'At stake':
+		'Pelissä',
+	'Right':
+		'Oikein',
+	'Ace':
+		'Ässä',
+	'King':
+		'Kuningas',
+	'Queen':
+		'Kuningatar',
+	'Jack':
+		'Jätkä',
+	'Hearts':
+		'Hertta',
+	'Diamonds':
+		'Ruutu',
+	'Clubs':
+		'Risti',
+	'Spades':
+		'Pata',
+	'%r of %s':
+		'%s %r',
+	'Card %n: %c':
+		'Kortti %n: %c',
 	'A gambling limit on your account has been reached.': 'Tilisi pelirajoitus on saavutettu.',
 	'This game is not available from your location.': 'Tämä peli ei ole käytettävissä sijainnistasi.',
 	'The game server had a problem. Please try again shortly.':
@@ -191,7 +240,6 @@ export default {
 	'Tap to continue': 'Jatka napauttamalla',
 	'Round details': 'Kierroksen tiedot',
 	'Play amount': 'Panoksen määrä',
-	Mode: 'Tila',
 	'Game mode': 'Pelitila',
 	Guesses: 'Arvaukset',
 	Cards: 'Kortit',
@@ -213,8 +261,6 @@ export default {
 		'Kiertävät nuolet avaavat automaattipelin: sama panos jaetaan uudelleen asetetun määrän kierroksia tai rajattomasti. Painike laskee jäljellä olevat kierrokset.',
 	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
 		'Suuri pyöreä painike jakaa. Niin myös välilyönti: napauta yhtä kierrosta varten, pidä pohjassa jakaaksesi lisää. Automaattipelin aikana siitä tulee Pysäytä, ja käynnissä oleva kierros pelataan ensin loppuun.',
-	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
-		'Tila avaa pelitilan valinnan. Vaihto pyytää vahvistuksen ennen kuin se tulee voimaan.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
 		'Tässä pelissä ei ole ilmaiskierroksia, bonuskierroksia, jättipotteja eikä uudelleenlaukaisuominaisuuksia. Jokainen kierros on yksittäinen, itsenäinen jako: neljä korttia arvaustiloissa, kolme Kolmoset-tilassa.',
 	'Big Win': 'Iso voitto',

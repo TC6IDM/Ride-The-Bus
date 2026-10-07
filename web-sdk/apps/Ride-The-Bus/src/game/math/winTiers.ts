@@ -473,34 +473,52 @@ export const CEILING_PAUSE_MS = 1000;
 /**
  * Break a win into the legs its count-up climbs through.
  *
- * Every celebration starts at zero on "Big Win" and climbs to the top of that
- * band; then restarts at the next tier's floor and climbs through that one, and
+ * A celebration starts on the figure the board last showed, under that
+ * figure's tier ("Big Win" from zero when there was none), and climbs to the top
+ * of that band; then restarts at the next tier's floor and climbs through that one, and
  * so on until the leg that ends on the amount actually won. So the player reads
  * the title rising rather than being handed the answer and waiting for the
  * digits to catch up.
  *
  * The bands are the tier thresholds themselves, so leg i runs
  * WIN_TIERS[i].min -> WIN_TIERS[i+1].min, except:
- *   - the first leg starts at 0, not at 10x, so the number always begins at zero
+ *   - the first leg starts at `startMultiplier`, not at 10x, and the legs below
+ *     it are not run at all
  *   - the last leg ends on the real payout, wherever inside its band that falls
  *
+ * `startMultiplier` is the figure the BOARD was showing before the last card
+ * landed (0 when there was none). Counting from zero after the board had
+ * already printed $20 put "Big Win $1.83" on screen - a win announced as less
+ * than the player had just watched (the critique, 2026-10-05). A leg whose
+ * ceiling the board had already reached is dropped, and the count opens on the
+ * board's figure under the title that figure belongs to: board 430.1x, paid
+ * 1,354.2x climbs Epic from $430.10 into Max. The first fix kept those legs as
+ * holds at their own ceilings, so the live build opened that max win on "Big
+ * Win $40.00" over a board that had just said $430.10 (front v72, 2026-10-06).
+ * The earned leg is always kept, so a round that celebrates on less than the
+ * board showed is one held leg on its own amount.
+ *
  * A win below the entry tier (a full-game win as small as 6.6x) yields exactly
- * one leg, 0 -> the amount, labelled "Big Win".
+ * one leg, start -> the amount, labelled "Big Win".
  */
 export function countUpSegments(
   finalMultiplier: number,
   earned: WinTier,
   tiers: readonly WinTier[] = WIN_TIERS,
+  startMultiplier = 0,
 ): CountUpSegment[] {
   const earnedIndex = tiers.findIndex((tier) => tier.id === earned.id);
   if (earnedIndex < 0) return [];
 
+  const start = Math.max(0, startMultiplier);
   const segments: CountUpSegment[] = [];
   for (let i = 0; i <= earnedIndex; i++) {
     const tier = tiers[i]!;
     const isLast = i === earnedIndex;
-    const fromMultiplier = i === 0 ? 0 : tier.minMultiplier;
     const toMultiplier = isLast ? finalMultiplier : tiers[i + 1]!.minMultiplier;
+    // The board already showed this band's ceiling: skip the leg.
+    if (!isLast && toMultiplier <= start) continue;
+    const fromMultiplier = segments.length === 0 ? Math.min(start, toMultiplier) : tier.minMultiplier;
     const isHold = toMultiplier <= fromMultiplier;
 
     segments.push({

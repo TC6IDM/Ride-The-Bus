@@ -324,17 +324,21 @@ describe('the chrome does not slide back', () => {
   });
 
   /**
-   * The fills are owner-decided. A re-derivation from the scene was tried and
-   * rejected on the look; a softer set (same hue and lightness, less chroma)
-   * was shown side by side and taken on 2026-09-27. Pinned so neither drifts
-   * without the owner, and so the shipped-until-then set stays one edit away.
+   * The fills are owner-decided. A re-derivation from the scene was rejected
+   * on the look in 2026-09; a softer set (same hue and lightness, less chroma)
+   * was taken on 2026-09-27; and on 2026-10-05, after two audits named the
+   * squares the least authored thing on the board, "Felt & brass" was picked
+   * from three sets shown side by side under normal and colour-blind vision.
+   * Pinned so the fills never drift without the owner, and so both earlier
+   * sets stay one edit away.
    */
-  test('the choice fills are the owner-chosen set, with the originals kept as the backup', () => {
+  test('the choice fills are the owner-chosen set, with the earlier sets kept as backups', () => {
     for (const [name, value] of [
-      ['higher', 'var(--choice-higher-soft)'],
-      ['lower', '#c0392b'],
-      ['inside', 'var(--choice-inside-soft)'],
-      ['outside', 'var(--choice-outside-soft)'],
+      ['higher', '#4fae72'],
+      ['lower', '#b3263a'],
+      ['inside', '#2f9d9a'],
+      ['outside', '#9b4f9a'],
+      ['equal', '#d6a733'],
     ] as const) {
       assert.ok(
         TOKENS.includes(`--choice-${name}: ${value}`),

@@ -45,7 +45,10 @@
   import { GUESS_COLUMNS, guessColumnFor, nextGuess } from '../../game/bet/guessKeys';
   import { isCombinationPlayable } from '../../game/math/modes';
   import { celebration } from '../../game/celebration/celebrationState.svelte';
-  import { fitValue } from '../../game/ui/fitValue';
+  import { fitBlock, fitValue } from '../../game/ui/fitValue';
+  import { titleFaceFor } from '../../game/ui/displayFace';
+  import { reducedMotion } from '../../game/celebration/celebrationGestures';
+  import { cubicInOut } from 'svelte/easing';
   import { jurisdiction } from '../../game/jurisdiction/jurisdiction.svelte';
   import { collapseRevealWaitToInstant, pacing } from '../../game/round/revealPacing.svelte';
   import { cooldownSecondsLabel, gate, resolveRoundSeed, runRound } from '../../game/round/roundPlace.svelte';
@@ -80,7 +83,8 @@
       | 'turbo'
       | 'autospin'
       | 'info'
-      | 'sound';
+      | 'sound'
+      | 'history';
     /** The bet row, so the parent's fit effects can still measure it. */
     betRowEl: HTMLElement | undefined;
     /** The intro phase, so the spin button can refuse before the board is up. */
@@ -288,6 +292,24 @@ function flashModeTip() {
   modeTipTimer = setTimeout(() => { modeTipVisible = false; }, BET_TIP_MS);
 }
 
+/** The family's name, as the MODE sign letters it. */
+const familyName = $derived(t(familyRules().label));
+
+/**
+ * The sign ROLLS when the family changes: the old name winds up and out of the
+ * window as the new one comes up from below, the way a destination blind
+ * turns to the next route. {#key} only transitions on a CHANGE, so first paint
+ * is still. Reduced motion: a short crossfade, the arrivals rule in design.md.
+ */
+function roll(_node: Element, { leaving }: { leaving: boolean }) {
+  if (reducedMotion()) return { duration: 120, css: (t: number) => `opacity: ${t}` };
+  return {
+    duration: 340,
+    easing: cubicInOut,
+    css: (_t: number, u: number) => `transform: translateY(${(leaving ? -u : u) * 100}%)`,
+  };
+}
+
 function onModeClick() {
   if (modeLockedReason()) { sound.playBlocked(); flashModeTip(); return; }
   togglePopup('mode');
@@ -486,7 +508,7 @@ $effect(() => {
      See the volatility notes in CLAUDE.md before collapsing them. -->
 <footer
   class="control-bar"
-  inert={chromeInert}
+  inert={chromeInert || introPhase !== 'playing'}
   style={`--vol-color: ${volatilityColorVar(bet.family)}; --vol-rgb: ${volatilityColorRgbVar(bet.family)}; --mode-ink: ${modeNameColor()}; --mode-rgb: ${modeRgb()}`}
 >
   <!-- Removed, not just disabled, when the regulator bars Turbo: a greyed
@@ -562,9 +584,15 @@ $effect(() => {
         </div>
       {/if}
       <!-- Always rendered (even before the first spin) so it can't pop into
-           existence mid-session and shove the rest of the bar sideways. -->
-      <div class="cb-lastwin" class:won={round.lastWinNet}>
-        <span class="cb-cap">{t('Last Win')}</span>
+           existence mid-session and shove the rest of the bar sideways.
+
+           A BUTTON outside replay: it opens the session's recent rounds
+           (HistoryPopup). Last Win already answers "what happened last", so it
+           is the way in to "and before that" - and the board and the bar gain
+           nothing to carry it. In replay there is no session to look back
+           over, so it stays the plain readout it was. -->
+      {#snippet lastWinFigure(opens: boolean)}
+        <span class="cb-cap">{t('Last Win')}{#if opens}<svg class="cb-lastwin-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h9" /></svg>{/if}</span>
         <!-- The multiplier chip is INSIDE the fitted box on purpose: the two
              shrink together, so the pair either both fit or both scale, and
              the chip can never be the thing that pushes the cash out. -->
@@ -574,7 +602,20 @@ $effect(() => {
                bust that kept nothing, "$0.00 0.0x" said zero twice. -->
           {#if round.lastWinAmount > 0}<span class="cb-lastwin-mult">{formatMultiplier(round.lastWinMultiplier)}</span>{/if}
         </span>
-      </div>
+      {/snippet}
+      {#if stateUrlDerived.replay()}
+        <div class="cb-lastwin" class:won={round.lastWinNet}>{@render lastWinFigure(false)}</div>
+      {:else}
+        <button
+          type="button"
+          class="cb-lastwin cb-lastwin-btn"
+          class:won={round.lastWinNet}
+          class:active={openPopup === 'history'}
+          aria-haspopup="dialog"
+          aria-label={`${t('Last Win')} ${numberToCurrencyString(round.lastWinAmount)}. ${t('Show recent rounds')}`}
+          onclick={() => togglePopup('history')}
+        >{@render lastWinFigure(true)}</button>
+      {/if}
     </div>
   </div>
 
@@ -618,25 +659,9 @@ $effect(() => {
           {numberToCurrencyString(betValue() > 0 ? betValue() : 0)} × {familyRules().cost}
         </span>
       {/if}
-      <!-- The live mode, with its volatility. Shown on EVERY family, Classic
-           included - it used to be hidden there on the grounds that "Classic"
-           under every bet is noise, which was fair while the line was only a
-           name. It now carries the volatility rating, and hiding that on the
-           one mode most players never leave would be hiding it from most
-           players. Showing it always also stops the bar changing height when
-           the mode changes.
-
-           Same 5-bolt ruler as the mode picker, deliberately: two lightning
-           meters that counted differently would be the "two units on one
-           screen" mistake this game has already made three times. -->
-      <span class="cb-bet-mode">
-        <BoltMeter
-          lit={liveBolts()}
-          total={VOLATILITY_BOLTS}
-          label={volatilityLabel(liveBolts())}
-        />
-        {t(familyRules().label)}
-      </span>
+      <!-- The family's name and its bolts used to print here, under the bet;
+           they are the MODE sign's now (below), so the family is said in one
+           place and this display is money only. -->
     </button>
     <div class="cb-betstep">
       <!-- Same condition as the display beside them, so the whole bet group
@@ -814,9 +839,13 @@ $effect(() => {
        Balance and Last Win the width a translated word used to hold - the pill
        is one line on a phone, in every currency (CLAUDE.md).
 
-       A rounded rectangle, not a disc: the word and the family colour are what
-       players know it by. It keeps .cb-icon, so it keeps the "toggle" press
-       cue (pressCues.ts) rather than the heavier one the floating discs play.
+       A DESTINATION BLIND (2026-10-06): the sign on the front of a bus that
+       names its route, naming the family the next round rides on, lettered in
+       the family's colour, with the same seven bolts the picker draws. It used
+       to be a pill that said "MODE" while the name printed in the bet display
+       across the bar - the control named its category rather than its value.
+       It keeps .cb-icon, so it keeps the "toggle" press cue (pressCues.ts)
+       rather than the heavier one the floating discs play.
 
        Locked during an auto run and in replay, like the bet itself: the run
        was started on one mode's odds, and a replay is a record of a round
@@ -830,10 +859,23 @@ $effect(() => {
       class:blocked={modeLockedReason() !== null}
       onclick={onModeClick}
       disabled={stateUrlDerived.replay()}
-      aria-label={t('Choose game mode')}
-      title={t(familyRules().label)}
+      aria-label={`${t('Choose game mode')}, ${familyName}, ${volatilityLabel(liveBolts())}`}
+      title={familyName}
     >
-      <span class="cb-mode-word">{t('Mode')}</span>
+      <!-- aria-hidden: the button's name already says all of it. -->
+      <span class="cb-blind" aria-hidden="true">
+        <span class="cb-blind-roll">
+          {#key bet.family}
+            <span
+              class="cb-blind-name face-{titleFaceFor(familyName)}"
+              use:fitBlock={familyName}
+              in:roll={{ leaving: false }}
+              out:roll={{ leaving: true }}
+            >{familyName}</span>
+          {/key}
+        </span>
+        <BoltMeter lit={liveBolts()} total={VOLATILITY_BOLTS} label={volatilityLabel(liveBolts())} />
+      </span>
     </button>
     {#if modeLockedReason()}
       <span class="cb-mode-tip" class:is-shown={modeTipVisible} role="tooltip" aria-live="polite"

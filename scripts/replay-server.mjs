@@ -236,7 +236,11 @@ function resolveAlias(mode, alias) {
    payout.test.ts. */
 async function findBook(mode, id) {
   const file = path.join(PUBLISH, MODES.get(mode).events);
-  const stream = createReadStream(file).pipe(createZstdDecompress());
+  // The FILE stream is kept as well as the decompressor: .pipe() returns the
+  // decompressor, and destroying that never closes the file under it, so every
+  // lookup leaked a handle until a long scan died on EMFILE (2026-10-06).
+  const file$ = createReadStream(file);
+  const stream = file$.pipe(createZstdDecompress());
   const lines = createInterface({ input: stream, crlfDelay: Infinity });
   try {
     for await (const line of lines) {
@@ -250,6 +254,7 @@ async function findBook(mode, id) {
   } finally {
     lines.close();
     stream.destroy();
+    file$.destroy();
   }
   return null;
 }
@@ -265,10 +270,14 @@ async function findBook(mode, id) {
    and the limits, so nothing calls /wallet/authenticate, and a dead rgs_url
    therefore raises nothing until a round is actually bought.
 
-   The client reads a failure out of the BODY, not the HTTP status - see the
-   check in roundPlace.svelte.ts: `data.error || status.statusCode !== 'SUCCESS'`
-   - so an armed failure answers 200 with a failing body, exactly as the RGS
-   does.
+   It answers the way the LIVE RGS does: HTTP 400 with `{ error, message }`.
+   Measured on Stake Engine (live pass, 2026-10-06): an off-ladder amount came
+   back `400 {"error":"ERR_VAL","message":"invalid amount"}`, and a session
+   token it would not accept came back a bare `400 Bad Request` with no body at
+   all. This used to answer 200 with `status.statusCode`, on the belief that
+   the RGS did; the client reads both (rgsFetcher throws "RGS responded 400:
+   ..." and ErrorModal digs the code out of it), so the change only means dev
+   now rehearses the path the live game actually takes.
 
    Armed over HTTP rather than by a flag, because the game is already running by
    the time a test knows which failure it wants:
@@ -367,9 +376,11 @@ function landingPage() {
      page's generic green. Every value below is copied from the app's
      styles/tokens.css by name, so a change there has one place to be mirrored:
 
-       --choice-higher  #2ecc71   --choice-lower   #c0392b
-       --choice-inside  #00bcd4   --choice-outside #d81ce0
-       --choice-equal   #f1c40f   --suit-red       #e74c3c
+       --choice-higher  #4fae72   --choice-lower   #b3263a
+       --choice-inside  #2f9d9a   --choice-outside #9b4f9a
+       --choice-equal   #d6a733   --suit-red       #e74c3c
+       (the 2026-10-05 "Felt & brass" set; this page had still been on the
+       pre-2026-09-27 stock hues)
        --card-red       #b3252b
 
      Same treatment as the replay-info badges inside the game, and for the same
@@ -404,11 +415,11 @@ function landingPage() {
 
   button.pick.red{--pick-c:#b3252b}
   button.pick.blk{--pick-c:#cfd6e4}
-  button.pick.higher{--pick-c:#2ecc71}
-  button.pick.lower{--pick-c:#c0392b}
-  button.pick.inside{--pick-c:#00bcd4}
-  button.pick.outside{--pick-c:#d81ce0}
-  button.pick.equal{--pick-c:#f1c40f}
+  button.pick.higher{--pick-c:#4fae72}
+  button.pick.lower{--pick-c:#b3263a}
+  button.pick.inside{--pick-c:#2f9d9a}
+  button.pick.outside{--pick-c:#9b4f9a}
+  button.pick.equal{--pick-c:#d6a733}
   /* The four suits take the card face's own two inks: hearts and diamonds
      red, clubs and spades the dark the pips are printed in. */
   button.pick.suit-red{--pick-c:#e74c3c}
@@ -1011,11 +1022,9 @@ createServer(async (req, res) => {
       if (forcedError) {
         const code = forcedError;
         console.log(`  /wallet/play -> forced ${code}`);
-        return json(res, 200, {
-          status: {
-            statusCode: code,
-            statusMessage: FORCED_MESSAGES[code] || `Forced ${code} from the replay RGS.`,
-          },
+        return json(res, 400, {
+          error: code,
+          message: FORCED_MESSAGES[code] || `Forced ${code} from the replay RGS.`,
         });
       }
       console.log('  /wallet/play -> not implemented (replay server serves books only)');

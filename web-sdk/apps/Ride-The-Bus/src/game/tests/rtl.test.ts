@@ -63,6 +63,7 @@ describe('figures are laid out left to right whatever the locale', () => {
     'components/intro/IntroPanels.svelte',
     'components/intro/ReplayDetails.svelte',
     'components/board/WinCelebration.svelte',
+    'components/popups/HistoryPopup.svelte',
   ]
     .map(read)
     .concat(GAME_MARKUP)

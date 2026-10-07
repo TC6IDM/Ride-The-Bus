@@ -12,6 +12,7 @@
  */
 import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
+import { readFileSync } from 'node:fs';
 
 import { PAYOUT_ROWS, bustRowsFor, oddsExampleFor, payoutColumnFor, payoutRowsFor } from '../payoutTable.ts';
 import { decayFor, partialMultiplier, stageRetention } from '../payout.ts';
@@ -343,4 +344,18 @@ describe('the worked example in How to Play', () => {
 			assert.doesNotMatch(v, /4[.,]75|1[.,]19|1[.,]57|2[.,]08/, 'a Classic figure is typed into the copy');
 		}
 	});
+});
+
+/*
+ * Second Chance's table prices every card with the forgiveness still in hand.
+ * Once it is spent the cards after it are priced as on Classic - higher - so a
+ * forgiven round can pay outside the printed ranges (live replay 2026-10-06:
+ * card 4 at 3.41x against 2.38-2.94x). How to Play says so under the table.
+ */
+test('a forgiving family discloses that later cards are priced higher once forgiveness is spent', () => {
+  const sc = payoutRowsFor(FAMILY_RULES.sc).find((r) => r.stage === 4)!;
+  const base = payoutRowsFor(FAMILY_RULES.base).find((r) => r.stage === 4)!;
+  assert.ok(base.max > sc.max, 'the note exists because Classic can price card 4 above every Second Chance figure');
+  const popup = readFileSync(new URL('../../../components/popups/HowToPlayPopup.svelte', import.meta.url), 'utf8');
+  assert.match(popup, /\{#if viewingRules\.forgive !== null\}\s*<p>\{t\('These prices assume your forgiveness is unused\./);
 });

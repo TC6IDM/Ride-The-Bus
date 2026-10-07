@@ -15,7 +15,6 @@ export default {
 
 	Winning: 'Ganancia',
 	'Full game win': 'Juego completo',
-	Banked: 'Asegurado',
 	Busted: 'Fallaste',
 	'Revealing…': 'Revelando…',
 
@@ -161,6 +160,56 @@ export default {
 		'Esa apuesta fue rechazada. Ajusta el importe e inténtalo de nuevo.',
 	'Not enough balance for that bet.': 'Saldo insuficiente para esa apuesta.',
 	'Your session has expired. Please reload the game.': 'Tu sesión ha caducado. Recarga el juego.',
+	'Could not reach the game server. Check your connection, then reload.':
+		'No se pudo conectar con el servidor del juego. Comprueba tu conexión y recarga.',
+	'Recent rounds':
+		'Rondas recientes',
+	'No rounds yet this session.':
+		'Aún no hay rondas en esta sesión.',
+	'Show recent rounds':
+		'Mostrar rondas recientes',
+	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
+		'Más y menos fijan tu apuesta. Haz clic en el importe para abrir el menú de apuestas rápidas.',
+	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
+		'Los rayos muestran cada modo antes de tus elecciones de Igual. Cada Igual suma uno.',
+	'Click to continue':
+		'Haz clic para continuar',
+	'Click to skip':
+		'Haz clic para saltar',
+	'Click the amount for the quick-bet menu.':
+		'Haz clic en el importe para abrir el menú de apuestas rápidas.',
+	'These prices assume your forgiveness is unused. After a forgiven miss, the cards that follow are priced as on Classic, a little higher.':
+		'Estos precios suponen que el perdón no se ha usado. Tras un fallo perdonado, las cartas siguientes se pagan como en Clásico, algo más.',
+	'The sign at the end of the bar names your game mode. Press it to choose another; switching asks you to confirm first.':
+		'El letrero al final de la barra muestra tu modo de juego. Púlsalo para elegir otro; cambiar pide confirmación primero.',
+	'Kept':
+		'Conservado',
+	'Won':
+		'Ganaste',
+	'At stake':
+		'En juego',
+	'Right':
+		'Acierto',
+	'Ace':
+		'As',
+	'King':
+		'Rey',
+	'Queen':
+		'Reina',
+	'Jack':
+		'Jota',
+	'Hearts':
+		'Corazones',
+	'Diamonds':
+		'Diamantes',
+	'Clubs':
+		'Tréboles',
+	'Spades':
+		'Picas',
+	'%r of %s':
+		'%r de %s',
+	'Card %n: %c':
+		'Carta %n: %c',
 	'A gambling limit on your account has been reached.':
 		'Se ha alcanzado un límite de juego de tu cuenta.',
 	'This game is not available from your location.':
@@ -192,7 +241,6 @@ export default {
 	'Tap to continue': 'Toca para continuar',
 	'Round details': 'Detalles de la ronda',
 	'Play amount': 'Importe de la apuesta',
-	Mode: 'Modo',
 	'Game mode': 'Modo de juego',
 	Guesses: 'Apuestas',
 	Cards: 'Cartas',
@@ -214,8 +262,6 @@ export default {
 		'Las flechas circulares abren el juego automático: la misma apuesta, repartida de nuevo durante un número fijo de rondas o sin límite. El botón cuenta las rondas que quedan.',
 	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
 		'El botón redondo grande reparte. La barra espaciadora también: púlsala para una ronda o mantenla para seguir repartiendo. Durante el juego automático se convierte en Parar y la ronda en curso termina primero.',
-	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
-		'Modo abre el selector de modo de juego. Cambiar pide confirmación antes de aplicarse.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
 		'Este juego no tiene giros gratis, rondas de bonificación, botes ni funciones de reactivación. Cada ronda es un único reparto independiente: cuatro cartas en los modos de predicción, tres en Trío.',
 	'Big Win': 'Gran Ganancia',

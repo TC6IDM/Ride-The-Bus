@@ -32,8 +32,10 @@ base.plugins = [...(base.plugins ?? []), styleImportHmr];
  * Raised rather than split, because the default's advice does not apply here.
  * There is no Pixi in it any more - the board is HTML and CSS. Measured on the
  * 2026-09-22 build: ~640 kB of JS (~205 kB gzipped), about half of it the 17
- * locale catalogues, and ~290 kB of CSS (~125 kB gzipped), of which ~130 kB is
- * the six self-hosted font subsets as base64. bundleStrategy is 'inline', so
+ * locale catalogues, and ~290 kB of CSS (~125 kB gzipped), of which ~130 kB was
+ * the six font subsets as base64 - until 2026-10-05, when they moved out to
+ * static/fonts/ because Stake's CDN CSP (`font-src 'self'`) refuses data:
+ * fonts (see src/app.html). bundleStrategy is 'inline', so
  * every byte is in index.html and a split would buy nothing but a second
  * request; there is no route to lazy-load behind and no second page to defer
  * to. This game is one screen.

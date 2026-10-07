@@ -55,6 +55,21 @@
 .game-layout { --ui-bar: clamp(6px, min(2.05vw, 2.4vh), 11px); }
 }
 
+/* ---- The type floor, on a phone -------------------------------------------
+   --type-floor (tokens.css) was set for Popout S, where 6px is the price of a
+   whole game in a 400x225 window. A portrait phone is not that window: it is
+   width-bound (--ui is 2.2vw) with ~400px of height unused, and at 6px the
+   bar's captions and the family name were unreadable on the device most
+   players hold - 6px captions, 7.4px guess labels, an 8.1px first-deal hint
+   at 320px (the critique, 2026-10-05). 9px and 11px here; Popout S keeps 6.
+   A floor, so it binds only where the unit would go under it. */
+@media (max-width: 620px) and (orientation: portrait) {
+.game-layout {
+    --type-floor: 9px;
+    --type-floor-figure: 11px;
+  }
+}
+
 /* ---- Touch targets on phones ---------------------------------------------
    The layout is WIDTH-constrained in portrait: --ui resolves from min(2vw,
    1.55vh), so on a 390x844 phone the 2vw term wins at ~7.8px and every control

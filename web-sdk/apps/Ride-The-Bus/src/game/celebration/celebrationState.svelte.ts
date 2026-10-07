@@ -43,6 +43,11 @@ export type Celebration = {
    * no ladder to climb - its single tier wears the FAMILY's colour instead.
    */
   family: ModeFamily;
+  /**
+   * What the board's readout was showing before the last card landed, as a
+   * multiple of the base bet - where the count-up starts (countUpSegments).
+   */
+  startMultiplier: number;
 };
 
 /**
@@ -89,10 +94,23 @@ export function showWinCelebration(
     forgivenIndex: round.forgivenIndex,
     ticket: round.ticketShown,
     family,
+    startMultiplier: boardFigureBeforeLastCard(),
   };
   return new Promise((resolve) => {
     celebrationResolve = resolve;
   });
+}
+
+/**
+ * The running total the board printed before the round's last card: the stage
+ * before the last one that has a figure. On Last Stop that is card 3's total -
+ * the suit card prices at 1.0 and its chip lands with the ticket.
+ */
+function boardFigureBeforeLastCard(): number {
+  const stages = round.stageMultipliers;
+  let last = -1;
+  for (let i = 0; i < stages.length; i += 1) if (stages[i] !== null) last = i;
+  return last > 0 ? (stages[last - 1] ?? 0) : 0;
 }
 
 export function dismissCelebration() {

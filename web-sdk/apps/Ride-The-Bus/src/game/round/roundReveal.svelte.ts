@@ -17,7 +17,7 @@
  * every cue in between, so a cue added to the loop needs the same treatment.
  */
 import type { Card } from './roundContract';
-import { loaderGone } from '../platform/ready.svelte';
+import { introGone, loaderGone } from '../platform/ready.svelte';
 import { HOLD_MIN_CLIMB, sound } from '../audio/sound';
 import { applyBust, bookTicket, forgivenessAvailable, quantizeMultiplier, ticketStage, topTicket } from '../math/payout';
 import { FREE_CHOICE, isCleanSweep, stageCount } from '../math/modes';
@@ -82,6 +82,18 @@ export function waitForLoaderGone(timeoutMs = 10000): Promise<void> {
       if (loaderGone.value || performance.now() - started > timeoutMs) resolve();
       else requestAnimationFrame(check);
     };
+    check();
+  });
+}
+
+/**
+ * Resolves once the intro has gone and the board is in front of the player.
+ * No timeout: the intro waits for a tap however long it takes, and a round
+ * revealed behind it is a round nobody saw. See introGone in ready.svelte.ts.
+ */
+export function waitForIntroGone(): Promise<void> {
+  return new Promise((resolve) => {
+    const check = () => (introGone.value ? resolve() : requestAnimationFrame(check));
     check();
   });
 }

@@ -49,14 +49,44 @@
     return match ? match[0] : null;
   });
 
+  /**
+   * A failure with no session behind it - authenticate or the replay fetch
+   * failed while the game was launching (Authenticate.svelte tags those
+   * `launch: true`). Nothing on the board can work after it, so Reload is the
+   * only honest action. A bad rgs_url is the case a Stake PreCheck tries.
+   */
+  const launch = $derived(stateModal.modal?.name === 'error' && (stateModal.modal as any).launch === true);
+
+  /**
+   * The request never reached an answer: fetch throws a TypeError ("Failed to
+   * fetch" in Chrome, "Load failed" in Safari, "NetworkError when attempting to
+   * fetch resource" in Firefox), or the launch timeout fired. That raw text
+   * used to be the dialog's only detail - true, but it tells a player nothing.
+   */
+  const network = $derived.by(() => {
+    const e = raw;
+    if (!e || code) return false;
+    const text = typeof e === 'string' ? e : typeof e?.message === 'string' ? e.message : '';
+    return e instanceof TypeError || /failed to fetch|load failed|networkerror|did not respond|timed out|timeout/i.test(text);
+  });
+
   const message = $derived(
-    (code && MESSAGES[code]?.()) || t('Something went wrong. Please try again.'),
+    (code && MESSAGES[code]?.()) ||
+      (network ? t('Could not reach the game server. Check your connection, then reload.') : null) ||
+      t('Something went wrong. Please try again.'),
   );
 
   /** The underlying payload, readable, for support. Never shown as [object Object]. */
   const detail = $derived.by(() => {
     const e = raw;
-    if (!e) return '';
+    // The plain-language message already says everything a network failure means.
+    // So does a RECOGNISED code's: its sentence is translated, and the RGS's own
+    // statusMessage under it is the same news again in English - in fifteen of
+    // the sixteen languages the only English on screen (live pass, 2026-10-06:
+    // "RGS rejected play (ERR_GEN): General error." under the German message).
+    // The code line below stays for support. Unknown failures keep the detail,
+    // because there it is the only thing that says what happened.
+    if (!e || network || (code && MESSAGES[code])) return '';
     if (typeof e === 'string') return e;
     if (e instanceof Error) return e.message;
     const parts = [
@@ -72,7 +102,18 @@
     }
   });
 
-  const canReload = $derived(Boolean(code && RELOADABLE.has(code)));
+  const canReload = $derived(Boolean((code && RELOADABLE.has(code)) || launch));
+
+  /**
+   * A failure the dialog cannot name: no RGS code, not the network, not the
+   * launch. The live RGS answers a session token it will not accept with a bare
+   * "400 Bad Request" - no ERR_IS, nothing to map (live pass, 2026-10-06) - so an
+   * expired session can arrive here, and Close alone left the player retrying
+   * into the same wall. Reload is offered beside Close: it is always safe (an
+   * unfinished round resumes) and it is the one action that fixes a dead
+   * session. Known codes keep their single, specific action.
+   */
+  const unknown = $derived(stateModal.modal?.name === 'error' && !code && !network && !launch);
 
   const isOpen = $derived(stateModal.modal?.name === 'error');
 
@@ -106,8 +147,8 @@
   /**
    * Escape closes - but only when there is something to close TO.
    *
-   * ERR_IS and ERR_ATE are dead sessions, and for those the dialog's only
-   * action is Reload. Letting Escape dismiss it there would leave a player
+   * ERR_IS and ERR_ATE are dead sessions, and so is any launch failure; for
+   * those the dialog's only action is Reload. Letting Escape dismiss it there would leave a player
    * looking at a board that cannot take a bet, with nothing on screen saying
    * why - which is the same failure the backdrop comment refuses ("an
    * unacknowledged failure should not be dismissable by a stray click"),
@@ -157,6 +198,9 @@
 
     <div class="err-actions">
       {#if canReload}
+        <button class="action-button" onclick={reload}>{t('Reload')}</button>
+      {:else if unknown}
+        <button class="err-secondary" onclick={() => (stateModal.modal = null)}>{t('Close')}</button>
         <button class="action-button" onclick={reload}>{t('Reload')}</button>
       {:else}
         <button class="action-button" onclick={() => (stateModal.modal = null)}>{t('Close')}</button>

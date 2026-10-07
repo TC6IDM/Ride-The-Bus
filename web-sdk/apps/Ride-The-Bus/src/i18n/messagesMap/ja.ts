@@ -15,7 +15,6 @@ export default {
 
 	Winning: '配当',
 	'Full game win': 'フルゲーム達成',
-	Banked: '確保',
 	Busted: '失敗',
 	'Revealing…': 'めくり中…',
 
@@ -162,6 +161,56 @@ export default {
 	'Not enough balance for that bet.': 'そのベットに必要な残高が足りません。',
 	'Your session has expired. Please reload the game.':
 		'セッションの有効期限が切れました。ゲームを再読み込みしてください。',
+	'Could not reach the game server. Check your connection, then reload.':
+		'ゲームサーバーに接続できませんでした。接続を確認してから再読み込みしてください。',
+	'Recent rounds':
+		'最近のラウンド',
+	'No rounds yet this session.':
+		'このセッションのラウンドはまだありません。',
+	'Show recent rounds':
+		'最近のラウンドを表示',
+	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
+		'プラスとマイナスでベット額を設定します。金額をクリックするとクイックベットのメニューが開きます。',
+	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
+		'稲妻はイコールを選ぶ前の各モードを示します。イコールを1つ選ぶごとに1つ増えます。',
+	'Click to continue':
+		'クリックして続行',
+	'Click to skip':
+		'クリックしてスキップ',
+	'Click the amount for the quick-bet menu.':
+		'金額をクリックするとクイックベットのメニューが開きます。',
+	'These prices assume your forgiveness is unused. After a forgiven miss, the cards that follow are priced as on Classic, a little higher.':
+		'この配当は免除が未使用の場合のものです。免除されたミスの後は、続くカードがクラシックと同じ、少し高い配当になります。',
+	'The sign at the end of the bar names your game mode. Press it to choose another; switching asks you to confirm first.':
+		'バーの端の表示板に現在のゲームモードが出ます。押すと別のモードを選べます。切り替えの前に確認があります。',
+	'Kept':
+		'キープ',
+	'Won':
+		'勝ち',
+	'At stake':
+		'賭け中',
+	'Right':
+		'正解',
+	'Ace':
+		'エース',
+	'King':
+		'キング',
+	'Queen':
+		'クイーン',
+	'Jack':
+		'ジャック',
+	'Hearts':
+		'ハート',
+	'Diamonds':
+		'ダイヤ',
+	'Clubs':
+		'クラブ',
+	'Spades':
+		'スペード',
+	'%r of %s':
+		'%sの%r',
+	'Card %n: %c':
+		'カード%n：%c',
 	'A gambling limit on your account has been reached.': 'アカウントのプレイ上限に達しました。',
 	'This game is not available from your location.':
 		'このゲームはお客様の地域ではご利用いただけません。',
@@ -192,7 +241,6 @@ export default {
 	'Tap to continue': 'タップして続行',
 	'Round details': 'ラウンド詳細',
 	'Play amount': 'ベット額',
-	Mode: 'モード',
 	'Game mode': 'ゲームモード',
 	Guesses: '予想',
 	Cards: 'カード',
@@ -214,8 +262,6 @@ export default {
 		'円形の矢印でオートプレイを開きます。同じベットを指定ラウンド数または無制限に配り直し、ボタンに残りラウンド数が表示されます。',
 	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
 		'大きな丸いボタンで配ります。スペースキーでも同様で、押すと1ラウンド、押し続けると配り続けます。オートプレイ中は停止に変わり、進行中のラウンドが先に終了します。',
-	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
-		'モードでゲームモードの選択画面を開きます。切り替えは適用前に確認を求めます。',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
 		'このゲームにはフリースピン、ボーナスラウンド、ジャックポット、再トリガー機能はありません。各ラウンドは独立した1回の配札です：予想モードでは4枚、スリーカードでは3枚。',
 	'Big Win': '大当たり',

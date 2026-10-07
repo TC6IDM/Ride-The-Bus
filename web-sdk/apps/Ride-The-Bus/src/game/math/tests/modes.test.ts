@@ -339,7 +339,7 @@ describe('parseModeName', () => {
   // `node --test` cannot mount. Crude, but the failure it guards is silent, has
   // now happened twice on the same two call sites, and a replay is exactly the
   // thing a Stake reviewer opens.
-  test('the replay and resume effects carry the family, not just the guesses', () => {
+  test('the replay, resume and remembered-picks restores carry the family, not just the guesses', () => {
     // Both effects stay in the component - $effect only runs inside one - but
     // the source is read through the manifest so this keeps looking at the
     // right files if that ever stops being true. See sources.testlib.ts.
@@ -353,8 +353,8 @@ describe('parseModeName', () => {
     const restores = source.match(/const parsed = parseModeName\([\s\S]*?\n {2,4}}/g) ?? [];
     assert.equal(
       restores.length,
-      2,
-      'expected exactly two parseModeName restore blocks in Game.svelte (replay + resume)',
+      3,
+      'expected exactly three parseModeName restore blocks (replay, resume, and the remembered picks)',
     );
 
     for (const block of restores) {
@@ -449,10 +449,11 @@ describe('parseModeName', () => {
       source.match(
         /isCleanSweep\(\s*(?:round\.)?bustedIndex\s*,\s*(?:round\.)?forgivenIndex\s*\)/g,
       ) ?? [];
+    // Six since 2026-10-05: the history panel's "full game win" mark asks it too.
     assert.equal(
       sweeps.length,
-      5,
-      `expected 5 isCleanSweep call sites in Game.svelte, found ${sweeps.length}`,
+      6,
+      `expected 6 isCleanSweep call sites in the game's sources, found ${sweeps.length}`,
     );
 
     // The wrong spelling, gone and staying gone. A forgiven round has no bust

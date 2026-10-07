@@ -48,7 +48,14 @@ export const bookEventAmountToNormalisedAmount = (bookEventAmount: number) => {
 
 export const numberToFloat = (value: number) => Number.parseFloat(`${value}`);
 
-export const numberToCurrencyString = (value: number) => {
+/**
+ * `fractionDigits` (LOCAL ADDITION) pins the decimals instead of deriving them
+ * from `value`. For a figure animating towards a total - the win takeover's
+ * count-up - pass the TOTAL's digits (currencyFractionDigits(total)), so the
+ * frames in between print the way the total will, rather than flashing six
+ * decimals on their way up ("$0.0002"). Never below the currency's precision.
+ */
+export const numberToCurrencyString = (value: number, fractionDigits?: number) => {
 	if (stateBet.currency in NO_LOCALISATION_CURRENCY_MAP) {
 		// Social currencies are shown to two places, widened the same way so a
 		// sub-cent SC/GC payout is not rendered as "0.00 SC".
@@ -57,8 +64,15 @@ export const numberToCurrencyString = (value: number) => {
 		// from upstream. The label is a SUFFIX: Stake's currency table gives the
 		// format as "10.00 GC" / "10.00 SC", where every other currency is shown
 		// with a leading symbol. The SDK had it leading, like the rest.
-		const digits = displayFractionDigits(value, 2);
-		return `${numberToFloat(value).toFixed(digits)} ${NO_LOCALISATION_CURRENCY_MAP[stateBet.currency]}`;
+		const digits = Math.max(2, fractionDigits ?? displayFractionDigits(value, 2));
+		// Grouped like every other currency ("4,583.30 SC"). This used toFixed(),
+		// which never groups, so a social balance read "8665.60 SC" beside a
+		// "4,583.3x" multiplier. Social mode is English-only, so 'en' grouping.
+		const figure = new Intl.NumberFormat('en', {
+			minimumFractionDigits: digits,
+			maximumFractionDigits: digits,
+		}).format(numberToFloat(value));
+		return `${figure} ${NO_LOCALISATION_CURRENCY_MAP[stateBet.currency]}`;
 	}
 
 	// LOCAL ADDITION to the Stake SDK - re-apply if this package is updated
@@ -74,8 +88,8 @@ export const numberToCurrencyString = (value: number) => {
 		// 3 and a maximum of 2 underneath it throws a RangeError. The maximum
 		// only ever widens past `places`, and only for amounts that would
 		// otherwise render as zero - see displayFractionDigits.
-		minimumFractionDigits: places,
-		maximumFractionDigits: displayFractionDigits(value, places),
+		minimumFractionDigits: fractionDigits === undefined ? places : Math.max(places, fractionDigits),
+		maximumFractionDigits: Math.max(places, fractionDigits ?? displayFractionDigits(value, places)),
 		// numberingSystem: 'latn',
 	} as const;
 
@@ -99,6 +113,13 @@ export const numberToCurrencyString = (value: number) => {
 		return new Intl.NumberFormat(undefined, format).format(numberToFloat(value));
 	}
 };
+
+/**
+ * LOCAL ADDITION. The decimals `value` needs in the current currency - what a
+ * count-up passes to numberToCurrencyString for every frame on its way there.
+ */
+export const currencyFractionDigits = (value: number) =>
+	displayFractionDigits(value, stateBet.currency in NO_LOCALISATION_CURRENCY_MAP ? 2 : currencyDecimals(stateBet.currency));
 
 export const bookEventAmountToCurrencyString = (bookEventAmount: number) => {
 	const normalisedAmount = bookEventAmountToNormalisedAmount(bookEventAmount);

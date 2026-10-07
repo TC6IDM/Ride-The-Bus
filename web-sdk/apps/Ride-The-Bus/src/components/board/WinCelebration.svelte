@@ -8,8 +8,10 @@
 	 * also dismiss - that would hide the number the player stopped to read.
 	 *
 	 * The count-up is SEGMENTED, one leg per tier the win passes through (see
-	 * countUpSegments). Every celebration opens at zero on "Big Win" and climbs to
-	 * the top of that band, then restarts at the next tier's floor and climbs
+	 * countUpSegments). Every celebration opens at the figure the board last
+	 * showed, under that figure's tier (never at zero after the board printed $20,
+	 * and never on a lower tier's ceiling), and climbs to the top of that band,
+	 * then restarts at the next tier's floor and climbs
 	 * through that one, until the leg that ends on the amount actually won. Each
 	 * leg eases in and out, so the number accelerates away from the floor and
 	 * settles into the ceiling rather than running at a constant rate.
@@ -35,9 +37,10 @@
 	 * index.html, and "optimised bundle size" is an explicit 3-star criterion -
 	 * so a sprite sheet for one screen would be a bad trade.
 	 */
-	import { numberToCurrencyString } from 'utils-shared/amount';
+	import { currencyFractionDigits, numberToCurrencyString } from 'utils-shared/amount';
 	import { labelEms } from '../../game/ui/typeFit';
 	import { titleFaceFor } from '../../game/ui/displayFace';
+	import { fingerPointer } from '../../game/ui/pointerWords';
 
 	import MarkIcon from '../icons/MarkIcon.svelte';
 	import SuitIcon from '../icons/SuitIcon.svelte';
@@ -79,6 +82,11 @@
 		 */
 		family: ModeFamily;
 		/**
+		 * Where the count starts: the board's figure before the last card, as a
+		 * multiple of the base bet. See countUpSegments.
+		 */
+		startMultiplier: number;
+		/**
 		 * The four card slots of the round being celebrated, in deal order, with
 		 * null for any the player never reached.
 		 *
@@ -115,15 +123,15 @@
 	 * The legs of the climb. Built once - the props for a given celebration never
 	 * change, and rebuilding mid-count would restart it.
 	 */
-	const segments = countUpSegments(props.multiplier, props.tier, props.tiers);
+	const segments = countUpSegments(props.multiplier, props.tier, props.tiers, props.startMultiplier);
 
 	/** Display units per 1x, for converting a leg's multipliers into money. */
 	const perX = props.multiplier > 0 ? props.amount / props.multiplier : 0;
 
 	/** Which leg is running. */
 	let segmentIndex = $state(0);
-	/** Amount currently on screen. */
-	let shown = $state(0);
+	/** Amount currently on screen - from the first frame, where the count starts. */
+	let shown = $state(segments.length ? segments[0]!.fromMultiplier * perX : 0);
 	/** True until the final leg lands - drives which prompt shows. */
 	let counting = $state(true);
 	/**
@@ -179,6 +187,14 @@
 	const titleFace = $derived(titleFaceFor(titleText));
 
 	const amountEms = $derived(labelEms(numberToCurrencyString(props.amount)));
+	/**
+	 * The count-up prints every frame at the FINAL amount's precision. Money is
+	 * shown exactly now, so a frame on its way to $0.711 would otherwise print
+	 * "$0.0002" and then "$0.068213" - the width jumping and six decimals
+	 * flashing past - before settling on the real figure. Fixed to the total's
+	 * digits, the climb reads $0.000 ... $0.711.
+	 */
+	const amountDigits = $derived(currencyFractionDigits(props.amount));
 
 	let amountEl: HTMLElement | undefined = $state(undefined);
 	let fanEl: HTMLElement | undefined = $state(undefined);
@@ -210,11 +226,14 @@
 	 * A label that changed with the count would re-announce on every frame, which
 	 * is the noise the aria-hidden exists to prevent.
 	 */
+	/** A finger taps and a mouse clicks - the prompt says which (pointerWords.ts). */
+	const finger = fingerPointer();
+
 	const ariaLabel = () =>
 		[
 			t(props.tier.label),
 			numberToCurrencyString(props.amount),
-			counting ? t('Tap to skip') : t('Tap to continue'),
+			counting ? (finger ? t('Tap to skip') : t('Click to skip')) : finger ? t('Tap to continue') : t('Click to continue'),
 		].join(', ');
 
 	/** Mark the celebration finished: nothing left to count, only to dismiss. */
@@ -303,6 +322,13 @@
 		// run and nothing to skip, so it arrives finished: the prompt reads "tap to
 		// continue" immediately and the next tap dismisses. Offering "tap to skip"
 		// over a static number would be a button that does nothing.
+		// A first leg can be a hold too, when the board had already passed its
+		// ceiling: it rests there and climbs on, like any other ceiling.
+		if (segment.isHold && !isLast) {
+			shown = to;
+			holdThenAdvance(index);
+			return;
+		}
 		if (segment.isHold) {
 			shown = to;
 			settle();
@@ -322,7 +348,12 @@
 		shown = from;
 
 		const step = (now: number) => {
-			const progress = Math.min(1, (now - start) / duration);
+			// Clamped at 0 as well as 1: a requestAnimationFrame timestamp is the
+			// frame's START, which can fall before `start` (read with
+			// performance.now() a moment later), and a negative progress eased to
+			// a figure under the leg's floor - the live max win opened on
+			// "-$0.00001" (live pass, 2026-10-06).
+			const progress = Math.max(0, Math.min(1, (now - start) / duration));
 			// Ease-in-out cubic.
 			const eased =
 				progress < 0.5 ? 4 * progress ** 3 : 1 - (-2 * progress + 2) ** 3 / 2;
@@ -582,7 +613,7 @@
 			style="--amount-ems: {amountEms}"
 			bind:this={amountEl}
 		>
-			{numberToCurrencyString(shown)}
+			{numberToCurrencyString(shown, amountDigits)}
 		</div>
 
 		<!-- Climbs with the amount, so the multiplier and the title agree at
@@ -590,7 +621,7 @@
 		<div class="wc-mult">{formatMultiplier(shownMultiplier)}</div>
 
 		<div class="wc-prompt" class:is-ready={!counting}>
-			{counting ? t('Tap to skip') : t('Tap to continue')}
+			{counting ? (finger ? t('Tap to skip') : t('Click to skip')) : finger ? t('Tap to continue') : t('Click to continue')}
 		</div>
 	</div>
 </div>

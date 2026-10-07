@@ -59,6 +59,21 @@ const LADDER_FAMILIES: readonly ModeFamily[] = MODE_FAMILIES.filter(
 const FIXED_FAMILIES: readonly ModeFamily[] = MODE_FAMILIES.filter(
   (family) => FAMILY_RULES[family].fixedChoices !== null,
 );
+/**
+ * Neighbouring families whose per-combination order is a SAMPLED claim, not an
+ * exact one - see 'the ordering holds for every guess combination'. Last Stop
+ * sits under High Stakes exactly on all 64 (test_model.py), but its ticket tail
+ * samples noisily: the 2026-10-01 build had 3 combinations up to 2.9% the wrong
+ * way round. 5% and 5 leave room for the next build's draw without letting a
+ * real change in either family's rules through.
+ */
+const SAMPLED_NEIGHBOURS: readonly {
+  quieter: ModeFamily;
+  louder: ModeFamily;
+  tolerance: number;
+  maxTies: number;
+}[] = [{ quieter: 'ls', louder: 'hs', tolerance: 0.05, maxTies: 5 }];
+
 /** The last stop a four-guess family reaches on its own; the two Equals fill the rest. */
 const LADDER_CEILING = Math.max(...LADDER_FAMILIES.map((family) => FAMILY_BOLTS[family]));
 
@@ -345,6 +360,16 @@ describe('the ordering matches the published math', () => {
    * not place an average bet - they place one of the 64 combinations. This
    * asserts the ordering holds for every single one of them, which is what makes
    * one row of bolts an honest summary of a family rather than a headline.
+   *
+   * STRICT for every neighbouring pair but one: Last Stop under High Stakes is
+   * held within SAMPLED_NEIGHBOURS instead (owner's call, 2026-10-05). Exactly,
+   * Last Stop is the calmer on all 64 - `math-sdk/games/ride_the_bus/tests/
+   * test_model.py` pins that strictly - but on the Higher/Lower + Outside
+   * combinations the two are only 0.78% apart, and a ticket family's tail is a
+   * handful of x10 sweeps, so its std samples noisily: the 2026-10-01 build put
+   * three combinations level or a few percent the wrong way round. No rebuild
+   * can promise that order on a sampled table, so a tie inside the tolerance is
+   * logged rather than failed, and anything wider, or more of them, still fails.
    */
   test('the ordering holds for every guess combination', { skip: !available }, () => {
     const stats = readStats();
@@ -358,16 +383,32 @@ describe('the ordering matches the published math', () => {
 
     const ascending = LADDER_FAMILIES.slice().sort((a, b) => FAMILY_BOLTS[a] - FAMILY_BOLTS[b]);
     const violations: string[] = [];
+    const ties: string[] = [];
     for (const [key, stds] of byCombination) {
       for (let i = 1; i < ascending.length; i += 1) {
-        const quieter = stds.get(ascending[i - 1]!)!;
-        const louder = stds.get(ascending[i]!)!;
-        if (!(quieter < louder)) {
-          violations.push(`${key}: ${ascending[i - 1]} ${quieter} !< ${ascending[i]} ${louder}`);
-        }
+        const quieterFamily = ascending[i - 1]!;
+        const louderFamily = ascending[i]!;
+        const quieter = stds.get(quieterFamily)!;
+        const louder = stds.get(louderFamily)!;
+        if (quieter < louder) continue;
+        const line = `${key}: ${quieterFamily} ${quieter} !< ${louderFamily} ${louder}`;
+        const sampled = SAMPLED_NEIGHBOURS.find(
+          (pair) => pair.quieter === quieterFamily && pair.louder === louderFamily,
+        );
+        if (sampled && quieter <= louder * (1 + sampled.tolerance)) ties.push(line);
+        else violations.push(line);
       }
     }
+    for (const line of ties) console.log(`    sampling tie (within tolerance): ${line}`);
     assert.deepEqual(violations, [], `${violations.length} combinations rank against the meter`);
+    for (const pair of SAMPLED_NEIGHBOURS) {
+      const count = ties.filter((line) => line.includes(` ${pair.quieter} `) && line.includes(` ${pair.louder} `)).length;
+      assert.ok(
+        count <= pair.maxTies,
+        `${count} combinations put ${pair.quieter} level with or above ${pair.louder} - more than the ` +
+          `${pair.maxTies} sampling noise explains; the families have moved, not the sample`,
+      );
+    }
   });
 
   /**

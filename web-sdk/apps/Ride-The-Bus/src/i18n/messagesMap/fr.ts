@@ -15,7 +15,6 @@ export default {
 
 	Winning: 'Gain',
 	'Full game win': 'Partie complète',
-	Banked: 'Sécurisé',
 	Busted: 'Perdu',
 	'Revealing…': 'Révélation…',
 
@@ -162,6 +161,56 @@ export default {
 	'Not enough balance for that bet.': 'Solde insuffisant pour cette mise.',
 	'Your session has expired. Please reload the game.':
 		'Votre session a expiré. Veuillez recharger le jeu.',
+	'Could not reach the game server. Check your connection, then reload.':
+		'Impossible de joindre le serveur du jeu. Veuillez vérifier votre connexion, puis recharger.',
+	'Recent rounds':
+		'Manches récentes',
+	'No rounds yet this session.':
+		'Aucune manche pour l’instant dans cette session.',
+	'Show recent rounds':
+		'Afficher les manches récentes',
+	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
+		'Plus et moins fixent votre mise. Cliquez sur le montant pour ouvrir le menu des mises rapides.',
+	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
+		'Les éclairs montrent chaque mode avant vos choix Égal. Chaque choix Égal en ajoute un.',
+	'Click to continue':
+		'Cliquez pour continuer',
+	'Click to skip':
+		'Cliquez pour passer',
+	'Click the amount for the quick-bet menu.':
+		'Cliquez sur le montant pour ouvrir le menu des mises rapides.',
+	'These prices assume your forgiveness is unused. After a forgiven miss, the cards that follow are priced as on Classic, a little higher.':
+		'Ces prix supposent que le pardon n’a pas été utilisé. Après une erreur pardonnée, les cartes suivantes sont cotées comme en Classique, un peu plus haut.',
+	'The sign at the end of the bar names your game mode. Press it to choose another; switching asks you to confirm first.':
+		'Le panneau au bout de la barre affiche votre mode de jeu. Appuyez dessus pour en choisir un autre ; changer demande d’abord une confirmation.',
+	'Kept':
+		'Conservé',
+	'Won':
+		'Gagné',
+	'At stake':
+		'En jeu',
+	'Right':
+		'Correct',
+	'Ace':
+		'As',
+	'King':
+		'Roi',
+	'Queen':
+		'Dame',
+	'Jack':
+		'Valet',
+	'Hearts':
+		'Cœur',
+	'Diamonds':
+		'Carreau',
+	'Clubs':
+		'Trèfle',
+	'Spades':
+		'Pique',
+	'%r of %s':
+		'%r de %s',
+	'Card %n: %c':
+		'Carte %n : %c',
 	'A gambling limit on your account has been reached.':
 		'Une limite de jeu de votre compte a été atteinte.',
 	'This game is not available from your location.':
@@ -193,7 +242,6 @@ export default {
 	'Tap to continue': 'Appuyez pour continuer',
 	'Round details': 'Détails de la manche',
 	'Play amount': 'Montant de la mise',
-	Mode: 'Mode',
 	'Game mode': 'Mode de jeu',
 	Guesses: 'Pronostics',
 	Cards: 'Cartes',
@@ -215,8 +263,6 @@ export default {
 		'Les flèches circulaires ouvrent le jeu automatique : la même mise, redistribuée pour un nombre défini de manches ou sans limite. Le bouton décompte les manches restantes.',
 	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
 		'Le grand bouton rond distribue. La barre d’espace aussi : appuyez pour une manche, maintenez pour continuer à distribuer. Pendant le jeu automatique, il devient Arrêter et la manche en cours se termine d’abord.',
-	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
-		'Mode ouvre le sélecteur de mode de jeu. Changer demande une confirmation avant de s’appliquer.',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
 		'Ce jeu ne comporte ni tours gratuits, ni tours bonus, ni jackpots, ni fonctions de relance. Chaque manche est une donne unique et indépendante : quatre cartes dans les modes à pronostics, trois en Brelan.',
 	'Big Win': 'Gros Gain',

@@ -22,28 +22,29 @@ import { splitChipLabel } from '../../bet/betChips.ts';
  */
 describe('the figure is fitted to the disc', () => {
   /**
-   * string -> em width, Geist 800, `tnum`, letter-spacing -0.01em.
+   * string -> em width, Overpass 800, `tnum`, letter-spacing -0.01em.
+   * Re-measured 2026-10-05, when the body face changed from Geist.
    *
    * Summed from the shipped file's advance widths with fontTools (tabular
    * digits, no kerning - kerning only ever makes a run narrower, so a table
    * without it is the conservative one for the "never smaller" check below).
-   * The Poppins table this replaces was measured off a probe span in the page;
+   * The Poppins table before Geist was measured off a probe span in the page;
    * the three "x,000" strings differed there because Poppins' "2", "5" and "0"
    * are different widths, and are identical here because tabular digits are.
    */
   const REAL_EMS: Record<string, number> = {
-    $1: 1.311,
-    $25: 1.949,
-    $100: 2.587,
-    '$1,000': 3.463,
-    '12,500': 3.428,
-    '20,000': 3.428,
-    '15,000': 3.428,
-    '0.10': 2.152,
-    NOK: 2.216,
-    SC: 1.42,
-    '¥1,000': 3.43,
-    '1 234,50': 4.277,
+    $1: 1.205,
+    $25: 1.811,
+    $100: 2.417,
+    '$1,000': 3.27,
+    '12,500': 3.277,
+    '20,000': 3.277,
+    '15,000': 3.277,
+    '0.10': 2.057,
+    NOK: 2.135,
+    SC: 1.234,
+    '¥1,000': 3.281,
+    '1 234,50': 4.128,
   };
 
   /**
@@ -65,7 +66,7 @@ describe('the figure is fitted to the disc', () => {
    * legible.
    *
    * 20% rather than 15% because of the capitals. This face's common caps run
-   * 0.61 ("Z") to 0.79 ("O") and EM_CAP is one number at the top of that
+   * 0.30 ("I") to 0.73 ("A") and EM_CAP is one number at the top of that
    * range, so an all-narrow code like "SC" comes out 13% heavy. That costs
    * nothing in practice: capitals only ever appear in a currency CODE, which
    * takes its own line under a cap of its own, and that cap is what binds on a

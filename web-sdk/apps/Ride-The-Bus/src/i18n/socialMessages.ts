@@ -12,8 +12,12 @@ import type { MessageKey } from './i18nDerived';
 
 const socialMessages: Partial<Record<MessageKey, string>> = {
 	// Control bar readouts
+	// "win" is NOT a restricted term - Stake's table uses win/won as the
+	// REPLACEMENTS for pay/paid. "Last Win", "Winning" and "Full game win" used to be
+	// rewritten to "Last Won", "Won" (mid-round, the wrong tense) and "Full game won",
+	// which only made the copy ungrammatical (live pass, 2026-10-05). They render
+	// in plain English now.
 	Balance: 'Balance',
-	'Last Win': 'Last Won',
 	Bet: 'Play',
 
 	// Deal button / action states. "Deal" carries no restricted term, so the
@@ -44,7 +48,7 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 	'Stop autoplay': 'Stop auto play',
 
 	// Autoplay popup, what ends a run
-	'Stop autoplay on full game win': 'Stop auto play on full game won',
+	'Stop autoplay on full game win': 'Stop auto play on full game win',
 	'× means times your base bet.': '× means times your base play amount.',
 	'Times your base bet': 'Times your base play amount',
 
@@ -55,9 +59,9 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 	'Decrease bet': 'Decrease play',
 
 	// Running win bar
-	Winning: 'Won',
-	'Full game win': 'Full game won',
-	Banked: 'Banked',
+	Kept: 'Kept',
+	// "stake" is restricted (play amount); Three of a Kind's live total rides.
+	'At stake': 'In play',
 	Busted: 'Busted',
 	'Revealing…': 'Revealing…',
 
@@ -124,6 +128,8 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 	// is spelled "auto play" everywhere else in social mode.
 	'Plus and minus set your bet. Tap the amount for the quick-bet menu.':
 		'Plus and minus set your play amount. Tap the amount for the quick-play menu.',
+	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
+		'Plus and minus set your play amount. Click the amount for the quick-play menu.',
 	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
 		'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During auto play it becomes Stop, and the round in play finishes first.',
 	'The circular arrows open autoplay: the same bet, dealt again for a set number of rounds or without limit. The button counts down the rounds left.':
@@ -165,6 +171,8 @@ const socialMessages: Partial<Record<MessageKey, string>> = {
 	'%c× your base bet of %b': '%c× your base play amount of %b',
 	'Tap the amount for the quick-bet menu.':
 		'Tap the amount for the quick-play menu.',
+	'Click the amount for the quick-bet menu.':
+		'Click the amount for the quick-play menu.',
 	'Max win %s your bet':
 		'Max win %s your play amount',
 	// Last Stop: "pays" and "bet" are restricted. Its blurb, the Classic-pricing

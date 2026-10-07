@@ -44,9 +44,26 @@ describe('displayFractionDigits', () => {
     assert.equal(displayFractionDigits(0, 0), 0);
   });
 
-  test('an amount exactly on the rounding threshold still displays', () => {
-    // 0.005 rounds to 0.01 at 2dp, so it is visible and needs no widening.
-    assert.equal(displayFractionDigits(0.005, 2), 2);
+  test('half a cent is shown as half a cent, not rounded up to one', () => {
+    // The old rule kept 2dp here because 0.005 rounds to a visible 0.01 - and a
+    // player who was credited $0.005 was shown $0.01. Exact now (2026-10-05).
+    assert.equal(displayFractionDigits(0.005, 2), 3);
+  });
+
+  test('an amount with sub-cent digits is shown exactly, not rounded', () => {
+    // Measured over every paying round in the published tables: at a $0.01 bet,
+    // 58% of payouts used to display a figure different from the credit.
+    assert.equal(displayFractionDigits(0.017, 2), 3); // 1.7x on $0.01, was "$0.02"
+    assert.equal(displayFractionDigits(13.542, 2), 3); // 1354.2x on $0.01, was "$13.54"
+    assert.equal(displayFractionDigits(997.468, 2), 3); // a balance after sub-cent wins
+    assert.equal(displayFractionDigits(0.0172, 2), 4);
+    assert.equal(displayFractionDigits(4583.3, 2), 2); // a whole-cent figure is unchanged
+  });
+
+  test('binary floating-point noise does not cost extra decimals', () => {
+    // 0.1 * 0.17 is 0.017000000000000001 in a double; it is still 0.017.
+    assert.equal(displayFractionDigits(0.1 * 0.17, 2), 3);
+    assert.equal(displayFractionDigits(1_000_000_000.123, 2), 3);
   });
 
   test('widens just enough for sub-cent amounts', () => {
@@ -71,6 +88,8 @@ describe('displayFractionDigits', () => {
     assert.equal(displayFractionDigits(10, 0), 0);
     assert.equal(displayFractionDigits(0.4, 0), 1);
     assert.equal(displayFractionDigits(0.04, 0), 2);
+    // Half a yen used to round to "1"; it is "0.5" now.
+    assert.equal(displayFractionDigits(0.5, 0), 1);
   });
 
   test('never returns less than the currency precision', () => {

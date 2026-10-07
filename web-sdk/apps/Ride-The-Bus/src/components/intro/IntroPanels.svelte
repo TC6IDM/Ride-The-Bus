@@ -10,6 +10,7 @@
      see the Svelte scoping note in CLAUDE.md. -->
 <script lang="ts">
 	import { t } from '../../i18n/i18nDerived';
+	import { fingerPointer } from '../../game/ui/pointerWords';
 	import { formatMultiplier } from '../../game/ui/formatMultiplier';
 	import gameConfig from '../../game/platform/config';
 	import { FAMILY_RULES, MODE_FAMILIES, allPlayableModes } from '../../game/math/modes';
@@ -190,15 +191,20 @@
 					{@render help('Guess the color of card 1: red or black.')}
 					<span class="ss-step-label">{t('Color')}</span>
 
+					<!-- The squares here are a DEMONSTRATION, so they are out of the Tab
+					     order (tabindex -1): a keyboard player tabbed through twelve of them
+					     before reaching Continue (the critique, 2026-10-05). Each step's ?
+					     badge stays tabbable and says the same thing in words; a pointer
+					     still plays the demo. -->
 					<div class="choice-square color-square" role="group" onmouseleave={() => (hover.color = null)} aria-label={t('Pick a color')}>
 						<button
-							type="button" class="half-btn black-half" class:selected={locked.color === 'black'}
+							type="button" tabindex="-1" class="half-btn black-half" class:selected={locked.color === 'black'}
 							aria-label={t('Black')}
 							onmouseenter={() => (hover.color = 'black')} onfocus={() => (hover.color = 'black')}
 							onclick={() => lock('color', 'black')}
 						></button>
 						<button
-							type="button" class="half-btn red-half" class:selected={locked.color === 'red'}
+							type="button" tabindex="-1" class="half-btn red-half" class:selected={locked.color === 'red'}
 							aria-label={t('Red')}
 							onmouseenter={() => (hover.color = 'red')} onfocus={() => (hover.color = 'red')}
 							onclick={() => lock('color', 'red')}
@@ -221,19 +227,19 @@
 
 					<div class="choice-square hl-square" role="group" onmouseleave={() => (hover.hl = null)} aria-label={t('Higher, lower, or equal')}>
 						<button
-							type="button" class="third-btn higher-third" class:selected={locked.hl === 'higher'}
+							type="button" tabindex="-1" class="third-btn higher-third" class:selected={locked.hl === 'higher'}
 							aria-label={t('Higher')}
 							onmouseenter={() => (hover.hl = 'higher')} onfocus={() => (hover.hl = 'higher')}
 							onclick={() => lock('hl', 'higher')}
 						><ChoiceIcon name="triangleUp" /></button>
 						<button
-							type="button" class="third-btn lower-third" class:selected={locked.hl === 'lower'}
+							type="button" tabindex="-1" class="third-btn lower-third" class:selected={locked.hl === 'lower'}
 							aria-label={t('Lower')}
 							onmouseenter={() => (hover.hl = 'lower')} onfocus={() => (hover.hl = 'lower')}
 							onclick={() => lock('hl', 'lower')}
 						><ChoiceIcon name="triangleDown" /></button>
 						<button
-							type="button" class="equal-btn" class:selected={locked.hl === 'equal'}
+							type="button" tabindex="-1" class="equal-btn" class:selected={locked.hl === 'equal'}
 							aria-label={t('Equal')}
 							onmouseenter={() => (hover.hl = 'equal')} onfocus={() => (hover.hl = 'equal')}
 							onclick={() => lock('hl', 'equal')}
@@ -256,19 +262,19 @@
 
 					<div class="choice-square io-square" role="group" onmouseleave={() => (hover.io = null)} aria-label={t('Inside, outside, or equal')}>
 						<button
-							type="button" class="half-btn inside-half" class:selected={locked.io === 'inside'}
+							type="button" tabindex="-1" class="half-btn inside-half" class:selected={locked.io === 'inside'}
 							aria-label={t('Inside')}
 							onmouseenter={() => (hover.io = 'inside')} onfocus={() => (hover.io = 'inside')}
 							onclick={() => lock('io', 'inside')}
 						><ChoiceIcon name="inside" /></button>
 						<button
-							type="button" class="half-btn outside-half" class:selected={locked.io === 'outside'}
+							type="button" tabindex="-1" class="half-btn outside-half" class:selected={locked.io === 'outside'}
 							aria-label={t('Outside')}
 							onmouseenter={() => (hover.io = 'outside')} onfocus={() => (hover.io = 'outside')}
 							onclick={() => lock('io', 'outside')}
 						><ChoiceIcon name="outside" /></button>
 						<button
-							type="button" class="equal-btn" class:selected={locked.io === 'equal'}
+							type="button" tabindex="-1" class="equal-btn" class:selected={locked.io === 'equal'}
 							aria-label={t('Equal')}
 							onmouseenter={() => (hover.io = 'equal')} onfocus={() => (hover.io = 'equal')}
 							onclick={() => lock('io', 'equal')}
@@ -302,7 +308,7 @@
 					<div class="choice-square suit-square" role="group" onmouseleave={() => (hover.suit = null)} aria-label={t('Pick a suit')}>
 						{#each ['heart', 'spade', 'club', 'diamond'] as suit}
 							<button
-								type="button" class="quad-btn" class:red-suit={SUIT_GLYPH[suit].red}
+								type="button" tabindex="-1" class="quad-btn" class:red-suit={SUIT_GLYPH[suit].red}
 								class:selected={locked.suit === suit} aria-label={t(SUIT_GLYPH[suit].label)}
 								onmouseenter={() => (hover.suit = suit)} onfocus={() => (hover.suit = suit)}
 								onclick={() => lock('suit', suit)}
@@ -363,7 +369,7 @@
 			</p>
 
 			<button class="ss-continue" style="--d: 10" onclick={oncontinue}>
-				{t('Tap to continue')}
+				{fingerPointer() ? t('Tap to continue') : t('Click to continue')}
 			</button>
 		</div>
 

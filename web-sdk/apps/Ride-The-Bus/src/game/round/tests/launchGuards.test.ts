@@ -48,6 +48,16 @@ describe('the spacebar cannot buy a round behind a panel', () => {
   });
 });
 
+describe('nothing behind the intro takes focus', () => {
+  // The intro and Round details cover the screen, but Tab went on from
+  // Continue onto the board's Black square under it (front v72, CMP-20).
+  test('the board and the bar are inert until play starts', () => {
+    assert.match(GAME, /const behindIntro = \$derived\(introPhase !== 'playing'\)/);
+    assert.match(GAME, /<main class="play-area" inert=\{chromeInert \|\| behindIntro\}>/);
+    assert.match(CONTROL_BAR, /inert=\{chromeInert \|\| introPhase !== 'playing'\}/);
+  });
+});
+
 describe('replay never becomes a live round', () => {
   // The only thing keeping this path closed used to be betIsValid() failing
   // on a replay's zero balance. An 'engine-replay' seed further down routes

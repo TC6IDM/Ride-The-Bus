@@ -15,7 +15,6 @@ export default {
 
 	Winning: '赢额',
 	'Full game win': '全中',
-	Banked: '已锁定',
 	Busted: '未中',
 	'Revealing…': '翻牌中…',
 
@@ -161,6 +160,56 @@ export default {
 		'该投注被拒绝，请调整金额后重试。',
 	'Not enough balance for that bet.': '余额不足，无法进行该投注。',
 	'Your session has expired. Please reload the game.': '会话已过期，请重新加载游戏。',
+	'Could not reach the game server. Check your connection, then reload.':
+		'无法连接到游戏服务器。请检查网络连接，然后重新加载。',
+	'Recent rounds':
+		'最近几局',
+	'No rounds yet this session.':
+		'本次会话还没有对局。',
+	'Show recent rounds':
+		'查看最近几局',
+	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
+		'加减按钮设定投注。单击金额可打开快速投注菜单。',
+	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
+		'闪电表示选择“相同”之前的各模式。每选一个“相同”就加一个。',
+	'Click to continue':
+		'单击继续',
+	'Click to skip':
+		'单击跳过',
+	'Click the amount for the quick-bet menu.':
+		'单击金额可打开快速投注菜单。',
+	'These prices assume your forgiveness is unused. After a forgiven miss, the cards that follow are priced as on Classic, a little higher.':
+		'以上价格假设豁免尚未使用。豁免一次失误后，之后的牌按经典模式定价，略高一些。',
+	'The sign at the end of the bar names your game mode. Press it to choose another; switching asks you to confirm first.':
+		'栏末端的指示牌显示当前游戏模式。按下它可选择其他模式；切换前会要求确认。',
+	'Kept':
+		'保留',
+	'Won':
+		'赢',
+	'At stake':
+		'押注中',
+	'Right':
+		'猜中',
+	'Ace':
+		'A',
+	'King':
+		'K',
+	'Queen':
+		'Q',
+	'Jack':
+		'J',
+	'Hearts':
+		'红桃',
+	'Diamonds':
+		'方块',
+	'Clubs':
+		'梅花',
+	'Spades':
+		'黑桃',
+	'%r of %s':
+		'%s%r',
+	'Card %n: %c':
+		'第%n张牌：%c',
 	'A gambling limit on your account has been reached.': '您的账户已达到博彩限额。',
 	'This game is not available from your location.': '您所在的地区无法使用本游戏。',
 	'The game server had a problem. Please try again shortly.': '游戏服务器出现问题，请稍后重试。',
@@ -188,7 +237,6 @@ export default {
 	'Tap to continue': '点击继续',
 	'Round details': '本局详情',
 	'Play amount': '投注金额',
-	Mode: '模式',
 	'Game mode': '游戏模式',
 	Guesses: '猜测',
 	Cards: '牌',
@@ -209,8 +257,6 @@ export default {
 		'环形箭头打开自动游戏：以同一投注按设定局数或无限次重新发牌。按钮会倒数剩余局数。',
 	'The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.':
 		'大圆形按钮发牌。空格键同样可以：轻按发一局，按住则持续发牌。自动游戏时它变为停止，进行中的一局会先结束。',
-	'Mode opens the game-mode picker. Switching asks you to confirm before it applies.':
-		'模式打开游戏模式选择器。切换前会要求确认。',
 	'This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.':
 		'本游戏没有免费旋转、奖励回合、累积奖池或重新触发功能。每一局都是独立的一次发牌：猜测模式为四张牌，三条为三张牌。',
 	'Big Win': '大奖',

@@ -32,13 +32,14 @@
 	} from '../../game/math/payoutTable';
 	import { winTiersFor } from '../../game/math/winTiers';
 	import { FAMILY_BLURB, FAMILY_RULES, MODE_FAMILIES, allPlayableModes, type ModeFamily } from '../../game/math/modes';
-	import { FAMILIES_BY_VOLATILITY } from '../../game/math/volatility';
+	import { FAMILIES_BY_VOLATILITY, volatilityColorVar } from '../../game/math/volatility';
 	import gameConfig from '../../game/platform/config';
 	import { t } from '../../i18n/i18nDerived';
 	import { formatMultiplier } from '../../game/ui/formatMultiplier';
 	import MarkIcon from '../icons/MarkIcon.svelte';
 	import SuitIcon from '../icons/SuitIcon.svelte';
 	import ControlGlyph from '../icons/ControlGlyph.svelte';
+	import { fingerPointer } from '../../game/ui/pointerWords';
 	import TicketFace from '../cards/TicketFace.svelte';
 
 	/** The biggest figure any mode can pay, and WHICH mode, for the RTP
@@ -347,6 +348,15 @@
             {/each}
           </tbody>
         </table>
+        <!-- A forgiving family prices every card with the forgiveness still in
+             hand. Once it is spent, a second miss ends the round, so the cards
+             after it are priced as on Classic - a little higher, and outside
+             the ranges above. A forgiven round's card 4 paid 3.41x against the
+             table's 2.38-2.94x (live replay, 2026-10-06), so it is said here,
+             where a player checking a round against the rules would look. -->
+        {#if viewingRules.forgive !== null}
+          <p>{t('These prices assume your forgiveness is unused. After a forgiven miss, the cards that follow are priced as on Classic, a little higher.')}</p>
+        {/if}
         <!-- The worked example, computed for this family - see oddsExampleFor.
              Two Higher/Lower figures and the Equal figure are stage-2 rows of
              the table above, so a player can check one against the other.
@@ -473,11 +483,11 @@
            that line shows the chip and says what the bar there offers. -->
       <ul class="control-guide">
         <li><ControlGlyph name="deal" /><span>{t('The big round button deals. So does the spacebar: tap for one round, hold to keep dealing. During autoplay it becomes Stop, and the round in play finishes first.')}</span></li>
-        <li><ControlGlyph name="mode" label={t('Mode')} /><span>{t('Mode opens the game-mode picker. Switching asks you to confirm before it applies.')}</span></li>
+        <li><ControlGlyph name="mode" label={t(FAMILY_RULES[props.family ?? 'base'].label)} ink={volatilityColorVar(props.family ?? 'base')} /><span>{t('The sign at the end of the bar names your game mode. Press it to choose another; switching asks you to confirm first.')}</span></li>
         {#if phoneBar}
-          <li><ControlGlyph name="chip" /><span>{t('Tap the amount for the quick-bet menu.')}</span></li>
+          <li><ControlGlyph name="chip" /><span>{fingerPointer() ? t('Tap the amount for the quick-bet menu.') : t('Click the amount for the quick-bet menu.')}</span></li>
         {:else}
-          <li><ControlGlyph name="bet" /><span>{t('Plus and minus set your bet. Tap the amount for the quick-bet menu.')}</span></li>
+          <li><ControlGlyph name="bet" /><span>{fingerPointer() ? t('Plus and minus set your bet. Tap the amount for the quick-bet menu.') : t('Plus and minus set your bet. Click the amount for the quick-bet menu.')}</span></li>
         {/if}
         <li><ControlGlyph name="turbo" /><span>{t('The lightning button is Turbo: how fast the cards flip, from Normal to Instant.')}</span></li>
         <li><ControlGlyph name="autoplay" /><span>{t('The circular arrows open autoplay: the same bet, dealt again for a set number of rounds or without limit. The button counts down the rounds left.')} {t('It can stop by itself on a full game win, a loss limit or one big win.')}</span></li>

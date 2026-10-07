@@ -248,18 +248,19 @@ reading before proposing it again.
   alone is off the scale and keeps its cream-on-crimson inversion. The hand hops
   through `element.animate()` with `composite: 'add'`; both halves matter.
 - **"A full game win" is `isCleanSweep(bustedIndex, forgivenIndex)`, never
-  "did not bust", and FIVE decisions ask it.** A clean sweep is floored onto the
+  "did not bust", and SIX decisions ask it.** A clean sweep is floored onto the
   takeover ladder however little it pays; the same question also gates the
   autoplay **Stop on full game win**, the `playFullWin()` sting, the
   running-win bar's **"Full game win"** label, and (since 2026-09-23) the
   **last-card hold's floor** - a card that would complete a clean sweep is held
-  at least the entry tier's length. Only the takeover was converted
+  at least the entry tier's length, and (since 2026-10-05) the **history
+  panel's** record of the round. Only the takeover was converted
   when `isCleanSweep` landed, so a forgiven Second Chance round — three of four
   right, no bust marker — stopped autoplay runs and called itself a full game
-  win for months. `modes.test.ts` greps all five sites and fails if
-  `bustedIndex === null` reappears anywhere in the game's own sources. The five
-  now live in four files — the running-win label in `GameBoard.svelte`, the
-  takeover floor and the win sting in `roundSettle.svelte.ts`, the autoplay stop
+  win for months. `modes.test.ts` greps all six sites and fails if
+  `bustedIndex === null` reappears anywhere in the game's own sources. The six
+  live in four files — the running-win label in `GameBoard.svelte`, the
+  takeover floor, the win sting and the history entry in `roundSettle.svelte.ts`, the autoplay stop
   in `autoplayLoop.svelte.ts`, the hold in `roundReveal.svelte.ts` — which is
   why the grep reads a MANIFEST rather than a path. All three names have already changed once under a split, and the
   manifest is what kept the grep finding them. See `game/sources.testlib.ts`.
@@ -390,10 +391,17 @@ reading before proposing it again.
   going grey.** `setBetLevel` and `formatBetInput` check `betLockedReason()` too.
 - **MODE is the bar's outer-edge control, mirroring Turbo** (owner's call,
   2026-09-26). The sliders button and its two-switch "Advanced" panel are gone;
-  both switches live in the autoplay panel. MODE is a **rounded rectangle**, in
-  its family colour, keeping its `.cb-icon` "toggle" press cue; its locked-state
-  tip is hosted on `.cb-mode-slot` and anchored to the slot's inner edge (it sits
-  at the screen edge). Out of the light pill, so Balance and Last Win got its
+  both switches live in the autoplay panel. **MODE is a destination sign**
+  (2026-10-06, the owner's "too basic"): the live family's NAME lettered in its
+  colour on a recessed dark sign, the seven bolts (`liveBolts`) under it, no
+  coloured outline; it keeps its `.cb-icon` "toggle" press cue, and its
+  locked-state tip is hosted on `.cb-mode-slot` and anchored to the slot's inner
+  edge (it sits at the screen edge). FIXED width, paid for by the bet display,
+  which carries money only now: 8.42 / 11.6 units on the one-row bar (6.2 / 13.82
+  before), 7.4 on phones at a 36px-or-5-unit height; the name fits into it
+  (`fitBlock`, two lines then smaller), never the sign to the name; Popout S drops
+  the bolts. A family change ROLLS the name ({#key} + a transition, a crossfade
+  under reduced motion). Out of the light pill, so Balance and Last Win got its
   width. **Row two of the phone bar is budgeted for every pointer** (tighter
   gaps and side margin, the bet figure's trimmed reservation, a narrower MODE,
   all in the 620px block and all restored for Popout S): with only the touch
@@ -490,8 +498,9 @@ reading before proposing it again.
   pair over Stake's 3 MB. The cups are left off unless `--cups`. The generated
   pair it replaced (a mangled Jack, a droplet spade, a backyard party) is in git
   history.
-- **The body face is Geist (variable, one file per subset), and its metrics
-  are measured, never guessed.** It ships `tnum`, so every `tabular-nums` in
+- **The body face is Overpass (variable, one file per subset; Geist until
+  2026-10-05, the owner's pick from a compare sheet), and its metrics are
+  measured, never guessed.** It ships `tnum`, so every `tabular-nums` in
   the app is live (they were inert for the whole life of Poppins).
   `typeFit.ts`'s width table, `displayFace.ts`'s `unicode-range` transcription
   and the currency ranking test are all measured off the shipped woff2 files
@@ -608,7 +617,7 @@ reading before proposing it again.
   the deal, and the bus rides on `--flip-dur`, so nothing is left travelling.
   No idle "Pays up to" line: removed by the owner's call the same day.
 - **Card backs and the deck carry the house name, not the logo** - "TAKEOVER /
-  CASINO" in Geist 400 at 58% white on a plain label of the card's own red with
+  CASINO" in the body face at 400, 58% white on a plain label of the card's own red with
   a faint hairline edge (set straight on the back, the crosshatch ran through
   the letters), one token set (`--brand-wordmark*`) for the board's backs, the
   deck prop, the loader's cards and the takeover's fan. On the deck it takes the
@@ -1001,15 +1010,72 @@ between a one-row bar and a two-row one.
 
 ## Current state and outstanding work
 
-**Last Stop is built (2026-10-01, the "Classic until the suit" design), and
-nothing is committed.** 915 tests, 914 pass, 1 FAILS: `volatility.test.ts`'s
-per-combination ordering, on three of 64 combinations, where the build's
-sampling put Last Stop level with or above High Stakes - two Higher/Lower +
-Outside modes the exact model puts only 0.78% apart, and one Higher + Inside
-mode where Last Stop's sampled std ran 12% hot (an open decision - status.md).
-0 type errors, 0 CSS warnings, lint clean; math 26 passed. The Last Stop row
-of `winTiers.ts` is measured off the published tables. Still to do:
-`npm run audio` on the ticket cue.
+**2026-10-06: three live passes on Stake; the uploaded build is front v72 +
+math v13** (v72 = this working tree built 2026-10-06 15:26). `RGS_TEST_PLAN.md`
+holds 132 checks, **122 ticked live**. Of the ten open, five need the owner's
+hardware or judgement (CMP-12, CMP-14, DEV-04, DEV-05, PRF-03) and CMP-18 a real
+screen reader; SES-03 waits for a genuine session lapse; WIN-16, DEV-11 and
+DEV-12 failed on v72 and are FIXED LOCALLY, not yet uploaded (below). The method,
+its scripts and its pitfalls are the `rtb-live-audit` skill. 974 tests pass; 0
+type errors, 0 CSS warnings, lint clean. Last Stop's volatility tie with High Stakes (three near-ties) was
+accepted by the owner on 2026-10-05; `volatility.test.ts` allows a 5% sampled
+tolerance on that one pair. The ticket cue was measured with `npm run audio`
+(no clipping, adds no level; its parts sit at about a third of a card chime -
+a listen is the owner's). **Nothing from 2026-10-05/06 is committed; the next
+upload needs a production build from the owner first.**
+
+**What changed in the client on 2026-10-05/06** (each rule has its own note in
+the code; the test that pins it is named):
+
+- **Fonts are same-origin FILES** in `static/fonts/`, declared in `app.html` via
+  `%sveltekit.assets%`. The Stake CDN sends `font-src 'self'
+  https://fonts.gstatic.com`, which blocked every `data:` font the build used to
+  inline (F-5) - the live game drew in system fonts. `displayFace.test.ts` fails
+  on any `@font-face` in a stylesheet or a font path that is not a file.
+- **The error dialog is the top layer** (`--z-error`, above the loader and the
+  intro, F-4). A launch failure (authenticate or the replay fetch) offers Reload;
+  ERR_IS / ERR_ATE offer Reload; a failure it cannot name offers Reload beside
+  Close (a forged session gets a bare `400 Bad Request`); a recognised code shows
+  its translated sentence and the code, never the RGS's English statusMessage.
+  `errorModal.test.ts`.
+- **Money is exact everywhere**: `displayFractionDigits` widens past the
+  currency's places until the amount is exact (to 6), so $0.017 never reads
+  $0.02; the takeover counts in the final amount's own places (F-2/8/9).
+- **Three restore paths, not two**: replay, resume and REMEMBERED PICKS
+  (`rememberedPicks.ts`: the family and four picks under `ride-the-bus:picks`,
+  never the amount, never in a replay, a resume wins). `modes.test.ts` counts
+  three blocks that apply `parsed.family`.
+- **Recent rounds** open from Last Win (a button except in replay):
+  `HistoryPopup.svelte`, ten rounds, session-only, snapshotted at settle.
+- **The result words**: Full game win / Won (a forgiven ride that finished) /
+  Kept (a bust that kept a share - no percentage, it would not add up after the
+  decay and the floor) / Busted. A missed card's chip is neutral ink; a bust that
+  kept nothing shows no chip; Three of a Kind's live total is "At stake" (social
+  "In play"). Screen readers get `aria-pressed` picks, named cards and the bust
+  card in the announcement. `announce.test.ts`.
+- **The count-up starts at the board's last figure** (`countUpSegments`'
+  `startMultiplier`) and its progress is clamped - the live build opened on
+  "-$0.00001". A leg whose ceiling the board had already passed is DROPPED, so
+  the count opens on the board's figure under that figure's tier: v72 kept those
+  legs as holds and opened a max win on "Big Win $40.00" over a $430.10 board
+  (after v72, not uploaded; `winTiers.test.ts`).
+- **The board and the bar are inert behind the loader, the intro and Round
+  details** (`behindIntro`): Tab went from Continue onto the board's Black square
+  under the intro (after v72, not uploaded; `launchGuards.test.ts`).
+- **Three of a Kind's "$1.00 x 250" line is floored** like every other line of
+  the bar - it printed at 3.3px on Popout S and 5.6px on a 320px phone (after
+  v72, not uploaded). It still makes that family's bar 6px taller on Popout S and
+  2.6px on Mobile S - open for the owner (DEV-11).
+- **Owner's calls, 2026-10-06** (memory: feedback_deal_button_equal_seam): the
+  deal button stays the blue disc with no caption; the Equal "=" stays on the
+  seam at every size; picking a guess dims nothing.
+- Also: phones floor type at 9 / 11 px (`--type-floor`, portrait <= 620px);
+  desktop bar captions >= 10px; the guess palette is "Felt & brass" (palette A);
+  prompts say Click with a mouse and Tap on touch (`pointerWords.ts`); Second
+  Chance's How to Play says forgiven rounds price later cards as on Classic
+  (`payoutTable.test.ts`); the intro's demo squares are out of the Tab order;
+  `/index.html` launch URLs are rerouted (`hooks.ts`); `npm run build` prunes
+  unreferenced files (`scripts/prune-build.mjs`).
 
 Before Last Stop: 861/861 tests (none skipped), 0 type errors, 0 CSS warnings, lint clean, and
 the client reproduces the published books of all **193** modes exactly — the

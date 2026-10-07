@@ -31,7 +31,7 @@
    render on, where --accent measured 5.20 / 6.75 / 6.38. Deliberately matched:
    the caption changes temperature and keeps its exact weight in the hierarchy,
    so nothing about what the eye reaches first has moved. */
-.cb-cap { display: block; font-size: max(calc(var(--ui-bar) * 0.87), var(--type-floor)) /* 9.6px */; letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink-warm-mute); font-weight: 700; }
+.cb-cap { display: block; font-size: max(calc(var(--ui-bar) * 0.92), var(--type-floor)) /* 10.1px - 10 is the floor a caption is read at on a desktop */; letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink-warm-mute); font-weight: 700; }
 
 /* tabular-nums + the reserved min-widths below mean a value changing (a win
    landing, the bet stepping) never re-flows the bar. */
