@@ -10,6 +10,37 @@ rather than on every turn. Nothing here is reworded.
 
 ## Current state
 
+**2026-10-07: the fourth live pass, on front v73.** v73 is `f6369ae4` built
+2026-10-07 01:25 (math v13); its live `index.html` hashes identical to
+`build/index.html`. USD Studio sessions. `RGS_TEST_PLAN.md`: 123 of 132 ticked.
+- PASSED on v73: WIN-16 (every count-up leg opens on the board's last figure
+  under its tier - #975 "Epic Win $430.10", hs #45449 "Huge Win $119.00", ls
+  #20751, trips #2 "Max Win $916.60"); CMP-20's follow-on (Tab never reaches the
+  board under the intro); the smoke set (SES-01, BET-06, RND-01, REP-01, PRF-04)
+  and SES-08, RND-10, BET-17, CMP-17, CMP-19 re-run clean.
+- DEV-12 FAILS on a new finding, **F-11**: the MODE sign's `fitBlock` shrinks a
+  family name that cannot wrap below the 9px phone floor - fi "Toinen
+  mahdollisuus" 6.3 / 7.5 / 8.5px (Mobile S / M / L), "Pääteasema" 7.6px,
+  "Klassinen" 8.8px; ru "Классика" / "Конечная" 7.9px, "Высокие ставки" 8.6px
+  (Mobile S). en, de, ar, ja hold 9px. Three of a Kind's "$1.00 x 250" line is
+  fixed (9px on phones, 6px on Popout S). v72's DEV-12 read type only on the
+  family `dev11.js` ended on, which is why this was missed; read the sign per
+  family. Needs a decision before a fix: a shorter fi/ru name, or wrapping
+  inside a word (hyphenation), or exempting the sign from the floor as `fitValue`
+  figures already are.
+- DEV-11 is still the owner's call: Three of a Kind's Popout S bar is 5-7px
+  taller in all six languages (and ja 1-2px on Mobile M / S).
+- SIMULATED on v73, recorded but not ticked: DEV-05 (8 rounds at +800 ms
+  latency, double-taps and Space mid-play - one play each, balance exact),
+  PRF-03 (6x CPU throttle through a max win: 44 fps, p95 33 ms, at most two
+  dropped frames running; one 133-333 ms frame as the takeover mounts), CMP-12
+  (`touch-action: manipulation` on every element, no `user-scalable=no`).
+- Pitfall: a `page.on(...)` listener that THROWS inside `run-code` kills the
+  playwright-cli daemon and closes the browser ("Session closed"). `new URL()`
+  on every response did it twice; wrap every listener body in try/catch.
+- Pitfall: the CDN answers 403 to a browser without the Studio sign-in, replays
+  included - a headless session cannot replay; use the signed-in `live` profile.
+
 **2026-10-06, later: the third live pass, on front v72.** v72 is the working
 tree built 2026-10-06 15:26 (math v13); USD and XSC social Studio sessions.
 `RGS_TEST_PLAN.md`: 122 of 132 ticked.

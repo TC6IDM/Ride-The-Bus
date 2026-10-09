@@ -1,6 +1,6 @@
 async page => {
   // The front version under test, read off the live game frame.
-  const FRONT = (page.frames().map(fr => fr.url()).find(u => u.includes('live.engine.io')) || '').match(/\/(v\d+)\//)?.[1] || 'v72';
+  const FRONT = (page.frames().map(fr => fr.url()).find(u => u.includes('live.engine.io')) || '').match(/\/(v\d+)\//)?.[1] || 'v73';
   // Replays on the uploaded build, one tab per case. Records the book, the
   // takeover's title/amount as it climbs, the fan, the settled board and the
   // Round details panel. Cases: [mode, event, {currency, amount, lang, w, h, tag, tapMid}]

@@ -18,6 +18,10 @@ for path in sys.argv[1:]:
                 flags.append(f'{r["lang"]} {r["name"]} {f["t"]} bolts={f["bolts"]}')
             if r["name"] == "popoutS" and f["bolts"]:
                 flags.append(f'{r["lang"]} {r["name"]} {f["t"]} bolts shown on Popout S')
+            # DEV-12: the sign's name on a phone, per family - r["type"] is read
+            # once, on the family the sweep ends on, and missed F-11 on v72.
+            if r["name"].startswith("mobile") and f["fs"] < 9:
+                flags.append(f'{r["lang"]} {r["name"]} {f["t"]} sign name {f["fs"]}px, under the 9px phone floor')
         print("      label:", fams[-1]["label"] if fams else None)
         print("      type:", r.get("type"), "| quickBet:", r.get("quickBet"), "| err:", r.get("err"))
         if len(bars) > 1 or len(btns) > 1 or len(rows) > 1:

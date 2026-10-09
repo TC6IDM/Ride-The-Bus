@@ -87,6 +87,29 @@ does at 375, which is the shadow band doing its documented job - it reaches up
 over the bottom of the fan so the title is never cream type on white card faces -
 and the ranks and pips still read above it. A real device is still open.
 
+## Layout checks run locally, on the uploaded build's own bytes
+
+Since 2026-10-09 a check that only MEASURES LAYOUT - clipping, overflow, type
+size, the bar's rows, the MODE sign - may be run on localhost instead of on
+Stake, provided the local `build/index.html` hashes identical to the live one
+(`npm run rgs` prints that comparison on every run). The same bytes lay out the
+same way wherever they are served, so the answer is the same, and it costs the
+live RGS nothing: it refused this machine at 12 page loads in about five
+minutes that day, and every page load is an authenticate.
+
+- Such a line reads **Local <date> - NOT run on Stake** and says what was served
+  (`build/` with its hash, or the dev server) - and a pass on the uploaded
+  build's bytes ticks the box like a live one.
+- Anything about the RGS or the CDN still needs Stake: money and the wallet
+  calls, the handshake, the CDN's own headers (CSP, fonts), the replay endpoint,
+  the jurisdiction block, rate limits.
+- How: `npm run rgs:local -- --front <N>` from `web-sdk/apps/Ride-The-Bus` -
+  it serves `build/` and the local replay server itself, compares `build/` with
+  the live `index.html` (one CDN request, no RGS call), runs DEV-11, DEV-12 and
+  CUR-04 with the live checks' own code, and shows them on a dashboard
+  (http://127.0.0.1:8767) with their screenshots. `--record` writes its lines
+  here, tagged `rgs-local`. See `scripts/rgs-live/README.md`.
+
 ---
 
 ## 01 · Session and launch
@@ -97,6 +120,8 @@ inherits the mistake, usually silently.
 - [x] **SES-01 · Cold launch completes the handshake** — *Blocker*
   **Live 2026-10-05** (front v71 = a177bf85, math v13, Studio demo session, USD): authenticate 200; Balance $1,000.00 and Bet $1.00 match 1,000,000,000 / 1,000,000 micro; 42 levels; the loader cleared to the intro.
   **Live 2026-10-06** (front v72 = this working tree built 2026-10-06 15:26, math v13, Studio demo session, USD): smoke re-run - cold launch, then five Classic rounds: every debit and the one credit exact (a 0.5x win, end-round 500000 of 500000), Last Win agrees.
+  **Live 2026-10-07** (front v73 = f6369ae4, index.html sha256 matching the local build; math v13, Studio demo session, USD): smoke re-run on a fresh launch: authenticate 200, balance 1,000,000,000 micro USD = $1,000.00, 42 bet levels, the jurisdiction block present, no open round.
+  **Live 2026-10-09** (front v74 = the working tree built 2026-10-09 03:03 - f6369ae4 plus the F-11 fix - index.html sha256 683db6d8... identical to the local build; math v13, Studio demo session, USD; `npm run rgs`): PASS: authenticate 200; the loader cleared to the start screen in 2.1s; bet $1.00; 42 chips $0.01 .. $1,000.00 against the RGS's 42 levels (min 10,000, max 1,000,000,000 micro).
   Open the game URL fresh with the Network tab open.
   **Expect:** `/wallet/authenticate` returns 200; balance, currency and bet
   limits on the control bar all match the account; the loader clears to the
@@ -104,6 +129,7 @@ inherits the mistake, usually silently.
 
 - [x] **SES-02 · Balance matches the operator's figure exactly** — *Blocker*
   **Live 2026-10-05** (front v71 = a177bf85, math v13, Studio demo session, USD): board $1,000.00 = RGS 1,000,000,000 micro; held to the cent through 500+ rounds.
+  **Live 2026-10-09** (front v74 = the working tree built 2026-10-09 03:03 - f6369ae4 plus the F-11 fix - index.html sha256 683db6d8... identical to the local build; math v13, Studio demo session, USD; `npm run rgs`): PASS: the RGS's 987,654,320,000 micro (every digit significant) reads "$987,654.32" on the board.
   Compare the displayed balance against the operator UI, to the last decimal.
   **Expect:** identical. The RGS speaks micro-units (1,000,000 = 1.00); a
   factor-of-100 or 1,000,000 error here is the most damaging bug possible, and
@@ -144,6 +170,7 @@ inherits the mistake, usually silently.
 
 - [x] **SES-06 · The build carries no Stake Engine Loader** — *Blocker*
   **Live 2026-10-05** (front v71 = a177bf85, math v13, Studio demo session, USD): deployed index.html searched: no LoaderStakeEngine, no #041721 loader background; only the game's own loader. Deployed index.html is byte-identical to build/ (sha256 b44f9e83...).
+  **Live 2026-10-09** (front v74 = the working tree built 2026-10-09 03:03 - f6369ae4 plus the F-11 fix - index.html sha256 683db6d8... identical to the local build; math v13, Studio demo session, USD; `npm run rgs`): PASS: no SDK loader markup in the deployed index.html; the load sequence is the game's own loader, then the intro.
   Search the deployed bundle for the SDK's loader markup and watch the load
   sequence.
   **Expect:** only this game's own CSS loader appears. A verbatim PreCheck
@@ -160,6 +187,8 @@ inherits the mistake, usually silently.
 
 - [x] **SES-08 · The `/index.html` launch URL is clean** — *Minor*
   **Live 2026-10-06** (front v72 = this working tree built 2026-10-06 15:26, math v13, Studio demo session, USD): PASS. `/ride-the-bus/v72/index.html?sessionID=...` loads exactly as the bare path does - intro, board, balance - with an empty console.
+  **Live 2026-10-07** (front v73 = f6369ae4, index.html sha256 matching the local build; math v13, Studio demo session, USD): PASS: `/ride-the-bus/v73/index.html` opens the intro, then a $1,000.00 board with four slots; no "Not found" and no console errors.
+  **Live 2026-10-09** (front v74 = the working tree built 2026-10-09 03:03 - f6369ae4 plus the F-11 fix - index.html sha256 683db6d8... identical to the local build; math v13, Studio demo session, USD; `npm run rgs`): PASS: `/ride-the-bus/v74/index.html` opens the start screen, then a $100,000.00 board with four slots; no "Not found".
   Open the build as `…/v<front>/index.html?sessionID=…` - the form the SDK's own
   docs give.
   **Expect:** the game loads exactly as it does without `index.html`, and the
@@ -205,6 +234,7 @@ so this section is genuinely untested until upload.
 
 - [x] **BET-06 · Every bet mode is accepted** — *Blocker*
   **Live 2026-10-05** (front v71 = a177bf85, math v13, Studio demo session, USD): all FIVE families accepted: red_higher_outside_heart, sc_..., ls_..., hs_..., and tr_any_equal_equal (three tokens).
+  **Live 2026-10-07** (front v73 = f6369ae4, index.html sha256 matching the local build; math v13, Studio demo session, USD): smoke re-run: red_higher_outside_heart, sc_black_lower_outside_spade, ls_red_higher_outside_diamond, hs_black_higher_outside_club and tr_any_equal_equal all accepted (200). Trips debited exactly 250 x $1.00, and with $246.80 left the deal was refused with no request.
   Play at least one round in each of the four modes — Classic, Second Chance,
   High Stakes, Three of a Kind — and check the mode string sent in
   `/wallet/play`.
@@ -303,6 +333,7 @@ so this section is genuinely untested until upload.
 
 - [x] **BET-17 · A typed bet under the minimum is explained, not zeroed** — *Major*
   **Live 2026-10-06** (front v72 = this working tree built 2026-10-06 15:26, math v13, Studio demo session, USD): PASS. This template's minimum is $0.01 (levels $0.01 ... $1,000.00). Typed 0.004: the bet display reads "Bet $0.004", a deal flashes "Bet is below the minimum of $0.01" and sends no `/wallet/play`, the balance is untouched and the field still holds 0.004. Social mode: "Play amount is below the minimum of 0.01 SC".
+  **Live 2026-10-07** (front v73 = f6369ae4, index.html sha256 matching the local build; math v13, Studio demo session, USD): PASS: $0.004 typed shows "Bet is below the minimum of $0.01", sends no /wallet/play, leaves the balance alone and keeps 0.004 in the field.
   Type an amount below the minimum (e.g. 0.004) into the bet field.
   **Expect:** the figure stays as typed and the deal is blocked with "Bet is below
   the minimum of $0.01" (the session's own minimum; $0.01 on the Studio USD
@@ -322,6 +353,7 @@ one.
 - [x] **RND-01 · A win settles and credits** — *Blocker*
   **Live 2026-10-05** (front v71 = a177bf85, math v13, Studio demo session, USD): every paying round: one /wallet/play, one /wallet/end-round, both 200; credit = payoutMultiplier x amount to the micro-unit (e.g. 4.1 x 10,000 = 41,000).
   **Live 2026-10-06** (front v72 = this working tree built 2026-10-06 15:26, math v13, Studio demo session, USD): smoke re-run - the 0.5x win credited exactly by end-round; an 8.4x Second Chance sweep settled through its takeover ($993.80 to $1,001.20).
+  **Live 2026-10-07** (front v73 = f6369ae4, index.html sha256 matching the local build; math v13, Studio demo session, USD): smoke re-run: 34 live rounds over five families. Every paying round made one /wallet/play and one /wallet/end-round, the credit equalled payout x amount to the micro-unit (18.1x, 3.4x, 3.1x, 2.0x and the partial returns), and the board matched the RGS balance.
   Play until a round pays, watching the Network tab throughout.
   **Expect:** exactly one `/wallet/play`, then exactly one `/wallet/end-round`,
   both 200. Balance afterwards equals *before - stake + payout*.
@@ -382,6 +414,7 @@ one.
 
 - [x] **RND-10 · Recent rounds** — *Minor*
   **Live 2026-10-06** (front v72 = this working tree built 2026-10-06 15:26, math v13, Studio demo session, USD): PASS. Five rounds across Classic, Second Chance and Three of a Kind: newest first; family names in their colours; "Bet $250.00 ($1.00 x 250)" on Three of a Kind; bust and forgiven marks on the cards; "$8.40 8.4x" in win green and the partial returns ($0.50, $0.30) in neutral ink; the picks under each (none on Three of a Kind). Escape closes it and focus is back on Last Win. In every v72 replay Last Win is a plain readout.
+  **Live 2026-10-07** (front v73 = f6369ae4, index.html sha256 matching the local build; math v13, Studio demo session, USD): PASS: five rounds across Classic, Second Chance and Three of a Kind are listed newest first, each with its family colour, its cost ("Bet $250.00 ($1.00 x 250)" on trips), the hand with Busted / Forgiven marks, the amount paid and the picks; Escape closes the panel and focus returns to Last Win.
   Play five rounds across two families, then press Last Win.
   **Expect:** a panel lists them newest first: the family in its colour, what the
   round cost (Three of a Kind as "$250.00 ($1.00 x 250)"), the cards with a bust
@@ -589,6 +622,7 @@ currencies. Only these five are shown with no decimal places.
 
 - [x] **CUR-04 · Large amounts stay inside their boxes** — *Minor*
   **Live 2026-10-06** (front v71 = a177bf85, math v13, Studio demo session, IDR, balance 2,000,000,000): fits its box at all seven sizes with no horizontal scroll (fitted to 5 px at Popout S, as designed); 43 chips up to IDR 10,000,000, none overflowing; the takeover reads IDR 45,833,000 (REP-04).
+  **Local 2026-10-09 - NOT run on Stake** (the v74 `build/` folder, whose index.html sha256 683db6d8... is identical to the live v74, served from localhost with the local replay server answering authenticate as an IDR session - balance 2,000,000,000, a ladder to the 10,000,000 cap; no live RGS traffic; `npm run rgs:local`): PASS: IDR 2,000,000,000 and the IDR 10,000,000 cap bet fit their boxes at all seven sizes with no horizontal scroll (the cap bet fitted to 11.5 / 10.1 / 8.8px on Mobile L / M / S); the Three of a Kind cap replay reads IDR 45,833,000 inside its box. v74's wider MODE sign takes nothing from the bet display: on the dev server with v73's sign widths injected, the bet box (100 / 88 / 76px) and its figure are identical.
   Use a high-balance account in a high-denomination currency (IDR or VND run to
   millions of units).
   **Expect:** correct thousands separators, and nothing overflowing or
@@ -755,8 +789,9 @@ on nearly every round. It still celebrates on size.
   amounts, winning combinations and pop-up information legible").
 
 
-- [ ] **WIN-16 · The count-up starts where the board stopped** — *Minor*
+- [x] **WIN-16 · The count-up starts where the board stopped** — *Minor*
   **Live 2026-10-06** (front v72 = this working tree built 2026-10-06 15:26, math v13, replay, USD)): FAIL for big wins. #2484 opens on "Big Win $20.00" over a $20.00 board and climbs, and no figure is ever negative - but the max win #975 (board $430.10 after card 3) opened on "Big Win $40.00" and climbed back up through Huge and Mega: the first fix held each band the board had already passed at its own ceiling. FIXED LOCALLY: those legs are dropped, so #975 opens on "Epic Win $430.10" and a High Stakes 467.1x on "Huge Win $119.00" (`winTiers.test.ts`). Prompts: "Click to skip" / "Click to continue" with a mouse. Re-run on the next upload.
+  **Live 2026-10-07** (front v73 = f6369ae4, index.html sha256 matching the local build; math v13, Studio demo session, USD): PASS (fixed since v72). Every leg opens on the board's last figure under that figure's tier: #2484 "Big Win $20.00", then Huge Win to $68.20; #975 "Epic Win $430.10", then Max Win; hs #45449 (467.1x) "Huge Win $119.00", then Mega Win; hs #975 "Epic Win $619.60"; ls #20751 "Epic Win $430.10" with the ticket on the fan; trips #2 "Max Win $916.60" to $4,583.30. No figure is ever negative, and a click mid-count skips to Max Win $1,354.20.
   Replay `red_higher_outside_heart` #2484 (68.2x; the board shows $20.00 after
   card 3) and any max win.
   **Expect:** the takeover opens on "Big Win $20.00" and climbs, never on $0.00 and
@@ -821,6 +856,7 @@ being logged, so this must not become a production-visible flag.
 - [x] **REP-01 · A replay renders the original round** — *Blocker*
   **Live 2026-10-05** (front v71 = a177bf85, math v13, Studio demo session): Studio-format replay URLs (game UUID 019f7e00-fa38-78fa-9ea7-b4933e75765b, version 13): Classic #82 (1.1x), #2484 (68.2x), trips #2 (4583.3x), ls #9426 (200.3x, x10 ticket), sc #128 (19.1x forgiven) - board chips and payout match the /bet/replay book every time.
   **Live 2026-10-06** (front v72 = this working tree built 2026-10-06 15:26, math v13, replay, USD)): re-run - twelve replays across the five families render their own round, family and picks, and no replay calls `/wallet/*`.
+  **Live 2026-10-07** (front v73 = f6369ae4, index.html sha256 matching the local build; math v13, Studio demo session, USD): re-run: seven replays across the five families (#2484, #975 on three families, #45449, ls #20751, trips #2). Cards, guesses, chips, Round details and payout match the /bet/replay book, with zero /wallet calls.
   Take a round ID from a real session and open it in replay.
   **Expect:** the same four cards, the same guesses lit, the same stage
   multipliers and the same final payout.
@@ -1095,6 +1131,7 @@ live in the How to Play panel behind the `i` button.
   be scrollable").
 
 - [ ] **CMP-12 · Double-tap zoom is off, pinch zoom is not** — *Major*
+  **Live 2026-10-07** (front v73 = f6369ae4, index.html sha256 matching the local build; math v13, Studio demo session, USD, SIMULATED): supporting evidence, not the gesture: the viewport meta is `width=device-width, initial-scale=1.0, viewport-fit=cover` (no maximum-scale, no user-scalable=no), and all 1,363 elements on a touch-emulated Mobile M compute `touch-action: manipulation`, none `none` - so double-tap zoom is off and pinch is not blocked. The real-phone double-tap and pinch are still the owner's.
   On a real phone, double-tap the board, then pinch it.
   **Expect:** double-tap does nothing; pinch still magnifies. Verbatim for the
   first half. The second half is deliberate and easy to undo by accident: the
@@ -1196,6 +1233,7 @@ live in the How to Play panel behind the `i` button.
 
 - [x] **CMP-17 · A forgiven Second Chance round can be checked against the rules** — *Major*
   **Live 2026-10-06** (front v72 = this working tree built 2026-10-06 15:26, math v13, Studio demo session, USD): PASS. sc #11 replays (card 2 forgiven, card 4 busted, 0.4x). The sentence sits under Second Chance's payout table, in social mode too, and on no other tab.
+  **Live 2026-10-07** (front v73 = f6369ae4, index.html sha256 matching the local build; math v13, Studio demo session, USD): PASS: the forgiven-miss sentence sits under Second Chance's payout table and on no other tab.
   Replay `sc_red_higher_outside_heart` #11 (forgiven at card 2, card 4 priced
   3.41x) and read Second Chance's How to Play tab.
   **Expect:** under the payout table: "These prices assume your forgiveness is
@@ -1204,6 +1242,7 @@ live in the How to Play panel behind the `i` button.
 
 - [ ] **CMP-18 · A screen reader hears the picks, the cards and the result** — *Major*
   **Live 2026-10-06** (front v72 = this working tree built 2026-10-06 15:26, math v13, Studio demo session, USD), accessibility tree): PASS for everything a screen reader is handed - the twelve picks carry `aria-pressed`; before a deal the chips are `aria-hidden` and the cards unnamed; dealt cards read "Card 2: Ace of Clubs, Busted" / "Card 3: 5 of Hearts, Forgiven" / "Card 1: Ace of Diamonds" (trips' dealt card); the status line says "Kept, Card 2: Ace of Clubs, $0.50, 0.5x" once. The NVDA / VoiceOver listen is still the owner's.
+  **Live 2026-10-07** (front v73 = f6369ae4, index.html sha256 matching the local build; math v13, Studio demo session, USD): accessibility tree re-read: the twelve picks carry aria-pressed; before a deal the chips are aria-hidden and the cards unnamed; dealt cards read "Card 2: King of Hearts, Forgiven" / "Card 4: Ace of Diamonds, Busted"; the status line says "Kept, Card 4: Ace of Diamonds, $0.30, 0.3x" once. The NVDA / VoiceOver listen is still the owner's.
   With NVDA or VoiceOver, pick four guesses, deal, and let the round settle.
   **Expect:** each pick is announced pressed or not pressed; each dealt card reads
   like "Card 2: King of Clubs, Right" (Busted / Forgiven on a miss); the empty
@@ -1212,12 +1251,14 @@ live in the How to Play panel behind the `i` button.
 
 - [x] **CMP-19 · The prompts name the pointer** — *Minor*
   **Live 2026-10-06** (front v72 = this working tree built 2026-10-06 15:26, math v13, Studio demo session, USD), phones by CDP touch emulation): PASS. Mouse: "Click to continue", "Click to skip", "Click the amount for the quick-bet menu". Touch (Mobile S/M/L): "Tap to continue", "Tap the amount ...". The same split in de, fi, ru, ar and ja.
+  **Live 2026-10-07** (front v73 = f6369ae4, index.html sha256 matching the local build; math v13, Studio demo session, USD): the intro prompt reads Click with a mouse and Tap on touch in en, de, fi, ru, ar and ja at all seven sizes, and How to Play's quick-bet line does the same.
   On a desktop with a mouse, then on a phone.
   **Expect:** "Click to continue" / "Click to skip" and "Click the amount for the
   quick-bet menu" with a mouse; "Tap ..." on touch. In every language.
 
 - [x] **CMP-20 · The intro's Tab order reaches Continue first** — *Minor*
   **Live 2026-10-06** (front v72 = this working tree built 2026-10-06 15:26, math v13, Studio demo session, USD): PASS - Tab visits the four ? badges, then Continue. One more Tab then reached the board's Black square, hidden under the intro: FIXED LOCALLY, the board and the bar are `inert` until play starts (`launchGuards.test.ts`), so Tab now wraps from Continue to the badges.
+  **Live 2026-10-07** (front v73 = f6369ae4, index.html sha256 matching the local build; math v13, Studio demo session, USD): PASS: Tab visits the four ? badges, then Continue, then leaves the page - never the board under the intro (inert since v72's fix).
   Load the game and press Tab from the start.
   **Expect:** the four ? badges, then Continue - the demo squares are not in the
   Tab order (a pointer still plays them) - and Tab never leaves the intro for the
@@ -1295,6 +1336,7 @@ badge taking a bite out of their inner edge.
   precisely so no platform substitutes its own.
 
 - [ ] **DEV-05 · Cellular latency does not break the round** — *Major*
+  **Live 2026-10-07** (front v73 = f6369ae4, index.html sha256 matching the local build; math v13, Studio demo session, USD, SIMULATED): CDP on Mobile M with touch, +800 ms latency, 50 KB/s down / 25 KB/s up: eight rounds by tap, double-tap, and tap + Space x2 while the play was in flight. Exactly one /wallet/play each (all 200), end-round on every paying round, the board equal to the RGS balance after every round, Deal usable again every time, no error. A real cellular connection is still the owner's.
   Play on a real mobile connection, not office wifi.
   **Expect:** slow responses delay the reveal but never double-charge, never
   desync the balance and never strand the spin button disabled.
@@ -1311,6 +1353,8 @@ badge taking a bite out of their inner edge.
 
 - [ ] **DEV-11 · The MODE sign** — *Major*
   **Live 2026-10-06** (front v72 = this working tree built 2026-10-06 15:26, math v13, Studio demo session, USD), seven sizes x en, de, fi, ru, ar, ja, phones by CDP touch emulation): the sign PASSES everywhere - the name in its family colour, fitted (smallest: Finnish "Toinen mahdollisuus" at 4.4px on Popout S), never overflowing; seven bolts except on Popout S; the bet display money only; MODE the same size on every family; the accessible name "Choose game mode, Three of a Kind, Volatility 7 of 7" translated in each. NOT the same bar height: on Popout S Three of a Kind's bar is 1-5px taller (its extra "$1.00 x 250" line), and that line printed at 3.3px there (DEV-12). The floor is FIXED LOCALLY; the height difference remains (6px on Popout S, 2.6px on Mobile S) and is the owner's call.
+  **Live 2026-10-07** (front v73 = f6369ae4, index.html sha256 matching the local build; math v13, Studio demo session, USD): the sign PASSES again at all seven sizes in en, de, fi, ru, ar and ja (phones touch-emulated): the name in its colour, never overflowing or outside the sign, seven bolts except on Popout S, MODE the same size on every family, the bet display money only. Still NOT the same bar height: on Popout S Three of a Kind's bar is 5-7px taller (34 -> 40 in en/de/fi, 36 -> 40 ru, 34 -> 39 ar, 36 -> 43 ja), and in ja 2px / 1px taller on Mobile M / S. Open for the owner, as before. In ar at Popout S the "1.00 US$ x 250" line runs 2.6px past the bet button's box; it stays inside the pill and touches nothing.
+  **Local 2026-10-09 - NOT run on Stake** (the v74 `build/` folder, whose index.html sha256 683db6d8... is identical to the live v74, served from localhost with the local replay server answering authenticate in the live session's shape - $100,000, $1.00; phones as touch contexts; no live RGS traffic; `npm run rgs:local`): the sign PASSES in en, de, fi, ru, ar, ja, pt, es, id and pl at all seven sizes: every family's name in its colour, never overflowing or outside the sign, seven bolts except on Popout S, MODE one size across the families. Still NOT one bar height, unchanged from v73: Three of a Kind's bar is 2-7px taller on Popout S in all ten languages (34 -> 40 en/de/fi, 36 -> 40 ru, 34 -> 39 ar, 36 -> 43 ja, 34 -> 38 pt/es, 36 -> 38 id/pl), and 2px / 1px on Mobile M / S in ja. Open for the owner, as before.
   Switch through all five families at every size, in `en`, `de`, `fi`, `ru`, `ar`
   and `ja`.
   **Expect:** the family's name in its colour on the dark sign, with the seven
@@ -1320,8 +1364,11 @@ badge taking a bite out of their inner edge.
   under reduced motion). The accessible name is "Choose game mode, <family>,
   Volatility N of 7".
 
-- [ ] **DEV-12 · Phone type is legible** — *Minor*
+- [x] **DEV-12 · Phone type is legible** — *Minor*
   **Live 2026-10-06** (front v72 = this working tree built 2026-10-06 15:26, math v13, Studio demo session, USD), Mobile S/M/L by CDP touch emulation, six languages): captions, guess labels, hints and family names are all >= 9px and the bar stays on two rows. FAIL for one line: Three of a Kind's base-bet line ("$1.00 x 250") was the only unfloored type in the bar - 5.6 / 6.6 / 7.5px on the phones, 3.3px on Popout S. FIXED LOCALLY (9px on phones, 6px on Popout S).
+  **Live 2026-10-07** (front v73 = f6369ae4, index.html sha256 matching the local build; math v13, Studio demo session, USD): Three of a Kind's line is FIXED: 9px on Mobile S/M/L and 6px on Popout S in en, de and ar. Captions, guess labels and hints are >= 9px on every phone in all six languages, and the bar stays on two rows. FAIL for family names on the MODE sign (finding F-11): fitBlock shrinks a name that cannot wrap any further below the 9px phone floor - fi "Toinen mahdollisuus" 6.3 / 7.5 / 8.5px (Mobile S / M / L), "Pääteasema" 7.6px and "Klassinen" 8.8px (Mobile S); ru "Классика" and "Конечная" 7.9px, "Высокие ставки" 8.6px (Mobile S). en, de, ar and ja hold 9px. The v72 pass read the type only on the family its sweep ended on (Three of a Kind), so it never measured these.
+  **Local 2026-10-09** (dev build, NOT uploaded): F-11 FIXED LOCALLY - the phone MODE sign is 8.4 units from 404px up and 9.4 units with a thinner frame at 400px and under, where the hidden stepper gives its width back (`responsive-bar.css`, pinned by `autoplayLimits.test.ts`). Swept every 1px 320-404 in all five families in fi / pt / ru / es / id / pl / en, mouse and touch: 2,975 points each, every name >= 9.00px, nothing clipped, the bar always on two rows; and every 4px 320-620 in all 17 language variants (fi's 8.85px at 324px under 9.2 units is what moved it to 9.4). Re-run live on the next upload.
+  **Local 2026-10-09 - NOT run on Stake** (the v74 `build/` folder, whose index.html sha256 683db6d8... is identical to the live v74, served from localhost with the local replay server answering authenticate in the live session's shape - $100,000, $1.00; phones as touch contexts; no live RGS traffic; `npm run rgs:local`): PASS - F-11 is fixed on the uploaded build. In the same ten languages every family name, caption, guess label, hint and Three of a Kind line on Mobile S / M / L is 9px or more, and the bar stays on two rows. The smallest names: 9.00px on Mobile S (en "Second Chance", fi "Toinen mahdollisuus"), 10.46px on Mobile M, 9.95px on Mobile L (fi) - where v73 printed fi "Toinen mahdollisuus" at 6.3 / 7.5 / 8.5px.
   Mobile S, M and L.
   **Expect:** no caption, guess label, hint, family name or Three of a Kind's
   "$1.00 x 250" line under 9 px; the bar
@@ -1401,6 +1448,7 @@ deliberate look rather than trusting the fix.
 
 - [x] **REG-02 · The fonts load under the CDN's policy** — *Blocker*
   **Live 2026-10-06** (front v72 = this working tree built 2026-10-06 15:26, math v13, Studio demo session, USD): PASS (F-5 fixed). The CDN still sends `font-src 'self' https://fonts.gstatic.com`; Overpass and Big Shoulders load from the build's own `fonts/` files and report `loaded`; no font error in the console.
+  **Live 2026-10-09** (front v74 = the working tree built 2026-10-09 03:03 - f6369ae4 plus the F-11 fix - index.html sha256 683db6d8... identical to the local build; math v13, Studio demo session, USD; `npm run rgs`): PASS: Overpass and Big Shoulders report loaded from the build's own files, the body draws in Overpass, no font error in the console.
   On the uploaded build, check the response's `content-security-policy` and
   `document.fonts`.
   **Expect:** Overpass and Big Shoulders load from the build's own `fonts/` files
@@ -1484,6 +1532,7 @@ measurable from the source.
   to show a leak.
 
 - [ ] **PRF-03 · The win takeover holds its frame rate on a phone** — *Major*
+  **Live 2026-10-07** (front v73 = f6369ae4, index.html sha256 matching the local build; math v13, Studio demo session, USD, SIMULATED): CDP on Mobile M with touch and a coarse pointer, CPU throttled; the Classic max win #975 replayed, every rAF interval recorded while the takeover is up. Unthrottled 58.7 fps (p95 16.9 ms); 4x 53.0 fps (p95 33.3 ms); 6x 44.2 fps (p95 33.4 ms, p99 66.6 ms), never more than two dropped frames in a row. Each run has one long frame (133 / 150 / 333 ms), consistent with the takeover mounting. A trace on a real mid-range Android is still the owner's.
   Record a performance trace through a Max Win on a mid-range Android.
   **Expect:** no sustained dropped frames. The known costs are the fan's four
   `box-shadow`ed cards and the `drop-shadow` on the suit marks; the blur is
@@ -1493,6 +1542,8 @@ measurable from the source.
 - [x] **PRF-04 · The network tab is clean and says nothing it should not** — *Blocker*
   **Live 2026-10-05** (front v71 = a177bf85, math v13, Studio demo session, USD): FAIL. The CDN sends `font-src 'self' https://fonts.gstatic.com`, which blocks the bundle's data: fonts: every Geist and Big Shoulders face reports `error`, the console logs one error per face, and the live game draws in fallback system fonts. Finding F-5. Requests otherwise clean: only the RGS and the game's own CDN (courts.svg, A.mp3); no game data logged.
   **Live 2026-10-06** (front v72 = this working tree built 2026-10-06 15:26, math v13, Studio demo session, USD): PASS (F-5 fixed). Only the RGS and the game's own CDN in the network log, no 4xx or 5xx, no font errors and no game data logged, across launch, rounds and every panel (and REG-01's 100 rounds).
+  **Live 2026-10-07** (front v73 = f6369ae4, index.html sha256 matching the local build; math v13, Studio demo session, USD): PASS: a fresh launch, two rounds and every panel - 8 requests to takeovercasino.live.engine.io and 4 to rgsd.engine.io, no 4xx / 5xx, no failed request, an empty console; Overpass and Big Shoulders load from files.
+  **Live 2026-10-09** (front v74 = the working tree built 2026-10-09 03:03 - f6369ae4 plus the F-11 fix - index.html sha256 683db6d8... identical to the local build; math v13, Studio demo session, USD; `npm run rgs`): PASS: a cold launch, two Classic rounds and all seven panels - 9 requests to takeovercasino.live.engine.io and 5 to rgsd.engine.io, no 4xx / 5xx or failed request, an empty console, no game data logged.
   Play a full session on the **uploaded** build with the Network tab open.
   **Expect:** no 4xx or 5xx that a test here did not provoke, no requests to any
   origin but the RGS and the Stake CDN, and no game internals logged. The

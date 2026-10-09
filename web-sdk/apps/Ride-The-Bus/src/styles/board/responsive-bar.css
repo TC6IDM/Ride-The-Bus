@@ -58,8 +58,13 @@
      came out 1.4px over and put MODE on a third row by itself:
        - the bet figure's reservation, measured from "$1,000,000.00", which is not
          a bet anyone places at this width (use:fitValue shrinks a long one);
-       - MODE's width: the sign, a shade narrower than on the one-row bar - the
-         name inside it is fitted, so the sign never grows to its word;
+       - MODE's width: the sign, as wide as the row can spare at 404px on touch
+         (just above the stepper's 400px cut, the tightest point: 13.1px left
+         at 7.4 units). 8.4 units, not the 7.4 it was: at 7.4 the phone floor's
+         9px was lost to fitBlock on 11 family names in six languages (Finnish
+         "Toinen mahdollisuus" at 6.3px on Mobile S, Russian "Классика" at 7.9),
+         finding F-11. At 8.4 the smallest name from 404 to 620px is 9.5px. The
+         name inside it is still fitted, so the sign never grows to its word;
        - the gaps BETWEEN the controls on a row (not between the two rows).
          Russian was the tight case while the family name sat under the bet;
          it is the MODE sign's now, and the bet display is money only.
@@ -74,9 +79,9 @@
     min-width: calc(var(--ui-bar) * 11);
   }
 .cb-mode-slot .cb-mode-btn {
-    width: calc(var(--ui-bar) * 7.4);
-    min-width: calc(var(--ui-bar) * 7.4);
-    max-width: calc(var(--ui-bar) * 7.4);
+    width: calc(var(--ui-bar) * 8.4);
+    min-width: calc(var(--ui-bar) * 8.4);
+    max-width: calc(var(--ui-bar) * 8.4);
     /* The touch floor's height for every pointer: the sign's name takes two
        lines here, and at 4.18 units (27px on a 320px window) they fitted to
        6.5px. Row two is taller than 36px anyway, so nothing moves. */
@@ -209,6 +214,24 @@
    same way - its controls are half-size, not floored, so the steppers fit
    there exactly as they do on Popout L. */
 @media (max-width: 400px) and (orientation: portrait) {.cb-betstep { display: none; }
+/* The width the stepper gave back goes to the MODE sign, which needs it most
+     here: the narrower the phone, the bigger the share of the sign its frame
+     takes, and at 8.4 units Finnish "Toinen mahdollisuus" and Portuguese
+     "Segunda Oportunidade" still fitted under the 9px floor below 340px. 9.4
+     units and a thinner frame (padding 0.36 -> 0.2, the window's sides 0.3 ->
+     0.15) put every name in all 16 languages at 9px or more, swept every 1px
+     from 320 to 400, and leave touch 4.2px of row two at 320 - the tightest
+     width in this block. 9.2 was 1px short: at 324px "MAHDOLLISUUS" measured
+     55px in a 54px window at its 9.03px base and fitBlock's 2% step took it
+     to 8.85. 9.8 units with the frame as it was left only 1.6px of the row.
+     Portrait-scoped like the stepper rule, so Popout S never sees it. */
+.cb-mode-slot .cb-mode-btn {
+    width: calc(var(--ui-bar) * 9.4);
+    min-width: calc(var(--ui-bar) * 9.4);
+    max-width: calc(var(--ui-bar) * 9.4);
+    padding: calc(var(--ui-bar) * 0.2);
+  }
+.cb-blind { padding-inline: calc(var(--ui-bar) * 0.15); }
 }
 
 /* ==========================================================================

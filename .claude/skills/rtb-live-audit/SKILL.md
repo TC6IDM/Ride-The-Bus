@@ -1,13 +1,61 @@
 ---
 name: rtb-live-audit
-description: Run RGS_TEST_PLAN.md's live-session checks against the UPLOADED Ride The Bus build on Stake Engine Studio, driven by playwright-cli in a signed-in browser - the method used 2026-10-05 (all 50 Blockers) and 2026-10-06 (two more passes, front v71 then v72: 122 of 132 ticked). Use when the owner pastes a studio.engine.io launch link, asks for the live/Stake checks, or a new front/math version has been uploaded.
+description: Run RGS_TEST_PLAN.md's live-session checks against the UPLOADED Ride The Bus build on Stake Engine Studio - now one command, `npm run rgs -- --front N --math N` (scripts/rgs-live, 130 of 132 checks, parallel, rate-limit aware). The per-check playwright-cli scripts below are the reference it was ported from. Use when the owner pastes a studio.engine.io launch link, asks for the live/Stake checks, or a new front/math version has been uploaded.
 ---
 
 # Live audit on Stake Engine (the uploaded build)
 
+**Start with the runner.** `cd web-sdk/apps/Ride-The-Bus && npm run rgs -- --front <N> --math <N>`
+(add `--record` to write results into RGS_TEST_PLAN.md, `--quick` for the smoke set,
+`--only WIN,REP-01` for a slice). It is `scripts/rgs-live/` - read its README first:
+it is built around three facts about the live RGS that broke earlier attempts (a
+per-machine rate limit that authenticates exhaust fastest, ONE open round per Studio
+account shared by every demo session, and Google refusing Playwright-launched
+browsers). Everything below is the hand-driven method it was ported from - still the
+reference for what each check measures, and the way to dig into one that fails.
+
 Localhost is not the uploaded build. The first live pass found two Blocker failures
 that no local check could see: the CDN's CSP blocks every embedded font, and the
 error modal sits under the intro. So this is how the RGS_TEST_PLAN boxes get ticked.
+
+## Local on the uploaded bytes - do this first
+
+**The owner's rule (2026-10-09): if a check is fully valid locally, run it locally,
+not against the live RGS.** That day the RGS refused this machine at 12 page loads
+in about five minutes, and the owner asked whether it could lock them out of
+Stake Engine. Every page load is an authenticate.
+
+- **Valid locally:** anything that only measures layout - clipping, overflow,
+  type size, the bar's rows, the MODE sign - provided the local
+  `build/index.html` hashes identical to the live one (`npm run rgs` prints the
+  comparison; any live run of it does). Serve that `build/` folder itself on
+  localhost, with the local replay server answering authenticate. The same bytes
+  lay out the same way.
+- **Still needs Stake:** the wallet and its arithmetic, the handshake, the CDN's
+  own headers (CSP, fonts), the replay endpoint, the jurisdiction block, rate
+  limits.
+- **Before a live run,** name which checks go live and why each one cannot be
+  done locally, then keep that list to the minimum (the smoke set plus whatever
+  only Stake can show).
+- **Record it honestly:** the line reads `**Local <date> - NOT run on Stake**`
+  and names what was served (`build/` with its hash, or the dev server). A pass
+  on the uploaded build's bytes ticks the box; see RGS_TEST_PLAN.md, "Layout
+  checks run locally".
+
+**The command:** `cd web-sdk/apps/Ride-The-Bus && npm run rgs:local -- --front <N>`
+(`scripts/rgs-live/local.mjs`). It serves `build/` and the local replay server
+on spare ports itself (3013 / 3021 - the owner's 3001 / 3010 are left alone),
+checks `build/` against the live `index.html` with ONE CDN request (no RGS call;
+leave `--front` off to make none), and runs DEV-11, DEV-12 and CUR-04 with the
+live checks' own measuring code (`checks/11-devices.mjs`' `signAndTypeAt`,
+`checks/06-currency.mjs`' `fits`), authenticate answered in the live session's
+shape. A dashboard opens on http://127.0.0.1:8767 - the live runner's page,
+with the screenshots under it - and the run writes `report.md`, `results.json`
+and `dashboard.html` to `scripts/.shots/rgs/<date>-local-<time>/`. `--record`
+writes `rgs-local`-tagged lines into the plan, and refuses when `build/` is not
+the upload. `--only DEV-12 --langs fi,ru` narrows it. A new layout check goes in
+`scripts/rgs-live/local-checks.mjs`, measuring with an export from `checks/`
+so the two cannot drift.
 
 ## What you need from the owner
 
@@ -51,7 +99,10 @@ error modal sits under the intro. So this is how the RGS_TEST_PLAN boxes get tic
   `?replay=true&game=<game UUID>&version=<math>&mode=<mode>&event=<simulation id>&currency=USD&amount=<MICRO-units>&lang=en&device=desktop&social=false&rgs_url=rgsd.engine.io`.
   - The game UUID is `019f7e00-fa38-78fa-9ea7-b4933e75765b`. The RGS rejects the slug,
     and authenticate's `config.gameID` comes back EMPTY, so the game cannot learn it.
-  - Replays need no session, so they can run in any tab.
+  - Replays need no game session, so they can run in any tab of the signed-in
+    profile - but NOT in a fresh browser: the CDN answers `403 Forbidden` to
+    every path, every version, without the Studio sign-in's cookies (seen
+    2026-10-07). A separate headless session cannot replay.
   - Event IDs come from `REPLAY_EVENTS.md`.
 
 ## Running scripts
@@ -91,6 +142,18 @@ error modal sits under the intro. So this is how the RGS_TEST_PLAN boxes get tic
   If it does not, the live results describe a different build from the branch.
 
 ## Which script covers what
+
+Added 2026-10-07 (against front v73). `gen-rounds.sh` now reads a pick's
+`aria-pressed`; it read a `selected` class the squares no longer carry, so it
+could toggle a pick OFF.
+
+| Checks | Script |
+|---|---|
+| SES-01, PRF-04 | `smokenet.js` - a fresh tab: the authenticate summary, every origin and status, the console, font status, two rounds, every panel |
+| DEV-12's Three of a Kind line | `tbase.js` - the "$1.00 x 250" line's size and clipping, five sizes x en/de/ar |
+| DEV-05 (SIMULATED) | `dev05sim.js` - Mobile M, +800 ms latency, tap / double-tap / Space mid-play; one play per round, board = RGS |
+| PRF-03 (SIMULATED) | `prf03sim.js` - Mobile M, CPU 1x / 4x / 6x, every rAF interval through the #975 takeover |
+| CMP-12 (evidence only) | `cmp12.js` - the viewport meta and every element's computed `touch-action` |
 
 Added 2026-10-06, later (against front v72). Every script now reads the front
 version off the live frame (`FRONT`), and `golaunch.js` names `MATH` / `FRONT`
@@ -170,6 +233,12 @@ intro.
 - **Listeners outlive a failed run-code.** A script that throws leaves its
   `page.on(...)` attached, and every later script inherits its errors.
   `lib-round.js` line 1 removes them.
+- **A listener that THROWS kills the browser.** An exception inside a
+  `tab.on('response' | 'requestfailed' | 'console', ...)` body takes down the
+  playwright-cli daemon: run-code dies with "Session closed" and the window is
+  gone (`new URL(r.url())` on every response did it twice, 2026-10-07). Wrap
+  every listener body in `try { } catch {}`; reopen with
+  `open --headed --persistent` - the sign-in survives - and relaunch.
 - **Reloading the frame brings the intro back.** Any click then times out behind it.
 - **Playwright waits for "stable".** The pulsing Deal button and touch-emulated
   squares can time out. Use `{ force: true }`, or accept the retry.

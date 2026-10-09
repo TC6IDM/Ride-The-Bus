@@ -41,6 +41,18 @@ These override default behaviour. Follow them every time.
    is ignored by ESLint 9 and kept only so the app still matches its siblings.
 
    ```
+   npm run verify        # all four gates at once, watched on a page (:8768)
+   ```
+   `npm run verify` (`scripts/verify.mjs`) runs those four through their own
+   npm scripts in parallel (~25s) and shows each one live on
+   http://127.0.0.1:8768 - status, the count, any failure, the output. It is
+   stricter than `check:svelte` alone: a warning in the game's own source fails
+   it, as the rule above says. Each run leaves its four logs and a
+   `dashboard.html` in `scripts/.shots/verify/`. **The owner wants checks
+   viewable this way**: `npm run rgs` (:8766) and `npm run rgs:local` (:8767)
+   have pages too.
+
+   ```
    npm run audio         # capture the REAL audio graph and draw it
    ```
    `npm run audio` exists because I cannot hear. It taps the running game's
@@ -398,8 +410,11 @@ reading before proposing it again.
   locked-state tip is hosted on `.cb-mode-slot` and anchored to the slot's inner
   edge (it sits at the screen edge). FIXED width, paid for by the bet display,
   which carries money only now: 8.42 / 11.6 units on the one-row bar (6.2 / 13.82
-  before), 7.4 on phones at a 36px-or-5-unit height; the name fits into it
-  (`fitBlock`, two lines then smaller), never the sign to the name; Popout S drops
+  before), 8.4 on phones at a 36px-or-5-unit height, and 9.4 with a thinner
+  frame at 400px and under, where the hidden stepper gives its width back (F-11:
+  at 7.4, eleven names in six languages fitted under the 9px phone floor); the
+  name fits into it (`fitBlock`, two lines then smaller), never the sign to the
+  name - so a wider sign is how a name is kept legible, not a wider name; Popout S drops
   the bolts. A family change ROLLS the name ({#key} + a transition, a crossfade
   under reduced motion). Out of the light pill, so Balance and Last Win got its
   width. **Row two of the phone bar is budgeted for every pointer** (tighter
@@ -1010,19 +1025,33 @@ between a one-row bar and a two-row one.
 
 ## Current state and outstanding work
 
-**2026-10-06: three live passes on Stake; the uploaded build is front v72 +
-math v13** (v72 = this working tree built 2026-10-06 15:26). `RGS_TEST_PLAN.md`
-holds 132 checks, **122 ticked live**. Of the ten open, five need the owner's
-hardware or judgement (CMP-12, CMP-14, DEV-04, DEV-05, PRF-03) and CMP-18 a real
-screen reader; SES-03 waits for a genuine session lapse; WIN-16, DEV-11 and
-DEV-12 failed on v72 and are FIXED LOCALLY, not yet uploaded (below). The method,
-its scripts and its pitfalls are the `rtb-live-audit` skill. 974 tests pass; 0
+**2026-10-09: the uploaded build is front v74 + math v13** (v74 = `f6369ae4`
+plus the F-11 fix, built 2026-10-09 03:03; its live `index.html` hashes
+identical to `build/`, sha256 `683db6d8...`). `RGS_TEST_PLAN.md` holds 132
+checks, **124 ticked**. Of the eight open, five need the owner's hardware or
+judgement (CMP-12, CMP-14, DEV-04, DEV-05, PRF-03 - DEV-05, PRF-03 and CMP-12
+have SIMULATED evidence on record) and CMP-18 a real screen reader; SES-03 waits
+for a genuine session lapse; DEV-11 waits on the owner's call (Three of a Kind's
+bar is 2-7px taller on Popout S, unchanged by v74). DEV-12 failed on v73 on F-11
+(the MODE sign's `fitBlock` shrank Finnish and Russian family names to
+6.3-8.8px on phones) and PASSES on v74's bytes - measured LOCALLY, not on Stake:
+every name 9px or more in ten languages. On v74 the live smoke set passed
+(SES-01/02/06/08, PRF-04, REG-02). **The live checks are one command:** `npm run
+rgs -- --front N --math N` (`scripts/rgs-live/`, 130 of 132 checks, a live
+dashboard on :8766) - read its README before a run. **Run only what needs
+Stake** (the owner's rule, 2026-10-09): the live RGS refused this machine at 12
+page loads in about five minutes that day, even after 9.5 hours of silence, and
+refuses for growing periods (5, 12, 35+ minutes); every demo session of one
+Studio account shares ONE open round. A check that only measures layout runs on
+the local `build/` instead - `npm run rgs:local -- --front N` (DEV-11, DEV-12,
+CUR-04; :8767; zero RGS calls), recorded as **Local - NOT run on Stake**. The method,
+its scripts and its pitfalls are the `rtb-live-audit` skill. 975 tests pass; 0
 type errors, 0 CSS warnings, lint clean. Last Stop's volatility tie with High Stakes (three near-ties) was
 accepted by the owner on 2026-10-05; `volatility.test.ts` allows a 5% sampled
 tolerance on that one pair. The ticket cue was measured with `npm run audio`
 (no clipping, adds no level; its parts sit at about a third of a card chime -
-a listen is the owner's). **Nothing from 2026-10-05/06 is committed; the next
-upload needs a production build from the owner first.**
+a listen is the owner's). Everything through 2026-10-09 is committed
+and on `main` (PR #2 merged the branch; the v74 work went straight onto it).
 
 **What changed in the client on 2026-10-05/06** (each rule has its own note in
 the code; the test that pins it is named):

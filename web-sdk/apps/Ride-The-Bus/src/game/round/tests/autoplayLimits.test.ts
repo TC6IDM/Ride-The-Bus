@@ -144,7 +144,19 @@ describe('the bar holds two rows on a phone with MODE at the edge', () => {
     assert.match(block, /\.control-bar\s*{[^}]*column-gap:\s*calc\(var\(--ui-bar\) \* 0\.55\)/, 'row two lost its tighter gaps');
     assert.match(block, /\.control-bar\s*{[^}]*padding-inline:\s*calc\(var\(--ui-bar\) \* 1\)/, 'row two lost its narrower side margin');
     assert.match(block, /\.cb-bet-display\s*{\s*min-width:\s*calc\(var\(--ui-bar\) \* 11\)/, 'the bet figure lost its trimmed reservation');
-    assert.match(block, /\.cb-mode-slot \.cb-mode-btn\s*{[^}]*min-width:\s*calc\(var\(--ui-bar\) \* 7\.4\)/, 'the MODE sign lost its narrower two-row width');
+    assert.match(block, /\.cb-mode-slot \.cb-mode-btn\s*{[^}]*min-width:\s*calc\(var\(--ui-bar\) \* 8\.4\)/, 'the MODE sign lost its two-row width');
+  });
+
+  test('under 400px the stepper\'s width goes to the MODE sign (F-11)', () => {
+    // The phone type floor is 9px, and at 7.4 units fitBlock fitted 11 family
+    // names in six languages under it - Finnish "Toinen mahdollisuus" at 6.3px
+    // on Mobile S. 8.4 units from 404px up and 9.4 with a thinner frame below
+    // put every name in all 16 languages at 9px or more, swept every 4px from
+    // 320 to 620, mouse and touch, with the bar still on two rows.
+    const narrow = bar.slice(bar.indexOf('@media (max-width: 400px) and (orientation: portrait)'), bar.indexOf('\n}\n', bar.indexOf('@media (max-width: 400px) and (orientation: portrait)')));
+    assert.match(narrow, /\.cb-betstep\s*{\s*display:\s*none/, 'the stepper no longer hides under 400px, so the sign has no width to take');
+    assert.match(narrow, /\.cb-mode-slot \.cb-mode-btn\s*{[^}]*min-width:\s*calc\(var\(--ui-bar\) \* 9\.4\)[^}]*padding:\s*calc\(var\(--ui-bar\) \* 0\.2\)/, 'the MODE sign lost its narrow-phone width or its thinner frame');
+    assert.match(narrow, /\.cb-blind\s*{\s*padding-inline:\s*calc\(var\(--ui-bar\) \* 0\.15\)/, 'the sign\'s window lost its narrower sides');
   });
 
   test('Popout S puts all four back, so it stays Popout L at half size', () => {

@@ -16,9 +16,12 @@
 		"preview": "vite preview",
 		"test": "node --test \"src/**/*.test.ts\"",
 		"test:watch": "node --test --watch \"src/**/*.test.ts\"",
+		"verify": "node ../../../scripts/verify.mjs",
 		"replay": "node ../../../scripts/replay-server.mjs",
 		"shots": "node ../../../scripts/shoot.mjs",
 		"audio": "node ../../../scripts/audio-lab.mjs",
+		"rgs": "node ../../../scripts/rgs-live/run.mjs",
+		"rgs:local": "node ../../../scripts/rgs-live/local.mjs",
 		"graph": "node ../../../scripts/graph-build.mjs",
 		"graph:watch": "node ../../../scripts/graph-build.mjs --watch",
 		"dev:replay": "node ../../../scripts/dev-all.mjs"

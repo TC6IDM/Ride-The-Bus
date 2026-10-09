@@ -16,8 +16,8 @@ if (PICKS !== '-') {
   const names = PICKS.split(',');
   for (let i = 0; i < names.length; i++) {
     const b = cols.nth(i).getByRole('button', { name: names[i], exact: true }).first();
-    const cls = (await b.getAttribute('class')) || '';
-    if (!/selected/.test(cls)) { await b.click(); await page.waitForTimeout(150); }
+    const pressed = await b.getAttribute('aria-pressed');
+    if (pressed !== 'true') { await b.click(); await page.waitForTimeout(150); }
   }
 }
 const rounds = [];
