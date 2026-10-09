@@ -92,13 +92,12 @@ If the client's arithmetic drifts from the Python, the game shows a player one
 number while the RGS credits another. That is the worst bug this project can
 have, and `payout.test.ts` guards it by replaying every published book.
 
-**`main` is behind.** It stops at the `ui-art-pass` merge; everything since -
-Three of a Kind, High Stakes at 15%, the direct book writer, the readability
-passes, the 2026-09-22 audit fixes and the 2026-09-26 card faces - is on
-`refactor/readability-passes`, 26+ commits ahead, until that branch is merged. Merge it before building
-anything for submission. Note that local `main` tracks
-`origin/monorepo-restructure`, not `origin/main`, so a bare `git push` from it
-goes somewhere unexpected; push `main:main` explicitly or re-point the upstream.
+**`main` is current.** PR #2 merged `refactor/readability-passes` into it
+(2026-10-07) - Three of a Kind, High Stakes at 15%, the direct book writer, the
+readability passes, Last Stop and everything since - and work goes straight
+onto `main` from 2026-10-09. Local `main` tracks `origin/main` now (it used to
+track `origin/monorepo-restructure`, which sent a bare `git push` somewhere
+unexpected); still ask before every push.
 
 ---
 
