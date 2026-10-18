@@ -1,5 +1,6 @@
 /**
- * How the takeover MOVES: the hand's hop, and the reduced-motion gate. (The
+ * How the takeover MOVES: the hand's hop and its breath, and the reduced-motion
+ * gate. (The
  * title's and the amount's scale pops went with the sign and the split-flap
  * board, 2026-10-18: the sign rolls and the flaps turn instead.)
  *
@@ -61,6 +62,42 @@ export function hopFan(fanEl: HTMLElement | undefined) {
 	const ticket = fanEl.querySelector<HTMLElement>('.wc-fan-ticket');
 	if (ticket) hop(ticket, ((cards.length - 1) / 2) * 55);
 }
+
+/**
+ * THE HAND BREATHES (the owner's call, 2026-10-18): a slow rise and fall for
+ * as long as the takeover is up, each card a little behind the one before so
+ * the hand moves as a held thing rather than as one block. It starts once the
+ * hand has been dealt out of the board's slots, and handFlight cancels it
+ * before flying the hand home.
+ *
+ * Through the same composite: 'add' as the hop and for the same reason - the
+ * fan's tilt and offset live in the transform this layers on, and the hop and
+ * the breath add to each other rather than fighting over it. The ticket on a
+ * Last Stop hand breathes with the middle of it, as it hops.
+ */
+export function breatheHand(fanEl: HTMLElement | undefined) {
+	if (!fanEl || reducedMotion()) return;
+	const breathe = (element: HTMLElement, delay: number) =>
+		element.animate(
+			[{ transform: 'translateY(0)' }, { transform: 'translateY(calc(var(--ui) * -0.45))' }],
+			{
+				duration: BREATH_MS,
+				delay,
+				direction: 'alternate',
+				iterations: Infinity,
+				easing: 'cubic-bezier(0.45, 0, 0.55, 1)',
+				composite: 'add',
+			},
+		);
+	const cards = fanEl.querySelectorAll<HTMLElement>('.wc-fan-card');
+	cards.forEach((card, i) => breathe(card, i * BREATH_STAGGER_MS));
+	const ticket = fanEl.querySelector<HTMLElement>('.wc-fan-ticket');
+	if (ticket) breathe(ticket, ((cards.length - 1) / 2) * BREATH_STAGGER_MS);
+}
+
+/** One way of the breath, and the beat between one card and the next. */
+export const BREATH_MS = 1700;
+export const BREATH_STAGGER_MS = 210;
 
 /**
  * Read from the stylesheet rather than restated here. The literal that used

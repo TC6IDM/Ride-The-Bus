@@ -45,7 +45,6 @@
 	import { fingerPointer } from '../../game/ui/pointerWords';
 
 	import MarkIcon from '../icons/MarkIcon.svelte';
-	import SuitIcon from '../icons/SuitIcon.svelte';
 	import CardFace from '../cards/CardFace.svelte';
 	import SplitFlap from './SplitFlap.svelte';
 	import TicketFace from '../cards/TicketFace.svelte';
@@ -54,9 +53,10 @@
 	import { sound } from '../../game/audio/sound';
 	import { CEILING_PAUSE_MS, countUpSegments, type WinTier } from '../../game/math/winTiers';
 	import { FAMILY_RULES, stageCount, type ModeFamily } from '../../game/math/modes';
-	import { BURST, fanFor } from '../../game/celebration/celebrationScene';
+	import { fanFor } from '../../game/celebration/celebrationScene';
+	import { chipStream, type ChipStream } from '../../game/celebration/chipStream';
 	import { formatMultiplier } from '../../game/ui/formatMultiplier';
-	import { hopFan, reducedMotion } from '../../game/celebration/celebrationGestures';
+	import { breatheHand, hopFan, reducedMotion } from '../../game/celebration/celebrationGestures';
 	import { flyHand } from '../../game/celebration/handFlight';
 
 	type Props = {
@@ -188,6 +188,11 @@
 	const amountDigits = $derived(currencyFractionDigits(props.amount));
 
 	let fanEl: HTMLElement | undefined = $state(undefined);
+	let overlayEl: HTMLElement | undefined = $state(undefined);
+	let chipsEl: HTMLElement | undefined = $state(undefined);
+	/** The chips (chipStream.ts), once the hand is down. See the effect below. */
+	let chips: ChipStream | null = null;
+	let streaming = $state(false);
 	/**
 	 * Continue was pressed and the hand is flying home: the overlay is going, so
 	 * a second tap or key must not dismiss it twice. See dismiss().
@@ -418,12 +423,44 @@
 		clearHold();
 		cancelAnimationFrame(frame);
 		leaving = true;
+		chips?.stop();
 		void flyHand(fanEl, 'out').then(() => props.ondismiss());
 	}
 
-	/* The hand is dealt OUT of the board's slots, once, as the takeover opens. */
+	/** The takeover's --ui in px, read off a fan card (7.4 units wide). */
+	const unitPx = () => (fanEl?.querySelector<HTMLElement>('.wc-fan-card')?.offsetWidth ?? 0) / 7.4 || 8;
+
+	/**
+	 * The hand is dealt OUT of the board's slots, once, as the takeover opens.
+	 * When it is down it starts to breathe and the chips start to stream from
+	 * behind it (the owner's W1 notes, 2026-10-18).
+	 */
 	$effect(() => {
-		if (fanEl) void flyHand(fanEl, 'in');
+		if (!fanEl) return;
+		const stream = chipStream(chipsEl, unitPx);
+		chips = stream;
+		void flyHand(fanEl, 'in').then(() => {
+			if (leaving) return;
+			breatheHand(fanEl);
+			stream.start();
+			streaming = true;
+		});
+		return () => stream.stop();
+	});
+
+	/**
+	 * Every promotion sets the stream to the new tier and throws its burst. The
+	 * numbers are the tier's own knobs in win-celebration.css, read off the
+	 * overlay after the tier class has changed (an effect runs after the DOM
+	 * update), so the ladder stays one table in one place.
+	 */
+	$effect(() => {
+		void activeTier.id;
+		if (!streaming || !overlayEl || !chips) return;
+		const css = getComputedStyle(overlayEl);
+		const knob = (name: string, fallback: number) => parseFloat(css.getPropertyValue(name)) || fallback;
+		const share = knob('--wc-chip-share', 1);
+		chips.level(knob('--wc-chip-rate', 3) * share, Math.round(knob('--wc-chip-burst', 6) * share), knob('--wc-throw', 1));
 	});
 
 	/**
@@ -487,6 +524,7 @@
 <div
 	class="wc-overlay tier-{activeTier.id}"
 	class:is-leaving={leaving}
+	bind:this={overlayEl}
 	role="button"
 	tabindex="0"
 	aria-label={ariaLabel()}
@@ -503,27 +541,6 @@
 	     win-celebration.css. -->
 	<div class="wc-deck-sweep" aria-hidden="true"></div>
 
-	<!-- KEYED, and unlike the title that is the whole point.
-	     A burst is an event: it should fire when the tier is promoted and be
-	     over. The marks used to loop forever on independent delays, which meant
-	     they never shared a start and the ring only ever drifted. Keying tears
-	     the container down and rebuilds it on each promotion, which restarts the
-	     one-shot animation - the exact behaviour that is WRONG for .wc-title
-	     (it would replay the sign's entrance on every promotion) and is right
-	     here. -->
-	{#key activeTier.id}
-		<div class="wc-burst" aria-hidden="true">
-			{#each BURST as mark}
-				<span
-					class="wc-mark"
-					style={`--angle: ${mark.angle}deg; --dist: calc(var(--ui) * ${mark.dist}); --spin: ${mark.spin}deg; font-size: calc(var(--ui) * ${mark.size}); animation-delay: ${mark.delay}s`}
-				>
-					<SuitIcon suit={mark.suit} scale={1} />
-				</span>
-			{/each}
-		</div>
-	{/key}
-
 	<div class="wc-body" aria-hidden="true">
 		<!-- The round's own hand, dealt above the figure.
 
@@ -539,6 +556,10 @@
 		     promotion would re-deal the hand four times during one count-up. It
 		     widens instead, off --wc-fan-spread. -->
 		<div class="wc-fan" bind:this={fanEl} aria-hidden="true">
+			<!-- The chips leave from here: a point under the cards, so they come
+			     out from behind the hand and pass behind the words. chipStream.ts
+			     fills it; win-celebration.css draws them. -->
+			<div class="wc-chips" bind:this={chipsEl}></div>
 			{#each fan as slot}
 				{@const card = props.cards[slot.index] ?? null}
 				<!-- is-face carries NO styling and is not meant to: scripts/shoot.mjs

@@ -47,14 +47,13 @@
  * and Huge where the veil is lightest. THREE AMBIENT CIRCLES ON ONE CENTRE IS
  * NOT DEPTH. Do not put them back.
  *
- * THE BURST IS SUITS, NOT SPARKS, and it is now a MOMENT rather than a loop.
- * Glowing dots are the particle burst every casino template ships; these are
- * the four suits, drawn by SuitIcon. They used to run on independent infinite
- * loops with delays up to 2.1s, so they never shared a t=0 and nothing ever
- * burst - at any frame they sat at ten unrelated radii, which is dust, not a
- * gesture. One origin, one instant, fired on each promotion (WinCelebration
- * keys the container), fading before they reach the frame edge so none of them
- * lands in a corner or over the control bar.
+ * THE CHIPS ARE THE TABLE'S (the owner's W1, 2026-10-18). Flat chips in the
+ * table's own colours stream out from behind the hand for as long as the win
+ * is up, thicker at every tier, with a burst as each tier lands
+ * (chipStream.ts). They replaced a burst of suit marks, which the takeover
+ * audit found read as debris on a still frame - and before that, glowing
+ * particle dots, the burst every casino template ships. The stream is a loop
+ * BY THE OWNER'S REQUEST; it stops the moment Continue is pressed.
  *
  * THE LIGHT IS ONE BEAM, NOT A SPINNING CONE. table.css lights the whole game
  * from the upper right; the takeover borrows the same light instead of rotating
@@ -69,7 +68,9 @@
  *   --wc-cool       the outer falloff
  *   --wc-beam-op    beam brightness
  *   --wc-fan-spread how wide the hand opens - THE VISIBLE LADDER
- *   --wc-throw      how far the suit marks are thrown
+ *   --wc-throw      how far the chips are thrown
+ *   --wc-chip-rate  chips a second in the stream
+ *   --wc-chip-burst chips thrown at once as the tier lands
  *
  * Each tier is declared as an RGB TRIPLET with the hex derived from it, the way
  * --gold-rgb and the repaired --ctl-turbo-rgb are. --wc-ray used to be a
@@ -118,6 +119,9 @@
 	   nothing suggests it is a tier's to change.
 	   Kept at Big Win's original value. */
 	--wc-veil: 0.6;
+	/* How much of each tier's chip stream this screen gets. Trimmed on phones
+	   and Popout S, where the same count reads as a swarm. */
+	--wc-chip-share: 1;
 
 	/* Derived once, from the triplet, so a fill and a wash cannot drift apart.
 	   Fallbacks are Classic's gold: the element always carries a tier class, but
@@ -209,6 +213,8 @@
 	--wc-beam-op: 0.3;
 	--wc-fan-spread: 0.82;
 	--wc-throw: 1;
+	--wc-chip-rate: 3;
+	--wc-chip-burst: 6;
 }
 .tier-huge {
 	--wc-hot-rgb: var(--vol-base-rgb);
@@ -216,6 +222,8 @@
 	--wc-beam-op: 0.42;
 	--wc-fan-spread: 0.98;
 	--wc-throw: 1.15;
+	--wc-chip-rate: 5;
+	--wc-chip-burst: 8;
 }
 .tier-mega {
 	--wc-hot-rgb: var(--vol-hs-rgb);
@@ -223,6 +231,8 @@
 	--wc-fan-spread: 1.14;
 	--wc-beam-op: 0.54;
 	--wc-throw: 1.32;
+	--wc-chip-rate: 8;
+	--wc-chip-burst: 10;
 }
 /* The purple, and the last stop before Max steps off the scale. */
 .tier-epic {
@@ -231,6 +241,8 @@
 	--wc-beam-op: 0.68;
 	--wc-fan-spread: 1.3;
 	--wc-throw: 1.5;
+	--wc-chip-rate: 11;
+	--wc-chip-burst: 12;
 }
 /* Max win INVERTS rather than continuing: a cream core on the brand crimson from
    logo.png, so the ceiling reads as the game's own moment rather than one more
@@ -244,6 +256,8 @@
 	--wc-beam-op: 0.85;
 	--wc-fan-spread: 1.48;
 	--wc-throw: 1.75;
+	--wc-chip-rate: 14;
+	--wc-chip-burst: 16;
 }
 
 /* ---- The light ----
@@ -674,56 +688,76 @@
 	filter: none;
 }
 
-/* ---- The suit burst ----
-   --angle, --dist, --spin and animation-delay are set inline per mark; see the
-   BURST constant in WinCelebration.svelte for why they are not computed here.
-
-   SuitIcon is a CHILD COMPONENT, so nothing in this file can style its internals
-   - a `.suit-icon` rule here would compile to `.suit-icon.svelte-<parent>` and
-   match nothing. It inherits instead: `color` feeds its `fill: currentColor` and
-   `font-size` feeds its em-based size. See the note atop ChoiceIcon.svelte. */
-.wc-burst {
+/* ---- The chips ----
+   The table's own chips, flat and seen from above, thrown out from behind the
+   hand (chipStream.ts flies them). The host is a point under the cards, inside
+   .wc-fan, so a chip leaves from behind the hand and passes behind the words.
+   The chips are made in script, so they carry no scope class: hence :global()
+   under the scoped host. The face is table.css's chip top seen square-on:
+   cream spots round the rim, a hard dark ring, the flat centre, and the
+   chip's own thickness as a hard shadow under it. */
+.wc-chips {
 	position: absolute;
-	inset: 0;
+	top: 0;
+	left: 0;
+	width: 0;
+	height: 0;
+	z-index: -1;
 	pointer-events: none;
-	/* Thrown off the CARDS, not off the dead centre of the viewport - originating
-	   them at the centre put half the ring behind the figure and the rest in the
-	   corners. Roughly the fan's height above centre; it does not have to be
-	   exact, because a burst that lined up perfectly with anything would look
-	   placed rather than thrown. */
-	transform: translateY(calc(var(--ui) * -9));
 }
 
-.wc-mark {
+.wc-chips :global(.wc-chip) {
 	position: absolute;
-	top: 50%;
-	left: 50%;
-	display: block;
-	/* The mark takes the tier colour rather than card red/black: a black club on
-	   a dark scrim is invisible, and a red one fights the Max tier's crimson.
-	   One colour also keeps the burst reading as a single gesture. */
-	color: var(--wc-hot);
-	/* A cast shadow, not a glow: thrown things in a lit room. A coloured halo
-	   round each mark made the burst the particle-glow every casino template
-	   ships, which is what the suit shapes were chosen to get away from. */
-	filter: drop-shadow(calc(var(--ui) * -0.15) calc(var(--ui) * 0.3) calc(var(--ui) * 0.25) rgba(var(--shadow-rgb), 0.75));
-	opacity: 0;
-	/* ONCE, not infinite - `both` so the mark holds at the keyframe's cleared-out
-	   end state rather than snapping back to the origin. WinCelebration keys the
-	   container on the tier id, which rebuilds these elements on every promotion
-	   and so re-fires the shot. That is deliberately the opposite of what
-	   .wc-title needs (see the note on .wc-title's markup): the title must NOT replay, the burst
-	   must. */
-	animation: wc-mark-out var(--wc-mark-dur, 1.5s) var(--ease-out) both;
+	width: var(--d);
+	height: var(--d);
+	margin: calc(var(--d) / -2) 0 0 calc(var(--d) / -2);
+	border-radius: 50%;
+	background:
+		linear-gradient(56deg, rgba(0, 0, 0, 0.2) 0%, transparent 34%, rgba(255, 255, 255, 0.14) 100%),
+		radial-gradient(closest-side, transparent 0 40%, rgba(0, 0, 0, 0.16) 40% 43%, transparent 43%),
+		radial-gradient(closest-side, transparent 0 64%, rgba(0, 0, 0, 0.42) 64% 68%, transparent 68%),
+		radial-gradient(closest-side, var(--cf) 0 71%, transparent 71%),
+		repeating-conic-gradient(from -11.25deg, var(--cc) 0 22.5deg, var(--c) 22.5deg 45deg);
+	box-shadow:
+		inset 0 0 0 1px rgba(0, 0, 0, 0.3),
+		0 calc(var(--d) * 0.07) 0 var(--ck),
+		0 calc(var(--d) * 0.16) calc(var(--d) * 0.3) rgba(var(--shadow-rgb), 0.4);
 }
 
-/* The tumble slows as the tier climbs even though the throw grows - a mark that
-   both flew further AND spun faster read as frantic rather than as bigger. */
-.tier-epic .wc-mark {
-	--wc-mark-dur: 1.65s;
+/* The rack's five, from tokens.css: rim, face, edge, spots. */
+.wc-chips :global(.wc-chip[data-set='red']) {
+	--c: var(--chip-red);
+	--cf: var(--chip-red-face);
+	--ck: var(--chip-red-dark);
+	--cc: var(--chip-red-cream);
 }
-.tier-max .wc-mark {
-	--wc-mark-dur: 1.8s;
+
+.wc-chips :global(.wc-chip[data-set='green']) {
+	--c: var(--chip-green);
+	--cf: var(--chip-green-face);
+	--ck: var(--chip-green-dark);
+	--cc: var(--chip-green-cream);
+}
+
+.wc-chips :global(.wc-chip[data-set='black']) {
+	--c: var(--chip-black);
+	--cf: var(--chip-black-face);
+	--ck: var(--chip-black-dark);
+	--cc: var(--chip-black-cream);
+}
+
+.wc-chips :global(.wc-chip[data-set='blue']) {
+	--c: var(--chip-blue);
+	--cf: var(--chip-blue-face);
+	--ck: var(--chip-blue-dark);
+	--cc: var(--chip-blue-cream);
+}
+
+.wc-chips :global(.wc-chip[data-set='white']) {
+	--c: var(--chip-white);
+	--cf: var(--chip-white-face);
+	--ck: var(--chip-white-dark);
+	--cc: var(--chip-white-cream);
 }
 
 /* ---- Text stack ---- */
@@ -1092,29 +1126,6 @@
 
 /* Travel out along --angle while counter-rotating by the same amount, so the
    mark stays upright as it goes, then add --spin on top for the tumble. */
-/* One throw. Fast out of the origin, then decelerating and fading well before
-   the mark could reach a frame edge - the old version held 0.9 opacity to 74%
-   of a 3.6s loop, which is why marks were still fully lit out in the corners
-   and over the control bar, where a suit reads as a speck of dirt. */
-@keyframes wc-mark-out {
-	0% {
-		transform: rotate(var(--angle)) translateX(0) rotate(calc(var(--angle) * -1))
-			scale(0.2);
-		opacity: 0;
-	}
-	12% {
-		opacity: 1;
-	}
-	55% {
-		opacity: 0.85;
-	}
-	100% {
-		transform: rotate(var(--angle)) translateX(calc(var(--dist) * var(--wc-throw, 1)))
-			rotate(calc(var(--angle) * -1 + var(--spin))) scale(0.7);
-		opacity: 0;
-	}
-}
-
 @keyframes wc-veil-in {
 	from {
 		opacity: 0;
@@ -1186,10 +1197,9 @@
 	.wc-prompt {
 		margin-top: calc(var(--ui) * 0.9);
 	}
-	/* The burst would otherwise throw straight through the text on a 225px-tall
-	   viewport, where the marks' radius is a big fraction of the screen. */
-	.wc-mark {
-		--wc-throw: 0.8;
+	/* A 225px-tall window: the same chips read as a swarm. */
+	.wc-overlay {
+		--wc-chip-share: 0.6;
 	}
 	/* Popout S is 400x225 and --ui bottoms out at 4px there, so the layout stops
 	   scaling and starts overflowing - the floor is where every Popout S defect
@@ -1217,6 +1227,9 @@
 	   its 11vw arm at ~41px, so the cards come out small beside type they have to
 	   share a composition with. Scaling the fan rather than resizing the card
 	   keeps one set of numbers for the geometry. */
+	.wc-overlay {
+		--wc-chip-share: 0.6;
+	}
 	.wc-fan {
 		/* The scaled hand's turned corners reach further below its line. */
 		margin-bottom: calc(var(--ui) * 2.4);
@@ -1238,7 +1251,7 @@
 }
 
 .is-leaving .wc-beam,
-.is-leaving .wc-burst,
+.is-leaving .wc-chips,
 .is-leaving .wc-deck-sweep,
 .is-leaving .wc-fan-ticket,
 .is-leaving .wc-title,
@@ -1255,12 +1268,12 @@
    payout, so suppressing it entirely would hide information. Only the moving
    parts stop. The count-up is skipped in the component for the same reason. */
 @media (prefers-reduced-motion: reduce) {
-	/* The burst and the sweep are pure motion - a thrown mark that cannot be
-	   thrown is nothing - so they go. The BEAM and the FAN stay: they are the
+	/* The chips and the sweep are pure motion - a thrown chip that cannot be
+	   thrown is nothing - so they go (chipStream.ts throws none anyway). The BEAM and the FAN stay: they are the
 	   scene, and a celebration stripped back to text on a scrim would be exactly
 	   the "grey rectangle" this file opens by warning against. They just stop
 	   moving: the beam holds its lit opacity, the fan is dealt already. */
-	.wc-burst,
+	.wc-chips,
 	.wc-deck-sweep,
 	.tier-max .wc-deck-sweep {
 		display: none;
@@ -1274,8 +1287,7 @@
 	.wc-title,
 	.wc-amount,
 	.wc-mult,
-	.wc-prompt,
-	.wc-mark {
+	.wc-prompt {
 		animation: none;
 	}
 

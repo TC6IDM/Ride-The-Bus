@@ -338,6 +338,7 @@ width, where prose needs the measure.
   route under it rides the bus to the stop reached, and Max is the end of the
   line in crimson. The amount under it is the running total's split-flap board
   at hero size, so the figure the player watched climb is the figure handed
-  over.
+  over. The table's own chips stream out from behind the hand, thicker each
+  tier, and the hand breathes - the takeover's only loops, the owner's call.
 - The intro's four step panels are dealt (fanned, lifted) rather than gridded;
   they flatten to a 2×2 on portrait phones by design.

@@ -241,16 +241,27 @@ reading before proposing it again.
 - **Lettered, not lit: nothing on the takeover glows.** The title is a hard
   block shadow in the tier's deep colour (`--wc-cool`), cast down and left; the
   amount takes the same block while it holds; the fan's cards carry a thin rim
-  in the tier colour and no bloom; the burst marks cast shadows. The two-colour
+  in the tier colour and no bloom; the chips cast shadows. The two-colour
   neon title and the haloed hand were the stock slot "BIG WIN" look - the third
   Hallmark audit's top finding (2026-09-26).
 - **Every tier draws the whole celebration. Escalation is intensity, never
   presence.** `.tier-*` rules may set nothing but custom properties, and
   `winCelebration.test.ts` fails if one does. `--wc-fan-spread` is the rung,
   because it is the only one anyone could see; a test pins it monotonic.
-- **The burst is suit marks, not sparks, and a moment rather than a loop** — ten
-  one-shot marks off the fan, keyed on `activeTier.id`. Keying is right there and
-  **wrong for `.wc-title`**, which would replay its entrance on every promotion.
+- **The chips are the table's, and they stream** (the owner's W1 notes,
+  2026-10-18; `game/celebration/chipStream.ts`). Flat chips in the `--chip-*`
+  colours fly from a point under the cards, so they leave from behind the hand
+  and pass behind the words. They stream for as long as the win is up, thicker
+  at every tier, with a burst as each tier lands; the tier's own knobs
+  (`--wc-chip-rate`, `--wc-chip-burst`, `--wc-throw`) set the numbers, and
+  `--wc-chip-share` trims phones and Popout S to 60%. They REPLACED the
+  suit-mark burst (a moment keyed on the tier), which the takeover audit found
+  read as debris. The stream and the hand's slow breath (`breatheHand`,
+  composite 'add') are the takeover's only loops, both by the owner's request;
+  Continue stops the stream. Measured: 60fps on desktop and phone, and with the
+  CPU slowed 4x the frame times are the same with the chips hidden, so they
+  cost next to nothing. **The title must still never be keyed** - it would
+  replay its entrance on every promotion.
 - **The tier is a destination blind** (W1, 2026-10-18): `.wc-title` is the
   loader's sign at the takeover's scale. Its roll holds every rung of the
   family's ladder, each stop lettered in its OWN tier's colours (the stop
@@ -910,8 +921,9 @@ function of `round.source`.
 `BURST` and `FAN` geometry, pure) and `game/celebrationGestures.ts` (`pop`,
 `easePop`, `hopFan`, `reducedMotion`). The geometry being a plain module means
 `winCelebration.test.ts` now **imports and asserts on it** — the fan's symmetry,
-its centre falling between cards, the outer pair riding lower, the burst's suit
-spread — instead of grepping the component for `length: 4 }`.
+its centre falling between cards, the outer pair riding lower (and, since
+2026-10-18, `chipStream.ts`'s chip flight) — instead of grepping the component
+for `length: 4 }`.
 
 **The count-up state machine deliberately stayed in the component.**
 `<WinCelebration>` is `{#key}`'d so it remounts per celebration; its state

@@ -83,8 +83,8 @@ rather than on every turn. Nothing here is reworded.
   the only loops, and they are the owner's.
 - **Every win tier draws the whole celebration. Escalation is intensity, never
   presence.** All five tiers are full-bleed and draw every layer — veil, beam,
-  fan and suit burst; the `.tier-*` rules only turn them up (`--wc-beam-op`,
-  `--wc-fan-spread`, `--wc-throw`) and `winCelebration.test.ts`
+  fan and the chips; the `.tier-*` rules only turn them up (`--wc-beam-op`,
+  `--wc-fan-spread`, `--wc-throw`, `--wc-chip-rate`, `--wc-chip-burst`) and `winCelebration.test.ts`
   fails if one of them sets anything that is not a custom property. Max alone
   adds a layer: the deck's own crosshatch, sweeping once. **A tier that
   withholds a layer was tried and rejected** — Big/Huge got a bounded "plate" and
@@ -97,17 +97,48 @@ rather than on every turn. Nothing here is reworded.
     threshold, so the only real difference between Big and Epic was the word and
     the hue. The hand opening wider reads at a glance and is still intensity: a
     test pins it monotonic across the five.
-- **The burst is suit marks, not sparks, and it is a moment rather than a
-  loop.** Hearts, diamonds, clubs and spades through `SuitIcon`, thrown once per
-  promotion — `WinCelebration` keys the container on `activeTier.id` to re-fire
-  it. Sixteen marks on *independent infinite* loops with delays to 2.1s never
-  shared a `t=0`, so at any frame they sat at sixteen unrelated radii and read as
-  dust on the lens; several also ended up in the frame corners and over the
-  control bar. Ten larger marks, one origin, one instant, thrown off the fan
-  rather than the viewport centre, fading before they reach an edge. **Keying is
-  right here and wrong for `.wc-title`** — keying the title replayed its entrance
-  on every promotion (the bug `promoteTitle` once replaced), and both are now
-  pinned by tests.
+- **The chips are the table's, and they stream** (the owner's W1 notes,
+  2026-10-18; `game/celebration/chipStream.ts`). This REPLACED the rule that the
+  burst was suit marks thrown once per promotion. History, so it is not
+  re-litigated:
+  - The suit marks replaced glowing particle dots, the burst every casino
+    template ships.
+  - Before that, sixteen marks on *independent infinite* loops never shared a
+    `t=0` and read as dust on the lens.
+  - The takeover audit (2026-10-17) then found the one-shot suit marks read as
+    debris on any still frame too. The owner asked for chips flying out from
+    behind the cards, then a continuous stream thickening each tier, then half
+    as many and flat. The passes are in the design archive's DECISIONS.md.
+
+  What it is now:
+  - **The look.** Flat chips, the table chip's face seen square-on (eight cream
+    spots, the dark ring) in the five `--chip-*` sets, drawn under
+    `.wc-chips :global(.wc-chip)` because script makes them.
+  - **Where they fly from.** The host is a zero-size point inside `.wc-fan`,
+    under the cards, so a chip leaves from behind the hand and passes behind
+    the sign and the figure.
+  - **The numbers are the tier's.** `--wc-chip-rate` (3/5/8/11/14 a second),
+    `--wc-chip-burst` (6/8/10/12/16 as the tier lands) and `--wc-throw` are
+    knobs on the `.tier-*` rules. A test pins all three monotonic, and
+    non-zero on Big: intensity, never presence. `--wc-chip-share` trims phones
+    and Popout S to 0.6.
+  - **The flight is pure and tested** (`chipFlight`, seeded): it starts small
+    and lit behind the hand, arcs to a side, falls past its start and is gone
+    by the end.
+  - **The stream and the hand's breath are the only loops**, both the owner's.
+    Continue stops the stream (`chips?.stop()` before the hand flies home).
+    Reduced motion throws none.
+  - **Measured.** 60fps on desktop and a phone. With the CPU slowed 4x, frame
+    times are the same with the chips hidden as shown (p95 50ms both, at
+    Epic), so the chips cost next to nothing. What does cost under that
+    throttle is the rest of the takeover, worth a look on real hardware.
+- **The hand breathes** (the owner's call, 2026-10-18; `breatheHand`): a
+  1.7s rise and fall, each card 210ms behind the last, the ticket with the
+  middle. It is layered with composite 'add' like the hop, so the fan's
+  transform is never replaced, and `handFlight` cancels it before flying the
+  hand home. A test pins the composite and the stagger.
+- **The title is never keyed** - keying it replayed its entrance on every
+  promotion (the bug `promoteTitle` once replaced). Pinned by a test.
 - **The tier is a destination blind** (the owner's pick W1, 2026-10-18). The
   title is the loader's sign at the takeover's scale (`.wc-sign` / `.wc-roll` /
   `.wc-stop`, built once, never keyed). Its roll holds every rung of the
