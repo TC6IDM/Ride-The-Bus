@@ -913,7 +913,15 @@ describe('the reveal loop is wired to the right cues', () => {
 	});
 
 	test('the deal is NOT staggered - it is the cadence the rest falls in behind', () => {
-		assert.match(loop, /sound\.playDeal\(\)/, 'the deal now takes an argument it should not');
+		// It may carry the board's deal clock (dealTiming), so each riffle lands
+		// as its card reaches the deck (2026-10-17). It may never carry cueLead,
+		// and an instant or reduced-motion round must pass it NOTHING: there the
+		// riffles are the cadence the per-card cues fall in behind.
+		const call = loop.match(/sound\.playDeal\(([^;]*)\);/);
+		assert.ok(call, 'the reveal no longer plays the deal');
+		assert.doesNotMatch(call[1]!, /cueLead/, 'the deal is staggered by cueLead');
+		assert.match(call[1]!, /^animated \? \{[^}]*\} : undefined$/, 'the deal is timed when nothing is animated');
+		assert.match(loop, /const animated = dealSec > 0 && !reducedMotion\(\);/, 'the deal clock no longer follows the animation');
 	});
 
 	test('the hold only ducks the music, closes the tunnel and sings when it is long enough to be felt', () => {

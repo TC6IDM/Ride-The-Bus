@@ -868,6 +868,7 @@ $effect(() => {
           {#key bet.family}
             <span
               class="cb-blind-name face-{titleFaceFor(familyName)}"
+              style:--name-ink={volatilityColorVar(bet.family)}
               use:fitBlock={familyName}
               in:roll={{ leaving: false }}
               out:roll={{ leaving: true }}

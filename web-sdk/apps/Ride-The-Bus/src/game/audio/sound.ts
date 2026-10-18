@@ -731,8 +731,14 @@ export const sound = {
 	 * detail that makes it read as this game's deal rather than a generic shuffle.
 	 * Quieter and duller than playCardFlip, because these cards are going down
 	 * face-down and that one is a card being turned over.
+	 *
+	 * `timing` is the board's deal (dealTiming): each riffle lands as its card
+	 * reaches the deck, and the deck is squared up after the last. Without it -
+	 * an instant round, reduced motion - the four come straight away, close
+	 * together, as they always did.
 	 */
-	playDeal() {
+	playDeal(timing?: { lead: number; spacing: number }) {
+		const lead = timing?.lead ?? 0;
 		for (let i = 0; i < 4; i++) {
 			noise({
 				duration: rand(0.045, 0.07),
@@ -740,13 +746,14 @@ export const sound = {
 				from: rand(1400, 2100),
 				to: rand(500, 800),
 				q: rand(0.7, 1.2),
-				delay: i * rand(0.052, 0.075),
+				delay: lead + i * (timing ? timing.spacing * rand(0.92, 1.08) : rand(0.052, 0.075)),
 				curve: 1.8,
 				space: 0.4,
 			});
 		}
 		// One low settle under the last of them - the deck being squared up.
-		thud({ from: rand(120, 150), to: 58, duration: 0.13, gain: 0.07, delay: 0.21 });
+		const last = timing ? lead + 3 * timing.spacing + 0.03 : 0.21;
+		thud({ from: rand(120, 150), to: 58, duration: 0.13, gain: 0.07, delay: last });
 	},
 
 	/**

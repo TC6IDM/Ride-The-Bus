@@ -403,7 +403,7 @@
   background: rgba(var(--panel-dark-rgb), 0.96);
   box-shadow: 0 6px 18px rgba(var(--shadow-rgb), 0.55);
   color: var(--ink-strong);
-  font-size: calc(var(--ui-bar) * 1.05);
+  font-size: max(calc(var(--ui-bar) * 1.05), var(--type-floor));
   font-weight: 700;
   line-height: 1.2;
   white-space: nowrap;
@@ -460,7 +460,7 @@
   background: rgba(var(--panel-dark-rgb), 0.96);
   box-shadow: 0 6px 18px rgba(var(--shadow-rgb), 0.55);
   color: var(--ink-strong);
-  font-size: calc(var(--ui-bar) * 1.05);
+  font-size: max(calc(var(--ui-bar) * 1.05), var(--type-floor));
   font-weight: 700;
   line-height: 1.2;
   white-space: nowrap;
@@ -891,7 +891,11 @@
   line-height: 0.95;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--mode-ink, var(--gold));
+  /* Each name carries its own family's colour. --mode-ink is the bar's, and it
+     changes the moment the family does, so a name read from it repainted as it
+     rolled OUT: the leaving Classic went off in High Stakes red. The outgoing
+     block is inert, so its own --name-ink keeps the colour it was lettered in. */
+  color: var(--name-ink, var(--mode-ink, var(--gold)));
 }
 
 /* The faces the name falls back to, per string - titleFaceFor() in
@@ -1098,7 +1102,7 @@
   background: rgba(var(--panel-dark-rgb), 0.96);
   box-shadow: 0 6px 18px rgba(var(--shadow-rgb), 0.55);
   color: var(--ink-strong);
-  font-size: calc(var(--ui-bar) * 1.05);
+  font-size: max(calc(var(--ui-bar) * 1.05), var(--type-floor));
   font-weight: 700;
   line-height: 1.2;
   white-space: nowrap;

@@ -37,7 +37,7 @@
   import { formatMultiplier, formatTicket } from '../../game/ui/formatMultiplier';
 
   import { choicesLocked } from '../../game/round/roundState.svelte';
-  import { DEAL_REST_MS, flipDurSec, paceMs, pacing } from '../../game/round/revealPacing.svelte';
+  import { DEAL_REST_MS, dealTiming, flipDurSec, paceMs, pacing } from '../../game/round/revealPacing.svelte';
   import { reducedMotion } from '../../game/celebration/celebrationGestures';
   import { sound } from '../../game/audio/sound';
   import { untrack } from 'svelte';
@@ -388,10 +388,11 @@
    *
    * Two legs with a REST between them (DEAL_REST_MS, the owner's call on
    * 2026-10-01): each card is swept onto the deck, sits there a beat, and is
-   * dealt back out. The legs keep the split the single curve used to make -
-   * that curve passed the deck about 17% of the way through - and each eases
-   * out, because both now end at rest. The reveal holds card 1's turn back by
-   * the same beat.
+   * dealt back out. The gather is a third of the travel on the game's
+   * ease-in-out, the deal the rest on its ease-out, and the cards leave a
+   * clear beat apart (dealTiming, revealPacing): at the old 17% the gather
+   * read as a teleport and the four moved as one block (the owner,
+   * 2026-10-16). The reveal holds card 1's turn back by the same beat.
    *
    * ON THE PILE, NOT OVER IT (2026-10-01). A fixed scale(0.62) fitted the deck
    * at one size and hovered over it at others, and a full-brightness card on a
@@ -479,13 +480,15 @@
     settleDeal('cancel');
     const seconds = Number(flipDurSec());
     if (!(seconds > 0) || reducedMotion()) return;
-    const travel = seconds * 1300;
-    const gather = travel * 0.17;
+    const { travelMs: travel, gatherMs: gather, staggerMs: stagger } = dealTiming(seconds);
     const rest = paceMs(DEAL_REST_MS, 0);
     const duration = travel + rest;
     const landed = gather / duration;
     const leaves = (gather + rest) / duration;
-    const ease = 'cubic-bezier(0.3, 0.7, 0.3, 1)';
+    // tokens.css's --ease-in-out for a card crossing the table, --ease-out for
+    // one coming to rest in its slot. WAAPI cannot read a custom property.
+    const gatherEase = 'cubic-bezier(0.45, 0, 0.25, 1)';
+    const dealEase = 'cubic-bezier(0.2, 0.8, 0.3, 1)';
     /** Onto the pile's face, a beat there out of sight, and back out to where it stands. */
     const viaPile = (element: HTMLElement, pile: ReturnType<typeof pileFace>, delay: number) => {
       const at = restCentre(element);
@@ -501,9 +504,9 @@
       dealAnimations.push(
         element.animate(
           [
-            { transform: 'none', easing: ease },
+            { transform: 'none', easing: gatherEase },
             { transform: atPile, offset: landed },
-            { transform: atPile, offset: leaves, easing: ease },
+            { transform: atPile, offset: leaves, easing: dealEase },
             { transform: 'none' },
           ],
           { duration, delay },
@@ -527,12 +530,12 @@
       const pile = pileFace(deckFace, deck);
       slotEls.slice(0, slots).forEach((slot, index) => {
         const block = slot?.querySelector<HTMLElement>('.card-block');
-        if (block) viaPile(block, pile, index * seconds * 90);
+        if (block) viaPile(block, pile, index * stagger);
       });
     }
     const stack = document.querySelector('.p-tickets');
     const stackFace = stack?.querySelector('.tickets-face');
-    if (stack && stackFace && ticketEl) viaPile(ticketEl, pileFace(stackFace, stack), slots * seconds * 90);
+    if (stack && stackFace && ticketEl) viaPile(ticketEl, pileFace(stackFace, stack), slots * stagger);
   }
 
   /**

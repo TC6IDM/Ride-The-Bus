@@ -23,7 +23,8 @@ import { applyBust, bookTicket, forgivenessAvailable, quantizeMultiplier, ticket
 import { FREE_CHOICE, isCleanSweep, stageCount } from '../math/modes';
 import { holdClimbMs, lastCardHoldMs, lastCardHolds, lastCardTier, lastCardTunnels } from '../math/winTiers';
 import { familyRules, winTiers } from '../bet/betState.svelte';
-import { DEAL_REST_MS, cueLead, paceMs, pacing, revealWait } from './revealPacing.svelte';
+import { DEAL_REST_MS, cueLead, dealTiming, flipDurSec, paceMs, pacing, revealWait } from './revealPacing.svelte';
+import { reducedMotion } from '../celebration/celebrationGestures';
 import { resetForNewRound, round } from './roundState.svelte';
 import { settleRound } from './roundSettle.svelte';
 
@@ -118,8 +119,13 @@ export async function playRevealSequence() {
   // began with a card already landing.
   //
   // Under an instant reveal the per-card cues below fall in behind it at the
-  // same riffle spacing, so the whole round reads as one dealt hand.
-  sound.playDeal();
+  // same riffle spacing, so the whole round reads as one dealt hand. When the
+  // hand is animated, each riffle lands as its card reaches the deck - the
+  // board's own clock, dealTiming - and when it is not, they come at once.
+  const dealSec = Number(flipDurSec());
+  const animated = dealSec > 0 && !reducedMotion();
+  const deal = dealTiming(dealSec);
+  sound.playDeal(animated ? { lead: deal.gatherMs / 1000, spacing: deal.staggerMs / 1000 } : undefined);
 
   let running = 1;
   let busted = false;
