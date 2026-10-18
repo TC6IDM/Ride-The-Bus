@@ -71,6 +71,7 @@ export const SCRIPT_MODULE_PATHS: string[] = [
  */
 export const MARKUP_COMPONENT_PATHS: string[] = [
   at('../components/popups/ModePopup.svelte'),
+  at('../components/popups/FamilyVignette.svelte'),
   at('../components/popups/BetPopup.svelte'),
   at('../components/popups/TurboPopup.svelte'),
   at('../components/popups/SoundPopup.svelte'),

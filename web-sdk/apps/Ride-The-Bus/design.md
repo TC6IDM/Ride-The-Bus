@@ -257,7 +257,9 @@ under it, so its title and its way out are never a scroll away.
 
 ## What may differ
 
-The tint; the content's shape — a list (mode), a chip tray on felt with a
+The tint; the content's shape — a dealt hand of five family cards with no
+slab around them, the chosen one turned over to show the confirmation on its
+back, a sideways row on a phone (mode), a chip tray on felt with a
 brass lip (bet), five count keys over a folded limits well and two switches
 (autoplay: what a run needs first, first), ticket stubs of dimmed card stock
 (recent rounds), prose with section links that stay under the title and the

@@ -789,7 +789,7 @@
   {#if openPopup}
     <!-- Clear behind a bump (popup-bump.css): the board stays in view, and the
          backdrop is only the tap anywhere else that closes it. -->
-    <button class="popup-backdrop" class:clear={openPopup !== null && BUMP_PANELS.has(openPopup)} aria-label={t('Close menu')} onclick={closePopup}></button>
+    <button class="popup-backdrop" class:clear={openPopup !== null && BUMP_PANELS.has(openPopup)} class:deep={openPopup === 'mode'} aria-label={t('Close menu')} onclick={closePopup}></button>
   {/if}
 
   <!-- Bet mode. Approval requires each mode's cost and what it buys to be
