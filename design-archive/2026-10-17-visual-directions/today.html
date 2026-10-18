@@ -13,9 +13,11 @@
 <div class="stage" id="s"><span class="tag">Today</span></div>
 <script src="kit/kit.js"></script>
 <script>
-  const spec = (new URLSearchParams(location.search).get('f') || 'board').split(',').map((p) => p.split(':'));
+  const params = new URLSearchParams(location.search);
+  const ext = params.get('ext') || 'webp';
+  const spec = (params.get('f') || 'board').split(',').map((p) => p.split(':'));
   const s = document.getElementById('s');
-  const frames = spec.map(([n]) => { const d = RTB.el('div', 'frame'); d.style.backgroundImage = `url('kit/today-${n}-${RTB.size()}.webp')`; s.appendChild(d); return d; });
+  const frames = spec.map(([n]) => { const d = RTB.el('div', 'frame'); d.style.backgroundImage = `url('kit/today-${n}-${RTB.size()}.${ext}')`; s.appendChild(d); return d; });
   frames[0].classList.add('on');
   if (frames.length > 1) {
     let i = 0;

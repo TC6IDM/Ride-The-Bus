@@ -34,6 +34,7 @@ been superseded by C and A.
 | Deal button | **Original** (`dl1-deal-today.html`) | none | DL2 `dl2-deal-bell`, DL3 `dl3-deal-shoe`, DL4 `dl4-deal-puck` |
 | Table props | **Original** | none | TB1 `tb1-fewer-props`, TB2 `tb2-casino-layout`, TB3 `tb3-fare-route` |
 | Running total | **RW1** `rw1-splitflap.html` | none | RW2 `rw2-bus-carries`, original `today.html?f=midround` |
+| Win takeover (2026-10-18) | **W1 + chips**, *modified* (`w1d-chips-flat.html` is the last mock) | See "The win takeover" below: four rounds of notes | W1 without chips `w1-departures`, W2 `w2-payout`, W3 `w3-ticket`, the earlier chip passes `w1b-chips` and `w1c-chips-stream`, original `today.html?ext=png&f=tk-epic:1500,tk-max:2600` |
 
 The mock-ups are scratch HTML on a copy of the tokens and photographs of the
 game. None of them is shipping code, and none was ever imported by the app.
@@ -63,3 +64,62 @@ game. None of them is shipping code, and none was ever imported by the app.
 - **X1 on a phone: deal centred and symmetric.** Row 1 is the balance and
   last-win plaque, with sound and info as studs at its left end. Row 2 has bet
   and autoplay, then the deal disc in the centre, then turbo and MODE.
+
+## The win takeover (2026-10-18)
+
+Audited the same way as the rest (Hallmark, impeccable, the motion skills,
+`npm run shots`, `npm run audio`); the evidence is in `takeover-phase1/`. The
+directions were published as the "Win takeover" tab of the same artifact
+(v9-v13).
+
+**Picked: W1, the departures board, with chips.** The loader's destination
+blind rolls the tier words, a route of five stops ends at Max, and the amount
+runs on a hero split-flap. The owner's notes came in four rounds, and the spec
+being built is the sum of them:
+
+1. Add chips flying out from behind the cards (`w1b-chips`).
+2. Double them, make them 3D and styled like the table's chips, make them
+   stream continuously and thicken at every tier, let the cards breathe
+   slowly, tone the cards down by bringing the fade back or letting the tier
+   words cover their bottoms, and always start at Big and climb through every
+   tier (`w1c-chips-stream`).
+3. Halve the chips, keep them flat, fade less and cover less
+   (`w1d-chips-flat`).
+4. "No cover": the sign sits below the hand and does not overlap it at all.
+   This is the build's spec; no mock shows it exactly.
+
+### Alternatives offered and passed on
+
+Kept so any of them can be reopened. Each is still playable from this folder.
+
+- **W1 without chips** (`w1-departures`): my recommendation before the owner's
+  first note.
+- **W2, paid out on the felt** (`w2-payout`): five stacks of the table's chips
+  pushed across from the rack, growing taller at every rung, with the amount
+  engraved on a brass plaque whose enamel band carried the tier. Sound would
+  have been a chip clack per rung. Its risk was the most money imagery in the
+  game, which needed a social-mode check.
+- **W3, the ticket** (`w3-ticket`): a ticket issued from the rail, its five
+  fare stages punched as the count passed each, then stamped with the tier, and
+  sunk back into the rail toward Last Win on Continue. Sound would have been a
+  punch click per rung and a stamp thump. Its risk was two tickets on screen on
+  a Last Stop win.
+- **The suit-mark burst kept alongside the chips.** I read the chips as
+  REPLACING today's suit marks (the audit called them debris) and asked; the
+  owner went ahead with chips only.
+- **One burst per tier only** (`w1b-chips`: 6 chips on Big up to 16 on Max, a
+  moment rather than a loop). Passed on for a continuous stream.
+- **3D chips, and twice as many** (`w1c-chips-stream`: solid cylinders
+  tumbling in depth, a stream of 6-28 a second plus bursts of 12-32). Passed
+  on as too many, and flat preferred.
+- **The tier sign covering the bottom of the cards on a heavy fade band**
+  (`w1c-chips-stream`), then a lighter overlap (`w1d-chips-flat`). Passed on
+  for no overlap at all.
+- **Counting from the board's last figure** (the rule since 2026-10-05, which
+  skipped the tiers the board had already passed). Passed on: every win climbs
+  from Big.
+- **A still hand.** The audit recommended no idle motion on the takeover;
+  the owner asked for the cards to breathe.
+- **The audit's own recommendation against loops.** It removed the beam's and
+  the prompt's endless pulses, which the build does. The owner then chose a
+  continuous chip stream and a breathing hand, which are loops by request.

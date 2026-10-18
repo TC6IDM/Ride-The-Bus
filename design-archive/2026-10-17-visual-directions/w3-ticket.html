@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>W3 The ticket</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* The win is a ticket, issued from the rail. Last Stop's ticket language for
+     every family: it rises out from behind the control bar, the five rungs are
+     fare stages along its foot and each is punched as the count passes it, and
+     when the count lands the conductor stamps the tier across the punched stages. On Continue it
+     goes back down into the rail, where Last Win is. */
+  .slot { position: absolute; left: 0; right: 0; top: 0; overflow: hidden; }
+  .ticket { position: absolute; left: 50%; translate: -50% 0; width: var(--tw); border-radius: 10px; color: #16130f;
+    background:
+      repeating-linear-gradient(45deg, rgba(120, 90, 40, 0.05) 0 2px, transparent 2px 7px),
+      linear-gradient(180deg, #f8f1e0, #efe4c9);
+    box-shadow: 0 2px 3px rgba(0,0,0,0.5), 0 18px 36px rgba(0,0,0,0.55);
+    /* The tear line's two notches. */
+    -webkit-mask: radial-gradient(circle var(--nr) at 0 var(--tear), transparent 98%, #000) left / 51% 100% no-repeat, radial-gradient(circle var(--nr) at 100% var(--tear), transparent 98%, #000) right / 51% 100% no-repeat;
+            mask: radial-gradient(circle var(--nr) at 0 var(--tear), transparent 98%, #000) left / 51% 100% no-repeat, radial-gradient(circle var(--nr) at 100% var(--tear), transparent 98%, #000) right / 51% 100% no-repeat; }
+  .ticket .head { height: var(--hh); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-radius: 10px 10px 0 0;
+    background: rgb(var(--c)); color: #14110a; transition: background 300ms var(--ease-out); }
+  .ticket .head.max { background: linear-gradient(180deg, #b81030, #a80828 55%, #78061e); color: #fff1cc; }
+  .head .tier { font: 900 var(--tfs)/1 var(--font-display); }
+  .head .fam { font: 800 var(--sfs)/1 var(--font-body); letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.8; }
+  .ticket .amt { padding-top: var(--ap); text-align: center; font: 900 var(--afs)/1 var(--font-display); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+  .ticket .x { padding-top: 6px; text-align: center; font: 800 var(--xfs)/1 var(--font-body); color: #6b5a3c; font-variant-numeric: tabular-nums; }
+  .ticket .perf { position: absolute; left: var(--nr); right: var(--nr); top: var(--tear); border-top: 2px dashed rgba(90, 70, 40, 0.35); }
+  .stages { position: absolute; left: 14px; right: 14px; bottom: 12px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .stage-box { position: relative; height: var(--bxh); border: 1.5px solid rgba(60, 45, 25, 0.45); border-radius: 5px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 5px;
+    font: 800 var(--lfs)/1 var(--font-body); color: #4a3b22; }
+  .stage-box .hole { position: absolute; top: 18%; left: 50%; width: var(--hd); height: var(--hd); translate: -50% 0; border-radius: 50%; background: #120c07;
+    box-shadow: inset 0 2px 3px rgba(0,0,0,0.9), 0 1px 0 rgba(255,255,255,0.6); transform: scale(0); }
+  .stage-box.punched .hole { transform: scale(1); transition: transform 90ms var(--ease-out); }
+  .chad { position: absolute; width: var(--hd); height: var(--hd); border-radius: 50%; background: #f3e9d2; box-shadow: 0 1px 2px rgba(0,0,0,0.4); z-index: 6; pointer-events: none; }
+  .stamp { position: absolute; white-space: nowrap; left: 56%; bottom: calc(var(--bxh) * 0.5 + 12px); translate: -50% 50%; padding: 0.12em 0.32em; font: 900 var(--stfs)/1 var(--font-display); letter-spacing: 0.02em; text-transform: uppercase;
+    color: var(--ink); border: 4px double var(--ink); border-radius: 6px; rotate: -8deg; opacity: 0; background: rgba(248, 241, 224, 0.35); mix-blend-mode: multiply; filter: url(#rough); }
+  .stamp.on { opacity: 0.86; animation: stamp 170ms cubic-bezier(0.3, 0, 0.2, 1) backwards; }
+  @keyframes stamp { from { transform: scale(1.6); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .stamp.on { animation: none; } }
+</style></head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="rough"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -0.8 1.15"/><feComposite in="SourceGraphic" operator="in"/></filter></svg>
+<div class="stage" id="s"></div>
+<script src="kit/kit.js"></script><script src="kit/wintake.js"></script>
+<script>
+  const { TIERS, phone, money, mult } = WT, { el } = RTB;
+  const L = phone
+    ? { hand: { cx: 195, cy: 116, w: 56 }, rail: 540, top: 184, tw: 312, hh: 44, tfs: 28, sfs: 10, afs: 54, xfs: 14, ap: 22, tear: 160, nr: 10, bxh: 54, lfs: 11, hd: 12, stfs: 38, prompt: 482 }
+    : { hand: { cx: 600, cy: 128, w: 78 }, rail: 581, top: 214, tw: 400, hh: 50, tfs: 32, sfs: 11, afs: 66, xfs: 16, ap: 24, tear: 186, nr: 12, bxh: 60, lfs: 12, hd: 14, stfs: 46, prompt: 545 };
+  const H_T = L.tear + 12 + L.bxh + 12;
+
+  WT.cycle(document.getElementById('s'), async (stale) => {
+    const st = WT.stage(document.getElementById('s'));
+    const H = WT.hand(st.layer, L.hand);
+    const slot = el('div', 'slot'); slot.style.height = L.rail + 'px';
+    const tk = el('div', 'ticket', `<div class="head"><span class="tier"></span><span class="fam">Classic</span></div><div class="amt"></div><div class="x"></div><span class="perf"></span>
+      <div class="stages">${TIERS.map((t) => `<div class="stage-box"><span class="hole"></span>${t.word.split(' ')[0]}</div>`).join('')}</div><div class="stamp"></div>`);
+    tk.style.top = L.top + 'px'; tk.style.height = H_T + 'px';
+    for (const [k, v] of Object.entries({ '--tw': L.tw + 'px', '--hh': L.hh + 'px', '--tfs': L.tfs + 'px', '--sfs': L.sfs + 'px', '--afs': L.afs + 'px', '--xfs': L.xfs + 'px', '--ap': L.ap + 'px',
+      '--tear': L.tear + 'px', '--nr': L.nr + 'px', '--bxh': L.bxh + 'px', '--lfs': L.lfs + 'px', '--hd': L.hd + 'px', '--stfs': L.stfs + 'px' })) tk.style.setProperty(k, v);
+    tk.style.visibility = 'hidden';
+    slot.appendChild(tk);
+    const pr = el('div', 'wt-prompt', phone ? 'Tap to continue' : 'Click to continue'); pr.style.top = L.prompt + 'px';
+    st.layer.append(slot, pr);
+    const head = tk.querySelector('.head'), tier = tk.querySelector('.tier'), amt = tk.querySelector('.amt'), x = tk.querySelector('.x');
+    const boxes = [...tk.querySelectorAll('.stage-box')], stamp = tk.querySelector('.stamp');
+    const below = L.rail - L.top + 10;
+    const punch = (i) => {
+      boxes[i].classList.add('punched');
+      if (RTB.reduced()) return;
+      const r = boxes[i].querySelector('.hole').getBoundingClientRect();
+      const c = el('span', 'chad'); Object.assign(c.style, { left: r.left + 'px', top: r.top + 'px' }); document.body.appendChild(c);
+      c.animate([{ transform: 'none', opacity: 1 }, { transform: `translate(${(i - 2) * 6}px, 70px) rotate(160deg)`, opacity: 0 }], { duration: 520, easing: 'cubic-bezier(0.5, 0, 0.9, 0.6)', fill: 'forwards' }).finished.then(() => c.remove());
+    };
+
+    await RTB.wait(500); if (stale()) return;
+    st.veil.classList.add('on');
+    const dealt = H.dealIn();
+    // Issued: the ticket rises out of the rail behind the hand.
+    tk.style.visibility = '';
+    if (!RTB.reduced()) tk.animate([{ transform: `translateY(${below}px)` }, { transform: 'none' }], { duration: 560, delay: 160, easing: 'cubic-bezier(0.2, 0.8, 0.3, 1)', fill: 'backwards' });
+    await dealt; if (stale()) return;
+    const done = await WT.count(stale, (m) => { amt.textContent = money(m); x.textContent = mult(m) + ' your bet'; }, (i) => {
+      const t = TIERS[i];
+      tier.textContent = t.word; head.style.setProperty('--c', t.rgb); head.classList.toggle('max', t.id === 'max');
+      H.tier(t); punch(i);
+    });
+    if (!done) return;
+    const top = TIERS[4];
+    stamp.textContent = top.word; stamp.style.setProperty('--ink', top.deep); stamp.classList.add('on');
+    if (!RTB.reduced()) tk.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(3px)' }, { transform: 'translateY(0)' }], { duration: 160, delay: 120 });
+    await RTB.wait(260); if (stale()) return;
+    pr.classList.add('on');
+    await RTB.wait(2600); if (stale()) return;
+    pr.classList.remove('on');
+    // Continue: the ticket goes back down into the rail, toward Last Win.
+    if (!RTB.reduced()) tk.animate([{ transform: 'none' }, { transform: `translateY(${below}px)` }], { duration: 420, easing: 'cubic-bezier(0.45, 0, 0.25, 1)', fill: 'forwards' });
+    else tk.style.visibility = 'hidden';
+    st.veil.classList.remove('on');
+    await H.exit();
+  });
+</script>
+</body></html>

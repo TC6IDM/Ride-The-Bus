@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>W1 with chips</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* The takeover as the route's terminus. The loader's destination blind (A2)
+     rolls through the five rungs as the count passes them, the route under it
+     lights a stop per rung with Max as the end of the line, and the amount runs
+     on the running total's split-flap board (RW1), grown to hero size.
+     W1 + chips: at every rung the table's chips burst out from behind the hand,
+     in place of today's suit marks. They pass BEHIND the sign and the amount. */
+  .sign, .flap, .wt-mult { z-index: 5; }
+  .sign { position: absolute; left: 50%; translate: -50% 0; display: flex; flex-direction: column; align-items: center; gap: var(--gap); }
+  .win { position: relative; width: var(--sw); height: var(--sh); overflow: hidden; border: var(--fr) solid var(--flap-well, #0d0b09); border-radius: 12px; box-sizing: content-box;
+    background: linear-gradient(180deg, #0d0b09, #1b1815 50%, #0d0b09) padding-box;
+    box-shadow: inset 0 3px 10px rgba(0,0,0,0.85), 0 1px 0 rgba(255,255,255,0.12), 0 14px 30px rgba(0,0,0,0.5); transition: background 400ms var(--ease-out); }
+  .win::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.6), transparent 24%, transparent 76%, rgba(0,0,0,0.6)); pointer-events: none; }
+  .roll { display: flex; flex-direction: column; transform: translateY(calc(var(--stop) * var(--sh) * -1)); transition: transform 340ms cubic-bezier(0.45, 0, 0.25, 1); }
+  .stop { flex: 0 0 var(--sh); display: grid; place-items: center; font: 900 var(--fs)/1 var(--font-display); letter-spacing: -0.005em; color: rgb(var(--c));
+    text-shadow: 0.05em 0.06em 0 var(--d); white-space: nowrap; }
+  /* Max is the terminus: the blind's last stop is crimson cloth with cream letters, the ladder's one inversion. */
+  .stop.max { background: linear-gradient(180deg, #b81030, #a80828 55%, #78061e); color: #fff1cc; text-shadow: 0.05em 0.06em 0 #4d0414; }
+
+  .route { position: relative; width: calc(var(--sw) - 40px); height: 16px; }
+  .route .line { position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; background: rgba(255,255,255,0.28); }
+  .route .lit { position: absolute; left: 0; top: 50%; height: 2px; margin-top: -1px; background: var(--gold); width: calc(var(--stop) * 25%); transition: width 340ms cubic-bezier(0.45, 0, 0.25, 1); }
+  .route .dot { position: absolute; top: 50%; left: calc(var(--at) * 25%); width: 10px; height: 10px; border-radius: 50%; translate: -50% -50%; background: #1c1917; border: 2px solid rgba(255,255,255,0.5); transition: background 200ms, border-color 200ms; }
+  .route .dot.end { width: 14px; height: 14px; }
+  .route .dot.on { background: var(--gold); border-color: var(--gold); }
+  .route .dot.end.on { background: #a80828; border-color: #fff1cc; }
+  .route .bus { position: absolute; bottom: 9px; left: calc(var(--stop) * 25%); width: 26px; translate: -50% 0; transition: left 340ms cubic-bezier(0.45, 0, 0.25, 1); }
+
+  .flap { position: absolute; left: 50%; translate: -50% 0; display: flex; gap: 4px; padding: 6px; border-radius: 10px; background: #0b0907;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.9), 0 1px 0 rgba(255,240,220,0.12), 0 14px 30px rgba(0,0,0,0.45); perspective: 400px; }
+  .cell { position: relative; width: var(--cw); height: calc(var(--cw) * 1.42); border-radius: 5px; display: grid; place-items: center; overflow: hidden;
+    background: linear-gradient(180deg, #2a2622 0 49%, #000 49% 51%, #1f1c19 51%); font: 900 calc(var(--cw) * 1.08)/1 var(--font-display); color: #f4efe6; font-variant-numeric: tabular-nums; }
+  .cell.flip { animation: flip 120ms cubic-bezier(0.45, 0, 0.25, 1); }
+  @keyframes flip { 50% { transform: rotateX(-90deg); filter: brightness(0.55); } }
+  .cell.punct { width: calc(var(--cw) * 0.5); }
+  @media (prefers-reduced-motion: reduce) { .roll, .route .lit, .route .bus { transition: none; } }
+</style></head>
+<body>
+<div class="stage" id="s"></div>
+<script src="kit/kit.js"></script><script src="kit/wintake.js"></script>
+<script>
+  const { TIERS, phone, money, mult } = WT, { el } = RTB;
+  const L = phone
+    ? { hand: { cx: 195, cy: 142, w: 66 }, signTop: 236, sw: 290, sh: 48, fs: 36, fr: 7, gap: 12, flapTop: 330, cw: 27, multTop: 386, prompt: 446 }
+    : { hand: { cx: 600, cy: 158, w: 90 }, signTop: 268, sw: 420, sh: 62, fs: 48, fr: 9, gap: 14, flapTop: 380, cw: 38, multTop: 458, prompt: 522 };
+  const BUS = '<svg viewBox="0 0 26 16"><rect x="1" y="1" width="24" height="11" rx="2.5" fill="#d6a733"/><rect x="3.5" y="3" width="5" height="4" rx="0.8" fill="#1c1917"/><rect x="10" y="3" width="5" height="4" rx="0.8" fill="#1c1917"/><rect x="16.5" y="3" width="6" height="4" rx="0.8" fill="#1c1917"/><circle cx="7" cy="12.5" r="2.4" fill="#14110a"/><circle cx="19" cy="12.5" r="2.4" fill="#14110a"/></svg>';
+
+  WT.cycle(document.getElementById('s'), async (stale) => {
+    const st = WT.stage(document.getElementById('s'));
+    const H = WT.hand(st.layer, L.hand);
+    const sign = el('div', 'sign wt-fade', `<div class="win"><div class="roll">${TIERS.map((t) => `<div class="stop ${t.id}" style="--c:${t.rgb};--d:${t.deep}">${t.word}</div>`).join('')}</div></div>
+      <div class="route"><span class="line"></span><span class="lit"></span>${TIERS.map((t, i) => `<span class="dot${i === 4 ? ' end' : ''}" style="--at:${i}"></span>`).join('')}<span class="bus">${BUS}</span></div>`);
+    Object.assign(sign.style, { top: L.signTop + 'px' });
+    for (const [k, v] of Object.entries({ '--sw': L.sw + 'px', '--sh': L.sh + 'px', '--fs': L.fs + 'px', '--fr': L.fr + 'px', '--gap': L.gap + 'px', '--stop': 0 })) sign.style.setProperty(k, v);
+    const CH = 9, flap = el('div', 'flap wt-fade', Array.from({ length: CH }, () => '<span class="cell"></span>').join(''));
+    flap.style.top = L.flapTop + 'px'; flap.style.setProperty('--cw', L.cw + 'px');
+    const mx = el('div', 'wt-mult wt-fade'); mx.style.top = L.multTop + 'px';
+    const pr = el('div', 'wt-prompt', phone ? 'Tap to continue' : 'Click to continue'); pr.style.top = L.prompt + 'px';
+    [sign, flap, mx].forEach((n) => n.classList.add('wt-gone'));
+    st.layer.append(sign, flap, mx, pr);
+    const cells = [...flap.querySelectorAll('.cell')], dots = [...sign.querySelectorAll('.dot')];
+    let shown = '', last = 0;
+    const show = (text, force) => {
+      const now = performance.now(); if (!force && now - last < 70) return; last = now;
+      const t = text.padStart(CH, ' ');
+      cells.forEach((c, i) => {
+        c.classList.toggle('punct', t[i] === ',' || t[i] === '.');
+        if (shown[i] === t[i]) return;
+        c.textContent = t[i] === ' ' ? '' : t[i];
+        if (!RTB.reduced()) { c.classList.remove('flip'); void c.offsetWidth; c.classList.add('flip'); }
+      });
+      shown = t;
+    };
+
+    await RTB.wait(500); if (stale()) return;
+    st.veil.classList.add('on');
+    await H.dealIn(); if (stale()) return;
+    [sign, flap, mx].forEach((n) => n.classList.remove('wt-gone'));
+    show(money(0), true);
+    const done = await WT.count(stale, (m) => { show(money(m)); mx.textContent = mult(m); }, (i) => {
+      sign.style.setProperty('--stop', i); dots.forEach((d, k) => d.classList.toggle('on', k <= i)); H.tier(TIERS[i]); WT.burst(st.layer, L.hand, i);
+    });
+    if (!done) return;
+    show(money(TIERS[4].at), true); mx.textContent = mult(TIERS[4].at);
+    pr.classList.add('on');
+    await RTB.wait(2600); if (stale()) return;
+    // The player continues: the board's numbers come back as the hand goes home.
+    pr.classList.remove('on'); [sign, flap, mx].forEach((n) => n.classList.add('wt-gone'));
+    st.veil.classList.remove('on');
+    await H.exit();
+  });
+</script>
+</body></html>

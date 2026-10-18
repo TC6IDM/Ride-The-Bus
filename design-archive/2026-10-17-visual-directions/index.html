@@ -37,6 +37,9 @@
   .item-head { display: grid; gap: 6px; margin-bottom: 18px; }
   .item-head h2 { margin: 0; font: 900 clamp(32px, 5vw, 46px)/1 var(--font-display); color: var(--ink); }
   .item-head p { margin: 0; max-width: 80ch; }
+  .audit { margin: 6px 0 0; padding: 14px 18px 14px 34px; max-width: 92ch; background: var(--panel); border: 1px solid var(--edge); border-radius: 12px; display: grid; gap: 8px; }
+  .audit li b { color: var(--ink); }
+  .audit-cap { margin: 10px 0 0; font-weight: 800; color: var(--ink); }
   .dir { display: grid; grid-template-columns: minmax(0, 1fr) 236px; gap: 16px 20px; padding: 20px; margin-bottom: 18px; background: var(--panel); border: 1px solid var(--edge); border-radius: 14px; }
   .dir.pick { border-color: rgba(127, 198, 160, 0.55); box-shadow: inset 0 0 0 1px rgba(127, 198, 160, 0.25); }
   .dir h3 { grid-column: 1 / -1; margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; font: 800 22px/1.2 var(--font-body); color: var(--ink); }
@@ -109,7 +112,8 @@
   </section>
 
   <nav class="tabs" role="tablist" aria-label="Pieces">
-    <button role="tab" data-tab="EQ" aria-selected="true">New · E3's "=" pick<span>5+1</span></button>
+    <button role="tab" data-tab="W" aria-selected="true">New · Win takeover<span>4+1</span></button>
+    <button role="tab" data-tab="EQ" aria-selected="false">New · E3's "=" pick<span>5+1</span></button>
     <button role="tab" data-tab="A" aria-selected="false">A · Loader<span>3+1</span></button>
     <button role="tab" data-tab="C" aria-selected="false">C + F · Hand-offs<span>2+1</span></button>
     <button role="tab" data-tab="E" aria-selected="false">E · Guess squares<span>6+1</span></button>
@@ -484,12 +488,53 @@
           risk: 'The figure on the bus is small on phones (about 11px). The plain total may need to stay underneath as well, which is what screen readers announce anyway. The board-never-moves rule needs the bus to sit in reserved space.' },
       ] },
   });
+  Object.assign(ITEMS, {
+    W: { title: 'The win takeover', intro: 'The one screen still in the old language. All three directions play the same Classic max win (2♥ 2♠ 2♦ 3♥, $1 bet), counted through all five rungs, then Continue. All three fix the audit below the same way: the hand is dealt out of its board slots and goes back into them on Continue, nothing loops, nothing overshoots, there is no backdrop blur, and the amount is at full ink the whole count.',
+      auditCap: 'What the audit found (Hallmark, impeccable, the motion skills, npm run shots and npm run audio)',
+      audit: [
+        '<b>The title sits on the hand.</b> "Max Win" overlaps the fan\'s lower edge at both sizes, and the fan overlaps the lockup.',
+        '<b>There is no exit.</b> Continue removes everything in one frame, so the cards vanish rather than going back to their slots and the board\'s numbers snap back in. This is the highest-leverage motion fix.',
+        '<b>Two loops never stop.</b> The beam breathes every 7.2s and the prompt pulses every 3.6s, for as long as the screen is up. Both are on the motion anti-checklist as "pulsing indicators".',
+        '<b>The entrances overshoot.</b> The fan and the title both use --ease-pop (0.72s and 1.24s) on the screen whose job is to be read. The amount is faint during the count, the one figure the screen exists for.',
+        '<b>The suit-mark burst reads as debris</b> on any still frame: marks scattered over the table that nobody reads as suits.',
+        '<b>A full-screen backdrop blur</b> sits under a 0.74 veil. It costs every frame on a phone and cannot be seen.',
+        '<b>It is the generic slot stack.</b> Title, amount, multiple and prompt are centred in the top half and the lower half is empty. It shares nothing with the language the game now speaks: the blind, the split-flap, the chips, the ticket and the rail.',
+        '<b>Sound (npm run audio, Max):</b> the fanfare and the promote land 5-8s in, then the count runs to 14s almost silent (RMS -31.8 dB, a tail near -50 dB). Only 0.8% of the energy is above 4 kHz (0.4% on Big), so nothing in the win sparkles. Each direction below brings its own count sound.',
+        '<b>Kept by all three:</b> the hand made of the round (CardFace), the volatility-ramp colours, Max as cream on crimson, lettered not lit, one veil, every rung drawing the whole scene, Last Stop\'s ticket on the hand, and isCleanSweep.',
+      ],
+      dirs: [
+        { code: 'W1 + chips', name: 'Your pick: the departures board, with chips', file: 'w1d-chips-flat', pick: true,
+          idea: 'W1 with your notes. The table\'s own chips, flat and seen from above in the table chips\' colours and markings, stream out from behind the hand for as long as the win is up. The stream thickens at every tier, and each tier lands with a burst, 6 on Big up to 16 on Max. The count always starts at Big and climbs Big, Huge, Mega, Epic, Max. The cards breathe slowly, and the sign just overlaps their lower edge on a light shadow band.',
+          reuse: 'The --chip-* colour sets and the table chip\'s face (eight cream spots, the dark ring), the loader\'s blind and route, SplitFlap, CardFace.',
+          motion: 'The stream runs at 3 chips a second on Big up to 14 on Max (60% of that on phones). Each chip spins flat on a 1.25-1.7s arc and fades over its last quarter, passing behind the sign and the amount. The breath is 1.7s each way, layered on the fan so a tier\'s re-spread never fights it. Under reduced motion there are no chips and no breathing; turbo or a skip cuts both.',
+          bytes: 'About 1 KB more than W1, replacing the suit-mark burst.',
+          risk: 'This reverses three written rules, all at your request: the burst was suit marks, it was a moment rather than a loop, and the count used to open on the board\'s last figure (so a big win skipped the lower tiers). The rules and their tests change with the build. Flat chips are cheap to draw, but about 35 in flight at Max still gets a frame-time check on a cheap phone.' },
+        { code: 'W1', name: 'The departures board', file: 'w1-departures',
+          idea: 'The win is the end of the line. The loader\'s destination blind (your A2) rolls through Big, Huge, Mega, Epic and Max as the count passes each rung. The route under it lights a stop per rung, with the bus riding to Max, the terminus, which is crimson cloth with cream letters. The amount runs on the running total\'s split-flap board (your RW1) at hero size.',
+          reuse: 'The loader\'s blind and route, SplitFlap.svelte, the bus, CardFace and the tier colours.',
+          motion: 'The blind rolls one stop per rung (340ms ease-in-out). Each character flips (120ms) as it changes, throttled to about 14 a second. The hand is dealt out of its slots (560ms, 55ms apart) and back on Continue (460ms). Under reduced motion the blind and flaps swap and the hand crossfades.',
+          bytes: 'About 3-4 KB of CSS. It reuses SplitFlap, and the burst, beam loop and blur go, so the net change is likely smaller.',
+          risk: 'Long amounts (the 24-character TZS, UGX and XOF) need more cells than fit, so they fall back to fitted type, as RW1 already does. Tier words in 17 languages go on the blind through fitBlock, as on the MODE sign. Three of a Kind\'s one-rung ladder gets a route with only the terminus. Sound: a flap clatter becomes the count (no more silent tail) and the existing tier-up cue rings at each stop, checked with npm run audio.' },
+        { code: 'W2', name: 'Paid out on the felt', file: 'w2-payout',
+          idea: 'The house pays out. Five stacks of the table\'s own chips are pushed across from the rack at the upper right to sit under the hand, and every rung drops more chips on all five, so the stacks grow taller rather than more appearing. The amount is engraved on a brass plaque in the rail\'s brass, and its enamel band carries the tier in the tier\'s colour.',
+          reuse: 'The table\'s chip colours, the rail\'s brass, CardFace and the tier colours.',
+          motion: 'The stacks slide in from the rack (480ms ease-out, 70ms apart) and chips drop on each rung (200ms). On Continue the chips slide down toward the bar, the player\'s side, and the hand goes home.',
+          bytes: 'About 3 KB. The side-view chip stack is a new drawing; the table\'s chips are seen from above.',
+          risk: 'This puts the most money imagery in the game on screen, so it needs a check against social mode and the stake-approval wording rules. On phones the stacks compete with the hand for height. Sound: a chip clack per rung, the pick\'s chip-down cue at scale.' },
+        { code: 'W3', name: 'The ticket', file: 'w3-ticket',
+          idea: 'The win is a ticket issued from the rail. It rises from behind the control bar under the hand, with the tier in its header band and the five rungs as fare stages along its foot. Each stage is punched as the count passes it. When the count lands, the conductor stamps the tier across the punched stages. On Continue it goes back down into the rail, where Last Win is.',
+          reuse: 'Last Stop\'s ticket language (TicketFace), the rail, CardFace and the tier colours.',
+          motion: 'The ticket rises (560ms ease-out). Each punch takes 90ms and its chad falls (520ms). The stamp lands in 170ms with a 3px thud. On Continue the ticket sinks into the rail (420ms).',
+          bytes: 'About 4 KB. The stamp\'s worn ink here is an SVG turbulence filter; shipped, it would be a small static mask, because the filter repaints on cheap phones.',
+          risk: 'On Last Stop a ticket already sits on the hand (your call, 2026-09-30), which makes two tickets on one screen, so one has to give. Stamp words in 17 languages (German, Finnish and Russian run long in capitals). "× your bet" may be a new string. Sound: a punch click per rung and a stamp thump at the end.' },
+      ] },
+  });
   const panes = document.getElementById('panes');
   // Every tab opens on the game as it is today, captured off the live build.
   const ORIG = { EQ: 'e3-chip-on-box.html', A: 'today.html?f=loader', C: 'today.html?f=intro:1800,board:2200', E: 'today.html?f=board', G: 'today.html?f=mode', B: 'today.html?f=board',
     D: 'd0-faces-today.html', T: 'today.html?f=turbo', S: 'today.html?f=sound', BT: 'today.html?f=bet', R: 'today.html?f=history', P: 'today.html?f=autospin',
-    H: 'today.html?f=info', X: 'today.html?f=board', TB: 'today.html?f=board', RW: 'today.html?f=midround' };
-  const ORIG_NOTE = { EQ: 'E3 as you picked it, before your chip rule. Its chips land on the marks.', C: 'The intro, then a hard cut to the board, as it plays now.', D: 'Today\'s faces as CardFace draws them: the same hand the D directions deal.' };
+    H: 'today.html?f=info', X: 'today.html?f=board', TB: 'today.html?f=board', RW: 'today.html?f=midround', W: 'today.html?ext=png&f=tk-epic:1500,tk-max:2600' };
+  const ORIG_NOTE = { W: 'Today, captured off the live build: the same Classic hand opening on Epic, then promoted to Max. Continue cuts back to the board in one frame.', EQ: 'E3 as you picked it, before your chip rule. Its chips land on the marks.', C: 'The intro, then a hard cut to the board, as it plays now.', D: 'Today\'s faces as CardFace draws them: the same hand the D directions deal.' };
   Object.entries(ORIG).forEach(([k, src]) => ITEMS[k].dirs.unshift({ code: 'Original', name: 'Today', src, orig: true, note: ORIG_NOTE[k] || 'The game as it is now, captured from the live build at both sizes.' }));
   Object.assign(ITEMS.EQ.dirs[0], { name: 'E3 as you picked it' });
   Object.assign(ITEMS.DL.dirs[0], { code: 'Original', name: 'Today: the blue disc', orig: true, note: 'Your settled call (2026-10-06), unchanged and being pressed. My pick.' });
@@ -502,7 +547,7 @@
   }
   function render(key) {
     const it = ITEMS[key];
-    panes.innerHTML = `<section class="item-head"><h2>${it.title}</h2><p>${it.intro}</p></section>`;
+    panes.innerHTML = `<section class="item-head"><h2>${it.title}</h2><p>${it.intro}</p>${it.audit ? `<p class="audit-cap">${it.auditCap}</p><ul class="audit">${it.audit.map((a) => `<li>${a}</li>`).join('')}</ul>` : ''}</section>`;
     it.dirs.forEach((d) => {
       const row = document.createElement('article'); row.className = 'dir' + (d.pick ? ' pick' : '') + (d.orig ? ' orig' : '');
       row.innerHTML = `<h3><span class="code">${d.code}</span>${d.name}${d.pick ? '<span class="mine">My pick</span>' : ''}</h3>`;
@@ -528,7 +573,7 @@
     render(b.dataset.tab);
     try { localStorage.setItem('rtb-p2-tab', b.dataset.tab); } catch (e) {}
   }));
-  let start = 'EQ';
+  let start = 'W';
   if (/^#[A-Z]{1,2}$/.test(location.hash) && ITEMS[location.hash.slice(1)]) start = location.hash.slice(1);
   document.querySelectorAll('.tabs button').forEach((x) => x.setAttribute('aria-selected', String(x.dataset.tab === start)));
   render(start);

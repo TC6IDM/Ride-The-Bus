@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>W2 Paid out on the felt</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* The house pays out. Five stacks of the table's own chips are pushed across
+     from the rack at the upper right, under the hand, and every rung the count
+     passes drops more chips on all five: escalation is height, never presence.
+     The amount is engraved on a brass plaque (the rail's brass) whose enamel
+     band carries the tier, lettered in the tier's colour. */
+  .stacks { position: absolute; left: 50%; translate: -50% 0; display: flex; gap: var(--sg); align-items: flex-end; height: 0; }
+  .stack { position: relative; width: var(--cw); height: 0; }
+  .chip { position: absolute; left: 0; width: var(--cw); height: calc(var(--cw) * 0.34); border-radius: 50%;
+    bottom: calc(var(--n) * var(--ct)); background:
+      radial-gradient(closest-side, var(--face) 0 52%, var(--edge) 53% 58%, var(--face) 59% 72%, transparent 73%),
+      repeating-conic-gradient(from 8deg, var(--edge) 0 16deg, var(--face) 16deg 45deg);
+    box-shadow: 0 var(--ct) 0 var(--side), 0 calc(var(--ct) + 1px) 0 rgba(0,0,0,0.5); }
+  .chip.drop { animation: drop 200ms var(--ease-out) backwards; }
+  @keyframes drop { from { transform: translateY(calc(var(--ct) * -4)); opacity: 0; } }
+  .stack .shadow { position: absolute; left: -8%; width: 116%; height: calc(var(--cw) * 0.36); bottom: calc(var(--cw) * -0.08); border-radius: 50%; background: rgba(0,0,0,0.45); filter: blur(3px); }
+
+  .plaque { position: absolute; left: 50%; translate: -50% 0; width: var(--pw); border-radius: 10px; overflow: hidden; text-align: center;
+    background: linear-gradient(180deg, #ecd08a 0%, #cfa752 42%, #a47a2c 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 248, 220, 0.85), inset 0 -2px 0 rgba(70, 44, 8, 0.6), 0 2px 4px rgba(0,0,0,0.55), 0 16px 34px rgba(0,0,0,0.5); }
+  .plaque .band { height: var(--bh); display: grid; place-items: center; background: rgb(var(--c)); color: #14110a;
+    font: 900 var(--tfs)/1 var(--font-display); letter-spacing: 0.01em; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.25), inset 0 2px 3px rgba(255,255,255,0.25); transition: background 300ms var(--ease-out); }
+  .plaque .band.max { background: linear-gradient(180deg, #b81030, #a80828 55%, #78061e); color: #fff1cc; }
+  .plaque .amt { padding: var(--ap) 0 2px; font: 900 var(--afs)/1 var(--font-display); color: #3a2508; font-variant-numeric: tabular-nums;
+    text-shadow: 0 1px 0 rgba(255, 244, 210, 0.7), 0 -1px 0 rgba(60, 36, 4, 0.5); }
+  .plaque .x { padding-bottom: var(--ap); font: 800 var(--xfs)/1 var(--font-body); color: #5a3d10; font-variant-numeric: tabular-nums; text-shadow: 0 1px 0 rgba(255,244,210,0.55); }
+  .plaque .screw { position: absolute; bottom: 8px; width: 7px; height: 7px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #f6e2a8, #7d5a1c); box-shadow: inset 0 0 0 1px rgba(60,36,4,0.5); }
+</style></head>
+<body>
+<div class="stage" id="s"></div>
+<script src="kit/kit.js"></script><script src="kit/wintake.js"></script>
+<script>
+  const { TIERS, phone, money, mult } = WT, { el } = RTB;
+  const L = phone
+    ? { hand: { cx: 195, cy: 128, w: 60 }, base: 296, cw: 40, ct: 5, sg: 10, plaque: 314, pw: 300, bh: 38, tfs: 26, afs: 46, xfs: 14, ap: 8, prompt: 454, from: [300, 120] }
+    : { hand: { cx: 600, cy: 140, w: 84 }, base: 330, cw: 52, ct: 6, sg: 14, plaque: 348, pw: 400, bh: 44, tfs: 30, afs: 60, xfs: 16, ap: 10, prompt: 522, from: [880, 190] };
+  // The table's own chips (the rack at the upper right), colour by rank.
+  const CHIP = [['#1b1b1d', '#f2ede2', '#0c0c0d'], ['#2f8a4a', '#f2ede2', '#1a5530'], ['#2a5ea8', '#f2ede2', '#173a6b'], ['#b3202f', '#f2ede2', '#6e1019'], ['#f2ede2', '#2f6fb3', '#b9b1a0']];
+  const HEIGHT = [2, 4, 6, 9, 13];
+
+  WT.cycle(document.getElementById('s'), async (stale) => {
+    const st = WT.stage(document.getElementById('s'));
+    const H = WT.hand(st.layer, L.hand);
+    const row = el('div', 'stacks');
+    Object.assign(row.style, { top: L.base + 'px' });
+    for (const [k, v] of Object.entries({ '--cw': L.cw + 'px', '--ct': L.ct + 'px', '--sg': L.sg + 'px' })) row.style.setProperty(k, v);
+    const stacks = CHIP.map((c) => { const s = el('div', 'stack', '<span class="shadow"></span>'); s.style.cssText = `--face:${c[0]};--edge:${c[1]};--side:${c[2]}`; row.appendChild(s); return s; });
+    const pl = el('div', 'plaque wt-fade wt-gone', `<div class="band"></div><div class="amt"></div><div class="x"></div><span class="screw" style="left:10px"></span><span class="screw" style="right:10px"></span>`);
+    pl.style.top = L.plaque + 'px';
+    for (const [k, v] of Object.entries({ '--pw': L.pw + 'px', '--bh': L.bh + 'px', '--tfs': L.tfs + 'px', '--afs': L.afs + 'px', '--xfs': L.xfs + 'px', '--ap': L.ap + 'px' })) pl.style.setProperty(k, v);
+    const pr = el('div', 'wt-prompt', phone ? 'Tap to continue' : 'Click to continue'); pr.style.top = L.prompt + 'px';
+    st.layer.append(row, pl, pr);
+    const band = pl.querySelector('.band'), amt = pl.querySelector('.amt'), x = pl.querySelector('.x');
+    const grow = (n, animate) => stacks.forEach((s, si) => {
+      for (let k = s.querySelectorAll('.chip').length; k < n; k++) {
+        const c = el('span', 'chip' + (animate ? ' drop' : '')); c.style.setProperty('--n', k);
+        if (animate) c.style.animationDelay = (si * 40 + (k % 4) * 30) + 'ms';
+        s.appendChild(c);
+      }
+    });
+
+    await RTB.wait(500); if (stale()) return;
+    st.veil.classList.add('on');
+    await H.dealIn(); if (stale()) return;
+    // The payout is pushed across from the house's rack, one stack after another.
+    grow(HEIGHT[0], false);
+    const rb = row.getBoundingClientRect();
+    stacks.forEach((s, i) => {
+      if (RTB.reduced()) return;
+      const r = s.getBoundingClientRect();
+      s.animate([{ transform: `translate(${L.from[0] - r.left}px, ${L.from[1] - r.top}px) scale(0.6)`, opacity: 0.4 }, { transform: 'none', opacity: 1 }],
+        { duration: 480, delay: i * 70, easing: 'cubic-bezier(0.2, 0.8, 0.3, 1)', fill: 'backwards' });
+    });
+    pl.classList.remove('wt-gone');
+    const done = await WT.count(stale, (m) => { amt.textContent = money(m); x.textContent = mult(m); }, (i) => {
+      const t = TIERS[i];
+      band.textContent = t.word; band.style.setProperty('--c', t.rgb); band.classList.toggle('max', t.id === 'max');
+      H.tier(t); if (i) grow(HEIGHT[i], true);
+    });
+    if (!done) return;
+    pr.classList.add('on');
+    await RTB.wait(2600); if (stale()) return;
+    pr.classList.remove('on'); pl.classList.add('wt-gone');
+    // Continue: the chips go to the player (down, toward the bar) as the hand goes home.
+    stacks.forEach((s, i) => s.animate([{ transform: 'none', opacity: 1 }, { transform: `translateY(${(phone ? 540 : 581) - L.base + 30}px)`, opacity: 0 }],
+      { duration: 380, delay: i * 30, easing: 'cubic-bezier(0.45, 0, 0.25, 1)', fill: 'forwards' }));
+    st.veil.classList.remove('on');
+    await H.exit();
+  });
+</script>
+</body></html>
