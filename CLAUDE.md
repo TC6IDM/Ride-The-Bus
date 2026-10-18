@@ -250,7 +250,19 @@ reading before proposing it again.
   because it is the only one anyone could see; a test pins it monotonic.
 - **The burst is suit marks, not sparks, and a moment rather than a loop** — ten
   one-shot marks off the fan, keyed on `activeTier.id`. Keying is right there and
-  **wrong for `.wc-title`**, which is what `promoteTitle` exists to replace.
+  **wrong for `.wc-title`**, which would replay its entrance on every promotion.
+- **The tier is a destination blind** (W1, 2026-10-18): `.wc-title` is the
+  loader's sign at the takeover's scale. Its roll holds every rung of the
+  family's ladder, each stop lettered in its OWN tier's colours (the stop
+  carries its `tier-*` class and re-derives `--wc-hot` - computed on the
+  overlay, it would wear the current tier). It rolls one stop per promotion,
+  and that roll replaced `promoteTitle`'s pop. Max is the terminus: crimson
+  cloth, cream letters. Under it the route lights a stop per rung, with the bus
+  at the one reached; a one-rung ladder (Three of a Kind) draws no route. Each
+  stop's face is picked per word (`titleFaceFor`) and the word is fitted on one
+  line (`fitValue`). Every locale fits at 320px (smallest 24.2px, Russian) and
+  at Popout S (15.5px). On landscape the stack sits 4 units lower so the hand
+  clears the lockup. `loader.css` is the same object; change them together.
 - **The light is one beam, not a spinning cone**, from the upper right, on an
   edge-to-edge shadow band. Three ambient circles on one centre is not depth.
 - **The board's numeric readouts are hidden while the takeover counts** —

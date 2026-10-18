@@ -712,7 +712,7 @@
 	   end state rather than snapping back to the origin. WinCelebration keys the
 	   container on the tier id, which rebuilds these elements on every promotion
 	   and so re-fires the shot. That is deliberately the opposite of what
-	   .wc-title needs (see promoteTitle): the title must NOT replay, the burst
+	   .wc-title needs (see the note on .wc-title's markup): the title must NOT replay, the burst
 	   must. */
 	animation: wc-mark-out var(--wc-mark-dur, 1.5s) var(--ease-out) both;
 }
@@ -781,89 +781,215 @@
 	);
 }
 
+/* ---- The sign: the tier on a destination blind (W1, 2026-10-18) ----
+   The loader's blind at the takeover's scale: a recessed dark sign whose roll
+   holds every rung of the family's ladder, rolled one stop per promotion, and
+   under it the route - a stop per rung, the bus riding to the one reached,
+   Max the end of the line. loader.css has the recipe this repeats; the two
+   are one object seen twice, so change them together. */
 .wc-title {
-	/* THE GAME'S OWN FACE. This was var(--font-body) - the body face at 900 with
-	   POSITIVE tracking and uppercase - which made the biggest type in the game
-	   the one screen not wearing the lockup CLAUDE.md defines across the loader,
-	   the intro and the board. Big Shoulders at negative tracking in title case
-	   is that lockup; the win title is its fourth instance now, not a foreign
-	   screen.
+	--sign-w: min(calc(var(--ui) * 44), 86vw);
+	--sign-h: calc(var(--ui) * 7.6);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: calc(var(--ui) * 1.3);
+	/* Runs once, on mount. The blind is never rebuilt between tiers, so this
+	   cannot replay; a promotion is the roll below. */
+	animation: wc-title-in 0.42s var(--ease-out) backwards;
+}
 
-	   Dropping uppercase also retires two responsive faults at once: uppercase
-	   at line-height 1 collides cap-tops with the line above when it wraps, and
-	   "Kemenangan Mega" at 33px DID wrap inside a 320px viewport. Big Shoulders
-	   is condensed, which buys the width back on top of that. */
+.wc-sign {
+	position: relative;
+	width: var(--sign-w);
+	height: var(--sign-h);
+	overflow: hidden;
+	box-sizing: content-box;
+	/* A BORDER, not padding: overflow clips inside a border, and as padding
+	   the next stop up showed through the frame (loader.css found this). */
+	border: calc(var(--ui) * 0.8) solid var(--flap-well);
+	border-radius: calc(var(--ui) * 1.2);
+	background: linear-gradient(180deg, var(--flap-well), var(--flap-top) 50%, var(--flap-well)) padding-box;
+	box-shadow:
+		inset 0 calc(var(--ui) * 0.3) calc(var(--ui) * 1) rgba(var(--shadow-rgb), 0.85),
+		inset 0 -1px 0 rgba(var(--ink-rgb), 0.08),
+		0 1px 0 rgba(var(--ink-rgb), 0.12),
+		0 calc(var(--ui) * 1.4) calc(var(--ui) * 3) rgba(var(--shadow-rgb), 0.5);
+}
+
+/* The sign's own shade top and bottom, where the blind winds round its
+   rollers: a stop arrives out of the dark and leaves into it. */
+.wc-sign::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background: linear-gradient(
+		180deg,
+		rgba(var(--shadow-rgb), 0.6),
+		transparent 22%,
+		transparent 78%,
+		rgba(var(--shadow-rgb), 0.6)
+	);
+}
+
+.wc-roll {
+	display: flex;
+	flex-direction: column;
+	transform: translateY(calc(var(--stop, 0) * var(--sign-h) * -1));
+	transition: transform 340ms var(--ease-in-out);
+}
+
+.wc-stop {
+	/* Re-derived HERE: --wc-hot is computed on the overlay from the CURRENT
+	   tier, so without this every stop would wear the tier being shown rather
+	   than its own. The stop's tier class sets the triplet and --wc-cool. */
+	--wc-hot: rgb(var(--wc-hot-rgb, 245, 215, 140));
+	flex: 0 0 var(--sign-h);
+	height: var(--sign-h);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	padding-inline: calc(var(--ui) * 1.4);
+	/* One line, always; fitValue shrinks a long name to the sign rather than
+	   letting it wrap into the next stop. */
+	white-space: nowrap;
+	overflow: hidden;
+	/* THE GAME'S OWN FACE, the lockup's: Big Shoulders at negative tracking,
+	   title case. The face is picked per STRING by titleFaceFor()
+	   (game/ui/displayFace.ts), because unicode-range falls back per
+	   character: Polish "Duza Wygrana" once drew its z-dot from the body face
+	   mid-word. DO NOT set font-family here without reading that file;
+	   .face-body and .face-system below are the two other answers. */
 	font-family: var(--font-display);
-	font-size: min(calc(var(--ui) * 5.6), 11vw);
+	font-size: min(calc(var(--ui) * 5.2), 10vw);
 	font-weight: 900;
-	line-height: 1.04;
+	line-height: 1;
 	letter-spacing: -0.015em;
 	color: var(--wc-hot);
-	/* Five of the 16 locales (ar hi ja ko zh) fall outside both self-hosted
-	   faces' declared unicode-range and drop to the OS font, where 900 is
-	   usually synthesised. Nothing CSS can do about that without shipping CJK
-	   webfonts, which the bundle budget will not take - but overflow-wrap is
-	   what keeps the synthesised, wider result inside the viewport.
-
-	   Those five were the half of this that was already understood, and a whole
-	   string in one OS font is a fair price. The other half is that
-	   unicode-range falls back PER CHARACTER, which makes an ALMOST-covered
-	   locale worse off than an uncovered one: Polish "Duza Wygrana" drew its
-	   z-dot from the body face - which ships latin-ext, where Big Shoulders does not -
-	   in the middle of a Big Shoulders word, and Vietnamese broke twice against
-	   a gap that reaches neither file. The face is picked per string now, by
-	   titleFaceFor() in game/ui/displayFace.ts. DO NOT set font-family on
-	   .wc-title without reading that file; .face-body and .face-system below
-	   are the two answers that are not this one. */
-	overflow-wrap: anywhere;
-	min-width: 0;
-	/* LETTERED, NOT LIT FROM INSIDE. A sign-painter's block: a hard step in the
-	   tier's own deep colour, set down and left the way the room's light from
-	   the upper right would cast it, then the contact shadow under that.
-	   Until 2026-09-26 this was a two-colour glow - --wc-hot blurred at 1.6
-	   units, --wc-cool at 4 - which made the title the neon "BIG WIN" of every
-	   slot template, and was the one thing on this screen that still looked
-	   generated. The tier still reads in both of its colours; neither blooms.
-	   design.md: "Lit, not haloed". */
+	/* LETTERED, NOT LIT. A sign-painter's block in the tier's own deep
+	   colour, cast down and left as the room's light from the upper right
+	   would cast it. It was a two-colour neon glow until 2026-09-26, the stock
+	   slot "BIG WIN". design.md: "Lit, not haloed". */
 	text-shadow:
 		calc(var(--ui) * -0.16) calc(var(--ui) * 0.24) 0 var(--wc-cool),
 		calc(var(--ui) * -0.4) calc(var(--ui) * 0.6) calc(var(--ui) * 0.7) rgba(var(--shadow-rgb), 0.65);
-	/* Runs once, on mount. The element is no longer torn down and rebuilt between
-	   tiers, so this cannot replay - promotions are a scale pop applied through
-	   element.animate(), see promoteTitle. */
-	animation: wc-title-in 0.42s var(--ease-out) backwards;
-	/* The palette variables change under the element as the tier climbs, so
-	   ease the colour across instead of letting it snap mid-pop. */
-	transition:
-		color 0.45s var(--ease-out),
-		text-shadow 0.45s var(--ease-out);
 }
 
-/* The two faces .wc-title falls back to, chosen per string - see the note above
-   and game/ui/displayFace.ts.
-
-   Neither restates size, weight, colour, tracking or shadow. They change the
-   font FILE and nothing else, so the tier ladder, the lettering and the entrance all
-   stay exactly where the rule above put them. */
-.wc-title.face-body {
+/* The faces a stop falls back to - see the note above. They change the font
+   FILE (and the cap, since the body face is wider) and nothing else. */
+.wc-stop.face-body {
 	font-family: var(--font-body);
-	/* Big Shoulders is condensed and the body face is not, so the same word is
-	   wider here. The title already carries overflow-wrap: anywhere and a vw
-	   cap; this pulls the cap down a step so a Latin-ext, Vietnamese or Cyrillic
-	   tier name has the same amount of room as the display face had, rather
-	   than the same font-size. Verified at Mobile S with "Thắng tối đa". */
-	font-size: min(calc(var(--ui) * 4.9), 9.6vw);
+	font-size: min(calc(var(--ui) * 4.6), 9vw);
 	letter-spacing: -0.01em;
 }
 
-/* No webfont covers this string, so the OS picks - and the OS face could be
-   anything. Nothing is asserted about its metrics beyond giving it the room the
-   widest plausible answer needs; 900 is very often synthesised here, which is
-   the case overflow-wrap on the rule above exists for. */
-.wc-title.face-system {
+.wc-stop.face-system {
 	font-family: sans-serif;
-	font-size: min(calc(var(--ui) * 4.6), 9.2vw);
+	font-size: min(calc(var(--ui) * 4.3), 8.6vw);
 	letter-spacing: 0;
+}
+
+/* THE TERMINUS. Max is the end of the line, and the ladder's one inversion:
+   crimson cloth with cream letters, the block in the cloth's own deep red. */
+.wc-stop.is-terminus {
+	background: linear-gradient(180deg, var(--brand-red-lit), var(--brand-red) 55%, var(--brand-red-deep));
+	text-shadow:
+		calc(var(--ui) * -0.16) calc(var(--ui) * 0.24) 0 var(--brand-red-deep),
+		calc(var(--ui) * -0.4) calc(var(--ui) * 0.6) calc(var(--ui) * 0.7) rgba(var(--shadow-rgb), 0.5);
+}
+
+/* ---- The route ----
+   A stop per rung, lit from the reading start as the blind passes each, the
+   bus riding to the one reached. LOGICAL, so in Arabic it runs from the right
+   like the board's own route line, and the bus faces the way it travels. */
+.wc-route {
+	position: relative;
+	width: calc(var(--sign-w) - var(--ui) * 4);
+	height: calc(var(--ui) * 1.6);
+}
+
+.wc-route-line,
+.wc-route-lit {
+	position: absolute;
+	inset-inline-start: 0;
+	top: 50%;
+	height: 2px;
+	margin-top: -1px;
+}
+
+.wc-route-line {
+	inset-inline-end: 0;
+	background: rgba(var(--ink-rgb), 0.3);
+}
+
+.wc-route-lit {
+	width: calc(var(--stop) / (var(--stops) - 1) * 100%);
+	background: var(--gold);
+	transition: width 340ms var(--ease-in-out);
+}
+
+.wc-route-dot {
+	position: absolute;
+	top: 50%;
+	inset-inline-start: calc(var(--at) / (var(--stops) - 1) * 100%);
+	width: calc(var(--ui) * 0.9);
+	aspect-ratio: 1;
+	border-radius: 50%;
+	translate: -50% -50%;
+	box-sizing: border-box;
+	background: var(--panel);
+	border: 2px solid rgba(var(--ink-rgb), 0.5);
+	transition:
+		background 200ms var(--ease-out),
+		border-color 200ms var(--ease-out);
+}
+
+.wc-route-dot.is-end {
+	width: calc(var(--ui) * 1.25);
+}
+
+.wc-route-dot.is-lit {
+	background: var(--gold);
+	border-color: var(--gold);
+}
+
+/* Reaching the end of the line takes the terminus's colours. */
+.wc-route-dot.is-end.is-lit {
+	background: var(--brand-red);
+	border-color: var(--ink-cream);
+}
+
+.wc-route-bus {
+	position: absolute;
+	bottom: calc(50% + var(--ui) * 0.55);
+	inset-inline-start: calc(var(--stop) / (var(--stops) - 1) * 100%);
+	width: calc(var(--ui) * 2.4);
+	translate: -50% 0;
+	transition: inset-inline-start 340ms var(--ease-in-out);
+}
+
+.wc-bus-body {
+	fill: var(--choice-equal);
+}
+
+.wc-bus-glass {
+	fill: var(--panel);
+}
+
+.wc-bus-wheel {
+	fill: var(--on-vol-ink);
+}
+
+/* translate is physical; from the inline start in Arabic it runs the other way. */
+:global([dir='rtl']) .wc-route-dot {
+	translate: 50% -50%;
+}
+
+:global([dir='rtl']) .wc-route-bus {
+	translate: 50% 0;
+	transform: scaleX(-1);
 }
 
 .wc-amount {
@@ -1074,9 +1200,25 @@
 /* ---- Short viewports ----
    Popout S is 400x225. The stack has to shrink or the prompt falls off the
    bottom and the player cannot see how to dismiss it. */
+/* LANDSCAPE: THE STACK SITS LOWER. The blind and its route made the stack
+   taller than the one-line title did, and centred in the window the hand rode
+   up over the lockup while the table below the prompt stood empty. Pushing
+   the centre down 4 units puts the hand under the lockup and leaves the
+   prompt clear of the rail (measured at the four landscape sizes,
+   2026-10-18). Portrait has the height already. */
+@media (orientation: landscape) {
+	.wc-overlay {
+		padding-top: calc(var(--ui) * 8);
+	}
+}
+
 @media (max-height: 380px) {
 	.wc-title {
-		font-size: min(calc(var(--ui) * 3.9), 9vw);
+		--sign-h: calc(var(--ui) * 6);
+		gap: calc(var(--ui) * 0.9);
+	}
+	.wc-stop {
+		font-size: min(calc(var(--ui) * 4.2), 9vw);
 	}
 	.wc-amount {
 		font-size: min(calc(var(--ui) * 3.7), 9vw);
@@ -1192,7 +1334,10 @@
 		opacity: var(--wc-beam-op, 0.5);
 	}
 
-	.wc-title {
+	.wc-roll,
+	.wc-route-lit,
+	.wc-route-dot,
+	.wc-route-bus {
 		transition: none;
 	}
 

@@ -15,11 +15,7 @@
  *   property. See the note on hopFan itself.
  */
 
-export function promoteTitle(titleEl: HTMLElement | undefined) {
-	pop(titleEl, 1.22, 560);
-}
-
-/** The same treatment for the amount as it settles on a band ceiling. */
+/** The pop the amount gets as it settles on a band ceiling. */
 export function popAmount(amountEl: HTMLElement | undefined) {
 	pop(amountEl, 1.12, 520);
 }
@@ -27,8 +23,7 @@ export function popAmount(amountEl: HTMLElement | undefined) {
 /**
  * The hand hops on every promotion.
  *
- * Driven through element.animate() for the same reason promoteTitle is, and
- * it is the same trap: the cards are already carrying wc-fan-deal with
+ * Driven through element.animate(), because it is a trap: the cards are already carrying wc-fan-deal with
  * `both`, so setting `animation` on them from a class would REPLACE that fill
  * and drop each card back to its undealt transform the moment the hop ended.
  * A Web Animations call composites over the CSS animation instead of

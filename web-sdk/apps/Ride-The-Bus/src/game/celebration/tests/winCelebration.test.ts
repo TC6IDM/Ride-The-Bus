@@ -382,14 +382,15 @@ describe('motion', () => {
   });
 
   /**
-   * The title must NOT be keyed - that is the bug promoteTitle exists to
-   * replace, and it is one careless edit away from coming back now that the
-   * burst next to it legitimately is keyed.
+   * The title must NOT be keyed - keying replayed its entrance on every
+   * promotion (the bug promoteTitle once replaced; the sign now rolls instead),
+   * and it is one careless edit away from coming back now that the burst next
+   * to it legitimately is keyed.
    */
   test('the title is still not keyed', () => {
     assert.ok(
       !/\{#key[^}]*\}\s*<div class="wc-title"/.test(COMPONENT),
-      'keying .wc-title replays its entrance on every promotion - use promoteTitle',
+      'keying .wc-title replays its entrance on every promotion - the blind rolls instead',
     );
   });
 

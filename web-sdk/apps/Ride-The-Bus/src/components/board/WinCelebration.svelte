@@ -42,6 +42,7 @@
 	import { currencyFractionDigits, numberToCurrencyString } from 'utils-shared/amount';
 	import { labelEms } from '../../game/ui/typeFit';
 	import { titleFaceFor } from '../../game/ui/displayFace';
+	import { fitValue } from '../../game/ui/fitValue';
 	import { fingerPointer } from '../../game/ui/pointerWords';
 
 	import MarkIcon from '../icons/MarkIcon.svelte';
@@ -55,13 +56,7 @@
 	import { FAMILY_RULES, stageCount, type ModeFamily } from '../../game/math/modes';
 	import { BURST, fanFor } from '../../game/celebration/celebrationScene';
 	import { formatMultiplier } from '../../game/ui/formatMultiplier';
-	import {
-		hopFan,
-		pop,
-		popAmount,
-		promoteTitle,
-		reducedMotion,
-	} from '../../game/celebration/celebrationGestures';
+	import { hopFan, popAmount, reducedMotion } from '../../game/celebration/celebrationGestures';
 	import { flyHand } from '../../game/celebration/handFlight';
 
 	type Props = {
@@ -140,6 +135,12 @@
 
 	/** Name and colours currently displayed. */
 	const activeTier = $derived<WinTier>(segments[segmentIndex]?.tier ?? props.tier);
+	/**
+	 * Which stop the sign has rolled to: the active tier's place on the
+	 * family's ladder. The count climbs from the first rung (countUpSegments),
+	 * so this walks 0, 1, 2 ... as the win is promoted.
+	 */
+	const stopIndex = $derived(Math.max(0, props.tiers.findIndex((tier) => tier.id === activeTier.id)));
 
 	/** How many cards the round dealt - see `family` in Props. */
 	const dealt = $derived(stageCount(FAMILY_RULES[props.family]));
@@ -156,7 +157,6 @@
 	/** Multiplier matching what is on screen, so it never runs ahead of the title. */
 	const shownMultiplier = $derived(perX > 0 ? shown / perX : props.multiplier);
 
-	let titleEl: HTMLElement | undefined = $state(undefined);
 	/**
 	 * How wide the SETTLED figure prints, so the CSS can size the amount to fit
 	 * the screen rather than to a constant.
@@ -172,18 +172,6 @@
 	 * type is chosen once, for the widest string that will ever appear, and the
 	 * count grows into it.
 	 */
-	/**
-	 * The tier name, and the face that can draw ALL of it.
-	 *
-	 * Derived rather than called twice in the markup because t() is reactive and
-	 * the face has to be decided from the SAME string that gets rendered - call
-	 * it twice and a locale change between the two lands a class chosen for the
-	 * previous language. game/ui/displayFace.ts has the argument for why this is
-	 * a three-way answer rather than "display or not".
-	 */
-	const titleText = $derived(t(activeTier.label));
-	const titleFace = $derived(titleFaceFor(titleText));
-
 	const amountEms = $derived(labelEms(numberToCurrencyString(props.amount)));
 	/**
 	 * The count-up prints every frame at the FINAL amount's precision. Money is
@@ -249,17 +237,6 @@
 	let autoTimer: ReturnType<typeof setTimeout> | null = null;
 	let holdTimer: ReturnType<typeof setTimeout> | null = null;
 
-	/**
-	 * The pop the title gets when it is promoted.
-	 *
-	 * Driven imperatively rather than by a CSS class, because re-adding a class
-	 * does not restart an animation that has already run - the usual workarounds
-	 * are removing it, forcing a reflow and adding it back, or keying the
-	 * element. Keying is what caused the bug this replaces: it tore the title
-	 * down and rebuilt it, replaying the full entrance so the word disappeared
-	 * and rose back up between every tier. element.animate() restarts cleanly and
-	 * leaves the element alone.
-	 */
 	function clearHold() {
 		if (holdTimer) clearTimeout(holdTimer);
 		holdTimer = null;
@@ -299,8 +276,7 @@
 		holding = false;
 		sound.playWinTierUp(segments[index]!.tier.id);
 		runSegment(index);
-		// After runSegment, so the new word is what pops.
-		promoteTitle(titleEl);
+		// The sign rolls to the new stop off stopIndex; the hand hops with it.
 		hopFan(fanEl);
 	}
 
@@ -533,8 +509,9 @@
 	     over. The marks used to loop forever on independent delays, which meant
 	     they never shared a start and the ring only ever drifted. Keying tears
 	     the container down and rebuilds it on each promotion, which restarts the
-	     one-shot animation - the exact behaviour that was WRONG for .wc-title
-	     (see promoteTitle) and is right here. -->
+	     one-shot animation - the exact behaviour that is WRONG for .wc-title
+	     (it would replay the sign's entrance on every promotion) and is right
+	     here. -->
 	{#key activeTier.id}
 		<div class="wc-burst" aria-hidden="true">
 			{#each BURST as mark}
@@ -620,11 +597,56 @@
 			{/if}
 		</div>
 
-		<!-- NOT keyed on the tier. Keying it destroys and recreates the element,
-		     which replays the entrance animation, so the title vanished and rose
-		     back up on every promotion. It stays put now; the word swaps in place,
-		     the colour cross-fades, and promoteTitle gives it a pop. -->
-		<div class="wc-title face-{titleFace}" bind:this={titleEl}>{titleText}</div>
+		<!-- THE TIER IS A DESTINATION BLIND (the owner's pick W1, 2026-10-18): the
+		     loader's sign, rolling one stop per rung as the count is promoted, and
+		     under it the route, a stop per rung, the bus riding to the one reached
+		     and Max as the end of the line. Every rung of the family's ladder is a
+		     stop on the blind, each lettered in its own tier's colours (the stop
+		     carries its tier's class, which sets only custom properties).
+
+		     NOT keyed on the tier. Keying it destroys and recreates the element,
+		     which replays the entrance, so the title vanished and rose back up on
+		     every promotion (the reason promoteTitle once existed). The blind is
+		     built once and rolls. -->
+		<div class="wc-title" style="--stop: {stopIndex}; --stops: {props.tiers.length}">
+			<div class="wc-sign">
+				<div class="wc-roll">
+					{#each props.tiers as tier (tier.id)}
+						{@const word = t(tier.label)}
+						<div
+							class="wc-stop tier-{tier.id} face-{titleFaceFor(word)}"
+							class:is-terminus={tier.id === 'max'}
+							use:fitValue={word}
+						>
+							{word}
+						</div>
+					{/each}
+				</div>
+			</div>
+			<!-- A one-rung ladder (Three of a Kind) has nowhere to ride: no route. -->
+			{#if props.tiers.length > 1}
+				<div class="wc-route">
+					<span class="wc-route-line"></span>
+					<span class="wc-route-lit"></span>
+					{#each props.tiers as tier, at (tier.id)}
+						<span
+							class="wc-route-dot"
+							class:is-lit={at <= stopIndex}
+							class:is-end={at === props.tiers.length - 1}
+							style="--at: {at}"
+						></span>
+					{/each}
+					<svg class="wc-route-bus" viewBox="0 0 26 14">
+						<rect class="wc-bus-body" x="1" y="1" width="24" height="10" rx="2.5" />
+						<rect class="wc-bus-glass" x="4" y="3" width="4" height="3" />
+						<rect class="wc-bus-glass" x="10" y="3" width="4" height="3" />
+						<rect class="wc-bus-glass" x="16" y="3" width="6" height="3" />
+						<circle class="wc-bus-wheel" cx="7" cy="11.5" r="2" />
+						<circle class="wc-bus-wheel" cx="19" cy="11.5" r="2" />
+					</svg>
+				</div>
+			{/if}
+		</div>
 
 		<!-- is-holding only letters the figure in the tier colour; the pop is applied through
 		     popAmount(amountEl) so it cannot clobber the entrance animation. -->

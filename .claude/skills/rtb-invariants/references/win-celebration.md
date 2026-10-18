@@ -105,8 +105,33 @@ rather than on every turn. Nothing here is reworded.
   dust on the lens; several also ended up in the frame corners and over the
   control bar. Ten larger marks, one origin, one instant, thrown off the fan
   rather than the viewport centre, fading before they reach an edge. **Keying is
-  right here and wrong for `.wc-title`** — that is the bug `promoteTitle` exists
-  to replace, and both are now pinned by tests.
+  right here and wrong for `.wc-title`** — keying the title replayed its entrance
+  on every promotion (the bug `promoteTitle` once replaced), and both are now
+  pinned by tests.
+- **The tier is a destination blind** (the owner's pick W1, 2026-10-18). The
+  title is the loader's sign at the takeover's scale (`.wc-sign` / `.wc-roll` /
+  `.wc-stop`, built once, never keyed). Its roll holds every rung of the
+  family's ladder, and it rolls one stop per promotion (340ms ease-in-out;
+  under reduced motion it swaps), which replaced `promoteTitle`'s overshoot pop.
+  Each stop is lettered in ITS OWN tier's colours. It carries its `tier-*` class
+  (custom properties only, so the tier-rule test still holds) and re-derives
+  `--wc-hot` from the triplet, because `--wc-hot` is computed on the overlay
+  from the current tier and would otherwise inherit already resolved. Max is
+  the terminus, the ladder's one inversion: crimson cloth, cream letters, the
+  block in the cloth's deep red.
+  - **The route** under it lights a stop per rung with the bus at the one
+    reached, laid out in logical properties so it runs from the right in
+    Arabic. A one-rung ladder (Three of a Kind) has nowhere to ride and draws
+    no route.
+  - **Each stop's face is chosen per word** (`titleFaceFor`; `displayFace.test.ts`
+    follows the class onto the stop), and the word is fitted on ONE line by
+    `fitValue`. Measured in all 16 other locales: smallest at 320px is Russian
+    "Эпический выигрыш" at 24.2px, and at Popout S 15.5px. Nothing overflows.
+  - **On landscape the stack sits 4 units lower** (overlay padding-top). The
+    sign made it taller than the old one-line title, and centred it put the
+    hand over the lockup. Measured at the four landscape sizes: the hand is
+    under the lockup and the prompt is above the rail.
+  - `loader.css` draws the same object. Change the two together.
 - **The light is one beam, not a spinning cone**, aimed from the upper right
   because that is where `table.css` puts the light for the whole game. Two
   counter-rotating conic sweeps plus a radial bloom plus an elliptical vignette
