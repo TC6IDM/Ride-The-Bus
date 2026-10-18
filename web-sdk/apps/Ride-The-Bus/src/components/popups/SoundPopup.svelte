@@ -9,9 +9,12 @@
      component imports it (see the note atop ChoiceIcon.svelte), so
      styles/popup-sound.css is imported here and nowhere else. Colour still comes
      in through the one --tint contract every menu wears; nothing below names a
-     colour of its own. -->
+     colour of its own.
+
+     A BUMP (the owner's pick S1, 2026-10-17): two levels are the whole menu,
+     so it opens over the sound button with no header, and the speakers are
+     bare glyphs in the bar's voice - no box round them. See popup-bump.css. -->
 <script lang="ts">
-  import MarkIcon from '../icons/MarkIcon.svelte';
   import RangeSlider from './RangeSlider.svelte';
   import SoundIcon from '../icons/SoundIcon.svelte';
   import { t } from '../../i18n/i18nDerived';
@@ -22,12 +25,10 @@
     onSfxInput,
     toggleBus,
   } from '../../game/audio/soundSettings.svelte';
-
-  let { onclose }: { onclose: () => void } = $props();
+  import { bump } from '../../game/ui/bumpAnchor';
 </script>
 
-  <div class="popup popup-sound" role="dialog" aria-modal="true" tabindex="-1" aria-label={t('Sound settings')}>
-    <div class="popup-head"><span>{t('Sound')}</span><button class="popup-close" onclick={onclose} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
+  <div class="popup bump popup-sound" role="dialog" aria-modal="true" tabindex="-1" aria-label={t('Sound settings')} use:bump={'.cb-sound'}>
     <div class="sound-body">
       <div class="sound-row" class:is-off={busSilent('music')}>
         <button
@@ -93,5 +94,6 @@
 
 <style>
   @import '../../styles/popups/popup-base.css';
+  @import '../../styles/popups/popup-bump.css';
   @import '../../styles/popups/popup-sound.css';
 </style>

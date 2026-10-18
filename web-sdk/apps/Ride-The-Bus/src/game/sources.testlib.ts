@@ -151,6 +151,8 @@ export const POPUP_STYLESHEET_PATHS = [
   at('../styles/popups/popup-turbo.css'),
   at('../styles/popups/popup-sound.css'),
   at('../styles/popups/popup-autospin.css'),
+  at('../styles/popups/popup-bump.css'),
+  at('../styles/popups/popup-head.css'),
 ];
 
 /** Every panel sheet, joined. */

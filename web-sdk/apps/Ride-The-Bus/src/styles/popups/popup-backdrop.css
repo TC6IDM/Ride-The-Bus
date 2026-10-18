@@ -38,6 +38,13 @@
   animation: backdrop-in 200ms var(--ease-out) both;
 }
 
+/* Behind a bump (popup-bump.css) the board stays in view: the backdrop is
+   still there, because a tap anywhere else is how a bump closes, but it no
+   longer dims the table under one slider. */
+.popup-backdrop.clear {
+  background: transparent;
+  animation: none;
+}
 @keyframes backdrop-in {
   from {
     opacity: 0;

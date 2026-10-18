@@ -197,7 +197,9 @@ the name.
 
 Three curves and one duration token (`--ease-out`, `--ease-in-out`,
 `--ease-pop`; `--dur-control`). A panel **arrives** — 220ms from 0.96 scale,
-its backdrop 200ms ahead of it — and leaves instantly. Hover lifts a control's
+its backdrop 200ms ahead of it — and leaves instantly. A **bump** grows out
+of its control instead: 180ms from 0.92 scale and 6px low, from the pointer's
+foot (origin-aware), with no dimmer behind it. Hover lifts a control's
 light; a press pushes it in. Reduced motion collapses arrivals to 120ms of
 opacity and keeps every state change. A focus ring is never transitioned.
 **Lit, not haloed:** a coloured bloom around a coloured control is the one
@@ -227,12 +229,28 @@ answer while the card still showed its back.
 `--focus-ring` over `--focus-halo`. A control takes the 2px offset ring. A
 panel that receives focus on opening puts the ring on the part that names it —
 the header's rule thickens in the panel's tint — never a rectangle around the
-dialog, and never the browser's default.
+dialog, and never the browser's default. A bump has no header, so its own edge
+takes the ring: an inset 2px line in the tint.
+
+## Two kinds of panel: a full panel and a bump
+
+**A menu that holds one control is a bump; a menu people read is a full
+panel** (the owner's picks T1 / S1 / B1, 2026-10-17). A bump - turbo's slider,
+the two sound levels, the bet chips - opens OVER the control that opened it,
+with a pointer at that control, and the board stays in view: the backdrop
+behind it is clear and only catches the tap that closes it. It has no header
+and no close disc; its name is the dialog's label, and a tap anywhere else or
+Escape closes it. The pointer stays on its control even when the bump shifts
+to stay on screen (`bumpAnchor.ts`). A bump that can outgrow its room (the chip
+tray) scrolls inside, never the slab, because the pointer hangs below it. On a
+phone held upright a bump floors its own unit so its smallest label clears the
+phone type floor. How to Play, the mode picker, autoplay and recent rounds stay
+full panels, because they are read.
 
 ## What every panel shares
 
 The material, the ink, the tint contract, the header voice (strong ink, 700, a
-rule beneath, the close disc), the arrival, the focus device, and the touch
+rule beneath, the close disc - full panels only), the arrival, the focus device, and the touch
 floors — 44px for a control alone or primary, 36px in a dense row, 32px where
 the paint must stay small. The header STAYS: a panel that scrolls scrolls
 under it, so its title and its way out are never a scroll away.

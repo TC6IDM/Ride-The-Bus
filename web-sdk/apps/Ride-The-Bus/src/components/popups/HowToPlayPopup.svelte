@@ -538,5 +538,6 @@
 	   this panel has no markup for, and importing it meant 46 unused-selector
 	   warnings. */
 	@import '../../styles/popups/popup-base.css';
+	@import '../../styles/popups/popup-head.css';
 	@import '../../styles/popups/popup-how-to-play.css';
 </style>

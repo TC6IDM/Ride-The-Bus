@@ -208,5 +208,6 @@
 
 <style>
   @import '../../styles/popups/popup-base.css';
+  @import '../../styles/popups/popup-head.css';
   @import '../../styles/popups/popup-autospin.css';
 </style>

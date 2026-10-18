@@ -51,9 +51,11 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* The speaker. A square tap target rather than a bare glyph: at Mobile S this
-   is one of only two ways to mute, so it has to clear the 24px floor the guess
-   segments and bar icons are measured against. */
+/* The speaker. A BARE glyph in the bar's voice (the owner's pick S1,
+   2026-10-17): the box round it was the one bordered icon in a panel of lines,
+   the "border effects" Stake's ratings name. The TAP TARGET is unchanged - at
+   Mobile S this is one of only two ways to mute, so the button keeps its square
+   and its 26px floor; only the paint round the glyph went. */
 .sound-mute {
   flex: 0 0 auto;
   display: grid;
@@ -63,11 +65,12 @@
   min-width: 26px;
   min-height: 26px;
   padding: 0;
-  border: 1px solid rgba(var(--tint-rgb), 0.42);
+  border: 0;
   border-radius: calc(var(--ui-bar) * 0.45);
-  background: rgba(var(--tint-rgb), 0.1);
+  background: none;
   color: var(--tint);
   cursor: pointer;
+  transition: color var(--dur-control) var(--ease-out);
 }
 
 /* `.sound-mute svg` lived here and never matched anything: SoundIcon is a child
@@ -86,14 +89,13 @@
 .sound-mute.off {
   --sound-slash: var(--loss);
   --sound-slash-cut: var(--panel);
-  border-color: rgba(var(--ink-rgb), 0.16);
-  background: transparent;
   color: var(--ink-dim);
 }
 
 /* Hover only where there is a pointer, and never on the disabled slider. */
-@media (any-hover: hover) {.sound-mute:hover { border-color: var(--tint); background: rgba(var(--tint-rgb), 0.2); color: var(--tint); }
-.sound-mute.off:hover { border-color: var(--loss); }
+/* No box to light, so the hover is the glyph itself: a muted speaker comes up
+   to full ink, saying the press would bring the sound back. */
+@media (any-hover: hover) {.sound-mute.off:hover { color: var(--ink); }
 }
 
 /* A muted bus cannot be levelled - the speaker is the way back, and un-muting
@@ -126,8 +128,10 @@
  * between finger-down and the level bar going flat. Not motion-only, because
  * reduced motion takes a transform away and would leave nothing behind.
  */
+/* No box to darken now, so the glyph itself dips: a step down in light and a
+   pixel down, the same press the bar's bare glyphs make. */
 .sound-mute:active {
-  background: rgba(var(--shadow-rgb), 0.28);
+  opacity: 0.7;
   transform: translateY(1px);
 }
 

@@ -984,7 +984,7 @@ describe('pressKindFor maps onto classes that exist', () => {
 	const CSS = [
 		'popups/popup-mode', 'popups/popup-bet', 'popups/popup-turbo',
 		'popups/popup-sound', 'popups/popup-autospin',
-		'popups/popup-base',
+		'popups/popup-base', 'popups/popup-head',
 		'board/control-bar', 'board/choices', 'board/cards',
 	]
 		.map((name) => read(`../../../styles/${name}.css`))

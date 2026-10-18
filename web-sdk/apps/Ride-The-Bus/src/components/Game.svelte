@@ -240,6 +240,8 @@
 
   // Bottom control-bar UI: which popup (if any) is open, plus mute state.
   let openPopup = $state<null | 'bet' | 'mode' | 'turbo' | 'autospin' | 'info' | 'sound' | 'history'>(null);
+  /** The panels that open as a bump over their control, not a centred dialog. */
+  const BUMP_PANELS = new Set<string>(['turbo', 'sound', 'bet']);
   /**
    * The simulation ID to print on the round-details panel.
    *
@@ -785,7 +787,9 @@
   <ControlBar bind:openPopup bind:betRowEl {introPhase} {chromeInert} />
 
   {#if openPopup}
-    <button class="popup-backdrop" aria-label={t('Close menu')} onclick={closePopup}></button>
+    <!-- Clear behind a bump (popup-bump.css): the board stays in view, and the
+         backdrop is only the tap anywhere else that closes it. -->
+    <button class="popup-backdrop" class:clear={openPopup !== null && BUMP_PANELS.has(openPopup)} aria-label={t('Close menu')} onclick={closePopup}></button>
   {/if}
 
   <!-- Bet mode. Approval requires each mode's cost and what it buys to be
@@ -796,11 +800,11 @@
   {/if}
 
   {#if openPopup === 'bet'}
-    <BetPopup onclose={closePopup} onpick={setBetLevel} oncommit={onBetInputKey} />
+    <BetPopup onpick={setBetLevel} oncommit={onBetInputKey} />
   {/if}
 
   {#if openPopup === 'turbo' && !jurisdiction.turboDisabled()}
-    <TurboPopup onclose={closePopup} />
+    <TurboPopup />
   {/if}
 
   <!-- Sound. Two buses on one panel, each with a speaker beside its slider:
@@ -809,7 +813,7 @@
        No jurisdiction gate - "an option to disable sounds" is a blocker
        everywhere, so this panel is the one that must always be reachable. -->
   {#if openPopup === 'sound'}
-    <SoundPopup onclose={closePopup} />
+    <SoundPopup />
   {/if}
 
   <!-- The session's recent rounds, opened from Last Win. Display only. -->

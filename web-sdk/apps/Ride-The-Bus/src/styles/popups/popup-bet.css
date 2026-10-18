@@ -16,6 +16,34 @@
    They are listed here only so this block is the whole map. */
 .popup-bet {
   --tint-ink: var(--on-vol-ink);
+  /* A bump (popup-bump.css), and the widest of the three: five chips abreast. */
+  --bump-w: calc(var(--ui-bar) * 40);
+}
+
+/* ---- The tray (the owner's pick B1, 2026-10-17) -------------------------
+   The chips lie in a felt tray set into the panel, with a brass lip: the same
+   baize and brass as the table they are bet on, so choosing a bet is reaching
+   into a rack rather than picking from a list. The table's own felt tokens and
+   the gold the "=" badge is cut from; nothing new.
+
+   It is the one part of the bump that can outgrow its space (an RGS ladder is
+   any length), so it is the part that scrolls - the panel itself cannot,
+   because its pointer hangs below it. */
+.bet-tray {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  --scroll-thumb-rgb: var(--gold-rgb);
+  padding: calc(var(--ui-bar) * 1.27) calc(var(--ui-bar) * 0.91) calc(var(--ui-bar) * 1.09);
+  border-radius: calc(var(--ui-bar) * 0.91);
+  background:
+    radial-gradient(rgba(var(--ink-rgb), 0.035) 0.6px, transparent 0.8px) 0 0 / 3px 3px,
+    radial-gradient(120% 140% at 70% 0%, var(--felt-lit), var(--felt-mid) 60%, var(--felt-deep));
+  box-shadow:
+    inset 0 0 0 2px rgba(var(--gold-rgb), 0.55),
+    inset 0 0 0 3px rgba(var(--shadow-rgb), 0.5),
+    inset 0 calc(var(--ui-bar) * 0.36) calc(var(--ui-bar) * 0.9) rgba(var(--shadow-rgb), 0.6);
 }
 
 /* ---- Bet levels, as chips ------------------------------------------------
@@ -36,6 +64,26 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: calc(var(--ui-bar) * 0.73);
+}
+
+/* A long ladder: the chips step down a size so it stays a tray of a few rows.
+   The figure is solved from the disc (labelEms), so it follows. */
+.bet-chips.many .bet-chip {
+  --chip-d: calc(var(--ui-bar) * 5.2);
+}
+
+/* A phone held upright: the bump's unit is floored there (popup-bump.css), and
+   at full size ten chips stacked three to a row and the tray covered the table
+   at 320px. A step down puts four in a row; a long ladder steps down again.
+   Both stay over the 44px touch floor (5.2 x 9.8 = 51px, 4.6 x 9.8 = 45px). */
+@media (max-width: 620px) and (orientation: portrait) {
+  .bet-chips .bet-chip {
+    --chip-d: calc(var(--ui-bar) * 5.2);
+  }
+
+  .bet-chips.many .bet-chip {
+    --chip-d: calc(var(--ui-bar) * 4.6);
+  }
 }
 
 /* TOP-DOWN, not the table's perspective cylinder. table.css builds a wall, a
@@ -277,13 +325,13 @@
   transform: translateY(0);
 }
 
-/* Free-entry bet field at the top of the bet menu (type any amount). */
+/* Free-entry bet field, under the tray (type any amount). */
 .bet-entry {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: calc(var(--ui-bar) * 0.36);
   padding: calc(var(--ui-bar) * 0.82) calc(var(--ui-bar) * 1.09);
-  margin-bottom: calc(var(--ui-bar) * 0.91);
   border-radius: calc(var(--ui-bar) * 0.91);
   border: 1px solid rgba(var(--ink-rgb), 0.18);
   background: var(--field-well);
@@ -308,6 +356,7 @@
 }
 
 .popup-bet .popup-sub { display: block; margin-bottom: calc(var(--ui-bar) * 0.64); }
+.bet-entry-label { flex: 0 0 auto; margin-top: calc(var(--ui-bar) * 0.91); }
 
 /* A field's label, in the voice every other label in the panels uses - body
    size, body ink, sentence case (see .control-label in popup-autospin.css,
