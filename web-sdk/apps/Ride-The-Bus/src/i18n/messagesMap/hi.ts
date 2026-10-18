@@ -334,6 +334,14 @@ export default {
 		'इतने नुकसान पर रोकें',
 	'Stop on a single win of':
 		'एक ही जीत इतनी होने पर रोकें',
+	'Limits':
+		'सीमाएँ',
+	'None set':
+		'कोई तय नहीं',
+	'Loss %s':
+		'हानि %s',
+	'Win %s':
+		'जीत %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'कीबोर्ड पर, 1 से 4 तक की कुंजियाँ चारों अनुमान बदलती हैं।',
 	'It can stop by itself on a full game win, a loss limit or one big win.':

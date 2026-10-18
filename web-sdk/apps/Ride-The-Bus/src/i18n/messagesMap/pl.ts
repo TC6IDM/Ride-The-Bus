@@ -334,6 +334,14 @@ export default {
 		'Zatrzymaj przy stracie',
 	'Stop on a single win of':
 		'Zatrzymaj przy pojedynczej wygranej',
+	'Limits':
+		'Limity',
+	'None set':
+		'Nie ustawiono',
+	'Loss %s':
+		'Strata %s',
+	'Win %s':
+		'Wygrana %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'Na klawiaturze klawisze 1–4 zmieniają cztery typy.',
 	'It can stop by itself on a full game win, a loss limit or one big win.':

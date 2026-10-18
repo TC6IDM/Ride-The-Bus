@@ -400,6 +400,15 @@ export default {
 		'Stop on a loss of',
 	'Stop on a single win of':
 		'Stop on a single win of',
+	// The autoplay panel's limits fold: its heading, its state with nothing armed, and an armed limit (%s is the figure, e.g. "20.0×").
+	'Limits':
+		'Limits',
+	'None set':
+		'None set',
+	'Loss %s':
+		'Loss %s',
+	'Win %s':
+		'Win %s',
 	// How to Play, on a desk only: the keyboard's way to make the four picks (ControlBar.svelte, game/bet/guessKeys.ts).
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'On a keyboard, keys 1 to 4 change the four guesses.',

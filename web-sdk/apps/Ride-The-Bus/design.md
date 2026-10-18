@@ -257,8 +257,11 @@ under it, so its title and its way out are never a scroll away.
 
 ## What may differ
 
-The tint; the content's shape — a list (mode), a chip rack (bet), pills,
-fields and switches (autoplay), prose (How to Play); and the
+The tint; the content's shape — a list (mode), a chip tray on felt with a
+brass lip (bet), five count keys over a folded limits well and two switches
+(autoplay: what a run needs first, first), ticket stubs of dimmed card stock
+(recent rounds), prose with section links that stay under the title and the
+game's own cards drawn beside what they illustrate (How to Play); and the
 width, where prose needs the measure.
 
 ## Known deviations, recorded

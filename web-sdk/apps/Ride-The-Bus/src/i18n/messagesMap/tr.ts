@@ -335,6 +335,14 @@ export default {
 		'Şu kadar kayıpta dur',
 	'Stop on a single win of':
 		'Tek seferde şu kadar kazançta dur',
+	'Limits':
+		'Limitler',
+	'None set':
+		'Ayarlanmadı',
+	'Loss %s':
+		'Kayıp %s',
+	'Win %s':
+		'Kazanç %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'Klavyede 1–4 tuşları dört tahmini değiştirir.',
 	'It can stop by itself on a full game win, a loss limit or one big win.':

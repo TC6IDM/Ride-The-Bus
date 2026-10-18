@@ -337,6 +337,14 @@ export default {
 		'Stopp bei einem Verlust von',
 	'Stop on a single win of':
 		'Stopp bei einem Einzelgewinn von',
+	'Limits':
+		'Grenzen',
+	'None set':
+		'Keine gesetzt',
+	'Loss %s':
+		'Verlust %s',
+	'Win %s':
+		'Gewinn %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'Auf der Tastatur ändern die Tasten 1 bis 4 die vier Tipps.',
 	'It can stop by itself on a full game win, a loss limit or one big win.':

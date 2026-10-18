@@ -9,7 +9,17 @@
      component imports it (see the note atop ChoiceIcon.svelte), so
      styles/popup-autospin.css is imported here and nowhere else. Colour still comes
      in through the one --tint contract every menu wears; nothing below names a
-     colour of its own. -->
+     colour of its own.
+
+     COUNT FIRST, LIMITS FOLDED (the owner's pick P1, 2026-10-17). The panel
+     used to open on eight pills, a count field, two typed limits with their
+     units and arm buttons, a note and two switches - every option at once,
+     the panel players most often open just to press Start. Now it reads in the
+     order a run is set up: how many plays (four presets, unlimited, and the
+     typed field for any other number - the owner: autoplay "should allow
+     users to put in custom numbers"), then the two limits behind one row that
+     says what is armed, then the two switches and Start. The switches stay
+     unfolded, directly above Start: the owner's call of 2026-09-26. -->
 <script lang="ts">
   import MarkIcon from '../icons/MarkIcon.svelte';
   import { t } from '../../i18n/i18nDerived';
@@ -27,6 +37,8 @@
   import { currencySymbol } from '../../game/bet/currencySymbol';
   import { stateBet } from 'state-shared';
   import { stopAuto } from '../../game/round/autoplayLoop.svelte';
+  import { numberToCurrencyString } from 'utils-shared/amount';
+  import { formatMultiplier } from '../../game/ui/formatMultiplier';
   import {
     allChoicesMade,
     betBlockedReason,
@@ -55,6 +67,24 @@
   function onLimitInput(setting: LimitSetting) {
     if (parseLimit(setting.input) === null) setting.on = false;
   }
+
+  /** The limits fold. Closed on open: most runs are started with none. */
+  let limitsOpen = $state(false);
+
+  /** A limit as the summary row prints it, in its own unit. */
+  const limitFigure = (setting: LimitSetting) => {
+    const value = parseLimit(setting.input) ?? 0;
+    return setting.unit === 'x' ? formatMultiplier(value) : numberToCurrencyString(value);
+  };
+
+  /** What the folded row says is armed: each live limit, or that none is. */
+  const limitsSummary = $derived.by(() => {
+    const armed = [
+      stops.lossLimit.on && parseLimit(stops.lossLimit.input) !== null ? t('Loss %s').replace('%s', limitFigure(stops.lossLimit)) : null,
+      stops.winLimit.on && parseLimit(stops.winLimit.input) !== null ? t('Win %s').replace('%s', limitFigure(stops.winLimit)) : null,
+    ].filter((s): s is string => s !== null);
+    return armed.length ? armed.join(', ') : t('None set');
+  });
 </script>
 
 <!-- The three drawn glyphs this panel uses, DUPLICATED rather than passed down
@@ -131,47 +161,68 @@
            stays pressed while it is armed. autoplayLimits.ts has the rule.
            The empty field shows a dash, not "0": a grey zero read as a limit
            already set to nothing, and zero is not a figure a limit accepts. -->
-      {#each LIMITS as row (row.key)}
-        {@const setting = stops[row.key]}
-        {@const usable = parseLimit(setting.input) !== null}
-        <div class="limit-group">
-          <label class="control-label" for={row.id}>{row.label()}</label>
-          <div class="limit-row">
-            <div class="limit-field" class:is-on={setting.on}>
-              <input
-                id={row.id}
-                name={row.id}
-                class="limit-input"
-                type="text"
-                inputmode="decimal"
-                autocomplete="off"
-                placeholder="—"
-                bind:value={setting.input}
-                oninput={() => onLimitInput(setting)}
-              />
-              <!-- The unit, inside the field it qualifies. x is times the base
-                   bet; the other is the player's own currency symbol (never a
-                   hardcoded $ - social mode's SC and GC print their codes). -->
-              <div class="limit-unit" role="group">
-                <button type="button" class="limit-unit-btn" class:active={setting.unit === 'x'} aria-pressed={setting.unit === 'x'} aria-label={t('Times your base bet')} onclick={() => (setting.unit = 'x')}>×</button>
-                <button type="button" class="limit-unit-btn" class:active={setting.unit === 'cash'} aria-pressed={setting.unit === 'cash'} aria-label={stateBet.currency || currencySymbol()} onclick={() => (setting.unit = 'cash')}>{currencySymbol()}</button>
+      <!-- The two limits, folded under one row that says what is armed. The
+           row is a real disclosure button (aria-expanded), and the folded
+           fields are inert, so Tab does not walk into what cannot be seen. -->
+      <div class="limits" class:open={limitsOpen}>
+        <button
+          type="button"
+          class="limits-sum"
+          aria-expanded={limitsOpen}
+          aria-controls="autoplay-limits"
+          onclick={() => (limitsOpen = !limitsOpen)}
+        >
+          <span class="limits-title">{t('Limits')}</span>
+          <span class="limits-state">{limitsSummary}</span>
+          <svg class="limits-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+        </button>
+        <div class="limits-body" id="autoplay-limits">
+          <div class="limits-inner" inert={!limitsOpen}>
+            {#each LIMITS as row (row.key)}
+              {@const setting = stops[row.key]}
+              {@const usable = parseLimit(setting.input) !== null}
+              <div class="limit-group">
+                <label class="control-label" for={row.id}>{row.label()}</label>
+                <div class="limit-row">
+                  <div class="limit-field" class:is-on={setting.on}>
+                    <input
+                      id={row.id}
+                      name={row.id}
+                      class="limit-input"
+                      type="text"
+                      inputmode="decimal"
+                      autocomplete="off"
+                      placeholder="—"
+                      bind:value={setting.input}
+                      oninput={() => onLimitInput(setting)}
+                    />
+                    <!-- The unit, inside the field it qualifies. x is times the base
+                         bet; the other is the player's own currency symbol (never a
+                         hardcoded $ - social mode's SC and GC print their codes). -->
+                    <div class="limit-unit" role="group">
+                      <button type="button" class="limit-unit-btn" class:active={setting.unit === 'x'} aria-pressed={setting.unit === 'x'} aria-label={t('Times your base bet')} onclick={() => (setting.unit = 'x')}>×</button>
+                      <button type="button" class="limit-unit-btn" class:active={setting.unit === 'cash'} aria-pressed={setting.unit === 'cash'} aria-label={stateBet.currency || currencySymbol()} onclick={() => (setting.unit = 'cash')}>{currencySymbol()}</button>
+                    </div>
+                  </div>
+                  <!-- Arms the limit. A toggle, pressed while armed; greyed until the
+                       field holds a figure it could stop on. -->
+                  <button
+                    type="button"
+                    class="limit-toggle"
+                    class:on={setting.on && usable}
+                    aria-pressed={setting.on && usable}
+                    aria-label={row.label()}
+                    disabled={!usable}
+                    onclick={() => (setting.on = !setting.on)}
+                  ><MarkIcon name="check" /></button>
+                </div>
               </div>
-            </div>
-            <!-- Arms the limit. A toggle, pressed while armed; greyed until the
-                 field holds a figure it could stop on. -->
-            <button
-              type="button"
-              class="limit-toggle"
-              class:on={setting.on && usable}
-              aria-pressed={setting.on && usable}
-              aria-label={row.label()}
-              disabled={!usable}
-              onclick={() => (setting.on = !setting.on)}
-            ><MarkIcon name="check" /></button>
+            {/each}
+            <span class="limit-note">{t('× means times your base bet.')}</span>
+
           </div>
         </div>
-      {/each}
-      <span class="limit-note">{t('× means times your base bet.')}</span>
+      </div>
 
       <!-- The two switches, one above the other in their order, directly above
            the panel's one action. The second changes only how the next

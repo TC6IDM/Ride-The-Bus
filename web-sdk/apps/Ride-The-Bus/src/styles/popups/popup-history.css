@@ -31,97 +31,171 @@
   padding: 0;
   display: flex;
   flex-direction: column;
+  gap: calc(var(--ui-bar) * 0.64);
 }
 
+/* A TICKET STUB (the owner's pick R1, 2026-10-17): the card stock, dimmed a
+   step (--stub-paper), with the family's colour as a band down its left edge
+   and a punched notch in its right. Lit like everything else - a lit top edge,
+   a shaded foot, inset so the notch's mask cannot clip them - rather than
+   outlined: a box per round would be a card drawn inside the panel's card,
+   and this is a piece of paper lying in it.
+
+   Dealt in when the panel opens, newest first, one beat apart. */
 .history-row {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: calc(var(--ui-bar) * 0.36);
-  padding: calc(var(--ui-bar) * 0.8) calc(var(--ui-bar) * 0.3);
+  gap: calc(var(--ui-bar) * 0.45);
+  padding: calc(var(--ui-bar) * 0.8) calc(var(--ui-bar) * 1.36) calc(var(--ui-bar) * 0.8) calc(var(--ui-bar) * 1.27);
+  border-radius: calc(var(--ui-bar) * 0.64);
+  color: var(--card-ink);
+  background: linear-gradient(170deg, var(--stub-paper-lit), var(--stub-paper) 55%, var(--stub-paper-shade));
+  box-shadow:
+    inset 0 1px 0 rgba(var(--ink-rgb), 0.55),
+    inset 0 -1px 0 rgba(var(--card-ink-rgb), 0.18);
+  --notch: calc(var(--ui-bar) * 0.55);
+  -webkit-mask: radial-gradient(circle at 100% 50%, transparent var(--notch), #000 calc(var(--notch) + 0.5px));
+  mask: radial-gradient(circle at 100% 50%, transparent var(--notch), #000 calc(var(--notch) + 0.5px));
+  animation: stub-in 300ms var(--ease-out) both;
+  animation-delay: calc(80ms + var(--i, 0) * 40ms);
 }
 
-/* Rows divided by a hairline, never boxed: a box per round would be a card
-   inside the panel's card. */
-.history-row + .history-row {
-  border-top: 1px solid rgba(var(--ink-rgb), 0.08);
+.history-row::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--ui-bar) * 0.55);
+  background: var(--fam);
+}
+
+@keyframes stub-in {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--ui-bar) * 0.9));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .history-row {
+    animation: stub-fade 120ms var(--ease-out) both;
+    animation-delay: 0ms;
+  }
+}
+
+@keyframes stub-fade {
+  from {
+    opacity: 0;
+  }
 }
 
 .history-head,
 .history-hand {
   display: flex;
-  align-items: baseline;
-  gap: calc(var(--ui-bar) * 0.6);
+  align-items: center;
+  gap: calc(var(--ui-bar) * 0.45);
 }
 
+/* The family, in the display face and the card's ink: its colour is the band. */
 .history-family {
-  font-size: max(calc(var(--ui-bar) * 1.09), var(--type-floor));
-  font-weight: 800;
-  color: var(--fam);
+  font-family: var(--font-display);
+  font-size: max(calc(var(--ui-bar) * 1.36), var(--type-floor));
+  font-weight: 900;
+  line-height: 1;
+  color: var(--card-ink);
 }
 
 .history-cost {
   margin-inline-start: auto;
-  font-size: max(calc(var(--ui-bar) * 1.05), var(--type-floor));
-  color: var(--ink-body);
+  font-size: max(calc(var(--ui-bar) * 1.0), var(--type-floor));
+  color: rgba(var(--card-ink-rgb), 0.72);
   font-variant-numeric: tabular-nums;
 }
 
-.history-cap { color: var(--ink-dim); }
+.history-cap { color: rgba(var(--card-ink-rgb), 0.6); }
 
-/* The dealt cards as compact index tokens on paper - the same reading as How
-   to Play's example round, not full faces. Red and black are the card's own
-   inks. */
+/* The dealt cards: the real face (CardFace), at the compact size it draws
+   below 46px - one pip and a larger index. Full paper on the dimmer stub, so
+   the hand is the first thing a row says. */
 .history-card {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.08em;
-  padding: 0.12em 0.34em;
-  border-radius: calc(var(--ui-bar) * 0.3);
+  position: relative;
+  flex: 0 0 auto;
+  width: calc(var(--ui-bar) * 2.6);
+  aspect-ratio: 200 / 298;
+  border-radius: calc(var(--ui-bar) * 0.27);
+  overflow: hidden;
   background: var(--card-paper);
-  color: var(--card-ink);
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: max(calc(var(--ui-bar) * 1.2), var(--type-floor-figure));
-  line-height: 1;
+  box-shadow: 0 1px 2px rgba(var(--shadow-rgb), 0.35), inset 0 0 0 1px var(--card-edge);
 }
 
-.history-card.is-red { color: var(--card-red); }
-
-/* The card the round ended on: struck through and dimmed, like the board's
-   bust - but legible, because what it was is the point of looking back. */
-.history-card.is-bust {
-  opacity: 0.6;
-  text-decoration: line-through;
-  text-decoration-thickness: 0.12em;
+/* The card the round ended on steps back, as on the board and the takeover. */
+.history-card.is-bust :global(svg) {
+  filter: saturate(0.35) brightness(0.8);
 }
 
-/* A forgiven miss is not a bust: outlined, not dimmed (the board's own rule). */
-.history-card.is-forgiven {
-  outline: 2px solid var(--forgiven, var(--gold-bright));
-  outline-offset: 1px;
+/* The board's two marks, over the card: a cross where the round ended, an
+   amber return arrow where a Second Chance let it off. MarkIcon is a child
+   component and sizes itself off --mark-size. */
+.history-mark {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(var(--shadow-rgb), 0.35);
+  --mark-size: calc(var(--ui-bar) * 2.1);
 }
 
+.history-mark.is-bust { color: var(--loss); }
+
+.history-mark.is-forgiven {
+  color: var(--forgiven);
+  background: rgba(var(--shadow-rgb), 0.5);
+}
+
+.history-mark.is-forgiven svg {
+  width: calc(var(--ui-bar) * 1.8);
+  height: calc(var(--ui-bar) * 1.8);
+}
+
+/* Last Stop's ticket: the multiplier it drew, gold on the card's ink. */
 .history-ticket {
+  padding: 0.18em 0.42em;
+  border-radius: calc(var(--ui-bar) * 0.27);
+  background: var(--card-ink);
   font-weight: 800;
-  font-size: max(calc(var(--ui-bar) * 1.09), var(--type-floor));
+  font-size: max(calc(var(--ui-bar) * 1.0), var(--type-floor));
   color: var(--gold-bright);
+  font-variant-numeric: tabular-nums;
 }
 
 .history-paid {
   margin-inline-start: auto;
-  font-size: max(calc(var(--ui-bar) * 1.24), var(--type-floor-figure));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: calc(var(--ui-bar) * 0.18);
+  font-size: max(calc(var(--ui-bar) * 1.16), var(--type-floor-figure));
   font-weight: 800;
-  color: var(--ink-body);
+  color: var(--card-ink);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-/* Win colour only for a round that paid more than it cost. */
-.history-row.is-net .history-paid { color: var(--win); }
+/* How it ended, in the board's words. A bust that kept nothing is the quiet
+   one; a round that paid more than it cost is the only one in win colour. */
+.history-word {
+  font-size: max(calc(var(--ui-bar) * 1.0), var(--type-floor));
+  font-weight: 800;
+}
+
+.history-row:not(.is-net) .history-word { color: rgba(var(--card-ink-rgb), 0.6); }
+
+.history-row.is-net .history-word,
+.history-row.is-net .history-amount { color: var(--win-on-paper); }
 
 .history-mult {
   font-size: 0.82em;
-  color: var(--gold-bright);
+  color: rgba(var(--card-ink-rgb), 0.7);
 }
 
 .history-picks {
@@ -129,8 +203,8 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 0 0.45em;
-  font-size: max(calc(var(--ui-bar) * 1.0), var(--type-floor));
-  color: var(--ink-dim);
+  font-size: max(calc(var(--ui-bar) * 0.95), var(--type-floor));
+  color: rgba(var(--card-ink-rgb), 0.66);
 }
 
 /* A drawn dot, not a typed one: Overpass's U+00B7 sits off-centre in its own

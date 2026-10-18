@@ -538,6 +538,20 @@
      alone, warmed to the paper. */
   --card-edge: #cfc4ad;
 
+  /* Recent rounds' ticket stubs (the owner's pick R1, 2026-10-17). The same
+     stock as the cards but DIMMER - the owner: "dim the paper rows if they are
+     too bright". Ten full-brightness paper slabs in one panel were the
+     brightest thing on screen and drowned the cards printed on them, so the
+     stub is the card paper toned down a step toward the wood, and the cards on
+     it stay at full paper: the hand reads first, the stub second. The card's
+     own ink on it, and a win green dark enough to read on paper (--win is
+     built for the dark panels; on this it measures 1.2:1). */
+  --stub-paper-rgb: 217, 207, 184;
+  --stub-paper: rgb(var(--stub-paper-rgb));
+  --stub-paper-lit: #e3dac6;
+  --stub-paper-shade: #c8bb9c;
+  --win-on-paper: #145c33;
+
   /* Courts and aces. The court figures are the English pattern
      (art-masters/courts/), which prints every court in red, blue, yellow and
      black whatever its suit. Here card 1's guess is RED OR BLACK and a card is

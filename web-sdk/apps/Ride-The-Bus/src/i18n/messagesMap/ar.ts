@@ -335,6 +335,14 @@ export default {
 		'التوقف عند خسارة قدرها',
 	'Stop on a single win of':
 		'التوقف عند ربح واحد قدره',
+	'Limits':
+		'الحدود',
+	'None set':
+		'لم يُحدَّد شيء',
+	'Loss %s':
+		'خسارة %s',
+	'Win %s':
+		'ربح %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'على لوحة المفاتيح، تغيّر المفاتيح من 1 إلى 4 التخمينات الأربعة.',
 	'It can stop by itself on a full game win, a loss limit or one big win.':

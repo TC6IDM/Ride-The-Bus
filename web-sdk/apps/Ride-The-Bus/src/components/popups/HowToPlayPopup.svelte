@@ -15,6 +15,17 @@
 	 * UI at any point during play. The RTP is interpolated from game/platform/config.ts
 	 * rather than written out, so the figure shown cannot drift from the one the
 	 * math is built and reweighted to.
+	 *
+	 * ILLUSTRATED, AND JUMPABLE (the owner's pick H1, 2026-10-17). Still one
+	 * document - one scroll a screen reader or a reviewer reads top to bottom,
+	 * every sentence Stake asks for in it - with two additions: a row of
+	 * section links under the title that stays as the page scrolls and jumps
+	 * to Guesses, Card order, Game modes, the payout table, Controls and Game
+	 * information; and pictures where the words describe something drawn -
+	 * each guess beside its own square and the cards it is about, the worked
+	 * round dealt in the game's real faces, and each mode tab marked in its
+	 * family's colour. Real jump links, not hidden tab panels: nothing is
+	 * taken out of the page to put the links in.
 	 */
 	// `ranks` is imported rather than the order being retyped here, so the strip
 	// below can never drift from the order the game and the math-sdk actually use.
@@ -38,6 +49,8 @@
 	import { formatMultiplier } from '../../game/ui/formatMultiplier';
 	import MarkIcon from '../icons/MarkIcon.svelte';
 	import SuitIcon from '../icons/SuitIcon.svelte';
+	import CardFace from '../cards/CardFace.svelte';
+	import { reducedMotion } from '../../game/celebration/celebrationGestures';
 	import ControlGlyph from '../icons/ControlGlyph.svelte';
 	import { fingerPointer } from '../../game/ui/pointerWords';
 	import TicketFace from '../cards/TicketFace.svelte';
@@ -140,6 +153,94 @@
 	const pickLabel = (choice: string) => t((PICK_LABEL[choice] ?? 'Equal') as Parameters<typeof t>[0]);
 
 	/**
+	 * The four guesses, each drawn beside its sentence: its own square in the
+	 * board's colours, and the cards the question is about, dealt so the
+	 * answer is right (black King; 7 then a higher Jack; a 7 inside 4 and 10;
+	 * a Heart). Decorative - the sentence says it - so aria-hidden.
+	 */
+	const GUIDE = [
+		{ key: 'color', text: 'Color: is card 1 red or black?', cards: [['K', 'spade']] },
+		{ key: 'hl', text: 'Higher or Lower: is card 2 above or below card 1, or Equal to it?', cards: [['7', 'diamond'], ['J', 'spade']] },
+		{ key: 'io', text: 'Inside or Outside: is card 3 between cards 1 and 2 or outside them, or Equal to one of them?', cards: [['4', 'club'], ['10', 'heart'], ['7', 'spade']] },
+		{ key: 'suit', text: 'Suit: which suit is card 4?', cards: [['A', 'heart']] },
+	] as const;
+	const SUITS = ['heart', 'spade', 'club', 'diamond'] as const;
+	const SUIT_KEY: Record<string, string> = { '♥': 'heart', '♦': 'diamond', '♣': 'club', '♠': 'spade' };
+	const suitKey = (suit: string) => SUIT_KEY[suit] ?? suit;
+
+	/**
+	 * The section links. Each names a heading already on the page, by the
+	 * string that heading prints, so a link can never promise a section the
+	 * page does not have. "Payout table" lands on the table of the mode on
+	 * screen, which is where a player checking a round looks.
+	 */
+	const SECTIONS = [
+		{ id: 'htp-guesses', label: () => t('Guesses') },
+		{ id: 'htp-order', label: () => t('Card order') },
+		{ id: 'htp-modes', label: () => t('Game modes') },
+		{ id: 'htp-paytable', label: () => t('Payout table') },
+		{ id: 'htp-controls', label: () => t('Controls') },
+		{ id: 'htp-info', label: () => t('Game information') },
+	] as const;
+	let panelEl = $state<HTMLDivElement>();
+	let headEl = $state<HTMLDivElement>();
+	let navEl = $state<HTMLElement>();
+	/** The link row is wider than the panel (a phone, a long language): its edge fades. */
+	let navOverflows = $state(false);
+	$effect(() => {
+		const nav = navEl;
+		if (!nav) return;
+		const measure = () => (navOverflows = nav.scrollWidth > nav.clientWidth + 1);
+		const observer = new ResizeObserver(measure);
+		observer.observe(nav);
+		measure();
+		return () => observer.disconnect();
+	});
+	// The link being read stays in view in a row that scrolls sideways. The
+	// ROW is moved, by itself: scrollIntoView would touch every scroller above
+	// it too, and in Chrome that cancels the page's own smooth jump mid-way
+	// (it did - every link stopped scrolling the page). Measured on screen, so
+	// the same sum works in Arabic, where the row starts at the right:
+	// scrollLeft is physical in every browser that ships now.
+	$effect(() => {
+		const nav = navEl;
+		const link = nav?.querySelector<HTMLElement>(`[href="#${current}"]`);
+		if (!nav || !link || !navOverflows) return;
+		const row = nav.getBoundingClientRect();
+		const box = link.getBoundingClientRect();
+		const pad = 16;
+		if (box.left < row.left + pad) nav.scrollLeft += box.left - row.left - pad;
+		else if (box.right > row.right - pad) nav.scrollLeft += box.right - row.right + pad;
+	});
+	let current = $state<string>(SECTIONS[0].id);
+
+	/** Where a section sits in the panel's own scroll, clear of the pinned header. */
+	function sectionTop(id: string): number {
+		const panel = panelEl!;
+		const target = panel.querySelector<HTMLElement>(`#${id}`);
+		if (!target) return 0;
+		const gap = (headEl?.offsetHeight ?? 0) + 8;
+		return target.getBoundingClientRect().top - panel.getBoundingClientRect().top + panel.scrollTop - gap;
+	}
+
+	function jump(event: MouseEvent, id: string) {
+		event.preventDefault();
+		if (!panelEl) return;
+		panelEl.scrollTo({ top: sectionTop(id), behavior: reducedMotion() ? 'auto' : 'smooth' });
+		current = id;
+	}
+
+	/** The link for the section being read: the last whose heading has passed the header. */
+	function onScroll() {
+		if (!panelEl) return;
+		const atEnd = panelEl.scrollTop + panelEl.clientHeight >= panelEl.scrollHeight - 2;
+		if (atEnd) return void (current = SECTIONS[SECTIONS.length - 1].id);
+		let reading: string = SECTIONS[0].id;
+		for (const section of SECTIONS) if (sectionTop(section.id) <= panelEl.scrollTop + 4) reading = section.id;
+		current = reading;
+	}
+
+	/**
 	 * A phone's bar has no plus and minus - they are hidden at this query in
 	 * responsive-bar.css - so the guide's bet line says what that bar actually
 	 * offers. Read live, because a phone can be turned while the panel is open.
@@ -154,15 +255,37 @@
 	});
 </script>
 
-  <div class="popup popup-info" role="dialog" aria-modal="true" tabindex="-1" aria-label={t('How to play')}>
-    <div class="popup-head"><span>{t('How to play')}</span><button class="popup-close" onclick={props.onclose} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
+  <div class="popup popup-info" role="dialog" aria-modal="true" tabindex="-1" aria-label={t('How to play')} bind:this={panelEl} onscroll={onScroll}>
+    <div class="popup-head info-head" bind:this={headEl}>
+      <span>{t('How to play')}</span><button class="popup-close" onclick={props.onclose} aria-label={t('Close')}><MarkIcon name="cross" /></button>
+      <nav class="info-nav" class:overflows={navOverflows} aria-label={t('How to play')} bind:this={navEl}>
+        {#each SECTIONS as section (section.id)}
+          <a
+            class="info-nav-link"
+            class:current={current === section.id}
+            href={`#${section.id}`}
+            aria-current={current === section.id ? 'location' : undefined}
+            onclick={(event) => jump(event, section.id)}
+          >{section.label()}</a>
+        {/each}
+      </nav>
+    </div>
     <div class="info-body">
-      <p>{t('Guess your way through four cards:')}</p>
-      <ol>
-        <li>{t('Color: is card 1 red or black?')}</li>
-        <li>{t('Higher or Lower: is card 2 above or below card 1, or Equal to it?')}</li>
-        <li>{t('Inside or Outside: is card 3 between cards 1 and 2 or outside them, or Equal to one of them?')}</li>
-        <li>{t('Suit: which suit is card 4?')}</li>
+      <p id="htp-guesses">{t('Guess your way through four cards:')}</p>
+      <ol class="guess-guide">
+        {#each GUIDE as guess (guess.key)}
+          <li>
+            <span class="gg-square gg-{guess.key}" aria-hidden="true">
+              {#if guess.key === 'suit'}
+                {#each SUITS as suit (suit)}<span class="gg-suit" class:red={suit === 'heart' || suit === 'diamond'}><SuitIcon {suit} /></span>{/each}
+              {/if}
+            </span>
+            <span class="gg-text">{t(guess.text)}</span>
+            <span class="gg-cards" aria-hidden="true">
+              {#each guess.cards as [rank, suit], index (index)}<span class="gg-card"><CardFace {rank} {suit} /></span>{/each}
+            </span>
+          </li>
+        {/each}
       </ol>
       <!-- What a miss costs is deliberately NOT stated here: it is different in
            every family (nothing at card 1; 30% or 15% after; forgiven once on
@@ -171,7 +294,7 @@
            below says it per family. -->
       <p>{t('Pick all four, set your bet and deal. Each right guess multiplies your win, and four right is a full game win. What a wrong guess costs depends on the game mode; see Game modes below.')}</p>
 
-      <h4 class="info-h">{t('Card order')}</h4>
+      <h4 class="info-h" id="htp-order">{t('Card order')}</h4>
       <p>{t('Ace is low and King is high. Suits have no rank: only the card’s value counts for Higher, Lower, Inside and Outside.')}</p>
       <!-- Rendered from the same `ranks` array the game runs on, so it cannot
            disagree with the real ordering. An ordered list because that is
@@ -206,7 +329,7 @@
            an {#if} in Game.svelte, so closing it destroys this component and
            reopening builds a fresh one - which is what makes it snap back to
            whatever the player is actually on, with no reset logic. -->
-      <h4 class="info-h">{t('Game modes')}</h4>
+      <h4 class="info-h" id="htp-modes">{t('Game modes')}</h4>
       <!-- What the count means, said plainly: every set of four picks is priced
            as its own bet mode, which is why the list of modes the RGS publishes
            is 193 long and not 4.
@@ -243,6 +366,7 @@
             role="tab"
             class="mode-tab"
             class:selected={viewing === family}
+            style={`--fam: ${volatilityColorVar(family)}`}
             aria-selected={viewing === family}
             onclick={() => (viewing = family)}
           >
@@ -320,7 +444,7 @@
              generated from the same function the game pays out with. Retention
              differs per mode, so every figure here moves with the tab. -->
 
-        <h5 class="info-sub">{t('Payout table')}</h5>
+        <h5 class="info-sub" id="htp-paytable">{t('Payout table')}</h5>
         <!-- Why Last Stop's suit row reads 2.00x - 10.00x (the table's own
              notation - a factor on the running total, like every row - where
              the stack above prints each ticket "x5"): said once, before the
@@ -402,9 +526,11 @@
           <ol class="example-round">
             {#each example as step, i}
               <li class="ex-step" class:is-last={i === example.length - 1}>
-                <span class="ex-card" class:red={step.card.suit === '♥' || step.card.suit === '♦'}>
-                  <span class="ex-rank">{step.card.rank}</span>
-                  <SuitIcon suit={step.card.suit} />
+                <!-- The game's own face, at its compact size; the rank and
+                     suit are spoken, because the drawing is aria-hidden. -->
+                <span class="ex-card">
+                  <CardFace rank={step.card.rank} suit={step.card.suit} />
+                  <span class="visually-hidden">{step.card.rank} {pickLabel(suitKey(step.card.suit))}</span>
                 </span>
                 <span class="ex-pick">{pickLabel(step.choice)}<span class="ex-tick"><MarkIcon name="check" /></span></span>
                 <span class="ex-odds">{t('%n of %t').replace('%n', String(step.hits)).replace('%t', String(step.total))}</span>
@@ -476,7 +602,7 @@
            payout" repeated in three separate bullets. What those bullets said
            is folded into the button's own line here, and the reassurance is
            said once, at the end. -->
-      <h4 class="info-h">{t('Controls')}</h4>
+      <h4 class="info-h" id="htp-controls">{t('Controls')}</h4>
       <!-- Each line led by the control it describes, drawn the way the bar
            draws it (ControlGlyph), so "the circular arrows" is a picture of
            the circular arrows. On a phone the bar has no plus and minus, so
@@ -501,7 +627,7 @@
       {#if !phoneBar}<p>{t('On a keyboard, keys 1 to 4 change the four guesses.')}</p>{/if}
       <p>{t('Turbo and skipping win animations change only what you see, never the cards, the odds or the payout.')}</p>
 
-      <h4 class="info-h">{t('Game information')}</h4>
+      <h4 class="info-h" id="htp-info">{t('Game information')}</h4>
       <!-- "The cards it deals", not "four cards": Three of a Kind deals three,
            and this sentence is the one a reviewer checks the rules against. -->
       <p>{t('This game has no free spins, bonus rounds, jackpots, or re-trigger features. Every round is a single, independent deal: four cards on the guess modes, three on Three of a Kind.')}</p>

@@ -24,6 +24,158 @@
 
 .info-body { font-size: calc(var(--ui-bar) * 1.24); line-height: 1.5; color: var(--ink-body); }
 
+/* ---- The section links (the owner's pick H1, 2026-10-17) -----------------
+   A second row inside the pinned header, so they stay as the page scrolls:
+   the header already sticks (popup-head.css) and wraps them under the title.
+   Jump links, not tab panels - the page stays one document. The one being
+   read takes the panel's tint, the way every chosen thing in a panel does. */
+.popup-head.info-head {
+  flex-wrap: wrap;
+  row-gap: calc(var(--ui-bar) * 0.73);
+}
+
+.info-nav {
+  order: 3;
+  flex: 1 0 100%;
+  display: flex;
+  gap: calc(var(--ui-bar) * 0.36);
+  overflow-x: auto;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+  font-size: calc(var(--ui-bar) * 1.0);
+}
+
+.info-nav::-webkit-scrollbar { display: none; }
+
+/* Only when the row does not fit (measured, HowToPlayPopup.svelte): its far
+   edge fades, saying there is more to the side. Logical, so it fades the
+   right end in English and the left in Arabic. */
+.info-nav.overflows {
+  -webkit-mask-image: linear-gradient(to right, #000 82%, transparent);
+  mask-image: linear-gradient(to right, #000 82%, transparent);
+}
+
+:global([dir='rtl']) .info-nav.overflows {
+  -webkit-mask-image: linear-gradient(to left, #000 82%, transparent);
+  mask-image: linear-gradient(to left, #000 82%, transparent);
+}
+
+.info-nav-link {
+  flex: 0 0 auto;
+  padding: calc(var(--ui-bar) * 0.45) calc(var(--ui-bar) * 0.73);
+  border-radius: 999px;
+  border: 1px solid rgba(var(--ink-rgb), 0.14);
+  color: var(--ink-body);
+  font-weight: 700;
+  letter-spacing: 0;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--dur-control) var(--ease-out), color var(--dur-control) var(--ease-out), border-color var(--dur-control) var(--ease-out);
+}
+
+@media (any-hover: hover) {
+  .info-nav-link:not(.current):hover { border-color: var(--tint); color: var(--ink); }
+}
+
+.info-nav-link.current {
+  background: var(--tint-strong);
+  border-color: var(--tint-strong);
+  color: var(--tint-ink);
+}
+
+.info-nav-link:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+@media (pointer: coarse) {
+  .info-nav-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+  }
+}
+
+/* ---- The four guesses, drawn ---------------------------------------------
+   Each sentence between its own square, in the board's colours, and the cards
+   it asks about. A grid, so the four sentences share one measure and the
+   cards line up down the right; on a narrow phone the cards drop under the
+   sentence rather than squeezing it. */
+.info-body .guess-guide {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: calc(var(--ui-bar) * 0.91);
+}
+
+.guess-guide li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: calc(var(--ui-bar) * 0.91);
+  margin: 0;
+}
+
+.gg-square {
+  width: calc(var(--ui-bar) * 2.4);
+  height: calc(var(--ui-bar) * 2.4);
+  border-radius: calc(var(--ui-bar) * 0.55);
+  box-shadow: inset 0 1px 0 rgba(var(--ink-rgb), 0.25), 0 1px 2px rgba(var(--shadow-rgb), 0.5);
+}
+
+.gg-color { background: linear-gradient(90deg, var(--choice-black) 50%, var(--choice-red) 50%); }
+.gg-hl { background: linear-gradient(180deg, var(--choice-higher) 50%, var(--choice-lower) 50%); }
+.gg-io { background: linear-gradient(90deg, var(--choice-inside) 50%, var(--choice-outside) 50%); }
+
+.gg-suit {
+  display: grid;
+  place-items: center;
+}
+
+.gg-square.gg-suit {
+  grid-template-columns: 1fr 1fr;
+  background: var(--choice-black);
+  color: var(--ink-strong);
+  font-size: calc(var(--ui-bar) * 0.8);
+  padding: calc(var(--ui-bar) * 0.2);
+}
+
+.gg-suit.red { color: var(--choice-red); }
+
+.gg-cards {
+  display: flex;
+  gap: calc(var(--ui-bar) * 0.27);
+}
+
+.gg-card {
+  position: relative;
+  width: calc(var(--ui-bar) * 2.5);
+  aspect-ratio: 200 / 298;
+  border-radius: calc(var(--ui-bar) * 0.27);
+  overflow: hidden;
+  background: var(--card-paper);
+  box-shadow: 0 1px 2px rgba(var(--shadow-rgb), 0.5);
+}
+
+@media (max-width: 620px) and (orientation: portrait) {
+  .guess-guide li {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .gg-cards {
+    grid-column: 2;
+  }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* Prose rhythm in --ui-bar, like the box around it. These were 8 / 20 / 3
    fixed pixels, so the panel scaled with the window and its paragraphs did
    not - the copy bunched up at desktop size and ran loose on a popout. */
@@ -141,6 +293,13 @@
 
 @media (any-hover: hover) {
 	.mode-tab:hover { border-color: var(--tint); color: var(--ink); }
+}
+
+/* Each tab carries its family's colour as a stripe along its foot - the colour
+   the mode picker, the MODE sign and the bolts give that family - so the five
+   read as the five families before their names do. */
+.mode-tab {
+	box-shadow: inset 0 calc(var(--ui-bar) * -0.27) 0 var(--fam, transparent);
 }
 
 .mode-tab.selected {
@@ -354,29 +513,20 @@
   line-height: 1.2;
 }
 
+/* The worked round's card: the game's own face (CardFace), at the compact size
+   it draws below 46px - one pip, a larger index. It was a rank and a suit mark
+   on a paper chip; the owner's pick H1 (2026-10-17) deals it in real cards. */
 .ex-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: calc(var(--ui-bar) * 0.1);
+  position: relative;
+  flex: 0 0 auto;
   width: calc(var(--ui-bar) * 3.3);
-  height: calc(var(--ui-bar) * 4.6);
-  border-radius: calc(var(--ui-bar) * 0.45);
+  aspect-ratio: 200 / 298;
+  border-radius: calc(var(--ui-bar) * 0.36);
+  overflow: hidden;
   background: var(--card-paper);
-  color: var(--card-ink);
   box-shadow:
     0 1px 2px rgba(var(--shadow-rgb), 0.5),
     0 calc(var(--ui-bar) * 0.3) calc(var(--ui-bar) * 0.7) rgba(var(--shadow-rgb), 0.35);
-  font-size: calc(var(--ui-bar) * 1.35);
-  font-weight: 800;
-}
-
-.ex-card.red { color: var(--card-red); }
-
-.ex-rank {
-  font-family: var(--font-display);
-  line-height: 1;
 }
 
 .ex-pick {

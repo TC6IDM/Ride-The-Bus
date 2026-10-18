@@ -34,11 +34,11 @@ export const auto = $state({
   // own EnableSpaceHold component.
   spaceHoldRunning: false,
 });
-// Spin-count presets for the Autoplay popup. These are exactly the SDK's own
-// AUTO_SPINS_TEXT_OPTIONS (state-shared/stateUi), infinity included - it is
-// rendered as a separate full-width cell below the eight numbers, using the
-// drawn lemniscate (iconInfinity) rather than the U+221E character.
-export const AUTOSPIN_PRESETS = [10, 25, 50, 75, 100, 250, 500, 1000];
+// Spin-count presets for the Autoplay popup: four, then unlimited (the drawn
+// lemniscate, not U+221E). They were the SDK's eight AUTO_SPINS_TEXT_OPTIONS;
+// the owner's pick P1 (2026-10-17) cut the row to the counts people start
+// runs with, and the typed field under it takes any other number.
+export const AUTOSPIN_PRESETS = [10, 25, 50, 100];
 
 export const autoRoundsValid = () =>
   auto.infinite ||

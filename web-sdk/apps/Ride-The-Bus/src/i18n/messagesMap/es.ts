@@ -336,6 +336,14 @@ export default {
 		'Detener con una pérdida de',
 	'Stop on a single win of':
 		'Detener con una sola ganancia de',
+	'Limits':
+		'Límites',
+	'None set':
+		'Ninguno',
+	'Loss %s':
+		'Pérdida %s',
+	'Win %s':
+		'Premio %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'Con el teclado, las teclas 1 a 4 cambian las cuatro predicciones.',
 	'It can stop by itself on a full game win, a loss limit or one big win.':

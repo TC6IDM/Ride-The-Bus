@@ -336,6 +336,14 @@ export default {
 		'Berhenti saat rugi sebesar',
 	'Stop on a single win of':
 		'Berhenti saat satu kemenangan sebesar',
+	'Limits':
+		'Batas',
+	'None set':
+		'Belum diatur',
+	'Loss %s':
+		'Rugi %s',
+	'Win %s':
+		'Menang %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'Di keyboard, tombol 1 sampai 4 mengubah keempat tebakan.',
 	'It can stop by itself on a full game win, a loss limit or one big win.':

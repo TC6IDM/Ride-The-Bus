@@ -329,6 +329,14 @@ export default {
 		'亏损达到时停止',
 	'Stop on a single win of':
 		'单次赢取达到时停止',
+	'Limits':
+		'限额',
+	'None set':
+		'未设置',
+	'Loss %s':
+		'亏损 %s',
+	'Win %s':
+		'单次赢得 %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'使用键盘时，按 1 至 4 键可切换四项预测。',
 	'It can stop by itself on a full game win, a loss limit or one big win.':

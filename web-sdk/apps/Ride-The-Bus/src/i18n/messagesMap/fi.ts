@@ -335,6 +335,14 @@ export default {
 		'Pysäytä, kun tappio on',
 	'Stop on a single win of':
 		'Pysäytä, kun yksittäinen voitto on',
+	'Limits':
+		'Rajat',
+	'None set':
+		'Ei asetettu',
+	'Loss %s':
+		'Tappio %s',
+	'Win %s':
+		'Voitto %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'Näppäimistöllä näppäimet 1–4 vaihtavat neljä arvausta.',
 	'It can stop by itself on a full game win, a loss limit or one big win.':

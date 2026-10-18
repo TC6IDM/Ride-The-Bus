@@ -334,6 +334,14 @@ export default {
 		'Остановить при проигрыше',
 	'Stop on a single win of':
 		'Остановить при разовом выигрыше',
+	'Limits':
+		'Лимиты',
+	'None set':
+		'Не заданы',
+	'Loss %s':
+		'Проигрыш %s',
+	'Win %s':
+		'Выигрыш %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'На клавиатуре клавиши 1–4 меняют четыре прогноза.',
 	'It can stop by itself on a full game win, a loss limit or one big win.':

@@ -334,6 +334,14 @@ export default {
 		'손실이 이만큼이면 중지',
 	'Stop on a single win of':
 		'한 번의 승리가 이만큼이면 중지',
+	'Limits':
+		'한도',
+	'None set':
+		'설정 안 됨',
+	'Loss %s':
+		'손실 %s',
+	'Win %s':
+		'1회 당첨 %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'키보드에서는 1~4 키로 네 가지 예측을 바꿀 수 있습니다.',
 	'It can stop by itself on a full game win, a loss limit or one big win.':

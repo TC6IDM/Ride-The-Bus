@@ -334,6 +334,14 @@ export default {
 		'損失がこの額で停止',
 	'Stop on a single win of':
 		'1回の勝利がこの額で停止',
+	'Limits':
+		'上限',
+	'None set':
+		'未設定',
+	'Loss %s':
+		'損失 %s',
+	'Win %s':
+		'1回の勝ち %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'キーボードでは、1〜4キーで4つの予想を切り替えられます。',
 	'It can stop by itself on a full game win, a loss limit or one big win.':

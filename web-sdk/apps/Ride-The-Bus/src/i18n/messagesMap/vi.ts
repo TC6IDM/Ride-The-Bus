@@ -336,6 +336,14 @@ export default {
 		'Dừng khi thua',
 	'Stop on a single win of':
 		'Dừng khi một lần thắng đạt',
+	'Limits':
+		'Giới hạn',
+	'None set':
+		'Chưa đặt',
+	'Loss %s':
+		'Thua %s',
+	'Win %s':
+		'Thắng %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'Trên bàn phím, phím 1 đến 4 đổi bốn dự đoán.',
 	'It can stop by itself on a full game win, a loss limit or one big win.':

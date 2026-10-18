@@ -487,8 +487,9 @@ reading before proposing it again.
   ranks are ASCII and deliberately NOT drawn; every suit mark is ONE drawing,
   `game/ui/suitPaths.ts`, which `SuitIcon` and the card pips both read.
 - **Every dealt card wears one face: `components/cards/CardFace.svelte`** - the
-  board's four and the takeover's fan (the intro's and How to Play's minis are
-  glyph tokens, not faces). A casino deck's layout in a 200 x 298 SVG
+  board's four, the takeover's fan, and since 2026-10-17 How to Play's guide
+  and example round and the recent-rounds stubs, at its compact size (the
+  intro's minis are still glyph tokens, not faces). A casino deck's layout in a 200 x 298 SVG
   (`game/ui/cardFaceLayout.ts`): 2-10 in pips on the standard grid with the
   lower half inverted, the Ace of Spades as the house card, the English-pattern
   courts. **One colour family per card** - red/maroon/rose or ink/slate/stone,
