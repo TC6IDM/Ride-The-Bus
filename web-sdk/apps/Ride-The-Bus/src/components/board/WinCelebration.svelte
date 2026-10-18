@@ -8,11 +8,13 @@
 	 * also dismiss - that would hide the number the player stopped to read.
 	 *
 	 * The count-up is SEGMENTED, one leg per tier the win passes through (see
-	 * countUpSegments). Every celebration opens at the figure the board last
-	 * showed, under that figure's tier (never at zero after the board printed $20,
-	 * and never on a lower tier's ceiling), and climbs to the top of that band,
-	 * then restarts at the next tier's floor and climbs
-	 * through that one, until the leg that ends on the amount actually won. Each
+	 * countUpSegments). Every celebration opens at zero under the FIRST tier and
+	 * climbs Big, Huge, Mega, Epic, Max as far as the win reaches (the owner's
+	 * call, 2026-10-18: a max win always climbs the whole ladder). It used to open
+	 * on the board's last figure and skip the bands below it; the board's figures
+	 * are hidden under the takeover, so nothing on screen disagrees with a count
+	 * from zero. Each leg climbs to the top of its band, then the next starts at
+	 * its floor, until the leg that ends on the amount actually won. Each
 	 * leg eases in and out, so the number accelerates away from the floor and
 	 * settles into the ceiling rather than running at a constant rate.
 	 *
@@ -60,6 +62,7 @@
 		promoteTitle,
 		reducedMotion,
 	} from '../../game/celebration/celebrationGestures';
+	import { flyHand } from '../../game/celebration/handFlight';
 
 	type Props = {
 		tier: WinTier;
@@ -81,11 +84,6 @@
 		 * never turned.
 		 */
 		family: ModeFamily;
-		/**
-		 * Where the count starts: the board's figure before the last card, as a
-		 * multiple of the base bet. See countUpSegments.
-		 */
-		startMultiplier: number;
 		/**
 		 * The four card slots of the round being celebrated, in deal order, with
 		 * null for any the player never reached.
@@ -123,7 +121,7 @@
 	 * The legs of the climb. Built once - the props for a given celebration never
 	 * change, and rebuilding mid-count would restart it.
 	 */
-	const segments = countUpSegments(props.multiplier, props.tier, props.tiers, props.startMultiplier);
+	const segments = countUpSegments(props.multiplier, props.tier, props.tiers);
 
 	/** Display units per 1x, for converting a leg's multipliers into money. */
 	const perX = props.multiplier > 0 ? props.amount / props.multiplier : 0;
@@ -198,6 +196,11 @@
 
 	let amountEl: HTMLElement | undefined = $state(undefined);
 	let fanEl: HTMLElement | undefined = $state(undefined);
+	/**
+	 * Continue was pressed and the hand is flying home: the overlay is going, so
+	 * a second tap or key must not dismiss it twice. See dismiss().
+	 */
+	let leaving = $state(false);
 
 	/**
 	 * When the celebration reached its final state, and how long a dismiss tap is
@@ -401,6 +404,7 @@
 	 * unpredictable.
 	 */
 	function onTap() {
+		if (leaving) return;
 		if (!counting) {
 			// Swallow a tap that arrives on the heels of the celebration settling -
 			// see DISMISS_GRACE_MS.
@@ -427,12 +431,25 @@
 		onTap();
 	}
 
+	/**
+	 * Leave the way the hand came: the cards fly back to their board slots while
+	 * the words and the veil fade, and only then does the round hear the
+	 * takeover is gone (handFlight.ts). Under reduced motion the flight resolves
+	 * at once and the overlay simply goes.
+	 */
 	function dismiss() {
+		if (leaving) return;
 		if (autoTimer) clearTimeout(autoTimer);
 		clearHold();
 		cancelAnimationFrame(frame);
-		props.ondismiss();
+		leaving = true;
+		void flyHand(fanEl, 'out').then(() => props.ondismiss());
 	}
+
+	/* The hand is dealt OUT of the board's slots, once, as the takeover opens. */
+	$effect(() => {
+		if (fanEl) void flyHand(fanEl, 'in');
+	});
 
 	/**
 	 * Keys are taken on `window`, not on the element.
@@ -494,12 +511,16 @@
      would announce on every frame. -->
 <div
 	class="wc-overlay tier-{activeTier.id}"
+	class:is-leaving={leaving}
 	role="button"
 	tabindex="0"
 	aria-label={ariaLabel()}
 	onclick={onTap}
 	onkeydown={onKey}
 >
+	<!-- The veil, its own layer so it can fade out on Continue while the hand
+	     flies home over it. One veil for the whole ladder (--wc-veil). -->
+	<div class="wc-veil" aria-hidden="true"></div>
 	<!-- One wide soft beam from the upper right - the same light the table is lit
 	     by. Every tier draws it; the tier sets how bright. -->
 	<div class="wc-beam" aria-hidden="true"></div>
@@ -551,6 +572,7 @@
 				     visual driver's fan check with it silently. -->
 				<div
 					class="wc-fan-card"
+					data-slot={slot.index}
 					class:is-face={card !== null}
 					class:is-busted={slot.index === props.bustedIndex}
 					class:is-forgiven={slot.index === props.forgivenIndex}

@@ -227,7 +227,17 @@ reading before proposing it again.
   not referenced. The fan marks what happened: a `--loss` cross on the busted
   card (desaturated), a `--forgiven` arrow on a Second Chance one (**not**
   dimmed). Exactly three shapes can reach it; the fourth is defensive only.
-- **One veil for the whole ladder.** `--wc-veil` on `.wc-overlay`, never per tier.
+- **One veil for the whole ladder.** `--wc-veil` on `.wc-overlay`, never per tier,
+  drawn by its own `.wc-veil` layer, with no backdrop blur (2026-10-18).
+- **The hand comes off the board and goes back to it** (W1, 2026-10-18,
+  `game/celebration/handFlight.ts`): each fan card is dealt OUT of its board
+  slot when the takeover opens and flown back INTO it on Continue, and only
+  then does `ondismiss` fire, so the board's cards reappear exactly where the
+  fan's landed (measured within 1px at all seven sizes). It is a FLIP across
+  two trees: the board's row is only hidden under `.takeover-open`, so its
+  slots can be measured. The fan stands CLEAR of the words ("no cover"), and
+  nothing on the takeover loops (the beam and the prompt used to pulse
+  forever). `handFlight.test.ts`.
 - **Lettered, not lit: nothing on the takeover glows.** The title is a hard
   block shadow in the tier's deep colour (`--wc-cool`), cast down and left; the
   amount takes the same block while it holds; the fan's cards carry a thin rim
@@ -1090,12 +1100,13 @@ the code; the test that pins it is named):
   kept nothing shows no chip; Three of a Kind's live total is "At stake" (social
   "In play"). Screen readers get `aria-pressed` picks, named cards and the bust
   card in the announcement. `announce.test.ts`.
-- **The count-up starts at the board's last figure** (`countUpSegments`'
-  `startMultiplier`) and its progress is clamped - the live build opened on
-  "-$0.00001". A leg whose ceiling the board had already passed is DROPPED, so
-  the count opens on the board's figure under that figure's tier: v72 kept those
-  legs as holds and opened a max win on "Big Win $40.00" over a $430.10 board
-  (after v72, not uploaded; `winTiers.test.ts`).
+- **The count-up starts at ZERO under Big and climbs every tier the win
+  reaches** (the owner's call, 2026-10-18: a max win always shows the whole
+  ladder). It used to start at the board's last figure and drop the legs below
+  it (`countUpSegments`' `startMultiplier`, kept and tested, no longer passed);
+  that was safe to reverse because the board's figures are hidden under the
+  takeover. Progress is still clamped - the live build once opened on
+  "-$0.00001" (`winTiers.test.ts`).
 - **The board and the bar are inert behind the loader, the intro and Round
   details** (`behindIntro`): Tab went from Continue onto the board's Black square
   under the intro (after v72, not uploaded; `launchGuards.test.ts`).

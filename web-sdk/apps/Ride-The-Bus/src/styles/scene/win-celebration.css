@@ -132,51 +132,31 @@
 	   generic dark vignette. The player won WITH those cards; hiding them at
 	   the moment of payoff is the wrong edit.
 
-	   The scrim is a veil rather than a lid, and the blur is what keeps the text
-	   legible over a busy scene instead of sheer darkness doing it. */
+	   The scrim is a veil rather than a lid. It is drawn by .wc-veil, below. */
+}
+
+/* THE VEIL, ITS OWN LAYER (2026-10-18) so it can fade out on Continue while the
+   hand flies home over it - the overlay itself cannot fade without taking the
+   cards with it.
+
+   NO BLUR. It was blur(2px) under the veil on fine pointers and none on coarse
+   ones: a full-viewport backdrop-filter repaints every frame anything moves
+   over it, and at this veil it could not be seen (the takeover audit,
+   2026-10-17). What the coarse-pointer copy used - the veil a step stronger to
+   stand in for the blur - is now the only veil. */
+.wc-veil {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
 	background: radial-gradient(
 		ellipse at center,
-		rgba(var(--wc-veil-lit-rgb), calc(var(--wc-veil, 0.6) * 0.62)) 0%,
-		rgba(var(--wc-veil-deep-rgb), var(--wc-veil, 0.6)) 72%
+		rgba(var(--wc-veil-lit-rgb), calc(var(--wc-veil, 0.6) * 0.78)) 0%,
+		rgba(var(--wc-veil-deep-rgb), calc(var(--wc-veil, 0.6) + 0.1)) 72%
 	);
-	/* Was blur(5px) saturate(0.72), which turned the hand-sampled table into
-	   brown mush - the same loss the scrim above refuses, taken by another route.
-	   The text no longer depends on it: .wc-body sits on its own shadow band now,
-	   so the blur only has to stop the table competing with the fan, and 2px
-	   does that while leaving the felt, the chips and the cups readable. */
-	backdrop-filter: blur(2px) saturate(0.86);
-	-webkit-backdrop-filter: blur(2px) saturate(0.86);
-	animation: wc-fade-in 0.44s var(--ease-out) both;
-}
-
-/* A full-viewport backdrop-filter on transform loops is the one thing here that
-   could drop frames on the older Android and iOS devices Stake tests, and it is
-   now the layer we can most afford to lose: the band under the text and the
-   veil carry legibility between them. Coarse pointer is the proxy for those
-   devices, and the veil steps up slightly to cover the difference. */
-@media (pointer: coarse) {
-	.wc-overlay {
-		backdrop-filter: none;
-		-webkit-backdrop-filter: none;
-		background: radial-gradient(
-			ellipse at center,
-			rgba(var(--wc-veil-lit-rgb), calc(var(--wc-veil, 0.6) * 0.78)) 0%,
-			rgba(var(--wc-veil-deep-rgb), calc(var(--wc-veil, 0.6) + 0.1)) 72%
-		);
-	}
-}
-
-/* Without backdrop-filter the scene behind stays sharp and the text has to
-   fight it, so the veil does the work instead. Safari on older iOS and every
-   Android WebView below 76 land here. */
-@supports not ((backdrop-filter: blur(5px)) or (-webkit-backdrop-filter: blur(5px))) {
-	.wc-overlay {
-		background: radial-gradient(
-			ellipse at center,
-			rgba(var(--wc-veil-lit-rgb), calc(var(--wc-veil, 0.6) * 0.86)) 0%,
-			rgba(var(--wc-veil-deep-rgb), calc(var(--wc-veil, 0.6) + 0.18)) 72%
-		);
-	}
+	/* backwards, not both: once it has arrived the static opacity rules, so the
+	   fade-out on Continue is a plain transition. */
+	animation: wc-veil-in 0.44s var(--ease-out) backwards;
+	transition: opacity 0.42s var(--ease-in-out);
 }
 
 /* The overlay is the button, so a full-viewport outline would be a rectangle
@@ -296,7 +276,11 @@
 	mask-image: radial-gradient(ellipse at 68% 26%, #000 0%, transparent 72%);
 	-webkit-mask-image: radial-gradient(ellipse at 68% 26%, #000 0%, transparent 72%);
 	opacity: var(--wc-beam-op, 0.5);
-	animation: wc-beam-breathe 7.2s var(--ease-in-out) infinite;
+	/* Arrives once and holds. It breathed on a 7.2s loop for as long as the
+	   screen was up - a pulsing indicator, on the motion audit's list
+	   (2026-10-17). Its tier steps are a transition now. */
+	animation: wc-beam-in 0.6s var(--ease-out) backwards;
+	transition: opacity 0.45s var(--ease-out);
 }
 
 /* ---- The deck's own crosshatch, sweeping once. MAX WIN ONLY. ----
@@ -397,7 +381,12 @@
 	left: 50%;
 	width: 0;
 	height: 0;
-	margin-bottom: calc(var(--ui) * -3.6);
+	/* CLEAR of the words, never under them (the owner's call, 2026-10-18:
+	   "no cover"). It hung 3.6 units into the text block - 1.4 in landscape -
+	   so the title sat over the bottom of the cards. The outer pair drop and
+	   turn with the spread, and at Max their lower corners reach about a unit
+	   below the hand's line (measured, 2026-10-18), which this margin clears. */
+	margin-bottom: calc(var(--ui) * 1.6);
 	pointer-events: none;
 	z-index: -2;
 }
@@ -489,8 +478,16 @@
 	--fan-x: calc(var(--ui) * var(--shift, 0) * var(--wc-fan-spread, 1) * var(--wc-hand, 1));
 	--fan-y: calc(var(--ui) * var(--drop, 0) * var(--wc-fan-spread, 1));
 	transform: translate(var(--fan-x), var(--fan-y)) rotate(var(--fan-tilt));
+	/* handFlight.ts reads this origin (FAN_ORIGIN_Y). The cards are dealt OUT
+	   of the board's slots and flown back into them on Continue - by the
+	   Web Animations API, so there is no CSS deal here to fight it. */
 	transform-origin: 50% 130%;
-	animation: wc-fan-deal 0.72s var(--ease-pop) both;
+}
+
+/* Last Stop's ticket is not on the board's card row, so it is not flown: it
+   rises into place after the last card lands. Ease-out, no overshoot. */
+.wc-fan-ticket {
+	animation: wc-ticket-in 0.42s var(--ease-out) backwards;
 }
 
 /* LAST STOP'S TICKET, laid ON the hand: over the middle of the four cards and
@@ -769,14 +766,17 @@
 	/* Reaches UP over the bottom of the fan - that is the whole reason the band
 	   exists here rather than under the text alone. Horizontal blown out past the
 	   viewport so it has no side edges. */
-	inset: calc(var(--ui) * -6.5) -50vw calc(var(--ui) * -3.4);
+	inset: calc(var(--ui) * -3) -50vw calc(var(--ui) * -3.4);
 	z-index: -1;
+	/* Lighter and shorter than it was (0.66 at its deepest, from 6.5 units
+	   above the text): with the hand clear of the words it only has to seat
+	   them, and the cards fade into it a little rather than under it. */
 	background: linear-gradient(
 		to bottom,
 		transparent 0%,
-		rgba(var(--wc-veil-deep-rgb), 0.44) 16%,
-		rgba(var(--wc-veil-deep-rgb), 0.66) 38%,
-		rgba(var(--wc-veil-deep-rgb), 0.62) 76%,
+		rgba(var(--wc-veil-deep-rgb), 0.34) 18%,
+		rgba(var(--wc-veil-deep-rgb), 0.56) 40%,
+		rgba(var(--wc-veil-deep-rgb), 0.54) 76%,
 		transparent 100%
 	);
 }
@@ -831,7 +831,7 @@
 	/* Runs once, on mount. The element is no longer torn down and rebuilt between
 	   tiers, so this cannot replay - promotions are a scale pop applied through
 	   element.animate(), see promoteTitle. */
-	animation: wc-title-in 1.24s var(--ease-pop) both;
+	animation: wc-title-in 0.42s var(--ease-out) backwards;
 	/* The palette variables change under the element as the tier climbs, so
 	   ease the colour across instead of letting it snap mid-pop. */
 	transition:
@@ -917,7 +917,7 @@
 		calc(var(--ui) * -0.25) calc(var(--ui) * 0.4) calc(var(--ui) * 0.5) rgba(var(--shadow-rgb), 0.65);
 	/* Runs once, on mount - nothing below may set `animation` on this element or
 	   it will replay. See .wc-amount.is-holding. */
-	animation: wc-amount-in 1s var(--ease-out) 0.32s both;
+	animation: wc-amount-in 0.42s var(--ease-out) 0.12s backwards;
 	transition:
 		color 0.45s var(--ease-out),
 		text-shadow 0.35s var(--ease-out);
@@ -958,7 +958,7 @@
 	color: var(--wc-hot);
 	opacity: 0.72;
 	font-variant-numeric: tabular-nums;
-	animation: wc-amount-in 1s var(--ease-out) 0.56s both;
+	animation: wc-amount-in 0.42s var(--ease-out) 0.2s backwards;
 }
 
 /* The one instruction on a full-screen modal. It used to blink between
@@ -978,26 +978,18 @@
 	font-size: max(calc(var(--ui) * 1.3), var(--type-floor-figure));
 	font-weight: 600;
 	color: var(--ink-warm-dim);
-	opacity: 0.72;
-	animation: wc-breathe 3.6s var(--ease-in-out) infinite;
+	/* Still. It pulsed between 0.62 and 0.92 every 3.6s for as long as the
+	   screen was up - the "pulsing indicator" the motion audit flags
+	   (2026-10-17). It sits at the legible end of that range now. */
+	opacity: 0.86;
 }
 
 .wc-prompt.is-ready {
 	color: var(--wc-hot);
 	opacity: 0.95;
-	animation: none;
 }
 
 /* ---- Keyframes ---- */
-@keyframes wc-fade-in {
-	from {
-		opacity: 0;
-	}
-	to {
-		opacity: 1;
-	}
-}
-
 @keyframes wc-deck-sweep {
 	from {
 		transform: translate3d(55%, 55%, 0);
@@ -1040,84 +1032,48 @@
 	}
 }
 
-/* The beam swells rather than turns. See .wc-beam. */
-@keyframes wc-beam-breathe {
-	0%,
-	100% {
-		opacity: calc(var(--wc-beam-op, 0.5) * 0.78);
-	}
-	50% {
-		opacity: var(--wc-beam-op, 0.5);
-	}
-}
-
-/* Each card deals up into the fan on its own short delay, so the hand arrives
-   as four cards rather than as one block. Rotation is the card's final tilt
-   from the start - a card that ALSO rotates into place spins, and a dealt card
-   does not spin. */
-@keyframes wc-fan-deal {
+@keyframes wc-veil-in {
 	from {
-		transform: translate(0, calc(var(--ui) * 3.2)) rotate(var(--fan-tilt)) scale(0.82);
 		opacity: 0;
 	}
-	to {
-		transform: translate(var(--fan-x), var(--fan-y)) rotate(var(--fan-tilt));
-		opacity: 1;
+}
+
+@keyframes wc-beam-in {
+	from {
+		opacity: 0;
 	}
 }
 
+/* The ticket settles onto the hand from just below its place. */
+@keyframes wc-ticket-in {
+	from {
+		transform: translate(var(--fan-x), calc(var(--fan-y) + var(--ui) * 1.2)) rotate(var(--fan-tilt));
+		opacity: 0;
+	}
+}
+
+/* From-only keyframes: each lands on the element's own static values, which
+   is what lets a `backwards` fill hand back to the stylesheet when it ends.
+   The title used to open from scale(0.55) on --ease-pop over 1.24s - an
+   overshoot on the one screen whose job is to be read (the motion audit,
+   2026-10-17), and the amount took a full second to reach full ink. */
 @keyframes wc-title-in {
 	from {
-		transform: scale(0.55);
+		transform: scale(0.92);
 		opacity: 0;
-	}
-	to {
-		transform: scale(1);
-		opacity: 1;
 	}
 }
 
 @keyframes wc-amount-in {
 	from {
-		transform: translateY(calc(var(--ui) * 1.2));
+		transform: translateY(calc(var(--ui) * 0.6));
 		opacity: 0;
-	}
-	to {
-		transform: translateY(0);
-		opacity: 1;
-	}
-}
-
-/* Floored at 0.62 - roughly 4.8:1 over the body vignette, which clears the
-   4.5:1 this text size needs. The old wc-blink bottomed out at 0.35. */
-@keyframes wc-breathe {
-	0%,
-	100% {
-		opacity: 0.62;
-	}
-	50% {
-		opacity: 0.92;
 	}
 }
 
 /* ---- Short viewports ----
    Popout S is 400x225. The stack has to shrink or the prompt falls off the
    bottom and the player cannot see how to dismiss it. */
-/* LANDSCAPE: THE HAND CLEARS THE TITLE. The fan hangs 3.6 units down into the
-   text block, which buries a third of each 10.4-unit card behind the title -
-   the court figures and the bottom indices of the very cards the round was
-   won with, the centrepiece this screen is "made of", on a landscape window
-   with a band of empty table above the hand (UI review, 2026-09-27). 1.4
-   leaves the title over the bottom corner only, which is enough for the band
-   to seat the hand on the text. Portrait keeps the deeper tuck: it has the
-   height and wants the stack as one block (below). The short-window rule that
-   follows is later and wins on Popout S, which has no room to spare. */
-@media (orientation: landscape) {
-	.wc-fan {
-		margin-bottom: calc(var(--ui) * -1.4);
-	}
-}
-
 @media (max-height: 380px) {
 	.wc-title {
 		font-size: min(calc(var(--ui) * 3.9), 9vw);
@@ -1142,7 +1098,7 @@
 	   cards closer together, because at 225px tall a Max Win's 2x spread would
 	   put the outer two off the top corners. */
 	.wc-fan {
-		margin-bottom: calc(var(--ui) * -3);
+		margin-bottom: calc(var(--ui) * 0.9);
 		scale: 0.74;
 	}
 	.wc-fan-card,
@@ -1163,8 +1119,36 @@
 	   share a composition with. Scaling the fan rather than resizing the card
 	   keeps one set of numbers for the geometry. */
 	.wc-fan {
+		/* The scaled hand's turned corners reach further below its line. */
+		margin-bottom: calc(var(--ui) * 2.4);
 		scale: 1.22;
 	}
+}
+
+/* ---- Leaving ----
+   Continue: the hand flies back to the board's slots (handFlight.ts) and
+   everything else fades under it, so the board's own cards and figures come
+   back where the takeover's were. Plain transitions, which is why every
+   entrance above fills backwards only. */
+.wc-overlay.is-leaving {
+	pointer-events: none;
+}
+
+.is-leaving .wc-veil {
+	opacity: 0;
+}
+
+.is-leaving .wc-beam,
+.is-leaving .wc-burst,
+.is-leaving .wc-deck-sweep,
+.is-leaving .wc-fan-ticket,
+.is-leaving .wc-title,
+.is-leaving .wc-amount,
+.is-leaving .wc-mult,
+.is-leaving .wc-prompt,
+.is-leaving .wc-body::before {
+	opacity: 0;
+	transition: opacity 0.22s var(--ease-out);
 }
 
 /* ---- Reduced motion ----
@@ -1184,6 +1168,7 @@
 	}
 
 	.wc-overlay,
+	.wc-veil,
 	.wc-beam,
 	.wc-fan-card,
 	.wc-fan-ticket,
@@ -1211,8 +1196,4 @@
 		transition: none;
 	}
 
-	/* The breathing prompt stops at its legible end, not at its dim one. */
-	.wc-prompt {
-		opacity: 0.92;
-	}
 }

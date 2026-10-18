@@ -330,5 +330,8 @@ width, where prose needs the measure.
   in the tier's deep colour, cast down and left - and its cards carry a thin
   tier-coloured rim, not a bloom. The two-layer glow atmospheric once allowed
   here was the stock slot "BIG WIN" look, and went in the third audit.
+- The takeover's hand is the board's own cards: dealt out of their slots when
+  it opens, flown back into them on Continue (2026-10-18). It stands clear of
+  the words, and the count always climbs from Big.
 - The intro's four step panels are dealt (fanned, lifted) rather than gridded;
   they flatten to a 2×2 on portrait phones by design.

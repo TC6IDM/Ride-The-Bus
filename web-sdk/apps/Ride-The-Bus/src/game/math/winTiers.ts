@@ -498,6 +498,13 @@ export const CEILING_PAUSE_MS = 1000;
  * The earned leg is always kept, so a round that celebrates on less than the
  * board showed is one held leg on its own amount.
  *
+ * THE TAKEOVER NO LONGER PASSES A START (the owner's call, 2026-10-18): every
+ * win climbs from zero through Big, Huge, Mega, Epic and Max as far as it
+ * reaches, so a max win always shows the whole ladder. The board's figures are
+ * hidden under the takeover, which is what makes that safe now and was not
+ * when the $1.83 critique was written. The parameter and its tests stay, so
+ * the rule above can be put back by passing the figure again.
+ *
  * A win below the entry tier (a full-game win as small as 6.6x) yields exactly
  * one leg, start -> the amount, labelled "Big Win".
  */

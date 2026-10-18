@@ -745,7 +745,6 @@
       forgivenIndex={celebration.active.forgivenIndex}
       ticket={celebration.active.ticket}
       family={celebration.active.family}
-      startMultiplier={celebration.active.startMultiplier}
       autoSkipMs={celebrationAutoSkipMs()}
       ondismiss={dismissCelebration}
     />

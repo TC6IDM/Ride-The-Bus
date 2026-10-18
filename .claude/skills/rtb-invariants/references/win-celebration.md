@@ -52,7 +52,35 @@ rather than on every turn. Nothing here is reworded.
   promotion — the rarest screen was the murkiest, and the scene visibly
   re-dimmed four times inside a single count-up. The takeover establishes a
   place once and stays in it; what escalates is the light, the colour, the hand
-  and the burst.
+  and the burst. Since 2026-10-18 it is drawn by its own `.wc-veil` layer so it
+  can fade on Continue under the flying hand, and there is **no backdrop blur**:
+  it was 2px on fine pointers, invisible at this veil and a full-viewport
+  repaint under every moving thing; the coarse-pointer veil that stood in for
+  it is now the only one.
+- **The hand comes off the board and goes back to it** (the owner's pick W1,
+  2026-10-18; `game/celebration/handFlight.ts`, `handFlight.test.ts`). Each fan
+  card is dealt OUT of its board slot as the takeover opens and flown back INTO
+  it on Continue; `ondismiss` waits for the landing, so the board's own cards
+  reappear exactly where the fan's came down (within 1px at all seven sizes,
+  measured on the first and last frames). It works because `.takeover-open`
+  only HIDES the card row: the slots stay laid out and measurable. The maths is
+  pure and tested: the fan card turns about a point below its centre
+  (`transform-origin: 50% 130%`, `FAN_ORIGIN_Y`) inside a `.wc-fan` that some
+  sizes scale, so a screen distance is not a transform distance. Before this the
+  fan rose from nowhere on `--ease-pop` and Continue removed everything in one
+  frame. Reduced motion skips the flight; the takeover appears and leaves.
+- **The hand stands clear of the words** (the owner's "no cover",
+  2026-10-18). The fan hung 3.6 units into the text block (1.4 in landscape) and
+  the title sat over the bottom of the cards; it now sits 2-3px above the title's
+  line at every size, the shadow band under the text is lighter and reaches
+  only just over the hand.
+- **Nothing on the takeover loops by itself.** The beam breathed on a 7.2s
+  loop and the prompt pulsed every 3.6s for as long as the screen was up; both
+  were the motion audit's "pulsing indicators" (2026-10-17) and both are still
+  now. Entrances are ease-out with no overshoot and fill backwards only, which
+  is what lets the leaving state fade them with plain transitions. The owner's
+  W1 adds a continuous chip stream and a breathing hand by request; those are
+  the only loops, and they are the owner's.
 - **Every win tier draws the whole celebration. Escalation is intensity, never
   presence.** All five tiers are full-bleed and draw every layer — veil, beam,
   fan and suit burst; the `.tier-*` rules only turn them up (`--wc-beam-op`,
