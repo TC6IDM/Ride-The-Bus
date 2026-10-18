@@ -135,7 +135,10 @@ face the game deals (the board, the takeover's fan). Paper, edge and shadow are
 the container's; the face is what is printed on it.
 
 - **Numbers** carry their value in pips on the standard grid; a pip below the
-  middle is printed upside down. Pips are a fifth of the card wide.
+  middle is printed upside down. Pips are a fifth of the card wide. They carry
+  the **house print** (2026-10-17): the court frame's two open L-shapes,
+  doubled - a line and a hairline - in the card's own ink, and the crown as a
+  gold watermark under the pips. Clear of every index and pip.
 - **Aces** are one large pip in a gold ring with a gold engraved line. The
   **Ace of Spades is the house card** - larger, engraved, the house name under
   it, as a casino deck prints its maker's mark there. It echoes the backs.
@@ -152,7 +155,14 @@ the container's; the face is what is printed on it.
   plus gold and paper. Never both families: card 1's guess is Red or Black and
   the courts must not blur it.
 - **Small**: under 46px on screen a number card is one large pip and a larger
-  index - the two marks that survive being small.
+  index - the two marks that survive being small - and no print.
+
+**The running total is a split-flap board** (`SplitFlap.svelte`, 2026-10-17):
+each character on its own flap of warm dark stock set into a well, a flap
+flipping when its character changes, keyed from the right so the units stay
+the units. A flip is half the card's turn, so turbo and a slam shorten it; the
+flaps share out their room in a long currency, and the row keeps its height
+so the board never moves. The digits take the bar's own state colours.
 - The corner index is Big Shoulders 700, top-left and turned bottom-right; in
   Arabic the whole face mirrors and its text is turned back.
 

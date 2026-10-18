@@ -12,6 +12,7 @@
      parts only the board draws - the row, the columns, the labels, the tip and
      the disabled state. responsive-board last. -->
 <script lang="ts">
+  import SplitFlap from './SplitFlap.svelte';
   import ChoiceIcon from '../icons/ChoiceIcon.svelte';
   import MarkIcon from '../icons/MarkIcon.svelte';
   import SuitIcon from '../icons/SuitIcon.svelte';
@@ -727,7 +728,9 @@
     <!-- No ceiling figure here before the first deal: "Pays up to X your bet"
          sat in this slot from 2026-09-27 and came out on the owner's call
          (2026-10-01). The picks' ceiling is stated in How to Play. -->
-    <span class="running-win-amount">{numberToCurrencyString(readout.runningWin)}</span>
+    <!-- On a split-flap board (SplitFlap.svelte): each character flips as it
+         changes, paced by the card's own turn. -->
+    <span class="running-win-amount"><SplitFlap text={numberToCurrencyString(readout.runningWin)} /></span>
     <!-- Always rendered (a non-breaking space when there is nothing to say) so
          the multiplier appearing at the end of a round never grows the bar and
          shoves the cards / choices around. WRITTEN AS '\u00a0', NOT AS THE

@@ -80,6 +80,7 @@ export const MARKUP_COMPONENT_PATHS: string[] = [
   at('../components/intro/ReplayDetails.svelte'),
   at('../components/board/ControlBar.svelte'),
   at('../components/board/GameBoard.svelte'),
+  at('../components/board/SplitFlap.svelte'),
   // The card face the board and the takeover's fan both draw, moved out of
   // GameBoard's markup 2026-09-26.
   at('../components/cards/CardFace.svelte'),

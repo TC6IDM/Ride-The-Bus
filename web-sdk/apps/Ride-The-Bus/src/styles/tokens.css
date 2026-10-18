@@ -552,6 +552,16 @@
   --stub-paper-shade: #c8bb9c;
   --win-on-paper: #145c33;
 
+  /* The running total's split-flap board (the owner's pick RW1, 2026-10-17;
+     SplitFlap.svelte): dark flap stock, a lighter upper half catching the one
+     light above, the hinge between them, all set into a well darker than the
+     table. Warm darks, the wood's family, never the cool grey of a generic
+     departures board. */
+  --flap-well: #0b0907;
+  --flap-top: #2a2622;
+  --flap-bottom: #1f1c19;
+  --flap-hinge: #060504;
+
   /* Courts and aces. The court figures are the English pattern
      (art-masters/courts/), which prints every court in red, blue, yellow and
      black whatever its suit. Here card 1's guess is RED OR BLACK and a card is
