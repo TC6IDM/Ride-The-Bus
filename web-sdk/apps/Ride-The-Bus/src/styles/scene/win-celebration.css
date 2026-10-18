@@ -993,81 +993,38 @@
 }
 
 .wc-amount {
-	/* Stays on the BODY face on purpose: the display face is for the word, the
-	   body face for the number. That split is the lockup's own rule - the
-	   wordmark is display, the credit line under it is body.
+	/* A SPLIT-FLAP BOARD (SplitFlap.svelte, the running total's own, W1
+	   2026-10-18). The component draws the flaps and fits them; this hands it
+	   the two sizes it reads, because a parent's sheet never reaches a child's
+	   elements:
 
-	   STABLE DIGIT WIDTHS COME FROM THE FACE, and that has to stay true. Overpass
-	   ships `tnum`, so the tabular-nums declared below holds every digit at
-	   0.616em and the count-up turns its cents over without the figure moving.
-	   Under Poppins that declaration was inert (measured: no tnum, "1" at
-	   0.387em against "0" at 0.657em) and this note claimed the opposite; for
-	   one commit the game boxed each digit in a component (Figure.svelte,
-	   c2a13a74) to hold it still. If the body face is ever swapped for one
-	   without tabular figures, that component is the fallback - and it was
-	   retired rather than kept because a box that matches the advance exactly
-	   is dead machinery nobody would remember the purpose of.
+	   --flap-base is one flap at full size. The figure used to be type solved
+	   from 88vw / its width in ems, because High Stakes' cap in a
+	   high-denomination currency ("NGN 3,820,400,000.00") ran off both edges of
+	   Mobile M. The flaps carry that rule now: --flap-room is the most the row
+	   may take, and a long figure shares it out across its characters.
 
-	   Was --ui * 4, a full third smaller than the title above it: the word
-	   describing the win outranked the win. They are co-leads now - the title
-	   still wins on face and weight, the amount on presence - which is the right
-	   way round for a screen whose entire job is to hand over a figure. The vw
-	   cap matches the title's so neither can outgrow the other on a wide,
-	   short window.
-
-	   THE THIRD TERM IS THE ONE THAT MATTERS ON A PHONE. The first two cap the
-	   font size and say nothing about the LINE's width, so a long currency
-	   string overflows however small the cap is. High Stakes' 1910.20x on a
-	   high-denomination currency settles at "NGN 3,820,400,000.00", and at
-	   Mobile M that ran off both edges of the viewport - the one figure this
-	   screen exists to hand over, clipped at both ends.
-
-	   --amount-ems is how wide the SETTLED figure prints, published by
-	   WinCelebration from props.amount (not from the climbing value, or the
-	   headline would re-size on every frame of the count). Dividing the width
-	   available by it gives the size at which the whole string fits. 88vw
-	   rather than 100 leaves the margin the body already wants. */
-	font-size: min(calc(var(--ui) * 5.2), 11vw, calc(88vw / var(--amount-ems, 8)));
-	font-weight: 800;
-	line-height: 1.1;
+	   --flip-dur sets the flap's turn (half of it). The board's flaps take the
+	   card's turn; the takeover is not inside the board, and its count changes
+	   far faster than a card turns, so it sets its own short one. */
+	--flap-base: min(calc(var(--ui) * 4), 8.4vw);
+	/* SplitFlap shares this across the flaps alone; the gaps between them and
+	   the well's padding add about an eighth again. 76vw lands the longest
+	   figure - "TZS 2,237,300,000.00", High Stakes' cap - at about 86vw on a
+	   320px phone, where 86vw ran the row to within 2px of both edges. */
+	--flap-room: min(76vw, calc(var(--ui) * 46));
+	--flip-dur: 0.24s;
+	display: flex;
+	justify-content: center;
 	color: var(--ink-cream);
-	/* LIVE, and load-bearing: this is what holds the digits still during the
-	   count (see the note at the top of this rule). The font-size is also solved
-	   once from the settled string above, so the block is as wide as it will
-	   ever need to be before the count starts. */
-	font-variant-numeric: tabular-nums;
-	/* The contact shadow the title stands on, without its coloured block. It was
-	   a pale halo (--ink at 1.4 units, all round) - a glow, however neutral. */
-	text-shadow:
-		0 0 0 transparent,
-		calc(var(--ui) * -0.25) calc(var(--ui) * 0.4) calc(var(--ui) * 0.5) rgba(var(--shadow-rgb), 0.65);
 	/* Runs once, on mount - nothing below may set `animation` on this element or
-	   it will replay. See .wc-amount.is-holding. */
+	   it will replay. */
 	animation: wc-amount-in 0.42s var(--ease-out) 0.12s backwards;
-	transition:
-		color 0.45s var(--ease-out),
-		text-shadow 0.35s var(--ease-out);
+	transition: color 0.45s var(--ease-out);
 }
 
 .wc-amount.is-counting {
 	color: var(--wc-hot);
-}
-
-/* Resting on a band ceiling between legs: the figure takes the title's lettered
-   block in the tier's deep colour, so the pause reads as the number being
-   presented rather than the count stalling. It used to take a two-colour glow
-   here, the same neon the title gave up. Two shadows in both states, so the
-   transition eases one into the other rather than popping.
-
-   Only the shadow. The scale pop is applied through element.animate() instead,
-   because setting `animation` here would REPLACE the entrance animation above -
-   and then removing the class restores it, restarting a 1s rise from
-   translateY+opacity:0. The number visibly dropped and climbed back after every
-   pause. A transition cannot collide that way. */
-.wc-amount.is-holding {
-	text-shadow:
-		calc(var(--ui) * -0.14) calc(var(--ui) * 0.22) 0 var(--wc-cool),
-		calc(var(--ui) * -0.25) calc(var(--ui) * 0.4) calc(var(--ui) * 0.5) rgba(var(--shadow-rgb), 0.65);
 }
 
 /* The multiplier and the amount are the same fact in two units, stacked - a
@@ -1221,7 +1178,7 @@
 		font-size: min(calc(var(--ui) * 4.2), 9vw);
 	}
 	.wc-amount {
-		font-size: min(calc(var(--ui) * 3.7), 9vw);
+		--flap-base: min(calc(var(--ui) * 3.4), 8vw);
 	}
 	.wc-mult {
 		font-size: max(calc(var(--ui) * 1.5), var(--type-floor-figure));
@@ -1316,7 +1273,6 @@
 	.wc-fan-ticket,
 	.wc-title,
 	.wc-amount,
-	.wc-amount.is-holding,
 	.wc-mult,
 	.wc-prompt,
 	.wc-mark {

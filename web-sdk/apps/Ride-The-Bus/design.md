@@ -336,6 +336,8 @@ width, where prose needs the measure.
 - The takeover's tier is the loader's destination blind, the game's one sign
   seen a third time (loader, MODE, takeover): it rolls a stop per tier, the
   route under it rides the bus to the stop reached, and Max is the end of the
-  line in crimson.
+  line in crimson. The amount under it is the running total's split-flap board
+  at hero size, so the figure the player watched climb is the figure handed
+  over.
 - The intro's four step panels are dealt (fanned, lifted) rather than gridded;
   they flatten to a 2×2 on portrait phones by design.

@@ -399,8 +399,10 @@ reading before proposing it again.
 
 ### Money and the control bar — `references/currency-and-control-bar.md`
 
-- **Money is fitted to its box, everywhere** — chips and the takeover amount
-  estimate via `labelEms()`; the bar's three readouts measure with `use:fitValue`.
+- **Money is fitted to its box, everywhere** — chips estimate via `labelEms()`;
+  the takeover amount is a split-flap board sharing `--flap-room` (W1,
+  2026-10-18; the room is 76vw because `SplitFlap` leaves its gaps out of the
+  share); the bar's three readouts measure with `use:fitValue`.
   **All three** need `max-width` (`.cb-bet-display` was the one missed), `.cb-val`
   needs `nowrap` and `max-width: 100%`, and the re-fit runs on a
   **MutationObserver** watching `characterData` + `childList`, never `attributes`.

@@ -40,7 +40,6 @@
 	 * so a sprite sheet for one screen would be a bad trade.
 	 */
 	import { currencyFractionDigits, numberToCurrencyString } from 'utils-shared/amount';
-	import { labelEms } from '../../game/ui/typeFit';
 	import { titleFaceFor } from '../../game/ui/displayFace';
 	import { fitValue } from '../../game/ui/fitValue';
 	import { fingerPointer } from '../../game/ui/pointerWords';
@@ -48,6 +47,7 @@
 	import MarkIcon from '../icons/MarkIcon.svelte';
 	import SuitIcon from '../icons/SuitIcon.svelte';
 	import CardFace from '../cards/CardFace.svelte';
+	import SplitFlap from './SplitFlap.svelte';
 	import TicketFace from '../cards/TicketFace.svelte';
 	import type { Card } from '../../game/round/roundContract';
 	import { t } from '../../i18n/i18nDerived';
@@ -56,7 +56,7 @@
 	import { FAMILY_RULES, stageCount, type ModeFamily } from '../../game/math/modes';
 	import { BURST, fanFor } from '../../game/celebration/celebrationScene';
 	import { formatMultiplier } from '../../game/ui/formatMultiplier';
-	import { hopFan, popAmount, reducedMotion } from '../../game/celebration/celebrationGestures';
+	import { hopFan, reducedMotion } from '../../game/celebration/celebrationGestures';
 	import { flyHand } from '../../game/celebration/handFlight';
 
 	type Props = {
@@ -123,15 +123,36 @@
 
 	/** Which leg is running. */
 	let segmentIndex = $state(0);
-	/** Amount currently on screen - from the first frame, where the count starts. */
-	let shown = $state(segments.length ? segments[0]!.fromMultiplier * perX : 0);
+	/** Where the count starts: the first leg's floor (zero, since 2026-10-18). */
+	const startAmount = segments.length ? segments[0]!.fromMultiplier * perX : 0;
+	/** The count's value, every frame. The board prints `printed`, below. */
+	let shown = $state(startAmount);
 	/** True until the final leg lands - drives which prompt shows. */
 	let counting = $state(true);
+
 	/**
-	 * Resting on a band's ceiling, between one leg finishing and the next
-	 * starting. Every tier gets the same pause - see CEILING_PAUSE_MS.
+	 * WHAT THE FLAPS PRINT (W1, 2026-10-18: the amount is a split-flap board,
+	 * SplitFlap.svelte, the running total's own). The count changes every frame
+	 * and a flap needs about 120ms to turn, so a flap re-keyed every frame would
+	 * restart its turn forever and never show a digit. The board takes the
+	 * latest figure at most every FLAP_STEP_MS, and the trailing timer means the
+	 * last one always lands - a ceiling, the settled total. The multiple under
+	 * it reads the same value, so the two never disagree mid-count.
 	 */
-	let holding = $state(false);
+	const FLAP_STEP_MS = 70;
+	let printed = $state(startAmount);
+	let printedAt = 0;
+	$effect(() => {
+		const value = shown;
+		const wait = FLAP_STEP_MS - (performance.now() - printedAt);
+		const print = () => {
+			printed = value;
+			printedAt = performance.now();
+		};
+		if (wait <= 0) return print();
+		const timer = setTimeout(print, wait);
+		return () => clearTimeout(timer);
+	});
 
 	/** Name and colours currently displayed. */
 	const activeTier = $derived<WinTier>(segments[segmentIndex]?.tier ?? props.tier);
@@ -154,25 +175,9 @@
 	 */
 	const ticketDelay = $derived(fanFor(dealt)[dealt - 1]!.delay + 0.14);
 
-	/** Multiplier matching what is on screen, so it never runs ahead of the title. */
-	const shownMultiplier = $derived(perX > 0 ? shown / perX : props.multiplier);
+	/** Multiplier matching what the board prints, so it never runs ahead of the title. */
+	const shownMultiplier = $derived(perX > 0 ? printed / perX : props.multiplier);
 
-	/**
-	 * How wide the SETTLED figure prints, so the CSS can size the amount to fit
-	 * the screen rather than to a constant.
-	 *
-	 * Measured before this existed: High Stakes' 1910.20x cap on a
-	 * high-denomination currency gives "NGN 3,820,400,000.00", and at Mobile M
-	 * that ran off BOTH edges of the viewport - the one figure the whole screen
-	 * exists to hand over, unreadable.
-	 *
-	 * Taken from props.amount and NOT from `shown`, which is the climbing value.
-	 * Sizing off the live string would re-solve the font on every frame of the
-	 * count-up and visibly pump the headline; sizing off the final one means the
-	 * type is chosen once, for the widest string that will ever appear, and the
-	 * count grows into it.
-	 */
-	const amountEms = $derived(labelEms(numberToCurrencyString(props.amount)));
 	/**
 	 * The count-up prints every frame at the FINAL amount's precision. Money is
 	 * shown exactly now, so a frame on its way to $0.711 would otherwise print
@@ -182,7 +187,6 @@
 	 */
 	const amountDigits = $derived(currencyFractionDigits(props.amount));
 
-	let amountEl: HTMLElement | undefined = $state(undefined);
 	let fanEl: HTMLElement | undefined = $state(undefined);
 	/**
 	 * Continue was pressed and the hand is flying home: the overlay is going, so
@@ -229,7 +233,6 @@
 
 	/** Mark the celebration finished: nothing left to count, only to dismiss. */
 	function settle() {
-		holding = false;
 		counting = false;
 		settledAt = performance.now();
 	}
@@ -264,8 +267,6 @@
 	 * at 40x as it does at 300x.
 	 */
 	function holdThenAdvance(index: number) {
-		holding = true;
-		popAmount(amountEl);
 		clearHold();
 		holdTimer = setTimeout(() => advanceTo(index + 1), CEILING_PAUSE_MS);
 	}
@@ -273,7 +274,6 @@
 	/** Leave the ceiling and start the next leg climbing. */
 	function advanceTo(index: number) {
 		clearHold();
-		holding = false;
 		sound.playWinTierUp(segments[index]!.tier.id);
 		runSegment(index);
 		// The sign rolls to the new stop off stopIndex; the hand hops with it.
@@ -311,7 +311,6 @@
 		if (segment.isHold) {
 			shown = to;
 			settle();
-			popAmount(amountEl);
 			sound.playWinCountEnd(props.tier.id);
 			return;
 		}
@@ -648,16 +647,14 @@
 			{/if}
 		</div>
 
-		<!-- is-holding only letters the figure in the tier colour; the pop is applied through
-		     popAmount(amountEl) so it cannot clobber the entrance animation. -->
-		<div
-			class="wc-amount"
-			class:is-counting={counting}
-			class:is-holding={holding}
-			style="--amount-ems: {amountEms}"
-			bind:this={amountEl}
-		>
-			{numberToCurrencyString(shown, amountDigits)}
+		<!-- THE AMOUNT ON A SPLIT-FLAP BOARD (W1, 2026-10-18): the running total's
+		     own board (RW1) at the takeover's scale, so the figure the player
+		     watched climb under the cards is the figure handed over here. Each
+		     character flips as it changes; a long currency shares the room out
+		     rather than clipping (SplitFlap's own fit). The digits take the
+		     element's colour: the tier's while counting, cream when it lands. -->
+		<div class="wc-amount" class:is-counting={counting}>
+			<SplitFlap text={numberToCurrencyString(printed, amountDigits)} />
 		</div>
 
 		<!-- Climbs with the amount, so the multiplier and the title agree at

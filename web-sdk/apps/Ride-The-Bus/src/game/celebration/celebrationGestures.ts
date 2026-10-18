@@ -1,5 +1,7 @@
 /**
- * How the takeover MOVES: the pop, the hand's hop, and the reduced-motion gate.
+ * How the takeover MOVES: the hand's hop, and the reduced-motion gate. (The
+ * title's and the amount's scale pops went with the sign and the split-flap
+ * board, 2026-10-18: the sign rolls and the flaps turn instead.)
  *
  * Every one of these takes an element or nothing, so none of them needed to be
  * inside the component. Two carry an argument worth keeping intact:
@@ -14,11 +16,6 @@
  *   length of the hop, because the tilt and the offset live in that same
  *   property. See the note on hopFan itself.
  */
-
-/** The pop the amount gets as it settles on a band ceiling. */
-export function popAmount(amountEl: HTMLElement | undefined) {
-	pop(amountEl, 1.12, 520);
-}
 
 /**
  * The hand hops on every promotion.
@@ -78,19 +75,6 @@ export function easePop(): string {
 		.trim();
 	return declared || 'ease-out';
 }
-
-export function pop(element: HTMLElement | undefined, scale: number, duration: number) {
-	if (!element || reducedMotion()) return;
-	element.animate(
-		[
-			{ transform: 'scale(1)' },
-			{ transform: `scale(${scale})`, offset: 0.38 },
-			{ transform: 'scale(1)' },
-		],
-		{ duration, easing: easePop() },
-	);
-}
-
 
 export const reducedMotion = () =>
 	typeof window !== 'undefined' &&

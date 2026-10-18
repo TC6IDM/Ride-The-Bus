@@ -10,9 +10,18 @@ rather than on every turn. Nothing here is reworded.
 
 - **Money is fitted to its box, everywhere.** Three surfaces size type from the
   string rather than from a constant, because no constant is right for both
-  `$1.00` and `NGN 11,461,200,000.00`: the bet chips and the win takeover's
-  amount solve a font-size from `labelEms()` (`game/typeFit.ts`), and the
-  control bar's three readouts use `use:fitValue`, which measures the real box.
+  `$1.00` and `NGN 11,461,200,000.00`: the bet chips solve a font-size from
+  `labelEms()` (`game/typeFit.ts`), and the control bar's three readouts use
+  `use:fitValue`, which measures the real box. The win takeover's amount did
+  the chips' estimate until 2026-10-18; it is a split-flap board now (W1,
+  `SplitFlap.svelte`, the running total's own), which shares `--flap-room`
+  across its characters. `SplitFlap` shares the room between the flaps alone,
+  and their gaps and the well's padding add about an eighth again, so the
+  takeover sets the room at 76vw to land the longest figure ("TZS
+  2,237,300,000.00", High Stakes' cap) at about 86vw. Measured on a 320px phone:
+  20px clear of each edge, 15.1px digits; on Popout S, 11.5px. The flaps take a
+  throttled copy of the count (one figure per 70ms, the last always lands), or
+  a flap re-keyed every frame would never finish turning.
   - **Estimate vs. measure is a deliberate split.** A chip or the takeover
     amount holds one run of text, so an em estimate is exact enough and needs no
     reflow. A control-bar readout can hold a value AND an inline multiplier chip

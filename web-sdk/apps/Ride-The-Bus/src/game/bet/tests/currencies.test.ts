@@ -150,9 +150,10 @@ describe('the widest figure each currency can settle on', () => {
   });
 
   test('none exceeds the width the takeover is built to fit', () => {
-    // .wc-amount solves its font from 88vw / ems, with a floor set by the
-    // font-size caps above it. Past about 26 ems the type would be driven
-    // below what those caps leave, so that is the line worth knowing about.
+    // The takeover's amount is a split-flap board whose row shares
+    // --flap-room across its characters (SplitFlap.svelte), so a wider figure
+    // means smaller flaps. Past about 26 ems they would be driven well below
+    // the size the board is built for, so that is the line worth knowing about.
     const LIMIT_EMS = 26;
     for (const code of ISO) {
       const cap = 500_000 * (UNITS_PER_USD[code] ?? 1);
