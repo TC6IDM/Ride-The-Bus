@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>B3 Lit felt</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* The smallest change: today's green, but LIT. One lamp from the upper right
+     falls across a baize floor; the far corners drop away; the table throws a
+     long shadow down and left, the way design.md says the light falls. */
+  .room {
+    background:
+      radial-gradient(48% 52% at 74% 16%, rgba(220, 255, 220, 0.10), transparent 70%),
+      radial-gradient(rgba(255,255,255,0.03) 0.6px, transparent 0.8px) 0 0 / 3px 3px,
+      radial-gradient(120% 100% at 66% 30%, var(--felt-lit) 0%, var(--felt-mid) 42%, var(--felt-deep) 72%, var(--felt-edge) 100%);
+  }
+  .cast { background: radial-gradient(42% 30% at 42% 74%, rgba(0,0,0,0.45), transparent 70%); }
+  .table, .ui { background-size: 100% 100%; }
+</style></head>
+<body>
+<div class="stage">
+  <div class="layer room"></div>
+  <div class="layer cast"></div>
+  <div class="layer table" id="table"></div>
+  <div class="layer ui" id="ui"></div>
+</div>
+<script src="kit/kit.js"></script>
+<script>
+  RTB.table(document.getElementById('table'), true);
+  document.getElementById('ui').style.backgroundImage = `url('kit/ui-${RTB.size()}.webp')`;
+</script>
+</body></html>

@@ -1,0 +1,79 @@
+/* Phase 2 mock-up kit. Values copied from web-sdk/apps/Ride-The-Bus/src/styles/tokens.css
+   (2026-10-17) so every mock is drawn in the game's own palette and faces. Mock-only. */
+@font-face { font-family: 'Big Shoulders'; font-weight: 700; src: url('bigshoulders-latin-700.woff2') format('woff2'); }
+@font-face { font-family: 'Big Shoulders'; font-weight: 900; src: url('bigshoulders-latin-900.woff2') format('woff2'); }
+@font-face { font-family: 'Overpass'; font-weight: 100 900; src: url('overpass-latin.woff2') format('woff2'); }
+
+:root {
+  color-scheme: dark;
+  --font-body: 'Overpass', system-ui, sans-serif;
+  --font-display: 'Big Shoulders', 'Overpass', sans-serif;
+  --felt-lit: #123a26; --felt-mid: #0e2e1e; --felt-deep: #071c12; --felt-edge: #030d08;
+  --brand-red: #a80828; --brand-red-lit: #b81030; --brand-red-deep: #78061e;
+  --brand-paper: #f8f8f8; --brand-chrome: #c8c8c8;
+  --gold-rgb: 245, 215, 140; --gold: rgb(var(--gold-rgb)); --gold-bright: #ffe08a;
+  --ink-lockup-sub: rgba(255, 224, 170, 0.72);
+  --ink: #fff; --ink-strong: #ece6da; --ink-body: #d6cfc2; --ink-dim: #aaa294; --ink-cream: #fffdf5;
+  --ink-rgb: 255, 255, 255; --shadow-rgb: 0, 0, 0;
+  --panel: #1c1917; --panel-lit-rgb: 255, 240, 220; --panel-lit: rgba(var(--panel-lit-rgb), 0.3);
+  --panel-shade: rgba(0, 0, 0, 0.55); --panel-edge: rgba(var(--panel-lit-rgb), 0.1);
+  --panel-face: linear-gradient(168deg, rgba(var(--panel-lit-rgb), 0.055) 0%, rgba(var(--panel-lit-rgb), 0.018) 26%, transparent 52%);
+  --panel-elevation: 0 2px 6px rgba(0,0,0,0.55), 0 18px 50px rgba(0,0,0,0.6), inset 0 1px 0 var(--panel-lit), inset 0 -1px 0 var(--panel-shade);
+  --panel-elevation-low: 0 1px 3px rgba(0,0,0,0.5), 0 8px 22px rgba(0,0,0,0.45), inset 0 1px 0 var(--panel-lit), inset 0 -1px 0 var(--panel-shade);
+  --card-paper: #f7f2e6; --card-ink-rgb: 22, 19, 15; --card-ink: rgb(var(--card-ink-rgb)); --card-red: #b3252b; --card-edge: #cfc4ad;
+  --court-gold: #d4a13d; --court-red-deep: #5c1418; --court-ink-tone: #5f5a54; --court-red-tint: #e8bfb3; --court-ink-tint: #c7beb1;
+  --choice-black: #16181c; --choice-red: #c0392b; --choice-higher: #4fae72; --choice-lower: #b3263a;
+  --choice-inside: #2f9d9a; --choice-outside: #9b4f9a;
+  --choice-equal-lit: #f2d27a; --choice-equal: #d6a733; --choice-equal-deep: #a87b16;
+  --vol-sc-rgb: 61, 220, 132; --vol-base-rgb: 255, 201, 60; --vol-hs-rgb: 255, 92, 92; --vol-tr-rgb: 178, 124, 200; --vol-ls-rgb: 255, 146, 64;
+  --vol-sc: rgb(var(--vol-sc-rgb)); --vol-base: rgb(var(--vol-base-rgb)); --vol-ls: rgb(var(--vol-ls-rgb)); --vol-hs: rgb(var(--vol-hs-rgb)); --vol-tr: rgb(var(--vol-tr-rgb));
+  --on-vol-ink: #14110a;
+  --spin-lit: #2a4d74; --spin-deep: #12233a;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.45, 0, 0.25, 1);
+  --ease-pop: cubic-bezier(0.2, 1.5, 0.4, 1);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--felt-deep); color: var(--ink-body); font-family: var(--font-body); }
+.stage { position: fixed; inset: 0; overflow: hidden; }
+.layer { position: absolute; inset: 0; }
+.bg { background: var(--felt-deep) center / 100% 100% no-repeat; }
+
+/* The board's lockup: wordmark over the credit line (base.css .game-title). */
+.lockup { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.lockup .main { font: 900 var(--lockup-size, 50px)/1 var(--font-display); letter-spacing: -0.015em; color: var(--gold-bright); text-shadow: 0 2px 10px rgba(0,0,0,0.85); white-space: nowrap; }
+.lockup .sub { margin-top: 0.42em; font: 400 calc(var(--lockup-size, 50px) * 0.25)/1 var(--font-body); letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-lockup-sub); text-shadow: 0 1px 6px rgba(0,0,0,0.85); white-space: nowrap; }
+
+/* The house back (cards.css .card-back / loader.css .gl-card). */
+.back {
+  position: absolute; border-radius: 7%/4.8%;
+  background:
+    repeating-linear-gradient(45deg, rgba(var(--ink-rgb), 0.12) 0 2px, transparent 2px 6px),
+    repeating-linear-gradient(-45deg, rgba(var(--ink-rgb), 0.12) 0 2px, transparent 2px 6px),
+    linear-gradient(160deg, var(--brand-red-lit) 0%, var(--brand-red) 55%, var(--brand-red-deep) 100%);
+  box-shadow: inset 0 0 0 3px var(--brand-paper), inset 0 0 0 4.5px var(--brand-chrome), 0 6px 14px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.5);
+}
+.back::before { content: ''; position: absolute; inset: 8%; border: 1px solid rgba(var(--ink-rgb), 0.34); border-radius: 4%; }
+.back::after {
+  content: 'TAKEOVER\A CASINO'; white-space: pre; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  font: 400 var(--wm, 8px)/1.35 var(--font-body); letter-spacing: 0.24em; text-align: center;
+  padding: 0.45em 0.75em 0.45em 0.99em; background: var(--brand-red); border: 1px solid rgba(var(--ink-rgb), 0.16); border-radius: 0.3em; color: rgba(var(--ink-rgb), 0.58);
+}
+
+/* A face: paper is the container's, the print is the SVG's (CardFace.svelte). */
+.face { position: absolute; border-radius: 7%/4.8%; background: var(--card-paper); overflow: hidden;
+  box-shadow: inset 0 0 0 1.5px var(--card-edge), 0 6px 14px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.5); }
+.face svg { display: block; width: 100%; height: 100%; }
+
+/* The panel material and the primary action (design.md). */
+.panel { background: var(--panel-face), var(--panel); box-shadow: var(--panel-elevation); border: 1px solid var(--panel-edge); border-radius: 12px; color: var(--ink-strong); }
+.action { font: 800 15px/1 var(--font-body); border: 0; border-radius: 10px; padding: 12px 16px; color: var(--tint-ink, var(--on-vol-ink));
+  background: linear-gradient(180deg, rgba(var(--tint-rgb, 255,201,60), 1), rgba(var(--tint-rgb, 255,201,60), 0.76));
+  box-shadow: inset 0 1px 0 var(--panel-lit), 0 1px 2px rgba(0,0,0,0.5), 0 6px 12px rgba(0,0,0,0.42); }
+
+.caption-note { position: fixed; left: 8px; bottom: 6px; font: 600 10px/1 var(--font-body); color: rgba(255,255,255,0.35); letter-spacing: 0.04em; pointer-events: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; transition-delay: 0ms !important; }
+}

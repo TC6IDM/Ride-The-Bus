@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>P1 Autoplay in two steps</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  .veil { position: absolute; inset: 0; background: rgba(4,9,6,0.55); opacity: 0; transition: opacity 200ms; }
+  .veil.in { opacity: 1; }
+  .ap { position: absolute; left: 50%; top: 50%; width: min(400px, calc(100vw - 28px)); padding: 16px; transform: translate(-50%, -46%) scale(0.96); opacity: 0;
+    transition: transform 220ms var(--ease-out), opacity 200ms; --tint-rgb: 87, 217, 138; }
+  .ap.in { transform: translate(-50%, -50%); opacity: 1; }
+  .ap h4 { margin: 0 0 14px; font: 700 18px/1 var(--font-body); color: var(--ink-strong); display: flex; justify-content: space-between; }
+  .ap h4 span:last-child { font-weight: 400; color: var(--ink-dim); }
+  .q { font: 700 13px/1 var(--font-body); color: var(--ink-body); margin-bottom: 8px; }
+  .counts { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .counts button { padding: 14px 0; border-radius: 10px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.04); color: var(--ink); font: 900 20px/1 var(--font-display); }
+  .counts button.on { background: rgb(var(--tint-rgb)); color: #08210f; border-color: transparent; }
+  .stops { margin-top: 14px; border-radius: 10px; background: rgba(0,0,0,0.22); overflow: hidden; }
+  .sum { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; font: 700 13.5px/1 var(--font-body); color: var(--ink-strong); }
+  .sum em { font-style: normal; font-weight: 600; color: var(--ink-dim); }
+  .sum .chev { transition: transform 200ms var(--ease-out); color: var(--ink-dim); }
+  .stops.open .sum .chev { transform: rotate(180deg); }
+  .body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 260ms var(--ease-out); }
+  .stops.open .body { grid-template-rows: 1fr; }
+  .body > div { overflow: hidden; }
+  .line { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; padding: 8px 14px; font: 600 12.5px/1.3 var(--font-body); color: var(--ink-body); }
+  .fld { display: flex; gap: 6px; align-items: center; }
+  .fld span { padding: 7px 10px; min-width: 70px; border-radius: 7px; background: rgba(0,0,0,0.35); font: 700 13px/1 var(--font-body); color: var(--ink); }
+  .fld i { width: 28px; height: 28px; border-radius: 7px; border: 1px solid rgba(255,255,255,0.2); display: grid; place-items: center; font-style: normal; color: var(--ink-dim); }
+  .fld i.armed { background: rgb(var(--tint-rgb)); color: #08210f; border-color: transparent; }
+  .tog { width: 38px; height: 22px; border-radius: 11px; background: rgba(255,255,255,0.16); position: relative; }
+  .tog::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left 160ms; }
+  .tog.on { background: rgb(var(--tint-rgb)); } .tog.on::after { left: 19px; }
+  .go { margin-top: 14px; width: 100%; font-size: 16px; padding: 14px; }
+  .go[disabled] { opacity: 0.45; }
+  .why { margin: 6px 0 0; text-align: center; font: 600 12px/1 var(--font-body); color: var(--ink-dim); }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div><div class="veil" id="veil"></div></div>
+<script src="kit/kit.js"></script><script src="kit/bar.js"></script>
+<script>
+  const { wait, loop, size, el } = RTB, s = document.getElementById('s');
+  document.getElementById('board').style.backgroundImage = `url('kit/board-${size()}.webp')`;
+  const ap = el('div', 'ap panel', `<h4><span>Autoplay</span><span>×</span></h4>
+    <div class="q">How many rounds?</div>
+    <div class="counts">${['10', '25', '50', '100', '∞'].map((c) => `<button data-c="${c}">${c}</button>`).join('')}</div>
+    <div class="stops"><div class="sum"><span>Stops <em class="state">None set</em></span><span class="chev">⌄</span></div>
+      <div class="body"><div>
+        <div class="line"><span>Stop on a loss of</span><span class="fld"><span class="loss">—</span><i class="arm">✓</i></span></div>
+        <div class="line"><span>Stop on a single win of</span><span class="fld"><span>—</span><i>✓</i></span></div>
+        <div class="line"><span>Stop autoplay on full game win</span><span class="tog"></span></div>
+        <div class="line"><span>Skip win animations on autoplay</span><span class="tog on"></span></div>
+      </div></div></div>
+    <button class="action go" disabled>Start 25 rounds</button><p class="why">Pick all 4 guesses first</p>`);
+  s.appendChild(ap);
+  const veil = document.getElementById('veil'), f = BAR.finger(s), stops = ap.querySelector('.stops'), go = ap.querySelector('.go');
+  const tapEl = async (n) => { const r = n.getBoundingClientRect(); await f.press(r.x + r.width / 2, r.y + r.height / 2); };
+  loop(8200, async () => {
+    ap.classList.remove('in'); veil.classList.remove('in'); stops.classList.remove('open');
+    ap.querySelectorAll('.counts button').forEach((b) => b.classList.toggle('on', b.dataset.c === '10'));
+    ap.querySelector('.loss').textContent = '—'; ap.querySelector('.arm').classList.remove('armed'); ap.querySelector('.state').textContent = 'None set';
+    go.disabled = true; go.textContent = 'Start 10 rounds'; ap.querySelector('.why').style.visibility = 'visible';
+    await wait(600);
+    const [x, y] = BAR.centre('auto'); await f.press(x, y); veil.classList.add('in'); ap.classList.add('in');
+    await wait(800);
+    await tapEl(ap.querySelector('[data-c="25"]')); ap.querySelectorAll('.counts button').forEach((b) => b.classList.toggle('on', b.dataset.c === '25')); go.textContent = 'Start 25 rounds';
+    await wait(500);
+    await tapEl(ap.querySelector('.sum')); stops.classList.add('open');
+    await wait(700);
+    ap.querySelector('.loss').textContent = '20×'; await tapEl(ap.querySelector('.arm')); ap.querySelector('.arm').classList.add('armed'); ap.querySelector('.state').textContent = 'Loss of 20×';
+    await wait(500);
+    await tapEl(ap.querySelector('.sum')); stops.classList.remove('open');
+    await wait(500);
+    go.disabled = false; ap.querySelector('.why').style.visibility = 'hidden';   // (the board's four picks are made)
+    await wait(1500); ap.classList.remove('in'); veil.classList.remove('in');
+  });
+</script>
+</body></html>

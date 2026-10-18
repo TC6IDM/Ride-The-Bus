@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>D2 The back shows through</title>
+<link rel="stylesheet" href="kit/kit.css">
+</head>
+<body>
+<div class="stage" id="s"></div>
+<script src="kit/kit.js"></script><script src="kit/faces.js"></script>
+<script>
+  /* The house back's crosshatch, printed as a fine border band on the face in the
+     card's own ink, so the face and the back read as one deck. The field stays clear. */
+  let n = 0;
+  FACES.mount(document.getElementById('s'), {
+    under: (ink) => {
+      const id = 'hatch' + (n++);
+      return `<defs><pattern id="${id}" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="2" height="7" fill="${ink}" fill-opacity="0.22"/><rect width="7" height="2" fill="${ink}" fill-opacity="0.22"/></pattern>
+          <mask id="${id}m"><rect x="10" y="10" width="180" height="278" rx="8" fill="#fff"/><rect x="24" y="24" width="152" height="250" rx="4" fill="#000"/>
+          <rect x="6" y="6" width="44" height="76" fill="#000"/><rect x="150" y="216" width="44" height="76" fill="#000"/></mask></defs>
+        <rect x="10" y="10" width="180" height="278" rx="8" fill="url(#${id})" mask="url(#${id}m)"/>
+        <rect x="24" y="24" width="152" height="250" rx="4" fill="none" stroke="${ink}" stroke-opacity="0.45" stroke-width="1"/>`;
+    },
+  });
+</script>
+</body></html>

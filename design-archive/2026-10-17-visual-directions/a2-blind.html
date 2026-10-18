@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A2 The destination blind</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  .full { opacity: 0; transition: opacity 600ms var(--ease-out); }
+  .full.on { opacity: 1; }
+  /* The MODE sign's recipe at hero size: a recessed dark sign, lettered, not lit. */
+  .sign { position: absolute; left: 50%; transform: translateX(-50%); border-radius: 14px; padding: 10px; background: #0c0a08;
+    box-shadow: inset 0 3px 10px rgba(0,0,0,0.85), inset 0 -1px 0 rgba(255,240,220,0.08), 0 1px 0 rgba(255,240,220,0.12), 0 14px 30px rgba(0,0,0,0.5);
+    transition: transform 700ms var(--ease-in-out), opacity 400ms; transform-origin: 50% 0; }
+  .window { position: relative; overflow: hidden; border-radius: 6px; background: linear-gradient(180deg, #050403, #15110c 50%, #050403); }
+  .window::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.65), transparent 22%, transparent 78%, rgba(0,0,0,0.65)); pointer-events: none; }
+  .roll { position: absolute; left: 0; right: 0; top: 0; transition: transform 340ms var(--ease-in-out); }
+  .stop { display: flex; align-items: center; justify-content: center; text-align: center; font: 900 var(--blind, 44px)/1 var(--font-display); color: var(--gold-bright); letter-spacing: -0.005em; white-space: nowrap; }
+  .stop.last { flex-direction: column; color: var(--gold-bright); }
+  .stop.last small { font: 400 calc(var(--blind) * 0.26)/1 var(--font-body); letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-lockup-sub); margin-top: 0.45em; }
+  .sign, .window { transition: transform 700ms var(--ease-in-out), background 500ms, box-shadow 500ms; }
+  .sign.landed, .sign.landed .window { background: transparent; box-shadow: none; }
+  .sign.landed .window::after { opacity: 0; }
+  .window::after { transition: opacity 500ms; }
+  .route { position: absolute; left: 50%; transform: translateX(-50%); height: 18px; transition: opacity 400ms; }
+  .route .line { position: absolute; left: 0; right: 0; top: 8px; height: 2px; background: rgba(255,236,200,0.35); }
+  .route .dot { position: absolute; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: #1c1917; border: 2px solid rgba(255,236,200,0.55); transform: translateX(-50%); transition: background 200ms, border-color 200ms; }
+  .route .dot.lit { background: var(--gold); border-color: var(--gold); }
+  .route .dot.end { width: 14px; height: 14px; top: 2px; }
+  .bus { position: absolute; top: -12px; width: 26px; height: 14px; transform: translateX(-50%); transition: left 340ms var(--ease-in-out); }
+</style></head>
+<body>
+<div class="stage" id="s">
+  <div class="layer bg" id="bare"></div>
+  <div class="layer bg full" id="full"></div>
+</div>
+<script src="kit/kit.js"></script>
+<script>
+  const { g, el, scene, loop, wait, size } = RTB;
+  const s = document.getElementById('s');
+  scene(document.getElementById('bare'), false); scene(document.getElementById('full'), true);
+  const phone = size() === 'phone';
+  // The four guesses are already translated in all 17 catalogues; the last stop is the game's name.
+  const STOPS = ['Color', 'Higher / Lower', 'Inside / Outside', 'Suit'];
+  const blind = phone ? 30 : 44, winW = phone ? 300 : 460, winH = phone ? 74 : 104;
+  const sign = el('div', 'sign');
+  sign.style.top = (phone ? 220 : 210) + 'px';
+  sign.innerHTML = `<div class="window" style="width:${winW}px;height:${winH}px;--blind:${blind}px"><div class="roll">${
+    STOPS.map((t) => `<div class="stop" style="height:${winH}px">${t}</div>`).join('') +
+    `<div class="stop last" style="height:${winH}px">Ride The Bus<small>by Takeover Casino</small></div>`}</div></div>`;
+  s.appendChild(sign);
+  const roll = sign.querySelector('.roll');
+  const route = el('div', 'route'); route.style.width = (winW - 40) + 'px'; route.style.top = (parseFloat(sign.style.top) + winH + 20 + 22) + 'px';
+  route.innerHTML = '<div class="line"></div>' + [0, 1, 2, 3, 4].map((i) => `<div class="dot${i === 4 ? ' end' : ''}" style="left:${i * 25}%"></div>`).join('') +
+    `<svg class="bus" viewBox="0 0 26 14" style="left:0%"><rect x="1" y="1" width="24" height="10" rx="2.5" fill="#d6a733"/><rect x="4" y="3" width="4" height="3" fill="#1c1917"/><rect x="10" y="3" width="4" height="3" fill="#1c1917"/><rect x="16" y="3" width="6" height="3" fill="#1c1917"/><circle cx="7" cy="11.5" r="2" fill="#14110a"/><circle cx="19" cy="11.5" r="2" fill="#14110a"/></svg>`;
+  s.appendChild(route);
+  const dots = route.querySelectorAll('.dot'), bus = route.querySelector('.bus');
+
+  function to(i) { roll.style.transform = `translateY(${-i * winH}px)`; bus.style.left = (i * 25) + '%'; dots.forEach((d, k) => d.classList.toggle('lit', k <= i)); }
+
+  async function run() {
+    const full = document.getElementById('full'); full.classList.remove('on');
+    sign.classList.remove('landed'); sign.style.transition = 'none'; sign.style.transform = 'translateX(-50%)'; sign.style.opacity = 1; route.style.opacity = 1;
+    roll.style.transition = 'none'; to(0); void roll.offsetWidth; roll.style.transition = ''; sign.offsetWidth; sign.style.transition = '';
+    await wait(900);  to(1);   // a milestone per stop, never a timer
+    await wait(800);  to(2);
+    await wait(1600); to(3);   // a slow authenticate simply holds the blind where it is
+    await wait(800);  to(4);
+    await wait(900);
+    // The sign rises into the board's lockup and drops its frame; the props fill in.
+    const target = g.lockup, top = parseFloat(sign.style.top);
+    const k = (phone ? 40 : 50) / blind;
+    sign.style.transform = `translateX(-50%) translateY(${target.y - top - (phone ? 24 : 2)}px) scale(${k})`;
+    route.style.opacity = 0; full.classList.add('on'); sign.classList.add('landed');
+  }
+  loop(9500, run);
+</script>
+</body></html>

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>E4 Casino plaques</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* High-value casino plaques: a lacquered slab with chip-style edge inserts, the
+     options lacquered into its face. A pick gets a gold foil inlay. */
+  .sq { position: absolute; display: grid; gap: 2px; padding: 7px; border-radius: 10px;
+    background: repeating-linear-gradient(90deg, #efe7d6 0 6px, transparent 6px 18px) top / 100% 4px no-repeat,
+                repeating-linear-gradient(90deg, #efe7d6 0 6px, transparent 6px 18px) bottom / 100% 4px no-repeat,
+                repeating-linear-gradient(0deg, #efe7d6 0 6px, transparent 6px 18px) left / 4px 100% no-repeat,
+                repeating-linear-gradient(0deg, #efe7d6 0 6px, transparent 6px 18px) right / 4px 100% no-repeat,
+                linear-gradient(160deg, #3a3631, #1d1a16);
+    box-shadow: 0 3px 0 #0b0907, 0 8px 14px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.2); }
+  .split-v { grid-template-columns: minmax(0,1fr) minmax(0,1fr); grid-template-rows: minmax(0,1fr); }
+  .split-h { grid-template-columns: minmax(0,1fr); grid-template-rows: minmax(0,1fr) minmax(0,1fr); }
+  .split-q { grid-template-columns: minmax(0,1fr) minmax(0,1fr); grid-template-rows: minmax(0,1fr) minmax(0,1fr); }
+  .seg { position: relative; min-width: 0; min-height: 0; overflow: hidden; border: 0; padding: 0; display: grid; place-items: center; border-radius: 4px; cursor: pointer;
+    background: linear-gradient(170deg, rgba(255,255,255,0.28), rgba(255,255,255,0.04) 38%, rgba(0,0,0,0.18)), var(--fill);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.35); color: var(--ink); }
+  .gl { width: 48%; aspect-ratio: 1; display: grid; filter: drop-shadow(0 1px 0 rgba(0,0,0,0.5)); }
+  .split-q .gl { width: 56%; }
+  .gl svg { width: 100%; height: 100%; display: block; }
+  .seg.on { box-shadow: inset 0 0 0 2px #f6dc8e, inset 0 0 0 3.5px #8a6510, inset 0 0 0 1px rgba(0,0,0,0.35); }
+  .seg.on .gl { color: #fbe7a6; }
+  .eq { position: absolute; left: 50%; top: 50%; width: 24%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; display: grid; place-items: center;
+    background: radial-gradient(circle at 35% 30%, #fbe7a6, #d6a733 55%, #8f6810); box-shadow: 0 2px 3px rgba(0,0,0,0.55); }
+  .eq svg { width: 70%; }
+  .split-v .seg:first-of-type .gl { transform: translateX(-16%); } .split-v .seg:nth-of-type(2) .gl { transform: translateX(16%); }
+  .split-h .seg:first-of-type .gl { transform: translateY(-14%); } .split-h .seg:nth-of-type(2) .gl { transform: translateY(14%); }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div></div>
+<script src="kit/kit.js"></script><script src="kit/guess.js"></script>
+<script>
+  const { g, place, el, size } = RTB, s = document.getElementById('s');
+  document.getElementById('board').style.backgroundImage = `url('kit/board-${size()}.webp')`;
+  GUESS.GUESSES.forEach((G, i) => { const n = el('div', '', GUESS.square(G)).firstElementChild; const r = g.squares[i];
+    place(n, { x: r.x - 4, y: r.y - 2, w: r.w + 8, h: r.h + 4 }); s.appendChild(n); });
+  GUESS.demo(s);
+</script>
+</body></html>

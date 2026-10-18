@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RW2 The bus carries it</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* The route's bus, drawn properly and big enough to read: it drives to each
+     stop as that card lands, and its destination sign carries the running total. */
+  .bus { position: absolute; z-index: 5; transform: translateX(-50%); transition: left 520ms var(--ease-in-out); }
+  .bus svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .bus .sign { position: absolute; left: 7%; top: 9%; width: 48%; height: 25%; display: grid; place-items: center; border-radius: 3px; background: #0b0907;
+    font: 900 var(--fs, 14px)/1 var(--font-display); color: #ffe08a; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .bus .sign.win { color: #3ddc84; }
+  .bus.go svg { animation: bob 520ms var(--ease-in-out); }
+  @keyframes bob { 30% { transform: translateY(-1.5px); } 60% { transform: translateY(0.5px); } }
+  .lab { position: absolute; z-index: 5; transform: translateX(-50%); font: 700 11px/1 var(--font-body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-dim); white-space: nowrap; }
+  .lab.win { color: #3ddc84; }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div></div>
+<script src="kit/kit.js"></script><script src="kit/roundmock.js"></script>
+<script>
+  const { el, g, size } = RTB, s = document.getElementById('s'), phone = size() === 'phone';
+  document.getElementById('board').style.backgroundImage = `url('kit/board-noread-${size()}.webp')`;
+  const w = phone ? 96 : 132, routeY = phone ? 296 : 315.7;
+  const bus = el('div', 'bus', `<svg viewBox="0 0 120 52">
+      <rect x="2" y="4" width="114" height="36" rx="7" fill="#d6a733"/><rect x="2" y="27" width="114" height="5" fill="#a87b16"/>
+      <rect x="70" y="10" width="11" height="12" rx="2" fill="#1c1917"/><rect x="85" y="10" width="11" height="12" rx="2" fill="#1c1917"/><rect x="100" y="10" width="12" height="16" rx="2" fill="#1c1917"/>
+      <circle cx="26" cy="42" r="7" fill="#14110a"/><circle cx="26" cy="42" r="3" fill="#6f7378"/><circle cx="92" cy="42" r="7" fill="#14110a"/><circle cx="92" cy="42" r="3" fill="#6f7378"/>
+      <rect x="112" y="30" width="5" height="4" rx="1" fill="#fff3c4"/></svg><span class="sign">$0.00</span>`);
+  bus.style.width = w + 'px'; bus.style.setProperty('--fs', phone ? '11px' : '14px');
+  bus.style.top = (routeY - w * 0.42) + 'px'; s.appendChild(bus);
+  const lab = el('div', 'lab', 'Winning'); lab.style.left = (phone ? 195 : 600) + 'px'; lab.style.top = (routeY + 24) + 'px'; s.appendChild(lab);
+  const sign = bus.querySelector('.sign');
+  const drive = (x) => { bus.classList.remove('go'); void bus.offsetWidth; bus.classList.add('go'); bus.style.left = x + 'px'; };
+  ROUNDMOCK.play(() => { bus.style.transition = 'none'; bus.style.left = (ROUNDMOCK.stops[0] - (phone ? 40 : 70)) + 'px'; void bus.offsetWidth; bus.style.transition = '';
+      sign.textContent = '$0.00'; sign.classList.remove('win'); lab.textContent = 'Winning'; lab.classList.remove('win'); },
+    (i, total) => { drive(ROUNDMOCK.stops[i]); setTimeout(() => (sign.textContent = total), 300); },
+    () => { sign.classList.add('win'); lab.textContent = 'Full game win'; lab.classList.add('win'); });
+</script>
+</body></html>

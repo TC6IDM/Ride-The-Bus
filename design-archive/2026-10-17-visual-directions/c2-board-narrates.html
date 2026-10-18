@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>C2 The board explains itself</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* A spotlight: a clear window cut out of a dim veil by one huge shadow, so the
+     window can travel from square to square as a transform-free box. */
+  .spot { position: absolute; border-radius: 16px; box-shadow: 0 0 0 4000px rgba(4, 10, 7, 0.62); outline: 2px solid rgba(var(--gold-rgb), 0.85); outline-offset: 4px;
+    transition: left 420ms var(--ease-in-out), top 420ms var(--ease-in-out), width 420ms var(--ease-in-out), height 420ms var(--ease-in-out), opacity 300ms; }
+  .tip { position: absolute; max-width: 250px; padding: 12px 14px; transition: left 420ms var(--ease-in-out), top 420ms var(--ease-in-out), opacity 200ms; }
+  .tip b { display: block; font: 800 15px/1.2 var(--font-body); color: var(--ink); margin-bottom: 4px; }
+  .tip span { font: 400 14px/1.4 var(--font-body); color: var(--ink-body); }
+  .beats { position: absolute; display: flex; gap: 6px; }
+  .beats i { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.25); }
+  .beats i.on { background: var(--gold); }
+  .skip { position: absolute; font: 700 13px/1 var(--font-body); color: var(--ink-body); background: transparent; border: 1px solid rgba(255,255,255,0.2); border-radius: 999px; padding: 8px 14px; }
+  .ex { transition: transform 460ms var(--ease-out), opacity 200ms; }
+  .ok { position: absolute; width: 26px; height: 26px; border-radius: 50%; background: #3ddc84; color: #08210f; font: 900 16px/26px var(--font-body); text-align: center; transform: translate(-50%, -50%); box-shadow: 0 2px 6px rgba(0,0,0,0.5); }
+</style></head>
+<body>
+<div class="stage" id="s">
+  <div class="layer bg" id="board"></div>
+</div>
+<script src="kit/kit.js"></script>
+<script>
+  const { g, el, place, face, loop, wait, size } = RTB;
+  const s = document.getElementById('s'), phone = size() === 'phone';
+  document.getElementById('board').style.backgroundImage = `url('kit/board-${size()}.webp')`;
+  const spot = el('div', 'spot'); s.appendChild(spot);
+  const tip = el('div', 'tip panel'); s.appendChild(tip);
+  const beats = el('div', 'beats', '<i></i><i></i><i></i><i></i>'); s.appendChild(beats);
+  const skip = el('button', 'skip', 'Skip'); s.appendChild(skip);
+  Object.assign(skip.style, phone ? { right: '14px', top: '84px' } : { right: '190px', top: '60px' });
+  // Mock copy: what each guess asks, with the example card it is checked against.
+  const BEATS = [
+    ['Color', 'Red or black? Card 1 is dealt and checked.', ['K', 'spade']],
+    ['Higher / Lower', 'Is card 2 higher or lower than card 1? Equal if it ties.', ['7', 'diamond']],
+    ['Inside / Outside', 'Does card 3 land between cards 1 and 2, or outside them?', ['10', 'heart']],
+    ['Suit', 'Name card 4’s suit. Four right is a full game win.', ['5', 'club']],
+  ];
+  let extras = [];
+  function frame(i) {
+    const sq = g.squares[i], pad = phone ? 6 : 8, labelH = sq.y - g.labelsY;
+    place(spot, { x: sq.x - pad, y: g.labelsY - pad, w: sq.w + pad * 2, h: sq.h + labelH + pad * 2 });
+    const [title, body] = BEATS[i];
+    tip.innerHTML = `<b>${title}</b><span>${body}</span>`;
+    const tw = phone ? 230 : 250;
+    const tx = Math.min(Math.max(sq.x + sq.w / 2 - tw / 2, 12), g.w - tw - 12);
+    Object.assign(tip.style, { width: tw + 'px', left: tx + 'px', top: (phone ? sq.y + sq.h + 12 : g.labelsY - 96) + 'px' });
+    beats.querySelectorAll('i').forEach((b, k) => b.classList.toggle('on', k === i));
+  }
+  function deal(i) {
+    const [rank, suit] = BEATS[i][2], r = g.slots[i];
+    const f = el('div', 'face ex', face(rank, suit)); place(f, r);
+    f.style.transform = `translate(${g.deck.x - r.x}px, ${g.deck.y - r.y}px) scale(0.55) rotate(-8deg)`;
+    s.insertBefore(f, spot); extras.push(f);
+    requestAnimationFrame(() => requestAnimationFrame(() => (f.style.transform = 'none')));
+    setTimeout(() => { const ok = el('div', 'ok', '✓'); Object.assign(ok.style, { left: (r.x + r.w - 6) + 'px', top: (r.y + 6) + 'px' }); s.appendChild(ok); extras.push(ok); }, 520);
+  }
+  async function run() {
+    extras.forEach((e) => e.remove()); extras = [];
+    spot.style.opacity = 1; tip.style.opacity = 1; beats.style.opacity = 1;
+    Object.assign(beats.style, { left: (g.w / 2 - 34) + 'px', top: (phone ? g.labelsY - 22 : g.squares[0].y + g.squares[0].h + 12) + 'px' });
+    for (let i = 0; i < 4; i++) { frame(i); await wait(250); deal(i); await wait(1700); }
+    // The walkthrough ends where play begins: the spotlight lifts off the live board.
+    spot.style.opacity = 0; tip.style.opacity = 0; beats.style.opacity = 0;
+    await wait(500); extras.forEach((e) => (e.style.opacity = 0));
+  }
+  loop(10200, run);
+</script>
+</body></html>

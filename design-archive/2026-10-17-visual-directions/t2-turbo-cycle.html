@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>T2 Turbo tap to cycle</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* No menu: each tap steps Off -> Fast -> Instant -> Off, and the bolt is a gauge
+     that fills by thirds. A label names the new setting for a moment. Long press
+     opens T1's bump for the fine slider. */
+  .bolt { position: absolute; z-index: 22; display: grid; place-items: center; border-radius: 50%; background: radial-gradient(circle at 40% 30%, #2b2420, #15110e); box-shadow: inset 0 1px 0 rgba(255,240,220,0.18), 0 4px 10px rgba(0,0,0,0.5); }
+  .bolt svg { width: 56%; height: 56%; overflow: visible; }
+  .bolt .outline { fill: none; stroke: rgba(255,240,220,0.75); stroke-width: 1.6; stroke-linejoin: round; }
+  .bolt .gauge { fill: rgb(255, 206, 58); transition: clip-path 220ms var(--ease-out); }
+  .label { position: absolute; z-index: 23; padding: 6px 10px; border-radius: 8px; font: 800 13px/1 var(--font-body); color: #2a1d06; background: rgb(255, 206, 58);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.45); opacity: 0; transform: translateY(6px); transition: opacity 140ms, transform 180ms var(--ease-out); white-space: nowrap; }
+  .label.on { opacity: 1; transform: none; }
+  .ticks { position: absolute; z-index: 23; display: flex; gap: 3px; }
+  .ticks i { width: 9px; height: 3px; border-radius: 2px; background: rgba(255,240,220,0.25); transition: background 160ms; }
+  .ticks i.on { background: rgb(255, 206, 58); }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div></div>
+<script src="kit/kit.js"></script><script src="kit/bar.js"></script>
+<script>
+  const { wait, loop, size, el } = RTB, s = document.getElementById('s');
+  document.getElementById('board').style.backgroundImage = `url('kit/board-${size()}.webp')`;
+  const a = BAR.R('turbo');
+  const B = 'M13.5 2 4 13.5h6.2L9 22l10-12.5h-6.4L13.5 2Z';
+  const bolt = el('div', 'bolt', `<svg viewBox="0 0 24 24"><path class="gauge" d="${B}" style="clip-path: inset(100% 0 0 0)"/><path class="outline" d="${B}"/></svg>`);
+  Object.assign(bolt.style, { left: a.x + 'px', top: a.y + 'px', width: a.w + 'px', height: a.h + 'px' }); s.appendChild(bolt);
+  const ticks = el('div', 'ticks', '<i></i><i></i>'); Object.assign(ticks.style, { left: (a.x + a.w / 2 - 10) + 'px', top: (a.y + a.h + 3) + 'px' }); s.appendChild(ticks);
+  const label = el('div', 'label', 'Fast'); s.appendChild(label);
+  const gauge = bolt.querySelector('.gauge'), f = BAR.finger(s);
+  const STEPS = [['Off: full animation', 100, 0], ['Fast', 50, 1], ['Instant', 0, 2]];
+  function show(i) {
+    const [name, cut, lit] = STEPS[i];
+    gauge.style.clipPath = `inset(${cut}% 0 0 0)`;
+    ticks.querySelectorAll('i').forEach((t, k) => t.classList.toggle('on', k < lit));
+    label.textContent = name; label.classList.add('on');
+    const w = label.offsetWidth; Object.assign(label.style, { left: Math.max(8, a.x + a.w / 2 - w / 2) + 'px', top: (a.y - 34) + 'px' });
+    clearTimeout(show.t); show.t = setTimeout(() => label.classList.remove('on'), 900);
+  }
+  loop(6000, async () => {
+    gauge.style.clipPath = 'inset(100% 0 0 0)'; ticks.querySelectorAll('i').forEach((t) => t.classList.remove('on'));
+    await wait(700);
+    const [x, y] = BAR.centre('turbo');
+    for (const i of [1, 2, 0]) { await f.press(x, y); show(i); await wait(1300); }
+  });
+</script>
+</body></html>

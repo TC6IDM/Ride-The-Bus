@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>S2 Sound tap to mute</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* One tap mutes or unmutes everything (the thing most players want from that
+     button), and the speaker shows it. A long press opens the levels bump. */
+  .spkbtn { position: absolute; z-index: 22; display: grid; place-items: center; border-radius: 8px; background: rgba(23,12,10,0.92); color: var(--ink); }
+  .spkbtn svg { width: 64%; height: 64%; fill: none; stroke: currentColor; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; }
+  .spkbtn .strike { opacity: 0; } .spkbtn.muted { color: var(--ink-dim); } .spkbtn.muted .strike { opacity: 1; } .spkbtn.muted .waves { opacity: 0; }
+  .hold { position: absolute; z-index: 23; border-radius: 50%; pointer-events: none; background: conic-gradient(rgba(255,253,245,0.9) var(--p, 0%), transparent 0); -webkit-mask: radial-gradient(circle, transparent 62%, #000 64%); mask: radial-gradient(circle, transparent 62%, #000 64%); }
+  .label { position: absolute; z-index: 23; padding: 6px 10px; border-radius: 8px; font: 800 13px/1 var(--font-body); color: var(--on-vol-ink); background: #fffdf5; box-shadow: 0 4px 10px rgba(0,0,0,0.45); opacity: 0; transition: opacity 140ms; white-space: nowrap; }
+  .label.on { opacity: 1; }
+  .srow { display: grid; grid-template-columns: 1fr 30px; gap: 4px 10px; align-items: center; }
+  .srow + .srow { margin-top: 10px; }
+  .srow .lab { grid-column: 1 / -1; font: 600 12.5px/1 var(--font-body); color: var(--ink-body); }
+  .srow .val { font: 700 13px/1 var(--font-body); text-align: right; }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div></div>
+<script src="kit/kit.js"></script><script src="kit/bar.js"></script>
+<script>
+  const { wait, loop, size, el } = RTB, s = document.getElementById('s'), phone = size() === 'phone';
+  document.getElementById('board').style.backgroundImage = `url('kit/board-${size()}.webp')`;
+  const a = BAR.R('sound');
+  const SPK = `<svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><g class="waves"><path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18 6.5a7.5 7.5 0 0 1 0 11"/></g><path class="strike" d="M16 9.5l5 5m0-5-5 5"/></svg>`;
+  const btn = el('div', 'spkbtn', SPK); Object.assign(btn.style, { left: a.x + 'px', top: a.y + 'px', width: a.w + 'px', height: a.h + 'px' }); s.appendChild(btn);
+  const hold = el('div', 'hold'); Object.assign(hold.style, { left: a.x - 6 + 'px', top: a.y - 6 + 'px', width: a.w + 12 + 'px', height: a.h + 12 + 'px' }); s.appendChild(hold);
+  const label = el('div', 'label', 'Sound off'); s.appendChild(label);
+  const place = () => { const w = label.offsetWidth; Object.assign(label.style, { left: Math.max(8, a.x + a.w / 2 - w / 2) + 'px', top: a.y - 36 + 'px' }); };
+  const row = (n, v) => `<div class="srow"><span class="lab">${n}</span><div class="slider"><div class="track"></div><div class="fill" style="width:${v}%"></div><div class="knob" style="left:${v}%"></div></div><span class="val">${v}</span></div>`;
+  const b = BAR.bump(s, 'sound', phone ? 250 : 270, row('Music', 75) + row('Game sounds', 75), '255, 253, 245');
+  const f = BAR.finger(s);
+  loop(7600, async () => {
+    btn.classList.remove('muted'); b.classList.remove('in'); hold.style.setProperty('--p', '0%');
+    await wait(600);
+    const [x, y] = BAR.centre('sound');
+    await f.press(x, y); btn.classList.add('muted'); label.textContent = 'Sound off'; place(); label.classList.add('on'); await wait(1000); label.classList.remove('on');
+    await wait(500);
+    await f.press(x, y); btn.classList.remove('muted'); label.textContent = 'Sound on'; place(); label.classList.add('on'); await wait(1000); label.classList.remove('on');
+    await wait(500);
+    // Long press: the ring fills, then the levels bump grows out of the speaker.
+    f.at(x, y); f.on();
+    for (let p = 0; p <= 100; p += 10) { hold.style.setProperty('--p', p + '%'); await wait(45); }
+    f.off(); hold.style.setProperty('--p', '0%'); b.classList.add('in');
+    await wait(1800); b.classList.remove('in');
+  });
+</script>
+</body></html>

@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TB1 Fewer, better props</title>
+<link rel="stylesheet" href="kit/kit.css">
+</head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div></div>
+<script src="kit/kit.js"></script><script src="kit/props.js"></script>
+<script>
+  /* Edit the table down: the cup goes (the props then weigh less than the controls),
+     the chips gather into two tall towers by the deck's opposite corner, the deck
+     and the die stay where play needs them. */
+  const s = document.getElementById('s'), { P, deck, stack, die } = PROPS, phone = RTB.size() === 'phone';
+  document.getElementById('board').style.backgroundImage = `url('kit/board-noprops-${RTB.size()}.webp')`;
+  deck(s);
+  const T = phone ? [[300, 112, 30], [330, 118, 30]] : [[860, 150, 46], [906, 170, 46]];
+  stack(s, T[0], 9, '#a80828', '#5a0414'); stack(s, T[1], 6, '#16181c', '#000');
+  die(s);
+</script>
+</body></html>

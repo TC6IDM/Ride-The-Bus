@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DL3 The card shoe</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* A dealer's shoe in dark wood with a house back peeking from its slot. Press
+     it and the card slides out, the way a dealer draws one. */
+  .shoe { position: relative; width: 100%; height: 100%; }
+  .box { position: absolute; left: 4%; right: 4%; top: 22%; bottom: 10%; border-radius: 10% 26% 8% 8%;
+    background: linear-gradient(170deg, #6b3a12, #3a1f08); box-shadow: inset 0 2px 0 rgba(255,220,170,0.3), 0 5px 12px rgba(0,0,0,0.55); }
+  .slot { position: absolute; left: 14%; right: 14%; top: 30%; height: 10%; border-radius: 3px; background: #120a04; box-shadow: inset 0 2px 3px rgba(0,0,0,0.8); }
+  .card { position: absolute; left: 22%; width: 56%; top: 6%; height: 42%; border-radius: 4px; overflow: hidden; transition: transform 160ms var(--ease-out);
+    background: repeating-linear-gradient(45deg, rgba(255,255,255,0.14) 0 1px, transparent 1px 3px), linear-gradient(160deg, var(--brand-red-lit), var(--brand-red-deep));
+    box-shadow: inset 0 0 0 1.5px #f8f8f8; transform: rotate(-4deg); }
+  .brass { position: absolute; left: 30%; right: 30%; bottom: 16%; height: 6%; border-radius: 2px; background: linear-gradient(90deg, #8f6810, #f2d27a, #8f6810); }
+  .down .card { transform: rotate(-4deg) translateY(-34%); }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div></div>
+<script src="kit/kit.js"></script><script src="kit/bar.js"></script><script src="kit/glyphs.js"></script><script src="kit/dealmock.js"></script>
+<script>
+  document.getElementById('board').style.backgroundImage = `url('kit/board-${RTB.size()}.webp')`;
+  DEALMOCK.mount(document.getElementById('s'), () => `<div class="shoe"><div class="card"></div><div class="box"></div><div class="slot"></div><div class="brass"></div></div>`,
+    (n, d) => n.classList.toggle('down', d), 'Card shoe');
+</script>
+</body></html>

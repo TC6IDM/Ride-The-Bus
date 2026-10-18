@@ -1,0 +1,535 @@
+<title>Ride The Bus Directions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Overpass:wght@400;600;700;800&family=Overpass+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  /* Layout: the felt sheet from Phase 1. One item per tab; each direction is a
+     row with the live desktop frame, the live iPhone 14 frame and its facts. */
+  :root {
+    color-scheme: dark;
+    --felt: #0f2a1c; --felt-deep: #0a1d13; --panel: #1c1916; --edge: rgba(255,236,200,0.10); --edge-strong: rgba(255,236,200,0.20);
+    --ink: #f6efe2; --ink-body: #d9cfbf; --ink-dim: #a99e8c; --brass: #d9b45a; --brass-ink: #1a1408; --pick: #7fc6a0;
+    --font-display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+    --font-body: "Overpass", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "Overpass Mono", ui-monospace, Menlo, monospace;
+  }
+  body { background: radial-gradient(ellipse 120% 70% at 70% 0%, #163826 0%, var(--felt) 38%, var(--felt-deep) 100%) fixed, var(--felt-deep); color: var(--ink-body); font: 16px/1.6 var(--font-body); }
+  .wrap { max-width: 1240px; margin: 0 auto; padding-block: 36px 96px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 40px; }
+  a { color: var(--brass); text-underline-offset: 3px; }
+  :focus-visible { outline: 2px solid var(--brass); outline-offset: 3px; }
+  .kicker { font: 600 12px/1 var(--font-mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--brass); }
+  h1 { font: 900 clamp(42px, 7.5vw, 80px)/0.92 var(--font-display); color: var(--ink); margin: 10px 0 14px; text-wrap: balance; }
+  .lede { max-width: 70ch; font-size: 18px; margin: 0; }
+  .card { background: var(--panel); border: 1px solid var(--edge); border-radius: 14px; padding: 22px clamp(16px, 3vw, 28px); box-shadow: inset 0 1px 0 rgba(255,236,200,0.05), 0 14px 34px rgba(0,0,0,0.3); }
+  .card h2 { margin: 0 0 10px; font: 900 28px/1.05 var(--font-display); color: var(--ink); }
+  .inventory { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 12px 24px; margin: 0; padding: 0; list-style: none; }
+  .inventory li { font-size: 14.5px; }
+  .inventory b { color: var(--ink); display: block; font-size: 15px; }
+  .assume { margin: 12px 0 0; font-size: 14.5px; color: var(--ink-dim); max-width: 90ch; }
+
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; padding: 10px 0; background: linear-gradient(var(--felt-deep) 80%, transparent); }
+  .tabs button { font: 800 15px/1 var(--font-body); color: var(--ink-body); background: var(--panel); border: 1px solid var(--edge-strong); border-radius: 999px; padding: 10px 16px; cursor: pointer; }
+  .tabs button[aria-selected="true"] { background: var(--brass); color: var(--brass-ink); border-color: var(--brass); }
+  .tabs button span { font: 600 12px/1 var(--font-mono); opacity: 0.75; margin-left: 6px; }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--felt-deep); }
+
+  .item-head { display: grid; gap: 6px; margin-bottom: 18px; }
+  .item-head h2 { margin: 0; font: 900 clamp(32px, 5vw, 46px)/1 var(--font-display); color: var(--ink); }
+  .item-head p { margin: 0; max-width: 80ch; }
+  .dir { display: grid; grid-template-columns: minmax(0, 1fr) 236px; gap: 16px 20px; padding: 20px; margin-bottom: 18px; background: var(--panel); border: 1px solid var(--edge); border-radius: 14px; }
+  .dir.pick { border-color: rgba(127, 198, 160, 0.55); box-shadow: inset 0 0 0 1px rgba(127, 198, 160, 0.25); }
+  .dir h3 { grid-column: 1 / -1; margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; font: 800 22px/1.2 var(--font-body); color: var(--ink); }
+  .dir h3 .code { font: 900 26px/1 var(--font-display); color: var(--brass); }
+  .dir.orig { background: rgba(28, 25, 22, 0.55); border-style: dashed; }
+  .dir.orig h3 .code { color: var(--ink-dim); }
+  .dir h3 .mine { font: 700 12px/1 var(--font-mono); color: #08210f; background: var(--pick); border-radius: 999px; padding: 5px 9px; }
+  .frames { display: contents; }
+  .fd, .fp { position: relative; overflow: hidden; border-radius: 10px; border: 1px solid var(--edge-strong); background: #000; }
+  .fd { aspect-ratio: 1200 / 675; }
+  .fp { width: 236px; height: 402px; align-self: start; }
+  .fd iframe, .fp iframe { position: absolute; left: 0; top: 0; border: 0; transform-origin: 0 0; }
+  .fd iframe { width: 1200px; height: 675px; }
+  .fp iframe { width: 390px; height: 664px; transform: scale(0.6051); }
+  .flabel { position: absolute; left: 8px; bottom: 8px; z-index: 2; font: 600 11px/1 var(--font-mono); color: #fff; background: rgba(0,0,0,0.6); border-radius: 999px; padding: 4px 8px; pointer-events: none; }
+  .facts { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 10px 22px; margin: 0; }
+  .facts div { font-size: 14.5px; }
+  .facts dt { font: 600 11px/1.3 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); }
+  .facts dd { margin: 3px 0 0; }
+  .tools { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 14px; font-size: 14px; }
+  .tools button { font: 700 13px/1 var(--font-body); color: var(--ink); background: none; border: 1px solid var(--edge-strong); border-radius: 999px; padding: 8px 12px; cursor: pointer; }
+  @media (max-width: 760px) {
+    .dir { grid-template-columns: minmax(0, 1fr); padding: 14px; }
+    .fp { justify-self: center; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="kicker">Phase 2 · Directions · 17 Oct 2026</span>
+    <h1>Pick a direction for each piece</h1>
+    <p class="lede">Every direction is a working mock-up running on the game's own table, tokens, fonts, cards and chips, photographed off the live build and placed on its measured slots. Each one is shown live at desktop and iPhone 14 size. Nothing here touches shipping source. My recommendation in each tab is marked, and the choice is yours.</p>
+  </header>
+
+  <section class="card" aria-labelledby="inv-h">
+    <h2 id="inv-h">What only this game has</h2>
+    <ul class="inventory">
+      <li><b>The bus</b>The route line under the cards with its four stops and terminus, the bus that rides it, and Last Stop's punched ticket.</li>
+      <li><b>The destination blind</b>MODE, lettered on a recessed sign in the family's colour, with seven bolts.</li>
+      <li><b>The bar table</b>Oval wood under one lamp from the upper right, the red party cup, chip stacks, the deck, the die.</li>
+      <li><b>The house</b>Takeover Casino: the crown-over-spade chip, and the lettered backs on every card.</li>
+      <li><b>The deck</b>English-pattern courts with the crown, the house Ace of Spades, red or black and never both.</li>
+      <li><b>The four guesses</b>Colour, Higher / Lower, Inside / Outside and Suit, with "=" on the seam, all picked before the deal.</li>
+    </ul>
+    <p class="assume">Assumed rather than asked (your brief allowed one question round, and the Phase 1 answers covered it): every direction keeps your settled calls (the deal disc, "=" on the seam, no dimming on a pick, the ticket over cards 2-3, the two-row phone bar). Money, the maths and the copy Stake requires stay exactly as they are; where a direction needs a new string, it says so.</p>
+  </section>
+
+  <section class="card" aria-labelledby="rest-h">
+    <h2 id="rest-h">The other six panels</h2>
+    <p style="margin:0 0 12px;max-width:80ch">One rule would tie them together. A menu that holds a single control becomes a <b>bump</b>: a small pop-over grown out of the button that opened it, with the board still in view. A menu people read stays a full panel. Every bump keeps the colour of the button that opened it, as the panels do now. That is a design.md change, and yours to make.</p>
+    <ul class="inventory">
+      <li><b>Turbo · redo</b>A centred dialog for one slider. Your bump idea is the pick (T1).</li>
+      <li><b>Sound · touch-up</b>Becomes a bump. The boxed speakers go bare (touch-up 2).</li>
+      <li><b>Bet · touch-up</b>The chips are already good; they move into a tray that rises from the bet display.</li>
+      <li><b>Recent rounds · touch-up and a bug</b>A round that kept money prints no result word ("Kept" is missing). Becomes a drawer.</li>
+      <li><b>Autoplay · redo the layout</b>About 19 controls in one sheet. Counts first, stop rules folded behind a summary, Stake's confirmation kept.</li>
+      <li><b>How to play · redo the structure</b>The text stays word for word (Stake reads it). It gains sections you can jump to, and pictures of the guesses.</li>
+    </ul>
+  </section>
+
+  <section class="card" aria-labelledby="peek-h">
+    <h2 id="peek-h">The rest of the screen</h2>
+    <p style="margin:0 0 12px;max-width:80ch">Four more elements, mocked in the last four tabs: the control bar, the deal button, the table's props and the running total. Others I looked at but did not mock, because each would be a small tweak, not a direction:</p>
+    <ul class="inventory">
+      <li><b>The board's title lockup</b>It takes about 65px of a phone's 664. It could shrink once the loader carries the brand.</li>
+      <li><b>The MODE bolts</b>6.8px on the bar. They need to be 9px or more, or left to the picker.</li>
+      <li><b>The win takeover</b>Already on the touch-up list: the title over the cards, and the burst.</li>
+      <li><b>Bet and balance type</b>Fine as is; the bar directions show them in new housings.</li>
+    </ul>
+  </section>
+
+  <nav class="tabs" role="tablist" aria-label="Pieces">
+    <button role="tab" data-tab="EQ" aria-selected="true">New · E3's "=" pick<span>5+1</span></button>
+    <button role="tab" data-tab="A" aria-selected="false">A · Loader<span>3+1</span></button>
+    <button role="tab" data-tab="C" aria-selected="false">C + F · Hand-offs<span>2+1</span></button>
+    <button role="tab" data-tab="E" aria-selected="false">E · Guess squares<span>6+1</span></button>
+    <button role="tab" data-tab="G" aria-selected="false">G · Mode picker<span>3+1</span></button>
+    <button role="tab" data-tab="B" aria-selected="false">B · Room<span>3+1</span></button>
+    <button role="tab" data-tab="D" aria-selected="false">D · Card faces<span>3+1</span></button>
+    <button role="tab" data-tab="T" aria-selected="false">Turbo<span>2+1</span></button>
+    <button role="tab" data-tab="S" aria-selected="false">Sound<span>2+1</span></button>
+    <button role="tab" data-tab="BT" aria-selected="false">Bet<span>2+1</span></button>
+    <button role="tab" data-tab="R" aria-selected="false">Recent rounds<span>2+1</span></button>
+    <button role="tab" data-tab="P" aria-selected="false">Autoplay<span>2+1</span></button>
+    <button role="tab" data-tab="H" aria-selected="false">How to play<span>2+1</span></button>
+    <button role="tab" data-tab="X" aria-selected="false">Control bar<span>3+1</span></button>
+    <button role="tab" data-tab="DL" aria-selected="false">Deal button<span>3+1</span></button>
+    <button role="tab" data-tab="TB" aria-selected="false">Table props<span>3+1</span></button>
+    <button role="tab" data-tab="RW" aria-selected="false">Running total<span>2+1</span></button>
+  </nav>
+
+  <main id="panes"></main>
+</div>
+
+<script>
+  const ITEMS = {
+    EQ: { title: 'E3: where the chip goes, and four ways to mark "="', intro: 'Your rule, applied to every half: a pick lights its section (brighter, ringed in gold) and the chip sits on that section\'s outer corner, half over the frame, never on the symbol. "=" is the open question, so here are four ways. Each plays two passes: Red, "=" on Higher/Lower, Outside, Spade; then Black, Higher, "=" on Inside/Outside, Heart. The badge is the board\'s own rounded square, half a guess square.',
+      dirs: [
+        { code: '=5', name: 'Your spec (chosen 2026-10-17)', file: 'e3-eq5', pick: true,
+          idea: '"=" sets the chip HALF ONTO the badge along the seam: on its right edge on Higher/Lower, its bottom edge on Inside/Outside. The badge is smaller than today (34% of the square, from 50%) and lights and grows 10% as the chip lands. Every other pick sets its chip inside the section by hand: a little jitter, a random spin, and on Higher/Lower and Inside/Outside a random side of the mark, never on it. The section lights.',
+          reuse: 'The chip, the badge and the section ring.',
+          motion: 'The chip sets down (300ms ease-out). The badge grows and its ring fades in (180ms).',
+          bytes: 'Nothing beyond E3.',
+          risk: 'The suit quarters are small, so their chip is smaller (18% of the square) and tucked in the outer corner. It may still touch a mark at 320px; this is checked on the real glyphs when E3 is built. Replay the panes to see the placement change.' },
+        { code: '=1', name: 'Corner of the badge', file: 'e3-eq1',
+          idea: '"=" lights and lifts, and the chip sits on the badge\'s outer corner, off the mark: the same rule as the halves.',
+          reuse: 'The badge as it is, the chip and the section ring.',
+          motion: 'The badge lifts 8% (180ms ease-out) and the chip sets down (300ms).',
+          bytes: 'Nothing beyond E3.',
+          risk: 'Ambiguous, which is the thing to avoid. The badge\'s corner falls almost where a Higher pick puts its chip, so the chip\'s position alone does not tell "=" from Higher. Shown so you can see why I would not choose it.' },
+        { code: '=2', name: 'The seam\'s own spot', file: 'e3-eq2',
+          idea: 'A faint ring is printed where the seam meets the frame: on Higher/Lower\'s right edge, on Inside/Outside\'s bottom edge. "=" puts the chip in that ring and lights the badge. Every option then has a place of its own: two corners and the seam.',
+          reuse: 'The chip, and the same gold ink as the frame.',
+          motion: 'The chip sets down (300ms) and the badge ring fades in (160ms).',
+          bytes: 'Under 1 KB.',
+          risk: 'A chip on a seam sits between two halves by definition, so the lit badge does the telling. The printed rings add two small marks to the layout.' },
+        { code: '=3', name: 'A gold lid', file: 'e3-eq3',
+          idea: '"=" closes both halves under one gold band, wiped in from the seam, with the mark on it. The whole square says "=", and the chip sits on the lid\'s corner like on any other pick.',
+          reuse: 'The badge\'s gold and the mark.',
+          motion: 'A clip-path wipe from the seam out (220ms ease-out), then the chip.',
+          bytes: 'About 1 KB.',
+          risk: 'Hides both halves\' colours while "=" is picked. That is the point, but un-picking must bring them back the same way. The board-never-moves rule holds, because the lid is laid over the square.' },
+        { code: '=4', name: 'The badge rides the chip', file: 'e3-eq4',
+          idea: 'The chip goes UNDER the badge, so its red-and-white rim shows all round the square and the "=" stays on top. Nothing covers the mark, and no other pick looks like it.',
+          reuse: 'The chip at a larger size, and the badge.',
+          motion: 'The chip slides in under (300ms) while the badge rises 4px onto it.',
+          bytes: 'Under 1 KB.',
+          risk: 'The chip is bigger than on the halves, about 60% of the square, so it brushes both halves\' marks on phones. A different size of chip for one pick.' },
+      ] },
+    A: { title: 'The loader', intro: 'The first second of the game. Today: a centred splash on plain felt whose bar stalls at 90% and whose cards never land. All three put the real table under the loader from its first frame, and none of them shows a progress number it cannot back up.',
+      dirs: [
+        { code: 'A1', name: 'The deal', file: 'a1-deal', pick: true,
+          idea: 'Each real loading milestone deals one house back from the deck onto its board slot. The deal is the progress. If sign-in is slow, the deck riffles once and one line says so; when the game is ready, the props and the bar arrive around the cards the player is about to play.',
+          reuse: 'The table, the deck prop, the card backs and the measured slots, plus the deal code plan 001 retimes.',
+          motion: 'A stagger of shared element transitions, deck to slot (520ms ease-out). One riffle while waiting, then nothing; no loop.',
+          bytes: 'About 3-4 KB of CSS and JS, and no assets: everything drawn already ships.',
+          risk: 'One new string ("Connecting to the table…") in 17 locales plus social mode. The loader mounts before the game tree, so the slots have to be known before the board exists. Replay must keep auto-load, then round details, then Play.' },
+        { code: 'A2', name: 'The destination blind', file: 'a2-blind',
+          idea: 'A roller blind on the table rolls through the four guesses, one stop per milestone, while the bus moves along the route beneath it, and lands on "Ride The Bus". The sign then rises into the board lockup and drops its frame.',
+          reuse: 'MODE\'s sign recipe at hero size, the route and bus marker, and the four guess names, already translated in every locale.',
+          motion: 'A stepped roll (the closest glossary term is number ticker) at 340ms ease-in-out per stop, then a shared element transition into the lockup.',
+          bytes: 'About 3 KB, with no new strings.',
+          risk: 'Long translated guess names (Finnish, Russian) on one sign need the same fitBlock the MODE sign uses. Big Shoulders is Latin only, so other scripts fall back to Overpass.' },
+        { code: 'A3', name: 'The chip', file: 'a3-chip',
+          idea: 'The house chip is dropped on the table and spins on its edge for as long as loading lasts. It settles flat when ready and slides onto the red stack as the table fills in.',
+          reuse: 'The chip logo (already shipped and preloaded) and the chip stacks.',
+          motion: '3D tilt / Flip on a loop, then follow-through as it settles. One deliberate wobble.',
+          bytes: 'About 2 KB.',
+          risk: 'The chip is a raster, so edge-on frames show a thin sliver. It says the least about progress, and the cards never appear, so it does nothing for item C.' },
+      ] },
+    C: { title: 'One continuous table, with the intro (F) folded in', intro: 'Today the intro leaves in one frame, and the cup, chips, deck and die pop in with the board. Both directions keep a single table under every screen.',
+      dirs: [
+        { code: 'C1', name: 'The panels become the slots', file: 'c1-panels-to-slots', pick: true,
+          idea: 'On Continue, each of the four intro panels (the real ones, photographed off the live build at their real tilts) shrinks into the card slot it was teaching and turns face down there. The chip logo leaves, the wordmark glides to its board position, and the props and the bar arrive with the cards.',
+          reuse: 'The intro panels as they are, the board, and the deal\'s measured-at-rest helpers.',
+          motion: 'A shared element transition, 440ms ease-in-out with 60ms between panels. Under reduced motion, a 150ms crossfade.',
+          bytes: 'About 2-3 KB, with no new strings.',
+          risk: 'StartScreen draws its own table with the props off, so the intro must sit on the board\'s table instead. On phones the panels sit in a 2×2 grid and fly to a row of four, so their paths cross. Focus must land on the board.' },
+        { code: 'C2', name: 'The board explains itself', file: 'c2-board-narrates',
+          idea: 'There is no overlay. The live board is up from the start, and a spotlight walks the four guess squares one beat each, dealing an example card into the matching slot. It ends where play begins.',
+          reuse: 'The real board, the squares and the card faces.',
+          motion: 'A dimmed mask with a window that moves between squares by layout animation (420ms ease-in-out), plus a stagger of example deals. No glossary term fits exactly.',
+          bytes: 'About 4-5 KB.',
+          risk: 'The biggest change of the two. Four new captions in 17 locales. The intro\'s "257 ways · RTP · Max win" line, which Stake asks for, must move to How to Play and the picker. Auto-advance must pause and skip (WCAG 2.2.2), and screen-reader order needs work.' },
+      ] },
+    E: { title: 'The guess squares', intro: 'Today: flat app tiles on a table of lit objects, an unreadable Inside/Outside mark, and a pick that turns pastel. All three redraw Inside/Outside as card pictograms (a card between two outlines, a card beyond them), keep "=" on the seam, keep full colour on a pick, and dim nothing else. The demo picks Black, Higher, Outside and Hearts.',
+      dirs: [
+        { code: 'E1', name: 'Brass-inlaid tiles', file: 'e1-brass', pick: true,
+          idea: 'Felt fields set into a brass bezel with thickness and a lit top edge: objects on the table, like the die. A pick presses the field in and lines it with brass.',
+          reuse: 'The "Felt & brass" fills already chosen, and the brass of the "=" badge.',
+          motion: 'Press / Tap feedback held as a state: a 1px press with an inset, 140ms ease-out.',
+          bytes: 'About 3 KB of CSS, plus the redrawn glyph SVG.',
+          risk: 'More gold sits near the "=" coin. The squares\' contrast must be measured at the 9px phone floor, and the colour-blind check redone.' },
+        { code: 'E2', name: 'Punch tickets', file: 'e2-tickets',
+          idea: 'Each guess is a bus-ticket stub, notched at the seam, with its options printed in the game\'s colours. A pick is punched like a conductor\'s ticket.',
+          reuse: 'Last Stop\'s ticket language and the card paper.',
+          motion: 'Pop in for the punched hole, and an exit for the paper dot.',
+          bytes: 'About 3 KB.',
+          risk: 'The meaning clashes: on Last Stop a ticket is a multiplier. Paper tiles become the brightest things below the cards and compete with them. A hole punched in a black field is barely visible.' },
+        { code: 'E3', name: 'A chip on the box', file: 'e3-chip-on-box',
+          idea: 'The guesses are printed in gold ink on a baize betting layout set into the table. A pick sets down one of the table\'s own red chips on the box.',
+          reuse: 'The chips and the felt tokens.',
+          motion: 'Scale in with follow-through: a set-down that settles once, 300ms.',
+          bytes: 'About 4 KB.',
+          risk: 'A chip per guess suggests four separate bets, when the round is one bet. That is a player-facing misreading, so check it against the approval rules before choosing this. The baize strip is a large new surface.' },
+        { code: 'E4', name: 'Casino plaques', file: 'e4-plaques',
+          idea: 'Each guess is a high-value casino plaque: a lacquered slab with chip-style edge inserts, its options lacquered into the face. A pick gets a gold-foil inlay, and its glyph turns gold.',
+          reuse: 'The chips\' edge pattern and the brass of the "=" badge.',
+          motion: 'None beyond the state change (a 140ms ease-out on the inlay).',
+          bytes: 'About 3 KB.',
+          risk: 'The edge inserts are busy at phone size, and four patterned borders brush against the "border effects" Stake\'s rankings name.' },
+        { code: 'E5', name: 'Destination signs', file: 'e5-signs',
+          idea: 'Each guess is a small destination blind, MODE\'s material: recessed and dark, with every option drawn in its own colour. A pick paints that panel in its colour with dark ink, like the blind rolled to that destination. The Color guess gets a card pictogram in each colour.',
+          reuse: 'The MODE sign recipe, which would tie the squares to the bar and to G1.',
+          motion: 'A 180ms colour fill on the picked panel. No movement.',
+          bytes: 'About 3 KB.',
+          risk: 'Unpicked options become coloured glyphs on near-black, so their colour fields are smaller: the colour-blind and contrast checks must be redone. The colour glyphs here are lighter mock tints, not tokens yet.' },
+        { code: 'E6', name: 'Inlaid enamel', file: 'e6-enamel',
+          idea: 'No raised tile: the guesses are enamel inlaid flush in the table, the fields divided by brass wire (cloisonné). A pick sets a brass stud in the field and doubles its wire. Nothing else changes.',
+          reuse: 'The "Felt & brass" fills, as enamel.',
+          motion: 'Scale in for the stud (160ms ease-out).',
+          bytes: 'About 3 KB.',
+          risk: 'Flush inlays are the least obviously pressable of the six, the same problem the die has on phones. The stud is small at 9px-floor phone sizes.' },
+      ] },
+    G: { title: 'The Game mode picker, after the Buy Bonus study', intro: 'The five families in volatility order, with their real blurbs, ceilings and Three of a Kind\'s cost. No outer dialog box: as in your reference, the cards sit on the dimmed game, so there is one container, not a card inside a card. Each shows the arrival and then Stake\'s confirmation on High Stakes, laid over the chosen card so no card changes size. "Playing now" is the one new string.',
+      dirs: [
+        { code: 'G1', name: 'Destination blinds', file: 'g1-blinds', pick: true,
+          idea: 'Each card is headed by the MODE sign itself: recessed, dark, the family\'s name lettered in its colour, with the seven bolts. The panel shows the same blind the bar shows.',
+          reuse: 'The MODE sign recipe, the BoltMeter, the panel material and the action button. The vignettes are made from CardFace, TicketFace and the chips.',
+          motion: 'Orchestration: the panel arrives (220ms), then the five cards are dealt up in a stagger, 45ms apart with a small tilt.',
+          bytes: 'About 5-7 KB of CSS, and the vignettes reuse shipped components.',
+          risk: 'Five columns at Popout S need the 6px type floor and a scroll. Long family names (Finnish, Portuguese) need fitBlock on the sign. design.md changes: the mode panel becomes "a rack", not "a list".' },
+        { code: 'G2', name: 'Flood heads', file: 'g2-flood',
+          idea: 'The head is flooded in the family colour with dark ink, and the card\'s top edge is lit in the same tint. This is closest to your reference\'s punch.',
+          reuse: 'As G1, with --on-vol-ink on the floods.',
+          motion: 'As G1.',
+          bytes: 'As G1.',
+          risk: 'Five saturated floods at once make this the loudest panel in the game. A red flood next to a red Switch reads as destructive. Contrast on the yellow and green floods must be measured.' },
+        { code: 'G3', name: 'The dealt hand', file: 'g3-hand',
+          idea: 'The families are oversized playing cards in the card\'s own paper, fanned like a hand with the live one lifted. Switch turns the chosen card over, and the confirmation is printed on its back. On phones the hand becomes a swipeable row.',
+          reuse: 'The card paper, TicketFace\'s band, and the flip the board already uses.',
+          motion: 'A stagger (the deal) plus 3D tilt / Flip for the confirmation, 460ms ease-in-out.',
+          bytes: 'About 6-8 KB.',
+          risk: 'Blurbs on paper drop to about 11.5px. Tilted text is harder to read. On phones only one family is in full view at a time, though Stake asks for each mode\'s description and cost, so all five must stay reachable. The fan geometry must hold at Popout S.' },
+      ] },
+    B: { title: 'A room around the table', intro: 'Today, about a third of the desktop frame is a dark-green fade with no light. All three are still: nothing in the room moves. The table and the interface are the real game, photographed without their surround.',
+      dirs: [
+        { code: 'B1', name: 'The back room', file: 'b1-backroom', pick: true,
+          idea: 'Walnut panelling to a brass rail, dark boards below, a framed route map on the wall, and one lamp pool from the upper right, the table\'s own light.',
+          reuse: 'The lamp direction from table.css, and the route line and stop marks.',
+          motion: 'None. A still room.',
+          bytes: 'About 1-2 KB of CSS gradients plus a tiny inline SVG.',
+          risk: 'Wood on wood lowers the table\'s edge contrast, which may need a deeper shadow under the rim. The panel seams must not shimmer at Popout S.' },
+        { code: 'B2', name: 'The depot at night', file: 'b2-depot',
+          idea: 'The bus depot after hours: dark brick, a sodium lamp from the upper right, a painted bay line on the floor and a faded route mural.',
+          reuse: 'The route language, and the lamp direction.',
+          motion: 'None.',
+          bytes: 'About 2 KB.',
+          risk: 'It mixes two worlds: a bar table in a bus depot. The cool brick works against the warm one-light rule, and is held back only by the lamp.' },
+        { code: 'B3', name: 'Lit felt', file: 'b3-lit-felt',
+          idea: 'The smallest change: today\'s green, but actually lit. One lamp falls across a baize floor, the corners drop away, and the table casts its shadow down and to the left.',
+          reuse: 'The felt tokens.',
+          motion: 'None.',
+          bytes: 'Under 1 KB.',
+          risk: 'The lowest risk, and possibly too subtle to count as "a room".' },
+      ] },
+    D: { title: 'Takeover-themed card faces', intro: 'Two courts and two numbers dealt on the real board (K♥ 7♣ Q♦ J♠), drawn with the game\'s real English-pattern court art. On desktop, today\'s King and 7 sit at the left and the proposal at the right, at detail size. The colour-family rule holds in every direction: red cards print in reds, black cards in inks, plus gold and paper.',
+      dirs: [
+        { code: 'D1', name: 'House print', file: 'd1-house-print', pick: true,
+          idea: 'A fine inner frame in the card\'s own colour family, notched around the index, and the Takeover crown as a faint gold watermark, on the number cards. The courts already carry the house frame and crowns, so D1 brings the numbers up to them and leaves the courts as they are.',
+          reuse: 'The crown, the gold and the index layout as they are.',
+          motion: 'None.',
+          bytes: 'About 1 KB inside CardFace.',
+          risk: 'Under 46px the compact face takes over and the watermark must go, which is already the rule. cardFace.test.ts must still find one colour family per card.' },
+        { code: 'D2', name: 'The back shows through', file: 'd2-back-print',
+          idea: 'The house back\'s crosshatch printed as a fine border band in the card\'s own ink, so the face and the back read as one deck.',
+          reuse: 'The card back\'s pattern.',
+          motion: 'None.',
+          bytes: 'About 1.5 KB, with one pattern id per card.',
+          risk: 'At 32px the hatch becomes noise, so it is off on the compact face. Patterned borders are close to the "border effects" Stake\'s rankings name.' },
+        { code: 'D3', name: 'Bold index', file: 'd3-bold-index',
+          idea: 'Type leads: a bigger Big Shoulders 900 index under a crown-and-pip seal, slightly smaller pips and a double frame.',
+          reuse: 'Big Shoulders, the crown and the pips.',
+          motion: 'None.',
+          bytes: 'About 1 KB, but it changes the INDEX constants.',
+          risk: 'The bigger index crowds the court figure\'s corner and the 10\'s top pip. It changes cardFaceLayout\'s INDEX numbers, which typeFit and the face tests measure.' },
+      ] },
+  };
+
+  Object.assign(ITEMS, {
+    T: { title: 'Turbo', intro: 'Today: a centred dialog with one slider in it. Both directions keep the same range (Normal to Instant, capped at Fast where the operator turns super-turbo off) and the same strings.',
+      dirs: [
+        { code: 'T1', name: 'The bump slider (your idea)', file: 't1-turbo-bump', pick: true,
+          idea: 'Tapping the bolt grows a small amber bump out of it with the slider and its readout. Nothing else is in it. A tap anywhere else closes it, and the board stays in view.',
+          reuse: 'TurboPopup\'s slider, range and strings, and the amber turbo tint.',
+          motion: 'Origin-aware animation: a scale-in from the button, 180ms ease-out. It closes instantly, as panels do now.',
+          bytes: 'About 1 KB, and it removes more than it adds.',
+          risk: 'The bump must stay on screen at Popout S, where the bar is tiny. On phones it opens upward over the deal row. Escape and focus must behave like a panel.' },
+        { code: 'T2', name: 'Tap to cycle', file: 't2-turbo-cycle',
+          idea: 'No menu at all. Each tap steps Off → Fast → Instant, and the bolt fills by thirds as a gauge, with two ticks under it. A label names the new setting for a moment. A long press opens T1\'s bump for fine control.',
+          reuse: 'The existing "Fast" and "Instant" strings; the bolt becomes the gauge.',
+          motion: 'A clip-path fill of the bolt (220ms), and a label fade.',
+          bytes: 'About 1-2 KB.',
+          risk: 'It changes what a tap does, so players used to the slider lose the in-between speeds unless they find the long press. A gauge in the bolt breaks "controls are lines, gauges are fills" unless design.md names the exception.' },
+      ] },
+    S: { title: 'Sound', intro: 'Today: a centred dialog with two sliders, each mute toggle a speaker in a bordered box.',
+      dirs: [
+        { code: 'S1', name: 'The sound bump', file: 's1-sound-bump', pick: true,
+          idea: 'The two levels in a cream bump over the speaker. Each mute toggle is a bare speaker that gets struck through when muted, and its slider dims.',
+          reuse: 'SoundPopup\'s sliders, the mixer\'s separate volume and mute fields, and the cream sound tint.',
+          motion: 'Origin-aware scale-in, 180ms. The strike is instant.',
+          bytes: 'About 1 KB.',
+          risk: 'Small: it is a re-housing. The struck speaker must still say "muted" to a screen reader (aria-pressed).' },
+        { code: 'S2', name: 'Tap to mute, hold for levels', file: 's2-sound-tap',
+          idea: 'A tap on the speaker mutes or unmutes everything, the most common thing anyone wants from it, and the speaker shows it. A long press (with a fill ring) opens S1\'s bump for the two levels.',
+          reuse: 'S1, plus the mixer\'s two mutes set together.',
+          motion: 'A hold ring that fills over about 450ms, then the bump.',
+          bytes: 'About 1-2 KB.',
+          risk: 'Two new strings ("Sound off" and "Sound on") in 17 locales. A long press is undiscoverable on desktop, so a mouse needs a small chevron as well.' },
+      ] },
+    BT: { title: 'Bet', intro: 'Today: a centred "Bet menu" with a typed field and the chips in a wrapping row. The chips are good and stay; the question is where they live.',
+      dirs: [
+        { code: 'B1', name: 'The chip tray', file: 'b1-bet-tray', pick: true,
+          idea: 'A baize tray with a brass lip rises out of the bet display, holding the chips in a row, with "Other amount" beside it for any bet. The chosen chip lifts, and the bet display updates behind the tray.',
+          reuse: 'The chips (colour by rank, labelEms fitting), the felt tokens and the yellow bet tint.',
+          motion: 'Origin-aware scale-in, 180ms, and a 180ms lift on the chosen chip.',
+          bytes: 'About 1-2 KB.',
+          risk: 'Seven chips plus a field must fit a 320px phone: two rows there. The money-fitting rules for 24-character currencies (TZS, UGX, XOF) still apply to every chip.' },
+        { code: 'B2', name: 'The dealer\'s rack', file: 'b2-bet-rack',
+          idea: 'The bet menu as a wooden chip rack: each denomination a stack standing in its slot, seen from the front, and the chosen one rising out of it.',
+          reuse: 'The chip colours and the table\'s wood.',
+          motion: 'Panel arrival (220ms) and a 200ms lift.',
+          bytes: 'About 2 KB.',
+          risk: 'Values are printed under the stacks, not on the chips, which is weaker for long currencies. It is a centred panel again, which hides the board.' },
+      ] },
+    R: { title: 'Recent rounds', intro: 'Today: a centred list of the session\'s rounds. The five rounds here were really played on the dev build; the Second Chance win is marked as an example. Both fix the missing "Kept" word.',
+      dirs: [
+        { code: 'R1', name: 'Ticket stubs', file: 'r1-history-stubs',
+          idea: 'Each round is a paper stub with a band in its family colour and the hand as real mini cards: the bust card crossed out, the forgiven one marked. The result reads in words with the amount, and the picks sit underneath.',
+          reuse: 'CardFace at mini size, the ticket stub, and the result words from design.md.',
+          motion: 'Stubs are dealt up in a stagger, 45ms apart.',
+          bytes: 'About 2 KB, and mini CardFaces cost DOM, not bytes.',
+          risk: 'Ten rounds of mini cards is a lot of SVG on a phone. Paper rows are bright on a dark panel.' },
+        { code: 'R2', name: 'The ledger drawer', file: 'r2-history-drawer', pick: true,
+          idea: 'A drawer slides in from the Last Win side (a bottom sheet on phones), so the board stays in view. Each round reads at a glance as the bus route: four stops, right ✓, wrong ×, forgiven ↺, or never reached.',
+          reuse: 'The route line under the cards, the family colours and the result words.',
+          motion: 'Slide in, 320ms ease-out (a direction-aware transition).',
+          bytes: 'About 1-2 KB.',
+          risk: 'A drawer from the right must mirror in Arabic. Green and red dots need their marks (✓ ×) for colour-blind players, which they have.' },
+      ] },
+    P: { title: 'Autoplay', intro: 'Today: about 19 controls in one sheet (nine count pills, a stepper, two typed limits with unit switches and arm buttons, two toggles), and a disabled Start that looks pressable. Stake requires a confirmation before a run starts; Start is that confirmation in both.',
+      dirs: [
+        { code: 'P1', name: 'Counts first, stops folded', file: 'p1-autoplay-steps', pick: true,
+          idea: 'Five large counts and a Start that names the run ("Start 25 rounds"). The stop rules fold behind one row whose summary always says what is armed. A disabled Start looks disabled and says why.',
+          reuse: 'Every existing control and limit rule (autoplayLimits.ts), regrouped.',
+          motion: 'An accordion for the stops (260ms), and a pill fill.',
+          bytes: 'About 2 KB.',
+          risk: 'New strings ("How many rounds?", "Start %n rounds", "Stops", "None set", "Pick all 4 guesses first") in 17 locales. The stepper for other counts must survive somewhere (the ∞ pill plus a field).' },
+        { code: 'P2', name: 'The quick bump', file: 'p2-autoplay-bump',
+          idea: 'A bump over the autoplay button holds four counts and Start, the quick path. "Stop rules…" opens the full panel only when wanted. The button then counts the run down.',
+          reuse: 'The countdown the button already shows, and P1\'s panel for the rules.',
+          motion: 'Origin-aware scale-in, 180ms.',
+          bytes: 'About 2 KB on top of P1.',
+          risk: 'The quickest path skips past the stop rules. That is allowed, but weaker on responsible-gambling optics. Two surfaces to keep in step.' },
+      ] },
+    H: { title: 'How to play', intro: 'Today: a correct but long scroll of prose. Both keep every sentence Stake requires, word for word, and change only how it is organised. These mock-ups abbreviate the payout table, the controls and the disclaimer; the shipped version keeps all of it.',
+      dirs: [
+        { code: 'H1', name: 'The illustrated guide', file: 'h1-howto-guide', pick: true,
+          idea: 'One scroll, as now, with section tabs that stay at the top to jump around. The four guesses are shown with their squares and real example cards, the card order as a strip of ranks, and each mode as a row in its colour with its max win.',
+          reuse: 'Every existing string, CardFace minis and the family colours.',
+          motion: 'None beyond a scroll to the chosen section.',
+          bytes: 'About 2 KB.',
+          risk: 'Low. Everything stays in one document for screen readers and reviewers. The tabs must be real jump links, not hidden panels.' },
+        { code: 'H2', name: 'Flip through it', file: 'h2-howto-deck',
+          idea: 'The guide as a deck of large cards, one topic each, paged with arrows, dots and swipes.',
+          reuse: 'The same strings, sectioned.',
+          motion: 'A direction-aware slide between pages, 320ms ease-in-out.',
+          bytes: 'About 2 KB.',
+          risk: 'It hides most of the rules behind paging, which reviewers and screen-reader users have to step through. Long sections (the payout table) do not fit a card.' },
+      ] },
+  });
+  Object.assign(ITEMS, {
+    X: { title: 'The control bar', intro: 'Today: a row of separate pills and discs, each with its own border, floating under the table. These are drawn over the real board with today\'s bar removed. Every control and every money figure stays; only the housing changes. The deal disc stays the blue disc in all three (see the Deal button tab for alternatives).',
+      dirs: [
+        { code: 'X1', name: 'The table rail', file: 'x1-bar-rail', pick: true,
+          idea: 'The bar becomes the table\'s own front rail: walnut, a brass inlay along the top, the controls set into it as bare glyphs. The money sits in recessed wells like the MODE sign, and the deal disc sits in a brass bezel.',
+          reuse: 'The table\'s wood, the MODE sign\'s recessed well, the bare glyphs (touch-up 1).',
+          motion: 'None of its own.',
+          bytes: 'About 2-3 KB of CSS, a restyle of control-bar.css.',
+          risk: 'The phone bar\'s two-row layout and its width budget (F-11, the 9px floor, every currency) have to be re-proven. It touches the rule to leave the two-row phone bar alone, which is yours to reopen.' },
+        { code: 'X2', name: 'The bus dashboard', file: 'x2-bar-dash',
+          idea: 'A bus driver\'s dash: charcoal with a curved top edge. The money sits on odometer drums that roll when a figure changes, the captions are in amber, and (shown here with DL2) the deal is the big red stop-request button.',
+          reuse: 'The bus world, and the MODE sign as the destination blind on the dash.',
+          motion: 'An odometer roll on changing digits, 520ms.',
+          bytes: 'About 3-4 KB.',
+          risk: 'Odometer cells per character fight the money-fitting rules for 24-character currencies. It is the most themed, and the most likely to feel like a skin.' },
+        { code: 'X3', name: 'The quiet strip', file: 'x3-bar-quiet',
+          idea: 'The lightest bar: one slim strip fading up into the room, with bare glyphs and plain figures. No pills or wells; the deal disc is the only object.',
+          reuse: 'Everything, with the containers removed.',
+          motion: 'None.',
+          bytes: 'Smaller than today.',
+          risk: 'Figures sit straight on the room, so contrast over the table edge must hold at every size. Least character of the three.' },
+      ] },
+    DL: { title: 'The deal button', intro: 'You settled on the blue disc with no caption (2026-10-06); DL1 shows it as the baseline, and the other three are here only because you asked. Each is shown in place on the real bar, being pressed, with a 3× detail on desktop.',
+      dirs: [
+        { code: 'DL1', name: 'Today: the blue disc', file: 'dl1-deal-today', pick: true,
+          idea: 'The current button, unchanged, as the baseline to judge the others against.',
+          reuse: 'Everything.',
+          motion: 'Press feedback: a 1px press, as now.',
+          bytes: 'None.',
+          risk: 'None. It is your settled call.' },
+        { code: 'DL2', name: 'The bus stop button', file: 'dl2-deal-bell',
+          idea: 'The bell push on a bus pole: a yellow housing with a red dome you press, the deal mark riding on the dome. Pressed, the dome sinks and a ring answers, ready to pair with a bell "ding".',
+          reuse: 'The deal mark and the bus world. The stop and skip states could recolour the dome.',
+          motion: 'Press feedback (the dome sinks 2px) plus a ripple.',
+          bytes: 'About 1 KB.',
+          risk: 'Red reads as "stop", the opposite of deal, and today\'s Stop state is red. The states would need rethinking (Skip amber, Stop as a different shape).' },
+        { code: 'DL3', name: 'The card shoe', file: 'dl3-deal-shoe',
+          idea: 'A dealer\'s shoe in dark wood with a house back peeking out. Press it and the card slides out, the way a dealer draws one.',
+          reuse: 'The card back and the table\'s wood.',
+          motion: 'The card slides 34% out of the shoe, 160ms ease-out.',
+          bytes: 'About 1 KB.',
+          risk: 'It is not round and not obviously a button. The Skip and Stop states have no obvious form. At 47px on phones the detail is lost.' },
+        { code: 'DL4', name: 'The dealer button', file: 'dl4-deal-puck',
+          idea: 'Poker\'s own dealer button: a thick cream puck edged in brass, engraved DEAL. Pressed, it pushes into the felt and its shadow tightens.',
+          reuse: 'Casino vocabulary every poker player already knows.',
+          motion: 'A 3px push, 90ms.',
+          bytes: 'Under 1 KB.',
+          risk: 'A word on the button means "Deal" must be translated, and it brings back the caption you took off. Skip and Stop would print other words.' },
+      ] },
+    TB: { title: 'The table\'s props', intro: 'Today: deck, red cup, four chip stacks and the die. Drawn over the real board with today\'s props removed. The die stays a control in all three.',
+      dirs: [
+        { code: 'TB1', name: 'Fewer, better props', file: 'tb1-fewer-props', pick: true,
+          idea: 'Edit the table down. The cup goes, so the props weigh less than the controls (the critique\'s point). The chips gather into two tall towers opposite the deck. The deck and the die stay where play needs them.',
+          reuse: 'The existing props.',
+          motion: 'None.',
+          bytes: 'Saves bytes: one prop fewer.',
+          risk: 'The cup is part of the bar-game identity, and some players will miss it. The die is more findable on phones with the cup gone (touch-up 7).' },
+        { code: 'TB2', name: 'A casino layout', file: 'tb2-casino-layout',
+          idea: 'A baize inlay set into the wood under the cards, edged in brass, with the game\'s name printed in gold and a box under each card. The deck sits in a dealing shoe and the chips in a dealer\'s rack.',
+          reuse: 'The felt tokens and the brass.',
+          motion: 'None.',
+          bytes: 'About 2 KB.',
+          risk: 'It moves the table from a bar to a casino pit, a change of story. The inlay covers the route line, so the bus would need a new home.' },
+        { code: 'TB3', name: 'Fare and route', file: 'tb3-fare-route',
+          idea: 'The bus world on the table: the cards lie on a printed route placemat, a chrome fare box stands where the cup was, and the stakes are brass fare tokens.',
+          reuse: 'The route and Last Stop\'s ticket colour.',
+          motion: 'None.',
+          bytes: 'About 2 KB.',
+          risk: 'Fare tokens look like coins, which could read as money changing hands. The placemat adds a second paper surface under the cards.' },
+      ] },
+    RW: { title: 'The running total', intro: 'Today: "Winning $5.40" in plain type between the cards and the guesses, plus a 21×12px bus on the route. Both play the same round here: four cards turn and the total climbs to a full game win.',
+      dirs: [
+        { code: 'RW1', name: 'A split-flap board', file: 'rw1-splitflap',
+          idea: 'The total on a small split-flap board, like a station departures display: each character flips when it changes. The result word sits above it.',
+          reuse: 'The result words, and Big Shoulders for the digits.',
+          motion: 'Each changing character flips on its own (260ms).',
+          bytes: 'About 1-2 KB.',
+          risk: 'Long totals in long currencies need more cells than fit, so it must fall back to fitted type. Flipping digits are busier on autoplay.' },
+        { code: 'RW2', name: 'The bus carries it', file: 'rw2-bus-carries', pick: true,
+          idea: 'The route\'s bus, drawn properly and big enough to read, drives to each stop as that card lands, and its destination sign carries the running total. The game\'s best idea, today 21×12px, becomes the readout.',
+          reuse: 'The route line, the bus marker and the destination-sign language.',
+          motion: 'Translate between stops, 520ms ease-in-out, with a small bob.',
+          bytes: 'About 1-2 KB.',
+          risk: 'The figure on the bus is small on phones (about 11px). The plain total may need to stay underneath as well, which is what screen readers announce anyway. The board-never-moves rule needs the bus to sit in reserved space.' },
+      ] },
+  });
+  const panes = document.getElementById('panes');
+  // Every tab opens on the game as it is today, captured off the live build.
+  const ORIG = { EQ: 'e3-chip-on-box.html', A: 'today.html?f=loader', C: 'today.html?f=intro:1800,board:2200', E: 'today.html?f=board', G: 'today.html?f=mode', B: 'today.html?f=board',
+    D: 'd0-faces-today.html', T: 'today.html?f=turbo', S: 'today.html?f=sound', BT: 'today.html?f=bet', R: 'today.html?f=history', P: 'today.html?f=autospin',
+    H: 'today.html?f=info', X: 'today.html?f=board', TB: 'today.html?f=board', RW: 'today.html?f=midround' };
+  const ORIG_NOTE = { EQ: 'E3 as you picked it, before your chip rule. Its chips land on the marks.', C: 'The intro, then a hard cut to the board, as it plays now.', D: 'Today\'s faces as CardFace draws them: the same hand the D directions deal.' };
+  Object.entries(ORIG).forEach(([k, src]) => ITEMS[k].dirs.unshift({ code: 'Original', name: 'Today', src, orig: true, note: ORIG_NOTE[k] || 'The game as it is now, captured from the live build at both sizes.' }));
+  Object.assign(ITEMS.EQ.dirs[0], { name: 'E3 as you picked it' });
+  Object.assign(ITEMS.DL.dirs[0], { code: 'Original', name: 'Today: the blue disc', orig: true, note: 'Your settled call (2026-10-06), unchanged and being pressed. My pick.' });
+
+  function frame(kind, d) {
+    const src = d.src || `${d.file}.html`;
+    const box = document.createElement('div'); box.className = kind === 'd' ? 'fd' : 'fp';
+    box.innerHTML = `<span class="flabel">${kind === 'd' ? 'Desktop 1200×675' : 'iPhone 14 390×664'}</span><iframe title="${d.code} ${kind === 'd' ? 'desktop' : 'iPhone 14'}" loading="lazy" data-src="${src}"></iframe>`;
+    return box;
+  }
+  function render(key) {
+    const it = ITEMS[key];
+    panes.innerHTML = `<section class="item-head"><h2>${it.title}</h2><p>${it.intro}</p></section>`;
+    it.dirs.forEach((d) => {
+      const row = document.createElement('article'); row.className = 'dir' + (d.pick ? ' pick' : '') + (d.orig ? ' orig' : '');
+      row.innerHTML = `<h3><span class="code">${d.code}</span>${d.name}${d.pick ? '<span class="mine">My pick</span>' : ''}</h3>`;
+      row.appendChild(frame('d', d)); row.appendChild(frame('p', d));
+      const facts = d.orig
+        ? `<dl class="facts"><div><dt>Today</dt><dd>${d.note}</dd></div></dl>`
+        : `<dl class="facts">
+        <div><dt>The idea</dt><dd>${d.idea}</dd></div><div><dt>Reuses</dt><dd>${d.reuse}</dd></div>
+        <div><dt>Motion</dt><dd>${d.motion}</dd></div><div><dt>Bytes when shipped</dt><dd>${d.bytes}</dd></div>
+        <div><dt>Risk</dt><dd>${d.risk}</dd></div></dl>`;
+      row.insertAdjacentHTML('beforeend', `${facts}
+        <div class="tools"><button type="button" class="replay">Replay both</button><a href="${d.src || d.file + '.html'}" target="_blank" rel="noopener">Open full size</a></div>`);
+      row.querySelector('.replay').addEventListener('click', () => row.querySelectorAll('iframe').forEach((f) => (f.src = f.dataset.src)));
+      panes.appendChild(row);
+    });
+    panes.querySelectorAll('iframe').forEach((f) => (f.src = f.dataset.src));
+    fit();
+  }
+  function fit() { panes.querySelectorAll('.fd').forEach((b) => { const f = b.querySelector('iframe'); f.style.transform = `scale(${b.clientWidth / 1200})`; }); }
+  addEventListener('resize', fit);
+  document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => {
+    document.querySelectorAll('.tabs button').forEach((x) => x.setAttribute('aria-selected', String(x === b)));
+    render(b.dataset.tab);
+    try { localStorage.setItem('rtb-p2-tab', b.dataset.tab); } catch (e) {}
+  }));
+  let start = 'EQ';
+  if (/^#[A-Z]{1,2}$/.test(location.hash) && ITEMS[location.hash.slice(1)]) start = location.hash.slice(1);
+  document.querySelectorAll('.tabs button').forEach((x) => x.setAttribute('aria-selected', String(x.dataset.tab === start)));
+  render(start);
+</script>

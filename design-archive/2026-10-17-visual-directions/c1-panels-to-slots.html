@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>C1 Panels become slots</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  .introbg { transition: opacity 320ms var(--ease-out); }
+  .introbg.off { opacity: 0; }
+  /* The intro's real step panels (photographed off the live build), at their real
+     positions, tilts and lifts. On Continue each one flies into the card slot it
+     was teaching; the face-down card fades in there as the panel lands. */
+  .panel-img { position: absolute; transform-origin: 50% 50%; will-change: transform, opacity; background: center / 100% 100% no-repeat; }
+  .panel-img.go { transition: transform 460ms var(--ease-in-out), opacity 200ms var(--ease-out) 240ms; }
+  .slotback { opacity: 0; transition: opacity 200ms var(--ease-out); }
+  .slotback.on { opacity: 1; }
+  .logo { position: absolute; background: url('kit/logo.webp') center / contain no-repeat; transition: opacity 260ms var(--ease-out), transform 460ms var(--ease-in-out); }
+  .lockup { transform-origin: 50% 0; transition: transform 460ms var(--ease-in-out), opacity 240ms var(--ease-out); }
+  .press { position: absolute; border-radius: 8px; background: rgba(0,0,0,0.18); opacity: 0; transition: opacity 90ms; }
+  .press.on { opacity: 1; }
+</style></head>
+<body>
+<div class="stage" id="s">
+  <div class="layer bg" id="board"></div>
+  <div class="layer bg introbg" id="introbg"></div>
+</div>
+<script src="kit/kit.js"></script>
+<script>
+  const { g, el, place, loop, wait, size } = RTB;
+  const s = document.getElementById('s'), phone = size() === 'phone', tag = size();
+  document.getElementById('board').style.backgroundImage = `url('kit/board-notitle-${tag}.webp')`;
+  const introbg = document.getElementById('introbg'); introbg.style.backgroundImage = `url('kit/introbg-${tag}.webp')`;
+  // Measured off the live intro (2026-10-17): rects with the tilt taken out, then the tilt and lift.
+  const INTRO = phone
+    ? { steps: [[21.1, 139.2, 170, 184.7], [199, 139.2, 170, 184.7], [21.1, 331.9, 170, 184.7], [199, 331.9, 170, 184.7]], tilt: [-1, 1, -1, 1], lift: [0, 0, 0, 0],
+        logo: [166.8, 25, 56.4, 56.4], title: [126.8, 91.4, 136.3, 27.9], cont: [124, 595, 141.9, 44] }
+    : { steps: [[56, 221.2, 264.1, 265.9], [330.6, 221.2, 264.1, 265.9], [605.3, 221.2, 264.1, 265.9], [879.9, 221.2, 264.1, 265.9]], tilt: [-1.5, -0.5, 0.5, 1.5], lift: [4.4, -4.4, -4.4, 4.4],
+        logo: [562.7, 41.2, 74.6, 74.6], title: [509.9, 128.9, 180.2, 36.9], cont: [501.2, 592.3, 197.7, 41.6] };
+  const R = ([x, y, w, h]) => ({ x, y, w, h });
+  const backs = g.slots.map((r) => { const b = el('div', 'back slotback'); b.style.setProperty('--wm', phone ? '6.2px' : '7.6px'); place(b, r); s.appendChild(b); return b; });
+  const panels = INTRO.steps.map((r, i) => { const p = el('div', 'panel-img'); p.style.backgroundImage = `url('kit/step${i + 1}-${tag}.webp')`; place(p, R(r)); s.appendChild(p); return p; });
+  const logo = el('div', 'logo'); place(logo, R(INTRO.logo)); s.appendChild(logo);
+  // The board's lockup, drawn: it starts at the intro's title and glides to the board's.
+  const lock = RTB.lockup(s);
+  const press = el('div', 'press'); place(press, R(INTRO.cont)); s.appendChild(press);
+  const k = INTRO.title[3] / (g.lockup.size * 1.0);
+  const startShift = (INTRO.title[1] - 6) - g.lockup.y;
+
+  async function run() {
+    introbg.classList.remove('off'); backs.forEach((b) => b.classList.remove('on'));
+    logo.style.transition = 'none'; logo.style.opacity = 1;
+    lock.style.transition = 'none'; lock.style.transform = `translateY(${startShift}px) scale(${k})`;
+    panels.forEach((p, i) => { p.classList.remove('go'); p.style.opacity = 1; p.style.transform = `translateY(${INTRO.lift[i]}px) rotate(${INTRO.tilt[i]}deg)`; });
+    void s.offsetWidth; logo.style.transition = ''; lock.style.transition = '';
+    await wait(1700);
+    press.classList.add('on'); await wait(110); press.classList.remove('on');
+    introbg.classList.add('off'); logo.style.opacity = 0;
+    lock.style.transform = 'none';
+    panels.forEach((p, i) => setTimeout(() => {
+      const [x, y, w, h] = INTRO.steps[i], r = g.slots[i];
+      const dx = (r.x + r.w / 2) - (x + w / 2), dy = (r.y + r.h / 2) - (y + h / 2);
+      p.classList.add('go'); p.style.transform = `translate(${dx}px, ${dy}px) scale(${r.w / w}, ${r.h / h})`; p.style.opacity = 0;
+      setTimeout(() => backs[i].classList.add('on'), 300);
+    }, i * 60));
+    // The board's own lockup and backs are underneath in the same places; hand over to them.
+    await wait(900); backs.forEach((b) => b.classList.remove('on'));
+  }
+  loop(6200, run);
+</script>
+</body></html>

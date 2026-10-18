@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>E3 A chip on the box</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* A betting layout inlaid in the table: a strip of baize edged in brass, the
+     four guesses PRINTED on it in gold-ink boxes. A pick is a chip set down. */
+  .baize { position: absolute; border-radius: 14px;
+    background: radial-gradient(rgba(255,255,255,0.035) 0.6px, transparent 0.8px) 0 0 / 3px 3px, radial-gradient(120% 140% at 70% 0%, var(--felt-lit), var(--felt-mid) 55%, var(--felt-deep));
+    box-shadow: inset 0 0 0 2px #b88a25, inset 0 0 0 3px rgba(0,0,0,0.5), inset 0 4px 12px rgba(0,0,0,0.6), 0 1px 0 rgba(255,230,180,0.25); }
+  .label { position: absolute; text-align: center; font: 700 var(--lab, 14px)/1 var(--font-body); color: rgba(var(--gold-rgb), 0.9); letter-spacing: 0.01em; }
+  .sq { position: absolute; display: grid; gap: 0; border: 1.5px solid rgba(var(--gold-rgb), 0.75); border-radius: 6px; overflow: visible; }
+  .split-v { grid-template-columns: minmax(0,1fr) minmax(0,1fr); grid-template-rows: minmax(0,1fr); }
+  .split-h { grid-template-columns: minmax(0,1fr); grid-template-rows: minmax(0,1fr) minmax(0,1fr); }
+  .split-q { grid-template-columns: minmax(0,1fr) minmax(0,1fr); grid-template-rows: minmax(0,1fr) minmax(0,1fr); }
+  .seg { position: relative; border: 0; padding: 0; display: grid; place-items: center; cursor: pointer;
+    background: color-mix(in srgb, var(--fill) 82%, transparent); }
+  .split-v .seg:first-of-type { border-right: 1.5px solid rgba(var(--gold-rgb), 0.75); }
+  .split-h .seg:first-of-type { border-bottom: 1.5px solid rgba(var(--gold-rgb), 0.75); }
+  .split-q .seg:nth-of-type(1), .split-q .seg:nth-of-type(3) { border-right: 1.5px solid rgba(var(--gold-rgb), 0.75); }
+  .split-q .seg:nth-of-type(1), .split-q .seg:nth-of-type(2) { border-bottom: 1.5px solid rgba(var(--gold-rgb), 0.75); }
+  .gl { width: 46%; color: var(--ink); opacity: 0.92; display: grid; }
+  .split-q .gl { width: 54%; }
+  .gl svg { width: 100%; height: auto; }
+  /* The chip: the table's own red chip, set down on the pick and settling once. */
+  .chipmark { position: absolute; width: var(--chip, 30px); height: calc(var(--chip, 30px) * 0.92); left: 74%; top: 26%; pointer-events: none;
+    transform: translate(-50%, -50%); animation: setdown 300ms var(--ease-out) both; }
+  .chipmark::before { content: ''; position: absolute; inset: 0; border-radius: 50%; transform: translateY(3px); background: #5a0414; box-shadow: 0 4px 6px rgba(0,0,0,0.5); }
+  .chipmark::after { content: ''; position: absolute; inset: 0; border-radius: 50%;
+    background: radial-gradient(circle, var(--brand-red) 0 38%, #fff 39% 42%, var(--brand-red) 43% 60%, transparent 61%),
+                repeating-conic-gradient(from 10deg, #f4efe6 0 14deg, var(--brand-red) 14deg 45deg); }
+  @keyframes setdown { 0% { transform: translate(-50%, -50%) translateY(-26px) scale(1.35); opacity: 0; } 55% { opacity: 1; } 80% { transform: translate(-50%, -50%) scale(0.97); } 100% { transform: translate(-50%, -50%); } }
+  .eq { position: absolute; left: 50%; top: 50%; width: 32%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; display: grid; place-items: center; z-index: 1;
+    background: radial-gradient(circle at 35% 30%, #fbe7a6, #d6a733 55%, #8f6810); box-shadow: 0 2px 3px rgba(0,0,0,0.5); }
+  .eq svg { width: 70%; }
+  .seg { min-width: 0; min-height: 0; overflow: visible; font: inherit; color: inherit; }
+  .gl { aspect-ratio: 1; height: auto; max-height: 70%; }
+  .gl svg { display: block; width: 100%; height: 100%; }
+  .seg .chipmark { overflow: visible; }
+  .split-v .seg:first-of-type .gl { transform: translateX(-16%); }
+  .split-v .seg:nth-of-type(2) .gl { transform: translateX(16%); }
+  .split-h .seg:first-of-type .gl { transform: translateY(-14%); }
+  .split-h .seg:nth-of-type(2) .gl { transform: translateY(14%); }
+  .eq { width: 24% !important; }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div></div>
+<script src="kit/kit.js"></script>
+<script src="kit/guess.js"></script>
+<script>
+  const { g, place, el, size } = RTB;
+  const s = document.getElementById('s'), phone = size() === 'phone';
+  document.getElementById('board').style.backgroundImage = `url('kit/board-${size()}.webp')`;
+  const a = g.squares[0], z = g.squares[3];
+  const pad = phone ? 10 : 14;
+  // The inlay covers the board's own labels and squares; labels are printed on it.
+  s.appendChild(place(el('div', 'baize'), { x: a.x - pad - 4, y: g.labelsY - pad, w: (z.x + z.w) - a.x + pad * 2 + 8, h: (a.y + a.h) - g.labelsY + pad * 2 }));
+  GUESS.GUESSES.forEach((G, i) => {
+    const r = g.squares[i];
+    const lab = el('div', 'label', G.label); lab.style.setProperty('--lab', phone ? '11px' : '13px');
+    place(lab, { x: r.x - 14, y: g.labelsY + (phone ? 4 : 6), w: r.w + 28, h: 16 }); s.appendChild(lab);
+    const n = el('div', '', GUESS.square(G)).firstElementChild; place(n, r); s.appendChild(n);
+  });
+  GUESS.demo(s, (b) => { const c = el('div', 'chipmark'); c.style.setProperty('--chip', (phone ? 24 : 30) + 'px'); b.appendChild(c); });
+</script>
+</body></html>

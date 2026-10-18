@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A1 The deal</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  .bare, .full { background-size: 100% 100%; }
+  .full { opacity: 0; transition: opacity 600ms var(--ease-out); }
+  .full.on { opacity: 1; }
+  .place { position: absolute; border-radius: 7%/4.8%; border: 1.5px dashed rgba(255, 236, 200, 0.18); transition: opacity 300ms; }
+  .deck { position: absolute; }
+  .deck .back { inset: 0; }
+  .deck .back:nth-child(1) { transform: translate(2px, 3px); filter: brightness(0.7); }
+  .deck .back:nth-child(2) { transform: translate(1px, 1.5px); filter: brightness(0.85); }
+  .card { transition: transform 520ms var(--ease-out); will-change: transform; }
+  .wait { position: absolute; left: 0; right: 0; text-align: center; font: 600 14px/1.2 var(--font-body); color: var(--ink-body); opacity: 0; transition: opacity 400ms; text-shadow: 0 1px 4px rgba(0,0,0,0.7); }
+  .wait.on { opacity: 0.9; }
+  .bar { position: absolute; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, rgba(23,12,10,0.0), rgba(23,12,10,0.88) 30%); transform: translateY(100%); transition: transform 500ms var(--ease-out); }
+  .bar.on { transform: none; }
+  .riffle { animation: riffle 900ms var(--ease-in-out); }
+  @keyframes riffle { 0%,100% { transform: none; } 30% { transform: translateX(-5px) rotate(-6deg); } 60% { transform: translateX(5px) rotate(5deg); } }
+</style></head>
+<body>
+<div class="stage" id="s">
+  <div class="layer bg bare" id="bare"></div>
+  <div class="layer bg full" id="full"></div>
+</div>
+<script src="kit/kit.js"></script>
+<script>
+  const { g, el, place, lockup, scene, loop, wait, size } = RTB;
+  const s = document.getElementById('s');
+  scene(document.getElementById('bare'), false);
+  scene(document.getElementById('full'), true);
+  lockup(s);
+  const deck = el('div', 'deck', '<div class="back"></div><div class="back"></div><div class="back"></div>');
+  const d = g.deck; place(deck, { x: d.x + 6, y: d.y + 4, w: d.w * 0.82, h: d.h * 0.9 });
+  deck.querySelectorAll('.back').forEach((b) => b.style.setProperty('--wm', size() === 'phone' ? '3px' : '5px'));
+  s.appendChild(deck);
+  const places = g.slots.map((r) => s.appendChild(place(el('div', 'place'), r)));
+  const msg = el('div', 'wait', 'Connecting to the table…');
+  msg.style.top = (g.slots[0].y + g.slots[0].h + (size() === 'phone' ? 30 : 34)) + 'px';
+  s.appendChild(msg);
+  const bar = el('div', 'bar'); bar.style.height = g.bar.h + 'px'; s.appendChild(bar);
+  let cards = [];
+
+  function dealOne(i) {
+    const r = g.slots[i];
+    const c = el('div', 'back card'); c.style.setProperty('--wm', size() === 'phone' ? '6.2px' : '7.6px');
+    place(c, r);
+    const dx = (d.x + d.w / 2) - (r.x + r.w / 2), dy = (d.y + d.h / 2) - (r.y + r.h / 2);
+    c.style.transform = `translate(${dx}px, ${dy}px) scale(${(d.w * 0.82) / r.w}) rotate(-8deg)`;
+    s.insertBefore(c, msg);
+    cards.push(c);
+    requestAnimationFrame(() => requestAnimationFrame(() => { c.style.transform = 'none'; places[i].style.opacity = 0; }));
+  }
+
+  async function run() {
+    cards.forEach((c) => c.remove()); cards = [];
+    places.forEach((p) => (p.style.opacity = 1));
+    document.getElementById('full').classList.remove('on'); bar.classList.remove('on'); msg.classList.remove('on');
+    await wait(500);  dealOne(0);          // fonts and logo decoded
+    await wait(600);  dealOne(1);          // catalogue ready
+    await wait(700);  deck.classList.add('riffle'); msg.classList.add('on');   // authenticate is slow: say so
+    await wait(1900); deck.classList.remove('riffle'); msg.classList.remove('on'); dealOne(2); // authenticate returned
+    await wait(500);  dealOne(3);          // game mounted
+    await wait(700);  document.getElementById('full').classList.add('on'); bar.classList.add('on'); deck.style.opacity = 0; // the props fill in; the drawn deck hands over to the real one
+  }
+  deck.style.transition = 'opacity 600ms';
+  loop(9000, () => { deck.style.opacity = 1; run(); });
+</script>
+</body></html>

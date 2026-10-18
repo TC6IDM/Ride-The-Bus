@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>P2 Autoplay bump</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* The quick path in a bump over the autoplay button: four counts and Start.
+     "Stop rules…" opens the full panel only when someone wants it. */
+  .counts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .counts button { padding: 11px 0; border-radius: 9px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.04); color: var(--ink); font: 900 18px/1 var(--font-display); }
+  .counts button.on { background: rgb(var(--tint-rgb)); color: #08210f; border-color: transparent; }
+  .go { margin-top: 10px; width: 100%; padding: 12px; }
+  .more { display: block; margin-top: 10px; text-align: center; font: 700 12.5px/1 var(--font-body); color: var(--ink-dim); text-decoration: underline; text-underline-offset: 3px; }
+  .badge { position: absolute; z-index: 22; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; display: grid; place-items: center; font: 800 12px/1 var(--font-body); color: #08210f; background: rgb(87, 217, 138); box-shadow: 0 2px 4px rgba(0,0,0,0.5); opacity: 0; transition: opacity 160ms; }
+  .badge.on { opacity: 1; }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div></div>
+<script src="kit/kit.js"></script><script src="kit/bar.js"></script>
+<script>
+  const { wait, loop, size, el } = RTB, s = document.getElementById('s'), phone = size() === 'phone';
+  document.getElementById('board').style.backgroundImage = `url('kit/board-${size()}.webp')`;
+  const GREEN = '87, 217, 138';
+  const b = BAR.bump(s, 'auto', phone ? 250 : 270, `<div class="counts">${['10', '25', '100', '∞'].map((c) => `<button data-c="${c}">${c}</button>`).join('')}</div>
+    <button class="action go">Start 10 rounds</button><span class="more">Stop rules…</span>`, GREEN);
+  const ring = BAR.ring(s, 'auto', GREEN), f = BAR.finger(s), a = BAR.R('auto');
+  const badge = el('div', 'badge', '25'); Object.assign(badge.style, { left: a.x + a.w - 14 + 'px', top: a.y - 8 + 'px' }); s.appendChild(badge);
+  const tapEl = async (n) => { const r = n.getBoundingClientRect(); await f.press(r.x + r.width / 2, r.y + r.height / 2); };
+  loop(6600, async () => {
+    b.classList.remove('in'); ring.classList.remove('on'); badge.classList.remove('on'); badge.textContent = '25';
+    b.querySelectorAll('.counts button').forEach((k) => k.classList.toggle('on', k.dataset.c === '10')); b.querySelector('.go').textContent = 'Start 10 rounds';
+    await wait(600);
+    const [x, y] = BAR.centre('auto'); await f.press(x, y); ring.classList.add('on'); b.classList.add('in');
+    await wait(800);
+    await tapEl(b.querySelector('[data-c="25"]')); b.querySelectorAll('.counts button').forEach((k) => k.classList.toggle('on', k.dataset.c === '25')); b.querySelector('.go').textContent = 'Start 25 rounds';
+    await wait(500);
+    await tapEl(b.querySelector('.go')); b.classList.remove('in'); ring.classList.remove('on'); badge.classList.add('on');
+    for (const n of [24, 23, 22]) { await wait(700); badge.textContent = n; }   // the button counts the run down
+  });
+</script>
+</body></html>

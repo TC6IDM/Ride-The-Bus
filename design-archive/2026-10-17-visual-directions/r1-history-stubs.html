@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>R1 Ticket stubs</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  .veil { position: absolute; inset: 0; background: rgba(4,9,6,0.55); opacity: 0; transition: opacity 200ms; }
+  .veil.in { opacity: 1; }
+  .hist { position: absolute; left: 50%; top: 50%; width: min(440px, calc(100vw - 28px)); max-height: calc(100vh - 140px); overflow: hidden; padding: 14px;
+    transform: translate(-50%, -46%) scale(0.96); opacity: 0; transition: transform 220ms var(--ease-out), opacity 200ms; }
+  .hist.in { transform: translate(-50%, -52%); opacity: 1; }
+  .hist h4 { margin: 0 0 10px; font: 700 18px/1 var(--font-body); color: var(--ink-strong); display: flex; justify-content: space-between; }
+  .hist h4 span:last-child { font-weight: 400; color: var(--ink-dim); }
+  /* Each round is a stub of the card paper: a band in the family's colour, the
+     hand as real (tiny) cards, the result in words, the picks underneath. */
+  .stub { position: relative; display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; padding: 10px 12px 10px 16px; margin-bottom: 8px; border-radius: 8px; color: var(--card-ink);
+    background: linear-gradient(170deg, #fbf7ec, var(--card-paper) 60%, #ece3cf); box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+    -webkit-mask: radial-gradient(circle at 100% 50%, transparent 6px, #000 6.5px); mask: radial-gradient(circle at 100% 50%, transparent 6px, #000 6.5px);
+    animation: dealup 320ms var(--ease-out) both; animation-delay: calc(140ms + var(--i) * 45ms); }
+  .hist:not(.in) .stub { animation: none; opacity: 0; }
+  @keyframes dealup { from { opacity: 0; transform: translateY(12px); } }
+  .stub::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: rgb(var(--fam)); border-radius: 8px 0 0 8px; }
+  .fam { font: 900 15px/1 var(--font-display); color: rgba(var(--card-ink-rgb), 0.9); }
+  .bet { font: 600 12px/1 var(--font-body); color: rgba(var(--card-ink-rgb), 0.6); text-align: right; }
+  .hand { display: flex; gap: 4px; align-items: center; }
+  .hand .face { position: relative; width: 28px; height: 42px; box-shadow: 0 1px 2px rgba(0,0,0,0.35), inset 0 0 0 1px var(--card-edge); }
+  .hand .face.no::after { content: '×'; position: absolute; inset: 0; display: grid; place-items: center; font: 900 30px/1 var(--font-body); color: #c4283f; background: rgba(255,255,255,0.35); }
+  .hand .face.fg::after { content: '↺'; position: absolute; right: -4px; top: -6px; font: 900 14px/1 var(--font-body); color: #1f8a4c; }
+  .res { text-align: right; align-self: center; }
+  .res b { display: block; font: 800 14px/1.1 var(--font-body); color: var(--card-ink); }
+  .res span { font: 700 13px/1.2 var(--font-body); color: rgba(var(--card-ink-rgb), 0.75); font-variant-numeric: tabular-nums; }
+  .res.busted b { color: rgba(var(--card-ink-rgb), 0.55); }
+  .picks { grid-column: 1 / -1; font: 600 11.5px/1 var(--font-body); color: rgba(var(--card-ink-rgb), 0.6); }
+  .ex { font: 700 10px/1 var(--font-body); color: #a87b16; margin-left: 6px; }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div><div class="veil" id="veil"></div></div>
+<script src="kit/kit.js"></script><script src="kit/bar.js"></script><script src="kit/rounds.js"></script>
+<script>
+  const { wait, loop, size, el, face } = RTB, s = document.getElementById('s');
+  RTB.courts().then(() => {
+    document.getElementById('board').style.backgroundImage = `url('kit/board-${size()}.webp')`;
+    const hist = el('div', 'hist panel', `<h4><span>Recent rounds</span><span>×</span></h4>${ROUNDS.map((r, i) => `
+      <div class="stub" style="--fam:${r.rgb};--i:${i}">
+        <span class="fam">${r.fam}${r.example ? '<span class="ex">example</span>' : ''}</span><span class="bet">Bet ${r.bet}</span>
+        <div class="hand">${r.cards.map(([rk, su], k) => `<div class="face ${r.marks[k]}">${face(rk, su)}</div>`).join('')}</div>
+        <div class="res${r.word === 'Busted' ? ' busted' : ''}"><b>${r.word}</b>${r.amt ? `<span>${r.amt} ${r.mult}</span>` : ''}</div>
+        <span class="picks">${r.picks}</span></div>`).join('')}`);
+    s.appendChild(hist);
+    const veil = document.getElementById('veil'), f = BAR.finger(s);
+    loop(5600, async () => {
+      hist.classList.remove('in'); veil.classList.remove('in'); await wait(600);
+      const [x, y] = BAR.centre('lastwin'); await f.press(x, y); veil.classList.add('in'); hist.classList.add('in');
+      await wait(3600); hist.classList.remove('in'); veil.classList.remove('in');
+    });
+  });
+</script>
+</body></html>

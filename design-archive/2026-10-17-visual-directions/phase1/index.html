@@ -1,0 +1,524 @@
+<title>Ride The Bus Audit</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Overpass:wght@400;600;700;800&family=Overpass+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  /* Layout: a dealer's tally sheet laid on the felt. One column of ranked rows,
+     three buckets in the game's own order of work, evidence pinned beside each row. */
+  :root {
+    color-scheme: dark;
+    --felt: #0f2a1c;
+    --felt-deep: #0a1d13;
+    --panel: #1c1916;
+    --panel-2: #24201c;
+    --edge: rgba(255, 236, 200, 0.10);
+    --edge-strong: rgba(255, 236, 200, 0.20);
+    --ink: #f6efe2;
+    --ink-body: #d9cfbf;
+    --ink-dim: #a99e8c;
+    --brass: #d9b45a;
+    --brass-ink: #1a1408;
+    --card-red: #c4283f;
+    --rebuild: #e0566b;
+    --new: #d9b45a;
+    --touch: #7fc6a0;
+    --font-display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+    --font-body: "Overpass", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "Overpass Mono", ui-monospace, "Cascadia Mono", Menlo, monospace;
+  }
+  body {
+    background: radial-gradient(ellipse 120% 70% at 70% 0%, #163826 0%, var(--felt) 38%, var(--felt-deep) 100%) fixed, var(--felt-deep);
+    color: var(--ink-body);
+    font: 16px/1.6 var(--font-body);
+  }
+  .wrap {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding-block: 40px 96px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    display: grid;
+    gap: 56px;
+  }
+  a { color: var(--brass); text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--brass); outline-offset: 3px; border-radius: 4px; }
+  code { font-family: var(--font-mono); font-size: 0.86em; color: var(--ink); background: rgba(255,236,200,0.06); padding: 0 4px; border-radius: 3px; overflow-wrap: anywhere; }
+
+  /* ---- header ---- */
+  header { display: grid; gap: 18px; }
+  .kicker { font: 600 12px/1 var(--font-mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--brass); }
+  h1 { font: 900 clamp(44px, 8vw, 84px)/0.92 var(--font-display); color: var(--ink); margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+  .lede { max-width: 66ch; font-size: 18px; color: var(--ink-body); margin: 0; }
+  .ran { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 0; padding: 0; list-style: none; }
+  .ran li { font: 600 12px/1 var(--font-mono); color: var(--ink-dim); border: 1px solid var(--edge-strong); border-radius: 999px; padding: 7px 11px; }
+  .ran li b { color: var(--ink); font-weight: 600; }
+  .tally { display: flex; flex-wrap: wrap; gap: 28px; margin-top: 8px; }
+  .tally div { display: grid; gap: 2px; }
+  .tally .n { font: 900 46px/1 var(--font-display); font-variant-numeric: tabular-nums; }
+  .tally .l { font: 600 11px/1 var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim); }
+  .t-re .n { color: var(--rebuild); } .t-new .n { color: var(--new); } .t-tu .n { color: var(--touch); }
+
+  /* ---- the read ---- */
+  .read { background: var(--panel); border: 1px solid var(--edge); border-radius: 14px; padding: 24px clamp(18px, 3vw, 32px); box-shadow: inset 0 1px 0 rgba(255,236,200,0.06), 0 18px 40px rgba(0,0,0,0.35); display: grid; gap: 12px; }
+  .read h2 { margin: 0; font: 900 28px/1.05 var(--font-display); color: var(--ink); }
+  .read p { margin: 0; max-width: 72ch; }
+  .read ol { margin: 0; padding-left: 22px; display: grid; gap: 6px; max-width: 72ch; }
+
+  /* ---- buckets ---- */
+  .bucket { display: grid; gap: 18px; }
+  .bucket-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; border-bottom: 1px solid var(--edge-strong); padding-bottom: 10px; }
+  .bucket-head h2 { margin: 0; font: 900 clamp(32px, 5vw, 44px)/1 var(--font-display); color: var(--ink); }
+  .bucket-head .what { color: var(--ink-dim); font-size: 15px; }
+  .bucket-head .mark { width: 14px; height: 20px; border-radius: 3px; align-self: center; }
+  .re .mark { background: var(--rebuild); } .nw .mark { background: var(--new); } .tu .mark { background: var(--touch); }
+
+  .item { display: grid; grid-template-columns: 56px minmax(0, 1fr) minmax(0, 360px); gap: 20px; align-items: start; background: var(--panel); border: 1px solid var(--edge); border-radius: 14px; padding: 20px; box-shadow: inset 0 1px 0 rgba(255,236,200,0.05), 0 10px 26px rgba(0,0,0,0.28); }
+  .rank { font: 900 44px/0.9 var(--font-display); color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+  .re .rank { color: var(--rebuild); } .nw .rank { color: var(--new); } .tu .rank { color: var(--touch); }
+  .body { display: grid; gap: 10px; min-width: 0; }
+  .body h3 { margin: 0; font: 800 21px/1.25 var(--font-body); color: var(--ink); text-wrap: balance; }
+  .body h3 .tag { font: 600 11px/1 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-dim); margin-right: 6px; vertical-align: 3px; }
+  .why { margin: 0; color: var(--ink); font-size: 16.5px; }
+  .detail { margin: 0; color: var(--ink-body); font-size: 15px; max-width: 70ch; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font: 600 11px/1 var(--font-mono); letter-spacing: 0.04em; padding: 5px 8px; border-radius: 999px; border: 1px solid var(--edge-strong); color: var(--ink-dim); }
+  .chip.sev { color: var(--brass-ink); border: 0; }
+  .sev.p0 { background: var(--rebuild); color: #fff; } .sev.p1 { background: var(--new); } .sev.p2 { background: var(--touch); } .sev.p3 { background: #b7ad9c; }
+  .owner { font-size: 14px; color: var(--ink-dim); margin: 0; }
+  .owner b { color: var(--brass); font-weight: 700; }
+
+  .ev { display: grid; gap: 8px; min-width: 0; }
+  .ev.pair { grid-template-columns: 1fr 1fr; }
+  .shot { display: block; padding: 0; border: 1px solid var(--edge-strong); border-radius: 8px; overflow: hidden; background: #000; cursor: zoom-in; width: 100%; }
+  .shot img { display: block; width: 100%; height: auto; max-height: 260px; object-fit: cover; object-position: top; }
+  .shot.tall img { max-height: 340px; }
+  .cap { font: 500 11.5px/1.35 var(--font-mono); color: var(--ink-dim); margin: 0; }
+
+  /* ---- tables ---- */
+  .scroll { overflow-x: auto; border: 1px solid var(--edge); border-radius: 12px; background: var(--panel); }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--edge); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  th { font: 600 11px/1.2 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-dim); }
+  td.num { font-variant-numeric: tabular-nums; color: var(--ink); font-weight: 700; white-space: nowrap; }
+  .twocol { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 18px; }
+  .note { background: var(--panel); border: 1px solid var(--edge); border-radius: 12px; padding: 18px 20px; display: grid; gap: 8px; }
+  .note h3 { margin: 0; font: 800 17px/1.3 var(--font-body); color: var(--ink); }
+  .note ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 14.5px; }
+  section > h2.plain { margin: 0 0 14px; font: 900 34px/1 var(--font-display); color: var(--ink); }
+
+  /* ---- lightbox ---- */
+  dialog { border: 0; padding: 0; background: transparent; max-width: min(96vw, 1400px); max-height: 92vh; }
+  dialog::backdrop { background: rgba(5, 12, 8, 0.86); }
+  dialog img { display: block; max-width: 100%; max-height: 86vh; border-radius: 10px; }
+  dialog p { margin: 8px 0 0; font: 500 13px/1.4 var(--font-mono); color: var(--ink-body); }
+  dialog button { position: absolute; top: 8px; right: 8px; font: 700 14px var(--font-body); background: var(--panel); color: var(--ink); border: 1px solid var(--edge-strong); border-radius: 999px; padding: 8px 14px; cursor: pointer; }
+
+  @media (max-width: 860px) {
+    .item { grid-template-columns: 40px minmax(0, 1fr); }
+    .ev { grid-column: 1 / -1; }
+    .rank { font-size: 34px; }
+  }
+  @media (max-width: 420px) {
+    .item { grid-template-columns: minmax(0, 1fr); padding: 16px; }
+    .rank { font-size: 30px; }
+    .ev.pair { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="kicker">Phase 1 · Audit · 16 Oct 2026 · main @ 619403e8</span>
+    <h1>What the table needs next</h1>
+    <p class="lede">Every audit your brief asked for, run against the live game at all seven sizes plus an iPhone 14, and merged into one ranked list in three buckets, the order the work would happen in. Each row has its evidence beside it; tap a picture to enlarge it.</p>
+    <ul class="ran">
+      <li><b>7 sizes + iPhone 14</b> · 415 screens</li>
+      <li><b>impeccable critique</b> · dual-agent · 29/40</li>
+      <li><b>hallmark audit</b> · 2 critical · 4 major</li>
+      <li><b>motion audit</b> · 2 critical · 4 important</li>
+      <li><b>improve-animations</b> · 3 plans</li>
+      <li><b>find-animation-opportunities</b> · 4 kept, 5 rejected</li>
+      <li><b>detector</b> · 1 true, 9 false</li>
+    </ul>
+    <div class="tally">
+      <div class="t-re"><span class="n">2</span><span class="l">Rebuild</span></div>
+      <div class="t-new"><span class="n">4</span><span class="l">New work</span></div>
+      <div class="t-tu"><span class="n">11</span><span class="l">Touch-ups</span></div>
+    </div>
+  </header>
+
+  <section class="read" aria-labelledby="read-h">
+    <h2 id="read-h">The read</h2>
+    <p>Inside a round the game is well made: results wait for the card to turn, a slam finishes everything in flight, and the held last card is a real set piece. What reads as unfinished is everything <em>around</em> a round: the first second, the hand-offs between screens, the space outside the table, and the chrome in the control bar.</p>
+    <ol>
+      <li>The loader is the one screen every audit flagged first. It is a stock centred splash whose bar stalls at 90% and whose cards never land.</li>
+      <li>The intro leaves in a single frame. 80ms after Continue the full board is already there, and the cup, chips, deck and die pop in with it.</li>
+      <li>The guess squares move from optional to rebuild. Stake names "mismatched art styles" as a cause of low ratings, and flat app tiles on a table of lit objects is exactly that.</li>
+    </ol>
+  </section>
+
+  <!-- REBUILD -->
+  <section class="bucket re" aria-labelledby="b-re">
+    <div class="bucket-head"><span class="mark" aria-hidden="true"></span><h2 id="b-re">Rebuild</h2><span class="what">Replace what is there</span></div>
+
+    <article class="item">
+      <div class="rank">1</div>
+      <div class="body">
+        <h3><span class="tag">A</span>The loader</h3>
+        <p class="why">The first frame of the game is a stock centred splash on plain felt: a logo, a title, four cards and a bar, with no table and nowhere for the cards to go.</p>
+        <p class="detail">The bar races to 90% on a 1.4s timer and then sits there, silent, for the whole sign-in wait. One capture showed it unchanged for 4.3s, which reads as hung. The cards breathe on an endless loop. When it clears, an unrelated intro rises over it and the logo jumps to a new place. Replay keeps its own path: load, then the round details, then Play.</p>
+        <div class="chips"><span class="chip sev p0">P0</span><span class="chip">critique · P1</span><span class="chip">hallmark · critical</span><span class="chip">motion · critical</span><span class="chip">owner · top priority</span></div>
+      </div>
+      <div class="ev pair">
+        <button class="shot" data-full="img/a-loader-7300.jpg" data-cap="Loader, Desktop, 7.3s in: the bar has been at 90% for 4.3s"><img src="img/loader-desktop.jpg" alt="The loader at desktop size: the chip logo, the title and four card backs centred on plain green" loading="lazy"></button>
+        <button class="shot tall" data-full="img/loader-iphone.jpg" data-cap="Loader, iPhone 14 (390×664)"><img src="img/loader-iphone.jpg" alt="The loader on an iPhone 14, mid-deal, with a large empty field above and below" loading="lazy"></button>
+        <p class="cap" style="grid-column: 1 / -1">Desktop (tap it for the 90% stall) · iPhone 14</p>
+      </div>
+    </article>
+
+    <article class="item">
+      <div class="rank">2</div>
+      <div class="body">
+        <h3><span class="tag">E</span>The guess squares</h3>
+        <p class="why">The one control the player touches most is a set of flat app-icon tiles on a table of lit, sampled objects. The Inside/Outside marks cannot be read without the intro.</p>
+        <p class="detail">Stake's quality rankings name "mismatched art styles" and "border effects" as causes of a low rating, which moves this from optional to earned. A pick lightens the fill to pastel (red turns salmon), so on the Color guess the hue that <em>is</em> the bet washes out, and "unavailable" is shown by lightness too. Your settled calls hold: "=" on the seam, and a pick never dims the others.</p>
+        <div class="chips"><span class="chip sev p1">P1</span><span class="chip">critique · P1 + P2</span><span class="chip">hallmark · major</span><span class="chip">Stake rankings</span></div>
+      </div>
+      <div class="ev pair">
+        <button class="shot" data-full="img/squares-crop.jpg" data-cap="The four squares, Desktop"><img src="img/squares-crop.jpg" alt="The four guess squares: glossy app-style tiles in black and red, green and red, teal and purple, and black" loading="lazy"></button>
+        <button class="shot" data-full="img/a-board-4picked.jpg" data-cap="All four picked: the picked fills turn pastel"><img src="img/a-board-4picked.jpg" alt="The board with all four guesses picked; the picked halves are lighter, pastel versions of their colours" loading="lazy"></button>
+        <p class="cap" style="grid-column: 1 / -1">At rest · all four picked</p>
+      </div>
+    </article>
+  </section>
+
+  <!-- NEW WORK -->
+  <section class="bucket nw" aria-labelledby="b-nw">
+    <div class="bucket-head"><span class="mark" aria-hidden="true"></span><h2 id="b-nw">New work</h2><span class="what">Things that do not exist yet</span></div>
+
+    <article class="item">
+      <div class="rank">3</div>
+      <div class="body">
+        <h3><span class="tag">C + F</span>One continuous table: loader, intro, board</h3>
+        <p class="why">The intro leaves in one frame: 80ms after Continue the full board is already on screen, and the wordmark has jumped from one place to another for the third time in ten seconds.</p>
+        <p class="detail">The intro draws its own table with the props off, so the cup, chips, deck and die appear on the cut. Its four panels are the stock icon-tile onboarding card (number, heading, tile, "?" badge), with an asterisked legal footnote on the very first screen. I recommend folding F into C: the panels teach the four cards, so let them become the four slots. A 240ms fade (plan 002) is the stopgap if C waits.</p>
+        <div class="chips"><span class="chip sev p0">P0</span><span class="chip">critique · P1 + P2</span><span class="chip">motion · critical</span><span class="chip">hallmark · major</span><span class="chip">plan 002</span></div>
+      </div>
+      <div class="ev pair">
+        <button class="shot tall" data-full="img/intro-iphone.jpg" data-cap="Intro, iPhone 14"><img src="img/intro-iphone.jpg" alt="The intro on iPhone 14: four step panels in a 2×2 grid on a table with no props" loading="lazy"></button>
+        <button class="shot tall" data-full="img/cut-80ms-iphone.jpg" data-cap="80ms after Continue: the full board, props included"><img src="img/cut-80ms-iphone.jpg" alt="80 milliseconds after Continue: the full board with all props already in place" loading="lazy"></button>
+        <p class="cap" style="grid-column: 1 / -1">Intro · 80ms later</p>
+      </div>
+    </article>
+
+    <article class="item">
+      <div class="rank">4</div>
+      <div class="body">
+        <h3><span class="tag">G</span>The Game mode picker, after the Buy Bonus study</h3>
+        <p class="why">The panel the MODE sign opens is a narrow text list. It scrolls even at 1200×675, its RTP note is cut off at the bottom, and Popout S shows two and a half of the five families.</p>
+        <p class="detail">This is RTB's version of your Buy Bonus screen. What transfers from it: a rack of five family objects, each in its own colour, one dominant figure each (the max win), and an action on each. What would clash is left out: thick outlines, neon, "Buy", and money printed beside a multiple. Stake's confirmation step stays.</p>
+        <div class="chips"><span class="chip sev p1">P1</span><span class="chip">hallmark study</span><span class="chip">critique · 5 dense rows</span><span class="chip">detector · scrolls 18px</span></div>
+      </div>
+      <div class="ev pair">
+        <button class="shot" data-full="img/mode-desktop.jpg" data-cap="Game mode panel, Desktop: the RTP note is cut off at the bottom"><img src="img/mode-desktop.jpg" alt="The Game mode panel at desktop size, a tall list over the table with its last note cut off" loading="lazy"></button>
+        <button class="shot" data-full="img/mode-popout-s.jpg" data-cap="Game mode panel, Popout S: 2.5 of 5 families visible"><img src="img/mode-popout-s.jpg" alt="The Game mode panel at Popout S showing only the first two and a half families" loading="lazy"></button>
+        <p class="cap" style="grid-column: 1 / -1">Desktop · Popout S</p>
+      </div>
+    </article>
+
+    <article class="item">
+      <div class="rank">5</div>
+      <div class="body">
+        <h3><span class="tag">B</span>A room around the table</h3>
+        <p class="why">About a third of the desktop frame is a dark-green fade. A wooden table floats on felt, and the one light from the upper right never reaches the room.</p>
+        <p class="detail">Shared with the new loader. It stays still: ambient motion at the edge of the board competes with the cards.</p>
+        <div class="chips"><span class="chip sev p1">P1</span><span class="chip">critique · P2</span><span class="chip">hallmark · major</span><span class="chip">owner</span></div>
+      </div>
+      <div class="ev">
+        <button class="shot" data-full="img/board-desktop.jpg" data-cap="Idle board, Desktop"><img src="img/board-desktop.jpg" alt="The idle board at desktop: the oval table on a plain dark-green ground" loading="lazy"></button>
+        <p class="cap">Idle board, Desktop</p>
+      </div>
+    </article>
+
+    <article class="item">
+      <div class="rank">6</div>
+      <div class="body">
+        <h3><span class="tag">D</span>Takeover-themed card faces</h3>
+        <p class="why">A number card is pips on blank paper beside the ornate English-pattern courts: two decks in one row.</p>
+        <p class="detail">One colour family per card stays, because card 1's guess is red or black. The paper shading also turns black cards a dirty grey on phones, and a busted card loses its colour entirely.</p>
+        <div class="chips"><span class="chip sev p2">P2</span><span class="chip">critique · P2</span><span class="chip">owner</span></div>
+      </div>
+      <div class="ev">
+        <button class="shot" data-full="img/hold-top.jpg" data-cap="Number faces on the board, mid-hold"><img src="img/faces-hold-crop.jpg" alt="Three dealt number cards, plain white faces with pips, beside the held face-down card" loading="lazy"></button>
+        <p class="cap">Faces on the board, mid-hold</p>
+      </div>
+    </article>
+  </section>
+
+  <!-- TOUCH-UPS -->
+  <section class="bucket tu" aria-labelledby="b-tu">
+    <div class="bucket-head"><span class="mark" aria-hidden="true"></span><h2 id="b-tu">Touch-ups</h2><span class="what">Small, quick, first in the plan</span></div>
+
+    <article class="item">
+      <div class="rank">7</div>
+      <div class="body">
+        <h3><span class="tag">new</span>Three of a Kind shows two units on one screen</h3>
+        <p class="why">The bar says "BET $250.00" while the picker and its confirmation say "Max win 4,583.3× your bet", so a player multiplies 4,583.3 by $250.</p>
+        <p class="detail">This is bug class 1 in CLAUDE.md. The wording is player-facing copy in 17 locales plus social mode, so the fix is yours to choose: label the readout "Cost", or say "× base bet".</p>
+        <div class="chips"><span class="chip sev p1">P1</span><span class="chip">critique · P2</span><span class="chip">bug class 1</span></div>
+      </div>
+      <div class="ev">
+        <button class="shot" data-full="img/a-tr-board.jpg" data-cap="Three of a Kind board: BET $250.00"><img src="img/a-tr-board.jpg" alt="The Three of a Kind board with the bet readout showing 250 dollars" loading="lazy"></button>
+        <p class="cap">Three of a Kind, Desktop</p>
+      </div>
+    </article>
+
+    <article class="item">
+      <div class="rank">8</div>
+      <div class="body">
+        <h3><span class="tag">new</span>Type under the game's own floors</h3>
+        <p class="why">The phone bar's tip "Pick all 4 guesses" prints at 8.39px, under the 9px phone floor. The intro's max-win and cost footnote, a disclosure Stake asks for, is the smallest text on the desktop screen at 8.34px.</p>
+        <p class="detail"><code>.cb-cooldown-tip</code>, <code>.cb-bet-tip</code> and <code>.cb-mode-tip</code> have no floor (<code>control-bar.css:406/463/1101</code>). The MODE bolts are 6.8px.</p>
+        <div class="chips"><span class="chip sev p1">P1</span><span class="chip">detector · measured clean</span><span class="chip">critique</span></div>
+      </div>
+      <div class="ev">
+        <button class="shot" data-full="img/tip-phone-crop.jpg" data-cap="iPhone 14: the refusal tip at 8.39px"><img src="img/tip-phone-crop.jpg" alt="The phone control bar with the Pick all 4 guesses tip above the deal button" loading="lazy"></button>
+        <p class="cap">iPhone 14, the refusal tip</p>
+      </div>
+    </article>
+
+    <article class="item">
+      <div class="rank">9</div>
+      <div class="body">
+        <h3><span class="tag">new</span>The held last card dims the stake</h3>
+        <p class="why">At the highest-stakes moment in the game, "LAST CARD $430.10" goes dim, low-contrast green under the tunnel, and the card rises only about 15px.</p>
+        <p class="detail">The audio carries the moment; the picture under-delivers. Fix: keep the figure above the tunnel layer, as the bar already is, and give the lift more height. The hold's clock and its shape stay.</p>
+        <div class="chips"><span class="chip sev p1">P1</span><span class="chip">critique · P2</span></div>
+      </div>
+      <div class="ev">
+        <button class="shot" data-full="img/a-rp-max-hold1.jpg" data-cap="The held last card, Desktop"><img src="img/a-rp-max-hold1.jpg" alt="The held last card with the vignette closing and the running total dimmed" loading="lazy"></button>
+        <p class="cap">The hold, Desktop</p>
+      </div>
+    </article>
+
+    <article class="item">
+      <div class="rank">10</div>
+      <div class="body">
+        <h3><span class="tag">8</span>Takeover: the title over the fan, the burst as debris</h3>
+        <p class="why">"Max Win" sits on the bottom third of the fan and hides the indices, and the fan's cards are smaller than the board's own (74px against 97px on desktop). The suit marks end as scattered beige crumbs.</p>
+        <p class="detail">The overlap is built in (<code>.wc-fan</code>'s negative margin and the band's inset), and design.md's "band reaches up over the fan" rule would change with it.</p>
+        <div class="chips"><span class="chip sev p1">P1</span><span class="chip">critique · P1 + P2</span><span class="chip">motion · important</span><span class="chip">hallmark · major</span></div>
+      </div>
+      <div class="ev">
+        <button class="shot" data-full="img/takeover-max-crop.jpg" data-cap="Max Win takeover, Desktop"><img src="img/takeover-max-crop.jpg" alt="The Max Win takeover: the title overlapping the bottom of four fanned cards, with scattered gold suit marks" loading="lazy"></button>
+        <p class="cap">Max Win, Desktop</p>
+      </div>
+    </article>
+
+    <article class="item">
+      <div class="rank">11</div>
+      <div class="body">
+        <h3><span class="tag">6</span>The deal and Last Stop's ticket</h3>
+        <p class="why">The gather leg is 110ms, so cards teleport to the deck; they move 45ms apart, as one block, and fly half-transparent. The ticket reads as a thin sliver.</p>
+        <p class="detail">Plan 001: the same total with a new split. The gather becomes a third of the travel, your 300ms rest stays, and cards move 80ms apart. Card 1 has to land inside the reveal's 950ms hold-back, which rules out the much longer legs one audit proposed. <code>playDeal</code> is re-timed and checked with <code>npm run audio</code>.</p>
+        <div class="chips"><span class="chip sev p1">P1</span><span class="chip">critique · P2</span><span class="chip">motion · important</span><span class="chip">plan 001</span></div>
+      </div>
+      <div class="ev"><p class="cap">Motion: the looping demo is finding 3 in the motion report.</p></div>
+    </article>
+
+    <article class="item">
+      <div class="rank">12</div>
+      <div class="body">
+        <h3><span class="tag">4</span>The MODE roll repaints the leaving name</h3>
+        <p class="why">Cause confirmed. <code>.cb-blind-name</code> reads <code>var(--mode-ink)</code>, published on the whole bar, so "CLASSIC" shows in High Stakes red as it rolls away.</p>
+        <p class="detail">Fix: each keyed name carries its own family colour, captured when it is created. Same roll, same 340ms.</p>
+        <div class="chips"><span class="chip sev p2">P2</span><span class="chip">critique · P3</span><span class="chip">motion · important</span></div>
+      </div>
+      <div class="ev"><p class="cap">Motion: finding 5 in the motion report shows the fix running.</p></div>
+    </article>
+
+    <article class="item">
+      <div class="rank">13</div>
+      <div class="body">
+        <h3><span class="tag">1 + 3 + 5</span>The control bar: bare glyphs, the info glyph, the bet display</h3>
+        <p class="why">Seven container shapes in one bar. The info glyph is drawn at 20px against the speaker's 34px in the same box. The bet box uses 35% of its width, and +/- are 30×25px, under the 32px floor.</p>
+        <p class="detail">Bare stroked glyphs for turbo, sound, info and autoplay, with the 44px hit areas kept; the deal disc stays. The info glyph is drawn optically equal to the speaker. The bet's reservation shrinks with the money-fitting doing the rest, checked against TZS, UGX and XOF.</p>
+        <div class="chips"><span class="chip sev p2">P2</span><span class="chip">critique · P2</span><span class="chip">hallmark · critical</span><span class="chip">Stake · border effects</span></div>
+      </div>
+      <div class="ev">
+        <button class="shot" data-full="img/bar-crop.jpg" data-cap="Control bar, Desktop"><img src="img/bar-crop.jpg" alt="The control bar: turbo in a disc, sound and info in boxes, the bet display with empty space, plus and minus in small boxes" loading="lazy"></button>
+        <p class="cap">The bar, Desktop</p>
+      </div>
+    </article>
+
+    <article class="item">
+      <div class="rank">14</div>
+      <div class="body">
+        <h3><span class="tag">7</span>The die is hard to find on an iPhone 14</h3>
+        <p class="why">At 390×664 it is a 44px object in a row with the red cup and four chip stacks, drawn exactly like them, with no label and no touch tooltip. On desktop it ends the guess row and is easy to find.</p>
+        <div class="chips"><span class="chip sev p2">P2</span><span class="chip">critique · P1</span><span class="chip">measured</span></div>
+      </div>
+      <div class="ev">
+        <button class="shot" data-full="img/die-iphone-crop.jpg" data-cap="iPhone 14: the die among the props"><img src="img/die-iphone-crop.jpg" alt="The lower half of the phone board: the guess squares, then the die, the red cup and chips, then the control bar" loading="lazy"></button>
+        <p class="cap">iPhone 14, lower half</p>
+      </div>
+    </article>
+
+    <article class="item">
+      <div class="rank">15</div>
+      <div class="body">
+        <h3><span class="tag">new</span>"Revealing… $0.00" in win green</h3>
+        <p class="why">The running total prints in win green before anything is won. design.md says win colour means the round came out ahead.</p>
+        <div class="chips"><span class="chip sev p2">P2</span><span class="chip">critique</span><span class="chip">design.md rule</span></div>
+      </div>
+      <div class="ev">
+        <button class="shot" data-full="img/a-live-01.jpg" data-cap="Revealing… $0.00 in green"><img src="img/a-live-01.jpg" alt="The board mid-round with the running total showing zero dollars in green" loading="lazy"></button>
+        <p class="cap">Mid-round, Desktop</p>
+      </div>
+    </article>
+
+    <article class="item">
+      <div class="rank">16</div>
+      <div class="body">
+        <h3><span class="tag">new</span>The autoplay panel is overloaded</h3>
+        <p class="why">About 19 controls on one sheet, and its disabled action ("Pick all 4 guesses") is full-strength green, so it looks pressable.</p>
+        <p class="detail">The stop limits are approval-relevant, so any regrouping keeps them visible and armed exactly as now.</p>
+        <div class="chips"><span class="chip sev p2">P2</span><span class="chip">critique · P2</span></div>
+      </div>
+      <div class="ev">
+        <button class="shot" data-full="img/autospin.jpg" data-cap="Autoplay panel, Desktop"><img src="img/autospin.jpg" alt="The autoplay panel with nine count pills, a stepper, two limit fields with switches and arm buttons, two toggles and the action" loading="lazy"></button>
+        <p class="cap">Autoplay, Desktop</p>
+      </div>
+    </article>
+
+    <article class="item">
+      <div class="rank">17</div>
+      <div class="body">
+        <h3><span class="tag">2</span>Borders round the sound panel's speakers</h3>
+        <p class="why">Each mute toggle is a speaker in a bordered box. A bare glyph, struck through when muted, says the same.</p>
+        <div class="chips"><span class="chip sev p3">P3</span><span class="chip">critique · P3</span><span class="chip">owner</span></div>
+      </div>
+      <div class="ev">
+        <button class="shot" data-full="img/sound-crop.jpg" data-cap="Sound panel, Desktop"><img src="img/sound-crop.jpg" alt="The Sound panel: two rows, each a boxed speaker icon, a slider and the value 75" loading="lazy"></button>
+        <p class="cap">Sound panel, Desktop</p>
+      </div>
+    </article>
+  </section>
+
+  <section aria-labelledby="ask-h">
+    <h2 class="plain" id="ask-h">Your calls, raised by the audit</h2>
+    <div class="twocol">
+      <div class="note">
+        <h3>Every 1× mode switch asks to confirm</h3>
+        <ul>
+          <li>Stake requires a confirmation before a <em>high-cost</em> mode. The game asks on all five families.</li>
+          <li>The critique suggests switching on a tap for the 1× families and keeping the sheet for Three of a Kind. It changes a compliance step, so it is yours to decide; G is designed either way.</li>
+        </ul>
+      </div>
+      <div class="note">
+        <h3>The bus is drawn at 21×12px</h3>
+        <ul>
+          <li>PRODUCT.md names the bus, the ticket and the destination sign as the world, yet the loader, the intro and the takeover carry no bus.</li>
+          <li>Phase 2 can test it in A, C and the takeover. A new mechanic or prize is out of scope.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="scores-h">
+    <h2 class="plain" id="scores-h">Scores</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Nielsen heuristic (critique A)</th><th>Score</th><th>Key issue</th></tr></thead>
+        <tbody>
+          <tr><td>Visibility of system status</td><td class="num">3</td><td>The loader's bar stalls silently at 90%.</td></tr>
+          <tr><td>Match with the real world</td><td class="num">3</td><td>The Inside/Outside marks and the 6.8px bolts need decoding.</td></tr>
+          <tr><td>User control and freedom</td><td class="num">3</td><td>Continue is the 5th Tab stop; every 1× switch confirms.</td></tr>
+          <tr><td>Consistency and standards</td><td class="num">2</td><td>Six container shapes in one bar; flat squares among lit objects.</td></tr>
+          <tr><td>Error prevention</td><td class="num">3</td><td>Strong guards; the stop-limit arm is a second step.</td></tr>
+          <tr><td>Recognition over recall</td><td class="num">3</td><td>The die and the history icon are unlabelled on touch.</td></tr>
+          <tr><td>Flexibility and efficiency</td><td class="num">4</td><td>Space, keys 1-4, the die, turbo, slam, autoplay, remembered picks.</td></tr>
+          <tr><td>Aesthetic and minimalist design</td><td class="num">2</td><td>Props weigh as much as controls; the takeover is the weakest screen.</td></tr>
+          <tr><td>Error recovery</td><td class="num">3</td><td>A translated sentence, the code, and Close or Reload.</td></tr>
+          <tr><td>Help and documentation</td><td class="num">3</td><td>How to Play is thorough but long; no contextual help on touch.</td></tr>
+          <tr><td><b>Total</b></td><td class="num">29/40</td><td>Good (73%). Consistency and aesthetics are the weak pair.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+
+
+  <section aria-labelledby="kept-h">
+    <h2 class="plain" id="kept-h">Left alone, on purpose</h2>
+    <div class="twocol">
+      <div class="note">
+        <h3>Kept</h3>
+        <ul>
+          <li><code>--ease-pop</code>, the detector's one true hit: a documented overshoot used only on the takeover's fan and title, a rare moment.</li>
+          <li>Your settled calls: the deal disc, "=" on the seam, no dimming on a pick, the ticket over cards 2-3, and the two-row phone bar.</li>
+          <li>The held last card: every audit named it the strongest moment in the game.</li>
+        </ul>
+      </div>
+      <div class="note">
+        <h3>Detector false positives, traced to source</h3>
+        <ul>
+          <li>The cup's cone flagged as an "organic clip-path", a chip's printed rings as a "halo", a card's printed edge as a "glow".</li>
+          <li>The crosshatch and wood grain flagged as stripes, and the table's light pool as a spotlight.</li>
+          <li>The 9px phone captions are your F-11 floor; the detector's floor is 10px.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="files-h">
+    <h2 class="plain" id="files-h">Reports and plans</h2>
+    <div class="twocol">
+      <div class="note">
+        <h3>Written this phase</h3>
+        <ul>
+          <li><a href="motion-audit.html" target="_blank" rel="noopener">The motion audit</a>: 12 findings, with a looping demo of each fix.</li>
+          <li><code>plans/001-deal-rebalance.md</code>, <code>002-intro-exit.md</code> and <code>003-loader-stop-breathing.md</code>, plus their README.</li>
+          <li><code>web-sdk/apps/Ride-The-Bus/PRODUCT.md</code>, confirmed by you.</li>
+        </ul>
+      </div>
+      <div class="note">
+        <h3>Tooling notes</h3>
+        <ul>
+          <li><code>npm run shots -- --tips</code> is stale: remembered picks restore the guesses, so its "nothing picked" refusal buys a round. It needs to clear <code>ride-the-bus:picks</code> first.</li>
+          <li><code>impeccable detect</code> on <code>src/components</code> sees no CSS (the sheets live in <code>src/styles</code>); scan <code>src</code>.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="read" aria-labelledby="next-h">
+    <h2 id="next-h">Next: Phase 2, for your picks</h2>
+    <p>Working mock-ups, two or three genuinely different directions each, for A, E, C (with F), G, B and D. Desktop and iPhone 14 frames side by side, with the motion running live. No shipping source is touched until you approve the Phase 3 plan.</p>
+  </section>
+</div>
+
+<dialog id="lb" aria-label="Enlarged screenshot">
+  <button type="button" id="lb-close">Close</button>
+  <img id="lb-img" alt="">
+  <p id="lb-cap"></p>
+</dialog>
+
+<script>
+  (function () {
+    var lb = document.getElementById('lb');
+    var img = document.getElementById('lb-img');
+    var cap = document.getElementById('lb-cap');
+    document.querySelectorAll('.shot').forEach(function (b) {
+      b.addEventListener('click', function () {
+        img.src = b.getAttribute('data-full');
+        img.alt = b.querySelector('img').alt;
+        cap.textContent = b.getAttribute('data-cap') || '';
+        if (lb.showModal) lb.showModal();
+      });
+    });
+    document.getElementById('lb-close').addEventListener('click', function () { lb.close(); });
+    lb.addEventListener('click', function (e) { if (e.target === lb) lb.close(); });
+  })();
+</script>

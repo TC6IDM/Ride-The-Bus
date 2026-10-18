@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TB3 Fare and route</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* The bus world on the table: the cards lie on a printed route placemat, a fare
+     box stands where the cup was, and the stakes are brass fare tokens. */
+  .mat { position: absolute; z-index: 1; border-radius: 6px; transform: rotate(-0.6deg);
+    background: linear-gradient(170deg, #f3ecd9, #e4d9bf); box-shadow: 0 6px 14px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(0,0,0,0.12); }
+  .mat .band { position: absolute; left: 0; right: 0; top: 0; height: 18%; background: #d6a733; border-radius: 6px 6px 0 0; display: flex; align-items: center; padding-left: 12px; font: 800 var(--fs) / 1 var(--font-body); letter-spacing: 0.14em; color: #2a1d06; }
+  .mat svg { position: absolute; left: 0; right: 0; bottom: 6%; width: 100%; height: 14%; }
+  .farebox { position: absolute; z-index: 3; border-radius: 10px 10px 6px 6px; background: linear-gradient(90deg, #6f7378, #d9dde1 35%, #8a8f95 70%, #c3c7cc); box-shadow: 0 8px 14px rgba(0,0,0,0.55), inset 0 2px 0 rgba(255,255,255,0.6); }
+  .farebox::before { content: ''; position: absolute; left: 30%; right: 30%; top: 12%; height: 6%; border-radius: 3px; background: #2a2c2f; }
+  .farebox::after { content: ''; position: absolute; left: 18%; right: 18%; top: 34%; bottom: 14%; border-radius: 6px; background: linear-gradient(180deg, rgba(20,24,28,0.7), rgba(60,70,80,0.4)); box-shadow: inset 0 0 0 2px rgba(255,255,255,0.3); }
+  .tok i { position: absolute; left: 0; right: 0; height: 24%; border-radius: 50%; background: radial-gradient(circle, transparent 0 14%, #f2d27a 15% 40%, #b88a25 41% 50%, #e8c35e 51% 62%, transparent 63%); box-shadow: 0 2px 0 #7a570c, 0 3px 4px rgba(0,0,0,0.35); }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div></div>
+<script src="kit/kit.js"></script><script src="kit/props.js"></script>
+<script>
+  const s = document.getElementById('s'), { g, el } = RTB, { deck, die, at } = PROPS, phone = RTB.size() === 'phone';
+  document.getElementById('board').style.backgroundImage = `url('kit/board-noprops-${RTB.size()}.webp')`;
+  const a = g.slots[0], z = g.slots[3];
+  const mat = el('div', 'mat', `<div class="band">ROUTE 4 · TAKEOVER LINE</div><svg viewBox="0 0 100 10" preserveAspectRatio="none"><line x1="8" y1="5" x2="92" y2="5" stroke="#2a1d06" stroke-width="0.6"/></svg>`);
+  mat.style.setProperty('--fs', phone ? '8px' : '11px');
+  s.appendChild(at(mat, [a.x - 14, a.y - (phone ? 30 : 40), z.x + z.w - a.x + 28, a.h + (phone ? 60 : 78)]));
+  deck(s);
+  s.appendChild(at(el('div', 'pr farebox'), phone ? [126, 474, 48, 66] : [222, 262, 84, 120]));
+  const tok = (x, y, w, n) => s.appendChild(at(el('div', 'pr tok', Array.from({ length: n }, (_, i) => `<i style="bottom:${i * 9}%"></i>`).join('')), [x, y - w * 0.6, w, w * 1.4]));
+  (phone ? [[200, 494, 26, 6], [230, 500, 26, 4], [300, 110, 26, 7]] : [[250, 430, 44, 7], [292, 460, 44, 5], [336, 488, 44, 8], [872, 150, 44, 9], [912, 180, 44, 6]]).forEach(([x, y, w, n]) => tok(x, y, w, n));
+  die(s);
+  // The four face-down cards, back on top of the new surface.
+  g.slots.forEach((r) => { const b = el('div', 'back'); b.style.zIndex = 4; b.style.setProperty('--wm', phone ? '6.2px' : '7.6px'); s.appendChild(at(b, [r.x, r.y, r.w, r.h])); });
+</script>
+</body></html>

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>E6 Inlaid enamel</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* No tile at all: the guesses are enamel inlaid FLUSH in the table's wood, the
+     fields divided by brass wire (cloisonné). The wood shows around them. A pick
+     sets a brass stud in the field and doubles its wire; nothing else changes. */
+  .sq { position: absolute; display: grid; gap: 0; border-radius: 14px; padding: 2px; background: #b88a25;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.45), inset 0 1px 1px rgba(0,0,0,0.6), 0 1px 0 rgba(255,220,160,0.25); }
+  .split-v { grid-template-columns: minmax(0,1fr) minmax(0,1fr); grid-template-rows: minmax(0,1fr); }
+  .split-h { grid-template-columns: minmax(0,1fr); grid-template-rows: minmax(0,1fr) minmax(0,1fr); }
+  .split-q { grid-template-columns: minmax(0,1fr) minmax(0,1fr); grid-template-rows: minmax(0,1fr) minmax(0,1fr); }
+  .seg { position: relative; min-width: 0; min-height: 0; overflow: hidden; border: 0; padding: 0; display: grid; place-items: center; cursor: pointer; color: var(--ink);
+    background: radial-gradient(120% 90% at 30% 15%, rgba(255,255,255,0.16), transparent 55%), var(--fill);
+    box-shadow: inset 0 0 0 1px #8a6510, inset 0 1px 3px rgba(0,0,0,0.5); }
+  .split-v .seg:first-of-type { border-radius: 12px 0 0 12px; } .split-v .seg:nth-of-type(2) { border-radius: 0 12px 12px 0; }
+  .split-h .seg:first-of-type { border-radius: 12px 12px 0 0; } .split-h .seg:nth-of-type(2) { border-radius: 0 0 12px 12px; }
+  .split-q .seg:nth-of-type(1) { border-radius: 12px 0 0 0; } .split-q .seg:nth-of-type(2) { border-radius: 0 12px 0 0; }
+  .split-q .seg:nth-of-type(3) { border-radius: 0 0 0 12px; } .split-q .seg:nth-of-type(4) { border-radius: 0 0 12px 0; }
+  .gl { width: 48%; aspect-ratio: 1; display: grid; filter: drop-shadow(0 1px 0 rgba(0,0,0,0.45)); }
+  .split-q .gl { width: 56%; }
+  .gl svg { width: 100%; height: 100%; display: block; }
+  .seg.on { box-shadow: inset 0 0 0 2.5px #f2d27a, inset 0 0 0 4px #8a6510, inset 0 1px 3px rgba(0,0,0,0.5); }
+  .seg::after { content: ''; position: absolute; right: 9%; top: 9%; width: 13%; aspect-ratio: 1; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fff3c4, #d6a733 55%, #7a570c); box-shadow: 0 1px 1px rgba(0,0,0,0.6);
+    transform: scale(0); transition: transform 160ms var(--ease-out); }
+  .seg.on::after { transform: scale(1); }
+  .eq { position: absolute; left: 50%; top: 50%; width: 24%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; display: grid; place-items: center;
+    background: radial-gradient(circle at 35% 30%, #fbe7a6, #d6a733 55%, #8f6810); box-shadow: 0 0 0 1px rgba(0,0,0,0.4); }
+  .eq svg { width: 70%; }
+  .split-v .seg:first-of-type .gl { transform: translateX(-16%); } .split-v .seg:nth-of-type(2) .gl { transform: translateX(16%); }
+  .split-h .seg:first-of-type .gl { transform: translateY(-14%); } .split-h .seg:nth-of-type(2) .gl { transform: translateY(14%); }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div></div>
+<script src="kit/kit.js"></script><script src="kit/guess.js"></script>
+<script>
+  const { g, place, el, size } = RTB, s = document.getElementById('s');
+  document.getElementById('board').style.backgroundImage = `url('kit/board-${size()}.webp')`;
+  // The inlay sits flush: a patch of the table's own wood is laid over the old square
+  // first, so no raised tile shows underneath.
+  GUESS.GUESSES.forEach((G, i) => { const r = g.squares[i];
+    const wood = el('div'); Object.assign(wood.style, { position: 'absolute', borderRadius: '18px', background: 'radial-gradient(closest-side, #6b3a12, #5a300f)', boxShadow: '0 0 12px 8px #5c3110' });
+    place(wood, { x: r.x - 6, y: r.y - 6, w: r.w + 12, h: r.h + 12 }); s.appendChild(wood);
+    const n = el('div', '', GUESS.square(G)).firstElementChild; place(n, { x: r.x + 2, y: r.y + 2, w: r.w - 4, h: r.h - 4 }); s.appendChild(n); });
+  GUESS.demo(s);
+</script>
+</body></html>

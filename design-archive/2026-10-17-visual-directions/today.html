@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Original</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* Today's game, photographed off the live build. ?f=name shows one capture;
+     ?f=a:1700,b:2200 plays them in turn with hard cuts, as the game does now. */
+  .frame { position: absolute; inset: 0; background: center / 100% 100% no-repeat; opacity: 0; }
+  .frame.on { opacity: 1; }
+  .tag { position: fixed; right: 8px; top: 8px; z-index: 9; font: 700 11px/1 var(--font-body); color: #fff; background: rgba(0,0,0,0.6); border-radius: 999px; padding: 5px 9px; letter-spacing: 0.04em; }
+</style></head>
+<body>
+<div class="stage" id="s"><span class="tag">Today</span></div>
+<script src="kit/kit.js"></script>
+<script>
+  const spec = (new URLSearchParams(location.search).get('f') || 'board').split(',').map((p) => p.split(':'));
+  const s = document.getElementById('s');
+  const frames = spec.map(([n]) => { const d = RTB.el('div', 'frame'); d.style.backgroundImage = `url('kit/today-${n}-${RTB.size()}.webp')`; s.appendChild(d); return d; });
+  frames[0].classList.add('on');
+  if (frames.length > 1) {
+    let i = 0;
+    const next = () => { frames[i].classList.remove('on'); i = (i + 1) % frames.length; frames[i].classList.add('on'); setTimeout(next, +(spec[i][1] || 2000)); };
+    setTimeout(next, +(spec[0][1] || 2000));
+  }
+</script>
+</body></html>
