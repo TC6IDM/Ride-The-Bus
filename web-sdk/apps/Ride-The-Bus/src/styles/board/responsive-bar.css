@@ -234,6 +234,52 @@
 .cb-blind { padding-inline: calc(var(--ui-bar) * 0.15); }
 }
 
+/* ---- Row two, arranged (the owner's pick X1, 2026-10-17) ------------------
+   On the rail, a phone's bar is two rows that read as groups, not as buttons
+   scattered along a strip (the owner: "so it doesn't look like random buttons
+   are just everywhere"). Row one is the money well, with sound and info set
+   into its start. Row two is centred on the deal, the way a dealer's rail is:
+   the bet and autoplay to one side, turbo and MODE to the other.
+
+   A GRID, because centred has to mean centred. The two outer columns take an
+   equal share of what is left, and the two beside the deal are the same fixed
+   key - so the deal sits on the middle of the row whatever the bet or the sign
+   measure, and still does if a jurisdiction hides autoplay or turbo (their
+   column keeps its width, empty). The actions panel dissolves into it
+   (display: contents): on the rail autoplay and the deal are not a group in a
+   pill, they are two places on the rail. The widths budgeted in the block
+   above - the gaps, the bet's reservation, MODE's sign - are all still what
+   row two is made of; this only says where each goes.
+
+   Popout S is narrower than 620px too, and takes its one row back below. */
+@media (max-width: 620px) {
+.control-bar {
+    --rail-key: max(36px, calc(var(--ui-bar) * 4.18));
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--rail-key) auto var(--rail-key) minmax(0, 1fr);
+    grid-template-areas:
+      'well well well well well'
+      'bet auto deal turbo mode';
+    align-items: center;
+  }
+.cb-panel-light { grid-area: well; }
+.cb-bet { grid-area: bet; justify-self: end; }
+.cb-actions { display: contents; }
+.cb-autospin { grid-area: auto; justify-self: center; }
+.cb-spin-wrap { grid-area: deal; }
+.cb-turbo { grid-area: turbo; justify-self: center; }
+.cb-mode-slot { grid-area: mode; justify-self: start; }
+}
+
+/* A phone held upright sets its bet from the chip tray (the bet bump, with its
+   typed amount), not the +/- pair - X1's phone bar has none. Below 400px the
+   pair already went (the block below); from 400 to 620 it made the bet group
+   ~150px against its ~133px column at 425px, and the well hung off the left
+   edge. How to Play's controls guide reads the same query (PHONE_BAR). */
+@media (max-width: 620px) and (orientation: portrait) {
+.cb-betstep { display: none; }
+}
+
 /* ==========================================================================
    3. Popout S - Popout L at half size
    ========================================================================== */
@@ -257,7 +303,10 @@
    the two with room to spare on each side. */
 @media (orientation: landscape) and (max-height: 320px) and (max-width: 520px) {/* Back to the one-row bar. Undoing the 620px block above rather than
      narrowing it, because that block is right for every OTHER window it
-     catches - this is the exception, not a correction. */
+     catches - this is the exception, not a correction. And the phone's
+     two-row grid with it (X1): one flex row, the actions a group again. */
+.control-bar { display: flex; }
+.cb-actions { display: flex; }
 .cb-panel-light {
     order: 0;
     flex: 0 1 auto;

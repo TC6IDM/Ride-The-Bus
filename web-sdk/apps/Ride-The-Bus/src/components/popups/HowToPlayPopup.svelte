@@ -245,7 +245,8 @@
 	 * responsive-bar.css - so the guide's bet line says what that bar actually
 	 * offers. Read live, because a phone can be turned while the panel is open.
 	 */
-	const PHONE_BAR = '(max-width: 400px) and (orientation: portrait)';
+	// The phone bar has had no +/- since X1 (responsive-bar.css: 620px upright).
+	const PHONE_BAR = '(max-width: 620px) and (orientation: portrait)';
 	let phoneBar = $state(typeof window !== 'undefined' && window.matchMedia(PHONE_BAR).matches);
 	$effect(() => {
 		const query = window.matchMedia(PHONE_BAR);

@@ -200,7 +200,22 @@ that same hairline.
 **The deal button is the stated exception**: the blue disc with its two-card
 mark, no caption, its states (Skip amber, Stop red) changing the fill. An armed
 gold state and a "Deal" caption were tried on 2026-10-06 and taken out the same
-day on the owner's call - "the deal button was fine as is".
+day on the owner's call - "the deal button was fine as is". On the rail it
+sits in a brass bezel; the disc itself is unchanged.
+
+## The bar is the table's front rail
+
+(The owner's pick X1, 2026-10-17.) Walnut, a brass inlay along its top edge,
+rounded where it meets the room; the money in wells sunk into the wood - the
+balance and last win, the bet - and the MODE sign likewise; turbo, sound, info
+and autoplay as bare glyphs on the rail, their open state a wash in their
+identity colour, never a disc or a ring; the deal disc in its bezel. A layer of
+material over the layout: every measured width the bar budgets is unchanged.
+On a phone it is two rows that read as groups: the money well with sound and
+info set into its start, then a row centred on the deal - bet and autoplay to
+one side, turbo and MODE to the other - a grid, so the deal is on the middle
+whatever the bet or the sign measure. A phone sets its bet from the chip tray;
+it has no +/- pair. Popout S keeps its one row.
 
 ## MODE, the destination sign
 

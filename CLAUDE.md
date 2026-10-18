@@ -386,6 +386,14 @@ reading before proposing it again.
 - **On a phone the light pill is ONE line** and takes a bar row of its own; a
   share of the row (`flex: 1 1 0`), not a reservation. Popout S opts out and must
   restate `.cb-balance`, `.cb-lastwin` and `.cb-readouts.solo`.
+- **The bar is the table's front rail (X1, 2026-10-17)** - a material layer;
+  every pinned width below is unchanged. On a phone (<=620px) row two is a
+  GRID centred on the deal: `bet | autoplay | DEAL | turbo | MODE`, the two
+  outer columns equal shares and the two inner a fixed equal key, so the deal
+  is on the middle (swept 320-620 every 10px in en/ru/fi: 0px off, nothing off
+  an edge, every MODE name >= 9px). `.cb-actions` is `display: contents` there;
+  Popout S restores `display: flex` on both. Upright phones have no +/- pair
+  (the chip tray sets the bet), and How to Play's PHONE_BAR reads that query.
 - **Replay hides the balance, and that is a different layout** — `.solo` pushes
   Last Win right; its 26-unit floor is cleared on phones. Under a replay's
   takeover the pill KEEPS its width with Last Win faded out in place; it used

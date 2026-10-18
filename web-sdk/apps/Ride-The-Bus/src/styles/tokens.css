@@ -562,6 +562,17 @@
   --flap-bottom: #1f1c19;
   --flap-hinge: #060504;
 
+  /* The control bar as the table's front rail (the owner's pick X1,
+     2026-10-17; control-bar.css): walnut a step darker than the table's own
+     rim (#653008, table.css) because it is nearer and in its shadow, a brass
+     inlay along its top edge, and wells sunk into it for the money. */
+  --rail-wood-lit: #6b3a12;
+  --rail-wood: #4a280c;
+  --rail-wood-deep: #2f1806;
+  --rail-brass-rgb: 184, 138, 37;
+  --rail-brass: rgb(var(--rail-brass-rgb));
+  --rail-well: #0f0b08;
+
   /* Courts and aces. The court figures are the English pattern
      (art-masters/courts/), which prints every court in red, blue, yellow and
      black whatever its suit. Here card 1's guess is RED OR BLACK and a card is
