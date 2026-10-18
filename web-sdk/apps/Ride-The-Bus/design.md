@@ -62,6 +62,16 @@ parity of contrast against the three panel grounds (the table is in
 - **A pick is shown by the picked segment alone.** Selecting one never dims the
   others, and the Equal badge stays on the seam at every size (owner's calls,
   2026-10-06).
+- **The guesses are a betting layout** (the owner's pick E3, 2026-10-17): the
+  four squares are boxes printed in gold ink - edge and seams - on a strip of
+  baize edged in brass, their labels in the same gold. The section picked is
+  lit and ringed in gold, and the house's plain red chip is set down in it -
+  no value on it: it marks the pick, the one bet is the bar's. The chip lies
+  inside its section and off its mark, thrown by hand each time (jitter, spin,
+  and a side where the mark leaves room either side); on "=" it lies half onto
+  the badge along the seam, and the badge grows and keeps its warm-white ring
+  (gold on gold does not read). The intro's demo squares sit on the same
+  baize, in a brass-edged inlay each.
 - Two files are exempt from tokens: `table.css` (sampled measurements) and
   `win-celebration.css`'s tier palette (a closed one-screen set). The deal
   button's `--spin-*` palette was a third until the controls guide drew the same

@@ -323,6 +323,27 @@
    switched on a touch screen. */
 .ss-step .choice-square {
 	flex: 0 0 auto;
+	/* Set into a little felt inlay edged in brass - the board's betting layout
+	   (choices-board.css), in miniature, so the four panels teach the guesses
+	   on the same printed layout the board deals them over (the owner's pick
+	   E3, 2026-10-17, and its note: the hand-off screen's theme follows the
+	   new squares). Spread shadows, so it costs no layout; the margin keeps the
+	   inlay clear of the step's heading and its worked example - except on a
+	   phone (below), where the step's own gap already clears it and the 11px
+	   two rows of margin cost pushed Continue off a 320x568 screen. */
+	--inlay: calc(var(--ss) * 0.55);
+	margin-block: var(--inlay);
+	box-shadow:
+		0 0 0 1.5px var(--guess-ink),
+		0 0 0 var(--inlay) var(--felt-mid),
+		0 0 0 calc(var(--inlay) + 1.5px) rgba(var(--gold-rgb), 0.55),
+		0 calc(var(--ss) * 0.5) calc(var(--ss) * 1.2) rgba(var(--shadow-rgb), 0.45);
+}
+
+@media (max-width: 620px) and (orientation: portrait) {
+	.ss-step .choice-square {
+		margin-block: 0;
+	}
 }
 
 /* ---- Square option panels, on screens wide enough to have the room --------

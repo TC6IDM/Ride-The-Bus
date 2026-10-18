@@ -50,7 +50,13 @@
   box-shadow:
     0 2px 4px rgba(var(--shadow-rgb), 0.4),
     0 10px 22px rgba(var(--shadow-rgb), 0.3),
-    0 0 0 1px rgba(var(--ink-rgb), 0.18);
+    0 0 0 1.5px var(--guess-ink);
+  /* PRINTED IN GOLD INK (the owner's pick E3, 2026-10-17): each guess is a box
+     on a betting layout, its edge and its seams in the layout's gold. The
+     square's own edge was a faint white hairline, needed because the Color
+     square's black half vanished against the wood; the gold does that job and
+     says what the square is - a place to set a bet down. */
+  --guess-ink: rgba(var(--gold-rgb), 0.78);
 }
 
 /* LIT FROM THE UPPER RIGHT, like everything else on the table. The squares
@@ -80,6 +86,30 @@
   box-shadow:
     inset 0 1px 0 rgba(var(--panel-lit-rgb), 0.32),
     inset 0 -1px 0 rgba(var(--shadow-rgb), 0.4);
+}
+
+/* The seams, in the same gold ink as the edge: where one choice ends and the
+   next begins, printed on the layout rather than left as a change of colour.
+   Drawn in the sheen layer (above the fills, under the badge), so they cost no
+   layout and never take a tap. Centred, so they need no right-to-left flip. */
+.color-square::after,
+.io-square::after {
+  background:
+    linear-gradient(90deg, transparent calc(50% - 0.75px), var(--guess-ink) calc(50% - 0.75px) calc(50% + 0.75px), transparent calc(50% + 0.75px)),
+    linear-gradient(168deg, rgba(var(--panel-lit-rgb), 0.16) 0%, transparent 34%, transparent 66%, rgba(var(--shadow-rgb), 0.18) 100%);
+}
+
+.hl-square::after {
+  background:
+    linear-gradient(180deg, transparent calc(50% - 0.75px), var(--guess-ink) calc(50% - 0.75px) calc(50% + 0.75px), transparent calc(50% + 0.75px)),
+    linear-gradient(168deg, rgba(var(--panel-lit-rgb), 0.16) 0%, transparent 34%, transparent 66%, rgba(var(--shadow-rgb), 0.18) 100%);
+}
+
+.suit-square::after {
+  background:
+    linear-gradient(90deg, transparent calc(50% - 0.75px), var(--guess-ink) calc(50% - 0.75px) calc(50% + 0.75px), transparent calc(50% + 0.75px)),
+    linear-gradient(180deg, transparent calc(50% - 0.75px), var(--guess-ink) calc(50% - 0.75px) calc(50% + 0.75px), transparent calc(50% + 0.75px)),
+    linear-gradient(168deg, rgba(var(--panel-lit-rgb), 0.16) 0%, transparent 34%, transparent 66%, rgba(var(--shadow-rgb), 0.18) 100%);
 }
 
 .half-btn,
@@ -135,11 +165,16 @@
   }
 }
 
+/* The section a bet is set down on is LIT and ringed in the layout's gold
+   (E3): brighter from within, the ring in --gold-bright. Nothing else in the
+   row changes - a pick dims nothing (the owner's call, 2026-10-06). On the
+   board a chip is set down on it too (choices-board.css); the intro has no
+   chips, and the ring alone says it there. */
 .half-btn.selected,
 .third-btn.selected,
 .quad-btn.selected {
-  filter: brightness(1.3);
-  box-shadow: inset 0 0 0 3px var(--ink), inset 0 0 16px rgba(var(--ink-rgb), 0.5);
+  filter: brightness(1.22) saturate(1.06);
+  box-shadow: inset 0 0 0 2.5px var(--gold-bright), inset 0 0 calc(var(--choice-size) * 0.16) rgba(var(--gold-rgb), 0.4);
 }
 
 /* Held down.
@@ -468,7 +503,9 @@
      A 14px white halo used to sit outside it, and on a badge this small the
      halo was wider than the badge: a glow, not a selection. The missed-guess
      ring round Three of a Kind's badge clears these 3px (choices-board.css,
-     .choice-column .equal-slot) - change one, change both. */
+     .choice-column .equal-slot) - change one, change both. It stays the warm
+     white when the sections went gold (E3): a gold ring on a gold badge does
+     not read. */
   box-shadow:
     0 4px 12px rgba(var(--shadow-rgb), 0.5),
     0 0 0 3px var(--ink),
