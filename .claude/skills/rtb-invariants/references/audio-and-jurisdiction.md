@@ -238,6 +238,25 @@ three that loop end to end. The seam is therefore heard far more often than it
 was under any earlier candidate, which makes it the thing to listen for on this
 bed — `?dev_loop=` is how, without waiting two and a half minutes per pass.
 
+- **The takeover's count clatters** (W1, 2026-10-18; `playFlapClatter`). The
+  amount is a split-flap board, and each new figure it prints (at most one per
+  70ms) plays one flap's clack per character that turned, up to four. A clack
+  is a bright band-passed tick (2.7-3.9 kHz) over a duller one (0.95-1.3 kHz),
+  all fresh noise and drifted. It exists because the takeover audit measured
+  the climb nearly silent between the fanfare and the landing, with under 1% of
+  the energy above 4 kHz.
+  - **Measured with `npm run audio`** (Max, 22s, the count window 7-16.5s,
+    before / after): 2-5 kHz +5.3 dB and 5 kHz up +11.6 dB, while 1-2 kHz,
+    where the scale tick lives, is unchanged. So it sits under the tick: the
+    tick is the tune, the clatter is the board.
+  - **Level.** Peak in the count -17.4 dBFS against the fanfare's -10.5, no
+    clipping, whole-file RMS unchanged.
+  - **The first level was buried.** Gains of 0.045-0.06 measured as nothing
+    under the bed (count RMS -41.5 both ways), and 0.13-0.16 is what reads.
+  - **When it plays.** Never on the first figure, while the fanfare opens,
+    and never while the takeover is leaving. `sound.test.ts` pins one clack
+    per flap, the cap and both conditions.
+
 ---
 
 - **The jurisdiction block is the operator's, and every read must survive it

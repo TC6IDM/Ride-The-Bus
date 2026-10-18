@@ -970,6 +970,32 @@ export const sound = {
 	},
 
 	/**
+	 * The takeover's split-flap board turning to a new figure (W1, 2026-10-18):
+	 * one flap's clack for each character that changed, up to four, a few
+	 * milliseconds apart, as a departures board rattles through a change.
+	 *
+	 * It is what fills the count. The takeover audit (npm run audio, Max)
+	 * found the climb nearly silent between the fanfare and the landing - the
+	 * scale ticks are sparse at the ends of each leg - with under 1% of the
+	 * energy above 4 kHz, so nothing in the win sparkled. The board prints a new
+	 * figure at most every 70ms (WinCelebration), so this paces itself.
+	 *
+	 * Each clack is a bright tick of band-passed noise (the flap's edge) over a
+	 * duller one an octave and a half down (the flap landing on the stack), all
+	 * fresh noise and drifted, so a long count never loops. Quieter than the
+	 * scale tick it plays under: the tick is the tune, this is the board.
+	 */
+	playFlapClatter(changed: number) {
+		const flaps = Math.min(4, Math.max(1, Math.round(changed)));
+		let at = 0;
+		for (let i = 0; i < flaps; i += 1) {
+			noise({ duration: 0.016, gain: rand(0.13, 0.16), from: rand(2700, 3900), q: 1.3, curve: 3, delay: at, space: 0.12 });
+			noise({ duration: 0.024, gain: rand(0.075, 0.095), from: rand(950, 1300), q: 1.6, curve: 2.4, delay: at + 0.003, space: 0.1 });
+			at += rand(0.009, 0.017);
+		}
+	},
+
+	/**
 	 * The title being promoted mid-count - Big to Huge, Huge to Mega, and so on.
 	 *
 	 * Deliberately short and bright, and deliberately NOT another fanfare: it

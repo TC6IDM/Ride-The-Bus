@@ -142,12 +142,32 @@
 	const FLAP_STEP_MS = 70;
 	let printed = $state(startAmount);
 	let printedAt = 0;
+	/** The figure the flaps last showed, to hear how many of them turned. */
+	let printedText: string | null = null;
+	/**
+	 * How many flaps a change turns: characters compared FROM THE RIGHT, the
+	 * way SplitFlap keys them, so a new digit arriving on the left is one flap
+	 * dropping in rather than every flap moving along.
+	 */
+	const flapsTurned = (before: string, after: string) => {
+		const a = Array.from(before).reverse();
+		const b = Array.from(after).reverse();
+		let turned = 0;
+		for (let i = 0; i < Math.max(a.length, b.length); i += 1) if (a[i] !== b[i]) turned += 1;
+		return turned;
+	};
 	$effect(() => {
 		const value = shown;
 		const wait = FLAP_STEP_MS - (performance.now() - printedAt);
 		const print = () => {
 			printed = value;
 			printedAt = performance.now();
+			// The board's own clack, once per new figure (sound.playFlapClatter).
+			// Not on the first figure: the takeover's fanfare is opening then.
+			const text = numberToCurrencyString(value, amountDigits);
+			const turned = printedText === null ? 0 : flapsTurned(printedText, text);
+			printedText = text;
+			if (turned > 0 && !leaving) sound.playFlapClatter(turned);
 		};
 		if (wait <= 0) return print();
 		const timer = setTimeout(print, wait);

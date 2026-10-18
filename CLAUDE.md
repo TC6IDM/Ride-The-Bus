@@ -932,8 +932,9 @@ are, and behind a factory it needs about six callbacks injected, which reads
 worse than the 200 lines do. Its pure half is already `countUpSegments` in
 `winTiers.ts`.
 
-**`sound.ts` (751) is deliberately NOT split.** It is a flat catalogue of 18
-independent cues in one object. Splitting a catalogue means looking in more
+**`sound.ts` (751) is deliberately NOT split.** It is a flat catalogue of
+independent cues in one object (19 since the takeover's flap clatter,
+2026-10-18). Splitting a catalogue means looking in more
 places to find one cue, and every change costs an `npm run audio` pass. Size
 there is not complexity.
 

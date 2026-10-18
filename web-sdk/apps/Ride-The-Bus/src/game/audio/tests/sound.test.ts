@@ -490,6 +490,30 @@ describe('every cue actually makes a sound', () => {
 	}
 });
 
+describe('the takeover’s flap board clatters', () => {
+	// All noise, no oscillators, so it is counted in buffer sources: two per
+	// clack (the flap's edge and the flap landing).
+	const sources = (fire: () => void) => {
+		resetCreated();
+		fire();
+		return created.bufferSources;
+	};
+
+	test('one clack per flap that turned, and never more than four', () => {
+		const one = sources(() => sound.playFlapClatter(1));
+		assert.ok(one > 0, 'a turning flap is silent');
+		assert.equal(sources(() => sound.playFlapClatter(3)), one * 3);
+		assert.equal(sources(() => sound.playFlapClatter(12)), one * 4, 'a long figure turning must not pile up clacks');
+		assert.equal(sources(() => sound.playFlapClatter(0)), one, 'a call means a flap turned');
+	});
+
+	test('the takeover clacks once per figure the board prints, never on the first', () => {
+		const component = readFileSync(resolve(import.meta.dirname, '../../../components/board/WinCelebration.svelte'), 'utf8');
+		assert.match(component, /printedText === null \? 0 : flapsTurned\(printedText, text\)/);
+		assert.match(component, /if \(turned > 0 && !leaving\) sound\.playFlapClatter\(turned\)/);
+	});
+});
+
 describe('press kinds', () => {
 	const KINDS = ['choice', 'equal', 'chip', 'primary', 'toggle', 'soft'] as const;
 
