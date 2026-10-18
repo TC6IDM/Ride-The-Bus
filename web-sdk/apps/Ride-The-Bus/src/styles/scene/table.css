@@ -53,12 +53,17 @@
      visible banding and was the single noisiest thing on screen. All that is
      left is a deep vignette, which is what actually makes the table read as
      lit. Any weave belongs on a felt playing surface, and this is a room. */
+  /* THE BACK ROOM (the owner's pick B1, 2026-10-17). The table used to stand
+     in a green void - a felt-coloured backdrop that read as the table's cloth
+     spilling past its rim. Now it stands in a room: walnut panelling to a brass
+     dado rail a third of the way down, dark boards below, and ONE lamp, from
+     the upper right, which is where every shadow on the table already says the
+     light is. Still: nothing here moves. --room-* in tokens.css. */
   background:
-    /* The vignette proper, kept as its own layer over the floor colour so the
-       falloff can bite hard at the frame edge without dragging the middle of
-       the room down with it. Flat until 56% out - past that it closes down to
-       near black in the corners, which is what pushes the eye into the table
-       and reads as a lit room rather than a green backdrop. */
+    /* The vignette proper, kept as its own layer over the room so the falloff
+       can bite hard at the frame edge without dragging the middle down with
+       it. Flat until 56% out - past that it closes down to near black in the
+       corners, which pushes the eye into the table and reads as a lit room. */
     radial-gradient(
       ellipse 76% 70% at 50% 46%,
       transparent 0%,
@@ -66,8 +71,49 @@
       rgba(0, 0, 0, 0.4) 80%,
       rgba(0, 0, 0, 0.74) 100%
     ),
-    radial-gradient(ellipse 88% 80% at 50% 46%, #123a26 0%, #0e2e1e 42%, #071c12 76%, #030d08 100%),
-    #071a10;
+    /* The lamp: a warm pool high on the right-hand wall. */
+    radial-gradient(60% 55% at 76% 14%, rgba(var(--room-lamp-rgb), 0.18), rgba(var(--room-lamp-rgb), 0.05) 45%, transparent 70%),
+    /* The dado rail: a lit brass edge over its own shadow. */
+    linear-gradient(180deg, transparent 0 33%, rgba(var(--rail-brass-rgb), 0.55) 33.2%, rgba(var(--rail-brass-rgb), 0.35) 33.6%, rgba(0, 0, 0, 0.6) 34.4%, transparent 34.6%),
+    /* The panelling: a groove every board, with a lit lip beside it. */
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.38) 0 2px, rgba(var(--room-lamp-rgb), 0.035) 2px 4px, transparent 4px 132px),
+    /* And the grain. */
+    repeating-linear-gradient(90deg, rgba(var(--room-lamp-rgb), 0.012) 0 1px, transparent 1px 7px),
+    linear-gradient(180deg, var(--room-panel-lit) 0%, var(--room-panel) 33%, var(--room-floor) 34.6%, var(--room-floor-deep) 100%);
+}
+
+/* A print on the wall, top left, clear of the title and the session panel
+   (top right): the route the game is named for, its four stops and the
+   terminus, in a walnut frame. Drawn here, not painted; dim, as a picture on
+   a wall behind a lit table is. */
+.room-print {
+  position: absolute;
+  left: max(14px, 5.3vw);
+  top: max(14px, 5.9vh);
+  width: clamp(56px, 12.5vw, 170px);
+  opacity: 0.55;
+}
+
+.room-print svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.room-print .print-frame { fill: var(--rail-wood-deep); stroke: var(--rail-wood-lit); stroke-width: 2; }
+.room-print .print-paper { fill: rgba(var(--room-print-paper-rgb), 0.18); }
+.room-print .print-route { fill: none; stroke: var(--choice-equal); stroke-width: 2.4; opacity: 0.8; }
+.room-print .print-stop { fill: var(--rail-wood-deep); stroke: var(--choice-equal); stroke-width: 1.6; }
+.room-print .print-end { fill: var(--choice-equal); }
+
+/* A phone held upright: the corner is small and the title wide; the print
+   steps down to a thumbnail. */
+@media (max-width: 620px) and (orientation: portrait) {
+  .room-print {
+    width: 15vw;
+    left: 3.6vw;
+    top: 2.7vh;
+  }
 }
 
 /* ---- the table ---------------------------------------------------------- */

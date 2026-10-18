@@ -573,6 +573,18 @@
   --rail-brass: rgb(var(--rail-brass-rgb));
   --rail-well: #0f0b08;
 
+  /* The back room the table stands in (the owner's pick B1, 2026-10-17;
+     table.css .scene): walnut panelling to a brass dado rail a third of the
+     way down, dark boards below, and the one lamp from the upper right that
+     lights the table. Darker than the table and the rail in front of it at
+     every step, so the room stays behind them. */
+  --room-panel-lit: #2b1910;
+  --room-panel: #20120a;
+  --room-floor: #120a06;
+  --room-floor-deep: #0b0604;
+  --room-lamp-rgb: 255, 210, 140;
+  --room-print-paper-rgb: 217, 204, 176;
+
   /* Courts and aces. The court figures are the English pattern
      (art-masters/courts/), which prints every court in red, blue, yellow and
      black whatever its suit. Here card 1's guess is RED OR BLACK and a card is
