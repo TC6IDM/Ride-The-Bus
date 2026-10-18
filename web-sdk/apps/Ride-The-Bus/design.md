@@ -248,6 +248,13 @@ lockup. A stop is a milestone - the art decoded, the game mounted, the floor
 passed - never a timer; a route of five stops under it lights from the reading
 start, the bus riding along. Reduced motion swaps the stops instead of rolling.
 
+**The intro becomes the board** (the owner's pick C1, as they changed it): on
+Continue the intro fades over 240ms while its four squares fly down, one after
+another, and land as the board's guess squares - the controls the panels taught
+are the ones the player then uses. They fly unpicked, so a demo pick never
+lands on a square showing another. Reduced motion and Three of a Kind (no four
+squares to land on) get the fade alone.
+
 The reveal has two beats of its own. When a lot rides on the last card of a
 round with an Equal pick it is **held** - for longer the more it would land, decided from
 the stake and never from the outcome. The card slides up off the table in a

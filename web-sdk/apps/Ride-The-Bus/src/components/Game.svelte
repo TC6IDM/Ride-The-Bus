@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { flyIntroSquaresToBoard } from '../game/ui/introHandoff';
   import type { Component } from 'svelte';
   import './app.css';
   // TYPE ONLY, deliberately - this line erases at build time.
@@ -461,6 +462,9 @@
   // Called when the player clicks "Tap to Continue" on the start screen, which
   // only normal play shows: a replay never reaches the intro.
   function onStartContinue() {
+    // Before the intro goes: its squares fly down and become the board's
+    // (introHandoff.ts) while it fades (StartScreen's out:fade).
+    flyIntroSquaresToBoard();
     introPhase = 'playing';
     introDismissed = true;
     introGone.value = true;

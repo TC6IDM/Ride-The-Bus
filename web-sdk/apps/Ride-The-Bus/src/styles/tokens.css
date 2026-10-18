@@ -442,6 +442,7 @@
   --z-loader: 998; /* under Stake's own loader (999), over the game */
   --z-intro: 1000; /* the intro, and the replay's round details */
   --z-intro-popup: 1001; /* the round-details dimmer over the intro's table */
+  --z-handoff: 1002; /* the intro's squares, flying down to the board's (introHandoff.ts) */
   --z-takeover: 1200; /* the win takeover, over the game */
   /* The error dialog is the TOP layer, over the loader, the intro and the
      takeover. It sat at 90/91 - under the loader and the intro - so a launch
