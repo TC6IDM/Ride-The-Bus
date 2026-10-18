@@ -240,6 +240,14 @@ opacity and keeps every state change. A focus ring is never transitioned.
 **Lit, not haloed:** a coloured bloom around a coloured control is the one
 effect this system refuses by name.
 
+**The game loads on a destination blind** (the owner's pick A2, 2026-10-17):
+the MODE sign's recipe at hero size over the room and the empty table, its
+blind rolling through Red / Black, Higher / Lower, Inside / Outside and the
+four suit marks to the game's name, which drops its frame and stands as the
+lockup. A stop is a milestone - the art decoded, the game mounted, the floor
+passed - never a timer; a route of five stops under it lights from the reading
+start, the bus riding along. Reduced motion swaps the stops instead of rolling.
+
 The reveal has two beats of its own. When a lot rides on the last card of a
 round with an Equal pick it is **held** - for longer the more it would land, decided from
 the stake and never from the outcome. The card slides up off the table in a

@@ -202,36 +202,27 @@ describe('the intro screen fits the frame in Arabic', () => {
   });
 });
 
-describe('the loader deals from the side the row is dealt into', () => {
+describe('the loader runs its route from the reading start', () => {
+  // The loader was four dealt cards and a progress bar, and this block pinned
+  // their flips: the hand dealt from the side the row is dealt into, the bar
+  // filled from the right. The destination blind replaced both (the owner's
+  // pick A2, 2026-10-17); what it carries over is the same promise - progress
+  // runs the way the language reads - now on the route under the sign.
   const css = read('styles/intro/loader.css');
 
-  test('the deal offset and tilt take a direction factor', () => {
-    // .gl-cards is flex and already lays the four out right to left in Arabic,
-    // but loader-deal's own offset and angle are physical, so the hand flew in
-    // from the left and crossed the row it was being dealt into.
-    assert.ok(
-      /:global\(\[dir='rtl'\]\)\s*\.gl-cards\s*{\s*--gl-hand:\s*-1/.test(css),
-      'loader.css lost the right-to-left deal flip',
-    );
-    for (const prop of ['--gl-deal-x', '--gl-deal-tilt']) {
-      const decl = (css.match(new RegExp(`${prop}:[^;]*`)) ?? [])[0];
-      assert.ok(decl, `${prop} is gone`);
-      assert.ok(decl.includes('var(--gl-hand, 1)'), `${prop} misses the flip: ${decl}`);
+  test('the stops and the bus are placed from the inline start, not the left', () => {
+    for (const sel of ['.gl-dot', '.gl-bus']) {
+      const rule = css.slice(css.indexOf(`${sel} {`), css.indexOf('}', css.indexOf(`${sel} {`)));
+      assert.match(rule, /inset-inline-start:/, `${sel} is placed physically again`);
+      assert.doesNotMatch(rule, /(^|\s)left:/, `${sel} has a physical left`);
     }
-    // The keyframe has to read them rather than restate the numbers, because it
-    // is shared by all four cards and --gl-hand is inherited per element.
-    const at = css.indexOf('@keyframes loader-deal');
-    const frames = css.slice(at, css.indexOf('\n}', at));
-    assert.ok(frames.includes('var(--gl-deal-x)'), 'loader-deal restated its own offset');
-    assert.ok(frames.includes('var(--gl-deal-tilt)'), 'loader-deal restated its own tilt');
   });
 
-  test('the progress bar still empties from the right edge', () => {
-    // The rule that was already here, and the precedent every other flip cites.
-    assert.ok(
-      /:global\(\[dir='rtl'\]\)\s*\.gl-bar-fill\s*{\s*transform-origin: right/.test(css),
-      'loader.css lost the right-to-left progress-bar origin',
-    );
+  test('the centring and the bus turn round in Arabic', () => {
+    // translate has no logical form, so the centring has to flip by hand -
+    // the same reason the guess squares' --io-icon-shift does.
+    assert.match(css, /:global\(\[dir='rtl'\]\)\s*\.gl-dot\s*{\s*translate:\s*50% -50%/, 'the stops are centred the wrong way in Arabic');
+    assert.match(css, /:global\(\[dir='rtl'\]\)\s*\.gl-bus\s*{[^}]*transform:\s*scaleX\(-1\)/, 'the bus drives backwards in Arabic');
   });
 });
 
