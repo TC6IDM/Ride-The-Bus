@@ -33,6 +33,10 @@ const clamp = (value: number, lo: number, hi: number) => Math.min(hi, Math.max(l
  * Higher / Lower, under it on Inside / Outside - a little further out than
  * half-on since 2026-10-18 (the owner: "a bit more to the right" and "a bit
  * more lower"), so more of the chip shows and less of the badge is covered.
+ *
+ * These are the DEFAULT sides (a keyboard pick). A click picks the side: the
+ * half of the badge it landed on - left or right of it on Higher / Lower, above
+ * or below it on Inside / Outside (the owner, 2026-10-19).
  */
 export const EQUAL_SPOT: Record<'hl' | 'io', { x: number; y: number }> = {
   hl: { x: 1.18, y: 0.5 },
@@ -54,7 +58,11 @@ export function chipSpot(column: ChipColumn, pick: string, click: ChipClick | nu
   const spin = Math.round(rand() * 90);
   const eitherSide = (near: number) => (rand() < 0.5 ? near : 1 - near);
 
-  if (pick === 'equal' && (column === 'hl' || column === 'io')) return { ...EQUAL_SPOT[column], k: 0.26, spin };
+  if (pick === 'equal' && (column === 'hl' || column === 'io')) {
+    const { x, y } = EQUAL_SPOT[column];
+    if (column === 'hl') return { x: click && click.x < 0.5 ? 1 - x : x, y, k: 0.26, spin };
+    return { x, y: click && click.y < 0.5 ? 1 - y : y, k: 0.26, spin };
+  }
 
   switch (column) {
     case 'color':

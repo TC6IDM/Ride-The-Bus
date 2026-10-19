@@ -9,6 +9,13 @@
 <script lang="ts">
 	import { numberToCurrencyString } from 'utils-shared/amount';
 	import { t } from '../../i18n/i18nDerived';
+	import { onMount } from 'svelte';
+	import { landTitle } from '../../game/ui/titleHandoff';
+
+	// The loader's name lands on this lockup, dimmed with it; its credit line
+	// has nowhere to land here and fades (titleHandoff.ts).
+	let titleEl = $state<HTMLElement>();
+	onMount(() => landTitle([titleEl]));
 	import { formatMultiplier, formatTicket } from '../../game/ui/formatMultiplier';
 	import { FAMILY_RULES, familyOf, parseModeName } from '../../game/math/modes';
 
@@ -94,7 +101,7 @@
 		     rather than a form on a page. -->
 		<div class="ss-card" aria-hidden="true" style="opacity: 0.55; pointer-events: none">
 			<div class="ss-logo"></div>
-			<h1 class="ss-title">Ride The Bus</h1>
+			<h1 class="ss-title" bind:this={titleEl}>Ride The Bus</h1>
 		</div>
 
 		<div class="ss-popup-backdrop">

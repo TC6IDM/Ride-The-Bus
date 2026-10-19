@@ -155,12 +155,14 @@
 	/**
 	 * The four guesses, each drawn beside its sentence: its own square in the
 	 * board's colours, and the cards the question is about, dealt so the
-	 * answer is right (black King; 7 then a higher Jack; a 7 inside 4 and 10;
-	 * a Heart). Decorative - the sentence says it - so aria-hidden.
+	 * answer is right (a black 8; 7 then a higher 10; a 7 inside 4 and 10;
+	 * a Heart). Decorative - the sentence says it - so aria-hidden. Number
+	 * cards only, like the intro and the example round (the owner, 2026-10-19):
+	 * a court figure at this size is a busy picture beside a sentence.
 	 */
 	const GUIDE = [
-		{ key: 'color', text: 'Color: is card 1 red or black?', cards: [['K', 'spade']] },
-		{ key: 'hl', text: 'Higher or Lower: is card 2 above or below card 1, or Equal to it?', cards: [['7', 'diamond'], ['J', 'spade']] },
+		{ key: 'color', text: 'Color: is card 1 red or black?', cards: [['8', 'spade']] },
+		{ key: 'hl', text: 'Higher or Lower: is card 2 above or below card 1, or Equal to it?', cards: [['7', 'diamond'], ['10', 'spade']] },
 		{ key: 'io', text: 'Inside or Outside: is card 3 between cards 1 and 2 or outside them, or Equal to one of them?', cards: [['4', 'club'], ['10', 'heart'], ['7', 'spade']] },
 		{ key: 'suit', text: 'Suit: which suit is card 4?', cards: [['A', 'heart']] },
 	] as const;

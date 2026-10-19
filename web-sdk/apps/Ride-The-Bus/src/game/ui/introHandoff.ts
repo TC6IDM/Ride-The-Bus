@@ -17,6 +17,12 @@
  * spots on both (chipSpot.ts), so the square that lands is the square that
  * left. They flew unpicked while the intro's picks were only a demo.
  *
+ * The intro's chips are the house's red; the board's are the bet's (betChips.ts
+ * chipForBet). So each chip in flight turns into its board chip on the way
+ * down - the board's own chip laid over it and faded in across the flight -
+ * rather than changing colour in one frame as it lands (the owner,
+ * 2026-10-19).
+ *
  * Skipped - the intro just fades - under reduced motion, on Three of a Kind
  * (no four squares to land on), or if either set is not on screen.
  */
@@ -67,6 +73,27 @@ export function flyIntroSquaresToBoard(): void {
       if (value) copy.style.setProperty(unit, value);
     }
     if (badge) copy.style.setProperty('--equal-size', `${badge.getBoundingClientRect().width}px`);
+    // The copy is a new element, so its chips would replay their drop: still them.
+    const chips = [...copy.querySelectorAll<HTMLElement>('.pick-chip')];
+    chips.forEach((chip) => (chip.style.animation = 'none'));
+    // A frame later: Continue adopts the intro's picks in the same click, so
+    // the board's chips are not drawn yet when this measures.
+    requestAnimationFrame(() => {
+      const boardChips = [...target.querySelectorAll<HTMLElement>('.pick-chip')];
+      chips.forEach((chip, at) => {
+        const boardChip = boardChips[at];
+        if (!boardChip || !chip.isConnected || boardChip.className === chip.className) return;
+        const next = boardChip.cloneNode(true) as HTMLElement;
+        next.style.animation = 'none';
+        chip.after(next);
+        next.animate([{ opacity: 0 }, { opacity: 1 }], {
+          duration: FLY_MS * 0.7,
+          delay: index * STAGGER_MS + FLY_MS * 0.1,
+          easing: 'ease-in-out',
+          fill: 'both',
+        });
+      });
+    });
     document.body.appendChild(copy);
 
     // The board's square waits, hidden, for its copy to land on it.

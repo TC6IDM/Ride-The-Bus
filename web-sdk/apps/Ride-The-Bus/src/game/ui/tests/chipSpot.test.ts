@@ -37,11 +37,15 @@ describe('a chip lands near the click, inside the rules', () => {
     }
   });
 
-  test('"=" keeps its seam place whatever is clicked - a little further out than half-on', () => {
-    assert.deepEqual(
-      [chipSpot('hl', 'equal', { x: 0.1, y: 0.1 }).x, chipSpot('hl', 'equal', null).y],
-      [EQUAL_SPOT.hl.x, EQUAL_SPOT.hl.y],
-    );
+  test('"=" lies off the side of the badge that was clicked - a little further out than half-on', () => {
+    // Higher / Lower: left or right of the badge, on the seam.
+    assert.deepEqual([chipSpot('hl', 'equal', { x: 0.1, y: 0.1 }).x, chipSpot('hl', 'equal', { x: 0.1, y: 0.1 }).y], [1 - EQUAL_SPOT.hl.x, EQUAL_SPOT.hl.y]);
+    assert.equal(chipSpot('hl', 'equal', { x: 0.9, y: 0.1 }).x, EQUAL_SPOT.hl.x);
+    // Inside / Outside: above or below it.
+    assert.deepEqual([chipSpot('io', 'equal', { x: 0.9, y: 0.2 }).x, chipSpot('io', 'equal', { x: 0.9, y: 0.2 }).y], [EQUAL_SPOT.io.x, 1 - EQUAL_SPOT.io.y]);
+    assert.equal(chipSpot('io', 'equal', { x: 0.1, y: 0.8 }).y, EQUAL_SPOT.io.y);
+    // A keyboard pick takes the default side.
+    assert.deepEqual([chipSpot('hl', 'equal', null).x, chipSpot('io', 'equal', null).y], [EQUAL_SPOT.hl.x, EQUAL_SPOT.io.y]);
     assert.ok(EQUAL_SPOT.hl.x > 1 && EQUAL_SPOT.io.y > 1, 'the "=" chip moved back onto the badge');
   });
 

@@ -22,6 +22,7 @@
   import { logoAsset } from '../../game/ui/logoAsset.svelte';
   import { gameReady, loaderGone } from '../../game/platform/ready.svelte';
   import { reducedMotion } from '../../game/celebration/celebrationGestures';
+  import { liftTitle } from '../../game/ui/titleHandoff';
   // The loader renders before /wallet/authenticate returns, but t() needs no
   // session - it reads ?lang= off the URL and the catalogues are static
   // imports - so the very first thing a screen reader announces is localised
@@ -101,6 +102,8 @@
       done = true;
       landed = true;
       setTimeout(() => {
+        // The name lifts off and flies to the intro's (titleHandoff.ts).
+        liftTitle([document.querySelector('.gl-title-main'), document.querySelector('.gl-title-sub')]);
         visible = false;
         // Anything that must not animate behind the overlay waits on this -
         // notably replay and round-resume, which otherwise start the reveal

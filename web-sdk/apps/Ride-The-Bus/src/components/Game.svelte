@@ -1,5 +1,6 @@
 <script lang="ts">
   import { flyIntroSquaresToBoard } from '../game/ui/introHandoff';
+  import { landTitle, liftTitle } from '../game/ui/titleHandoff';
   import type { Component } from 'svelte';
   import './app.css';
   // TYPE ONLY, deliberately - this line erases at build time.
@@ -465,6 +466,9 @@
     // Before the intro goes: its squares fly down and become the board's
     // (introHandoff.ts) while it fades (StartScreen's out:fade).
     flyIntroSquaresToBoard();
+    // And the name flies from the intro's lockup to the board's (titleHandoff.ts).
+    liftTitle([document.querySelector('.ss-title'), document.querySelector('.ss-subtitle')]);
+    landTitle([document.querySelector('.game-title-main'), document.querySelector('.game-title-sub')]);
     introPhase = 'playing';
     introDismissed = true;
     introGone.value = true;

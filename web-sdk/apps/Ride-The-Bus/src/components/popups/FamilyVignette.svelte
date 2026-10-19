@@ -43,6 +43,23 @@
   };
   const cards = $derived(SCENES[family] ?? []);
   const CHIPS = Array.from({ length: 9 }, (_, index) => index);
+
+  /**
+   * The top face's squash, as the box draws it: its height over its width.
+   * The face is drawn ROUND and squashed by this, so its spots fall at the
+   * same x as the walls' stripes below them, whatever shape the card gives
+   * the picture. A fixed figure only fitted one shape (the owner, 2026-10-19:
+   * the sides did not line up with the spots).
+   */
+  function squash(node: HTMLElement) {
+    const measure = () => {
+      if (node.clientWidth) node.style.setProperty('--sq', String(node.clientHeight / node.clientWidth));
+    };
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+    measure();
+    return { destroy: () => observer.disconnect() };
+  }
 </script>
 
 <span class="vignette" aria-hidden="true">
@@ -62,7 +79,7 @@
   {:else if family === 'hs'}
     <span class="v-stack">
       {#each CHIPS as index (index)}<i class="v-chip" style={`--n: ${index}`}></i>{/each}
-      <i class="v-top"></i>
+      <i class="v-top" use:squash></i>
     </span>
   {/if}
 </span>
@@ -161,18 +178,27 @@
     z-index: 10;
     height: var(--face);
     border-radius: 50%;
-    /* The guess chip's face (PickChip.svelte), as on the table's chips:
-       a cream ring, eight 13deg cream spots round the rim. */
-    background:
-      radial-gradient(closest-side, var(--chip-red-face) 0 52.3%, var(--chip-red-cream) 53.7% 59.4%, var(--chip-red-face) 60.8% 83.4%, transparent 84.9%),
-      conic-gradient(
-        var(--chip-red-cream) 0deg 9.6deg, var(--chip-red-face) 9.6deg 49.6deg, var(--chip-red-cream) 49.6deg 61.7deg,
-        var(--chip-red-face) 61.7deg 85.6deg, var(--chip-red-cream) 85.6deg 94.4deg, var(--chip-red-face) 94.4deg 118.3deg,
-        var(--chip-red-cream) 118.3deg 130.4deg, var(--chip-red-face) 130.4deg 170.4deg, var(--chip-red-cream) 170.4deg 189.6deg,
-        var(--chip-red-face) 189.6deg 229.6deg, var(--chip-red-cream) 229.6deg 241.7deg, var(--chip-red-face) 241.7deg 265.6deg,
-        var(--chip-red-cream) 265.6deg 274.4deg, var(--chip-red-face) 274.4deg 298.3deg, var(--chip-red-cream) 298.3deg 310.4deg,
-        var(--chip-red-face) 310.4deg 350.4deg, var(--chip-red-cream) 350.4deg 360deg
-      );
+  }
+
+  /* The face itself: the guess chip's (PickChip.svelte) - a cream ring, eight
+     13deg cream spots on 45deg centres - drawn on a ROUND disc and squashed to
+     the box by --sq, so a spot at angle a lands at x = 50% + 50% sin(a), where
+     the walls above put its stripe (centred on 135, 180 and 225deg, and the
+     two silhouettes). An angle drawn straight onto the flat box lands
+     somewhere else for every shape of box. */
+  .v-top::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    translate: 0 -50%;
+    scale: 1 var(--sq, 0.5);
     box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3);
+    background:
+      radial-gradient(circle closest-side, var(--chip-red-face) 0 52.3%, var(--chip-red-cream) 53.7% 59.4%, var(--chip-red-face) 60.8% 83.4%, transparent 84.9%),
+      repeating-conic-gradient(from -6.5deg, var(--chip-red-cream) 0 13deg, var(--chip-red-face) 13deg 45deg);
   }
 </style>

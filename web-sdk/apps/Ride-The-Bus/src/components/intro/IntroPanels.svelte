@@ -28,6 +28,8 @@
 		SUIT_GLYPH,
 	} from '../../game/dev/introDemo';
 	import PickChip from '../board/PickChip.svelte';
+	import { onMount } from 'svelte';
+	import { landTitle } from '../../game/ui/titleHandoff';
 	import { chipAt, clickIn, placeChip } from '../../game/ui/chipSpot';
 	import { adoptGuesses, guesses } from '../../game/bet/betState.svelte';
 	import { roundInProgress } from '../../game/round/roundState.svelte';
@@ -152,6 +154,11 @@
 	 * propagation, so its own click cannot reach this and close what it just
 	 * opened.
 	 */
+	// The loader's name lands on this one (titleHandoff.ts).
+	let titleEl = $state<HTMLElement>();
+	let subtitleEl = $state<HTMLElement>();
+	onMount(() => landTitle([titleEl, subtitleEl]));
+
 	$effect(() => {
 		if (openTip === null) return;
 		const close = () => (openTip = null);
@@ -215,8 +222,8 @@
 		     for anyone who wants it. -->
 		<div class="ss-card">
 			<div class="ss-logo" style="--d: 0" aria-hidden="true"></div>
-			<h1 class="ss-title" style="--d: 1">Ride The Bus</h1>
-			<p class="ss-subtitle" style="--d: 2">by Takeover Casino</p>
+			<h1 class="ss-title" style="--d: 1" bind:this={titleEl}>Ride The Bus</h1>
+			<p class="ss-subtitle" style="--d: 2" bind:this={subtitleEl}>by Takeover Casino</p>
 
 			<p class="ss-lead" style="--d: 3">{t('Guess your way through four cards:')}</p>
 

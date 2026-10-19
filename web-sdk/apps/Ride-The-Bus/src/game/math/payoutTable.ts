@@ -273,7 +273,9 @@ export type ExampleStep = {
 
 export const EXAMPLE_DEAL: readonly { card: Card; choice: string }[] = [
 	{ card: { rank: '7', suit: '♥' }, choice: 'red' },
-	{ card: { rank: 'J', suit: '♠' }, choice: 'higher' },
+	// A number card, not a court (the owner, 2026-10-19: How to Play draws
+	// number cards only). It was the Jack; 10 keeps card 2 above card 1.
+	{ card: { rank: '10', suit: '♠' }, choice: 'higher' },
 	{ card: { rank: '2', suit: '♣' }, choice: 'outside' },
 	{ card: { rank: '9', suit: '♥' }, choice: 'heart' },
 ];
