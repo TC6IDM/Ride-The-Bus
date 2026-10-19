@@ -171,8 +171,6 @@ export default {
 		'हाल के राउंड दिखाएँ',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'प्लस और माइनस आपका दांव तय करते हैं। त्वरित दांव मेनू के लिए राशि पर क्लिक करें।',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'बिजली के निशान हर मोड को आपके बराबर चुनावों से पहले दिखाते हैं। हर बराबर चुनाव एक जोड़ता है।',
 	'Click to continue':
 		'जारी रखने के लिए क्लिक करें',
 	'Click to skip':

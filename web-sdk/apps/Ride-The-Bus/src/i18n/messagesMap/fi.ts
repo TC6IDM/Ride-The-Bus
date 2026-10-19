@@ -171,8 +171,6 @@ export default {
 		'Näytä viimeisimmät kierrokset',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'Plus ja miinus asettavat panoksesi. Napsauta summaa avataksesi pikapanosvalikon.',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'Salamat näyttävät kunkin tilan ennen Yhtä suuri -valintojasi. Jokainen Yhtä suuri -valinta lisää yhden.',
 	'Click to continue':
 		'Jatka napsauttamalla',
 	'Click to skip':

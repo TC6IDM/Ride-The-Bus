@@ -171,8 +171,6 @@ export default {
 		'Tampilkan ronde terbaru',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'Plus dan minus mengatur taruhan Anda. Klik jumlahnya untuk membuka menu taruhan cepat.',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'Petir menunjukkan tiap mode sebelum pilihan Sama Anda. Setiap pilihan Sama menambah satu.',
 	'Click to continue':
 		'Klik untuk melanjutkan',
 	'Click to skip':

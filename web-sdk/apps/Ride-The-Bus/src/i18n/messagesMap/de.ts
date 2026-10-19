@@ -171,8 +171,6 @@ export default {
 		'Letzte Runden anzeigen',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'Plus und Minus legen deinen Einsatz fest. Klicke auf den Betrag für das Schnelleinsatz-Menü.',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'Die Blitze zeigen jeden Modus vor deinen Gleich-Tipps. Jeder Gleich-Tipp fügt einen hinzu.',
 	'Click to continue':
 		'Zum Fortfahren klicken',
 	'Click to skip':

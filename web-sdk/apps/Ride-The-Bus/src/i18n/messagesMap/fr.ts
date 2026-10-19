@@ -171,8 +171,6 @@ export default {
 		'Afficher les manches récentes',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'Plus et moins fixent votre mise. Cliquez sur le montant pour ouvrir le menu des mises rapides.',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'Les éclairs montrent chaque mode avant vos choix Égal. Chaque choix Égal en ajoute un.',
 	'Click to continue':
 		'Cliquez pour continuer',
 	'Click to skip':

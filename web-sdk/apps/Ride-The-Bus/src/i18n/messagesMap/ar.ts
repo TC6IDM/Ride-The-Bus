@@ -172,8 +172,6 @@ export default {
 		'عرض الجولات الأخيرة',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'زرا الزائد والناقص يحددان رهانك. انقر على المبلغ لفتح قائمة الرهانات السريعة.',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'تُظهر الصواعق كل وضع قبل اختيارات «متساوٍ». كل اختيار «متساوٍ» يضيف صاعقة.',
 	'Click to continue':
 		'انقر للمتابعة',
 	'Click to skip':

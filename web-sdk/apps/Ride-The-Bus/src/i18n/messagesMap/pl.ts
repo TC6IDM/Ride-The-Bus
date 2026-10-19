@@ -170,8 +170,6 @@ export default {
 		'Pokaż ostatnie rundy',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'Plus i minus ustawiają zakład. Kliknij kwotę, by otworzyć menu szybkich zakładów.',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'Pioruny pokazują każdy tryb przed twoimi typami Równo. Każdy typ Równo dodaje jeden.',
 	'Click to continue':
 		'Kliknij, aby kontynuować',
 	'Click to skip':

@@ -12,11 +12,14 @@
      on the recessed dark sign the bar shows, with the seven bolts. Under it a
      picture made of the game's own pieces (FamilyVignette), its sentence, its
      maximum win as the one big figure and its cost where that is not 1x, and
-     Switch - or "Playing" on the live one. Switch lays the confirmation Stake
-     asks for over the bottom of that card (what it costs, the most it pays,
-     what the four picks on the board would top out at), with Cancel and
-     Switch, while the other four step back. Dealt up from the table as the
-     panel opens. On a phone the five are rows, scrolling under the heading.
+     Switch - or "Playing" on the live one. Switch TURNS THE CARD OVER where it
+     stands (G3's turn, kept on G1's cards by the owner's call of 2026-10-19 -
+     in place, not to the middle of the table): its back is the confirmation
+     Stake asks for (what it costs, the most it pays, what the four picks on
+     the board would top out at), with Cancel and Switch. The other four stay
+     as they are - nothing dims (the same call). Dealt up from the table as
+     the panel opens. On a phone the five are rows, scrolling under the
+     heading.
 
      STYLES TRAVEL WITH THE MARKUP. A stylesheet is scoped to whichever
      component imports it (see the note atop ChoiceIcon.svelte), so
@@ -35,11 +38,10 @@
     FAMILIES_BY_VOLATILITY,
     FAMILY_BOLTS,
     VOLATILITY_BOLTS,
-    equalGuessCount,
     volatilityColorRgbVar,
     volatilityColorVar,
   } from '../../game/math/volatility';
-  import { bet, guesses, selectedCeiling, volatilityLabel } from '../../game/bet/betState.svelte';
+  import { bet, selectedCeiling, volatilityLabel } from '../../game/bet/betState.svelte';
   import { titleFaceFor } from '../../game/ui/displayFace';
   import { fitBlock } from '../../game/ui/fitValue';
 
@@ -95,21 +97,22 @@
           class="mcard"
           class:live={bet.family === family}
           class:chosen={turning}
-          class:aside={bet.pending !== null && !turning}
           data-family={family}
           {...bet.family === family ? { 'aria-current': 'true' } : {}}
           style={`--fam: ${volatilityColorVar(family)}; --fam-rgb: ${volatilityColorRgbVar(family)}; --i: ${index}`}
         >
-          <!-- The confirmation is FIRST in the markup: it is laid over the
-               bottom of the card, so the order is invisible, and while it is
-               not asked it is hidden and inert. It keeps the switch handler
-               ahead of every other Switch label, where modes.test.ts reads it.
+          <!-- The confirmation is FIRST in the markup: it is the card's BACK,
+               turned away until the card turns over, so the order is
+               invisible, and while it is not asked it is inert. It keeps the
+               switch handler ahead of every other Switch label, where
+               modes.test.ts reads it.
 
                The confirmation step approval asks for. It restates what the
                player is about to buy - its cost, its ceiling, what the picks
                reach - from the same FAMILY_RULES the card reads, so the two
                can never describe a mode differently. -->
           <div class="mode-confirm" inert={!turning}>
+            <span class="mode-confirm-name face-{titleFaceFor(t(rules.label))}">{t(rules.label)}</span>
             <span class="mode-confirm-q">{t('Switch mode?')}</span>
             <!-- The cost, when it is not the base 1x. Stake's checklist wants a
                  high-cost mode to state its cost before it is activated, and
@@ -161,7 +164,7 @@
               </button>
             </div>
           </div>
-          <div class="front">
+          <div class="front" inert={turning}>
             <!-- THE MODE SIGN, at card size: the name lettered in the family's
                  colour on the recessed dark sign, the seven bolts under it -
                  the same blind the bar shows. The FAMILY's own rating, without
@@ -200,12 +203,6 @@
     </ul>
 
     <div class="mode-notes">
-      <!-- Why these bolts and the MODE sign's can disagree. Each card is the
-           family on its own; the sign adds one stop per Equal pick on the
-           board (boltsFor). Said only when it is true. -->
-      {#if !bet.pending && equalGuessCount(guesses.hl, guesses.io) > 0}
-        <p class="mode-note">{t('Bolts show each mode before your Equal picks. Each Equal pick adds one.')}</p>
-      {/if}
       <!-- Cost and RTP in one sentence, both interpolated - from FAMILY_RULES
            and game/config.ts - rather than written into the string. The mode
            it names is the one BEING CONFIRMED when a card asks, and the live

@@ -171,8 +171,6 @@ export default {
 		'Xem các vòng gần đây',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'Cộng và trừ đặt tiền cược. Nhấp vào số tiền để mở menu cược nhanh.',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'Tia sét cho thấy mỗi chế độ trước các lựa chọn Bằng nhau của bạn. Mỗi lựa chọn Bằng nhau thêm một.',
 	'Click to continue':
 		'Nhấp để tiếp tục',
 	'Click to skip':

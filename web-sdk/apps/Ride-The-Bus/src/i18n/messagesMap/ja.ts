@@ -171,8 +171,6 @@ export default {
 		'最近のラウンドを表示',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'プラスとマイナスでベット額を設定します。金額をクリックするとクイックベットのメニューが開きます。',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'稲妻はイコールを選ぶ前の各モードを示します。イコールを1つ選ぶごとに1つ増えます。',
 	'Click to continue':
 		'クリックして続行',
 	'Click to skip':

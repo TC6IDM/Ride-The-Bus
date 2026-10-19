@@ -150,12 +150,19 @@ Kept so any of them can be reopened. Each is still playable from this folder.
     two-thirds).
   - **Its look and position:** centred on the page, and matched to the G1
     mock-up's look.
+  - **G3's turn, back on G1's cards (2026-10-19):** Switch turns the card
+    over where it stands and its back is the confirmation. Nothing dims when
+    a card is picked, and the "Bolts show each mode before your Equal picks"
+    note is gone.
 
 Passed on in this round:
 - **G3, the dealt hand:** it was built and committed, then replaced by G1.
 - **G1 on the hand's paper cards:** my first G1 build was passed on for the
   mock-up's dark panel cards.
 - **The picker pinned near the top of the window:** passed on for centred.
+- **G3's turn to the middle of the table:** passed on for turning in place.
+- **The confirmation laid over the foot of a G1 card, the other four
+  dimmed:** passed on for the turn.
 - **The bet-coloured chip on the intro:** passed on for plain red.
 - **A future idea (not to be built yet):** a cigar-smoking mobster character
   in a chair on the right, with idle smoke and a puff on big rounds.

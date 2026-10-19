@@ -171,8 +171,6 @@ export default {
 		'최근 라운드 보기',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'플러스와 마이너스로 베팅액을 정합니다. 금액을 클릭하면 빠른 베팅 메뉴가 열립니다.',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'번개는 이퀄 선택 전의 각 모드를 보여 줍니다. 이퀄을 하나 고를 때마다 하나씩 늘어납니다.',
 	'Click to continue':
 		'클릭하여 계속',
 	'Click to skip':

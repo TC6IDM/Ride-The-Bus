@@ -170,8 +170,6 @@ export default {
 		'查看最近几局',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'加减按钮设定投注。单击金额可打开快速投注菜单。',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'闪电表示选择“相同”之前的各模式。每选一个“相同”就加一个。',
 	'Click to continue':
 		'单击继续',
 	'Click to skip':

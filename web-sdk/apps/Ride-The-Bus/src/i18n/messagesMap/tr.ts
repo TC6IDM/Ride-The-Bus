@@ -171,8 +171,6 @@ export default {
 		'Son turları göster',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'Artı ve eksi bahsinizi belirler. Hızlı bahis menüsü için tutara tıklayın.',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'Şimşekler her modu Eşit seçimlerinizden önceki hâliyle gösterir. Her Eşit seçimi bir tane ekler.',
 	'Click to continue':
 		'Devam etmek için tıklayın',
 	'Click to skip':

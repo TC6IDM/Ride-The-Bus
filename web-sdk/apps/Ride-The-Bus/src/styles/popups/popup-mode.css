@@ -100,9 +100,16 @@
 
 .mcard {
   position: relative;
-  display: flex;
+  /* Front and back in ONE cell, so the card is as tall as the taller side
+     and neither ever spills out of it. */
+  display: grid;
   border-radius: calc(var(--ru) * 0.89);
-  transition: opacity 240ms var(--ease-out);
+  /* Turned over IN PLACE (the owner, 2026-10-19 - G3's turn without its
+     trip to the middle of the table): each card carries its own
+     perspective, so a card at the end of the rack turns about its own
+     middle rather than leaning toward the rack's. */
+  transform-style: preserve-3d;
+  transition: transform 520ms var(--ease-in-out);
   /* Dealt up off the table as the panel arrives, one after another, and
      settled: ease-out, no overshoot, the rack down inside half a second.
      Backwards fill, so once it has landed the static rules own it. */
@@ -117,14 +124,20 @@
   }
 }
 
-/* A card asking to confirm stays lit; the other four step back. */
-.mcard.aside {
-  opacity: 0.32;
+/* A card asking to confirm turns over; the other four stay as they are -
+   nothing dims (the owner, 2026-10-19). */
+.mcard.chosen {
+  transform: perspective(calc(var(--ru) * 90)) rotateY(180deg);
+}
+
+.mcard > .front,
+.mcard > .mode-confirm {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
 }
 
 /* The card: the panel material, one containment layer. */
 .front {
-  flex: 1 1 auto;
   display: grid;
   grid-template-rows: auto calc(var(--ru) * 7.7) auto 1fr auto;
   gap: calc(var(--ru) * 0.74);
@@ -270,38 +283,43 @@
   color: var(--fam);
 }
 
-/* ---- The confirmation, laid over the card's foot ------------------------
-   No card changes size: the question covers the figure and the button of the
-   card that asked it, edged along its top in the family's colour. */
+/* ---- The back: the confirmation ------------------------------------------
+   The same card material, edged inside in the family's colour, with the
+   family's name lettered at the top so the question says which mode it
+   means. Turned away until the card turns over. */
 .mode-confirm {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 2;
-  display: none;
-  flex-direction: column;
-  padding: calc(var(--ru) * 1.04);
-  border-radius: 0 0 calc(var(--ru) * 0.89) calc(var(--ru) * 0.89);
-  border-top: 1px solid rgba(var(--fam-rgb), 0.45);
-  background: linear-gradient(rgba(var(--fam-rgb), 0.1), rgba(var(--fam-rgb), 0.1)), var(--panel);
-  box-shadow: 0 calc(var(--ru) * -0.74) calc(var(--ru) * 1.33) rgba(var(--shadow-rgb), 0.35);
-}
-
-.mcard.chosen .mode-confirm {
+  transform: rotateY(180deg);
   display: flex;
-  animation: confirm-in 180ms var(--ease-out);
+  flex-direction: column;
+  padding: calc(var(--ru) * 1.3) calc(var(--ru) * 1.04) calc(var(--ru) * 1.04);
+  border-radius: inherit;
+  border: 1px solid var(--panel-edge);
+  background: linear-gradient(rgba(var(--fam-rgb), 0.08), rgba(var(--fam-rgb), 0.08)), var(--panel-face), var(--panel);
+  box-shadow:
+    inset 0 0 0 2px rgba(var(--fam-rgb), 0.5),
+    var(--panel-elevation-low);
+  color: var(--ink-body);
 }
 
-/* The card's own Switch is under the question while it is asked. */
-.mcard.chosen .ac {
-  visibility: hidden;
+.mode-confirm-name {
+  margin-bottom: calc(var(--ru) * 0.6);
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: max(calc(var(--ru) * 1.93), var(--type-floor));
+  line-height: 1.05;
+  letter-spacing: 0.005em;
+  color: var(--fam);
+  overflow-wrap: anywhere;
 }
 
-@keyframes confirm-in {
-  from {
-    opacity: 0;
-  }
+.mode-confirm-name.face-body {
+  font-family: var(--font-body);
+  letter-spacing: -0.01em;
+}
+
+.mode-confirm-name.face-system {
+  font-family: sans-serif;
+  letter-spacing: 0;
 }
 
 .mode-confirm-q {
@@ -327,7 +345,9 @@
 .mode-confirm-actions {
   display: flex;
   gap: calc(var(--ru) * 0.59);
-  margin-top: calc(var(--ru) * 0.45);
+  /* At the foot of the back, where the front's Switch was. */
+  margin-top: auto;
+  padding-top: calc(var(--ru) * 0.45);
 }
 
 .mode-confirm-cancel {
@@ -510,15 +530,36 @@
   }
 }
 
-/* ---- Reduced motion: no deal - the rack is simply there ---- */
+/* ---- Reduced motion: no deal - the rack is simply there - and no turn in
+   depth: turning a card over is a crossfade between its two sides. ---- */
 @media (prefers-reduced-motion: reduce) {
   .popup.popup-mode,
-  .mcard,
-  .mcard.chosen .mode-confirm {
+  .mcard {
     animation: none;
   }
 
-  .mcard {
+  .mcard,
+  .mcard.chosen {
     transition: none;
+    transform: none;
+  }
+
+  .mcard > .front,
+  .mcard > .mode-confirm {
+    backface-visibility: visible;
+    transition: opacity 120ms var(--ease-out);
+  }
+
+  .mode-confirm {
+    transform: none;
+    opacity: 0;
+  }
+
+  .mcard.chosen > .front {
+    opacity: 0;
+  }
+
+  .mcard.chosen > .mode-confirm {
+    opacity: 1;
   }
 }

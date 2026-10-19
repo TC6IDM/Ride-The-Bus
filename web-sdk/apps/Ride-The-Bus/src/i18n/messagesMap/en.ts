@@ -211,8 +211,6 @@ export default {
 		'Show recent rounds',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'Plus and minus set your bet. Click the amount for the quick-bet menu.',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'Bolts show each mode before your Equal picks. Each Equal pick adds one.',
 	'Click to continue':
 		'Click to continue',
 	'Click to skip':

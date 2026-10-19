@@ -170,8 +170,6 @@ export default {
 		'Mostrar rodadas recentes',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'Mais e menos definem sua aposta. Clique no valor para abrir o menu de apostas rápidas.',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'Os raios mostram cada modo antes das suas escolhas de Igual. Cada Igual soma um.',
 	'Click to continue':
 		'Clique para continuar',
 	'Click to skip':

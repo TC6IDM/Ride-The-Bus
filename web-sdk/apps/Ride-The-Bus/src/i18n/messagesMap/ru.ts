@@ -170,8 +170,6 @@ export default {
 		'Показать последние раунды',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'Плюс и минус задают ставку. Щёлкните по сумме, чтобы открыть меню быстрых ставок.',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'Молнии показывают каждый режим до ваших выборов «Равно». Каждый выбор «Равно» добавляет одну.',
 	'Click to continue':
 		'Щёлкните, чтобы продолжить',
 	'Click to skip':
