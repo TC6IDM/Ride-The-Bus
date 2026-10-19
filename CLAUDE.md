@@ -398,7 +398,8 @@ reading before proposing it again.
   `MarkIcon`'s voice (round caps, ~2.2 on a 24 grid); a glyph that is read
   (the bolt meter) is filled. The turbo bolt and the meter share a silhouette
   and differ by exactly this. The spin button's shapes are the stated
-  exception.
+  exception, and the turbo bolt FILLS at Instant (the owner's call,
+  2026-10-18; `turboBolt.test.ts`), so the button reads its setting.
 - **A panel opened from the keyboard shows its own ring, not the browser's** —
   `.popup:focus-visible { outline: none }` plus the header's rule thickening in
   `--tint`. Chrome's default double ring around a whole dialog was live on all

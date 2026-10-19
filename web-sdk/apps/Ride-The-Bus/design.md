@@ -184,7 +184,10 @@ read (the bolt meter) is filled. The spin button is the stated exception: its
 marks are shapes (two cards, a stop square, two chevrons) and it is the hero
 control. The table die is the other: it is not a mark but an OBJECT on the
 table, drawn as one - the card back's reds, the scene's camera, the room's
-light catching the top's far edge and the table's two-part shadow under it. Glyphs are drawn only where the font does not own them; card ranks
+light catching the top's far edge and the table's two-part shadow under it.
+The turbo bolt is the third, and only at the top of its scale: at Instant
+its outline fills in, so the button reads the setting at a glance (the
+owner's call, 2026-10-18). Glyphs are drawn only where the font does not own them; card ranks
 stay ASCII.
 
 ## The primary action
