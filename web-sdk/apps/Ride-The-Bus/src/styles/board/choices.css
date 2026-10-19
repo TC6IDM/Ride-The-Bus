@@ -175,6 +175,15 @@
 .quad-btn.selected {
   filter: brightness(1.22) saturate(1.06);
   box-shadow: inset 0 0 0 2.5px var(--gold-bright), inset 0 0 calc(var(--choice-size) * 0.16) rgba(var(--gold-rgb), 0.4);
+  /* ABOVE THE SEAMS AND ITS NEIGHBOURS, for its chip (the owner, 2026-10-18:
+     the suit chip "should always be over" the borders). The filter above makes
+     this segment a stacking context, so its chip's own z-index only counts
+     inside it: a chip lying across a seam was drawn under the gold seam layer
+     (.choice-square::after, z 1) and under the segment after it in the markup.
+     Lifted to 2, the whole segment - chip included - sits over both. The "="
+     badge is also 2 and comes later, so it still sits on top, and the gold
+     ring above outlines the segment where the seam no longer draws over it. */
+  z-index: 2;
 }
 
 /* Held down.
