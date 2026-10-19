@@ -520,6 +520,12 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
+  /* NOT CLIPPED (the owner's call, 2026-10-18): a quarter is small, so its
+     pick chip lies near the quarter's edge, and the square's clip cut it in
+     half. The quarters round their own outer corners (above) and the sheen
+     inherits the radius, so nothing else needed the clip - a chip may now sit
+     over the border and still read as a whole chip. */
+  overflow: visible;
 }
 
 .quad-btn {

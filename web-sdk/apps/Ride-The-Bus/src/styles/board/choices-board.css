@@ -125,66 +125,6 @@
   pointer-events: none;
 }
 
-/* ---- The chip a pick sets down -------------------------------------------
-   The house's red chip, plain - no value: it marks the pick, and the round is
-   one bet, the bar's. Placed by GameBoard (--cx / --cy, fractions of its
-   section from the inline start; --chip-k its width as a share of the square;
-   --spin turns its edge pattern so no two land alike). Inside its section, off
-   the mark; on "=" half onto the badge along the seam (.on-badge, sized and
-   placed against the badge instead). Drawn from the table's chip tokens. */
-.pick-chip {
-  position: absolute;
-  z-index: 3;
-  inset-inline-start: calc(var(--cx) * 100%);
-  top: calc(var(--cy) * 100%);
-  width: calc(var(--choice-size) * var(--chip-k));
-  aspect-ratio: 1;
-  translate: -50% -50%;
-  border-radius: 50%;
-  pointer-events: none;
-  background:
-    radial-gradient(circle, var(--chip-red-face) 0 37%, var(--chip-red-cream) 38% 42%, var(--chip-red-face) 43% 59%, transparent 60%),
-    repeating-conic-gradient(from var(--spin), var(--chip-red-cream) 0 13deg, var(--chip-red-face) 13deg 45deg);
-  box-shadow:
-    0 calc(var(--choice-size) * 0.02) 0 var(--chip-red-dark),
-    0 calc(var(--choice-size) * 0.035) calc(var(--choice-size) * 0.05) rgba(var(--shadow-rgb), 0.55);
-  /* Set down: dropped from a little above, settling once. */
-  animation: chip-down 300ms var(--ease-out) both;
-}
-
-/* translate is physical; from the inline start in Arabic it runs the other way. */
-:global([dir='rtl']) .pick-chip {
-  translate: 50% -50%;
-}
-
-@keyframes chip-down {
-  0% {
-    opacity: 0;
-    transform: translateY(-45%) scale(1.3);
-  }
-  55% {
-    opacity: 1;
-  }
-  80% {
-    transform: scale(0.97);
-  }
-  100% {
-    transform: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .pick-chip {
-    animation: chip-fade 120ms var(--ease-out) both;
-  }
-}
-
-@keyframes chip-fade {
-  from {
-    opacity: 0;
-  }
-}
-
 /* Pin the column to the square's width. Otherwise the longest labels
    ("INSIDE / OUTSIDE") are wider than their square and drive the column, which
    pushes the four columns past the viewport and wraps the row on phones. */

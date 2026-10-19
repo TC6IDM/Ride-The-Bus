@@ -19,6 +19,7 @@
   import CardFace from '../cards/CardFace.svelte';
   import TicketFace from '../cards/TicketFace.svelte';
   import TableDie from './TableDie.svelte';
+  import PickChip from './PickChip.svelte';
   import {
     familyRules,
     guesses,
@@ -28,7 +29,11 @@
     setIoChoice,
     setSuitChoice,
     allChoicesMade,
+    betLevels,
+    betValue,
   } from '../../game/bet/betState.svelte';
+  import { chipForBet } from '../../game/bet/betChips';
+  import { chipAt, clickIn, placeChip, type ChipColumn, type ChipSpot } from '../../game/ui/chipSpot';
   import { FREE_CHOICE, isCleanSweep, stageCount } from '../../game/math/modes';
   import { round } from '../../game/round/roundState.svelte';
   import type { Card } from '../../game/platform/typesBookEvent';
@@ -73,9 +78,9 @@
     insideTipTimer = setTimeout(() => { insideBlockedHover = false; }, INSIDE_TIP_MS);
   }
 
-  function onInsideClick() {
+  function onInsideClick(event: MouseEvent) {
     if (!insideIsPossible()) { sound.playBlocked(); flashInsideTip(); return; }
-    pick(setIoChoice, 'inside');
+    pick(setIoChoice, 'inside', 'io', event);
   }
 
   /**
@@ -343,45 +348,23 @@
   );
 
   /**
-   * WHERE EACH CHIP LIES (the owner's pick E3 and its rules, 2026-10-17). A
-   * pick sets the house's plain red chip down on the section chosen - no value
-   * on it: it marks the pick, and the one bet is the bar's. It lies INSIDE the
-   * section, clear of the section's mark, set down by hand rather than on a
-   * grid: a little jitter and a spin each time, and on Higher / Lower and
-   * Inside / Outside, where the mark leaves room either side, a random side.
-   * On "=" it lies half onto the badge along the seam (the snippet below).
-   *
-   * Fractions of the SEGMENT the chip is in, x from its inline start, so the
-   * same numbers serve Arabic; k is the chip's width as a share of the square.
-   * Each column's spot is its own $derived on that column's pick, so it is
-   * thrown again only when that pick changes - a die roll throws all four.
+   * WHERE EACH CHIP LIES - game/ui/chipSpot.ts has the rules (the owner's E3,
+   * 2026-10-17, and the notes of 2026-10-18). A pointer pick lands the chip
+   * near the click, inside the rules; anything else throws it by hand. Each
+   * column's spot is its own $derived on that column's pick, and the spot is
+   * remembered per pick, so the intro's chip and the board's are one.
    */
-  type ChipSpot = { x: number; y: number; k: number; spin: number };
-  const jitter = (amount: number) => (Math.random() - 0.5) * 2 * amount;
-  const throwSpin = () => Math.round(Math.random() * 90);
-  const eitherSide = (near: number) => (Math.random() < 0.5 ? near : 1 - near);
-  const colorSpot = $derived.by((): ChipSpot | null => (guesses.color ? { x: 0.5 + jitter(0.16), y: 0.5 + jitter(0.24), k: 0.3, spin: throwSpin() } : null));
-  const hlSpot = $derived.by((): ChipSpot | null => {
-    const pick = guesses.hl;
-    if (!pick) return null;
-    if (pick === 'equal') return { x: 1, y: 0.5, k: 0.26, spin: throwSpin() };
-    // Either side of the triangle, nearer the outer edge than the seam.
-    return { x: eitherSide(0.18) + jitter(0.03), y: (pick === 'higher' ? 0.44 : 0.56) + jitter(0.05), k: 0.28, spin: throwSpin() };
-  });
-  const ioSpot = $derived.by((): ChipSpot | null => {
-    const pick = guesses.io;
-    if (!pick) return null;
-    if (pick === 'equal') return { x: 0.5, y: 1, k: 0.26, spin: throwSpin() };
-    // Above or below the card mark, which runs across the half's middle.
-    return { x: 0.5 + jitter(0.07), y: eitherSide(0.17) + jitter(0.03), k: 0.26, spin: throwSpin() };
-  });
-  // The suit's quarter is small, so its chip is too, tucked in the outer
-  // corner: start-top for the first, end-top, start-bottom, end-bottom.
-  const SUIT_CORNER: Record<string, [number, number]> = { heart: [0.2, 0.2], spade: [0.8, 0.2], club: [0.2, 0.8], diamond: [0.8, 0.8] };
-  const suitSpot = $derived.by((): ChipSpot | null => {
-    const corner = guesses.suit ? SUIT_CORNER[guesses.suit] : undefined;
-    return corner ? { x: corner[0] + jitter(0.03), y: corner[1] + jitter(0.03), k: 0.18, spin: throwSpin() } : null;
-  });
+  const colorSpot = $derived(chipAt('color', guesses.color));
+  const hlSpot = $derived(chipAt('hl', guesses.hl));
+  const ioSpot = $derived(chipAt('io', guesses.io));
+  const suitSpot = $derived(chipAt('suit', guesses.suit));
+
+  /**
+   * WHICH CHIP: the bet's own (the owner's call, 2026-10-18). The bet menu's
+   * chip for the level the bet stands on, a typed amount rounding down - so a
+   * $25 bet sets down the $25 chip.
+   */
+  const betChip = $derived(chipForBet(betValue(), betLevels()));
 
   /** A card the round will never reach, once it has busted before it. */
   const isDead = (index: number) => round.bustedIndex !== null && index > round.bustedIndex;
@@ -605,8 +588,14 @@
    * round state and should not acquire one, so the guard belongs at the call
    * site, which is here.
    */
-  function pick<T>(set: (value: T) => void, value: T) {
+  function pick<T>(set: (value: T) => void, value: T, column?: ChipColumn, event?: MouseEvent) {
     if (choicesLocked()) { sound.playBlocked(); return; }
+    // A pointer pick sets its chip down where it was clicked (chipSpot.ts),
+    // BEFORE the pick changes, so the column's $derived reads the new spot.
+    if (column && event) {
+      const click = clickIn(event);
+      if (click) placeChip(column, String(value), click);
+    }
     set(value);
   }
 </script>
@@ -743,15 +732,8 @@
   </div>
 {/snippet}
 
-{#snippet pickChip(spot: ChipSpot | null, onBadge = false)}
-  {#if spot}
-    <span
-      class="pick-chip"
-      class:on-badge={onBadge}
-      aria-hidden="true"
-      style={`--cx: ${spot.x}; --cy: ${spot.y}; --chip-k: ${spot.k}; --spin: ${spot.spin}deg`}
-    ></span>
-  {/if}
+{#snippet pickChip(spot: ChipSpot | null)}
+  {#if spot}<PickChip {spot} chip={betChip} />{/if}
 {/snippet}
 
 {#snippet runningWinBar()}
@@ -834,8 +816,8 @@
          high. See .choice-label in choices-board.css. -->
     <span class="choice-label"><span>{t('Color')}</span></span>
     <div class="choice-square color-square" role="group" aria-label={t('Pick a color')}>
-      <button type="button" class="half-btn black-half" class:selected={guesses.color === 'black'} aria-pressed={guesses.color === 'black'} onclick={() => pick(setColorChoice, 'black')} aria-disabled={choicesLocked()} aria-label={t('Black')}>{#if guesses.color === 'black'}{@render pickChip(colorSpot)}{/if}</button>
-      <button type="button" class="half-btn red-half" class:selected={guesses.color === 'red'} aria-pressed={guesses.color === 'red'} onclick={() => pick(setColorChoice, 'red')} aria-disabled={choicesLocked()} aria-label={t('Red')}>{#if guesses.color === 'red'}{@render pickChip(colorSpot)}{/if}</button>
+      <button type="button" class="half-btn black-half" class:selected={guesses.color === 'black'} aria-pressed={guesses.color === 'black'} onclick={(event) => pick(setColorChoice, 'black', 'color', event)} aria-disabled={choicesLocked()} aria-label={t('Black')}>{#if guesses.color === 'black'}{@render pickChip(colorSpot)}{/if}</button>
+      <button type="button" class="half-btn red-half" class:selected={guesses.color === 'red'} aria-pressed={guesses.color === 'red'} onclick={(event) => pick(setColorChoice, 'red', 'color', event)} aria-disabled={choicesLocked()} aria-label={t('Red')}>{#if guesses.color === 'red'}{@render pickChip(colorSpot)}{/if}</button>
     </div>
   </div>
 
@@ -845,9 +827,9 @@
          reads "Higher /" over "Lower", never "Higher" over "/ Lower". -->
     <span class="choice-label"><span>{t('Higher')}&nbsp;/ {t('Lower')}</span></span>
     <div class="choice-square hl-square" role="group" aria-label={t('Higher, lower, or equal')}>
-      <button type="button" class="third-btn higher-third" class:selected={guesses.hl === 'higher'} aria-pressed={guesses.hl === 'higher'} onclick={() => pick(setHlChoice, 'higher')} aria-disabled={choicesLocked()} aria-label={t('Higher')}>{@render iconTriangleUp()}{#if guesses.hl === 'higher'}{@render pickChip(hlSpot)}{/if}</button>
-      <button type="button" class="third-btn lower-third" class:selected={guesses.hl === 'lower'} aria-pressed={guesses.hl === 'lower'} onclick={() => pick(setHlChoice, 'lower')} aria-disabled={choicesLocked()} aria-label={t('Lower')}>{@render iconTriangleDown()}{#if guesses.hl === 'lower'}{@render pickChip(hlSpot)}{/if}</button>
-      <button type="button" class="equal-btn" class:selected={guesses.hl === 'equal'} aria-pressed={guesses.hl === 'equal'} onclick={() => pick(setHlChoice, 'equal')} aria-disabled={choicesLocked()} aria-label={t('Equal')}>{@render iconEquals()}{#if guesses.hl === 'equal'}{@render pickChip(hlSpot, true)}{/if}</button>
+      <button type="button" class="third-btn higher-third" class:selected={guesses.hl === 'higher'} aria-pressed={guesses.hl === 'higher'} onclick={(event) => pick(setHlChoice, 'higher', 'hl', event)} aria-disabled={choicesLocked()} aria-label={t('Higher')}>{@render iconTriangleUp()}{#if guesses.hl === 'higher'}{@render pickChip(hlSpot)}{/if}</button>
+      <button type="button" class="third-btn lower-third" class:selected={guesses.hl === 'lower'} aria-pressed={guesses.hl === 'lower'} onclick={(event) => pick(setHlChoice, 'lower', 'hl', event)} aria-disabled={choicesLocked()} aria-label={t('Lower')}>{@render iconTriangleDown()}{#if guesses.hl === 'lower'}{@render pickChip(hlSpot)}{/if}</button>
+      <button type="button" class="equal-btn" class:selected={guesses.hl === 'equal'} aria-pressed={guesses.hl === 'equal'} onclick={(event) => pick(setHlChoice, 'equal', 'hl', event)} aria-disabled={choicesLocked()} aria-label={t('Equal')}>{@render iconEquals()}{#if guesses.hl === 'equal'}{@render pickChip(hlSpot)}{/if}</button>
     </div>
   </div>
 
@@ -867,8 +849,8 @@
         onfocus={() => (insideBlockedHover = true)}
         onblur={() => (insideBlockedHover = false)}
       >{@render iconInside()}{#if guesses.io === 'inside'}{@render pickChip(ioSpot)}{/if}</button>
-      <button type="button" class="half-btn outside-half" class:selected={guesses.io === 'outside'} aria-pressed={guesses.io === 'outside'} onclick={() => pick(setIoChoice, 'outside')} aria-disabled={choicesLocked()} aria-label={t('Outside')}>{@render iconOutside()}{#if guesses.io === 'outside'}{@render pickChip(ioSpot)}{/if}</button>
-      <button type="button" class="equal-btn" class:selected={guesses.io === 'equal'} aria-pressed={guesses.io === 'equal'} onclick={() => pick(setIoChoice, 'equal')} aria-disabled={choicesLocked()} aria-label={t('Equal')}>{@render iconEquals()}{#if guesses.io === 'equal'}{@render pickChip(ioSpot, true)}{/if}</button>
+      <button type="button" class="half-btn outside-half" class:selected={guesses.io === 'outside'} aria-pressed={guesses.io === 'outside'} onclick={(event) => pick(setIoChoice, 'outside', 'io', event)} aria-disabled={choicesLocked()} aria-label={t('Outside')}>{@render iconOutside()}{#if guesses.io === 'outside'}{@render pickChip(ioSpot)}{/if}</button>
+      <button type="button" class="equal-btn" class:selected={guesses.io === 'equal'} aria-pressed={guesses.io === 'equal'} onclick={(event) => pick(setIoChoice, 'equal', 'io', event)} aria-disabled={choicesLocked()} aria-label={t('Equal')}>{@render iconEquals()}{#if guesses.io === 'equal'}{@render pickChip(ioSpot)}{/if}</button>
     </div>
     <!-- Why Inside is off, in words. Rendered here rather than inside the
          square because .choice-square is overflow:hidden and would clip it
@@ -883,10 +865,10 @@
   <div class="choice-column" class:is-missed={round.bustedIndex === 3} class:is-forgiven={round.forgivenIndex === 3}>
     <span class="choice-label"><span>{t('Suit')}</span></span>
     <div class="choice-square suit-square" role="group" aria-label={t('Pick a suit')}>
-      <button type="button" class="quad-btn red-suit" class:selected={guesses.suit === 'heart'} aria-pressed={guesses.suit === 'heart'} onclick={() => pick(setSuitChoice, 'heart')} aria-disabled={choicesLocked()} aria-label={t('Heart')}><SuitIcon suit="heart" />{#if guesses.suit === 'heart'}{@render pickChip(suitSpot)}{/if}</button>
-      <button type="button" class="quad-btn" class:selected={guesses.suit === 'spade'} aria-pressed={guesses.suit === 'spade'} onclick={() => pick(setSuitChoice, 'spade')} aria-disabled={choicesLocked()} aria-label={t('Spade')}><SuitIcon suit="spade" />{#if guesses.suit === 'spade'}{@render pickChip(suitSpot)}{/if}</button>
-      <button type="button" class="quad-btn" class:selected={guesses.suit === 'club'} aria-pressed={guesses.suit === 'club'} onclick={() => pick(setSuitChoice, 'club')} aria-disabled={choicesLocked()} aria-label={t('Club')}><SuitIcon suit="club" />{#if guesses.suit === 'club'}{@render pickChip(suitSpot)}{/if}</button>
-      <button type="button" class="quad-btn red-suit" class:selected={guesses.suit === 'diamond'} aria-pressed={guesses.suit === 'diamond'} onclick={() => pick(setSuitChoice, 'diamond')} aria-disabled={choicesLocked()} aria-label={t('Diamond')}><SuitIcon suit="diamond" />{#if guesses.suit === 'diamond'}{@render pickChip(suitSpot)}{/if}</button>
+      <button type="button" class="quad-btn red-suit" class:selected={guesses.suit === 'heart'} aria-pressed={guesses.suit === 'heart'} onclick={(event) => pick(setSuitChoice, 'heart', 'suit', event)} aria-disabled={choicesLocked()} aria-label={t('Heart')}><SuitIcon suit="heart" />{#if guesses.suit === 'heart'}{@render pickChip(suitSpot)}{/if}</button>
+      <button type="button" class="quad-btn" class:selected={guesses.suit === 'spade'} aria-pressed={guesses.suit === 'spade'} onclick={(event) => pick(setSuitChoice, 'spade', 'suit', event)} aria-disabled={choicesLocked()} aria-label={t('Spade')}><SuitIcon suit="spade" />{#if guesses.suit === 'spade'}{@render pickChip(suitSpot)}{/if}</button>
+      <button type="button" class="quad-btn" class:selected={guesses.suit === 'club'} aria-pressed={guesses.suit === 'club'} onclick={(event) => pick(setSuitChoice, 'club', 'suit', event)} aria-disabled={choicesLocked()} aria-label={t('Club')}><SuitIcon suit="club" />{#if guesses.suit === 'club'}{@render pickChip(suitSpot)}{/if}</button>
+      <button type="button" class="quad-btn red-suit" class:selected={guesses.suit === 'diamond'} aria-pressed={guesses.suit === 'diamond'} onclick={(event) => pick(setSuitChoice, 'diamond', 'suit', event)} aria-disabled={choicesLocked()} aria-label={t('Diamond')}><SuitIcon suit="diamond" />{#if guesses.suit === 'diamond'}{@render pickChip(suitSpot)}{/if}</button>
     </div>
   </div>
   <!-- The table die: all four picks at random, dealt only when the player
