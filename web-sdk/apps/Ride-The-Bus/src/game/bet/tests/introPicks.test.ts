@@ -30,7 +30,7 @@ test('no Inside after an Equal, on the intro and in what it hands over', () => {
   assert.match(adopt.slice(0, adopt.indexOf('\n}')), /isCombinationPlayable\(guesses\.hl, next\.io/);
 });
 
-test('every intro pick sets the bet’s chip down, and the squares fly down carrying them', () => {
-  assert.equal((INTRO.match(/<PickChip spot=\{spots\.\w+\} chip=\{betChip\} \/>/g) ?? []).length, 9);
+test('every intro pick sets the house’s red chip down, and the squares fly down carrying them', () => {
+  assert.equal((INTRO.match(/<PickChip spot=\{spots\.\w+\} chip=\{introChip\} \/>/g) ?? []).length, 9);
   assert.ok(!/classList\.remove\('selected'\)/.test(HANDOFF), 'the hand-off strips the picks off the flying squares again');
 });
