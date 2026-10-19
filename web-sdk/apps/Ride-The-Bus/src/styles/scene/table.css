@@ -466,29 +466,35 @@
       rgba(0, 0, 0, 0.58) 95%,
       rgba(0, 0, 0, 0.8) 100%
     ),
-    /* The edge spots, projected round the cylinder. EIGHT of them, 22.5deg
-       wide on 45deg centres - the same eight the top face carries, so a spot
-       runs over the rim and down the wall as one mark instead of the face and
-       the wall each having their own count (six against ten) and never meeting.
-       Each edge is x = 50% + 50%*sin(a) for a = centre +/- 11.25deg, which is
-       why the spots bunch toward the silhouettes. */
+    /* The edge spots, projected round the cylinder: EIGHT of them, 13deg wide
+       on 45deg centres - the spots of the guess chip (PickChip.svelte), so the
+       chips of the table and the chip a pick sets down are one chip (the
+       owner, 2026-10-18; they were 22.5deg wide). NO APOSTROPHES in a comment
+       inside a value: the Svelte CSS parser reads one as an open string. Each edge is
+       x = 50% + 50%*sin(a) for a = centre +/- 6.5deg, which is why the spots
+       bunch toward the silhouettes, and they are the same eight the top face
+       carries, so a spot runs over the rim and down the wall as one mark. */
     linear-gradient(
       90deg,
-      var(--chip-cream) 0 0.96%,
-      var(--chip-dark) 0.96% 8.42%,
-      var(--chip-cream) 8.42% 22.22%,
-      var(--chip-dark) 22.22% 40.24%,
-      var(--chip-cream) 40.24% 59.76%,
-      var(--chip-dark) 59.76% 77.78%,
-      var(--chip-cream) 77.78% 91.58%,
-      var(--chip-dark) 91.58% 99.04%,
-      var(--chip-cream) 99.04% 100%
+      var(--chip-cream) 0 0.32%,
+      var(--chip-dark) 0.32% 10.87%,
+      var(--chip-cream) 10.87% 18.87%,
+      var(--chip-dark) 18.87% 44.34%,
+      var(--chip-cream) 44.34% 55.66%,
+      var(--chip-dark) 55.66% 81.13%,
+      var(--chip-cream) 81.13% 89.13%,
+      var(--chip-dark) 89.13% 99.68%,
+      var(--chip-cream) 99.68% 100%
     );
 }
 
-/* The top face, read from the reference straight across a chip: cream band,
-   a hard dark ring, then a flat coloured centre - the centre carries almost no
-   highlight of its own, all the modelling is in the cream. */
+/* The top face: THE GUESS CHIP'S FACE (PickChip.svelte), seen in the table's
+   perspective (the owner's call, 2026-10-18: "update the chips on the table to
+   look like the chips that we place on the guess buttons"). A plain face, a
+   thin cream ring at 38-42% of the radius, the face again, and round the rim
+   the eight cream spots in the chip's own colour. It was the reference
+   photograph's face - a dark separation ring inside the spots, a flat centre to
+   71% - and the two read as two different chips. */
 .chip-top {
   position: absolute;
   /* Above every disc in the stack. Each disc takes z-index --i + 1, so a fixed
@@ -501,43 +507,35 @@
   border-radius: 50%;
   background:
     /* Sheen across the face, running up to the light rather than across the
-       shot: 56deg, not the 102deg it was. 45deg in the table plane projects to
-       atan(1 / --flat) = 55.9deg on screen, the same conversion the edge spots
-       below use, so the bright side of a chip face and the lit side of its wall
-       are now the same side. */
+       shot: 45deg in the table plane projects to atan(1 / --flat) = 55.9deg
+       on screen, the same conversion the edge spots below use, so the bright
+       side of a chip face and the lit side of its wall are the same side. */
     linear-gradient(56deg, rgba(0, 0, 0, 0.2) 0%, transparent 34%, rgba(255, 255, 255, 0.12) 100%),
-    radial-gradient(closest-side, transparent 0 40%, rgba(0, 0, 0, 0.16) 40% 43%, transparent 43%),
-    /* The dark separation line sits INSIDE the coloured inlay rather than
-       straddling it and the cream spots - across the cream it turned grey and
-       read as a chrome ring. */
-    radial-gradient(closest-side, transparent 0 64%, rgba(0, 0, 0, 0.42) 64% 68%, transparent 68%),
-    radial-gradient(closest-side, var(--chip-face) 0 71%, transparent 71%),
-    /* The eight edge spots, seen from above. NOT a repeating-conic-gradient:
-       its sectors are evenly spaced in SCREEN angle, and on a squashed ellipse
+    radial-gradient(closest-side, var(--chip-face) 0 37%, var(--chip-cream) 38% 42%, var(--chip-face) 43% 59%, transparent 60%),
+    /* The eight spots seen from above. NOT a repeating-conic-gradient: its
+       sectors are evenly spaced in SCREEN angle, and on a squashed ellipse
        that is not the same as evenly spaced round the chip - so the spots on
-       the face never landed on the ones running down the wall. These sixteen
-       stops are the same eight 22.5deg spots as .chip-disc::after, converted
-       through tan(screen) = tan(round-the-chip) / --flat, which is why the
-       numbers look irregular. Sector centres: 0, 55.9, 90, 124.1, 180, 235.9,
-       270 and 304.1 degrees. */
+       the face would never land on the ones running down the wall. These are
+       the 13deg spots of the guess chip on 45deg centres, converted through
+       tan(screen) = tan(round-the-chip) / --flat. */
     conic-gradient(
-      var(--chip-cream) 0deg 16.4deg,
-      var(--chip) 16.4deg 44.7deg,
-      var(--chip-cream) 44.7deg 65.7deg,
-      var(--chip) 65.7deg 82.3deg,
-      var(--chip-cream) 82.3deg 97.7deg,
-      var(--chip) 97.7deg 114.3deg,
-      var(--chip-cream) 114.3deg 135.3deg,
-      var(--chip) 135.3deg 163.6deg,
-      var(--chip-cream) 163.6deg 196.4deg,
-      var(--chip) 196.4deg 224.7deg,
-      var(--chip-cream) 224.7deg 245.7deg,
-      var(--chip) 245.7deg 262.3deg,
-      var(--chip-cream) 262.3deg 277.7deg,
-      var(--chip) 277.7deg 294.3deg,
-      var(--chip-cream) 294.3deg 315.3deg,
-      var(--chip) 315.3deg 343.6deg,
-      var(--chip-cream) 343.6deg 360deg
+      var(--chip-cream) 0deg 9.6deg,
+      var(--chip-face) 9.6deg 49.6deg,
+      var(--chip-cream) 49.6deg 61.7deg,
+      var(--chip-face) 61.7deg 85.6deg,
+      var(--chip-cream) 85.6deg 94.4deg,
+      var(--chip-face) 94.4deg 118.3deg,
+      var(--chip-cream) 118.3deg 130.4deg,
+      var(--chip-face) 130.4deg 170.4deg,
+      var(--chip-cream) 170.4deg 189.6deg,
+      var(--chip-face) 189.6deg 229.6deg,
+      var(--chip-cream) 229.6deg 241.7deg,
+      var(--chip-face) 241.7deg 265.6deg,
+      var(--chip-cream) 265.6deg 274.4deg,
+      var(--chip-face) 274.4deg 298.3deg,
+      var(--chip-cream) 298.3deg 310.4deg,
+      var(--chip-face) 310.4deg 350.4deg,
+      var(--chip-cream) 350.4deg 360deg
     );
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3);
 }

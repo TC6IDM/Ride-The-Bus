@@ -5,17 +5,18 @@
      stays with the parent - which panel is open is the component's own state -
      and this file is the panel itself.
 
-     A DEALT HAND (the owner's pick G3, 2026-10-17, after the Buy Bonus study).
-     The five families are five oversized playing cards dealt over the table,
-     in volatility order, fanned like a hand: each headed by its colour with
-     its name and bolts, a picture made of the game's own pieces
-     (FamilyVignette), its sentence, its maximum win as the one big figure and
-     its cost where that is not 1x, and Switch - or "Playing" on the live one,
-     which sits a little higher in the hand. Switch turns that card over: its
-     BACK is the confirmation Stake asks for (what the mode is, what it costs,
-     the most it pays and what the four picks on the board would top out at),
-     with Cancel and Switch, while the rest of the hand steps back. On a phone
-     the hand is a row that scrolls sideways, one card at a time.
+     A RACK OF DESTINATION BLINDS (the owner's pick G1, 2026-10-18 - it
+     replaced G3's dealt hand the same day; both are in the design archive).
+     The five families are five cards in a row, in volatility order, each
+     headed by the MODE sign itself: the family's name lettered in its colour
+     on the recessed dark sign the bar shows, with the seven bolts. Under it a
+     picture made of the game's own pieces (FamilyVignette), its sentence, its
+     maximum win as the one big figure and its cost where that is not 1x, and
+     Switch - or "Playing" on the live one. Switch lays the confirmation Stake
+     asks for over the bottom of that card (what it costs, the most it pays,
+     what the four picks on the board would top out at), with Cancel and
+     Switch, while the other four step back. Dealt up from the table as the
+     panel opens. On a phone the five are rows, scrolling under the heading.
 
      STYLES TRAVEL WITH THE MARKUP. A stylesheet is scoped to whichever
      component imports it (see the note atop ChoiceIcon.svelte), so
@@ -39,6 +40,8 @@
     volatilityColorVar,
   } from '../../game/math/volatility';
   import { bet, guesses, selectedCeiling, volatilityLabel } from '../../game/bet/betState.svelte';
+  import { titleFaceFor } from '../../game/ui/displayFace';
+  import { fitBlock } from '../../game/ui/fitValue';
 
   let { onclose }: { onclose: () => void } = $props();
 
@@ -52,34 +55,10 @@
   /** "Max win 1,354.2× your bet", split so the figure can be the card's one big number in any word order. */
   const maxWinParts = $derived(t('Max win %s your bet').split('%s'));
 
-  /**
-   * How high each card sits in the fan: the middle of the hand rides higher,
-   * and the live family higher still, so the mode in play is the card raised
-   * out of the hand. In units of the hand's own --hu.
-   */
-  const lift = (index: number, family: ModeFamily) =>
-    -(2 - Math.abs(index - 2)) * 0.5 - (family === bet.family ? 2 : 0);
-
   let handEl = $state<HTMLElement>();
 
-  // On a phone the hand scrolls sideways: open it on the live card, not on
-  // whichever family happens to be first. A frame after mount, once the row
-  // is laid out and can scroll (set at mount it was ignored, and the row
-  // opened on the first card); scrollIntoView does the sideways sum, which
-  // runs backwards in Arabic. Nothing else is scrolling yet, and the panel
-  // does not scroll vertically on a phone, so only the row moves.
-  $effect(() => {
-    const hand = handEl;
-    if (!hand) return;
-    const frame = requestAnimationFrame(() => {
-      const live = hand.querySelector<HTMLElement>('.mcard.live');
-      if (live && hand.scrollWidth > hand.clientWidth) live.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'instant' });
-    });
-    return () => cancelAnimationFrame(frame);
-  });
-
-  // A card turned over takes focus to its safe answer, Cancel - so a keyboard
-  // player lands on the confirmation, and a stray Enter does not switch.
+  // A card asked to confirm takes focus to its safe answer, Cancel - so a
+  // keyboard player lands on the confirmation, and a stray Enter does not switch.
   $effect(() => {
     const pending = bet.pending;
     if (!pending || !handEl) return;
@@ -97,17 +76,17 @@
     style={`--tint: ${volatilityColorVar(bet.family)}; --tint-rgb: ${volatilityColorRgbVar(bet.family)}; --tint-strong: ${volatilityColorVar(bet.family)}`}
   >
     <div class="popup-head mode-head">
-      <!-- Always the panel's name: the question is asked on the card turned
-           over, and asking it in both places read twice. -->
+      <!-- Always the panel's name: the question is asked on the card itself,
+           and asking it in both places read twice. -->
       <span>{t('Game mode')}</span>
       <button class="popup-close" onclick={onclose} aria-label={t('Close')}><MarkIcon name="cross" /></button>
     </div>
 
     <!-- Volatility order, not publication order. MODE_FAMILIES is
          ['base','sc','hs','tr'] because that is what the math publishes, so
-         the cards would draw 3, 1, 5 bolts down the hand - a ruler beside
+         the cards would draw 3, 1, 5 bolts along the rack - a ruler beside
          values in no order. See FAMILIES_BY_VOLATILITY. -->
-    <ul class="hand" bind:this={handEl}>
+    <ul class="rack" bind:this={handEl}>
       {#each FAMILIES_BY_VOLATILITY as family, index (family)}
         {@const rules = FAMILY_RULES[family]}
         {@const turning = bet.pending === family}
@@ -115,23 +94,22 @@
         <li
           class="mcard"
           class:live={bet.family === family}
-          class:flip={turning}
+          class:chosen={turning}
           class:aside={bet.pending !== null && !turning}
           data-family={family}
           {...bet.family === family ? { 'aria-current': 'true' } : {}}
-          style={`--fam: ${volatilityColorVar(family)}; --fam-rgb: ${volatilityColorRgbVar(family)}; --vol-color: var(--on-vol-ink); --i: ${index}; --fan: ${index - 2}; --lift: ${lift(index, family)}`}
+          style={`--fam: ${volatilityColorVar(family)}; --fam-rgb: ${volatilityColorRgbVar(family)}; --i: ${index}`}
         >
-          <!-- The back is FIRST in the markup and the face second: the sides
-               are stacked, so the order is invisible, and the inert side is
-               out of the tab order and the accessibility tree either way. It
-               keeps the switch handler ahead of every other Switch label,
-               where modes.test.ts reads it. -->
-          <!-- The BACK: the confirmation step approval asks for. It restates
-               what the player is about to buy - the mode, its cost, the
-               ceiling - from the same FAMILY_RULES and FAMILY_BLURB the front
-               reads, so the two sides can never describe a mode differently. -->
-          <div class="side back mode-confirm" inert={!turning}>
-            <span class="mode-confirm-name">{t(rules.label)}</span>
+          <!-- The confirmation is FIRST in the markup: it is laid over the
+               bottom of the card, so the order is invisible, and while it is
+               not asked it is hidden and inert. It keeps the switch handler
+               ahead of every other Switch label, where modes.test.ts reads it.
+
+               The confirmation step approval asks for. It restates what the
+               player is about to buy - its cost, its ceiling, what the picks
+               reach - from the same FAMILY_RULES the card reads, so the two
+               can never describe a mode differently. -->
+          <div class="mode-confirm" inert={!turning}>
             <span class="mode-confirm-q">{t('Switch mode?')}</span>
             <!-- The cost, when it is not the base 1x. Stake's checklist wants a
                  high-cost mode to state its cost before it is activated, and
@@ -154,8 +132,8 @@
               </p>
             {/if}
             <div class="mode-confirm-actions">
-              <!-- Turning the card back puts focus back on its Switch: the
-                   button it was on goes inert with the back. -->
+              <!-- Cancelling puts focus back on the card's Switch, which the
+                   confirmation covered. -->
               <button
                 type="button"
                 class="mode-confirm-cancel"
@@ -183,13 +161,13 @@
               </button>
             </div>
           </div>
-          <div class="side front" inert={turning}>
-            <div class="band">
-              <span class="nm">{t(rules.label)}</span>
-              <!-- The FAMILY's own rating, without the guesses: the bet display
-                   adds one stop per Equal pick on top, and this card is what
-                   the mode contributes before that. Dark on the family's own
-                   colour (--vol-color is set to the ink on the card). -->
+          <div class="front">
+            <!-- THE MODE SIGN, at card size: the name lettered in the family's
+                 colour on the recessed dark sign, the seven bolts under it -
+                 the same blind the bar shows. The FAMILY's own rating, without
+                 the guesses: the bet display adds one stop per Equal pick. -->
+            <div class="sign">
+              <span class="nm face-{titleFaceFor(t(rules.label))}" use:fitBlock={t(rules.label)}>{t(rules.label)}</span>
               <span class="bolts">
                 <BoltMeter lit={FAMILY_BOLTS[family]} total={VOLATILITY_BOLTS} label={volatilityLabel(FAMILY_BOLTS[family])} />
               </span>
@@ -203,7 +181,7 @@
               <span class="fg-cap">{maxWinParts[0]}</span><b class="fg-fig">{formatMultiplier(rules.maxWin)}</b><span class="fg-cap">{maxWinParts[1] ?? ''}</span>
               <!-- And the cost, on the family where it is not 1x. Approval
                    wants "description and cost information" per mode; the
-                   others carry it in the note under the hand. -->
+                   others carry it in the note under the rack. -->
               {#if rules.cost !== 1}
                 <em class="fg-cost">{t('Costs %c× your bet').replace('%c', String(rules.cost))}</em>
               {/if}
@@ -230,8 +208,8 @@
       {/if}
       <!-- Cost and RTP in one sentence, both interpolated - from FAMILY_RULES
            and game/config.ts - rather than written into the string. The mode
-           it names is the one BEING CONFIRMED when a card is turned, and the
-           live one otherwise. -->
+           it names is the one BEING CONFIRMED when a card asks, and the live
+           one otherwise. -->
       <p class="mode-note">
         {t('This mode costs %c× your bet. Every mode returns the same %s over many rounds; what changes is how often a round pays and how much it can pay.')
           .replace('%c', String(FAMILY_RULES[bet.pending ?? bet.family].cost))

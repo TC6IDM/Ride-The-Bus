@@ -61,7 +61,8 @@
     <span class="v-ticket"><TicketFace value={null} /></span>
   {:else if family === 'hs'}
     <span class="v-stack">
-      {#each CHIPS as index (index)}<i style={`bottom: ${index * 9}%`}></i>{/each}
+      {#each CHIPS as index (index)}<i class="v-chip" style={`--n: ${index}`}></i>{/each}
+      <i class="v-top"></i>
     </span>
   {/if}
 </span>
@@ -103,32 +104,75 @@
     filter: drop-shadow(0 4px 6px rgba(var(--shadow-rgb), 0.45));
   }
 
-  /* The table's red chip, nine high: the family that stakes the most on a miss. */
+  /* The table's red chip, nine high: the family that stakes the most on a miss.
+     A REAL STACK (the owner's note, 2026-10-18: the chips "look like they're
+     just floating on top of each other"). They were nine flat ellipses 9%
+     apart with a 2px shadow between, so the table showed through every gap.
+     Now each chip is its WALL - one chip's thickness of the rim, striped with
+     its edge spots and shaded round the cylinder, as table.css draws the
+     table's own stacks - laid exactly one thickness above the one under it,
+     so they touch, and only the top chip shows its face. All in percentages
+     of the stack, so it scales with the card. */
   .v-stack {
+    --face: 20%;
+    --thick: 7.5%;
     position: absolute;
     left: 50%;
-    bottom: 10%;
+    bottom: 8%;
     width: 34%;
-    height: 76%;
+    height: 80%;
     transform: translateX(-50%);
   }
 
-  .v-stack i {
+  /* One chip: its face's ellipse plus its thickness, rounded top and bottom
+     by the face's half-height (10% of the stack is 36.4% of the chip's box). */
+  .v-chip {
     position: absolute;
     left: 0;
     right: 0;
-    height: 22%;
-    border-radius: 50%;
-    background: repeating-conic-gradient(from 10deg, var(--chip-red-cream) 0 12deg, var(--chip-red-face) 12deg 45deg);
-    box-shadow: 0 2px 0 var(--chip-red-dark), 0 3px 4px rgba(var(--shadow-rgb), 0.4);
+    bottom: calc(var(--n) * var(--thick));
+    z-index: var(--n);
+    height: calc(var(--face) + var(--thick));
+    border-radius: 50% / 36.4%;
+    background:
+      linear-gradient(90deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.22) 14%, rgba(255, 255, 255, 0.04) 46%, rgba(255, 255, 255, 0.14) 62%, rgba(0, 0, 0, 0.3) 88%, rgba(0, 0, 0, 0.6) 100%),
+      linear-gradient(90deg,
+        var(--chip-red-cream) 0 0.32%, var(--chip-red) 0.32% 10.87%, var(--chip-red-cream) 10.87% 18.87%, var(--chip-red) 18.87% 44.34%,
+        var(--chip-red-cream) 44.34% 55.66%, var(--chip-red) 55.66% 81.13%, var(--chip-red-cream) 81.13% 89.13%, var(--chip-red) 89.13% 99.68%,
+        var(--chip-red-cream) 99.68% 100%);
+    /* The join to the chip below: a hairline on the wall's own lower arc. */
+    box-shadow: inset 0 -1px 0 rgba(var(--shadow-rgb), 0.55);
   }
 
-  .v-stack i::after {
-    content: '';
+  /* The bottom chip stands on the card: its contact shadow. */
+  .v-chip:first-child {
+    box-shadow:
+      inset 0 -1px 0 rgba(var(--shadow-rgb), 0.55),
+      0 3px 5px rgba(var(--shadow-rgb), 0.45);
+  }
+
+  /* The face of the top chip: cream spots round the rim, the dark ring, the
+     flat centre - the table's chip top, seen from a little above. */
+  .v-top {
     position: absolute;
-    inset: 18%;
+    left: 0;
+    right: 0;
+    bottom: calc(9 * var(--thick));
+    z-index: 10;
+    height: var(--face);
     border-radius: 50%;
-    background: var(--chip-red-face);
-    box-shadow: inset 0 0 0 1px rgba(var(--ink-rgb), 0.6);
+    /* The guess chip's face (PickChip.svelte), as on the table's chips:
+       a cream ring, eight 13deg cream spots round the rim. */
+    background:
+      radial-gradient(closest-side, var(--chip-red-face) 0 37%, var(--chip-red-cream) 38% 42%, var(--chip-red-face) 43% 59%, transparent 60%),
+      conic-gradient(
+        var(--chip-red-cream) 0deg 9.6deg, var(--chip-red-face) 9.6deg 49.6deg, var(--chip-red-cream) 49.6deg 61.7deg,
+        var(--chip-red-face) 61.7deg 85.6deg, var(--chip-red-cream) 85.6deg 94.4deg, var(--chip-red-face) 94.4deg 118.3deg,
+        var(--chip-red-cream) 118.3deg 130.4deg, var(--chip-red-face) 130.4deg 170.4deg, var(--chip-red-cream) 170.4deg 189.6deg,
+        var(--chip-red-face) 189.6deg 229.6deg, var(--chip-red-cream) 229.6deg 241.7deg, var(--chip-red-face) 241.7deg 265.6deg,
+        var(--chip-red-cream) 265.6deg 274.4deg, var(--chip-red-face) 274.4deg 298.3deg, var(--chip-red-cream) 298.3deg 310.4deg,
+        var(--chip-red-face) 310.4deg 350.4deg, var(--chip-red-cream) 350.4deg 360deg
+      );
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3);
   }
 </style>

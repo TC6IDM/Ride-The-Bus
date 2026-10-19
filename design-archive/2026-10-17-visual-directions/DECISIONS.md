@@ -21,7 +21,7 @@ been superseded by C and A.
 | Loader | **A2** `a2-blind.html` | The first stop should be "Red/Black", not "Colour", and the suit stop should show the four suit marks | A1 `a1-deal`, A3 `a3-chip`, original `today.html?f=loader` |
 | Hand-offs | **C1** `c1-panels-to-slots.html`, *modified* | The intro panels should become the GUESS SQUARES, not the card slots. Keep **C2** `c2-board-narrates` for a walk-through tutorial opened from the help menu | Original `today.html?f=intro:1800,board:2200` |
 | Guess squares | **E3** `e3-chip-on-box.html`, *modified* | Keep the square-ish "=" badges. A chip's placement must never be ambiguous, for example a chip on "=" must not cover everything. Restyle the intro/hand-off theme to match | E1 `e1-brass`, E2 `e2-tickets`, E4 `e4-plaques`, E5 `e5-signs`, E6 `e6-enamel`, original `today.html?f=board` |
-| Mode picker | **G3** `g3-hand.html` | none | G1 `g1-blinds`, G2 `g2-flood`, original `today.html?f=mode` |
+| Mode picker | **G1** `g1-blinds.html` (switched from G3 on 2026-10-18) | Built exactly as the mock-up, at two-thirds of a desktop window, centred on the page | G3 `g3-hand` (built first, then replaced), G2 `g2-flood`, original `today.html?f=mode` |
 | Room | **B1** `b1-backroom.html` | none | B2 `b2-depot`, B3 `b3-lit-felt`, original `today.html?f=board` |
 | Card faces | **D1** `d1-house-print.html` | none | D2 `d2-back-print`, D3 `d3-bold-index`, original `d0-faces-today` |
 | Turbo | **T1** `t1-turbo-bump.html` | none | T2 `t2-turbo-cycle`, original `today.html?f=turbo` |
@@ -123,3 +123,39 @@ Kept so any of them can be reopened. Each is still playable from this folder.
 - **The audit's own recommendation against loops.** It removed the beam's and
   the prompt's endless pulses, which the build does. The owner then chose a
   continuous chip stream and a breathing hand, which are loops by request.
+
+## Answers given during the build (2026-10-18)
+
+- **The guess chip.**
+  - **Placement:** a pointer pick lands the chip near the click, inside the
+    rules (off the mark, inside the section).
+  - **On "=":** it sits further out: right of the badge on Higher/Lower,
+    below it on Inside/Outside.
+  - **Suit chips:** they may overhang the square's border, never cut off.
+  - **Colour:** the bet's own chip from the bet menu, rounding a typed amount
+    down. **On the intro it is always the plain red chip.**
+- **The table's chips** now wear the guess chip's face (the cream ring and
+  eight narrow spots). The takeover's flying chips and the High Stakes stack
+  were changed to match.
+- **The High Stakes stack** is a real stack: walls touching, the face on top.
+  It no longer reads as floating discs.
+- **The intro's picks are the game's.** Continue hands them to the board, and
+  the four squares fly down carrying their picks and chips.
+- **The running total never moves.** The bust's half-unit "settle" was
+  removed.
+- **The turbo bolt fills in at Instant.**
+- **The mode picker:**
+  - **G1 replaced G3** the same day G3 was built.
+  - **Its size:** no longer filling a desktop or laptop window (about
+    two-thirds).
+  - **Its look and position:** centred on the page, and matched to the G1
+    mock-up's look.
+
+Passed on in this round:
+- **G3, the dealt hand:** it was built and committed, then replaced by G1.
+- **G1 on the hand's paper cards:** my first G1 build was passed on for the
+  mock-up's dark panel cards.
+- **The picker pinned near the top of the window:** passed on for centred.
+- **The bet-coloured chip on the intro:** passed on for plain red.
+- **A future idea (not to be built yet):** a cigar-smoking mobster character
+  in a chair on the right, with idle smoke and a puff on big rounds.

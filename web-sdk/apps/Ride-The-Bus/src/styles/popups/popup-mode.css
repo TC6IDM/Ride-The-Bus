@@ -1,38 +1,36 @@
-/* The bet-mode picker: a dealt hand of five family cards (the owner's pick G3,
- * 2026-10-17). ModePopup.svelte has the reasoning; this is the drawing.
+/* Imported by ModePopup.svelte alone: the mode picker.
  *
- * Scoped to ModePopup.svelte, the only thing that renders these classes (the
- * Svelte scoping note in CLAUDE.md). Colour comes in through the family
- * tokens - each card is handed --fam / --fam-rgb, its family's own colour, the
- * one the MODE sign, the bolts and the takeover give it. Nothing here names a
- * colour of its own.
+ * A RACK OF DESTINATION BLINDS (the owner's pick G1, 2026-10-18; it replaced
+ * G3's dealt hand the same day). Built to the G1 mock-up
+ * (design-archive/2026-10-17-visual-directions/g1-blinds.html, kit/rack.css)
+ * value for value - the owner asked for it "exactly how they were in the
+ * testing artifact". Five family cards in a row on the dimmed table, each in
+ * the panel material and headed by the MODE sign - the family's name
+ * lettered in its colour in a recessed dark well, the seven bolts under it -
+ * over a picture, its sentence, its maximum win and Switch. Switch lays the
+ * confirmation over the bottom of that card; the other four step back. Every
+ * colour comes through the family tokens (--fam, --fam-rgb) and the panel
+ * tokens; nothing here names one of its own.
  *
- * ONE UNIT, --hu, sized so the whole hand fits the window: five cards of 16
- * units abreast with their gaps is ~88 units wide, a card is ~31 tall, and
- * the header and the note need the rest. Floored at 6px - Popout S - where the
- * hand is wider than the window and the panel scrolls, the same bargain every
- * panel makes there (popup-base.css). Type takes the type floor on top.
- *
- * AND CAPPED AT 0.75vw (the owner's call, 2026-10-18: "should not be this
- * big ... not fill the full screen on desktop or laptop"). Solved only to fit,
- * the hand ran edge to edge on a desktop (about 1,135px of 1,200). The cap
- * holds it near two-thirds of the window on a laptop and up (1000px wide and
- * landscape, at the foot of this file); Popout L, Popout S and phones keep
- * the fitted size, theirs being the windows the hand has to fill.
+ * ONE UNIT, --ru, a card's width over 16. The mock-up's card was 216px wide,
+ * so 1ru stands for 13.5px of it and every value below is the mock-up's,
+ * divided by that. Fitted to the window, floored at 6px (Popout S: the rack is
+ * wider than the window and the panel scrolls, the bargain every panel makes
+ * there), and from 1000px wide CAPPED at 0.78vw (the owner's call,
+ * 2026-10-18: not filling the window on a desktop or a laptop) - about
+ * two-thirds of it.
  */
 
 /* ---- The shell: the whole window, no slab --------------------------------
-   The cards are the objects here, so there is no panel around them - a slab
-   holding five cards would be a card holding cards. The backdrop
-   (popup-backdrop.css) is the dim; this is a transparent layer over it. */
+   The cards are the objects here, so there is no panel around them. The
+   backdrop (popup-backdrop.css) is the dim; this is a transparent layer over
+   it, its content centred in the window ("more centered on the page", the
+   owner, 2026-10-18) and scrolling when it cannot fit. */
 .popup.popup-mode {
-  --hu: max(6px, min(calc((100vw - 40px) / 88), calc((100vh - 150px) / 34)));
-  /* The cards' small type: the type floor, raised on a laptop and up (at the
-     foot of this file), where the capped unit alone would print the blurbs at
-     6-7px. */
+  --ru: max(6px, min(calc((100vw - 40px) / 88), calc((100vh - 110px) / 34)));
+  /* The cards' small type: the type floor, raised on a laptop and up (below),
+     where the capped unit alone would print the sentences under 9px. */
   --mode-floor: var(--type-floor);
-  --card-w: calc(var(--hu) * 16);
-  --card-h: calc(var(--hu) * 30.7);
   inset: 0;
   left: 0;
   top: 0;
@@ -41,7 +39,9 @@
   transform: none;
   display: flex;
   flex-direction: column;
-  padding: calc(var(--hu) * 1.4) calc(var(--hu) * 2);
+  align-items: center;
+  justify-content: safe center;
+  padding: calc(var(--ru) * 1.6) calc(var(--ru) * 2);
   border: 0;
   border-radius: 0;
   background: none;
@@ -50,21 +50,31 @@
   animation: mode-in 200ms var(--ease-out) both;
 }
 
+@media (min-width: 1000px) and (orientation: landscape) {
+  .popup.popup-mode {
+    --ru: max(6px, min(calc((100vw - 40px) / 88), calc((100vh - 110px) / 34), 0.78vw));
+    --mode-floor: 9.5px;
+  }
+}
+
 @keyframes mode-in {
   from {
     opacity: 0;
   }
 }
 
-/* The header, as on every panel - its voice and its close disc - but sat
-   on the dimmed table, so without the slab's face behind it. */
+/* The header, as on every panel - its voice and its close disc - but sat on
+   the dimmed table, so without the slab's face behind it. As wide as the rack. */
 .popup-mode .popup-head.mode-head {
   position: static;
-  margin: 0;
-  padding: 0;
+  width: min(100%, calc(var(--ru) * 84.6));
+  margin: 0 0 calc(var(--ru) * 1.04);
+  padding: 0 calc(var(--ru) * 0.3);
   border-bottom: 0;
   background: none;
-  font-size: max(calc(var(--hu) * 1.5), var(--type-floor));
+  font-size: max(calc(var(--ru) * 1.48), var(--type-floor));
+  font-weight: 700;
+  color: var(--ink-strong);
 }
 
 .popup-mode:focus-visible .popup-head.mode-head {
@@ -76,244 +86,268 @@
   text-underline-offset: 0.3em;
 }
 
-/* ---- The hand ------------------------------------------------------------
-   The five sit on one centre, each pushed out by its place in the fan (--fan
-   is -2..2), turned a little, and lifted by --lift (set per card: the middle
-   rides higher, the live family higher still). Perspective here, so the card
-   that turns over turns in depth. */
-.hand {
-  position: relative;
-  flex: 1 0 auto;
-  min-height: calc(var(--card-h) + var(--hu) * 4);
-  /* As wide as the fan. Where the window is narrower (Popout S, on the 6px
-     floor) the panel scrolls - and a hand centred in a narrower box would hang
-     its first card off the left edge, where no scroll can reach it. */
-  min-width: calc(var(--hu) * 86);
+/* ---- The rack ------------------------------------------------------------
+   Five in a row, as tall as the tallest, so the figures and the buttons line
+   up across the rack. */
+.rack {
+  display: grid;
+  grid-template-columns: repeat(5, calc(var(--ru) * 16));
+  gap: calc(var(--ru) * 0.89);
   margin: 0;
   padding: 0;
   list-style: none;
-  perspective: calc(var(--hu) * 110);
 }
 
 .mcard {
-  --tint-rgb: var(--fam-rgb);
-  --tint-ink: var(--on-vol-ink);
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: var(--card-w);
-  height: var(--card-h);
-  margin: calc(var(--card-h) * -0.5) 0 0 calc(var(--card-w) * -0.5);
-  transform-style: preserve-3d;
-  transform-origin: 50% 160%;
-  transform:
-    translateX(calc(var(--fan) * var(--hu) * 17))
-    translateY(calc(var(--lift) * var(--hu)))
-    rotate(calc(var(--fan) * 1.2deg));
-  transition: transform 460ms var(--ease-in-out), opacity 240ms var(--ease-out);
-  /* Dealt in from the left of the table, one after another. BACKWARDS only:
-     once it has landed the animation lets go, so the flip below is a plain
-     transition and not fighting a filled keyframe. */
-  animation: deal-in 420ms var(--ease-out) backwards;
-  animation-delay: calc(60ms + var(--i) * 60ms);
+  position: relative;
+  display: flex;
+  border-radius: calc(var(--ru) * 0.89);
+  transition: opacity 240ms var(--ease-out);
+  /* Dealt up off the table as the panel arrives, one after another, and
+     settled: ease-out, no overshoot, the rack down inside half a second.
+     Backwards fill, so once it has landed the static rules own it. */
+  animation: deal-up 380ms var(--ease-out) backwards;
+  animation-delay: calc(200ms + var(--i) * 45ms);
 }
 
 @keyframes deal-up {
   from {
     opacity: 0;
-    transform: translateY(calc(var(--hu) * 6));
+    transform: translateY(calc(var(--ru) * 1.63)) rotate(calc((var(--i) - 2) * 1.2deg));
   }
 }
 
-@keyframes deal-in {
-  from {
-    opacity: 0;
-    transform: translateX(calc(var(--hu) * -60)) translateY(calc(var(--hu) * 14)) rotate(-24deg);
-  }
-}
-
-/* Turned over: to the middle of the table, raised, face down - its back is
-   the confirmation. The rest of the hand steps back behind it. */
-.mcard.flip {
-  z-index: 9;
-  transform: translateY(calc(var(--hu) * -2)) rotateY(180deg);
-}
-
+/* A card asking to confirm stays lit; the other four step back. */
 .mcard.aside {
-  opacity: 0.35;
+  opacity: 0.32;
 }
 
-.side {
-  position: absolute;
-  inset: 0;
-  border-radius: calc(var(--hu) * 1.1);
-  overflow: hidden;
-  backface-visibility: hidden;
-}
-
-/* ---- The face ---- */
+/* The card: the panel material, one containment layer. */
 .front {
+  flex: 1 1 auto;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto auto auto;
-  gap: calc(var(--hu) * 0.6);
-  padding-bottom: calc(var(--hu) * 0.9);
-  color: var(--card-ink);
-  background: linear-gradient(170deg, var(--stub-paper-lit), var(--card-paper) 45%, var(--stub-paper-lit));
-  box-shadow:
-    inset 0 0 0 1.5px var(--card-edge),
-    0 calc(var(--hu) * 0.8) calc(var(--hu) * 1.8) rgba(var(--shadow-rgb), 0.5),
-    0 2px 3px rgba(var(--shadow-rgb), 0.45);
+  grid-template-rows: auto calc(var(--ru) * 7.7) auto 1fr auto;
+  gap: calc(var(--ru) * 0.74);
+  padding-bottom: calc(var(--ru) * 1.04);
+  border-radius: inherit;
+  overflow: hidden;
+  border: 1px solid var(--panel-edge);
+  background: var(--panel-face), var(--panel);
+  box-shadow: var(--panel-elevation-low);
+  color: var(--ink-body);
 }
 
-.band {
+/* The live family's card takes a wash of its own colour. */
+.mcard.live .front {
+  background:
+    linear-gradient(rgba(var(--fam-rgb), 0.1), rgba(var(--fam-rgb), 0.04)),
+    var(--panel-face),
+    var(--panel);
+}
+
+/* ---- The head: the MODE sign itself --------------------------------------
+   The bar's recipe at card size: a recessed dark well, the name LETTERED in
+   the family's colour, the bolts lit in it. */
+.sign {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: calc(var(--hu) * 0.4);
-  padding: calc(var(--hu) * 0.85) calc(var(--hu) * 0.7) calc(var(--hu) * 0.7);
-  background: var(--fam);
-  box-shadow: inset 0 calc(var(--hu) * -0.2) 0 rgba(var(--shadow-rgb), 0.18);
+  gap: calc(var(--ru) * 0.52);
+  margin: calc(var(--ru) * 0.74) calc(var(--ru) * 0.74) 0;
+  padding: calc(var(--ru) * 0.89) calc(var(--ru) * 0.74) calc(var(--ru) * 0.67);
+  border-radius: calc(var(--ru) * 0.6);
+  background: var(--flap-well);
+  box-shadow:
+    inset 0 calc(var(--ru) * 0.22) calc(var(--ru) * 0.6) rgba(var(--shadow-rgb), 0.85),
+    inset 0 -1px 0 rgba(var(--panel-lit-rgb), 0.07),
+    0 1px 0 rgba(var(--panel-lit-rgb), 0.1);
+  /* BoltMeter lights its bolts in --vol-color: the family's own here. */
+  --vol-color: var(--fam);
 }
 
-.band .nm {
+.nm {
   max-width: 100%;
   font-family: var(--font-display);
   font-weight: 900;
-  font-size: max(calc(var(--hu) * 1.9), var(--type-floor));
-  line-height: 1;
-  color: var(--on-vol-ink);
+  font-size: max(calc(var(--ru) * 1.93), var(--type-floor));
+  line-height: 1.05;
+  letter-spacing: 0.005em;
+  color: var(--fam);
   text-align: center;
-  overflow-wrap: anywhere;
+  text-wrap: balance;
+  /* fitBlock, as on the bar's sign: two lines before it takes a smaller size,
+     so a long name in a long language keeps its size where it can. */
+  max-height: 2.2em;
+  overflow: hidden;
 }
 
-/* BoltMeter is a child component: it takes its size and lit colour as custom
-   properties (the note atop BoltMeter.svelte). Lit in the card's ink, set on
-   the card as --vol-color. */
+/* titleFaceFor's two other answers (game/ui/displayFace.ts): the body face
+   where Big Shoulders does not cover the string, the system's where neither
+   does. The file only; the sign's size and colour stay the rule's above. */
+.nm.face-body {
+  font-family: var(--font-body);
+  letter-spacing: -0.01em;
+}
+
+.nm.face-system {
+  font-family: sans-serif;
+  letter-spacing: 0;
+}
+
 .bolts {
-  --bolt-size: max(calc(var(--hu) * 0.85), 6px);
-  display: inline-flex;
+  --bolt-size: max(calc(var(--ru) * 0.89), 7px);
+  display: flex;
 }
 
+/* ---- The body ------------------------------------------------------------ */
 .vig {
   min-height: 0;
-  margin: 0 calc(var(--hu) * 0.8);
+  margin: 0 calc(var(--ru) * 0.89);
 }
 
 .bl {
-  margin: 0 calc(var(--hu) * 0.95);
-  font-size: max(calc(var(--hu) * 0.9), var(--mode-floor));
-  line-height: 1.38;
-  color: rgba(var(--card-ink-rgb), 0.82);
+  margin: 0 calc(var(--ru) * 1.04);
+  font-size: max(calc(var(--ru) * 0.96), var(--mode-floor));
+  line-height: 1.42;
+  color: var(--ink-body);
 }
 
-/* The one big figure, its words small around it in whatever order the
-   language puts them. */
+/* The one big figure: its caption above it, "your bet" small beside it, in
+   whatever order the locale puts them. */
 .fg {
-  margin: 0 calc(var(--hu) * 0.95);
-  line-height: 1.05;
+  align-self: end;
+  margin: 0 calc(var(--ru) * 1.04);
+  line-height: 1.1;
 }
 
 .fg-cap {
-  font-size: max(calc(var(--hu) * 0.85), var(--mode-floor));
-  font-weight: 700;
-  color: rgba(var(--card-ink-rgb), 0.6);
+  font-size: max(calc(var(--ru) * 0.96), var(--mode-floor));
+  font-weight: 600;
+  color: var(--ink-dim);
+}
+
+.fg-cap:first-child {
+  display: block;
+  margin-bottom: calc(var(--ru) * 0.15);
+  font-size: max(calc(var(--ru) * 0.89), var(--mode-floor));
+}
+
+.fg-cap:not(:first-child) {
+  margin-inline-start: calc(var(--ru) * 0.3);
 }
 
 .fg-fig {
-  display: block;
   font-family: var(--font-display);
   font-weight: 900;
-  font-size: max(calc(var(--hu) * 2.5), var(--type-floor-figure));
-  color: var(--card-ink);
+  font-size: max(calc(var(--ru) * 2.52), var(--type-floor-figure));
+  letter-spacing: 0.005em;
+  color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
 
 .fg-cost {
   display: block;
-  margin-top: calc(var(--hu) * 0.25);
+  margin-top: calc(var(--ru) * 0.3);
   font-style: normal;
-  font-weight: 800;
-  font-size: max(calc(var(--hu) * 0.9), var(--mode-floor));
-  color: var(--card-red);
+  font-weight: 700;
+  font-size: max(calc(var(--ru) * 0.96), var(--mode-floor));
+  color: var(--ink);
 }
 
 .ac {
-  margin: 0 calc(var(--hu) * 0.95);
+  margin: 0 calc(var(--ru) * 1.04);
 }
 
 /* The live family's card says so instead of offering to switch to itself. */
 .now {
   display: block;
-  padding: calc(var(--hu) * 0.75) 0;
-  border-radius: calc(var(--hu) * 0.7);
-  border: 1.5px solid var(--fam);
+  padding: calc(var(--ru) * 0.96) 0;
+  border-radius: calc(var(--ru) * 0.74);
+  border: 1px solid rgba(var(--fam-rgb), 0.45);
   text-align: center;
-  font-size: max(calc(var(--hu) * 0.95), var(--mode-floor));
-  font-weight: 800;
-  color: rgba(var(--card-ink-rgb), 0.8);
-}
-
-/* ---- The back: the confirmation ---- */
-.back {
-  transform: rotateY(180deg);
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--hu) * 0.7);
-  padding: calc(var(--hu) * 1.3) calc(var(--hu) * 1.1);
-  color: var(--ink-strong);
-  background: var(--panel-face), var(--panel);
-  box-shadow:
-    inset 0 0 0 2px rgba(var(--fam-rgb), 0.55),
-    0 calc(var(--hu) * 0.8) calc(var(--hu) * 1.8) rgba(var(--shadow-rgb), 0.5);
-}
-
-.mode-confirm-name {
-  font-family: var(--font-display);
-  font-weight: 900;
-  font-size: max(calc(var(--hu) * 2), var(--type-floor));
-  line-height: 1;
+  font-size: max(calc(var(--ru) * 0.96), var(--mode-floor));
+  font-weight: 700;
   color: var(--fam);
-  overflow-wrap: anywhere;
+}
+
+/* ---- The confirmation, laid over the card's foot ------------------------
+   No card changes size: the question covers the figure and the button of the
+   card that asked it, edged along its top in the family's colour. */
+.mode-confirm {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  display: none;
+  flex-direction: column;
+  padding: calc(var(--ru) * 1.04);
+  border-radius: 0 0 calc(var(--ru) * 0.89) calc(var(--ru) * 0.89);
+  border-top: 1px solid rgba(var(--fam-rgb), 0.45);
+  background: linear-gradient(rgba(var(--fam-rgb), 0.1), rgba(var(--fam-rgb), 0.1)), var(--panel);
+  box-shadow: 0 calc(var(--ru) * -0.74) calc(var(--ru) * 1.33) rgba(var(--shadow-rgb), 0.35);
+}
+
+.mcard.chosen .mode-confirm {
+  display: flex;
+  animation: confirm-in 180ms var(--ease-out);
+}
+
+/* The card's own Switch is under the question while it is asked. */
+.mcard.chosen .ac {
+  visibility: hidden;
+}
+
+@keyframes confirm-in {
+  from {
+    opacity: 0;
+  }
 }
 
 .mode-confirm-q {
-  font-size: max(calc(var(--hu) * 1.15), var(--type-floor));
+  margin-bottom: calc(var(--ru) * 0.3);
+  font-size: max(calc(var(--ru) * 1.11), var(--type-floor));
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--ink-strong);
+}
+
+.mode-confirm p {
+  margin: 0 0 calc(var(--ru) * 0.3);
+  font-size: max(calc(var(--ru) * 0.93), var(--mode-floor));
+  line-height: 1.35;
+  color: var(--ink-dim);
+}
+
+.mode-confirm .mode-confirm-cost {
   font-weight: 800;
   color: var(--ink);
 }
 
-.back p {
-  margin: 0;
-  font-size: max(calc(var(--hu) * 0.95), var(--mode-floor));
-  line-height: 1.4;
-  color: var(--ink-body);
-}
-
-.mode-confirm-cost {
-  font-weight: 800;
-  color: var(--ink) !important;
-}
-
 .mode-confirm-actions {
-  margin-top: auto;
   display: flex;
-  gap: calc(var(--hu) * 0.55);
+  gap: calc(var(--ru) * 0.59);
+  margin-top: calc(var(--ru) * 0.45);
 }
 
 .mode-confirm-cancel {
-  padding: calc(var(--hu) * 0.8) calc(var(--hu) * 0.8);
-  border-radius: calc(var(--hu) * 0.7);
+  flex: 0 1 auto;
+  padding: calc(var(--ru) * 0.89);
+  border-radius: calc(var(--ru) * 0.74);
   border: 1px solid rgba(var(--ink-rgb), 0.2);
   background: none;
   color: var(--ink-body);
   font: inherit;
-  font-size: max(calc(var(--hu) * 0.95), var(--type-floor));
+  font-size: max(calc(var(--ru) * 1.04), var(--type-floor));
   font-weight: 700;
   cursor: pointer;
 }
 
 @media (any-hover: hover) {
-  .mode-confirm-cancel:hover { border-color: rgba(var(--ink-rgb), 0.45); color: var(--ink); }
+  .mode-confirm-cancel:hover {
+    border-color: rgba(var(--ink-rgb), 0.45);
+    color: var(--ink);
+  }
 }
 
 .mode-confirm-cancel:focus-visible {
@@ -325,21 +359,22 @@
    Copied per panel rather than shared (CLAUDE.md, "each popup is its own
    component"). Lit and contact-shadowed, never haloed. */
 .action-button {
+  --tint-rgb: var(--fam-rgb);
+  --tint-ink: var(--on-vol-ink);
   width: 100%;
-  padding: calc(var(--hu) * 0.8);
+  padding: calc(var(--ru) * 0.89) calc(var(--ru) * 1.18);
   font: inherit;
-  font-size: max(calc(var(--hu) * 1.05), var(--type-floor));
+  font-size: max(calc(var(--ru) * 1.11), var(--type-floor));
   font-weight: 800;
-  letter-spacing: 0.03em;
   border: none;
-  border-radius: calc(var(--hu) * 0.7);
+  border-radius: calc(var(--ru) * 0.74);
   cursor: pointer;
-  background: linear-gradient(180deg, rgba(var(--tint-rgb), 1), rgba(var(--tint-rgb), 0.78));
+  background: linear-gradient(180deg, rgba(var(--tint-rgb), 1), rgba(var(--tint-rgb), 0.76));
   color: var(--tint-ink);
   box-shadow:
     inset 0 1px 0 var(--panel-lit),
     0 1px 2px rgba(var(--shadow-rgb), 0.5),
-    0 calc(var(--hu) * 0.4) calc(var(--hu) * 0.8) rgba(var(--shadow-rgb), 0.35);
+    0 calc(var(--ru) * 0.44) calc(var(--ru) * 0.89) rgba(var(--shadow-rgb), 0.42);
 }
 
 .mode-confirm-go {
@@ -348,10 +383,14 @@
 }
 
 @media (any-hover: hover) {
-  .action-button:hover { filter: brightness(1.08); }
+  .action-button:hover {
+    filter: brightness(1.08);
+  }
 }
 
-.action-button:active { transform: translateY(1px); }
+.action-button:active {
+  transform: translateY(1px);
+}
 
 .action-button:focus-visible {
   outline: 2px solid var(--focus-ring);
@@ -365,126 +404,121 @@
   }
 }
 
-/* ---- The notes under the hand ---- */
+/* ---- The notes under the rack ---- */
 .mode-notes {
-  flex: 0 0 auto;
-  max-width: 70ch;
+  width: min(100%, calc(var(--ru) * 84.6));
+  margin-top: calc(var(--ru) * 1.04);
+  padding: 0 calc(var(--ru) * 0.3);
 }
 
 .mode-note {
-  margin: calc(var(--hu) * 0.4) 0 0;
-  font-size: max(calc(var(--hu) * 0.95), var(--mode-floor));
+  margin: calc(var(--ru) * 0.3) 0 0;
+  max-width: 80ch;
+  font-size: max(calc(var(--ru) * 0.96), var(--mode-floor));
   line-height: 1.45;
-  color: var(--ink-body);
+  color: var(--ink-dim);
 }
 
-/* ---- A phone held upright: a row that scrolls ---------------------------
-   Five cards abreast cannot be read at 390px, so the hand becomes a row of
-   full-size cards, one in view at a time, snapping to centre; the live card
-   is the one it opens on (ModePopup.svelte). The unit follows the card, not
-   the window, so the card keeps the desktop card's proportions. The fan, its
-   turn and its lift go - a row has no hand to fan - and the card turned over
-   turns where it is. Phones are the one place the layout may rearrange. */
+/* ---- A phone held upright: five rows ------------------------------------
+   The mock-up's phone layout: each family is a row - the sign across the
+   top, name and bolts side by side; the picture at the end beside the
+   sentence and the figure; the action across the foot. The panel scrolls
+   under its heading. Phones are the one place the layout may rearrange. The
+   unit follows the width, so the type reads at 9px and up. */
 @media (max-width: 620px) and (orientation: portrait) {
   .popup.popup-mode {
-    /* As wide as reads comfortably, and short enough that the card, the
-       header and the note fit the screen without scrolling it. */
-    --card-w: min(58vw, 250px, calc((100vh - 200px) / 1.92));
-    --hu: calc(var(--card-w) / 16);
-    --card-h: calc(var(--card-w) * 1.92);
-    padding: 14px 0 16px;
+    --ru: calc((100vw - 28px) / 30);
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 0 14px 20px;
   }
 
-  .popup-mode .popup-head.mode-head,
+  .popup-mode .popup-head.mode-head {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    width: auto;
+    margin: 0 -14px 4px;
+    padding: 14px 14px 10px;
+    font-size: max(calc(var(--ru) * 1.5), var(--type-floor));
+    background: linear-gradient(rgba(var(--shadow-rgb), 0.95) 70%, transparent);
+  }
+
+  .rack {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .front {
+    grid-template-columns: minmax(0, 1fr) calc(var(--ru) * 7.9);
+    grid-template-rows: auto auto auto auto;
+    gap: calc(var(--ru) * 0.7) calc(var(--ru) * 0.86);
+    padding-bottom: calc(var(--ru) * 1.03);
+  }
+
+  .sign {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: calc(var(--ru) * 0.86) calc(var(--ru) * 1.03);
+  }
+
+  .nm {
+    font-size: max(calc(var(--ru) * 2.07), var(--type-floor));
+    text-align: start;
+  }
+
+  .vig {
+    grid-column: 2;
+    grid-row: 2 / 4;
+    margin: 0 calc(var(--ru) * 0.86) 0 0;
+    height: calc(var(--ru) * 8.3);
+  }
+
+  .bl {
+    grid-column: 1;
+    grid-row: 2;
+    margin: 0 0 0 calc(var(--ru) * 1.03);
+    font-size: max(calc(var(--ru) * 1.08), var(--type-floor));
+  }
+
+  .fg {
+    grid-column: 1;
+    grid-row: 3;
+    margin: 0 0 0 calc(var(--ru) * 1.03);
+  }
+
+  .fg-fig {
+    font-size: max(calc(var(--ru) * 2.4), var(--type-floor-figure));
+  }
+
+  .ac {
+    grid-column: 1 / -1;
+    margin: 0 calc(var(--ru) * 1.03);
+  }
+
+  .mode-confirm {
+    padding: calc(var(--ru) * 1.03);
+  }
+
   .mode-notes {
-    padding: 0 16px;
+    width: auto;
   }
 
-  .hand {
-    display: flex;
-    gap: 12px;
-    flex: 0 0 auto;
-    min-height: 0;
-    min-width: 0;
-    margin: 12px 0;
-    padding: calc(var(--hu) * 2.5) calc((100vw - var(--card-w)) / 2) calc(var(--hu) * 1.5);
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-  }
-
-  .hand::-webkit-scrollbar { display: none; }
-
-  .mcard {
-    position: relative;
-    left: auto;
-    top: auto;
-    flex: 0 0 var(--card-w);
-    margin: 0;
-    scroll-snap-align: center;
-    transform: translateY(calc(var(--lift) * var(--hu) * 0.5));
-    /* Dealt UP, not in from the side: a card sliding sideways drags its
-       snap point with it, and when the slide ended the row re-snapped to the
-       first card instead of the live one it had been opened on. */
-    animation-name: deal-up;
-  }
-
-  .mcard.flip {
-    transform: rotateY(180deg);
+  .mode-note {
+    font-size: max(calc(var(--ru) * 1.08), var(--type-floor));
   }
 }
 
-/* ---- Reduced motion --------------------------------------------------------
-   No deal and no turn in depth: the cards are simply there (an opacity fade),
-   and turning one over is a crossfade between its two sides. The hand still
-   steps back, because that carries information. */
+/* ---- Reduced motion: no deal - the rack is simply there ---- */
 @media (prefers-reduced-motion: reduce) {
+  .popup.popup-mode,
+  .mcard,
+  .mcard.chosen .mode-confirm {
+    animation: none;
+  }
+
   .mcard {
-    animation: mode-in 120ms var(--ease-out) backwards;
-    animation-delay: 0ms;
-    transition: opacity 120ms var(--ease-out);
-  }
-
-  .mcard.flip {
-    transform:
-      translateX(calc(var(--fan) * var(--hu) * 17))
-      translateY(calc(var(--lift) * var(--hu)))
-      rotate(calc(var(--fan) * 1.2deg));
-  }
-
-  .side {
-    backface-visibility: visible;
-    transition: opacity 120ms var(--ease-out);
-  }
-
-  .back {
-    transform: none;
-    opacity: 0;
-  }
-
-  .mcard.flip .front { opacity: 0; }
-  .mcard.flip .back { opacity: 1; }
-
-  .action-button:active { transform: none; }
-}
-
-@media (prefers-reduced-motion: reduce) and (max-width: 620px) and (orientation: portrait) {
-  .mcard.flip {
-    transform: translateY(calc(var(--lift) * var(--hu) * 0.5));
-  }
-}
-
-/* Laptop and desktop: the hand capped at 0.75vw (see the note on --hu), and
-   the small type given a readable floor, which the capped unit alone would
-   print at 6-7px (the owner's call, 2026-10-18). Measured: the hand 66% of the
-   window at 1200 and 1024, blurbs 9.5px, nothing overflowing its card. */
-@media (min-width: 1000px) and (orientation: landscape) {
-  .popup.popup-mode {
-    --hu: max(6px, min(calc((100vw - 40px) / 88), calc((100vh - 150px) / 34), 0.75vw));
-    --mode-floor: 9.5px;
-    /* A little taller, to give the art its row back from the larger type:
-       Three of a Kind's four-line blurb ran up over its three kings. */
-    --card-h: calc(var(--hu) * 35);
+    transition: none;
   }
 }
