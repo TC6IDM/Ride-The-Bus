@@ -134,3 +134,35 @@ export function clickIn(event: MouseEvent): ChipClick | null {
     y: clamp((event.clientY - rect.top) / rect.height, 0, 1),
   };
 }
+
+/* ---- The edge's stripes ------------------------------------------------- */
+
+/** The face's edge spots: eight, SPOT_DEG wide on 45deg centres, from `spin`. */
+export const SPOT_DEG = 13;
+
+/**
+ * Where the face's edge spots run down the chip's side, as horizontal stops
+ * (0-100, left to right) for a linear-gradient across the side.
+ *
+ * A spot at angle a (0 up, clockwise, as conic-gradient counts) sits on the
+ * rim at x = 50 + 50 sin(a), and a chip's side is the rim extruded straight
+ * down, so the spot's stripe on the side spans the same x. Only the front half
+ * of the rim (90-270deg) has a side that shows. The owner, 2026-10-19: drawn as
+ * a second disc dropped under the face, the side's spots fanned from its own
+ * centre and the chip read as one floating on another.
+ */
+export function chipWallStripes(spin: number): Array<[number, number]> {
+  const stripes: Array<[number, number]> = [];
+  for (let k = 0; k < 8; k++) {
+    const from = (((spin + k * 45) % 360) + 360) % 360;
+    // A spot can straddle 0/360; test it at both turns.
+    for (const start of [from, from - 360]) {
+      const a1 = Math.max(start, 90);
+      const a2 = Math.min(start + SPOT_DEG, 270);
+      if (a2 <= a1) continue;
+      const x = (a: number) => 50 + 50 * Math.sin((a * Math.PI) / 180);
+      stripes.push([x(a2), x(a1)]);
+    }
+  }
+  return stripes.sort((p, q) => p[0] - q[0]);
+}

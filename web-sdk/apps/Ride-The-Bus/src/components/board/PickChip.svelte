@@ -13,17 +13,26 @@
      menu's alternate inlay where it has one. Plain, no value: it marks the
      pick, and the round is one bet, the bar's. -->
 <script lang="ts">
-	import type { ChipSpot } from '../../game/ui/chipSpot';
+	import { chipWallStripes, type ChipSpot } from '../../game/ui/chipSpot';
 	import type { ChipColour } from '../../game/bet/betChips';
 
 	let { spot, chip }: { spot: ChipSpot; chip: { colour: ChipColour; alt: boolean } } = $props();
+
+	// The side's stripes, under the face's spots (chipWallStripes).
+	const wall = $derived.by(() => {
+		const stops = ['var(--pc-dark) 0'];
+		for (const [l, r] of chipWallStripes(spot.spin)) {
+			stops.push(`var(--pc-dark) ${l.toFixed(2)}%`, `var(--pc-cream) ${l.toFixed(2)}% ${r.toFixed(2)}%`, `var(--pc-dark) ${r.toFixed(2)}%`);
+		}
+		return `linear-gradient(90deg, ${stops.join(', ')})`;
+	});
 </script>
 
 <span
 	class="pick-chip chip-{chip.colour}"
 	class:alt={chip.alt}
 	aria-hidden="true"
-	style={`--cx: ${spot.x}; --cy: ${spot.y}; --chip-k: ${spot.k}; --spin: ${spot.spin}deg`}
+	style={`--cx: ${spot.x}; --cy: ${spot.y}; --chip-k: ${spot.k}; --spin: ${spot.spin}deg; --pc-wall: ${wall}`}
 ></span>
 
 <style>
@@ -37,11 +46,12 @@
 	   chip's own disc dropped by its thickness, and ::after is the face. A
 	   z-index: -1 edge under the element's own background would not work - this
 	   box is a stacking context, and its negative layers paint ABOVE its own
-	   background. The edge carries the same conic spots from its own centre, so
-	   on the crescent that shows below the face each spot lands directly under
-	   the spot it continues (exactly so at the bottom of the edge), and it turns
-	   with --spin like the face does. Shaded across like the table chips' walls
-	   (table.css .chip-disc::after), lit from the upper right. */
+	   background. The edge's stripes are the face's spots extruded straight
+	   down (chipWallStripes, from --spin), so each runs on from the spot above
+	   it as one mark. Fanned from the dropped disc's own centre, as a conic,
+	   they did not, and the chip read as one floating on another (the owner,
+	   2026-10-19). Shaded across like the table chips' walls (table.css
+	   .chip-disc::after), lit from the upper right. */
 	.pick-chip {
 		--pc-face: var(--chip-red-face);
 		--pc-cream: var(--chip-red-cream);
@@ -73,7 +83,7 @@
 		translate: 0 var(--pc-thick);
 		background:
 			linear-gradient(90deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 12%, rgba(0, 0, 0, 0.08) 32%, rgba(255, 255, 255, 0.06) 60%, rgba(0, 0, 0, 0.12) 82%, rgba(0, 0, 0, 0.5) 100%),
-			repeating-conic-gradient(from var(--spin), var(--pc-cream) 0 13deg, var(--pc-dark) 13deg 45deg);
+			var(--pc-wall);
 	}
 
 	.pick-chip::after {

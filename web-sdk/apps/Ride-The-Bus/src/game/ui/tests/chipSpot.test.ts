@@ -4,8 +4,9 @@
  */
 import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
+import { readFileSync } from 'node:fs';
 
-import { EQUAL_SPOT, SUIT_CLEAR, chipAt, chipSpot, placeChip } from '../chipSpot.ts';
+import { EQUAL_SPOT, SPOT_DEG, SUIT_CLEAR, chipAt, chipSpot, chipWallStripes, placeChip } from '../chipSpot.ts';
 import { chipColour, chipForBet, chipInlayAlt } from '../../bet/betChips.ts';
 
 const fixed = (value: number) => () => value;
@@ -70,5 +71,32 @@ describe('the chip on the square is the bet’s chip', () => {
     assert.deepEqual(chipForBet(60, LEVELS), chipForBet(50, LEVELS));
     assert.deepEqual(chipForBet(0.2, LEVELS), chipForBet(1, LEVELS));
     assert.deepEqual(chipForBet(5000, LEVELS), chipForBet(1000, LEVELS));
+  });
+});
+
+describe('the chip side carries the face spots straight down', () => {
+  test('a spot at the bottom of the rim runs down the middle of the side', () => {
+    // From 173.5deg the spot is centred on 180deg, the bottom of the rim.
+    const stripes = chipWallStripes(180 - SPOT_DEG / 2);
+    const middle = stripes.find(([l, r]) => l < 50 && r > 50);
+    assert.ok(middle, 'a stripe crosses the middle');
+    assert.ok(Math.abs(50 - middle[0] - (middle[1] - 50)) < 1e-9, 'centred');
+  });
+
+  test('every stripe sits on the front of the rim, in order, apart', () => {
+    for (let spin = 0; spin < 90; spin += 1) {
+      const stripes = chipWallStripes(spin);
+      // Four spots face front, five when one straddles a silhouette.
+      assert.ok(stripes.length >= 4 && stripes.length <= 5, `spin ${spin}: ${stripes.length}`);
+      for (const [l, r] of stripes) assert.ok(l >= 0 && r <= 100 && l < r, `spin ${spin}`);
+      for (let i = 1; i < stripes.length; i++) assert.ok(stripes[i][0] >= stripes[i - 1][1], `spin ${spin} overlaps`);
+    }
+  });
+
+  test('the side matches the face at every spin (PickChip.svelte reads it)', () => {
+    const chip = readFileSync(new URL('../../../components/board/PickChip.svelte', import.meta.url), 'utf8');
+    assert.match(chip, /chipWallStripes\(spot\.spin\)/);
+    assert.match(chip, /from var\(--spin\), var\(--pc-cream\) 0 13deg/);
+    assert.equal(SPOT_DEG, 13);
   });
 });
