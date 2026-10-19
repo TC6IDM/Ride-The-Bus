@@ -27,8 +27,28 @@
 		IO_RESULT,
 		SUIT_GLYPH,
 	} from '../../game/dev/introDemo';
+	import PickChip from '../board/PickChip.svelte';
+	import { chipAt, clickIn, placeChip } from '../../game/ui/chipSpot';
+	import { chipForBet } from '../../game/bet/betChips';
+	import { adoptGuesses, betLevels, betValue, guesses } from '../../game/bet/betState.svelte';
+	import { roundInProgress } from '../../game/round/roundState.svelte';
 
 	let { oncontinue }: { oncontinue: () => void } = $props();
+
+	/**
+	 * THE INTRO'S PICKS ARE THE GAME'S (the owner's call, 2026-10-18). A pick
+	 * here sets the bet's chip down exactly as the board does (PickChip, placed
+	 * where it was clicked by chipSpot.ts), and Continue hands all four to the
+	 * board (adoptGuesses) - the squares then fly down carrying them
+	 * (introHandoff.ts). It opens on the picks the player already has (the
+	 * remembered ones), or on the worked example's when there are none.
+	 */
+	const betChip = $derived(chipForBet(betValue(), betLevels()));
+	function continueWithPicks() {
+		// A round already on the board (a resume) keeps its own picks.
+		if (!roundInProgress()) adoptGuesses(locked);
+		oncontinue();
+	}
 
 	/** The biggest figure ANY mode can reach, and which mode - for the asterisk.
 	 *  Derived so it cannot drift from the maths: it was High Stakes' until
@@ -63,11 +83,18 @@
 	 * one falls back to DEFAULTS for the worked example, so the demo never goes
 	 * empty even when nothing is selected.
 	 */
-	let locked = $state<{ color: string | null; hl: string | null; io: string | null; suit: string | null }>({
-		color: 'black',
-		hl: 'higher',
-		io: 'inside',
-		suit: 'heart',
+	const hasPicks = Boolean(guesses.color || guesses.hl || guesses.io || guesses.suit);
+	let locked = $state<{ color: string | null; hl: string | null; io: string | null; suit: string | null }>(
+		hasPicks
+			? { color: guesses.color, hl: guesses.hl, io: guesses.io, suit: guesses.suit }
+			: { color: 'black', hl: 'higher', io: 'inside', suit: 'heart' },
+	);
+	/** Where each pick's chip lies - shared with the board, so it lands where it left. */
+	const spots = $derived({
+		color: chipAt('color', locked.color),
+		hl: chipAt('hl', locked.hl),
+		io: chipAt('io', locked.io),
+		suit: chipAt('suit', locked.suit),
 	});
 	let hover = $state<{ color: string | null; hl: string | null; io: string | null; suit: string | null }>({
 		color: null,
@@ -85,9 +112,19 @@
 		suit: hover.suit ?? locked.suit ?? DEFAULTS.suit,
 	});
 
-	/** Click to lock in, click again to clear - the board's toggle behaviour. */
-	function lock(step: 'color' | 'hl' | 'io' | 'suit', value: string) {
+	/**
+	 * Click to lock in, click again to clear - the board's toggle behaviour, and
+	 * its rule: no Inside after an Equal (there is nothing to fall between), so
+	 * Equal clears an Inside and Inside is refused after Equal.
+	 */
+	function lock(step: 'color' | 'hl' | 'io' | 'suit', value: string, event?: MouseEvent) {
+		if (step === 'io' && value === 'inside' && locked.hl === 'equal') return;
+		if (event) {
+			const click = clickIn(event);
+			if (click) placeChip(step, value, click);
+		}
 		locked[step] = locked[step] === value ? null : value;
+		if (locked.hl === 'equal' && locked.io === 'inside') locked.io = null;
 	}
 
 	/**
@@ -201,14 +238,14 @@
 							type="button" tabindex="-1" class="half-btn black-half" class:selected={locked.color === 'black'}
 							aria-label={t('Black')}
 							onmouseenter={() => (hover.color = 'black')} onfocus={() => (hover.color = 'black')}
-							onclick={() => lock('color', 'black')}
-						></button>
+							onclick={(event) => lock('color', 'black', event)}
+						>{#if locked.color === 'black' && spots.color}<PickChip spot={spots.color} chip={betChip} />{/if}</button>
 						<button
 							type="button" tabindex="-1" class="half-btn red-half" class:selected={locked.color === 'red'}
 							aria-label={t('Red')}
 							onmouseenter={() => (hover.color = 'red')} onfocus={() => (hover.color = 'red')}
-							onclick={() => lock('color', 'red')}
-						></button>
+							onclick={(event) => lock('color', 'red', event)}
+						>{#if locked.color === 'red' && spots.color}<PickChip spot={spots.color} chip={betChip} />{/if}</button>
 					</div>
 
 					<div class="ss-demo">
@@ -230,20 +267,20 @@
 							type="button" tabindex="-1" class="third-btn higher-third" class:selected={locked.hl === 'higher'}
 							aria-label={t('Higher')}
 							onmouseenter={() => (hover.hl = 'higher')} onfocus={() => (hover.hl = 'higher')}
-							onclick={() => lock('hl', 'higher')}
-						><ChoiceIcon name="triangleUp" /></button>
+							onclick={(event) => lock('hl', 'higher', event)}
+						><ChoiceIcon name="triangleUp" />{#if locked.hl === 'higher' && spots.hl}<PickChip spot={spots.hl} chip={betChip} />{/if}</button>
 						<button
 							type="button" tabindex="-1" class="third-btn lower-third" class:selected={locked.hl === 'lower'}
 							aria-label={t('Lower')}
 							onmouseenter={() => (hover.hl = 'lower')} onfocus={() => (hover.hl = 'lower')}
-							onclick={() => lock('hl', 'lower')}
-						><ChoiceIcon name="triangleDown" /></button>
+							onclick={(event) => lock('hl', 'lower', event)}
+						><ChoiceIcon name="triangleDown" />{#if locked.hl === 'lower' && spots.hl}<PickChip spot={spots.hl} chip={betChip} />{/if}</button>
 						<button
 							type="button" tabindex="-1" class="equal-btn" class:selected={locked.hl === 'equal'}
 							aria-label={t('Equal')}
 							onmouseenter={() => (hover.hl = 'equal')} onfocus={() => (hover.hl = 'equal')}
-							onclick={() => lock('hl', 'equal')}
-						><ChoiceIcon name="equals" /></button>
+							onclick={(event) => lock('hl', 'equal', event)}
+						><ChoiceIcon name="equals" />{#if locked.hl === 'equal' && spots.hl}<PickChip spot={spots.hl} chip={betChip} />{/if}</button>
 					</div>
 
 					<div class="ss-demo">
@@ -265,20 +302,20 @@
 							type="button" tabindex="-1" class="half-btn inside-half" class:selected={locked.io === 'inside'}
 							aria-label={t('Inside')}
 							onmouseenter={() => (hover.io = 'inside')} onfocus={() => (hover.io = 'inside')}
-							onclick={() => lock('io', 'inside')}
-						><ChoiceIcon name="inside" /></button>
+							onclick={(event) => lock('io', 'inside', event)}
+						><ChoiceIcon name="inside" />{#if locked.io === 'inside' && spots.io}<PickChip spot={spots.io} chip={betChip} />{/if}</button>
 						<button
 							type="button" tabindex="-1" class="half-btn outside-half" class:selected={locked.io === 'outside'}
 							aria-label={t('Outside')}
 							onmouseenter={() => (hover.io = 'outside')} onfocus={() => (hover.io = 'outside')}
-							onclick={() => lock('io', 'outside')}
-						><ChoiceIcon name="outside" /></button>
+							onclick={(event) => lock('io', 'outside', event)}
+						><ChoiceIcon name="outside" />{#if locked.io === 'outside' && spots.io}<PickChip spot={spots.io} chip={betChip} />{/if}</button>
 						<button
 							type="button" tabindex="-1" class="equal-btn" class:selected={locked.io === 'equal'}
 							aria-label={t('Equal')}
 							onmouseenter={() => (hover.io = 'equal')} onfocus={() => (hover.io = 'equal')}
-							onclick={() => lock('io', 'equal')}
-						><ChoiceIcon name="equals" /></button>
+							onclick={(event) => lock('io', 'equal', event)}
+						><ChoiceIcon name="equals" />{#if locked.io === 'equal' && spots.io}<PickChip spot={spots.io} chip={betChip} />{/if}</button>
 					</div>
 
 					<!-- is-wide: this step carries three cards, or four on Equal, so its
@@ -311,8 +348,8 @@
 								type="button" tabindex="-1" class="quad-btn" class:red-suit={SUIT_GLYPH[suit].red}
 								class:selected={locked.suit === suit} aria-label={t(SUIT_GLYPH[suit].label)}
 								onmouseenter={() => (hover.suit = suit)} onfocus={() => (hover.suit = suit)}
-								onclick={() => lock('suit', suit)}
-							><SuitIcon {suit} /></button>
+								onclick={(event) => lock('suit', suit, event)}
+							><SuitIcon {suit} />{#if locked.suit === suit && spots.suit}<PickChip spot={spots.suit} chip={betChip} />{/if}</button>
 						{/each}
 					</div>
 
@@ -368,7 +405,7 @@
 				{/if}
 			</p>
 
-			<button class="ss-continue" style="--d: 10" onclick={oncontinue}>
+			<button class="ss-continue" style="--d: 10" onclick={continueWithPicks}>
 				{fingerPointer() ? t('Tap to continue') : t('Click to continue')}
 			</button>
 		</div>

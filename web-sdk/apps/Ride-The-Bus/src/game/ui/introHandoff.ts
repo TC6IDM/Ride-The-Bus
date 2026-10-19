@@ -11,9 +11,11 @@
  * this measures both sets of squares first, lifts a copy of each intro square
  * into its own layer above the intro, and flies the copies to the board's
  * squares while the intro fades. Each board square stays hidden until its copy
- * lands on it, then takes over and the copy goes. The copies fly UNPICKED: the
- * intro's demo picks are not the board's, and a demo pick landing on a square
- * that then showed another would read as the board changing its mind.
+ * lands on it, then takes over and the copy goes. The copies fly WITH their
+ * picks and chips (the owner's call, 2026-10-18): the intro's picks are the
+ * board's now (IntroPanels' continueWithPicks), and the chips lie in the same
+ * spots on both (chipSpot.ts), so the square that lands is the square that
+ * left. They flew unpicked while the intro's picks were only a demo.
  *
  * Skipped - the intro just fades - under reduced motion, on Three of a Kind
  * (no four squares to land on), or if either set is not on screen.
@@ -39,9 +41,6 @@ export function flyIntroSquaresToBoard(): void {
     if (!a.width || !b.width) return;
 
     const copy = source.cloneNode(true) as HTMLElement;
-    // Unpicked: see the note above.
-    copy.querySelectorAll('.selected').forEach((node) => node.classList.remove('selected'));
-    copy.querySelectorAll('[aria-pressed]').forEach((node) => node.removeAttribute('aria-pressed'));
     copy.setAttribute('aria-hidden', 'true');
     copy.inert = true;
     // The units the square is drawn in come from its ancestors on the intro,
