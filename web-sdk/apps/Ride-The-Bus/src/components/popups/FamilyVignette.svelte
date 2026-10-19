@@ -32,10 +32,13 @@
       ['8', 'spade', 36, 52, -6, 34],
       ['5', 'heart', 62, 52, 6, 34],
     ],
+    // Higher and a touch narrower than the other hands (2026-10-18): the
+    // outer Kings' turned corners hung into the blurb under them on a laptop,
+    // where Three of a Kind's four-line sentence takes the most room.
     tr: [
-      ['K', 'spade', 30, 54, -10, 30],
-      ['K', 'heart', 50, 48, 0, 30],
-      ['K', 'club', 70, 54, 10, 30],
+      ['K', 'spade', 31, 44, -10, 27],
+      ['K', 'heart', 50, 39, 0, 27],
+      ['K', 'club', 69, 44, 10, 27],
     ],
   };
   const cards = $derived(SCENES[family] ?? []);

@@ -12,6 +12,13 @@
  * the header and the note need the rest. Floored at 6px - Popout S - where the
  * hand is wider than the window and the panel scrolls, the same bargain every
  * panel makes there (popup-base.css). Type takes the type floor on top.
+ *
+ * AND CAPPED AT 0.75vw (the owner's call, 2026-10-18: "should not be this
+ * big ... not fill the full screen on desktop or laptop"). Solved only to fit,
+ * the hand ran edge to edge on a desktop (about 1,135px of 1,200). The cap
+ * holds it near two-thirds of the window on a laptop and up (1000px wide and
+ * landscape, at the foot of this file); Popout L, Popout S and phones keep
+ * the fitted size, theirs being the windows the hand has to fill.
  */
 
 /* ---- The shell: the whole window, no slab --------------------------------
@@ -20,6 +27,10 @@
    (popup-backdrop.css) is the dim; this is a transparent layer over it. */
 .popup.popup-mode {
   --hu: max(6px, min(calc((100vw - 40px) / 88), calc((100vh - 150px) / 34)));
+  /* The cards' small type: the type floor, raised on a laptop and up (at the
+     foot of this file), where the capped unit alone would print the blurbs at
+     6-7px. */
+  --mode-floor: var(--type-floor);
   --card-w: calc(var(--hu) * 16);
   --card-h: calc(var(--hu) * 30.7);
   inset: 0;
@@ -190,7 +201,7 @@
 
 .bl {
   margin: 0 calc(var(--hu) * 0.95);
-  font-size: max(calc(var(--hu) * 0.9), var(--type-floor));
+  font-size: max(calc(var(--hu) * 0.9), var(--mode-floor));
   line-height: 1.38;
   color: rgba(var(--card-ink-rgb), 0.82);
 }
@@ -203,7 +214,7 @@
 }
 
 .fg-cap {
-  font-size: max(calc(var(--hu) * 0.85), var(--type-floor));
+  font-size: max(calc(var(--hu) * 0.85), var(--mode-floor));
   font-weight: 700;
   color: rgba(var(--card-ink-rgb), 0.6);
 }
@@ -222,7 +233,7 @@
   margin-top: calc(var(--hu) * 0.25);
   font-style: normal;
   font-weight: 800;
-  font-size: max(calc(var(--hu) * 0.9), var(--type-floor));
+  font-size: max(calc(var(--hu) * 0.9), var(--mode-floor));
   color: var(--card-red);
 }
 
@@ -237,7 +248,7 @@
   border-radius: calc(var(--hu) * 0.7);
   border: 1.5px solid var(--fam);
   text-align: center;
-  font-size: max(calc(var(--hu) * 0.95), var(--type-floor));
+  font-size: max(calc(var(--hu) * 0.95), var(--mode-floor));
   font-weight: 800;
   color: rgba(var(--card-ink-rgb), 0.8);
 }
@@ -273,7 +284,7 @@
 
 .back p {
   margin: 0;
-  font-size: max(calc(var(--hu) * 0.95), var(--type-floor));
+  font-size: max(calc(var(--hu) * 0.95), var(--mode-floor));
   line-height: 1.4;
   color: var(--ink-body);
 }
@@ -362,7 +373,7 @@
 
 .mode-note {
   margin: calc(var(--hu) * 0.4) 0 0;
-  font-size: max(calc(var(--hu) * 0.95), var(--type-floor));
+  font-size: max(calc(var(--hu) * 0.95), var(--mode-floor));
   line-height: 1.45;
   color: var(--ink-body);
 }
@@ -461,5 +472,19 @@
 @media (prefers-reduced-motion: reduce) and (max-width: 620px) and (orientation: portrait) {
   .mcard.flip {
     transform: translateY(calc(var(--lift) * var(--hu) * 0.5));
+  }
+}
+
+/* Laptop and desktop: the hand capped at 0.75vw (see the note on --hu), and
+   the small type given a readable floor, which the capped unit alone would
+   print at 6-7px (the owner's call, 2026-10-18). Measured: the hand 66% of the
+   window at 1200 and 1024, blurbs 9.5px, nothing overflowing its card. */
+@media (min-width: 1000px) and (orientation: landscape) {
+  .popup.popup-mode {
+    --hu: max(6px, min(calc((100vw - 40px) / 88), calc((100vh - 150px) / 34), 0.75vw));
+    --mode-floor: 9.5px;
+    /* A little taller, to give the art its row back from the larger type:
+       Three of a Kind's four-line blurb ran up over its three kings. */
+    --card-h: calc(var(--hu) * 35);
   }
 }
