@@ -164,7 +164,7 @@
     /* The guess chip's face (PickChip.svelte), as on the table's chips:
        a cream ring, eight 13deg cream spots round the rim. */
     background:
-      radial-gradient(closest-side, var(--chip-red-face) 0 37%, var(--chip-red-cream) 38% 42%, var(--chip-red-face) 43% 59%, transparent 60%),
+      radial-gradient(closest-side, var(--chip-red-face) 0 52.3%, var(--chip-red-cream) 53.7% 59.4%, var(--chip-red-face) 60.8% 83.4%, transparent 84.9%),
       conic-gradient(
         var(--chip-red-cream) 0deg 9.6deg, var(--chip-red-face) 9.6deg 49.6deg, var(--chip-red-cream) 49.6deg 61.7deg,
         var(--chip-red-face) 61.7deg 85.6deg, var(--chip-red-cream) 85.6deg 94.4deg, var(--chip-red-face) 94.4deg 118.3deg,

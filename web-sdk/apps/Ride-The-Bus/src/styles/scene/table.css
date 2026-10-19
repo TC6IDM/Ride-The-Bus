@@ -494,7 +494,14 @@
    thin cream ring at 38-42% of the radius, the face again, and round the rim
    the eight cream spots in the chip's own colour. It was the reference
    photograph's face - a dark separation ring inside the spots, a flat centre to
-   71% - and the two read as two different chips. */
+   71% - and the two read as two different chips.
+
+   THE STOPS ARE THE GUESS CHIP'S, x 1.414. PickChip draws its face with
+   radial-gradient(circle, ...), whose percentages run to the box's CORNER,
+   1.414 radii out; this one is closest-side, which runs to the edge. Copied as
+   they stood, the ring came out small and the spots ran as long spokes (the
+   owner, 2026-10-19); scaled, the ring sits at 55% of the radius and the spots
+   are short blocks on the outer 15%, as on the guess chip. */
 .chip-top {
   position: absolute;
   /* Above every disc in the stack. Each disc takes z-index --i + 1, so a fixed
@@ -511,7 +518,7 @@
        on screen, the same conversion the edge spots below use, so the bright
        side of a chip face and the lit side of its wall are the same side. */
     linear-gradient(56deg, rgba(0, 0, 0, 0.2) 0%, transparent 34%, rgba(255, 255, 255, 0.12) 100%),
-    radial-gradient(closest-side, var(--chip-face) 0 37%, var(--chip-cream) 38% 42%, var(--chip-face) 43% 59%, transparent 60%),
+    radial-gradient(closest-side, var(--chip-face) 0 52.3%, var(--chip-cream) 53.7% 59.4%, var(--chip-face) 60.8% 83.4%, transparent 84.9%),
     /* The eight spots seen from above. NOT a repeating-conic-gradient: its
        sectors are evenly spaced in SCREEN angle, and on a squashed ellipse
        that is not the same as evenly spaced round the chip - so the spots on

@@ -130,7 +130,7 @@
   font-size: var(--choice-fs);
   font-weight: 800;
   line-height: 1;
-  transition: filter var(--dur-control) var(--ease-out), transform var(--dur-control) var(--ease-out);
+  transition: filter var(--dur-control) var(--ease-out), transform var(--dur-control) var(--ease-out), background-color var(--dur-control) var(--ease-out);
 }
 
 /* Hover: a lighter version of the selected treatment, so it reads as a
@@ -173,17 +173,32 @@
 .half-btn.selected,
 .third-btn.selected,
 .quad-btn.selected {
-  filter: brightness(1.22) saturate(1.06);
+  /* LIT WITHOUT A FILTER ON THE SEGMENT. This was filter: brightness(1.22)
+     saturate(1.06) on the whole button - and the button holds its pick chip,
+     which lies over the seam. Some GPU compositors cut a filtered box's output
+     at its own edge, so on the owner's machine the suit chip was sliced off at
+     the seam (2026-10-19) while every headless and headed capture here drew it
+     whole. So the lift is split: the fill is the segment's own colour times
+     1.22, the same arithmetic brightness() does, and the icon takes the filter
+     itself. The chip is in neither, so nothing can clip it, and it shows its
+     true colours - the same as the table's chips. A browser without relative
+     colour keeps the plain fill; the gold ring still says which is chosen. */
+  background-color: rgb(from var(--seg) calc(r * 1.22) calc(g * 1.22) calc(b * 1.22));
   box-shadow: inset 0 0 0 2.5px var(--gold-bright), inset 0 0 calc(var(--choice-size) * 0.16) rgba(var(--gold-rgb), 0.4);
   /* ABOVE THE SEAMS AND ITS NEIGHBOURS, for its chip (the owner, 2026-10-18:
-     the suit chip "should always be over" the borders). The filter above makes
-     this segment a stacking context, so its chip's own z-index only counts
-     inside it: a chip lying across a seam was drawn under the gold seam layer
-     (.choice-square::after, z 1) and under the segment after it in the markup.
-     Lifted to 2, the whole segment - chip included - sits over both. The "="
-     badge is also 2 and comes later, so it still sits on top, and the gold
-     ring above outlines the segment where the seam no longer draws over it. */
+     the suit chip "should always be over" the borders). Lifted to 2, the whole
+     segment - chip included - sits over the gold seam layer
+     (.choice-square::after, z 1) and over the segment after it in the markup.
+     The "=" badge is also 2 and comes later, so it still sits on top, and the
+     gold ring above outlines the segment where the seam no longer draws over
+     it. */
   z-index: 2;
+}
+
+.half-btn.selected > :global(svg),
+.third-btn.selected > :global(svg),
+.quad-btn.selected > :global(svg) {
+  filter: brightness(1.22) saturate(1.06);
 }
 
 /* Held down.
@@ -193,9 +208,9 @@
  * hover to preserve and this is the only feedback a tap can produce. It is now
  * the primary press state, and it is brighter than hover on purpose: on touch
  * it is the first thing the player sees happen. */
-.half-btn:active:not(:disabled):not(.unavailable):not([aria-disabled='true']),
-.third-btn:active:not(:disabled):not([aria-disabled='true']),
-.quad-btn:active:not(:disabled):not([aria-disabled='true']),
+.half-btn:active:not(:disabled):not(.unavailable):not(.selected):not([aria-disabled='true']),
+.third-btn:active:not(:disabled):not(.selected):not([aria-disabled='true']),
+.quad-btn:active:not(:disabled):not(.selected):not([aria-disabled='true']),
 .equal-btn:active:not(.selected) {
   filter: brightness(1.34);
 }
@@ -337,11 +352,13 @@
 }
 
 .black-half {
-  background: var(--choice-black);
+  --seg: var(--choice-black);
+  background: var(--seg);
 }
 
 .red-half {
-  background: var(--choice-red);
+  --seg: var(--choice-red);
+  background: var(--seg);
 }
 
 /* Higher/Lower square: top/bottom halves + center equal square */
@@ -351,11 +368,13 @@
 }
 
 .higher-third {
-  background: var(--choice-higher);
+  --seg: var(--choice-higher);
+  background: var(--seg);
 }
 
 .lower-third {
-  background: var(--choice-lower);
+  --seg: var(--choice-lower);
+  background: var(--seg);
 }
 
 /* Inside/Outside square: left/right halves */
@@ -365,11 +384,13 @@
 }
 
 .inside-half {
-  background: var(--choice-inside);
+  --seg: var(--choice-inside);
+  background: var(--seg);
 }
 
 .outside-half {
-  background: var(--choice-outside);
+  --seg: var(--choice-outside);
+  background: var(--seg);
 }
 
 /* Nudge the arrows away from the seam so the equal badge cannot sit on top of
@@ -538,7 +559,8 @@
 }
 
 .quad-btn {
-  background: var(--choice-black);
+  --seg: var(--choice-black);
+  background: var(--seg);
   font-size: var(--quad-fs);
 }
 

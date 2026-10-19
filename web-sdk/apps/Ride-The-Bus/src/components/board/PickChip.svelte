@@ -28,11 +28,25 @@
 
 <style>
 	/* The table's chip tokens (tokens.css --chip-*), drawn top-down: the face, a
-	   cream ring, the face again, and the edge spots round the rim. */
+	   cream ring, the face again, and the edge spots round the rim - and under it
+	   the chip's EDGE, with the spots carried down it (the owner, 2026-10-19:
+	   the stripes on the face "should extend along the sides"). The edge was a
+	   plain dark box-shadow.
+
+	   Two layers, because the face must cover the edge: ::before is the edge, the
+	   chip's own disc dropped by its thickness, and ::after is the face. A
+	   z-index: -1 edge under the element's own background would not work - this
+	   box is a stacking context, and its negative layers paint ABOVE its own
+	   background. The edge carries the same conic spots from its own centre, so
+	   on the crescent that shows below the face each spot lands directly under
+	   the spot it continues (exactly so at the bottom of the edge), and it turns
+	   with --spin like the face does. Shaded across like the table chips' walls
+	   (table.css .chip-disc::after), lit from the upper right. */
 	.pick-chip {
 		--pc-face: var(--chip-red-face);
 		--pc-cream: var(--chip-red-cream);
 		--pc-dark: var(--chip-red-dark);
+		--pc-thick: calc(var(--choice-size) * 0.02);
 		position: absolute;
 		z-index: 3;
 		inset-inline-start: calc(var(--cx) * 100%);
@@ -42,14 +56,30 @@
 		translate: -50% -50%;
 		border-radius: 50%;
 		pointer-events: none;
+		box-shadow: 0 calc(var(--choice-size) * 0.035) calc(var(--choice-size) * 0.05) rgba(var(--shadow-rgb), 0.55);
+		/* Set down: dropped from a little above, settling once. */
+		animation: chip-down 300ms var(--ease-out) both;
+	}
+
+	.pick-chip::before,
+	.pick-chip::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border-radius: 50%;
+	}
+
+	.pick-chip::before {
+		translate: 0 var(--pc-thick);
+		background:
+			linear-gradient(90deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 12%, rgba(0, 0, 0, 0.08) 32%, rgba(255, 255, 255, 0.06) 60%, rgba(0, 0, 0, 0.12) 82%, rgba(0, 0, 0, 0.5) 100%),
+			repeating-conic-gradient(from var(--spin), var(--pc-cream) 0 13deg, var(--pc-dark) 13deg 45deg);
+	}
+
+	.pick-chip::after {
 		background:
 			radial-gradient(circle, var(--pc-face) 0 37%, var(--pc-cream) 38% 42%, var(--pc-face) 43% 59%, transparent 60%),
 			repeating-conic-gradient(from var(--spin), var(--pc-cream) 0 13deg, var(--pc-face) 13deg 45deg);
-		box-shadow:
-			0 calc(var(--choice-size) * 0.02) 0 var(--pc-dark),
-			0 calc(var(--choice-size) * 0.035) calc(var(--choice-size) * 0.05) rgba(var(--shadow-rgb), 0.55);
-		/* Set down: dropped from a little above, settling once. */
-		animation: chip-down 300ms var(--ease-out) both;
 	}
 
 	/* The bet menu's five (popup-bet.css), by the same names. */
