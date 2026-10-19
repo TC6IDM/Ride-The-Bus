@@ -26,6 +26,23 @@ test("the readout's third line can never collapse, so the board never jumps", ()
   assert.match(css, /\.running-win-mult\s*\{[^}]*min-height:\s*1lh/, 'the line has no minimum height');
 });
 
+test('the running total never moves - no animation or transition on the readout shifts it', () => {
+  // The owner, 2026-10-18: "the running total should not jump in place after
+  // every round". A bust and a kept share used to settle the figure DOWN half
+  // a unit (rw-settle). Its colour and its word carry the result now.
+  const css = source('../styles/board/cards.css');
+  const rules = css.match(/[^{}]*\.running-win[^{}]*\{[^}]*\}/g) ?? [];
+  for (const rule of rules) {
+    const selector = rule.slice(0, rule.indexOf('{')).trim();
+    const body = rule.slice(rule.indexOf('{'));
+    // Motion, not placement: a static centring translate is fine; an
+    // animation, or a transition of where it sits, is not.
+    assert.ok(!/animation\s*:(?!\s*none)/.test(body), `${selector} animates`);
+    assert.ok(!/transition[^;]*\b(transform|translate|top|margin)\b/.test(body), `${selector} transitions its position`);
+  }
+  assert.ok(!/@keyframes rw-/.test(css), 'a running-total animation came back');
+});
+
 test("Last Stop's ticket and the route are laid over the card row, never in it", () => {
   // Both arrived with Last Stop (2026-09-27). In the row they would widen it -
   // the four cards would stand somewhere else on Last Stop than on every other
