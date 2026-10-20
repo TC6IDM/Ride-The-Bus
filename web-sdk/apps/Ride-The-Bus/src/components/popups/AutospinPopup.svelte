@@ -21,6 +21,7 @@
      says what is armed, then the two switches and Start. The switches stay
      unfolded, directly above Start: the owner's call of 2026-09-26. -->
 <script lang="ts">
+  import { peel, setPeelMyself } from '../../game/round/peelSetting.svelte';
   import MarkIcon from '../icons/MarkIcon.svelte';
   import { t } from '../../i18n/i18nDerived';
   import {
@@ -224,9 +225,13 @@
         </div>
       </div>
 
-      <!-- The two switches, one above the other in their order, directly above
-           the panel's one action. The second changes only how the next
-           celebration looks, never the round. -->
+      <!-- The switches, one above the other, directly above the panel's one
+           action. The second changes only how the next celebration looks,
+           never the round. The third is how the held last card is squeezed
+           (squeeze.svelte.ts): peeled by the player's own hand rather than
+           peeling itself - here by the owner's call (2026-10-20). It is a
+           setting for the player's own rounds; autoplay always peels for
+           them. -->
       <div class="stop-switches">
         <div class="stop-row">
           <span class="control-label">{t('Stop autoplay on full game win')}</span>
@@ -235,6 +240,10 @@
         <div class="stop-row">
           <span class="control-label">{t('Skip win animations on autoplay')}</span>
           <button type="button" class="switch" class:on={stops.skipWinOnAuto} role="switch" aria-checked={stops.skipWinOnAuto} aria-label={t('Skip big win animations during autoplay')} onclick={() => (stops.skipWinOnAuto = !stops.skipWinOnAuto)}><span class="switch-knob"></span></button>
+        </div>
+        <div class="stop-row">
+          <span class="control-label">{t('Peel the last card myself')}</span>
+          <button type="button" class="switch" class:on={peel.myself} role="switch" aria-checked={peel.myself} aria-label={t('Peel the last card myself')} onclick={() => setPeelMyself(!peel.myself)}><span class="switch-knob"></span></button>
         </div>
       </div>
       <!-- One reason per failure, the same rule the spin button follows.

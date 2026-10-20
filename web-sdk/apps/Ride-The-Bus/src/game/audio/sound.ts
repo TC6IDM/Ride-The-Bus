@@ -22,7 +22,7 @@
 
 import { busVolume, isBusMuted, isBusSilent, isMuted, setBusMuted, setBusVolume, setMuted, toggleBusMuted, toggleMuted } from './audioMixer.ts';
 import { rand, shuffler } from './audioVariation.ts';
-import { noise, swell, thud, tone } from './audioVoices.ts';
+import { follower, noise, swell, thud, tone } from './audioVoices.ts';
 
 export type { AudioBusName } from './audioMixer.ts';
 
@@ -541,6 +541,73 @@ export const sound = {
 			release({ seconds: 0.18, cents: -1200 });
 			strike(shape.strike);
 			haptic(shape.buzz);
+		};
+	},
+
+	/**
+	 * The last card's hum when the PLAYER peels it (squeeze.svelte.ts, "Peel the
+	 * last card myself") - the crowd of playLastCardHold, the same voices, vowel,
+	 * tuning and strike, but driven by the hand instead of a clock (the owner,
+	 * 2026-10-20, "Follows your hand"):
+	 *
+	 *   - NOTHING plays until the corner first lifts. Not a quiet bed waiting for
+	 *     the hand: no voice exists before the peel begins.
+	 *   - Its level and brightness follow how far the corner is lifted
+	 *     (follower(): a quarter at the first lift, full at the line).
+	 *   - Put back down (follow(0)), it STOPS - a short fade, the voices gone -
+	 *     and a later peel starts a fresh one, climbing from the bottom again.
+	 *   - release() is the turn: the dive and the strike, as on the clock. A
+	 *     card turned without ever being peeled (the deal button, Space, or the
+	 *     give-up) still gets its strike.
+	 *
+	 * `climb` is the crowd's own climb from each first lift, the hold's.
+	 */
+	peelHum(tier: WinTierSound = 'max', stage = 3, climb = 1.65) {
+		const shape = HOLD_SHAPE[tier];
+		const top = stageWinRoot(stage) / 4;
+		let live: { level: NonNullable<ReturnType<typeof follower>>; release: ReturnType<typeof swell> } | null = null;
+		const begin = () => {
+			const level = follower('sfx');
+			if (!level) return null;
+			const release = swell({
+				from: top / 2,
+				to: top,
+				climb,
+				voices: shape.voices,
+				type: 'sawtooth',
+				gain: shape.gain,
+				floor: 0.1,
+				formants: OH,
+				body: 0.22,
+				breath: shape.breath,
+				vibrato: { rate: [rand(4.4, 4.8), rand(6, 6.6)], depth: [6, 20] },
+				// A hand may hold the corner up as long as it likes.
+				ceiling: 120,
+				into: level.input,
+			});
+			return { level, release };
+		};
+		const end = (fade: { seconds: number; cents?: number }) => {
+			if (!live) return;
+			live.release(fade);
+			live.level.close(fade.seconds + 0.3);
+			live = null;
+		};
+		return {
+			/** How far the corner is lifted, 0 (flat) to 1 (the line it turns at). */
+			follow(share: number) {
+				if (!(share > 0.001)) {
+					end({ seconds: 0.12 });
+					return;
+				}
+				if (!live) live = begin();
+				live?.level.set(share);
+			},
+			release() {
+				end({ seconds: 0.18, cents: -1200 });
+				strike(shape.strike);
+				haptic(shape.buzz);
+			},
 		};
 	},
 

@@ -369,4 +369,10 @@ export default {
 		'Lance o dado para palpites aleatórios',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'O dado ao lado dos palpites escolhe os quatro ao acaso. Nada é jogado até você distribuir.',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': 'Levantar eu mesmo a última carta',
+	'Drag any corner to peel': 'Arraste um canto para levantar',
+	'or press space bar to skip': 'ou pressione a barra de espaço para pular',
+	'Wins': 'Ganha',
+	'Wins up to': 'Ganha até',
 };

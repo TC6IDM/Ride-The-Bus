@@ -368,4 +368,10 @@ export default {
 		'यादृच्छिक अनुमानों के लिए पासा फेंकें',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'अनुमानों के पास रखा पासा चारों को यादृच्छिक रूप से चुनता है। जब तक आप बाँटते नहीं, कुछ भी खेला नहीं जाता।',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': 'आख़िरी कार्ड ख़ुद खोलें',
+	'Drag any corner to peel': 'खोलने के लिए कोई भी कोना खींचें',
+	'or press space bar to skip': 'या छोड़ने के लिए स्पेस बार दबाएँ',
+	'Wins': 'जीत',
+	'Wins up to': 'अधिकतम जीत',
 };

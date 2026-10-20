@@ -369,4 +369,10 @@ export default {
 		'Heitä noppaa satunnaisiin arvauksiin',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'Arvausten vieressä oleva noppa valitsee kaikki neljä satunnaisesti. Mitään ei pelata ennen kuin jaat.',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': 'Käännä viimeinen kortti itse',
+	'Drag any corner to peel': 'Vedä mistä tahansa kulmasta',
+	'or press space bar to skip': 'tai ohita painamalla välilyöntiä',
+	'Wins': 'Voittaa',
+	'Wins up to': 'Voittaa jopa',
 };

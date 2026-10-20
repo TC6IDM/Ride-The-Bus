@@ -1,0 +1,197 @@
+/* ---- The squeeze (the owner's pick CL3, 2026-10-20) ------------------------
+   The held last card out in front of the board, a corner peeled up to show
+   the real face, then turned and taken home (game/round/squeeze.svelte.ts;
+   the fold is game/ui/cardFold.ts). It is drawn with the slots' own
+   .card-inner / .card-back / .card-front, so it is the same card: only where
+   it is and how it moves live here.
+
+   Stacking is the board's, as the tunnel's is (cards.css): over the tunnel
+   (3) and the lit slot (4), under the control bar, which stays lit. */
+
+/* The slot's own card is hidden while its squeeze is out, and turns face up
+   at once when the squeeze comes home onto it - it has already been turned
+   in front, and turning it again would be a second reveal. */
+.card-slot.is-squeezed .card-block {
+  visibility: hidden;
+}
+
+.card-slot.instant-turn .card-inner {
+  transition: none;
+}
+
+/* The readout lies under the card in front; the sign below says the same. */
+.running-win.is-covered {
+  opacity: 0;
+  transition: opacity 200ms var(--ease-out);
+}
+
+.squeeze {
+  position: fixed;
+  z-index: 6;
+  perspective: calc(var(--card-w) * 6);
+  /* A finger dragging a corner must not scroll the page. */
+  touch-action: none;
+  /* Home: back onto its slot. */
+  transition: transform var(--sq-home, 380ms) var(--ease-in-out);
+}
+
+/* Out: to the front, on the decelerating curve of anything arriving. */
+.squeeze.out {
+  transform: translate(var(--sq-dx), var(--sq-dy)) scale(var(--sq-k));
+  transition: transform 420ms var(--ease-out);
+}
+
+.squeeze .card-inner {
+  position: absolute;
+  inset: 0;
+}
+
+/* In front, the card casts the table's two-part shadow, longer: it is held
+   above the felt. */
+.squeeze.out .card-back {
+  box-shadow:
+    inset 0 0 0 calc(var(--ui) * 0.32) var(--brand-paper),
+    inset 0 0 0 calc(var(--ui) * 0.45) var(--brand-chrome),
+    inset 0 calc(var(--ui) * 0.1) calc(var(--ui) * 0.3) rgba(var(--ink-rgb), 0.16),
+    0 calc(var(--ui) * 0.5) calc(var(--ui) * 1) rgba(var(--shadow-rgb), 0.45),
+    0 calc(var(--ui) * 1.6) calc(var(--ui) * 2.6) rgba(var(--shadow-rgb), 0.45);
+}
+
+.squeeze.grabbable {
+  cursor: grab;
+}
+
+.squeeze.grabbable:active {
+  cursor: grabbing;
+}
+
+/* The flap: the face, folded over (cardFold.ts gives its matrix and its
+   clip). Its shadow is on the wrapper, because a clip cuts its own element's
+   shadow. The paper and edge are the face's own. */
+.squeeze-flapwrap {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  filter: drop-shadow(calc(var(--ui) * -0.15) calc(var(--ui) * -0.25) calc(var(--ui) * 0.3) rgba(var(--shadow-rgb), 0.45));
+}
+
+.squeeze-flap {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+  border-radius: var(--card-radius);
+  background: var(--card-paper);
+  box-shadow: inset 0 0 0 calc(var(--ui) * 0.16) var(--card-edge);
+}
+
+/* The room around it goes dark - the hold's tunnel, on the same rule: only
+   when the card could land a Huge win or bigger (round.holdTunnel). */
+.squeeze-dark {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: rgba(var(--shadow-rgb), 0.78);
+  opacity: 0;
+  transition: opacity 200ms var(--ease-out);
+}
+
+.squeeze-dark.on {
+  opacity: 1;
+  transition: opacity 420ms var(--ease-out);
+}
+
+/* What it needs and what it wins: the panel material, one figure. */
+.squeeze-sign {
+  position: fixed;
+  z-index: 7;
+  display: flex;
+  align-items: baseline;
+  gap: calc(var(--ui) * 0.7);
+  padding: calc(var(--ui) * 0.55) calc(var(--ui) * 1.1) calc(var(--ui) * 0.45);
+  border: 1px solid var(--panel-edge);
+  border-radius: calc(var(--ui) * 0.75);
+  background: var(--panel-face), var(--panel);
+  box-shadow: var(--panel-elevation-low);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, calc(var(--ui) * 0.5));
+  transition:
+    opacity 200ms var(--ease-out),
+    transform 200ms var(--ease-out);
+}
+
+.squeeze-sign.on {
+  opacity: 1;
+  transform: translate(-50%, 0);
+  transition-delay: 260ms;
+}
+
+.squeeze-need {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--ui) * 0.35);
+  font-size: max(calc(var(--ui) * 1.02), var(--type-floor));
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.squeeze-suit {
+  display: inline-flex;
+  font-size: calc(var(--ui) * 1.4);
+  color: var(--ink-strong);
+}
+
+.squeeze-suit.red {
+  color: var(--suit-red);
+}
+
+.squeeze-rank {
+  font-family: var(--font-display);
+  font-size: calc(var(--ui) * 1.4);
+  letter-spacing: 0;
+  color: var(--ink-strong);
+}
+
+.squeeze-wins {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: max(calc(var(--ui) * 2), var(--type-floor-figure));
+  letter-spacing: 0.01em;
+  color: var(--ink-cream);
+  font-variant-numeric: tabular-nums;
+}
+
+.squeeze-hint {
+  position: fixed;
+  z-index: 7;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--ui) * 0.25);
+  transform: translateX(-50%);
+  font-size: max(calc(var(--ui) * 1.1), var(--type-floor));
+  font-weight: 700;
+  color: var(--ink-strong);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* The second line: Space, said smaller and quieter under the drag. */
+.squeeze-hint-key {
+  font-size: max(calc(var(--ui) * 0.95), var(--type-floor));
+  font-weight: 600;
+  color: var(--ink-dim);
+}
+
+/* No spacebar on a touch-only screen, so no line about one. */
+@media (any-hover: none) {
+  .squeeze-hint-key {
+    display: none;
+  }
+}

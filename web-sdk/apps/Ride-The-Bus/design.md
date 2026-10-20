@@ -270,6 +270,21 @@ top for a breath; then the card slams down as it turns, on a lightning strike
 sized to the stake, and the room opens again. Card, voices and tunnel run on
 one clock (`holdClimbMs`). The control
 bar is outside the tunnel on purpose: the balance and the skip stay lit.
+**The held card is squeezed** (the owner's pick CL3, 2026-10-20): it leaves
+its slot for the front of the board (420ms), and only once it is there does
+its bottom-left corner peel up along the diagonal on the same clock - the
+fold shows the real face underneath, so the corner index comes into view -
+then it turns over where it is, holds its face a beat and goes home to its
+slot, which is face up already and does not turn again. A sign under it says
+what the card needs and what it wins, in money. "Peel the last card myself",
+in the autoplay panel, lets the player drag any corner instead; past a third
+of the card it turns. Space does the same from the keyboard: a tap plays the
+automatic peel, a hold peels while held. Nothing turns it on a timer.
+The card's chime lands on the turn, with the strike. A peel by hand is
+scored by the hand: no hum until the corner first lifts, as loud as it is
+lifted, gone when it is put back down.
+Autoplay and replays always peel for the player, and reduced motion keeps the
+plain rise.
 A bust **knocks** once
 as its cross lands, the cards it never reached step back, and the guess that
 failed takes a ring - after the card has turned, never during. **A result of

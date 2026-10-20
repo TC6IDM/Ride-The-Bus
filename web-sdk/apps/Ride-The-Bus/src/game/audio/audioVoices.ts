@@ -334,6 +334,12 @@ type SwellOptions = {
 	/** Maximum random detune of the whole crowd, in cents. */
 	jitter?: number;
 	bus?: AudioBusName;
+	/** Seconds it may go on past the top unreleased (SWELL_CEILING by default). */
+	ceiling?: number;
+	/** Play into this node instead of the bus - a follower() the player's hand
+	 *  drives. Its room send is then the follower's, so the reverb follows the
+	 *  hand too. */
+	into?: AudioNode;
 };
 
 /** Seconds a swell may go on sounding past the top when nothing releases it. */
@@ -423,6 +429,8 @@ export function swell({
 	space = 0.3,
 	jitter = 8,
 	bus = 'sfx',
+	ceiling = SWELL_CEILING,
+	into,
 }: SwellOptions): SwellRelease {
 	const voice = openVoice(bus);
 	if (!voice) return () => {};
@@ -513,8 +521,8 @@ export function swell({
 	}
 
 	env.connect(gate);
-	gate.connect(out);
-	if (space > 0 && room) {
+	gate.connect(into ?? out);
+	if (!into && space > 0 && room) {
 		const tap = audio.createGain();
 		tap.gain.value = space;
 		gate.connect(tap);
@@ -523,7 +531,7 @@ export function swell({
 
 	for (const node of held) {
 		node.start(start);
-		node.stop(top + SWELL_CEILING);
+		node.stop(top + ceiling);
 	}
 
 	let released = false;
@@ -548,5 +556,53 @@ export function swell({
 		// Five time constants in what is left: under 1% remains when the voices stop.
 		gate.gain.setTargetAtTime(0, now + hold, (seconds - hold) / 5);
 		for (const node of held) node.stop(end + 0.02);
+	};
+}
+
+/**
+ * A level the player's hand drives: a gain and a lowpass into the bus, both
+ * following set(share) - 0 is nothing, 1 is full and open. For the hum under a
+ * card the player peels by hand (sound.ts peelHum): it rises as far as they
+ * peel. Its own room send, after the level, so the reverb never sounds louder
+ * than the dry voice it belongs to.
+ */
+export function follower(bus: AudioBusName = 'sfx', space = 0.5) {
+	const voice = openVoice(bus);
+	if (!voice) return null;
+	const { audio, out, room } = voice;
+	const level = audio.createGain();
+	level.gain.value = 0;
+	const tone = audio.createBiquadFilter();
+	tone.type = 'lowpass';
+	tone.frequency.value = 600;
+	tone.Q.value = 0.5;
+	level.connect(tone);
+	tone.connect(out);
+	if (space > 0 && room) {
+		const tap = audio.createGain();
+		tap.gain.value = space;
+		tone.connect(tap);
+		tap.connect(room);
+	}
+	return {
+		input: level as AudioNode,
+		/** Follow the hand: a quarter of the way in at the first lift, all of it at the line. */
+		set(share: number) {
+			const s = Math.min(1, Math.max(0, share));
+			const now = audio.currentTime;
+			level.gain.setTargetAtTime(0.25 + 0.75 * s, now, 0.05);
+			tone.frequency.setTargetAtTime(600 + 9000 * s * s, now, 0.05);
+		},
+		/** Taken out of the graph once whatever is playing into it has stopped. */
+		close(afterSeconds = 0.4) {
+			setTimeout(() => {
+				try {
+					level.disconnect();
+					tone.disconnect();
+				} catch {
+					// Already gone with its context; nothing to take out.
+				}
+			}, afterSeconds * 1000);
+		},
 	};
 }

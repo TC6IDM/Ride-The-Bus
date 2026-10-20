@@ -370,4 +370,10 @@ export default {
 		'Gieo xúc xắc để chọn dự đoán ngẫu nhiên',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'Xúc xắc cạnh các dự đoán chọn ngẫu nhiên cả bốn. Không có gì được chơi cho đến khi bạn chia bài.',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': 'Tự lật lá bài cuối',
+	'Drag any corner to peel': 'Kéo một góc bất kỳ để lật',
+	'or press space bar to skip': 'hoặc nhấn phím cách để bỏ qua',
+	'Wins': 'Thắng',
+	'Wins up to': 'Thắng tới',
 };

@@ -368,4 +368,10 @@ export default {
 		'サイコロを振って予想をランダムに選ぶ',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'予想の横のサイコロは、4つすべてをランダムに選びます。配るまでは何もプレイされません。',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': '最後のカードを自分でめくる',
+	'Drag any corner to peel': '角をドラッグしてめくる',
+	'or press space bar to skip': 'またはスペースキーでスキップ',
+	'Wins': '的中で',
+	'Wins up to': '的中で最大',
 };

@@ -15,6 +15,7 @@
      win. -->
 <script lang="ts">
   import BoltMeter from '../icons/BoltMeter.svelte';
+  import { squeezeSpaceDown, squeezeSpaceUp } from '../../game/round/squeeze.svelte';
   import ChoiceIcon from '../icons/ChoiceIcon.svelte';
   import MarkIcon from '../icons/MarkIcon.svelte';
   import SoundIcon from '../icons/SoundIcon.svelte';
@@ -372,6 +373,11 @@ function onKeyDown(event: KeyboardEvent) {
   if (event.repeat || spaceDown) return;
   spaceDown = true;
 
+  // A last card waiting for the player's hand (squeeze.svelte.ts): Space
+  // peels it - a tap plays the automatic peel through, a hold peels while
+  // held - instead of slamming the reveal (the owner, 2026-10-20).
+  if (squeezeSpaceDown()) return;
+
   // A live auto run treats Space like the Stop button.
   if (auto.running) { sound.playPress('primary'); onSpin(); return; }
   if (spinDisabled()) return;
@@ -437,6 +443,8 @@ function onKeyUp(event: KeyboardEvent) {
 
 function releaseSpace() {
   spaceDown = false;
+  // A Space peel let go (or focus lost mid-hold): a tap runs on, a hold falls back.
+  squeezeSpaceUp();
   if (spaceHoldTimer !== null) {
     clearTimeout(spaceHoldTimer);
     spaceHoldTimer = null;

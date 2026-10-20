@@ -371,4 +371,10 @@ export default {
 		'Würfeln für zufällige Tipps',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'Der Würfel neben den Tipps wählt alle vier zufällig. Gespielt wird erst, wenn du austeilst.',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': 'Letzte Karte selbst aufbiegen',
+	'Drag any corner to peel': 'Zieh an einer Ecke, um sie aufzubiegen',
+	'or press space bar to skip': 'oder Leertaste drücken zum Überspringen',
+	'Wins': 'Gewinnt',
+	'Wins up to': 'Gewinnt bis zu',
 };

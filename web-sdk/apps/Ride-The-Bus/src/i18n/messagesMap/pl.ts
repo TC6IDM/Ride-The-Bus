@@ -368,4 +368,10 @@ export default {
 		'Rzuć kością, by wylosować typy',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'Kość obok typów losuje wszystkie cztery. Nic nie jest grane, dopóki nie rozdasz.',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': 'Odsłaniaj ostatnią kartę samodzielnie',
+	'Drag any corner to peel': 'Przeciągnij dowolny róg, aby odsłonić',
+	'or press space bar to skip': 'lub naciśnij spację, aby pominąć',
+	'Wins': 'Wygrywa',
+	'Wins up to': 'Wygrywa do',
 };

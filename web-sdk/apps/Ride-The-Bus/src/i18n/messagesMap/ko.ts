@@ -368,4 +368,10 @@ export default {
 		'주사위를 굴려 예측을 무작위로 고르기',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'예측 옆의 주사위는 네 가지를 모두 무작위로 고릅니다. 딜하기 전에는 아무것도 플레이되지 않습니다.',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': '마지막 카드를 직접 젖히기',
+	'Drag any corner to peel': '모서리를 끌어 젖히세요',
+	'or press space bar to skip': '또는 스페이스 바를 눌러 건너뛰기',
+	'Wins': '적중 시',
+	'Wins up to': '적중 시 최대',
 };

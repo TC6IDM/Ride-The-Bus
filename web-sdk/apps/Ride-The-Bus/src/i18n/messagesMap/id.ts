@@ -370,4 +370,10 @@ export default {
 		'Lempar dadu untuk tebakan acak',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'Dadu di samping tebakan memilih keempatnya secara acak. Tidak ada yang dimainkan sampai Anda membagikan kartu.',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': 'Buka sendiri kartu terakhir',
+	'Drag any corner to peel': 'Seret sudut mana pun untuk membuka',
+	'or press space bar to skip': 'atau tekan spasi untuk melewati',
+	'Wins': 'Menang',
+	'Wins up to': 'Menang hingga',
 };

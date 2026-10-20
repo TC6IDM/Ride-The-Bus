@@ -369,4 +369,10 @@ export default {
 		'ارمِ النرد لتخمينات عشوائية',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'النرد بجانب التخمينات يختار الأربعة عشوائيًا. لا يُلعب شيء حتى توزّع.',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': 'اكشف الورقة الأخيرة بنفسي',
+	'Drag any corner to peel': 'اسحب أي زاوية لكشفها',
+	'or press space bar to skip': 'أو اضغط على مفتاح المسافة للتخطي',
+	'Wins': 'يربح',
+	'Wins up to': 'يربح حتى',
 };

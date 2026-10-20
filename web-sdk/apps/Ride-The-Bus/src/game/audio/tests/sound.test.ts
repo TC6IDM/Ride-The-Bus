@@ -700,6 +700,43 @@ describe('the held last card', () => {
 		assert.deepEqual([created.oscillators.length, created.bufferSources, created.stops], after, 'a second release struck again');
 	});
 
+	// "Follows your hand" (the owner, 2026-10-20): a card the player peels has
+	// no hum until the corner lifts - not a quiet one, none - and putting it
+	// back down stops it; the next peel starts a fresh one.
+	test('the hand-driven hum: silent until the first lift, stopped when put down, fresh on the next peel', () => {
+		resetCreated();
+		const hum = sound.peelHum('max', 3, 1.2);
+		hum.follow(0);
+		assert.equal(created.oscillators.length, 0, 'the hum sounded before the corner lifted');
+		assert.equal(created.bufferSources, 0, 'the breath started before the corner lifted');
+
+		hum.follow(0.3);
+		const voices = created.oscillators.length;
+		assert.ok(voices > 0, 'lifting the corner did not start the hum');
+		hum.follow(0.8);
+		assert.equal(created.oscillators.length, voices, 'peeling further started a second hum');
+
+		const stops = created.stops;
+		const sourceStops = created.sourceStops;
+		hum.follow(0);
+		assert.equal(created.stops - stops, voices, 'putting the card down did not stop every voice');
+		assert.equal(created.sourceStops - sourceStops, 1, 'putting the card down did not stop the breath');
+
+		hum.follow(0.1);
+		assert.equal(created.oscillators.length, voices * 2, 'peeling again did not start a fresh hum');
+
+		const sources = created.bufferSources;
+		hum.release();
+		assert.ok(created.bufferSources > sources, 'the turn did not strike');
+	});
+
+	test('a hand-peeled card turned without a peel still gets its strike, and no hum', () => {
+		resetCreated();
+		sound.peelHum('big', 3).release();
+		assert.equal(created.oscillators.length, 0, 'a crack-only strike built a voice');
+		assert.ok(created.bufferSources > 0, 'the turn did not strike');
+	});
+
 	test('a climb too short to sing plays nothing - not even the strike', () => {
 		// Turbo shortens the hold; under HOLD_MIN_CLIMB the voices would be a blip.
 		const release = sound.playLastCardHold(0.15);
@@ -972,18 +1009,47 @@ describe('the reveal loop is wired to the right cues', () => {
 		// score, and the cue plays nothing for one. What it needs instead is the
 		// right END. Released after the flip, it drones over the result; released
 		// before the waits have run, it is cut off before it builds.
-		const call = /(\w+)\s*=\s*sound\.playLastCardHold\(/.exec(loop);
-		assert.ok(call, 'the held last card no longer plays its hum');
-		assert.ok(call.index > loop.indexOf('holdIndex = i'), 'the hum starts outside the hold');
+		// TWO paths since the squeeze (2026-10-20): a squeezed card's hum scores
+		// the peel and is released as the card turns in front (inside
+		// squeezeTurnAndHome's onTurn); a card that only rises (reduced motion)
+		// keeps the original order. Each is held to the same two rules.
+		const calls = [...loop.matchAll(/(\w+)\s*=\s*sound\.playLastCardHold\(/g)];
+		assert.equal(calls.length, 2, 'the held last card no longer plays its hum on both paths');
+		for (const call of calls) {
+			assert.ok(call.index! > loop.indexOf('holdIndex = i'), 'the hum starts outside the hold');
+		}
 
-		const release = loop.indexOf(`${call[1]}()`, call.index);
-		assert.ok(release > call.index, 'the hum is never released');
+		const [squeezed, plain] = calls as [RegExpExecArray, RegExpExecArray];
+		// The squeezed path runs from its hum to the plain path's: nothing in it
+		// may release the hum, and both of its waits must be in it.
+		const squeezedPath = loop.slice(squeezed.index, plain.index);
+		assert.ok(!squeezedPath.includes(`${squeezed[1]}()`), 'the squeezed hum is released before its wait has run');
+		assert.ok(squeezedPath.includes('squeezePeel('), 'the squeezed hum no longer scores the peel');
+		// A card the player peels has no clocked hum at all: the hand's own
+		// (sound.peelHum) is set up before the wait, follows the fold through
+		// it, and is the release the turn calls.
+		const manual = loop.indexOf('sound.peelHum(');
+		const wait = loop.indexOf('await squeezeWaitForPlayer(', manual);
+		assert.ok(manual > 0 && wait > manual, 'the manual hum is not set up before the player peels');
+		assert.ok(loop.slice(manual, wait).includes('squeezeListen('), 'the manual hum does not follow the hand');
+		assert.ok(loop.slice(manual, wait).includes('releaseHold = () => hum.release()'), 'the turn does not release the manual hum');
+		// ...and it is released inside the turn, before the card is set face up.
+		const turnAndHome = loop.indexOf('squeezeTurnAndHome(', squeezed.index);
+		const onTurn = loop.slice(turnAndHome, loop.indexOf('});', turnAndHome));
+		assert.ok(turnAndHome > 0 && onTurn.includes(`${squeezed[1]}()`), 'the squeezed hum is not released as the card turns');
 		assert.ok(
-			loop.indexOf('await revealWait(650, 0)', call.index) < release,
+			turnAndHome < loop.indexOf('revealedCards[i] = event.card', turnAndHome),
+			'the squeezed hum is released after the card has turned, so it drones over the result',
+		);
+
+		const plainRelease = loop.indexOf(`${plain[1]}()`, loop.indexOf('await revealWait(650, 0)', plain.index));
+		assert.ok(plainRelease > plain.index, 'the hum is never released');
+		assert.ok(
+			loop.indexOf('await revealWait(650, 0)', plain.index) < plainRelease,
 			'the hum is released before the wait it scores has run',
 		);
 		assert.ok(
-			release < loop.indexOf('revealedCards[i] = event.card'),
+			plainRelease < loop.indexOf('revealedCards[i] = event.card', plainRelease),
 			'the hum is released after the card has turned, so it drones over the result',
 		);
 	});

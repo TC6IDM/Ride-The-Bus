@@ -363,4 +363,10 @@ export default {
 		'掷骰子随机选择预测',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'预测旁边的骰子会随机选择全部四项。在你发牌之前，不会进行任何游戏。',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': '自己翻开最后一张牌',
+	'Drag any corner to peel': '拖动任意一角来翻开',
+	'or press space bar to skip': '或按空格键跳过',
+	'Wins': '赢得',
+	'Wins up to': '最高赢得',
 };

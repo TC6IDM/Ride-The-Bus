@@ -36,6 +36,8 @@
   import { chipAt, clickIn, placeChip, type ChipColumn, type ChipSpot } from '../../game/ui/chipSpot';
   import { FREE_CHOICE, isCleanSweep, stageCount } from '../../game/math/modes';
   import { round } from '../../game/round/roundState.svelte';
+  import { peelable, squeeze } from '../../game/round/squeeze.svelte';
+  import { jurisdiction } from '../../game/jurisdiction/jurisdiction.svelte';
   import type { Card } from '../../game/platform/typesBookEvent';
   import { t, type MessageKey } from '../../i18n/i18nDerived';
   import { suitName } from '../../game/ui/suitPaths';
@@ -570,6 +572,38 @@
    */
   const slotEls: HTMLElement[] = $state([]);
   let tunnelAt = $state<{ x: number; y: number } | null>(null);
+
+  /**
+   * The squeeze (game/round/squeeze.svelte.ts): where the held card lies, and
+   * where it goes in front - centred over the board, a little under the card
+   * row, half as big again (a third on a portrait phone), with the sign that
+   * says what it needs and wins under it. Measured once, with the card at
+   * rest, as the squeeze begins; the controller is told the card's size for
+   * the fold.
+   */
+  type SqueezeBox = { x: number; y: number; w: number; h: number; dx: number; dy: number; k: number; cx: number; signY: number };
+  let squeezeBox = $state<SqueezeBox | null>(null);
+  $effect(() => {
+    const index = squeeze.index;
+    if (index === null) return;
+    const block = slotEls[index]?.querySelector('.card-block');
+    const rowEl = document.querySelector('.card-row');
+    const guesses = document.querySelector('.choice-row');
+    if (!block || !rowEl) return;
+    const b = block.getBoundingClientRect();
+    const r = rowEl.getBoundingClientRect();
+    const below = guesses ? guesses.getBoundingClientRect().top : b.bottom + b.height * 0.8;
+    const k = window.innerHeight > window.innerWidth ? 1.32 : 1.5;
+    const cx = r.left + r.width / 2;
+    const cy = b.bottom + (below - b.bottom) * 0.12;
+    squeeze.w = b.width;
+    squeeze.h = b.height;
+    squeezeBox = {
+      x: b.left, y: b.top, w: b.width, h: b.height,
+      dx: cx - (b.left + b.width / 2), dy: cy - (b.top + b.height / 2), k,
+      cx, signY: cy + (b.height * k) / 2 + b.height * 0.07,
+    };
+  });
   $effect(() => {
     const index = round.holdIndex;
     if (index === null) return;
@@ -639,7 +673,9 @@
       <div
         class="card-slot"
         bind:this={slotEls[index]}
-        class:is-held={round.holdIndex === index}
+        class:is-held={round.holdIndex === index && squeeze.index !== index}
+        class:is-squeezed={squeeze.index === index}
+        class:instant-turn={squeeze.landed === index && card !== null}
         class:is-lit={round.lastCardHeld && index === slots - 1}
         style:--hold-climb={round.holdIndex === index ? `${round.holdClimbMs}ms` : undefined}
         class:is-dead={isDead(index)}
@@ -747,6 +783,7 @@
     class:is-partial={readout.state === 'won' && !readout.lastWinNet}
     class:is-loss={readout.state === 'lost'}
     class:is-at-stake={readout.state === 'playing' && keepsNothing}
+    class:is-covered={squeeze.out}
   >
     <!-- "At stake" on a family that keeps nothing on a miss: Three of a Kind's
          $916.60 after card 2 read as money won, in win green, when a miss on
@@ -886,15 +923,74 @@
      stay lit. -->
 <div
   class="tunnel"
-  class:is-closing={round.holdIndex !== null && round.holdTunnel}
+  class:is-closing={round.holdIndex !== null && round.holdTunnel && squeeze.index === null}
   style:--tv-x={tunnelAt ? `${tunnelAt.x}px` : undefined}
   style:--tv-y={tunnelAt ? `${tunnelAt.y}px` : undefined}
   style:--hold-climb={`${round.holdClimbMs}ms`}
   aria-hidden="true"
 ></div>
 
+<!-- The squeeze (squeeze.svelte.ts, squeeze.css): the held card out in front,
+     a corner lifted to show the real face underneath (cardFold.ts), then
+     turned and taken home. Drawn with the slots' own card classes, so it is
+     the same card. Decorative to a screen reader: the slot's card, and the
+     round's announcement, say what it is once it lands. -->
+{#if squeeze.index !== null && squeezeBox}
+  <div class="squeeze-dark" class:on={squeeze.dark && squeeze.out} aria-hidden="true"></div>
+  <div
+    class="squeeze"
+    class:out={squeeze.out}
+    class:grabbable={squeeze.grabbable}
+    style:left={`${squeezeBox.x}px`}
+    style:top={`${squeezeBox.y}px`}
+    style:width={`${squeezeBox.w}px`}
+    style:height={`${squeezeBox.h}px`}
+    style:--sq-dx={`${squeezeBox.dx}px`}
+    style:--sq-dy={`${squeezeBox.dy}px`}
+    style:--sq-k={squeezeBox.k}
+    style:--flip-dur={`${squeeze.turnMs}ms`}
+    style:--sq-home={`${squeeze.homeMs}ms`}
+    use:peelable
+    aria-hidden="true"
+  >
+    <div class="card-inner" class:flipped={squeeze.turned}>
+      <div class="card-back" style:clip-path={squeeze.fold.back ?? undefined}></div>
+      <div class="card-front">
+        {#if squeeze.card}<CardFace rank={squeeze.card.rank} suit={squeeze.card.suit} />{/if}
+      </div>
+    </div>
+    {#if squeeze.fold.flap && squeeze.card}
+      <div class="squeeze-flapwrap">
+        <div class="squeeze-flap" style:transform={squeeze.fold.flap.transform} style:clip-path={squeeze.fold.flap.clip}>
+          <CardFace rank={squeeze.card.rank} suit={squeeze.card.suit} />
+        </div>
+      </div>
+    {/if}
+  </div>
+  <!-- What it needs, and what it wins if it does: from the stake, in money,
+       the readout's unit. "Wins", never "pays" - Stake's social table bans
+       pay/pays, and win/wins is its replacement, so one word serves both. -->
+  <div class="squeeze-sign" class:on={squeeze.out && !squeeze.turned} style:left={`${squeezeBox.cx}px`} style:top={`${squeezeBox.signY}px`} aria-hidden="true">
+    <span class="squeeze-need">
+      {#if squeeze.needIsSuit}<span class="squeeze-suit" class:red={squeeze.need === 'heart' || squeeze.need === 'diamond'}><SuitIcon suit={squeeze.need} /></span>{:else}<b class="squeeze-rank">{squeeze.need}</b>{/if}
+      {squeeze.upTo ? t('Wins up to') : t('Wins')}
+    </span>
+    <b class="squeeze-wins">{numberToCurrencyString(squeeze.wins)}</b>
+  </div>
+  {#if squeeze.grabbable}
+    <!-- Space peels it too (squeeze.svelte.ts) - said only where there is a
+         spacebar the game may use: not on a touch-only screen, and not where
+         the operator has barred the shortcut. -->
+    <p class="squeeze-hint" style:left={`${squeezeBox.cx}px`} style:top={`${squeezeBox.signY + squeezeBox.h * 0.32}px`}>
+      <span>{t('Drag any corner to peel')}</span>
+      {#if !jurisdiction.spacebarDisabled()}<span class="squeeze-hint-key">{t('or press space bar to skip')}</span>{/if}
+    </p>
+  {/if}
+{/if}
+
 <style>
   @import '../../styles/board/cards.css';
+  @import '../../styles/board/squeeze.css';
   @import '../../styles/board/choices.css';
   @import '../../styles/board/choices-board.css';
   /* Board only: the start screen never disables a choice. */

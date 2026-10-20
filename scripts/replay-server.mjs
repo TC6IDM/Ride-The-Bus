@@ -458,6 +458,7 @@ function landingPage() {
   <span class=lab>Inside / Outside</span><div class=row id=io></div>
   <span class=lab>Suit</span><div class=row id=suit></div>
   <span class=lab>Round</span><div class=row id=ev></div>
+  <span class=lab>Last card</span><div class=row id=peel></div>
   <span class=lab>Currency</span>
   <div class=row>
     <select id=cur title="currency code"></select>
@@ -523,7 +524,13 @@ const GAME_PORT = ${GAME_PORT};
 const RGS = 'localhost:${PORT}';
 
 const state = { fam:'hs_', color:'red', hl:'equal', io:'equal', suit:'heart',
-                ev:'max', cur:'USD', lang:'en' };
+                ev:'max', cur:'USD', lang:'en', peel:'auto' };
+/* A squeezed last card peels itself in every replay - the game's rule, since a
+   replay cannot open the autoplay menu where "Peel the last card myself" lives.
+   'me' adds &dev_peel=me, which a DEV build of the game reads to let the
+   replay be peeled by hand (roundReveal.svelte.ts); a production build drops
+   that branch, so a real Stake replay is unaffected. */
+const PEEL = [['auto','Peels itself'],['me','I peel it']];
 
 const FAM  = [['','Classic','fam-base'],['sc_','Second Chance','fam-sc'],
               ['ls_','Last Stop','fam-ls'],
@@ -667,6 +674,7 @@ function render() {
   fill('hl', HL, 'hl');
   fill('io', IO, 'io');
   fill('suit', SUIT, 'suit');
+  fill('peel', PEEL, 'peel');
   fill('ev', EV, 'ev', (v) => {
     if (v === 'forgiven' && forgivenBlocked()) return 'sc only';
     if (ticketBlocked(v)) return 'ls only';
@@ -694,6 +702,7 @@ function render() {
     amount: String(Math.round(Number(document.getElementById('amt').value || 1) * 1e6)),
     lang: state.lang,
   });
+  if (state.peel === 'me') q.set('dev_peel', 'me');
   const url = 'http://localhost:' + gamePort() + '/?' + q;
   const a = document.getElementById('out');
   a.href = url;

@@ -368,4 +368,10 @@ export default {
 		'Бросить кубик для случайных прогнозов',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'Кубик рядом с прогнозами выбирает все четыре случайно. Ничего не разыгрывается, пока вы не сдадите карты.',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': 'Открывать последнюю карту самому',
+	'Drag any corner to peel': 'Потяните за любой угол',
+	'or press space bar to skip': 'или нажмите пробел, чтобы пропустить',
+	'Wins': 'Выигрыш',
+	'Wins up to': 'Выигрыш до',
 };

@@ -369,4 +369,10 @@ export default {
 		'Rastgele tahminler için zar atın',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'Tahminlerin yanındaki zar dördünü de rastgele seçer. Siz dağıtana kadar hiçbir şey oynanmaz.',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': 'Son kartı kendim açayım',
+	'Drag any corner to peel': 'Açmak için bir köşeyi sürükle',
+	'or press space bar to skip': 'veya atlamak için boşluk tuşuna bas',
+	'Wins': 'Kazanç',
+	'Wins up to': 'En fazla kazanç',
 };

@@ -452,4 +452,10 @@ export default {
 	// How to Play, Controls: the line for the table die. Each locale's own words for 'guesses' and 'deal'.
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'The die beside the guesses picks all four at random. Nothing is played until you deal.',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': 'Peel the last card myself',
+	'Drag any corner to peel': 'Drag any corner to peel',
+	'or press space bar to skip': 'or press space bar to skip',
+	'Wins': 'Wins',
+	'Wins up to': 'Wins up to',
 };

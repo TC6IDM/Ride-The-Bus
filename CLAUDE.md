@@ -658,6 +658,34 @@ reading before proposing it again.
   gain stage of its own, never the swell's envelope; `sound.test.ts` fails if
   the shape, the vowel, the tuning, the scaling or the strike drifts, or the
   release moves after the flip.
+- **The held card is SQUEEZED, not raised** (the owner's pick CL3, built
+  2026-10-20; `game/round/squeeze.svelte.ts`, the fold in `game/ui/cardFold.ts`,
+  `styles/board/squeeze.css`). It goes out in front of the board and NOTHING
+  peels until it has arrived; then the default (automatic) squeeze lifts the
+  **bottom-left** corner - whose underside is the face's index - on the hum's
+  climb, the fold showing the real face, never a drawn corner. It turns over
+  in front, holds, and goes home to a slot that is already face up
+  (`instant-turn`: no second reveal). **"Peel the last card myself"** is a
+  switch in the **autoplay panel** (the owner's call), stored on the device,
+  off by default: the player drags any corner, past `PEEL_DONE_AT` (a third)
+  it turns. **Space** peels too ("or press space bar to skip" under the hint,
+  hidden on touch-only screens and where the operator bars the spacebar): a
+  TAP plays the automatic peel through, a HOLD peels at its pace while held
+  and falls back if let go early. **Nothing turns it on a timer** - the round
+  waits for the player (the owner, 2026-10-20) - and the deal button still
+  slams it. **Autoplay and replays always
+  peel for the player** (a LOCAL replay can be peeled by hand: the replay
+  page's "Last card: I peel it" adds `?dev_peel=me`, read behind an
+  `import.meta.env.DEV` literal only), and reduced motion keeps the plain
+  rise. The win chime (or bust / forgiven cue) sounds ON THE TURN, with the
+  strike, not when the card is home. The hum is the crowd, unchanged, on the
+  hold's clock for the automatic squeeze; **for a manual peel it follows the
+  hand** (`sound.peelHum`, `follower()`): NO voice exists until the corner
+  first lifts, its level follows the lift, putting the card down STOPS it, and
+  the next peel starts a fresh one (the owner, 2026-10-20). The sign under it reads "wins", never "pays" (pay is
+  restricted in social mode; win is the replacement). `squeeze.test.ts` pins
+  the corner, the arrival, the defaults and the switch's home;
+  `sound.test.ts` holds both hold paths to the release order.
 - **The board never moves under the player.** The card row, the readout and
   the guess row hold their positions through picks, deals, holds and settles
   (0.0 px, measured every frame across a session at three sizes). The

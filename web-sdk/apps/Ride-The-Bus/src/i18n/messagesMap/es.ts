@@ -370,4 +370,10 @@ export default {
 		'Tira el dado para predicciones al azar',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'El dado junto a las predicciones elige las cuatro al azar. No se juega nada hasta que repartes.',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': 'Levantar yo la última carta',
+	'Drag any corner to peel': 'Arrastra una esquina para levantarla',
+	'or press space bar to skip': 'o pulsa la barra espaciadora para saltar',
+	'Wins': 'Gana',
+	'Wins up to': 'Gana hasta',
 };

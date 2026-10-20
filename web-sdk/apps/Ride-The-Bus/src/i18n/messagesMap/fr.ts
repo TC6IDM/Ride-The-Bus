@@ -371,4 +371,10 @@ export default {
 		'Lancer le dé pour des pronostics au hasard',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'Le dé à côté des pronostics choisit les quatre au hasard. Rien n’est joué tant que vous ne distribuez pas.',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': 'Soulever moi-même la dernière carte',
+	'Drag any corner to peel': 'Faites glisser un coin pour la soulever',
+	'or press space bar to skip': 'ou appuyez sur la barre d’espace pour passer',
+	'Wins': 'Gagne',
+	'Wins up to': 'Gagne jusqu’à',
 };
