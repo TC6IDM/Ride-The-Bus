@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>G1 Destination blinds</title>
+<link rel="stylesheet" href="kit/kit.css">
+<link rel="stylesheet" href="kit/rack.css">
+<style>
+  /* The head IS the MODE sign, at card size: recessed, dark, lettered in the
+     family's colour, the seven bolts under it. Lettered, not lit. */
+  .opt .top { margin: 10px 10px 0; padding: 12px 10px 9px; border-radius: 8px; background: #0b0907; display: flex; flex-direction: column; align-items: center; gap: 7px;
+    box-shadow: inset 0 3px 8px rgba(0,0,0,0.85), inset 0 -1px 0 rgba(255,240,220,0.07), 0 1px 0 rgba(255,240,220,0.1); }
+  .opt .name { font: 900 26px/1 var(--font-display); color: var(--fam); letter-spacing: 0.005em; text-align: center; white-space: nowrap; }
+  @media (max-width: 600px) {
+    .opt .top { flex-direction: row; justify-content: space-between; padding: 10px 12px; }
+    .opt .name { font-size: 24px; }
+  }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div></div>
+<script src="kit/kit.js"></script><script src="kit/modes.js"></script><script src="kit/rack.js"></script>
+<script>
+  document.getElementById('board').style.backgroundImage = `url('kit/board-${RTB.size()}.webp')`;
+  document.head.insertAdjacentHTML('beforeend', `<style>${MODES.CSS}</style>`);
+  RACK.demo(document.getElementById('s'));
+</script>
+</body></html>

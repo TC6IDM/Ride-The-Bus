@@ -9,6 +9,13 @@
 <script lang="ts">
 	import { numberToCurrencyString } from 'utils-shared/amount';
 	import { t } from '../../i18n/i18nDerived';
+	import { onMount } from 'svelte';
+	import { landTitle } from '../../game/ui/titleHandoff';
+
+	// The loader's name has nowhere to go on a replay - this lockup is dimmed
+	// under the round details - so it simply fades where it is (the owner,
+	// 2026-10-19; titleHandoff.ts).
+	onMount(() => landTitle([]));
 	import { formatMultiplier, formatTicket } from '../../game/ui/formatMultiplier';
 	import { FAMILY_RULES, familyOf, parseModeName } from '../../game/math/modes';
 

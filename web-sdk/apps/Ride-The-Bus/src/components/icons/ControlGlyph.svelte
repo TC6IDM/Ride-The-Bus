@@ -17,6 +17,7 @@
 	import SoundIcon from './SoundIcon.svelte';
 	import DieFace from '../cards/DieFace.svelte';
 	import { titleFaceFor } from '../../game/ui/displayFace';
+	import { fitBlock } from '../../game/ui/fitValue';
 
 	type Props = {
 		name: 'deal' | 'mode' | 'bet' | 'chip' | 'turbo' | 'autoplay' | 'sound' | 'info' | 'die';
@@ -47,7 +48,7 @@
 		<!-- The destination blind, small: the family's name on the dark sign,
 		     as the bar letters it (control-bar.css). -->
 		<span class="ctl-mode-sign" style:color={props.ink}>
-			<span class="ctl-mode-word face-{titleFaceFor(props.label ?? '')}">{props.label}</span>
+			<span class="ctl-mode-word face-{titleFaceFor(props.label ?? '')}" use:fitBlock={props.label}>{props.label}</span>
 		</span>
 	{:else if props.name === 'bet'}
 		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
@@ -138,18 +139,27 @@
 
 	/* MODE is a sign, not a pill: the bar's bezel and a dark well inside it,
 	   no coloured outline (control-bar.css, the destination blind). */
+	/* A FIXED sign, as on the bar: the name fits the sign (fitBlock - two lines,
+	   then smaller), never the sign the name. Sized to the label, it ran out of
+	   How to Play's glyph column and over the sentence beside it on High Stakes
+	   (the owner, 2026-10-19). max-width keeps it inside whatever holds it. */
 	.ctl-glyph.is-mode {
+		width: calc(var(--size) * 2.1);
+		max-width: 100%;
 		padding: calc(var(--size) * 0.08);
 		border-radius: calc(var(--size) * 0.24);
 		color: var(--gold);
 	}
 
 	.ctl-mode-sign {
+		width: 100%;
+		min-width: 0;
+		box-sizing: border-box;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		height: 100%;
-		padding: 0 calc(var(--size) * 0.18);
+		padding: 0 calc(var(--size) * 0.1);
 		border-radius: calc(var(--size) * 0.16);
 		background: linear-gradient(180deg, var(--blind-glass-top), var(--blind-glass-bottom));
 		box-shadow:
@@ -171,13 +181,20 @@
 	}
 
 	.ctl-mode-word {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		height: 100%;
+		min-height: 0;
+		overflow: hidden;
+		text-align: center;
 		font-family: var(--font-display);
 		font-size: calc(var(--size) * 0.4);
 		font-weight: 700;
 		letter-spacing: 0.04em;
-		line-height: 1;
+		line-height: 0.95;
 		text-transform: uppercase;
-		white-space: nowrap;
 	}
 
 	/* Big Shoulders is Latin only - titleFaceFor, as on the bar. */

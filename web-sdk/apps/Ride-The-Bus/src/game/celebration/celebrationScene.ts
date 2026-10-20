@@ -1,5 +1,7 @@
 /**
- * The takeover's scene geometry: where the burst marks fly and how the fan sits.
+ * The takeover's scene geometry: how the fan sits. (The suit-mark burst that
+ * also lived here went on 2026-10-18; the chips that replaced it fly from
+ * chipStream.ts.)
  *
  * Pure - no props, no state, no DOM - which is the whole reason it is worth
  * having out here. winCelebration.test.ts could previously only GREP the
@@ -7,56 +9,9 @@
  * every tier had to read the stylesheet to do it. Both are now arithmetic a
  * unit test can just call.
  *
- * Both tables are computed in TypeScript rather than in CSS on purpose: the
- * notes below say why (`round()` is too new for the Android and iOS versions
- * Stake tests on, and would silently collapse every mark to one radius).
+ * Computed in TypeScript rather than in CSS on purpose: see the note on the
+ * fan below (sibling-index() is too new for the devices Stake tests on).
  */
-
-/**
- * The burst geometry, computed here rather than in CSS.
- *
- * The obvious CSS version needs `round()` to alternate the throw distance,
- * and `round()` is far too new to rely on - Stake tests on older Android and
- * iOS, where it would silently collapse every mark to the same radius. Plain
- * arithmetic in a module constant costs nothing and works everywhere.
- *
- * THESE ARE SUIT MARKS, NOT SPARKS. They used to be fourteen glowing dots,
- * which is the particle burst every generated casino screen ships and says
- * nothing about what game you just won. Ride The Bus is four cards and four
- * guesses; its celebration should be made of its own deck. The marks come
- * from SuitIcon - already drawn as SVG because the body face does not own
- * U+2660..U+2666 and the fallback is a colour emoji on most phones.
- *
- * Sixteen over 360deg, four of each suit so no one suit dominates, jittered
- * off the exact spoke angles and alternating short/long so the ring does not
- * read as a perfect circle, on staggered delays so they do not fire as one.
- * Alternating spin direction keeps the tumble from looking mechanical.
- */
-export const SUIT_CYCLE = ['heart', 'spade', 'diamond', 'club'] as const;
-
-export const BURST_COUNT = 10;
-
-export const BURST = Array.from({ length: BURST_COUNT }, (_, i) => ({
-	suit: SUIT_CYCLE[i % 4]!,
-	angle: +(i * (360 / BURST_COUNT) + (i % 2 === 0 ? -9 : 9)).toFixed(2),
-	/* Pulled in hard from 19/26. The marks are 2x the size they were, and a
-	 * big mark thrown the old distance ends up out in a frame corner or over
-	 * the control bar, where a suit reads as a speck of dirt rather than as
-	 * part of the gesture. They should burst off the FAN, not off the
-	 * viewport. */
-	dist: i % 2 === 0 ? 11 : 15,
-	/** Font size in --ui units; the mark is sized in em off it. */
-	size: i % 3 === 0 ? 4.6 : 3.6,
-	spin: i % 2 === 0 ? 210 : -250,
-	/**
-	 * Small, and small ON PURPOSE. This used to run to 2.1s against a 3.6s
-	 * infinite loop, which meant the marks never shared a t=0: at any given
-	 * frame they sat at ten unrelated radii, so the ring drifted rather than
-	 * burst, and it read as dust on the lens. A burst is a MOMENT - one
-	 * origin, one instant, a little jitter so the edge is not machined.
-	 */
-	delay: +((i % 5) * 0.045).toFixed(3),
-}));
 
 /**
  * The fan of the round's own cards - the thing this screen is made of.
@@ -110,8 +65,8 @@ export const BURST = Array.from({ length: BURST_COUNT }, (_, i) => ({
  * A Max Win is always a clean sweep, for the same arithmetic: a forgiven
  * round has already given up half its multiplier and cannot reach a ceiling.
  *
- * Geometry is computed here for the same reason BURST is: the CSS version
- * needs the index centred about the middle of the row, and doing that in a
+ * Geometry is computed here rather than in CSS: the CSS version needs the
+ * index centred about the middle of the row, and doing that in a
  * stylesheet means either sibling-index() (far too new for the Android and
  * iOS versions Stake tests) or four hand-written nth-child rules that stop
  * working the day the game deals a fifth card.

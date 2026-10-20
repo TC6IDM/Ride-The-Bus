@@ -171,8 +171,6 @@ export default {
 		'최근 라운드 보기',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'플러스와 마이너스로 베팅액을 정합니다. 금액을 클릭하면 빠른 베팅 메뉴가 열립니다.',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'번개는 이퀄 선택 전의 각 모드를 보여 줍니다. 이퀄을 하나 고를 때마다 하나씩 늘어납니다.',
 	'Click to continue':
 		'클릭하여 계속',
 	'Click to skip':
@@ -334,6 +332,14 @@ export default {
 		'손실이 이만큼이면 중지',
 	'Stop on a single win of':
 		'한 번의 승리가 이만큼이면 중지',
+	'Limits':
+		'한도',
+	'None set':
+		'설정 안 됨',
+	'Loss %s':
+		'손실 %s',
+	'Win %s':
+		'1회 당첨 %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'키보드에서는 1~4 키로 네 가지 예측을 바꿀 수 있습니다.',
 	'It can stop by itself on a full game win, a loss limit or one big win.':
@@ -362,4 +368,10 @@ export default {
 		'주사위를 굴려 예측을 무작위로 고르기',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'예측 옆의 주사위는 네 가지를 모두 무작위로 고릅니다. 딜하기 전에는 아무것도 플레이되지 않습니다.',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': '마지막 카드를 직접 젖히기',
+	'Drag any corner to peel': '모서리를 끌어 젖히세요',
+	'or press space bar to skip': '또는 스페이스 바를 눌러 건너뛰기',
+	'Wins': '적중 시',
+	'Wins up to': '적중 시 최대',
 };

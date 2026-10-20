@@ -123,6 +123,27 @@ export function pipLayout(rank: string): Pip[] {
 	];
 }
 
+// ---- The house print on a number card -------------------------------------------
+/**
+ * The owner's pick D1 (2026-10-17): the number cards were bare pips on paper,
+ * the one part of the deck the house had not touched - the courts carry the
+ * English frame and a crown, the Ace of Spades the logo. A 2 to 10 now carries
+ * a fine inner frame in its OWN ink, the court frame's shape (two L-shaped
+ * lines with their open corners where the index sits), doubled - a heavier
+ * line and a hairline inside it, as an engraved border is printed - and the
+ * house crown as a gold watermark, faint, under the pips.
+ *
+ * Clear of the corner indices and of every pip on every layout
+ * (cardFace.test.ts). Not on a compact face: one large pip on a card under
+ * 46px has no room for a border, and a hairline there is a smudge.
+ */
+export const NUMBER_PRINT = {
+	outer: 'M58 24H176V214M142 274H24V84',
+	inner: 'M64 30H170V208M136 268H30V90',
+	/** The watermark crown: centred, on the 24 grid the face's crown uses. */
+	watermark: { x: CX, y: CY, size: 120 },
+} as const;
+
 // ---- Aces ---------------------------------------------------------------------
 /**
  * One large pip. The Ace of Spades is the house card - engraved, crowned, and

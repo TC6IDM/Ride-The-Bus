@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>E5 Destination signs</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* Each guess is a small destination blind, the MODE sign's material: recessed and
+     dark, every option drawn in its own colour. A pick PAINTS that panel in its
+     colour, ink turning dark on it, like the blind rolled to that destination. */
+  .sq { position: absolute; display: grid; gap: 3px; padding: 6px; border-radius: 12px; background: #0b0907;
+    box-shadow: inset 0 3px 8px rgba(0,0,0,0.85), inset 0 -1px 0 rgba(255,240,220,0.07), 0 1px 0 rgba(255,240,220,0.12), 0 6px 12px rgba(0,0,0,0.4); }
+  .split-v { grid-template-columns: minmax(0,1fr) minmax(0,1fr); grid-template-rows: minmax(0,1fr); }
+  .split-h { grid-template-columns: minmax(0,1fr); grid-template-rows: minmax(0,1fr) minmax(0,1fr); }
+  .split-q { grid-template-columns: minmax(0,1fr) minmax(0,1fr); grid-template-rows: minmax(0,1fr) minmax(0,1fr); }
+  .seg { position: relative; min-width: 0; min-height: 0; overflow: hidden; border: 0; padding: 0; display: grid; place-items: center; border-radius: 6px; cursor: pointer;
+    background: linear-gradient(180deg, #050403, #15110c 50%, #050403); color: var(--glyph, var(--fill)); transition: background 180ms var(--ease-out), color 180ms; }
+  /* Each option's own colour, drawn on the dark blind. */
+  .seg-black { --glyph: #e7e2d8; } .seg-red { --glyph: var(--choice-red); }
+  .seg-higher { --glyph: #6fd193; } .seg-lower { --glyph: #e0485c; } .seg-inside { --glyph: #43c4c0; } .seg-outside { --glyph: #c47ac3; }
+  .seg-heart, .seg-diamond { --glyph: #e0485c; } .seg-spade, .seg-club { --glyph: #e7e2d8; }
+  .gl { width: 50%; aspect-ratio: 1; display: grid; }
+  .split-q .gl { width: 56%; }
+  .gl svg { width: 100%; height: 100%; display: block; }
+  /* The colour guess has no glyph today; on a sign it needs one: a card in each colour. */
+  .seg-black .gl, .seg-red .gl { width: 34%; aspect-ratio: 5/7; border-radius: 3px; background: currentColor; }
+  .seg.on { background: var(--fill); color: #14110a; }
+  .seg-black.on { background: #e7e2d8; color: #14110a; }
+  .seg-black.on .gl { background: var(--choice-black); }
+  .seg-heart.on, .seg-spade.on, .seg-club.on, .seg-diamond.on { background: #e7e2d8; }
+  .seg-heart.on .gl, .seg-diamond.on .gl { color: var(--card-red); }
+  .eq { position: absolute; left: 50%; top: 50%; width: 24%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; display: grid; place-items: center;
+    background: radial-gradient(circle at 35% 30%, #fbe7a6, #d6a733 55%, #8f6810); box-shadow: 0 2px 3px rgba(0,0,0,0.55); }
+  .eq svg { width: 70%; }
+  .split-v .seg:first-of-type .gl { transform: translateX(-16%); } .split-v .seg:nth-of-type(2) .gl { transform: translateX(16%); }
+  .split-h .seg:first-of-type .gl { transform: translateY(-14%); } .split-h .seg:nth-of-type(2) .gl { transform: translateY(14%); }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div></div>
+<script src="kit/kit.js"></script><script src="kit/guess.js"></script>
+<script>
+  const { g, place, el, size } = RTB, s = document.getElementById('s');
+  document.getElementById('board').style.backgroundImage = `url('kit/board-${size()}.webp')`;
+  GUESS.GUESSES.forEach((G, i) => { const n = el('div', '', GUESS.square(G)).firstElementChild; const r = g.squares[i];
+    place(n, { x: r.x - 3, y: r.y - 3, w: r.w + 6, h: r.h + 6 }); s.appendChild(n); });
+  GUESS.demo(s);
+</script>
+</body></html>

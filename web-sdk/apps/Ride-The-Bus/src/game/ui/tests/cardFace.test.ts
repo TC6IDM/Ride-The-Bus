@@ -29,6 +29,7 @@ import {
 	INDEX,
 	COURT_FRAME,
 	COURT_PANEL,
+	NUMBER_PRINT,
 	faceKind,
 	pipLayout,
 	courtSymbol,
@@ -70,6 +71,47 @@ describe('the pip grid is a real deck', () => {
 				assert.ok(!inTopCorner && !inBottomCorner, `${rank} pip at (${p.x}, ${p.y}) sits on the index`);
 			}
 		}
+	});
+
+	test('the house print on a 2 to 10 stays clear of the index and of every pip', () => {
+		// NUMBER_PRINT's two paths as straight segments: M x y, then H and V.
+		const segments = (d: string) => {
+			const out: [number, number, number, number][] = [];
+			let x = 0;
+			let y = 0;
+			for (const [, op, n] of d.matchAll(/([MHV])\s*(-?[\d.]+(?:\s+-?[\d.]+)?)/g)) {
+				const v = n!.trim().split(/\s+/).map(Number);
+				if (op === 'M') [x, y] = [v[0]!, v[1]!];
+				else if (op === 'H') { out.push([x, y, v[0]!, y]); x = v[0]!; }
+				else { out.push([x, y, x, v[0]!]); y = v[0]!; }
+			}
+			return out;
+		};
+		const lines = [...segments(NUMBER_PRINT.outer), ...segments(NUMBER_PRINT.inner)];
+		assert.equal(lines.length, 8, 'the print is not two doubled L-shapes');
+		// A segment and a box overlap when their x and y ranges both overlap.
+		const hits = ([x1, y1, x2, y2]: number[], left: number, top: number, right: number, bottom: number) =>
+			Math.max(x1!, x2!) >= left && Math.min(x1!, x2!) <= right && Math.max(y1!, y2!) >= top && Math.min(y1!, y2!) <= bottom;
+		const indexRight = INDEX.x + 12.3;
+		const indexBottom = INDEX.pipY + INDEX.pipSize / 2;
+		const half = PIP_SIZE / 2;
+		for (const line of lines) {
+			assert.ok(!hits(line, 0, 0, indexRight, indexBottom), `print line ${line} crosses the top index`);
+			assert.ok(!hits(line, FACE_W - indexRight, FACE_H - indexBottom, FACE_W, FACE_H), `print line ${line} crosses the bottom index`);
+			for (const rank of ranks)
+				for (const pip of pipLayout(rank))
+					assert.ok(!hits(line, pip.x - half, pip.y - half, pip.x + half, pip.y + half), `print line ${line} crosses a ${rank} pip`);
+		}
+	});
+
+	test('the print is drawn only on a full number card, in the suit’s own ink', () => {
+		const face = readFileSync(resolve(import.meta.dirname, '../../../components/cards/CardFace.svelte'), 'utf8');
+		const pips = face.slice(face.indexOf("{#if kind === 'pips'}"), face.indexOf("{:else if kind === 'ace'}"));
+		const full = pips.slice(pips.indexOf('{:else}'));
+		assert.ok(full.includes('class="cf-print"'), 'the print is not on the full number face');
+		assert.ok(!pips.slice(0, pips.indexOf('{:else}')).includes('cf-print'), 'a compact face draws the print');
+		assert.equal(face.split('class="cf-print"').length - 1, 1, 'the print is drawn somewhere besides a number card');
+		for (const cls of ['cf-print-line', 'cf-print-hair']) assert.match(face, new RegExp(`\\.${cls}\\s*{\\s*stroke:\\s*var\\(--cf-suit\\);`), `.${cls} is not in the suit's ink`);
 	});
 
 	test('no two pips touch', () => {

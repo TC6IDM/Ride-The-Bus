@@ -490,6 +490,30 @@ describe('every cue actually makes a sound', () => {
 	}
 });
 
+describe('the takeover’s flap board clatters', () => {
+	// All noise, no oscillators, so it is counted in buffer sources: two per
+	// clack (the flap's edge and the flap landing).
+	const sources = (fire: () => void) => {
+		resetCreated();
+		fire();
+		return created.bufferSources;
+	};
+
+	test('one clack per flap that turned, and never more than four', () => {
+		const one = sources(() => sound.playFlapClatter(1));
+		assert.ok(one > 0, 'a turning flap is silent');
+		assert.equal(sources(() => sound.playFlapClatter(3)), one * 3);
+		assert.equal(sources(() => sound.playFlapClatter(12)), one * 4, 'a long figure turning must not pile up clacks');
+		assert.equal(sources(() => sound.playFlapClatter(0)), one, 'a call means a flap turned');
+	});
+
+	test('the takeover clacks once per figure the board prints, never on the first', () => {
+		const component = readFileSync(resolve(import.meta.dirname, '../../../components/board/WinCelebration.svelte'), 'utf8');
+		assert.match(component, /printedText === null \? 0 : flapsTurned\(printedText, text\)/);
+		assert.match(component, /if \(turned > 0 && !leaving\) sound\.playFlapClatter\(turned\)/);
+	});
+});
+
 describe('press kinds', () => {
 	const KINDS = ['choice', 'equal', 'chip', 'primary', 'toggle', 'soft'] as const;
 
@@ -674,6 +698,43 @@ describe('the held last card', () => {
 		const after = [created.oscillators.length, created.bufferSources, created.stops];
 		release();
 		assert.deepEqual([created.oscillators.length, created.bufferSources, created.stops], after, 'a second release struck again');
+	});
+
+	// "Follows your hand" (the owner, 2026-10-20): a card the player peels has
+	// no hum until the corner lifts - not a quiet one, none - and putting it
+	// back down stops it; the next peel starts a fresh one.
+	test('the hand-driven hum: silent until the first lift, stopped when put down, fresh on the next peel', () => {
+		resetCreated();
+		const hum = sound.peelHum('max', 3, 1.2);
+		hum.follow(0);
+		assert.equal(created.oscillators.length, 0, 'the hum sounded before the corner lifted');
+		assert.equal(created.bufferSources, 0, 'the breath started before the corner lifted');
+
+		hum.follow(0.3);
+		const voices = created.oscillators.length;
+		assert.ok(voices > 0, 'lifting the corner did not start the hum');
+		hum.follow(0.8);
+		assert.equal(created.oscillators.length, voices, 'peeling further started a second hum');
+
+		const stops = created.stops;
+		const sourceStops = created.sourceStops;
+		hum.follow(0);
+		assert.equal(created.stops - stops, voices, 'putting the card down did not stop every voice');
+		assert.equal(created.sourceStops - sourceStops, 1, 'putting the card down did not stop the breath');
+
+		hum.follow(0.1);
+		assert.equal(created.oscillators.length, voices * 2, 'peeling again did not start a fresh hum');
+
+		const sources = created.bufferSources;
+		hum.release();
+		assert.ok(created.bufferSources > sources, 'the turn did not strike');
+	});
+
+	test('a hand-peeled card turned without a peel still gets its strike, and no hum', () => {
+		resetCreated();
+		sound.peelHum('big', 3).release();
+		assert.equal(created.oscillators.length, 0, 'a crack-only strike built a voice');
+		assert.ok(created.bufferSources > 0, 'the turn did not strike');
 	});
 
 	test('a climb too short to sing plays nothing - not even the strike', () => {
@@ -913,7 +974,15 @@ describe('the reveal loop is wired to the right cues', () => {
 	});
 
 	test('the deal is NOT staggered - it is the cadence the rest falls in behind', () => {
-		assert.match(loop, /sound\.playDeal\(\)/, 'the deal now takes an argument it should not');
+		// It may carry the board's deal clock (dealTiming), so each riffle lands
+		// as its card reaches the deck (2026-10-17). It may never carry cueLead,
+		// and an instant or reduced-motion round must pass it NOTHING: there the
+		// riffles are the cadence the per-card cues fall in behind.
+		const call = loop.match(/sound\.playDeal\(([^;]*)\);/);
+		assert.ok(call, 'the reveal no longer plays the deal');
+		assert.doesNotMatch(call[1]!, /cueLead/, 'the deal is staggered by cueLead');
+		assert.match(call[1]!, /^animated \? \{[^}]*\} : undefined$/, 'the deal is timed when nothing is animated');
+		assert.match(loop, /const animated = dealSec > 0 && !reducedMotion\(\);/, 'the deal clock no longer follows the animation');
 	});
 
 	test('the hold only ducks the music, closes the tunnel and sings when it is long enough to be felt', () => {
@@ -940,18 +1009,47 @@ describe('the reveal loop is wired to the right cues', () => {
 		// score, and the cue plays nothing for one. What it needs instead is the
 		// right END. Released after the flip, it drones over the result; released
 		// before the waits have run, it is cut off before it builds.
-		const call = /(\w+)\s*=\s*sound\.playLastCardHold\(/.exec(loop);
-		assert.ok(call, 'the held last card no longer plays its hum');
-		assert.ok(call.index > loop.indexOf('holdIndex = i'), 'the hum starts outside the hold');
+		// TWO paths since the squeeze (2026-10-20): a squeezed card's hum scores
+		// the peel and is released as the card turns in front (inside
+		// squeezeTurnAndHome's onTurn); a card that only rises (reduced motion)
+		// keeps the original order. Each is held to the same two rules.
+		const calls = [...loop.matchAll(/(\w+)\s*=\s*sound\.playLastCardHold\(/g)];
+		assert.equal(calls.length, 2, 'the held last card no longer plays its hum on both paths');
+		for (const call of calls) {
+			assert.ok(call.index! > loop.indexOf('holdIndex = i'), 'the hum starts outside the hold');
+		}
 
-		const release = loop.indexOf(`${call[1]}()`, call.index);
-		assert.ok(release > call.index, 'the hum is never released');
+		const [squeezed, plain] = calls as [RegExpExecArray, RegExpExecArray];
+		// The squeezed path runs from its hum to the plain path's: nothing in it
+		// may release the hum, and both of its waits must be in it.
+		const squeezedPath = loop.slice(squeezed.index, plain.index);
+		assert.ok(!squeezedPath.includes(`${squeezed[1]}()`), 'the squeezed hum is released before its wait has run');
+		assert.ok(squeezedPath.includes('squeezePeel('), 'the squeezed hum no longer scores the peel');
+		// A card the player peels has no clocked hum at all: the hand's own
+		// (sound.peelHum) is set up before the wait, follows the fold through
+		// it, and is the release the turn calls.
+		const manual = loop.indexOf('sound.peelHum(');
+		const wait = loop.indexOf('await squeezeWaitForPlayer(', manual);
+		assert.ok(manual > 0 && wait > manual, 'the manual hum is not set up before the player peels');
+		assert.ok(loop.slice(manual, wait).includes('squeezeListen('), 'the manual hum does not follow the hand');
+		assert.ok(loop.slice(manual, wait).includes('releaseHold = () => hum.release()'), 'the turn does not release the manual hum');
+		// ...and it is released inside the turn, before the card is set face up.
+		const turnAndHome = loop.indexOf('squeezeTurnAndHome(', squeezed.index);
+		const onTurn = loop.slice(turnAndHome, loop.indexOf('});', turnAndHome));
+		assert.ok(turnAndHome > 0 && onTurn.includes(`${squeezed[1]}()`), 'the squeezed hum is not released as the card turns');
 		assert.ok(
-			loop.indexOf('await revealWait(650, 0)', call.index) < release,
+			turnAndHome < loop.indexOf('revealedCards[i] = event.card', turnAndHome),
+			'the squeezed hum is released after the card has turned, so it drones over the result',
+		);
+
+		const plainRelease = loop.indexOf(`${plain[1]}()`, loop.indexOf('await revealWait(650, 0)', plain.index));
+		assert.ok(plainRelease > plain.index, 'the hum is never released');
+		assert.ok(
+			loop.indexOf('await revealWait(650, 0)', plain.index) < plainRelease,
 			'the hum is released before the wait it scores has run',
 		);
 		assert.ok(
-			release < loop.indexOf('revealedCards[i] = event.card'),
+			plainRelease < loop.indexOf('revealedCards[i] = event.card', plainRelease),
 			'the hum is released after the card has turned, so it drones over the result',
 		);
 	});
@@ -976,7 +1074,7 @@ describe('pressKindFor maps onto classes that exist', () => {
 	const CSS = [
 		'popups/popup-mode', 'popups/popup-bet', 'popups/popup-turbo',
 		'popups/popup-sound', 'popups/popup-autospin',
-		'popups/popup-base',
+		'popups/popup-base', 'popups/popup-head',
 		'board/control-bar', 'board/choices', 'board/cards',
 	]
 		.map((name) => read(`../../../styles/${name}.css`))

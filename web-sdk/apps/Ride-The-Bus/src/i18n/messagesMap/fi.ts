@@ -171,8 +171,6 @@ export default {
 		'Näytä viimeisimmät kierrokset',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'Plus ja miinus asettavat panoksesi. Napsauta summaa avataksesi pikapanosvalikon.',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'Salamat näyttävät kunkin tilan ennen Yhtä suuri -valintojasi. Jokainen Yhtä suuri -valinta lisää yhden.',
 	'Click to continue':
 		'Jatka napsauttamalla',
 	'Click to skip':
@@ -335,6 +333,14 @@ export default {
 		'Pysäytä, kun tappio on',
 	'Stop on a single win of':
 		'Pysäytä, kun yksittäinen voitto on',
+	'Limits':
+		'Rajat',
+	'None set':
+		'Ei asetettu',
+	'Loss %s':
+		'Tappio %s',
+	'Win %s':
+		'Voitto %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'Näppäimistöllä näppäimet 1–4 vaihtavat neljä arvausta.',
 	'It can stop by itself on a full game win, a loss limit or one big win.':
@@ -363,4 +369,10 @@ export default {
 		'Heitä noppaa satunnaisiin arvauksiin',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'Arvausten vieressä oleva noppa valitsee kaikki neljä satunnaisesti. Mitään ei pelata ennen kuin jaat.',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': 'Käännä viimeinen kortti itse',
+	'Drag any corner to peel': 'Vedä mistä tahansa kulmasta',
+	'or press space bar to skip': 'tai ohita painamalla välilyöntiä',
+	'Wins': 'Voittaa',
+	'Wins up to': 'Voittaa jopa',
 };

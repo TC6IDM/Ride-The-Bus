@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RW1 Split-flap total</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* The running total on a split-flap board, a station's departures display: each
+     character a flap that flips when it changes. The label sits above it. */
+  .flap { position: absolute; z-index: 5; display: flex; flex-direction: column; align-items: center; gap: 6px; transform: translateX(-50%); }
+  .flap .lab { font: 700 11px/1 var(--font-body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-dim); }
+  .flap .lab.win { color: #3ddc84; }
+  .board { display: flex; gap: 3px; padding: 5px; border-radius: 8px; background: #0b0907; box-shadow: inset 0 2px 6px rgba(0,0,0,0.9), 0 1px 0 rgba(255,240,220,0.12); perspective: 300px; }
+  .cell { position: relative; width: var(--cw); height: calc(var(--cw) * 1.45); border-radius: 4px; display: grid; place-items: center; overflow: hidden;
+    background: linear-gradient(180deg, #2a2622 0 49%, #000 49% 51%, #1f1c19 51%); font: 900 calc(var(--cw) * 1.05)/1 var(--font-display); color: #f4efe6; }
+  .cell.flip { animation: flip 260ms var(--ease-in-out); }
+  @keyframes flip { 0% { transform: rotateX(0); } 50% { transform: rotateX(-90deg); filter: brightness(0.6); } 100% { transform: rotateX(0); } }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div></div>
+<script src="kit/kit.js"></script><script src="kit/roundmock.js"></script>
+<script>
+  const { el, size } = RTB, s = document.getElementById('s'), phone = size() === 'phone';
+  document.getElementById('board').style.backgroundImage = `url('kit/board-noread-${size()}.webp')`;
+  const W = 7, f = el('div', 'flap', `<span class="lab">Pick all 4 guesses</span><div class="board">${Array.from({ length: W }, () => '<span class="cell"></span>').join('')}</div>`);
+  f.style.setProperty('--cw', phone ? '17px' : '22px');
+  Object.assign(f.style, { left: (phone ? 195 : 600) + 'px', top: (phone ? 304 : 330) + 'px' }); s.appendChild(f);
+  const cells = [...f.querySelectorAll('.cell')], lab = f.querySelector('.lab');
+  function show(text) {
+    const t = text.padStart(W, ' ');
+    cells.forEach((c, i) => { if (c.textContent !== t[i]) { c.classList.remove('flip'); void c.offsetWidth; c.classList.add('flip'); setTimeout(() => (c.textContent = t[i] === ' ' ? '' : t[i]), 130); } });
+  }
+  ROUNDMOCK.play(() => { lab.textContent = 'Winning'; lab.classList.remove('win'); show('$0.00'); },
+    (i, total) => show(total),
+    () => { lab.textContent = 'Full game win'; lab.classList.add('win'); });
+</script>
+</body></html>

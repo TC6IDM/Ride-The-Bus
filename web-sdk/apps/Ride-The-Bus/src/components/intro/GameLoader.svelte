@@ -1,12 +1,32 @@
 <script lang="ts">
+  /**
+   * THE DESTINATION BLIND (the owner's pick A2, 2026-10-17). The game loads on
+   * the front of a bus: a recessed sign, the MODE sign's own recipe at hero
+   * size, whose blind rolls through the route's stops as the game gets ready -
+   * Red / Black, Higher / Lower, Inside / Outside, the four suits - and lands
+   * on the game's name, which drops its frame and stands as the lockup. Under
+   * it a route of five stops lights stop by stop, the bus riding along it.
+   * Behind it, the room and the empty table the intro opens on, so the
+   * handover is not a change of scene.
+   *
+   * It replaced a centred splash whose progress bar crept to 90% on a timer
+   * and then sat there while the real work finished, and four card backs that
+   * never landed anywhere (the Phase 1 audit, 2026-10-16). A stop here is a
+   * MILESTONE, never a timer: the art decoded, the game mounted, the floor
+   * passed. A slow authenticate holds the blind where it is.
+   */
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
+  import TableScene from '../board/TableScene.svelte';
+  import SuitIcon from '../icons/SuitIcon.svelte';
   import { logoAsset } from '../../game/ui/logoAsset.svelte';
   import { gameReady, loaderGone } from '../../game/platform/ready.svelte';
+  import { reducedMotion } from '../../game/celebration/celebrationGestures';
+  import { liftTitle } from '../../game/ui/titleHandoff';
   // The loader renders before /wallet/authenticate returns, but t() needs no
   // session - it reads ?lang= off the URL and the catalogues are static
   // imports - so the very first thing a screen reader announces is localised
-  // too. This label was the one hardcoded English string left in the app.
+  // too, and so are the stops on the blind.
   import { t } from '../../i18n/i18nDerived';
 
   type Props = { oncomplete?: () => void };
@@ -14,19 +34,25 @@
 
   // Floor, so the loader can't flash past on a warm cache and read as a glitch.
   const MIN_MS = 1400;
-  // Ceiling. Neither a backdrop that never loads (offline, 404, corrupt file)
-  // nor an auth call that never returns may strand the player on a loading
-  // screen, so past this we hand over regardless and let the game's own error
-  // handling take it from there. "The game's own error handling" did not
-  // exist for a hung authenticate until Authenticate.svelte gained a launch
-  // timeout (LAUNCH_TIMEOUT_MS, 10 s): before that, this fade landed on an
-  // empty table with no dialog, because the error modal renders inside the
-  // game tree that never mounted. Kept just ABOVE that timeout so the modal
-  // is already up when this clears.
+  // Ceiling. Neither art that never loads nor an auth call that never returns
+  // may strand the player on a loading screen, so past this we hand over
+  // regardless. Kept just ABOVE Authenticate.svelte's launch timeout (10 s),
+  // so its error dialog is already up when this clears.
   const MAX_MS = 10_500;
+  /** The least a stop is shown for, so the blind can be read as it rolls. */
+  const STOP_MS = 380;
+  /** The name held, its frame gone, before the screen hands over. */
+  const LANDED_MS = 650;
+
+  /** The blind's stops: the four guesses in the order they are made, then the name. */
+  const LAST_STOP = 4;
+  const SUITS = ['heart', 'spade', 'club', 'diamond'] as const;
 
   let visible = $state(true);
-  let progress = $state(0);
+  /** The stop the blind shows. */
+  let stop = $state(0);
+  /** The name is up and the sign has dropped its frame. */
+  let landed = $state(false);
 
   // Decode one image; resolves (never rejects) on error, because a missing
   // picture is cosmetic and must not block play.
@@ -39,19 +65,9 @@
     });
   }
 
-  // Wait for the bitmaps the game needs, so nothing pops in behind the player a
-  // beat after the loader clears. That is just the logo now - the title plate
-  // and every card back use it. The backdrop used to be preloaded here too,
-  // back when it could be a 1.9 MB bitmap; it is drawn in CSS and downloads
-  // nothing.
-  function preloadArt(): Promise<unknown> {
-    return Promise.all([decode(logoAsset.url)]);
-  }
-
   // <Game /> is a sibling tree, so poll the flag it sets on mount. Polled
-  // rather than watched with an effect: this runs inside the setup below, and
-  // a tracked read of gameReady there would make the whole setup re-run the
-  // moment the flag flipped - restarting the timer and resetting the bar.
+  // rather than watched with an effect: a tracked read of gameReady inside the
+  // setup below would re-run the whole setup the moment it flipped.
   function waitForGame(): Promise<void> {
     return new Promise((resolve) => {
       const check = () => {
@@ -65,26 +81,29 @@
   // onMount, not $effect: this setup has no reactive inputs and must run
   // exactly once.
   onMount(() => {
-    const started = performance.now();
     let done = false;
-    let raf = 0;
-
-    // Creep toward 90% on elapsed time and leave the last 10% for everything
-    // actually being ready, so a full bar means ready rather than "probably".
-    const tick = () => {
-      if (done) return;
-      progress = Math.min(0.9, (performance.now() - started) / MIN_MS);
-      raf = requestAnimationFrame(tick);
+    /** The furthest stop the work so far has earned. */
+    let earned = 0;
+    const earn = (s: number) => {
+      earned = Math.max(earned, s);
     };
-    raf = requestAnimationFrame(tick);
 
-    const finish = () => {
+    // The milestones, in the order they are usually met. Each earns a stop;
+    // the stepper below shows them one at a time, never skipping one, so the
+    // blind always rolls through all four guesses.
+    setTimeout(() => earn(1), STOP_MS);
+    void decode(logoAsset.url).then(() => earn(2));
+    void waitForGame().then(() => earn(3));
+    const floor = new Promise((r) => setTimeout(r, MIN_MS));
+    void Promise.all([decode(logoAsset.url), waitForGame(), floor]).then(() => earn(LAST_STOP));
+
+    const land = () => {
       if (done) return;
       done = true;
-      cancelAnimationFrame(raf);
-      progress = 1;
-      // Let the filled bar register before the fade starts.
+      landed = true;
       setTimeout(() => {
+        // The name lifts off and flies to the intro's (titleHandoff.ts).
+        liftTitle([document.querySelector('.gl-title-main'), document.querySelector('.gl-title-sub')]);
         visible = false;
         // Anything that must not animate behind the overlay waits on this -
         // notably replay and round-resume, which otherwise start the reveal
@@ -92,20 +111,28 @@
         // rather than in oncomplete so it holds however the loader is used.
         loaderGone.value = true;
         props.oncomplete?.();
-      }, 220);
+      }, reducedMotion() ? 200 : LANDED_MS);
     };
 
-    const cap = setTimeout(finish, MAX_MS);
+    // One stop at a time, each held at least STOP_MS.
+    const stepper = setInterval(() => {
+      if (done) return;
+      if (stop < earned) stop += 1;
+      if (stop === LAST_STOP) {
+        clearInterval(stepper);
+        setTimeout(land, STOP_MS);
+      }
+    }, STOP_MS);
 
-    void Promise.all([
-      preloadArt(),
-      waitForGame(),
-      new Promise((r) => setTimeout(r, MIN_MS)),
-    ]).then(finish);
+    // The ceiling: whatever has not arrived, hand over.
+    const cap = setTimeout(() => {
+      stop = LAST_STOP;
+      land();
+    }, MAX_MS);
 
     return () => {
       done = true;
-      cancelAnimationFrame(raf);
+      clearInterval(stepper);
       clearTimeout(cap);
     };
   });
@@ -115,33 +142,44 @@
   <!-- `game-loader`, not `loader`: the SDK's own LoaderImage already puts
        class="loader" on its <img>, and a shared name makes anything selecting
        by class ambiguous. -->
-  <div
-    class="game-loader"
-    style={`--logo-url: url(${logoAsset.url})`}
-    transition:fade={{ duration: 320 }}
-    role="status"
-    aria-label={t('Loading Ride The Bus…')}
-  >
-    <!-- Logo as the hero, with the game's name and the casino's stacked below
-         it, matching the in-game title plate. -->
-    <!-- Decorative: the title beneath it already names the game, so a screen
-         reader announcing the mark as well would say it twice. The cards and
-         the progress bar below carry the same attribute for the same reason. -->
-    <div class="gl-logo" aria-hidden="true"></div>
-    <div class="gl-title">
-      <span class="gl-title-main">Ride The Bus</span>
-      <span class="gl-title-sub">by Takeover Casino</span>
-    </div>
+  <div class="game-loader" transition:fade={{ duration: 320 }} role="status" aria-label={t('Loading Ride The Bus…')}>
+    <!-- The room and the empty table the intro opens on. -->
+    <TableScene showProps={false} />
 
-    <div class="gl-cards" aria-hidden="true">
-      <div class="gl-card"></div>
-      <div class="gl-card"></div>
-      <div class="gl-card"></div>
-      <div class="gl-card"></div>
-    </div>
-
-    <div class="gl-bar" aria-hidden="true">
-      <div class="gl-bar-fill" style={`transform: scaleX(${progress.toFixed(3)})`}></div>
+    <!-- Decorative: the status above already names the game and says it is
+         loading, so the sign and the route are not read out. -->
+    <div class="gl-sign" class:landed aria-hidden="true" style={`--stop: ${stop}`}>
+      <div class="gl-window">
+        <div class="gl-roll">
+          <span class="gl-stop">{t('Red')}&nbsp;/ {t('Black')}</span>
+          <span class="gl-stop">{t('Higher')}&nbsp;/ {t('Lower')}</span>
+          <span class="gl-stop">{t('Inside')}&nbsp;/ {t('Outside')}</span>
+          <span class="gl-stop gl-suits">
+            {#each SUITS as suit (suit)}<span class="gl-suit" class:red={suit === 'heart' || suit === 'diamond'}><SuitIcon {suit} /></span>{/each}
+          </span>
+          <!-- The lockup the loader, the intro and the board share (CLAUDE.md,
+               "One wordmark, three screens"). A proper name: not translated. -->
+          <span class="gl-stop gl-name">
+            <span class="gl-title-main">Ride The Bus</span>
+            <span class="gl-title-sub">by Takeover Casino</span>
+          </span>
+        </div>
+      </div>
+      <div class="gl-route">
+        <span class="gl-line"></span>
+        {#each [0, 1, 2, 3, 4] as at (at)}
+          <span class="gl-dot" class:lit={at <= stop} class:end={at === LAST_STOP} style={`--at: ${at}`}></span>
+        {/each}
+        <!-- The bus, at the stop the blind shows. -->
+        <svg class="gl-bus" viewBox="0 0 26 14">
+          <rect class="gl-bus-body" x="1" y="1" width="24" height="10" rx="2.5" />
+          <rect class="gl-bus-glass" x="4" y="3" width="4" height="3" />
+          <rect class="gl-bus-glass" x="10" y="3" width="4" height="3" />
+          <rect class="gl-bus-glass" x="16" y="3" width="6" height="3" />
+          <circle class="gl-bus-wheel" cx="7" cy="11.5" r="2" />
+          <circle class="gl-bus-wheel" cx="19" cy="11.5" r="2" />
+        </svg>
+      </div>
     </div>
   </div>
 {/if}

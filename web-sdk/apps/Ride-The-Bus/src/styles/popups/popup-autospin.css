@@ -18,28 +18,29 @@
 }
 
 /* ---- Autoplay presets ----
-   Deliberately NOT the chip row and no longer the bet grid. Rounds are a count,
-   not money: a wrapping row of pills, sized to their content so the row is
-   visibly irregular rather than a 4-column lattice. */
+   FIVE across, even, in the display face (the owner's pick P1, 2026-10-17):
+   four counts and unlimited, the first thing the panel asks. It was eight
+   content-width pills wrapping to two ragged rows, kept irregular so the row
+   would not read as the old bet grid; the bet menu is a chip tray now, so
+   there is nothing left to be mistaken for, and five is few enough to be one
+   row of equal keys. Rounds are a count, not money - no chip, no currency. */
 .spin-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: calc(var(--ui-bar) * 0.55);
 }
 
-/* Sized to its content, with a floor - so 10 and 1000 are different widths and
-   the row cannot line up into columns. That irregularity is the point: it is
-   what stops this reading as the bet grid it used to share a rule with. */
 .spin-pill {
-  flex: 0 0 auto;
-  min-width: calc(var(--ui-bar) * 4.36);
-  padding: calc(var(--ui-bar) * 0.73) calc(var(--ui-bar) * 1.09);
-  border-radius: 999px;
+  min-width: 0;
+  padding: calc(var(--ui-bar) * 0.95) 0;
+  border-radius: calc(var(--ui-bar) * 0.82);
   border: 1px solid rgba(var(--ink-rgb), 0.1);
   background: rgba(var(--ink-rgb), 0.05);
   color: var(--ink-body);
-  font-size: calc(var(--ui-bar) * 1.16);
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: calc(var(--ui-bar) * 1.7);
+  line-height: 1;
+  font-weight: 900;
   font-variant-numeric: tabular-nums;
   cursor: pointer;
   text-transform: none;
@@ -276,12 +277,11 @@
  * steppers 27x18.6px and Start 28.7px - all under the 24px WCAG 2.2 AA floor.
  */
 @media (pointer: coarse) {
-  /* A wrapping row of nine, so 36px rather than 44px: the pills are already the
-     tallest thing in the panel and 44 would add a row on a narrow phone. They
-     are 999px-radius pills, so extra height reads as deliberate. */
+  /* One row of five keys now (P1), so the full 44px: there is no second row
+     for the height to add to. */
   .spin-pill,
   .spin-pill-inf {
-    min-height: 36px;
+    min-height: 44px;
   }
 
   /* Stacked and adjacent, exactly like .cb-step in the bar - which takes a floor
@@ -465,6 +465,94 @@
 @media (prefers-reduced-motion: reduce) {
   .limit-toggle { transition: none; }
   .limit-toggle:active:not(:disabled) { transform: none; }
+}
+
+/* ---- The limits fold ------------------------------------------------------
+   One row that says what is armed ("Loss 20.0×, Win $50.00", or "None set")
+   and opens onto the two typed limits. A well, not a card: it is a part of
+   the panel, so it is recessed into it like the fields are, with no border of
+   its own. Opens on grid-template-rows (0fr to 1fr), which animates a height
+   the content decides without measuring it. */
+.limits {
+  border-radius: calc(var(--ui-bar) * 0.91);
+  background: var(--field-well);
+}
+
+.limits-sum {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--ui-bar) * 0.73);
+  width: 100%;
+  padding: calc(var(--ui-bar) * 0.91) calc(var(--ui-bar) * 1.09);
+  border: 0;
+  border-radius: inherit;
+  background: none;
+  color: var(--ink-strong);
+  font: inherit;
+  font-size: calc(var(--ui-bar) * 1.09);
+  font-weight: 700;
+  text-align: start;
+  cursor: pointer;
+}
+
+.limits-state {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 600;
+  color: var(--ink-dim);
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+/* An armed limit is the panel's own news: it takes the tint, like the arm
+   button that set it. */
+.limits:has(.limit-toggle.on) .limits-state { color: var(--tint); }
+
+.limits-chev {
+  flex: 0 0 auto;
+  width: calc(var(--ui-bar) * 1.36);
+  height: calc(var(--ui-bar) * 1.36);
+  color: var(--ink-dim);
+  transition: transform 200ms var(--ease-out);
+}
+
+.limits.open .limits-chev { transform: rotate(180deg); }
+
+.limits-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 240ms var(--ease-out);
+}
+
+.limits.open .limits-body { grid-template-rows: 1fr; }
+
+.limits-inner {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ui-bar) * 0.91);
+  padding: 0 calc(var(--ui-bar) * 1.09);
+}
+
+.limits.open .limits-inner { padding-bottom: calc(var(--ui-bar) * 1.09); }
+
+@media (any-hover: hover) {
+  .limits-sum:hover .limits-chev { color: var(--ink); }
+}
+
+.limits-sum:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .limits-body,
+  .limits-chev { transition: none; }
+}
+
+@media (pointer: coarse) {
+  .limits-sum { min-height: 44px; }
 }
 
 /* One line under both rows saying what x is - once, not per field. */

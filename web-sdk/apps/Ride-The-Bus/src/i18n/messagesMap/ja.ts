@@ -171,8 +171,6 @@ export default {
 		'最近のラウンドを表示',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'プラスとマイナスでベット額を設定します。金額をクリックするとクイックベットのメニューが開きます。',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'稲妻はイコールを選ぶ前の各モードを示します。イコールを1つ選ぶごとに1つ増えます。',
 	'Click to continue':
 		'クリックして続行',
 	'Click to skip':
@@ -334,6 +332,14 @@ export default {
 		'損失がこの額で停止',
 	'Stop on a single win of':
 		'1回の勝利がこの額で停止',
+	'Limits':
+		'上限',
+	'None set':
+		'未設定',
+	'Loss %s':
+		'損失 %s',
+	'Win %s':
+		'1回の勝ち %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'キーボードでは、1〜4キーで4つの予想を切り替えられます。',
 	'It can stop by itself on a full game win, a loss limit or one big win.':
@@ -362,4 +368,10 @@ export default {
 		'サイコロを振って予想をランダムに選ぶ',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'予想の横のサイコロは、4つすべてをランダムに選びます。配るまでは何もプレイされません。',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': '最後のカードを自分でめくる',
+	'Drag any corner to peel': '角をドラッグしてめくる',
+	'or press space bar to skip': 'またはスペースキーでスキップ',
+	'Wins': '的中で',
+	'Wins up to': '的中で最大',
 };

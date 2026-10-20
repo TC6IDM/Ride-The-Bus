@@ -1,390 +1,372 @@
-/* The bet-mode picker, and its confirmation step.
+/* Imported by ModePopup.svelte alone: the mode picker.
  *
- * Split out of the single 1,032-line popups.css when each panel became its own
- * component. Scoped to ModePopup.svelte, which is the only thing that renders
- * these classes - see the Svelte scoping note in CLAUDE.md: a stylesheet is
- * scoped to the component that IMPORTS it, so a panel's rules have to travel
- * with its markup.
+ * A RACK OF DESTINATION BLINDS (the owner's pick G1, 2026-10-18; it replaced
+ * G3's dealt hand the same day). Built to the G1 mock-up
+ * (design-archive/2026-10-17-visual-directions/g1-blinds.html, kit/rack.css)
+ * value for value - the owner asked for it "exactly how they were in the
+ * testing artifact". Five family cards in a row on the dimmed table, each in
+ * the panel material and headed by the MODE sign - the family's name
+ * lettered in its colour in a recessed dark well, the seven bolts under it -
+ * over a picture, its sentence, its maximum win and Switch. Switch lays the
+ * confirmation over the bottom of that card; the other four step back. Every
+ * colour comes through the family tokens (--fam, --fam-rgb) and the panel
+ * tokens; nothing here names one of its own.
  *
- * Sizes are multiples of --ui-bar, and colour comes in through the one --tint
- * contract every menu wears. Nothing here names a colour.
+ * ONE UNIT, --ru, a card's width over 16. The mock-up's card was 216px wide,
+ * so 1ru stands for 13.5px of it and every value below is the mock-up's,
+ * divided by that. Fitted to the window, floored at 6px (Popout S: the rack is
+ * wider than the window and the panel scrolls, the bargain every panel makes
+ * there), and from 1000px wide CAPPED at 0.78vw (the owner's call,
+ * 2026-10-18: not filling the window on a desktop or a laptop) - about
+ * two-thirds of it.
  */
 
-/* .popup-bet and .popup-mode take the LIVE volatility colour instead, set
-   inline in Game.svelte from the same modeNameColor() / volatilityColorVar()
-   the bet display and the MODE button read - the two controls that open them.
-   They are listed here only so this block is the whole map. */
-.popup-mode {
-  --tint-ink: var(--on-vol-ink);
-}
-
-.action-button {
-  width: 100%;
-  padding: calc(var(--ui-bar) * 1.27);
-  font-size: calc(var(--ui-bar) * 1.53);
-  font-weight: 800;
-  border: none;
-  border-radius: calc(var(--ui-bar) * 0.91);
-  cursor: pointer;
-  /* Filled in its own panel's tint. It was a blue gradient with a hardcoded
-     #1f6fe0 bottom stop and a blue shadow to match, which made the Start
-     button in the green autoplay panel the one blue thing in it. The shading
-     is now the tint at two alphas over the panel, so one declaration serves
-     all five colours and no second hex has to be kept in step with the
-     first. */
-  background: linear-gradient(180deg, rgba(var(--tint-rgb), 1), rgba(var(--tint-rgb), 0.76));
-  color: var(--tint-ink);
-  letter-spacing: 0.03em;
-  /* Elevation by LIGHT and a contact shadow, not by a coloured bloom. A green
-     halo around a green button on a dark panel is the shadow-glow tell; the
-     same two-part shadow the table gives its props reads as the button
-     standing off the panel instead. */
-  box-shadow:
-    inset 0 1px 0 var(--panel-lit),
-    0 1px 2px rgba(var(--shadow-rgb), 0.5),
-    0 calc(var(--ui-bar) * 0.55) calc(var(--ui-bar) * 1.09) rgba(var(--shadow-rgb), 0.42);
-}
-
-.action-button:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
-
-@media (any-hover: hover) {.action-button:not(:disabled):hover { filter: brightness(1.08); }
-}
-
-.action-button:not(:disabled):active { transform: translateY(1px); }
-
-/* ---- Bet mode picker -----------------------------------------------------
-   Approval requires each mode's cost and what it buys to be stated, so the
-   cost sits on the row itself rather than in a paytable elsewhere. */
-/* ---- A LIST, NOT THREE CARDS IN A CARD ------------------------------------
- * Each row used to carry its own 1px border, its own radius and its own wash,
- * inside a .popup that already has a border, a radius and a four-layer shadow.
- * That is one containment layer too many, and the outer one cannot be the one
- * to go - it is a dialog. So the rows gave theirs up.
- *
- * What replaces it is a hairline BETWEEN rows rather than around each one, which
- * is what turns three stacked boxes into a list - and a list is the right shape,
- * because these three are a volatility LADDER and are now drawn in that order
- * (see FAMILIES_BY_VOLATILITY). The meters make a clean right-hand column
- * climbing 1 / 3 / 5 down the page, which three separately-boxed cards actively
- * hid: every row was equally a card, so nothing about the arrangement said the
- * three were ordered at all.
- *
- * The gap goes with the borders. Rows that touch and are divided by a rule read
- * as one object with parts; rows that float apart read as three objects, which
- * is the thing being fixed.
- *
- * Only the SELECTED row is still a surface, and that is the point: with nothing
- * else boxed, one wash is unambiguous where before it was a fourth shade of
- * card. */
-.mode-list {
+/* ---- The shell: the whole window, no slab --------------------------------
+   The cards are the objects here, so there is no panel around them. The
+   backdrop (popup-backdrop.css) is the dim; this is a transparent layer over
+   it, its content centred in the window ("more centered on the page", the
+   owner, 2026-10-18) and scrolling when it cannot fit. */
+.popup.popup-mode {
+  --ru: max(6px, min(calc((100vw - 40px) / 88), calc((100vh - 110px) / 34)));
+  /* The cards' small type: the type floor, raised on a laptop and up (below),
+     where the capped unit alone would print the sentences under 9px. */
+  --mode-floor: var(--type-floor);
+  inset: 0;
+  left: 0;
+  top: 0;
+  width: auto;
+  max-height: none;
+  transform: none;
   display: flex;
   flex-direction: column;
-}
-
-.mode-option {
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--ui-bar) * 0.36);
-  padding: calc(var(--ui-bar) * 1.09);
-  border: none;
-  border-radius: calc(var(--ui-bar) * 0.55);
+  align-items: center;
+  justify-content: safe center;
+  padding: calc(var(--ru) * 1.6) calc(var(--ru) * 2);
+  border: 0;
+  border-radius: 0;
   background: none;
-  color: var(--ink-body);
-  text-align: start;
-  cursor: pointer;
-  text-transform: none;
-  transition: background var(--dur-control) var(--ease-out), color var(--dur-control) var(--ease-out);
+  box-shadow: none;
+  overflow: auto;
+  animation: mode-in 200ms var(--ease-out) both;
 }
 
-/* The divider, on every row but the first. Warm, like every other hairline on a
-   panel - see --panel-edge. */
-.mode-option + .mode-option {
-  border-top: 1px solid var(--panel-edge);
-}
-
-@media (any-hover: hover) {
-  /* ---- The picker rows wear their own mode's colour ------------------------
-   * Yellow for Classic, green for Second Chance, red for High Stakes, purple for
-   * Three of a Kind - the same four the bolts on each row are already burning,
-   * and the same four the bet display writes the live mode name in. The accent
-   * blue said only "this row is selectable", which every row is.
-   *
-   * --vol-color and --vol-rgb are set inline per row from the family (see
-   * ModePopup.svelte). They are the FAMILY's colour, deliberately not the live
-   * one: the picker rates the mode, and the Equal picks that push a four-guess
-   * rating up the ruler are a property of the bet, not of the mode being
-   * chosen. Purple is Three of a Kind's own colour, not an overflow - see
-   * tokens.css.
-   *
-   * The washes are 0.08 and 0.14. Red is what caps them: .mode-option-name is
-   * ~15px bold, which WCAG still counts as small text, and the name sits ON its
-   * own wash - at 0.18 red-on-red measures 4.43 and fails. 0.14 holds it at 4.74
-   * with the body copy above 10. */
-  .mode-option:hover {
-    background: rgba(var(--vol-rgb, var(--tint-rgb)), 0.08);
+@media (min-width: 1000px) and (orientation: landscape) {
+  .popup.popup-mode {
+    --ru: max(6px, min(calc((100vw - 40px) / 88), calc((100vh - 110px) / 34), 0.78vw));
+    --mode-floor: 9.5px;
   }
 }
 
-/* The one surface left in the list. 0.14 is a MEASURED ceiling, not a taste:
-   .mode-option-name is ~15px bold and sits ON its own wash, and at 0.18 red on
-   red measures 4.43 and fails. Re-measured after the borders came off - the
-   wash now sits directly on the panel rather than inside a bordered box, and
-   the figure is unchanged because the backdrop it is composited over is. */
-.mode-option.selected {
-  background: rgba(var(--vol-rgb, var(--tint-rgb)), 0.14);
+@keyframes mode-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The header, as on every panel - its voice and its close disc - but sat on
+   the dimmed table, so without the slab's face behind it. As wide as the rack. */
+.popup-mode .popup-head.mode-head {
+  position: static;
+  width: min(100%, calc(var(--ru) * 84.6));
+  margin: 0 0 calc(var(--ru) * 1.04);
+  padding: 0 calc(var(--ru) * 0.3);
+  border-bottom: 0;
+  background: none;
+  font-size: max(calc(var(--ru) * 1.48), var(--type-floor));
+  font-weight: 700;
+  color: var(--ink-strong);
+}
+
+.popup-mode:focus-visible .popup-head.mode-head {
+  box-shadow: none;
+}
+
+.popup-mode:focus-visible .mode-head > span {
+  text-decoration: underline 2px var(--tint);
+  text-underline-offset: 0.3em;
+}
+
+/* ---- The rack ------------------------------------------------------------
+   Five in a row, as tall as the tallest, so the figures and the buttons line
+   up across the rack. */
+.rack {
+  display: grid;
+  grid-template-columns: repeat(5, calc(var(--ru) * 16));
+  gap: calc(var(--ru) * 0.89);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mcard {
+  position: relative;
+  /* Front and back in ONE cell, so the card is as tall as the taller side
+     and neither ever spills out of it. */
+  display: grid;
+  border-radius: calc(var(--ru) * 0.89);
+  /* Turned over IN PLACE (the owner, 2026-10-19 - G3's turn without its
+     trip to the middle of the table): each card carries its own
+     perspective, so a card at the end of the rack turns about its own
+     middle rather than leaning toward the rack's. */
+  transform-style: preserve-3d;
+  transition: transform 520ms var(--ease-in-out);
+  /* Dealt up off the table as the panel arrives, one after another, and
+     settled: ease-out, no overshoot, the rack down inside half a second.
+     Backwards fill, so once it has landed the static rules own it. */
+  animation: deal-up 380ms var(--ease-out) backwards;
+  animation-delay: calc(200ms + var(--i) * 45ms);
+}
+
+@keyframes deal-up {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--ru) * 1.63)) rotate(calc((var(--i) - 2) * 1.2deg));
+  }
+}
+
+/* A card asking to confirm turns over; the other four stay as they are -
+   nothing dims (the owner, 2026-10-19). */
+.mcard.chosen {
+  transform: perspective(calc(var(--ru) * 90)) rotateY(180deg);
+}
+
+.mcard > .front,
+.mcard > .mode-confirm {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+}
+
+/* The card: the panel material, one containment layer. */
+.front {
+  display: grid;
+  grid-template-rows: auto calc(var(--ru) * 7.7) auto 1fr auto;
+  gap: calc(var(--ru) * 0.74);
+  padding-bottom: calc(var(--ru) * 1.04);
+  border-radius: inherit;
+  overflow: hidden;
+  border: 1px solid var(--panel-edge);
+  background: var(--panel-face), var(--panel);
+  box-shadow: var(--panel-elevation-low);
+  color: var(--ink-body);
+}
+
+/* The live family's card takes a wash of its own colour. */
+.mcard.live .front {
+  background:
+    linear-gradient(rgba(var(--fam-rgb), 0.1), rgba(var(--fam-rgb), 0.04)),
+    var(--panel-face),
+    var(--panel);
+}
+
+/* ---- The head: the MODE sign itself --------------------------------------
+   The bar's recipe at card size: a recessed dark well, the name LETTERED in
+   the family's colour, the bolts lit in it. */
+.sign {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--ru) * 0.52);
+  margin: calc(var(--ru) * 0.74) calc(var(--ru) * 0.74) 0;
+  padding: calc(var(--ru) * 0.89) calc(var(--ru) * 0.74) calc(var(--ru) * 0.67);
+  border-radius: calc(var(--ru) * 0.6);
+  background: var(--flap-well);
+  box-shadow:
+    inset 0 calc(var(--ru) * 0.22) calc(var(--ru) * 0.6) rgba(var(--shadow-rgb), 0.85),
+    inset 0 -1px 0 rgba(var(--panel-lit-rgb), 0.07),
+    0 1px 0 rgba(var(--panel-lit-rgb), 0.1);
+  /* BoltMeter lights its bolts in --vol-color: the family's own here. */
+  --vol-color: var(--fam);
+}
+
+.nm {
+  max-width: 100%;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: max(calc(var(--ru) * 1.93), var(--type-floor));
+  line-height: 1.05;
+  letter-spacing: 0.005em;
+  color: var(--fam);
+  text-align: center;
+  text-wrap: balance;
+  /* fitBlock, as on the bar's sign: two lines before it takes a smaller size,
+     so a long name in a long language keeps its size where it can. */
+  max-height: 2.2em;
+  overflow: hidden;
+}
+
+/* titleFaceFor's two other answers (game/ui/displayFace.ts): the body face
+   where Big Shoulders does not cover the string, the system's where neither
+   does. The file only; the sign's size and colour stay the rule's above. */
+.nm.face-body {
+  font-family: var(--font-body);
+  letter-spacing: -0.01em;
+}
+
+.nm.face-system {
+  font-family: sans-serif;
+  letter-spacing: 0;
+}
+
+.bolts {
+  --bolt-size: max(calc(var(--ru) * 0.89), 7px);
+  display: flex;
+}
+
+/* ---- The body ------------------------------------------------------------ */
+.vig {
+  min-height: 0;
+  margin: 0 calc(var(--ru) * 0.89);
+}
+
+.bl {
+  margin: 0 calc(var(--ru) * 1.04);
+  font-size: max(calc(var(--ru) * 0.96), var(--mode-floor));
+  line-height: 1.42;
+  color: var(--ink-body);
+}
+
+/* The one big figure: its caption above it, "your bet" small beside it, in
+   whatever order the locale puts them. */
+.fg {
+  align-self: end;
+  margin: 0 calc(var(--ru) * 1.04);
+  line-height: 1.1;
+}
+
+.fg-cap {
+  font-size: max(calc(var(--ru) * 0.96), var(--mode-floor));
+  font-weight: 600;
+  color: var(--ink-dim);
+}
+
+.fg-cap:first-child {
+  display: block;
+  margin-bottom: calc(var(--ru) * 0.15);
+  font-size: max(calc(var(--ru) * 0.89), var(--mode-floor));
+}
+
+.fg-cap:not(:first-child) {
+  margin-inline-start: calc(var(--ru) * 0.3);
+}
+
+.fg-fig {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: max(calc(var(--ru) * 2.52), var(--type-floor-figure));
+  letter-spacing: 0.005em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.fg-cost {
+  display: block;
+  margin-top: calc(var(--ru) * 0.3);
+  font-style: normal;
+  font-weight: 700;
+  font-size: max(calc(var(--ru) * 0.96), var(--mode-floor));
   color: var(--ink);
 }
 
-/* A selected row swallows the divider above it, so the wash reads as one block
-   rather than a block with a line stuck to its top edge. */
-.mode-option.selected,
-.mode-option.selected + .mode-option {
-  border-top-color: transparent;
+.ac {
+  margin: 0 calc(var(--ru) * 1.04);
 }
 
-.mode-option.selected .mode-option-name {
-  color: var(--vol-color, var(--tint));
-}
-
-/* min-width: 0 on the name and a hard `flex: 0 0 auto` on the meter, because
-   the panel is 215px wide at 320px and ships in 17 locales - "Second Chance" is
-   the short version. Without the first the name cannot shrink below its content
-   and pushes the meter out of the row; without the second the meter is what
-   gets squashed, and it is a RULER, so a bent one is worse than a wrapped
-   label. The name wraps; the seven stops never move. */
-.mode-option-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: calc(var(--ui-bar) * 0.9);
-}
-
-.mode-option-name,
-.mode-confirm-name { min-width: 0; overflow-wrap: anywhere; }
-
-/* The meter sits opposite the mode's name on the head row, which is already
-   space-between - so it needs no positioning of its own, only alignment.
-   align-self overrides the row's baseline alignment: the bolts are an image,
-   not text, and baseline-aligning them hangs them off the name's descender
-   line.
-
-   display: flex, NOT block. The meter inside is inline-flex, and inside a
-   block wrapper it sits in an anonymous line box whose height comes from the
-   wrapper's font - and .mode-option is a <button>, whose font-size is the
-   UA's 13.333px, which nothing here scales. At desktop the 20px name hid
-   that; at Popout S the name is 7px, the line box was still 17px, and the
-   meter dropped under the name on every row - Popout S stopped being Popout
-   L at half size. A flex wrapper has no line box, so the meter is exactly
-   as tall as its bolts. */
-.mode-option-vol {
-  display: flex;
-  align-self: center;
-  flex: 0 0 auto;
-  --bolt-size: calc(var(--ui-bar) * 1.27);
-}
-
-.mode-option-name { font-size: calc(var(--ui-bar) * 1.36); font-weight: 800; }
-
-.mode-option-blurb {
-  font-size: calc(var(--ui-bar) * 1.02);
-  line-height: 1.4;
-  color: var(--ink-dim);
-}
-
-.mode-option.selected .mode-option-blurb { color: var(--ink-body); }
-
-/* The ceiling, which approval requires stated per mode. Quiet like the blurb -
-   it is reference, not the thing being chosen - but the figure itself carries
-   weight: on the three four-guess families, priced the same, this is what
-   actually separates them, and on the fourth it sits beside the cost. */
-.mode-option-max {
-  font-size: calc(var(--ui-bar) * 1.02);
+/* The live family's card says so instead of offering to switch to itself. */
+.now {
+  display: block;
+  padding: calc(var(--ru) * 0.96) 0;
+  border-radius: calc(var(--ru) * 0.74);
+  border: 1px solid rgba(var(--fam-rgb), 0.45);
+  text-align: center;
+  font-size: max(calc(var(--ru) * 0.96), var(--mode-floor));
   font-weight: 700;
-  color: var(--ink-dim);
-  font-variant-numeric: tabular-nums;
+  color: var(--fam);
 }
 
-.mode-option.selected .mode-option-max { color: var(--ink); }
-
-/* The cost, on the one family where it is not 1x. Set like the ceiling above
-   it - same size, same weight - because on a 250x mode the price is as much
-   the thing being chosen as the payout is, and a quieter line would let a
-   player read the 4,583.3x and miss the 250x beside it. Rendered only when
-   cost != 1; see ModePopup.svelte. */
-.mode-option-cost {
-  font-size: calc(var(--ui-bar) * 1.02);
-  font-weight: 700;
-  color: var(--ink-dim);
-  font-variant-numeric: tabular-nums;
-}
-
-.mode-option.selected .mode-option-cost { color: var(--ink); }
-
-.mode-note {
-  margin: calc(var(--ui-bar) * 1) 0 0;
-  font-size: calc(var(--ui-bar) * 0.98);
-  line-height: 1.4;
-  color: var(--ink-dim);
-}
-
-/* ---- Keyboard focus -------------------------------------------------------
- * The menu controls. .bet-entry already showed focus through :focus-within on
- * its wrapper, and .rounds-selector did not - so typing a spin count gave no
- * indication of where the caret was.
- */
-.mode-option:focus-visible,
-.action-button:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
-}
-
-/* ---- Pressed states ------------------------------------------------------
- * These had hover and selected but nothing for the moment of the press, so a
- * tap on a touch screen - which never hovers - gave no acknowledgement at all
- * between finger down and the menu closing.
- */
-/* A press state that is NOT only motion.
- *
- * This was a 1px translate and nothing else, and the reduced-motion block below
- * sets transform: none - so a player on a phone with reduced motion on got
- * absolutely no acknowledgement from the biggest control in the panel. The
- * comment above exists because a finger cannot hover; reduced motion then took
- * back the one state it had left. The wash and the border stay put under
- * `prefers-reduced-motion`, so something always answers the press. */
-.mode-option:active {
-  transform: translateY(1px);
-  background: rgba(var(--vol-rgb, var(--tint-rgb)), 0.2);
-}
-
-/* ---- Reduced motion ----
-   The switch still moves: the knob's position IS the state, so freezing it
-   would leave the control unreadable. It travels instantly instead. */
-@media (prefers-reduced-motion: reduce) {.mode-option,
-.action-button {
-    transition: none;
-  }
-.mode-option:active,
-.action-button:not(:disabled):active {
-    transform: none;
-  }
-}
-
-/* ---- Mode change confirmation --------------------------------------------
- * Stake's approval checklist requires a confirmation step before a bet mode is
- * activated. It lives inside the picker rather than in a second stacked dialog:
- * a popup opening on top of a popup is how a player loses track of what they
- * were doing, and the picker already has the panel to itself.
- */
-/* The confirmation wears the colour of the mode it is about to switch TO, so
-   the whole panel answers the question it is asking. */
-/* A WASH, not a box. This carried a 0.42 border as well, which made it the last
-   card-inside-a-card left in the panel once the list rows gave theirs up - and
-   it is the same nesting for the same reason, just one of it instead of three.
-   The wash alone is enough here: it is the only thing on the screen, and the
-   colour it is washed in IS the answer to the question the header is asking.
-   0.14 matches the selected row exactly, so "the mode in question" is one
-   shade throughout the panel rather than two. Safe on contrast for the same
-   measurement, with room to spare - .mode-confirm-name is larger than
-   .mode-option-name, and the ceiling was set by the smaller of the two. */
+/* ---- The back: the confirmation ------------------------------------------
+   The same card material, edged inside in the family's colour, with the
+   family's name lettered at the top so the question says which mode it
+   means. Turned away until the card turns over. */
 .mode-confirm {
+  transform: rotateY(180deg);
   display: flex;
   flex-direction: column;
-  gap: calc(var(--ui-bar) * 0.55);
-  padding: calc(var(--ui-bar) * 1.09);
-  border-radius: calc(var(--ui-bar) * 0.55);
-  background: rgba(var(--vol-rgb, var(--ink-rgb)), 0.14);
-}
-
-.mode-confirm-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: calc(var(--ui-bar) * 0.9);
+  padding: calc(var(--ru) * 1.3) calc(var(--ru) * 1.04) calc(var(--ru) * 1.04);
+  border-radius: inherit;
+  border: 1px solid var(--panel-edge);
+  background: linear-gradient(rgba(var(--fam-rgb), 0.08), rgba(var(--fam-rgb), 0.08)), var(--panel-face), var(--panel);
+  box-shadow:
+    inset 0 0 0 2px rgba(var(--fam-rgb), 0.5),
+    var(--panel-elevation-low);
+  color: var(--ink-body);
 }
 
 .mode-confirm-name {
-  font-size: calc(var(--ui-bar) * 1.45);
+  margin-bottom: calc(var(--ru) * 0.6);
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: max(calc(var(--ru) * 1.93), var(--type-floor));
+  line-height: 1.05;
+  letter-spacing: 0.005em;
+  color: var(--fam);
+  overflow-wrap: anywhere;
+}
+
+.mode-confirm-name.face-body {
+  font-family: var(--font-body);
+  letter-spacing: -0.01em;
+}
+
+.mode-confirm-name.face-system {
+  font-family: sans-serif;
+  letter-spacing: 0;
+}
+
+.mode-confirm-q {
+  margin-bottom: calc(var(--ru) * 0.3);
+  font-size: max(calc(var(--ru) * 1.11), var(--type-floor));
   font-weight: 800;
-  color: var(--vol-color, var(--tint));
+  line-height: 1.2;
+  color: var(--ink-strong);
 }
 
-.mode-confirm-blurb {
-  margin: 0;
-  font-size: calc(var(--ui-bar) * 1.02);
-  line-height: 1.4;
-  color: var(--ink-body);
-}
-
-/* Sized above the blurb rather than level with it. The confirmation ran five
-   paragraphs at 1.02 / 1.02 / 0.98 / 0.98 / 0.98, three of them --ink-dim - so
-   the screen whose whole job is to make someone stop and read had nothing on it
-   sized to be read first. This figure is the reason anyone switches, so it is
-   the one thing that outranks the sentence above it. */
-.mode-confirm-max {
-  margin: 0;
-  font-size: calc(var(--ui-bar) * 1.24);
-  font-weight: 800;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-}
-
-/* The cost on the confirmation, at the ceiling's own weight: this step exists
-   so a 250x mode is never activated without its price having been read, and
-   the price is the half of the bargain the player is about to pay. Above the
-   ceiling in the markup, so the cost is read before the prize. */
-.mode-confirm-cost {
-  margin: 0;
-  font-size: calc(var(--ui-bar) * 1.24);
-  font-weight: 800;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-}
-
-/* What the guesses already on the board would top out at on the mode being
-   switched to. Under .mode-confirm-max and quieter than it, for the reason
-   .mode-panel-picked gives: the family ceiling is the headline and this is the
-   qualifier, and giving them equal weight would read as two competing claims. */
-.mode-confirm-picked {
-  margin: 0;
-  font-size: calc(var(--ui-bar) * 0.98);
+.mode-confirm p {
+  margin: 0 0 calc(var(--ru) * 0.3);
+  font-size: max(calc(var(--ru) * 0.93), var(--mode-floor));
+  line-height: 1.35;
   color: var(--ink-dim);
-  font-variant-numeric: tabular-nums;
 }
 
-/* The destructive-ish action is on the right and filled; the way out is on the
-   left and quiet. Cancel is a real button rather than a link so it carries the
-   same hit area as the thing it is protecting against. */
-/* wrap is the last resort, not the intent: Cancel still hugs its own text and
-   Switch still takes the rest. But `flex: 0 0 auto` on Cancel meant it could
-   not give a pixel back, so a locale where both labels run long pushed Switch
-   off the panel rather than reflowing. German, Finnish and Vietnamese are all
-   materially longer than "Cancel" / "Switch". */
+.mode-confirm .mode-confirm-cost {
+  font-weight: 800;
+  color: var(--ink);
+}
+
 .mode-confirm-actions {
   display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  gap: calc(var(--ui-bar) * 0.73);
-  margin-top: calc(var(--ui-bar) * 0.36);
+  gap: calc(var(--ru) * 0.59);
+  /* At the foot of the back, where the front's Switch was. */
+  margin-top: auto;
+  padding-top: calc(var(--ru) * 0.45);
 }
 
 .mode-confirm-cancel {
   flex: 0 1 auto;
-  min-width: 0;
-  padding: calc(var(--ui-bar) * 1.27) calc(var(--ui-bar) * 1.6);
-  border-radius: calc(var(--ui-bar) * 0.91);
+  padding: calc(var(--ru) * 0.89);
+  border-radius: calc(var(--ru) * 0.74);
   border: 1px solid rgba(var(--ink-rgb), 0.2);
   background: none;
   color: var(--ink-body);
-  font-size: calc(var(--ui-bar) * 1.53);
+  font: inherit;
+  font-size: max(calc(var(--ru) * 1.04), var(--type-floor));
   font-weight: 700;
   cursor: pointer;
-  text-transform: none;
-  transition: background var(--dur-control) var(--ease-out), border-color var(--dur-control) var(--ease-out);
 }
 
-@media (any-hover: hover) {.mode-confirm-cancel:hover {
-    background: rgba(var(--ink-rgb), 0.1);
-    border-color: rgba(var(--ink-rgb), 0.32);
+@media (any-hover: hover) {
+  .mode-confirm-cancel:hover {
+    border-color: rgba(var(--ink-rgb), 0.45);
+    color: var(--ink);
   }
 }
 
@@ -393,35 +375,191 @@
   outline-offset: 2px;
 }
 
-/* Filled in the target mode's own colour, with dark ink on it - the three
-   volatility colours are all light, and --on-vol-ink is the token that stops
-   this reaching for a white that would not read. Overrides .action-button's
-   blue gradient, which is still right for every other primary action. */
-.mode-confirm-go {
-  flex: 1 1 auto;
-  min-width: 0;
-  width: auto;
-  background: var(--vol-color, var(--tint));
+/* ---- The action: filled in the card's family colour ---------------------
+   Copied per panel rather than shared (CLAUDE.md, "each popup is its own
+   component"). Lit and contact-shadowed, never haloed. */
+.action-button {
+  --tint-rgb: var(--fam-rgb);
+  --tint-ink: var(--on-vol-ink);
+  width: 100%;
+  padding: calc(var(--ru) * 0.89) calc(var(--ru) * 1.18);
+  font: inherit;
+  font-size: max(calc(var(--ru) * 1.11), var(--type-floor));
+  font-weight: 800;
+  border: none;
+  border-radius: calc(var(--ru) * 0.74);
+  cursor: pointer;
+  background: linear-gradient(180deg, rgba(var(--tint-rgb), 1), rgba(var(--tint-rgb), 0.76));
   color: var(--tint-ink);
-  box-shadow: none;
+  box-shadow:
+    inset 0 1px 0 var(--panel-lit),
+    0 1px 2px rgba(var(--shadow-rgb), 0.5),
+    0 calc(var(--ru) * 0.44) calc(var(--ru) * 0.89) rgba(var(--shadow-rgb), 0.42);
 }
 
-@media (prefers-reduced-motion: reduce) {.mode-confirm-cancel {
-    transition: none;
+.mode-confirm-go {
+  flex: 1 1 auto;
+  width: auto;
+}
+
+@media (any-hover: hover) {
+  .action-button:hover {
+    filter: brightness(1.08);
   }
 }
 
-/* ---- Touch targets -------------------------------------------------------
- * See the note in popup-base.css for the 44/36/32 rule and for why
- * `pointer: coarse` alone. .mode-option is a three-line card and already clears
- * everything (~72px at 320px); the confirmation's two buttons did not - Switch
- * came out 28.7px and Cancel 30.7px, both under the 24px WCAG 2.2 AA floor once
- * borders are discounted, and Switch is the button that changes what the next
- * round costs.
- */
+.action-button:active {
+  transform: translateY(1px);
+}
+
+.action-button:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
 @media (pointer: coarse) {
-  .mode-confirm-cancel,
-  .mode-confirm-go {
-    min-height: 44px;
+  .action-button,
+  .mode-confirm-cancel {
+    min-height: 40px;
+  }
+}
+
+/* ---- The notes under the rack ---- */
+.mode-notes {
+  width: min(100%, calc(var(--ru) * 84.6));
+  margin-top: calc(var(--ru) * 1.04);
+  padding: 0 calc(var(--ru) * 0.3);
+}
+
+.mode-note {
+  margin: calc(var(--ru) * 0.3) 0 0;
+  max-width: 80ch;
+  font-size: max(calc(var(--ru) * 0.96), var(--mode-floor));
+  line-height: 1.45;
+  color: var(--ink-dim);
+}
+
+/* ---- A phone held upright: five rows ------------------------------------
+   The mock-up's phone layout: each family is a row - the sign across the
+   top, name and bolts side by side; the picture at the end beside the
+   sentence and the figure; the action across the foot. The panel scrolls
+   under its heading. Phones are the one place the layout may rearrange. The
+   unit follows the width, so the type reads at 9px and up. */
+@media (max-width: 620px) and (orientation: portrait) {
+  .popup.popup-mode {
+    --ru: calc((100vw - 28px) / 30);
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 0 14px 20px;
+  }
+
+  .popup-mode .popup-head.mode-head {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    width: auto;
+    margin: 0 -14px 4px;
+    padding: 14px 14px 10px;
+    font-size: max(calc(var(--ru) * 1.5), var(--type-floor));
+    background: linear-gradient(rgba(var(--shadow-rgb), 0.95) 70%, transparent);
+  }
+
+  .rack {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .front {
+    grid-template-columns: minmax(0, 1fr) calc(var(--ru) * 7.9);
+    grid-template-rows: auto auto auto auto;
+    gap: calc(var(--ru) * 0.7) calc(var(--ru) * 0.86);
+    padding-bottom: calc(var(--ru) * 1.03);
+  }
+
+  .sign {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: calc(var(--ru) * 0.86) calc(var(--ru) * 1.03);
+  }
+
+  .nm {
+    font-size: max(calc(var(--ru) * 2.07), var(--type-floor));
+    text-align: start;
+  }
+
+  .vig {
+    grid-column: 2;
+    grid-row: 2 / 4;
+    margin: 0 calc(var(--ru) * 0.86) 0 0;
+    height: calc(var(--ru) * 8.3);
+  }
+
+  .bl {
+    grid-column: 1;
+    grid-row: 2;
+    margin: 0 0 0 calc(var(--ru) * 1.03);
+    font-size: max(calc(var(--ru) * 1.08), var(--type-floor));
+  }
+
+  .fg {
+    grid-column: 1;
+    grid-row: 3;
+    margin: 0 0 0 calc(var(--ru) * 1.03);
+  }
+
+  .fg-fig {
+    font-size: max(calc(var(--ru) * 2.4), var(--type-floor-figure));
+  }
+
+  .ac {
+    grid-column: 1 / -1;
+    margin: 0 calc(var(--ru) * 1.03);
+  }
+
+  .mode-confirm {
+    padding: calc(var(--ru) * 1.03);
+  }
+
+  .mode-notes {
+    width: auto;
+  }
+
+  .mode-note {
+    font-size: max(calc(var(--ru) * 1.08), var(--type-floor));
+  }
+}
+
+/* ---- Reduced motion: no deal - the rack is simply there - and no turn in
+   depth: turning a card over is a crossfade between its two sides. ---- */
+@media (prefers-reduced-motion: reduce) {
+  .popup.popup-mode,
+  .mcard {
+    animation: none;
+  }
+
+  .mcard,
+  .mcard.chosen {
+    transition: none;
+    transform: none;
+  }
+
+  .mcard > .front,
+  .mcard > .mode-confirm {
+    backface-visibility: visible;
+    transition: opacity 120ms var(--ease-out);
+  }
+
+  .mode-confirm {
+    transform: none;
+    opacity: 0;
+  }
+
+  .mcard.chosen > .front {
+    opacity: 0;
+  }
+
+  .mcard.chosen > .mode-confirm {
+    opacity: 1;
   }
 }

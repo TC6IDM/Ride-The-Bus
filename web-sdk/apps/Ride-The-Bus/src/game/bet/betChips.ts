@@ -64,6 +64,21 @@ export function chipInlayAlt(index: number, count: number): boolean {
 }
 
 /**
+ * The chip a BET is drawn as, on the guess squares (the owner's call,
+ * 2026-10-18): the bet menu's own chip for the level the bet stands on, so a
+ * $25 bet sets down the $25 chip. A bet between two levels - a typed amount -
+ * takes the level BELOW it (rounded down, the owner's rule), and a bet under
+ * every level takes the smallest. Colour and inlay both come from the menu's
+ * rules above, so the chip on the square is the chip in the tray.
+ */
+export function chipForBet(amount: number, levels: readonly number[]): { colour: ChipColour; alt: boolean } {
+  const sorted = [...levels].sort((a, b) => a - b);
+  let index = 0;
+  for (let i = 0; i < sorted.length; i += 1) if (sorted[i]! <= amount + 1e-9) index = i;
+  return { colour: chipColour(index, sorted.length), alt: chipInlayAlt(index, sorted.length) };
+}
+
+/**
  * Drop the invisible bidi controls: the marks (LRM/RLM/ALM) and the
  * embedding/override/isolate formatting characters.
  *

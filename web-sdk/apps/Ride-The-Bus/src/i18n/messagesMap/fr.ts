@@ -171,8 +171,6 @@ export default {
 		'Afficher les manches récentes',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'Plus et moins fixent votre mise. Cliquez sur le montant pour ouvrir le menu des mises rapides.',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'Les éclairs montrent chaque mode avant vos choix Égal. Chaque choix Égal en ajoute un.',
 	'Click to continue':
 		'Cliquez pour continuer',
 	'Click to skip':
@@ -337,6 +335,14 @@ export default {
 		'Arrêter à une perte de',
 	'Stop on a single win of':
 		'Arrêter à un gain unique de',
+	'Limits':
+		'Limites',
+	'None set':
+		'Aucune',
+	'Loss %s':
+		'Perte %s',
+	'Win %s':
+		'Gain %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'Au clavier, les touches 1 à 4 changent les quatre pronostics.',
 	'It can stop by itself on a full game win, a loss limit or one big win.':
@@ -365,4 +371,10 @@ export default {
 		'Lancer le dé pour des pronostics au hasard',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'Le dé à côté des pronostics choisit les quatre au hasard. Rien n’est joué tant que vous ne distribuez pas.',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': 'Soulever moi-même la dernière carte',
+	'Drag any corner to peel': 'Faites glisser un coin pour la soulever',
+	'or press space bar to skip': 'ou appuyez sur la barre d’espace pour passer',
+	'Wins': 'Gagne',
+	'Wins up to': 'Gagne jusqu’à',
 };

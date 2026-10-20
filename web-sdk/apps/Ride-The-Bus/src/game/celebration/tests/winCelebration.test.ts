@@ -18,8 +18,9 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { GAME_MARKUP, GAME_SOURCES } from '../../sources.testlib.ts';
-import { BURST, BURST_COUNT, FAN, SUIT_CYCLE } from '../celebrationScene.ts';
-import { hopFan } from '../celebrationGestures.ts';
+import { FAN } from '../celebrationScene.ts';
+import { BREATH_STAGGER_MS, breatheHand, hopFan } from '../celebrationGestures.ts';
+import { CHIP_SETS, chipFlight } from '../chipStream.ts';
 
 const read = (rel: string) => readFileSync(resolve(import.meta.dirname, rel), 'utf8');
 
@@ -79,6 +80,8 @@ describe('escalation is intensity, never presence', () => {
       '--wc-beam-op',
       '--wc-fan-spread',
       '--wc-throw',
+      '--wc-chip-rate',
+      '--wc-chip-burst',
     ];
     for (const rule of CSS.match(/^\.tier-[a-z]+\s*\{[^}]*\}/gm) ?? []) {
       const name = rule.slice(0, rule.indexOf('{')).trim();
@@ -258,26 +261,54 @@ describe('the takeover is built out of the round', () => {
   });
 
   /**
-   * The burst is suit marks off the fan, and no one suit may dominate it - the
-   * marks come from the game's own deck, which is the whole reason they are
-   * marks rather than the generic particle sparks they replaced.
+   * THE CHIPS (the owner's W1, 2026-10-18) replaced the suit-mark burst. Every
+   * tier throws them - escalation is intensity, never presence - and every
+   * step up throws more of them, further: a ladder that went backwards would
+   * be invisible in review.
    */
-  test('the burst spreads its suits and its angles', () => {
-    assert.equal(BURST.length, BURST_COUNT);
-    const perSuit = new Map<string, number>();
-    for (const m of BURST) perSuit.set(m.suit, (perSuit.get(m.suit) ?? 0) + 1);
-    assert.equal(perSuit.size, SUIT_CYCLE.length, 'the burst dropped a suit');
-    const counts = [...perSuit.values()];
-    assert.ok(
-      Math.max(...counts) - Math.min(...counts) <= 1,
-      `one suit dominates the burst: ${JSON.stringify([...perSuit])}`,
-    );
-    // Jittered off the exact spokes, so the ring does not read as a circle.
-    const spoke = 360 / BURST_COUNT;
-    assert.ok(
-      BURST.every((m, i) => Math.abs(m.angle - i * spoke) > 0.001),
-      'a mark sits on its exact spoke angle - the ring is a perfect circle again',
-    );
+  test('every tier throws chips, and each step up throws more, further', () => {
+    const order = ['big', 'huge', 'mega', 'epic', 'max'];
+    const knob = (id: string, name: string) => {
+      const rule = CSS.match(new RegExp(`^\\.tier-${id}\\s*\\{[^}]*\\}`, 'm'));
+      assert.ok(rule, `no .tier-${id} rule`);
+      const match = rule[0].match(new RegExp(`${name}:\\s*([\\d.]+)`));
+      assert.ok(match, `.tier-${id} has no ${name}`);
+      return Number(match[1]);
+    };
+    for (const name of ['--wc-chip-rate', '--wc-chip-burst', '--wc-throw']) {
+      const values = order.map((id) => knob(id, name));
+      assert.ok(values[0]! > 0, `Big throws no chips (${name} is ${values[0]})`);
+      for (let i = 1; i < values.length; i++) {
+        assert.ok(values[i]! > values[i - 1]!, `${order[i]} does not raise ${name} over ${order[i - 1]}`);
+      }
+    }
+  });
+
+  test('a chip leaves from behind the hand, arcs out to a side, falls and fades', () => {
+    // A seeded generator, so the flight is pinned rather than sampled.
+    let seed = 7;
+    const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const unit = 10;
+    const sides = new Set<number>();
+    for (let n = 0; n < 40; n++) {
+      const flight = chipFlight(rand, unit, 1.75);
+      const at = flight.frames.map((f) => {
+        const m = String(f.transform).match(/translate\((-?[\d.]+)px, (-?[\d.]+)px\).*scale\(([\d.]+)\)/)!;
+        return { x: Number(m[1]), y: Number(m[2]), scale: Number(m[3]), opacity: Number(f.opacity) };
+      });
+      // From behind the cards: above the fan's origin, within the hand's width.
+      assert.ok(flight.y < 0 && Math.abs(flight.x) <= unit * 7.3, `starts at ${flight.x}, ${flight.y}`);
+      assert.ok(at[0]!.scale < 1 && at[0]!.opacity === 1, 'a chip should start small and lit, coming out from behind');
+      assert.ok(Math.min(...at.map((p) => p.y)) < 0, 'a chip never rises - it should arc');
+      assert.ok(at.at(-1)!.y > 0, 'a chip should fall past where it started');
+      assert.equal(at.at(-1)!.opacity, 0, 'a chip must be gone by the end of its flight');
+      sides.add(Math.sign(at.at(-1)!.x));
+    }
+    assert.ok(sides.has(-1) && sides.has(1), 'the chips all go one way');
+    assert.deepEqual([...CHIP_SETS], ['red', 'green', 'black', 'blue', 'white']);
+    for (const set of CHIP_SETS) {
+      assert.match(CSS, new RegExp(`data-set='${set}'\\]\\)\\s*\\{[^}]*--cc: var\\(--chip-${set}-cream\\)`), `the ${set} chip lost its table colours`);
+    }
   });
 });
 
@@ -363,33 +394,49 @@ describe('motion', () => {
     assert.deepEqual(hand(false).map((c) => c.label), ['card0', 'card1', 'card2', 'card3']);
   });
 
-  /**
-   * The burst is an event, not an ambience. Looping it was what made sixteen
-   * marks sit at sixteen unrelated radii and read as dust; the one-shot only
-   * works because WinCelebration keys the container on the tier.
-   */
-  test('the burst fires once and is re-fired by keying, not by looping', () => {
-    const mark = CSS.match(/^\.wc-mark\s*\{[^}]*\}/m);
-    assert.ok(mark, 'no .wc-mark rule');
-    assert.ok(
-      !/animation:[^;]*infinite/.test(mark[0]),
-      '.wc-mark loops - a burst that repeats forever is ambience, not a gesture',
-    );
-    assert.ok(
-      /\{#key activeTier\.id\}[\s\S]*?class="wc-burst"/.test(COMPONENT),
-      'the burst container is not keyed on the tier, so a promotion cannot re-fire it',
-    );
+  test('the hand breathes on top of the fan, not instead of it, the ticket with its middle', () => {
+    // The owner's call, 2026-10-18. Layered with composite 'add' like the hop,
+    // or the breath would replace the fan's tilt and offset.
+    const calls: { label: string; delay: number; composite?: string; iterations?: number }[] = [];
+    const made = (label: string) => ({
+      animate: (_frames: Keyframe[], options: KeyframeAnimationOptions) =>
+        calls.push({ label, delay: Number(options.delay), composite: options.composite, iterations: options.iterations }),
+    });
+    const cards = [0, 1, 2, 3].map((i) => made(`card${i}`));
+    const ticket = made('ticket');
+    breatheHand({
+      querySelectorAll: (selector: string) => (selector === '.wc-fan-card' ? cards : []),
+      querySelector: (selector: string) => (selector === '.wc-fan-ticket' ? ticket : null),
+    } as unknown as HTMLElement);
+    assert.deepEqual(calls.map((c) => c.label), ['card0', 'card1', 'card2', 'card3', 'ticket']);
+    assert.ok(calls.every((c) => c.composite === 'add'), 'a breath that replaces the transform drops the fan');
+    assert.ok(calls.every((c) => c.iterations === Infinity));
+    assert.deepEqual(calls.slice(0, 4).map((c) => c.delay), [0, 1, 2, 3].map((i) => i * BREATH_STAGGER_MS));
+    assert.equal(calls.at(-1)!.delay, 1.5 * BREATH_STAGGER_MS);
   });
 
   /**
-   * The title must NOT be keyed - that is the bug promoteTitle exists to
-   * replace, and it is one careless edit away from coming back now that the
-   * burst next to it legitimately is keyed.
+   * The chip stream is a loop by the owner's request (2026-10-18), and the one
+   * loop the takeover has besides the breath - so it must stop the moment the
+   * player continues, and every promotion must re-level it from the tier's
+   * knobs rather than from numbers in the script.
+   */
+  test('the chips stream from the tier’s knobs and stop on Continue', () => {
+    assert.match(COMPONENT, /function dismiss\(\)[\s\S]*?chips\?\.stop\(\)[\s\S]*?flyHand\(fanEl, 'out'\)/);
+    assert.match(COMPONENT, /void activeTier\.id;[\s\S]*?--wc-chip-rate[\s\S]*?--wc-chip-burst[\s\S]*?--wc-throw/);
+    assert.match(COMPONENT, /<div class="wc-fan"[^>]*>\s*(<!--[\s\S]*?-->\s*)?<div class="wc-chips"/, 'the chips must leave from inside the fan, under the cards');
+  });
+
+  /**
+   * The title must NOT be keyed - keying replayed its entrance on every
+   * promotion (the bug promoteTitle once replaced; the sign now rolls instead),
+   * and it is one careless edit away from coming back now that the burst next
+   * to it legitimately is keyed.
    */
   test('the title is still not keyed', () => {
     assert.ok(
       !/\{#key[^}]*\}\s*<div class="wc-title"/.test(COMPONENT),
-      'keying .wc-title replays its entrance on every promotion - use promoteTitle',
+      'keying .wc-title replays its entrance on every promotion - the blind rolls instead',
     );
   });
 
@@ -403,7 +450,8 @@ describe('motion', () => {
     assert.ok(block, 'no prefers-reduced-motion block');
 
     const hidden = block[0].match(/([^{}]*)\{\s*display:\s*none;\s*\}/);
-    assert.ok(hidden, 'reduced motion hides nothing at all - expected the burst and the sweep');
+    assert.ok(hidden, 'reduced motion hides nothing at all - expected the chips and the sweep');
+    assert.ok(hidden[1]!.includes('.wc-chips'), 'the chips still fly under reduced motion');
     for (const kept of ['.wc-fan', '.wc-beam']) {
       assert.ok(
         !hidden[1]!.includes(kept),

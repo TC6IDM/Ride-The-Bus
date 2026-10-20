@@ -172,8 +172,6 @@ export default {
 		'عرض الجولات الأخيرة',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'زرا الزائد والناقص يحددان رهانك. انقر على المبلغ لفتح قائمة الرهانات السريعة.',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'تُظهر الصواعق كل وضع قبل اختيارات «متساوٍ». كل اختيار «متساوٍ» يضيف صاعقة.',
 	'Click to continue':
 		'انقر للمتابعة',
 	'Click to skip':
@@ -335,6 +333,14 @@ export default {
 		'التوقف عند خسارة قدرها',
 	'Stop on a single win of':
 		'التوقف عند ربح واحد قدره',
+	'Limits':
+		'الحدود',
+	'None set':
+		'لم يُحدَّد شيء',
+	'Loss %s':
+		'خسارة %s',
+	'Win %s':
+		'ربح %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'على لوحة المفاتيح، تغيّر المفاتيح من 1 إلى 4 التخمينات الأربعة.',
 	'It can stop by itself on a full game win, a loss limit or one big win.':
@@ -363,4 +369,10 @@ export default {
 		'ارمِ النرد لتخمينات عشوائية',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'النرد بجانب التخمينات يختار الأربعة عشوائيًا. لا يُلعب شيء حتى توزّع.',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': 'اكشف الورقة الأخيرة بنفسي',
+	'Drag any corner to peel': 'اسحب أي زاوية لكشفها',
+	'or press space bar to skip': 'أو اضغط على مفتاح المسافة للتخطي',
+	'Wins': 'يربح',
+	'Wins up to': 'يربح حتى',
 };

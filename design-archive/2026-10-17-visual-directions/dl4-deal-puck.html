@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DL4 The dealer button</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* Poker's dealer button: a thick cream puck, engraved, edged in brass. Here it
+     says DEAL. Pressed, it pushes into the felt and its shadow tightens. */
+  .puck { width: 100%; height: 100%; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 40% 30%, #fffdf5, #ece3cf 60%, #cfc4ad);
+    box-shadow: 0 0 0 2px #b88a25, 0 4px 0 #a99a7c, 0 7px 12px rgba(0,0,0,0.5); transition: transform 90ms, box-shadow 90ms; }
+  .puck b { font: 900 calc(var(--d) * 0.3)/1 var(--font-display); color: #3a2a12; letter-spacing: 0.04em; text-shadow: 0 1px 0 rgba(255,255,255,0.7), 0 -1px 0 rgba(0,0,0,0.25); }
+  .puck::after { content: ''; position: absolute; }
+  .down .puck { transform: translateY(3px); box-shadow: 0 0 0 2px #b88a25, 0 1px 0 #a99a7c, 0 3px 6px rgba(0,0,0,0.5); }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div></div>
+<script src="kit/kit.js"></script><script src="kit/bar.js"></script><script src="kit/glyphs.js"></script><script src="kit/dealmock.js"></script>
+<script>
+  document.getElementById('board').style.backgroundImage = `url('kit/board-${RTB.size()}.webp')`;
+  DEALMOCK.mount(document.getElementById('s'), (w) => `<div class="puck" style="--d:${w}px"><b>DEAL</b></div>`, (n, d) => n.classList.toggle('down', d), 'Dealer button');
+</script>
+</body></html>

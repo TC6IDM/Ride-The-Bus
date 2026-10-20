@@ -53,12 +53,17 @@
      visible banding and was the single noisiest thing on screen. All that is
      left is a deep vignette, which is what actually makes the table read as
      lit. Any weave belongs on a felt playing surface, and this is a room. */
+  /* THE BACK ROOM (the owner's pick B1, 2026-10-17). The table used to stand
+     in a green void - a felt-coloured backdrop that read as the table's cloth
+     spilling past its rim. Now it stands in a room: walnut panelling to a brass
+     dado rail a third of the way down, dark boards below, and ONE lamp, from
+     the upper right, which is where every shadow on the table already says the
+     light is. Still: nothing here moves. --room-* in tokens.css. */
   background:
-    /* The vignette proper, kept as its own layer over the floor colour so the
-       falloff can bite hard at the frame edge without dragging the middle of
-       the room down with it. Flat until 56% out - past that it closes down to
-       near black in the corners, which is what pushes the eye into the table
-       and reads as a lit room rather than a green backdrop. */
+    /* The vignette proper, kept as its own layer over the room so the falloff
+       can bite hard at the frame edge without dragging the middle down with
+       it. Flat until 56% out - past that it closes down to near black in the
+       corners, which pushes the eye into the table and reads as a lit room. */
     radial-gradient(
       ellipse 76% 70% at 50% 46%,
       transparent 0%,
@@ -66,8 +71,49 @@
       rgba(0, 0, 0, 0.4) 80%,
       rgba(0, 0, 0, 0.74) 100%
     ),
-    radial-gradient(ellipse 88% 80% at 50% 46%, #123a26 0%, #0e2e1e 42%, #071c12 76%, #030d08 100%),
-    #071a10;
+    /* The lamp: a warm pool high on the right-hand wall. */
+    radial-gradient(60% 55% at 76% 14%, rgba(var(--room-lamp-rgb), 0.18), rgba(var(--room-lamp-rgb), 0.05) 45%, transparent 70%),
+    /* The dado rail: a lit brass edge over its own shadow. */
+    linear-gradient(180deg, transparent 0 33%, rgba(var(--rail-brass-rgb), 0.55) 33.2%, rgba(var(--rail-brass-rgb), 0.35) 33.6%, rgba(0, 0, 0, 0.6) 34.4%, transparent 34.6%),
+    /* The panelling: a groove every board, with a lit lip beside it. */
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.38) 0 2px, rgba(var(--room-lamp-rgb), 0.035) 2px 4px, transparent 4px 132px),
+    /* And the grain. */
+    repeating-linear-gradient(90deg, rgba(var(--room-lamp-rgb), 0.012) 0 1px, transparent 1px 7px),
+    linear-gradient(180deg, var(--room-panel-lit) 0%, var(--room-panel) 33%, var(--room-floor) 34.6%, var(--room-floor-deep) 100%);
+}
+
+/* A print on the wall, top left, clear of the title and the session panel
+   (top right): the route the game is named for, its four stops and the
+   terminus, in a walnut frame. Drawn here, not painted; dim, as a picture on
+   a wall behind a lit table is. */
+.room-print {
+  position: absolute;
+  left: max(14px, 5.3vw);
+  top: max(14px, 5.9vh);
+  width: clamp(56px, 12.5vw, 170px);
+  opacity: 0.55;
+}
+
+.room-print svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.room-print .print-frame { fill: var(--rail-wood-deep); stroke: var(--rail-wood-lit); stroke-width: 2; }
+.room-print .print-paper { fill: rgba(var(--room-print-paper-rgb), 0.18); }
+.room-print .print-route { fill: none; stroke: var(--choice-equal); stroke-width: 2.4; opacity: 0.8; }
+.room-print .print-stop { fill: var(--rail-wood-deep); stroke: var(--choice-equal); stroke-width: 1.6; }
+.room-print .print-end { fill: var(--choice-equal); }
+
+/* A phone held upright: the corner is small and the title wide; the print
+   steps down to a thumbnail. */
+@media (max-width: 620px) and (orientation: portrait) {
+  .room-print {
+    width: 15vw;
+    left: 3.6vw;
+    top: 2.7vh;
+  }
 }
 
 /* ---- the table ---------------------------------------------------------- */
@@ -420,29 +466,42 @@
       rgba(0, 0, 0, 0.58) 95%,
       rgba(0, 0, 0, 0.8) 100%
     ),
-    /* The edge spots, projected round the cylinder. EIGHT of them, 22.5deg
-       wide on 45deg centres - the same eight the top face carries, so a spot
-       runs over the rim and down the wall as one mark instead of the face and
-       the wall each having their own count (six against ten) and never meeting.
-       Each edge is x = 50% + 50%*sin(a) for a = centre +/- 11.25deg, which is
-       why the spots bunch toward the silhouettes. */
+    /* The edge spots, projected round the cylinder: EIGHT of them, 13deg wide
+       on 45deg centres - the spots of the guess chip (PickChip.svelte), so the
+       chips of the table and the chip a pick sets down are one chip (the
+       owner, 2026-10-18; they were 22.5deg wide). NO APOSTROPHES in a comment
+       inside a value: the Svelte CSS parser reads one as an open string. Each edge is
+       x = 50% + 50%*sin(a) for a = centre +/- 6.5deg, which is why the spots
+       bunch toward the silhouettes, and they are the same eight the top face
+       carries, so a spot runs over the rim and down the wall as one mark. */
     linear-gradient(
       90deg,
-      var(--chip-cream) 0 0.96%,
-      var(--chip-dark) 0.96% 8.42%,
-      var(--chip-cream) 8.42% 22.22%,
-      var(--chip-dark) 22.22% 40.24%,
-      var(--chip-cream) 40.24% 59.76%,
-      var(--chip-dark) 59.76% 77.78%,
-      var(--chip-cream) 77.78% 91.58%,
-      var(--chip-dark) 91.58% 99.04%,
-      var(--chip-cream) 99.04% 100%
+      var(--chip-cream) 0 0.32%,
+      var(--chip-dark) 0.32% 10.87%,
+      var(--chip-cream) 10.87% 18.87%,
+      var(--chip-dark) 18.87% 44.34%,
+      var(--chip-cream) 44.34% 55.66%,
+      var(--chip-dark) 55.66% 81.13%,
+      var(--chip-cream) 81.13% 89.13%,
+      var(--chip-dark) 89.13% 99.68%,
+      var(--chip-cream) 99.68% 100%
     );
 }
 
-/* The top face, read from the reference straight across a chip: cream band,
-   a hard dark ring, then a flat coloured centre - the centre carries almost no
-   highlight of its own, all the modelling is in the cream. */
+/* The top face: THE GUESS CHIP'S FACE (PickChip.svelte), seen in the table's
+   perspective (the owner's call, 2026-10-18: "update the chips on the table to
+   look like the chips that we place on the guess buttons"). A plain face, a
+   thin cream ring at 38-42% of the radius, the face again, and round the rim
+   the eight cream spots in the chip's own colour. It was the reference
+   photograph's face - a dark separation ring inside the spots, a flat centre to
+   71% - and the two read as two different chips.
+
+   THE STOPS ARE THE GUESS CHIP'S, x 1.414. PickChip draws its face with
+   radial-gradient(circle, ...), whose percentages run to the box's CORNER,
+   1.414 radii out; this one is closest-side, which runs to the edge. Copied as
+   they stood, the ring came out small and the spots ran as long spokes (the
+   owner, 2026-10-19); scaled, the ring sits at 55% of the radius and the spots
+   are short blocks on the outer 15%, as on the guess chip. */
 .chip-top {
   position: absolute;
   /* Above every disc in the stack. Each disc takes z-index --i + 1, so a fixed
@@ -455,43 +514,35 @@
   border-radius: 50%;
   background:
     /* Sheen across the face, running up to the light rather than across the
-       shot: 56deg, not the 102deg it was. 45deg in the table plane projects to
-       atan(1 / --flat) = 55.9deg on screen, the same conversion the edge spots
-       below use, so the bright side of a chip face and the lit side of its wall
-       are now the same side. */
+       shot: 45deg in the table plane projects to atan(1 / --flat) = 55.9deg
+       on screen, the same conversion the edge spots below use, so the bright
+       side of a chip face and the lit side of its wall are the same side. */
     linear-gradient(56deg, rgba(0, 0, 0, 0.2) 0%, transparent 34%, rgba(255, 255, 255, 0.12) 100%),
-    radial-gradient(closest-side, transparent 0 40%, rgba(0, 0, 0, 0.16) 40% 43%, transparent 43%),
-    /* The dark separation line sits INSIDE the coloured inlay rather than
-       straddling it and the cream spots - across the cream it turned grey and
-       read as a chrome ring. */
-    radial-gradient(closest-side, transparent 0 64%, rgba(0, 0, 0, 0.42) 64% 68%, transparent 68%),
-    radial-gradient(closest-side, var(--chip-face) 0 71%, transparent 71%),
-    /* The eight edge spots, seen from above. NOT a repeating-conic-gradient:
-       its sectors are evenly spaced in SCREEN angle, and on a squashed ellipse
+    radial-gradient(closest-side, var(--chip-face) 0 52.3%, var(--chip-cream) 53.7% 59.4%, var(--chip-face) 60.8% 83.4%, transparent 84.9%),
+    /* The eight spots seen from above. NOT a repeating-conic-gradient: its
+       sectors are evenly spaced in SCREEN angle, and on a squashed ellipse
        that is not the same as evenly spaced round the chip - so the spots on
-       the face never landed on the ones running down the wall. These sixteen
-       stops are the same eight 22.5deg spots as .chip-disc::after, converted
-       through tan(screen) = tan(round-the-chip) / --flat, which is why the
-       numbers look irregular. Sector centres: 0, 55.9, 90, 124.1, 180, 235.9,
-       270 and 304.1 degrees. */
+       the face would never land on the ones running down the wall. These are
+       the 13deg spots of the guess chip on 45deg centres, converted through
+       tan(screen) = tan(round-the-chip) / --flat. */
     conic-gradient(
-      var(--chip-cream) 0deg 16.4deg,
-      var(--chip) 16.4deg 44.7deg,
-      var(--chip-cream) 44.7deg 65.7deg,
-      var(--chip) 65.7deg 82.3deg,
-      var(--chip-cream) 82.3deg 97.7deg,
-      var(--chip) 97.7deg 114.3deg,
-      var(--chip-cream) 114.3deg 135.3deg,
-      var(--chip) 135.3deg 163.6deg,
-      var(--chip-cream) 163.6deg 196.4deg,
-      var(--chip) 196.4deg 224.7deg,
-      var(--chip-cream) 224.7deg 245.7deg,
-      var(--chip) 245.7deg 262.3deg,
-      var(--chip-cream) 262.3deg 277.7deg,
-      var(--chip) 277.7deg 294.3deg,
-      var(--chip-cream) 294.3deg 315.3deg,
-      var(--chip) 315.3deg 343.6deg,
-      var(--chip-cream) 343.6deg 360deg
+      var(--chip-cream) 0deg 9.6deg,
+      var(--chip-face) 9.6deg 49.6deg,
+      var(--chip-cream) 49.6deg 61.7deg,
+      var(--chip-face) 61.7deg 85.6deg,
+      var(--chip-cream) 85.6deg 94.4deg,
+      var(--chip-face) 94.4deg 118.3deg,
+      var(--chip-cream) 118.3deg 130.4deg,
+      var(--chip-face) 130.4deg 170.4deg,
+      var(--chip-cream) 170.4deg 189.6deg,
+      var(--chip-face) 189.6deg 229.6deg,
+      var(--chip-cream) 229.6deg 241.7deg,
+      var(--chip-face) 241.7deg 265.6deg,
+      var(--chip-cream) 265.6deg 274.4deg,
+      var(--chip-face) 274.4deg 298.3deg,
+      var(--chip-cream) 298.3deg 310.4deg,
+      var(--chip-face) 310.4deg 350.4deg,
+      var(--chip-cream) 350.4deg 360deg
     );
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3);
 }

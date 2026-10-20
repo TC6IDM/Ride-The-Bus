@@ -52,11 +52,39 @@ rather than on every turn. Nothing here is reworded.
   promotion — the rarest screen was the murkiest, and the scene visibly
   re-dimmed four times inside a single count-up. The takeover establishes a
   place once and stays in it; what escalates is the light, the colour, the hand
-  and the burst.
+  and the burst. Since 2026-10-18 it is drawn by its own `.wc-veil` layer so it
+  can fade on Continue under the flying hand, and there is **no backdrop blur**:
+  it was 2px on fine pointers, invisible at this veil and a full-viewport
+  repaint under every moving thing; the coarse-pointer veil that stood in for
+  it is now the only one.
+- **The hand comes off the board and goes back to it** (the owner's pick W1,
+  2026-10-18; `game/celebration/handFlight.ts`, `handFlight.test.ts`). Each fan
+  card is dealt OUT of its board slot as the takeover opens and flown back INTO
+  it on Continue; `ondismiss` waits for the landing, so the board's own cards
+  reappear exactly where the fan's came down (within 1px at all seven sizes,
+  measured on the first and last frames). It works because `.takeover-open`
+  only HIDES the card row: the slots stay laid out and measurable. The maths is
+  pure and tested: the fan card turns about a point below its centre
+  (`transform-origin: 50% 130%`, `FAN_ORIGIN_Y`) inside a `.wc-fan` that some
+  sizes scale, so a screen distance is not a transform distance. Before this the
+  fan rose from nowhere on `--ease-pop` and Continue removed everything in one
+  frame. Reduced motion skips the flight; the takeover appears and leaves.
+- **The hand stands clear of the words** (the owner's "no cover",
+  2026-10-18). The fan hung 3.6 units into the text block (1.4 in landscape) and
+  the title sat over the bottom of the cards; it now sits 2-3px above the title's
+  line at every size, the shadow band under the text is lighter and reaches
+  only just over the hand.
+- **Nothing on the takeover loops by itself.** The beam breathed on a 7.2s
+  loop and the prompt pulsed every 3.6s for as long as the screen was up; both
+  were the motion audit's "pulsing indicators" (2026-10-17) and both are still
+  now. Entrances are ease-out with no overshoot and fill backwards only, which
+  is what lets the leaving state fade them with plain transitions. The owner's
+  W1 adds a continuous chip stream and a breathing hand by request; those are
+  the only loops, and they are the owner's.
 - **Every win tier draws the whole celebration. Escalation is intensity, never
   presence.** All five tiers are full-bleed and draw every layer — veil, beam,
-  fan and suit burst; the `.tier-*` rules only turn them up (`--wc-beam-op`,
-  `--wc-fan-spread`, `--wc-throw`) and `winCelebration.test.ts`
+  fan and the chips; the `.tier-*` rules only turn them up (`--wc-beam-op`,
+  `--wc-fan-spread`, `--wc-throw`, `--wc-chip-rate`, `--wc-chip-burst`) and `winCelebration.test.ts`
   fails if one of them sets anything that is not a custom property. Max alone
   adds a layer: the deck's own crosshatch, sweeping once. **A tier that
   withholds a layer was tried and rejected** — Big/Huge got a bounded "plate" and
@@ -69,16 +97,72 @@ rather than on every turn. Nothing here is reworded.
     threshold, so the only real difference between Big and Epic was the word and
     the hue. The hand opening wider reads at a glance and is still intensity: a
     test pins it monotonic across the five.
-- **The burst is suit marks, not sparks, and it is a moment rather than a
-  loop.** Hearts, diamonds, clubs and spades through `SuitIcon`, thrown once per
-  promotion — `WinCelebration` keys the container on `activeTier.id` to re-fire
-  it. Sixteen marks on *independent infinite* loops with delays to 2.1s never
-  shared a `t=0`, so at any frame they sat at sixteen unrelated radii and read as
-  dust on the lens; several also ended up in the frame corners and over the
-  control bar. Ten larger marks, one origin, one instant, thrown off the fan
-  rather than the viewport centre, fading before they reach an edge. **Keying is
-  right here and wrong for `.wc-title`** — that is the bug `promoteTitle` exists
-  to replace, and both are now pinned by tests.
+- **The chips are the table's, and they stream** (the owner's W1 notes,
+  2026-10-18; `game/celebration/chipStream.ts`). This REPLACED the rule that the
+  burst was suit marks thrown once per promotion. History, so it is not
+  re-litigated:
+  - The suit marks replaced glowing particle dots, the burst every casino
+    template ships.
+  - Before that, sixteen marks on *independent infinite* loops never shared a
+    `t=0` and read as dust on the lens.
+  - The takeover audit (2026-10-17) then found the one-shot suit marks read as
+    debris on any still frame too. The owner asked for chips flying out from
+    behind the cards, then a continuous stream thickening each tier, then half
+    as many and flat. The passes are in the design archive's DECISIONS.md.
+
+  What it is now:
+  - **The look.** Flat chips, the table chip's face seen square-on (eight cream
+    spots, the dark ring) in the five `--chip-*` sets, drawn under
+    `.wc-chips :global(.wc-chip)` because script makes them.
+  - **Where they fly from.** The host is a zero-size point inside `.wc-fan`,
+    under the cards, so a chip leaves from behind the hand and passes behind
+    the sign and the figure.
+  - **The numbers are the tier's.** `--wc-chip-rate` (3/5/8/11/14 a second),
+    `--wc-chip-burst` (6/8/10/12/16 as the tier lands) and `--wc-throw` are
+    knobs on the `.tier-*` rules. A test pins all three monotonic, and
+    non-zero on Big: intensity, never presence. `--wc-chip-share` trims phones
+    and Popout S to 0.6.
+  - **The flight is pure and tested** (`chipFlight`, seeded): it starts small
+    and lit behind the hand, arcs to a side, falls past its start and is gone
+    by the end.
+  - **The stream and the hand's breath are the only loops**, both the owner's.
+    Continue stops the stream (`chips?.stop()` before the hand flies home).
+    Reduced motion throws none.
+  - **Measured.** 60fps on desktop and a phone. With the CPU slowed 4x, frame
+    times are the same with the chips hidden as shown (p95 50ms both, at
+    Epic), so the chips cost next to nothing. What does cost under that
+    throttle is the rest of the takeover, worth a look on real hardware.
+- **The hand breathes** (the owner's call, 2026-10-18; `breatheHand`): a
+  1.7s rise and fall, each card 210ms behind the last, the ticket with the
+  middle. It is layered with composite 'add' like the hop, so the fan's
+  transform is never replaced, and `handFlight` cancels it before flying the
+  hand home. A test pins the composite and the stagger.
+- **The title is never keyed** - keying it replayed its entrance on every
+  promotion (the bug `promoteTitle` once replaced). Pinned by a test.
+- **The tier is a destination blind** (the owner's pick W1, 2026-10-18). The
+  title is the loader's sign at the takeover's scale (`.wc-sign` / `.wc-roll` /
+  `.wc-stop`, built once, never keyed). Its roll holds every rung of the
+  family's ladder, and it rolls one stop per promotion (340ms ease-in-out;
+  under reduced motion it swaps), which replaced `promoteTitle`'s overshoot pop.
+  Each stop is lettered in ITS OWN tier's colours. It carries its `tier-*` class
+  (custom properties only, so the tier-rule test still holds) and re-derives
+  `--wc-hot` from the triplet, because `--wc-hot` is computed on the overlay
+  from the current tier and would otherwise inherit already resolved. Max is
+  the terminus, the ladder's one inversion: crimson cloth, cream letters, the
+  block in the cloth's deep red.
+  - **The route** under it lights a stop per rung with the bus at the one
+    reached, laid out in logical properties so it runs from the right in
+    Arabic. A one-rung ladder (Three of a Kind) has nowhere to ride and draws
+    no route.
+  - **Each stop's face is chosen per word** (`titleFaceFor`; `displayFace.test.ts`
+    follows the class onto the stop), and the word is fitted on ONE line by
+    `fitValue`. Measured in all 16 other locales: smallest at 320px is Russian
+    "Эпический выигрыш" at 24.2px, and at Popout S 15.5px. Nothing overflows.
+  - **On landscape the stack sits 4 units lower** (overlay padding-top). The
+    sign made it taller than the old one-line title, and centred it put the
+    hand over the lockup. Measured at the four landscape sizes: the hand is
+    under the lockup and the prompt is above the rail.
+  - `loader.css` draws the same object. Change the two together.
 - **The light is one beam, not a spinning cone**, aimed from the upper right
   because that is where `table.css` puts the light for the whole game. Two
   counter-rotating conic sweeps plus a radial bloom plus an elliptical vignette

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>H2 Flip through it</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  .veil { position: absolute; inset: 0; background: rgba(4,9,6,0.6); opacity: 0; transition: opacity 200ms; }
+  .veil.in { opacity: 1; }
+  .deck { position: absolute; left: 50%; top: 50%; width: min(560px, calc(100vw - 28px)); transform: translate(-50%, -46%) scale(0.96); opacity: 0; transition: transform 220ms var(--ease-out), opacity 200ms; }
+  .deck.in { transform: translate(-50%, -52%); opacity: 1; }
+  .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font: 700 18px/1 var(--font-body); color: var(--ink-strong); }
+  .top span:last-child { font-weight: 400; color: var(--ink-dim); }
+  /* One topic per card; paging slides in the direction you go. */
+  .viewport { position: relative; overflow: hidden; border-radius: 14px; height: min(400px, calc(100vh - 230px)); }
+  .page { position: absolute; inset: 0; padding: 18px; overflow: hidden; transition: transform 320ms var(--ease-in-out), opacity 320ms; }
+  .page h5 { margin: 0 0 10px; font: 900 26px/1 var(--font-display); color: var(--ink); }
+  .page p { margin: 0 0 8px; font: 400 13.5px/1.5 var(--font-body); color: var(--ink-body); }
+  .nav { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+  .nav button { width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.18); background: rgba(0,0,0,0.35); color: var(--ink); font: 700 18px/1 var(--font-body); }
+  .dots { display: flex; gap: 7px; }
+  .dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.25); transition: background 160ms, width 160ms; }
+  .dots i.on { background: rgb(76, 159, 254); width: 20px; border-radius: 4px; }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div><div class="veil" id="veil"></div></div>
+<script src="kit/kit.js"></script><script src="kit/bar.js"></script><script src="kit/howto.js"></script>
+<script>
+  const { wait, loop, size, el } = RTB, s = document.getElementById('s');
+  document.head.insertAdjacentHTML('beforeend', `<style>${HOWTO.CSS}</style>`);
+  RTB.courts().then(() => {
+    document.getElementById('board').style.backgroundImage = `url('kit/board-${size()}.webp')`;
+    const S = HOWTO.SECTIONS;
+    const d = el('div', 'deck', `<div class="top"><span>How to play</span><span>×</span></div>
+      <div class="viewport">${S.map((x) => `<div class="page panel"><h5>${x.title}</h5>${x.html}</div>`).join('')}</div>
+      <div class="nav"><button aria-label="Previous">‹</button><div class="dots">${S.map(() => '<i></i>').join('')}</div><button aria-label="Next" class="next">›</button></div>`);
+    s.appendChild(d);
+    const pages = [...d.querySelectorAll('.page')], dots = [...d.querySelectorAll('.dots i')], veil = document.getElementById('veil'), f = BAR.finger(s);
+    const show = (i) => { pages.forEach((p, k) => { p.style.transform = `translateX(${(k - i) * 104}%)`; p.style.opacity = k === i ? 1 : 0; }); dots.forEach((x, k) => x.classList.toggle('on', k === i)); };
+    loop(10000, async () => {
+      d.classList.remove('in'); veil.classList.remove('in'); pages.forEach((p) => (p.style.transition = 'none')); show(0); void d.offsetWidth; pages.forEach((p) => (p.style.transition = ''));
+      await wait(500);
+      const [x, y] = BAR.centre('info'); await f.press(x, y); veil.classList.add('in'); d.classList.add('in');
+      for (let i = 1; i < S.length; i++) { await wait(1500); const r = d.querySelector('.next').getBoundingClientRect(); await f.press(r.x + 22, r.y + 22); show(i); }
+      await wait(1400); d.classList.remove('in'); veil.classList.remove('in');
+    });
+  });
+</script>
+</body></html>

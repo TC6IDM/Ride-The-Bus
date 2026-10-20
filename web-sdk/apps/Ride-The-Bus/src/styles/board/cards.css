@@ -254,12 +254,21 @@
   text-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.6);
 }
 
+/* The figure is a split-flap board (SplitFlap.svelte, the owner's pick RW1):
+   it takes its colour from here - the states below still recolour it - and
+   its size from two custom properties, because a child's elements never
+   carry this sheet's scope. --flap-base is one flap at full size (the 30px
+   figure it replaced, as a 23px flap of 25px type); --flap-room is the most
+   the row may take, which a long currency shares out. */
 .running-win-amount {
-  font-size: calc(var(--ui) * 2.76); /* 30.4px */
-  font-weight: 900;
+  /* Floored so a flap's digit (1.08 of the flap) never prints under the money
+     figure's floor - Popout S's unit would put it at 8.7px. A long currency
+     still shares its room below that, as fitValue may. */
+  --flap-base: max(calc(var(--ui) * 2.1), calc(var(--type-floor-figure) / 1.08));
+  --flap-room: calc(var(--ui) * 30);
+  display: flex;
+  justify-content: center;
   color: var(--win);
-  text-shadow: 0 3px 14px rgba(var(--shadow-rgb), 0.65);
-  font-variant-numeric: tabular-nums;
 }
 
 .running-win-mult {
@@ -297,35 +306,11 @@
 .running-win.is-at-stake .running-win-amount { color: var(--ink-strong); }
 
 /* ---- The bust, acknowledged ------------------------------------------------
-   Not a celebration and not an apology - one beat so the round has an ending.
-
-   Wins had a five-tier full-screen production and a bust had nothing at all,
-   which read as unfinished rather than as restraint. The direction is the whole
-   message: the win beat scales UP and the figure settles DOWN, so the two are
-   never mistaken for each other even at a glance, and neither needs a word.
-   A partial return settles the same way: it is the same news, smaller. */
-.running-win.is-loss .running-win-amount,
-.running-win.is-partial .running-win-amount {
-  animation: rw-settle 520ms var(--ease-out) both;
-}
-
-@keyframes rw-settle {
-  from {
-    transform: translateY(calc(var(--ui) * -0.5));
-    opacity: 0.4;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .running-win.is-loss .running-win-amount,
-  .running-win.is-partial .running-win-amount {
-    animation: none;
-  }
-}
+   By its colour and its word, and NOTHING MOVES. The figure takes the spent
+   ink and the label says Kept or Busted. It used to settle DOWN as well - half
+   a unit, 520ms - which the owner saw as the running total jumping after every
+   round, and the rule is that the board never moves under the player
+   (2026-10-18; boardStill.test.ts). */
 
 /* Card = a 3D flip. .card-block is the perspective frame; .card-inner holds
    the two faces back-to-back and rotates 180deg when the card is revealed

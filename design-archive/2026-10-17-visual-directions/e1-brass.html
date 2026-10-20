@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>E1 Brass-inlaid tiles</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  .sq { position: absolute; display: grid; gap: 3px; padding: 6px; border-radius: 16%;
+    background: linear-gradient(160deg, #f6dc8e 0%, #d6a733 38%, #a87b16 72%, #7a570c 100%);
+    box-shadow: 0 1px 0 #f9e6ad inset, 0 -1px 0 rgba(0,0,0,0.35) inset, 0 3px 0 #5a3f07, 0 8px 14px rgba(0,0,0,0.5), 0 2px 3px rgba(0,0,0,0.5); }
+  .split-v { grid-template-columns: minmax(0,1fr) minmax(0,1fr); grid-template-rows: minmax(0,1fr); }
+  .split-h { grid-template-columns: minmax(0,1fr); grid-template-rows: minmax(0,1fr) minmax(0,1fr); }
+  .split-q { grid-template-columns: minmax(0,1fr) minmax(0,1fr); grid-template-rows: minmax(0,1fr) minmax(0,1fr); }
+  /* A felt field set into the brass: woven texture, sunk below the bezel. */
+  .seg { position: relative; border: 0; padding: 0; cursor: pointer; display: grid; place-items: center; border-radius: 3px;
+    background:
+      radial-gradient(rgba(255,255,255,0.05) 0.6px, transparent 0.8px) 0 0 / 3px 3px,
+      linear-gradient(180deg, rgba(0,0,0,0.28), rgba(255,255,255,0.04) 40%, rgba(0,0,0,0.18)),
+      var(--fill);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.55), inset 0 -1px 0 rgba(255,255,255,0.06);
+    transition: box-shadow 140ms var(--ease-out), transform 140ms var(--ease-out); }
+  .split-v .seg:first-of-type { border-radius: 11% 3px 3px 11% / 11% 3px 3px 11%; }
+  .split-v .seg:nth-of-type(2) { border-radius: 3px 11% 11% 3px / 3px 11% 11% 3px; }
+  .split-h .seg:first-of-type { border-radius: 11% 11% 3px 3px; }
+  .split-h .seg:nth-of-type(2) { border-radius: 3px 3px 11% 11%; }
+  .gl { width: 48%; color: var(--ink); filter: drop-shadow(0 1px 0 rgba(0,0,0,0.6)); display: grid; }
+  .split-q .gl { width: 58%; }
+  .gl svg { width: 100%; height: auto; }
+  /* Picked: pressed IN, lined with brass, full colour kept. Nothing else changes. */
+  .seg.on { transform: translateY(1px);
+    box-shadow: inset 0 0 0 2px #f2d27a, inset 0 0 0 3.5px rgba(80,55,6,0.6), inset 0 6px 10px rgba(0,0,0,0.65); }
+  .seg.on .gl { filter: drop-shadow(0 1px 0 rgba(0,0,0,0.6)) drop-shadow(0 0 0.5px #fff); }
+  .eq { position: absolute; left: 50%; top: 50%; width: 30%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; display: grid; place-items: center;
+    background: radial-gradient(circle at 35% 30%, #fbe7a6, #d6a733 55%, #8f6810); box-shadow: 0 2px 3px rgba(0,0,0,0.55), inset 0 -1px 0 rgba(0,0,0,0.3); }
+  .eq svg { width: 70%; }
+  .seg { min-width: 0; min-height: 0; overflow: hidden; font: inherit; color: inherit; }
+  .gl { aspect-ratio: 1; height: auto; max-height: 70%; }
+  .gl svg { display: block; width: 100%; height: 100%; }
+  .seg .chipmark { overflow: visible; }
+  .split-v .seg:first-of-type .gl { transform: translateX(-16%); }
+  .split-v .seg:nth-of-type(2) .gl { transform: translateX(16%); }
+  .split-h .seg:first-of-type .gl { transform: translateY(-14%); }
+  .split-h .seg:nth-of-type(2) .gl { transform: translateY(14%); }
+  .eq { width: 24% !important; }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div></div>
+<script src="kit/kit.js"></script>
+<script src="kit/guess.js"></script>
+<script>
+  const { g, place, el, size } = RTB;
+  const s = document.getElementById('s');
+  document.getElementById('board').style.backgroundImage = `url('kit/board-${size()}.webp')`;
+  GUESS.GUESSES.forEach((G, i) => { const n = el('div', '', GUESS.square(G)).firstElementChild; const r = g.squares[i];
+    place(n, { x: r.x - 3, y: r.y - 3, w: r.w + 6, h: r.h + 6 }); s.appendChild(n); });
+  GUESS.demo(s);
+</script>
+</body></html>

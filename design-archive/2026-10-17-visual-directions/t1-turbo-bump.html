@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>T1 Turbo bump</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  .row { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; }
+  .end { font: 600 12px/1 var(--font-body); color: var(--ink-dim); }
+  .read { margin-top: 8px; text-align: center; font: 700 13px/1 var(--font-body); color: rgb(var(--tint-rgb)); font-variant-numeric: tabular-nums; }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div></div>
+<script src="kit/kit.js"></script><script src="kit/bar.js"></script>
+<script>
+  const { wait, loop, size } = RTB, s = document.getElementById('s'), phone = size() === 'phone';
+  document.getElementById('board').style.backgroundImage = `url('kit/board-${size()}.webp')`;
+  const AMBER = '255, 206, 58';
+  // The panel today is a centred dialog for one slider. Here the slider IS the menu:
+  // a bump grown out of the turbo button, the same strings, the same 0-1 range.
+  const b = BAR.bump(s, 'turbo', phone ? 250 : 280, `
+    <div class="row"><span class="end">Normal</span><div class="slider"><div class="track"></div><div class="fill" style="width:0%"></div><div class="knob" style="left:0%"></div></div><span class="end">Instant</span></div>
+    <div class="read">Off: full animation</div>`, AMBER);
+  const ring = BAR.ring(s, 'turbo', AMBER), f = BAR.finger(s);
+  const fill = b.querySelector('.fill'), knob = b.querySelector('.knob'), read = b.querySelector('.read');
+  const set = (v) => { fill.style.width = knob.style.left = v * 100 + '%'; read.textContent = v <= 0 ? 'Off: full animation' : v >= 1 ? 'Instant' : Math.round(v * 100) + '% faster'; };
+  loop(6400, async () => {
+    b.classList.remove('in'); ring.classList.remove('on'); set(0);
+    await wait(700);
+    const [x, y] = BAR.centre('turbo'); await f.press(x, y);
+    ring.classList.add('on'); b.classList.add('in');
+    await wait(700);
+    const kr = () => knob.getBoundingClientRect();
+    f.at(kr().x + 10, kr().y + 10); f.on(); await wait(250);
+    set(0.6); f.at(kr().x + 10 + (b.querySelector('.slider').clientWidth * 0.6), kr().y + 10); await wait(700);
+    set(1); f.at(b.querySelector('.slider').getBoundingClientRect().right, kr().y + 10); await wait(700); f.off();
+    await wait(900);
+    await f.press(phone ? 200 : 640, phone ? 300 : 300);   // a tap anywhere else closes it
+    b.classList.remove('in'); ring.classList.remove('on');
+  });
+</script>
+</body></html>

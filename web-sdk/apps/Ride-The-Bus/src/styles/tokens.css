@@ -442,6 +442,7 @@
   --z-loader: 998; /* under Stake's own loader (999), over the game */
   --z-intro: 1000; /* the intro, and the replay's round details */
   --z-intro-popup: 1001; /* the round-details dimmer over the intro's table */
+  --z-handoff: 1002; /* the intro's squares, flying down to the board's (introHandoff.ts) */
   --z-takeover: 1200; /* the win takeover, over the game */
   /* The error dialog is the TOP layer, over the loader, the intro and the
      takeover. It sat at 90/91 - under the loader and the intro - so a launch
@@ -537,6 +538,53 @@
      the white half would be invisible, so the front gets the chrome half
      alone, warmed to the paper. */
   --card-edge: #cfc4ad;
+
+  /* Recent rounds' ticket stubs (the owner's pick R1, 2026-10-17). The same
+     stock as the cards but DIMMER - the owner: "dim the paper rows if they are
+     too bright". Ten full-brightness paper slabs in one panel were the
+     brightest thing on screen and drowned the cards printed on them, so the
+     stub is the card paper toned down a step toward the wood, and the cards on
+     it stay at full paper: the hand reads first, the stub second. The card's
+     own ink on it, and a win green dark enough to read on paper (--win is
+     built for the dark panels; on this it measures 1.2:1). */
+  --stub-paper-rgb: 217, 207, 184;
+  --stub-paper: rgb(var(--stub-paper-rgb));
+  --stub-paper-lit: #e3dac6;
+  --stub-paper-shade: #c8bb9c;
+  --win-on-paper: #145c33;
+
+  /* The running total's split-flap board (the owner's pick RW1, 2026-10-17;
+     SplitFlap.svelte): dark flap stock, a lighter upper half catching the one
+     light above, the hinge between them, all set into a well darker than the
+     table. Warm darks, the wood's family, never the cool grey of a generic
+     departures board. */
+  --flap-well: #0b0907;
+  --flap-top: #2a2622;
+  --flap-bottom: #1f1c19;
+  --flap-hinge: #060504;
+
+  /* The control bar as the table's front rail (the owner's pick X1,
+     2026-10-17; control-bar.css): walnut a step darker than the table's own
+     rim (#653008, table.css) because it is nearer and in its shadow, a brass
+     inlay along its top edge, and wells sunk into it for the money. */
+  --rail-wood-lit: #6b3a12;
+  --rail-wood: #4a280c;
+  --rail-wood-deep: #2f1806;
+  --rail-brass-rgb: 184, 138, 37;
+  --rail-brass: rgb(var(--rail-brass-rgb));
+  --rail-well: #0f0b08;
+
+  /* The back room the table stands in (the owner's pick B1, 2026-10-17;
+     table.css .scene): walnut panelling to a brass dado rail a third of the
+     way down, dark boards below, and the one lamp from the upper right that
+     lights the table. Darker than the table and the rail in front of it at
+     every step, so the room stays behind them. */
+  --room-panel-lit: #2b1910;
+  --room-panel: #20120a;
+  --room-floor: #120a06;
+  --room-floor-deep: #0b0604;
+  --room-lamp-rgb: 255, 210, 140;
+  --room-print-paper-rgb: 217, 204, 176;
 
   /* Courts and aces. The court figures are the English pattern
      (art-masters/courts/), which prints every court in red, blue, yellow and

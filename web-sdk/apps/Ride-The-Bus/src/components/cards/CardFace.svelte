@@ -50,6 +50,7 @@
 		faceKind,
 		pipLayout,
 		courtSymbol,
+		NUMBER_PRINT,
 	} from '../../game/ui/cardFaceLayout';
 	import { courtArt } from '../../game/ui/courtArt.svelte';
 
@@ -114,6 +115,13 @@
 				{#if compact}
 					{@render pip(FACE_CENTRE.x, FACE_CENTRE.y, ACE.pipSize, false)}
 				{:else}
+					<!-- The house print (NUMBER_PRINT): the frame in the card's own
+					     ink, and the crown as a watermark under the pips. -->
+					<g class="cf-print">
+						<path class="cf-print-line" d={NUMBER_PRINT.outer} />
+						<path class="cf-print-hair" d={NUMBER_PRINT.inner} />
+						<g class="cf-watermark">{@render crown(NUMBER_PRINT.watermark.x, NUMBER_PRINT.watermark.y, NUMBER_PRINT.watermark.size, false)}</g>
+					</g>
 					{#each pips as p (`${p.x} ${p.y}`)}
 						{@render pip(p.x, p.y, PIP_SIZE, p.inverted)}
 					{/each}
@@ -246,6 +254,30 @@
 		fill: none;
 		stroke: var(--cf-l);
 		stroke-width: 1.1;
+	}
+
+	/* The house print on a 2 to 10 (NUMBER_PRINT). The frame is the SUIT's ink,
+	   so a red card's border is red and a black card's black - the one-family
+	   rule; the watermark is the gold every crown is, at a whisper. */
+	.cf-print {
+		fill: none;
+		stroke-linecap: round;
+	}
+
+	.cf-print-line {
+		stroke: var(--cf-suit);
+		stroke-opacity: 0.42;
+		stroke-width: 1.3;
+	}
+
+	.cf-print-hair {
+		stroke: var(--cf-suit);
+		stroke-opacity: 0.18;
+		stroke-width: 0.8;
+	}
+
+	.cf-watermark {
+		opacity: 0.07;
 	}
 
 	.cf-court-letter {

@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CL3b The squeeze, peeled</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* CL3 with the owner's notes (2026-10-20). The peel shows the real card:
+     a lifted corner folds over and its underside is the face, so the corner
+     index comes into view as the fold grows. The squeeze starts only once the
+     card has arrived in front. Turning is automatic by default; with "I'll
+     peel it" the player grabs any corner and drags, and past a third of the
+     card the card turns over, shows its face, and goes back to its slot. */
+  .hm-card { transition: transform 380ms var(--ease-in-out); touch-action: none; }
+  .hm-card.out { transform: translate(var(--dx), var(--dy)) scale(var(--k)); transition: transform 420ms var(--ease-out); }
+  .hm-card .back { transition: none; }
+  .hm-card.out > .back { box-shadow: inset 0 0 0 3px var(--brand-paper), inset 0 0 0 4.5px var(--brand-chrome), 0 10px 24px rgba(0,0,0,0.55); }
+
+  /* The flap: the face, reflected across the fold, clipped to the lifted part.
+     Its shadow is on a wrapper, because a clip cuts its own element's shadow. */
+  .flapwrap { position: absolute; inset: 0; z-index: 3; pointer-events: none; filter: drop-shadow(-2px -3px 3px rgba(0,0,0,0.45)); }
+  .flap { position: absolute; left: 0; top: 0; transform-origin: 0 0; box-shadow: inset 0 0 0 1.5px var(--card-edge); }
+  .flap::after { content: ''; position: absolute; inset: 0; background: linear-gradient(var(--shade-dir, 135deg), rgba(0,0,0,0) 40%, rgba(0,0,0,0.16)); }
+
+  .dark { position: absolute; inset: 0; z-index: 5; pointer-events: none; background: rgba(4, 3, 2, 0.8); opacity: 0;
+    transition: opacity 200ms var(--ease-out); clip-path: inset(0 0 calc(100% - var(--pb)) 0); }
+  .dark.on { opacity: 1; transition: opacity 420ms var(--ease-out); }
+
+  .plaque { position: absolute; z-index: 7; transform: translate(-50%, 0); display: flex; align-items: baseline; gap: 8px; padding: 6px 12px 5px;
+    border-radius: 8px; opacity: 0; translate: 0 6px; transition: opacity 200ms var(--ease-out), translate 200ms var(--ease-out); white-space: nowrap; }
+  .plaque.on { opacity: 1; translate: 0 0; transition-delay: 260ms; }
+  .plaque .cap { display: flex; align-items: center; gap: 4px; font: 700 11px/1 var(--font-body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-dim); }
+  .plaque .cap svg { width: 12px; height: 12px; fill: #e0524f; }
+  .plaque .fig { font: 900 22px/1 var(--font-display); color: var(--ink-cream); letter-spacing: 0.01em; }
+  .hint { position: absolute; z-index: 7; transform: translateX(-50%); font: 700 12px/1 var(--font-body); color: var(--ink-strong); opacity: 0; transition: opacity 200ms; white-space: nowrap; }
+  .hint.on { opacity: 1; }
+  .hm-card.grabbable { cursor: grab; } .hm-card.grabbing { cursor: grabbing; }
+
+  /* Mock-only: the setting, here so it can be tried in place. */
+  .mode { position: absolute; z-index: 9; left: 10px; top: 10px; display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: rgba(0,0,0,0.6); font: 700 12px/1 var(--font-body); }
+  .mode button { font: inherit; color: var(--ink-body); background: none; border: 0; border-radius: 999px; padding: 7px 11px; cursor: pointer; }
+  .mode button[aria-pressed="true"] { background: var(--gold); color: #1a1408; }
+</style></head>
+<body>
+<div class="stage" id="s"></div>
+<script src="kit/kit.js"></script><script src="kit/holdmock.js"></script>
+<script>
+  const H = HOLDMOCK, { G, card, back, s, phone } = H, el = RTB.el, root = document.documentElement.style;
+  root.setProperty('--pb', G.playBottom + 'px');
+  const Wc = G.slot.w, Hc = G.slot.h;
+  const dark = el('div', 'dark'); s.appendChild(dark);
+  const k = phone ? 1.32 : 1.5, toX = phone ? 195 : 600, toY = phone ? 318 : 312;
+  card.style.setProperty('--dx', toX - (G.slot.x + Wc / 2) + 'px');
+  card.style.setProperty('--dy', toY - (G.slot.y + Hc / 2) + 'px');
+  card.style.setProperty('--k', k); card.style.zIndex = 8;
+  const wrap = el('div', 'flapwrap'), flap = el('div', 'face flap'); wrap.appendChild(flap); card.appendChild(wrap);
+  Object.assign(flap.style, { width: Wc + 'px', height: Hc + 'px', display: 'none' });
+  const plaqueTop = toY + (Hc * k) / 2 + (phone ? 10 : 12);
+  const plaque = el('div', 'panel plaque', `<span class="cap">${H.heartSvg} pays</span><span class="fig">$1,354.20</span>`);
+  Object.assign(plaque.style, { left: toX + 'px', top: plaqueTop + 'px' }); s.appendChild(plaque);
+  const hint = el('div', 'hint', 'Drag any corner to peel'); Object.assign(hint.style, { left: toX + 'px', top: plaqueTop + (phone ? 44 : 48) + 'px' }); s.appendChild(hint);
+
+  // The setting (mock-only switch; in the game it would sit with Turbo).
+  let mine = new URLSearchParams(location.search).get('peel') === 'me';
+  const mode = el('div', 'mode', '<button type="button" data-v="auto">Turn it for me</button><button type="button" data-v="me">I’ll peel it</button>');
+  s.appendChild(mode);
+  const paintMode = () => mode.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.v === 'me') === mine)));
+  mode.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { mine = b.dataset.v === 'me'; paintMode(); } });
+  paintMode();
+
+  /* ---- The fold -----------------------------------------------------------
+     Corner C is lifted to point P. The fold is the perpendicular bisector of
+     CP. The back keeps the part on the far side of it; the lifted part is
+     reflected across it and, being the card's underside, shows the face: a
+     face point (u, v) lies under the back at (W - u, v), and the fold reflects
+     that. One affine map, so the flap is the real face, rotated, never a
+     drawing of a corner. */
+  const sub = (a, b) => [a[0] - b[0], a[1] - b[1]], dot = (a, b) => a[0] * b[0] + a[1] * b[1];
+  function clip(poly, f) {
+    const out = [];
+    for (let i = 0; i < poly.length; i++) {
+      const a = poly[i], b = poly[(i + 1) % poly.length], fa = f(a), fb = f(b);
+      if (fa >= 0) out.push(a);
+      if ((fa >= 0) !== (fb >= 0)) { const t = fa / (fa - fb); out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]); }
+    }
+    return out;
+  }
+  const area = (p) => Math.abs(p.reduce((s2, a, i) => { const b = p[(i + 1) % p.length]; return s2 + a[0] * b[1] - b[0] * a[1]; }, 0)) / 2;
+  const RECT = [[0, 0], [Wc, 0], [Wc, Hc], [0, Hc]];
+  const poly = (p) => `polygon(${p.map(([x, y]) => `${x.toFixed(2)}px ${y.toFixed(2)}px`).join(',')})`;
+  let lifted = 0;
+  function setPeel(C, P) {
+    const d = sub(P, C), len = Math.hypot(...d);
+    if (len < 0.5) { back.style.clipPath = ''; flap.style.display = 'none'; lifted = 0; return; }
+    const n = [d[0] / len, d[1] / len], M = [(C[0] + P[0]) / 2, (C[1] + P[1]) / 2];
+    const side = (X) => dot(sub(X, M), n);
+    const keep = clip(RECT, side), up = clip(RECT, (X) => -side(X));
+    back.style.clipPath = keep.length ? poly(keep) : 'inset(50%)';
+    lifted = area(up) / (Wc * Hc);
+    const [nx, ny] = n, mn = dot(M, n);
+    const a = -(1 - 2 * nx * nx), b = 2 * nx * ny, c = -2 * nx * ny, dd = 1 - 2 * ny * ny;
+    const e = Wc * (1 - 2 * nx * nx) + 2 * mn * nx, f = -2 * Wc * nx * ny + 2 * mn * ny;
+    flap.style.display = '';
+    flap.style.transform = `matrix(${a},${b},${c},${dd},${e},${f})`;
+    flap.style.clipPath = poly(up.map(([x, y]) => [Wc - x, y]));
+    flap.style.setProperty('--shade-dir', `${Math.atan2(nx, -ny) * 180 / Math.PI}deg`);
+  }
+  const tween = (ms, step) => new Promise((done) => {
+    if (RTB.reduced() || ms <= 0) { step(1); done(); return; }
+    const t0 = performance.now();
+    const tick = (now) => { const t = Math.min(1, (now - t0) / ms); step(t); t < 1 ? requestAnimationFrame(tick) : done(); };
+    requestAnimationFrame(tick);
+  });
+  const arrived = () => new Promise((done) => {
+    let ok = false; const fin = () => { if (!ok) { ok = true; done(); } };
+    card.addEventListener('transitionend', function te(e) { if (e.target === card && e.propertyName === 'transform') { card.removeEventListener('transitionend', te); fin(); } });
+    setTimeout(fin, 700);
+  });
+
+  // The auto squeeze: the near-left corner, the one whose underside carries
+  // the index, lifted along the diagonal to 45% of the card's width.
+  const AUTO_C = [0, Hc], PEEL_MAX = Wc * 0.45;
+  const autoP = (p) => [AUTO_C[0] + p, AUTO_C[1] - p];
+
+  // The manual peel: any corner, dragged; past a third of the card it turns.
+  const CORNERS = [[0, 0], [Wc, 0], [Wc, Hc], [0, Hc]], DONE_AT = 0.32, GIVE_UP_MS = 12000;
+  let grab = null, finish = null;
+  const local = (e) => { const r = card.getBoundingClientRect(); return [(e.clientX - r.left) / k, (e.clientY - r.top) / k]; };
+  card.addEventListener('pointerdown', (e) => {
+    if (!finish) return;
+    const p = local(e), C = CORNERS.reduce((best, c) => (Math.hypot(...sub(p, c)) < Math.hypot(...sub(p, best)) ? c : best));
+    if (Math.hypot(...sub(p, C)) > Wc * 0.42) return;
+    grab = C; card.setPointerCapture(e.pointerId); card.classList.add('grabbing'); hint.classList.remove('on');
+  });
+  card.addEventListener('pointermove', (e) => {
+    if (!grab || !finish) return;
+    setPeel(grab, local(e));
+    if (lifted >= DONE_AT) { const f = finish; finish = null; grab = null; card.classList.remove('grabbing', 'grabbable'); f(); }
+  });
+  card.addEventListener('pointerup', async () => {
+    if (!grab) return;
+    const C = grab, r = card.style; grab = null; card.classList.remove('grabbing');
+    // Let go too early: the corner falls back flat.
+    const from = lastP; await tween(180, (t) => setPeel(C, [from[0] + (C[0] - from[0]) * t, from[1] + (C[1] - from[1]) * t]));
+  });
+  // From the keyboard: Space or Enter turns it, as the slam does today.
+  addEventListener('keydown', (e) => {
+    if (!finish || (e.key !== ' ' && e.key !== 'Enter')) return;
+    e.preventDefault(); const f = finish; finish = null; grab = null; card.classList.remove('grabbing', 'grabbable'); f();
+  });
+  let lastP = [0, 0];
+  card.addEventListener('pointermove', (e) => { if (grab) lastP = local(e); }, true);
+
+  H.play({
+    ownTurn: true,
+    reset() {
+      card.classList.remove('out', 'grabbable', 'grabbing'); dark.classList.remove('on'); plaque.classList.remove('on'); hint.classList.remove('on');
+      H.read.style.opacity = ''; setPeel([0, 0], [0, 0]);
+    },
+    hold(r) {
+      flap.innerHTML = RTB.face(...r.card);
+      card.classList.add('out'); dark.classList.add('on'); plaque.classList.add('on');
+      H.read.style.transition = 'opacity 200ms'; H.read.style.opacity = '0';
+    },
+    async holdUntil() {
+      // Nothing peels until the card is in front.
+      await arrived();
+      if (!mine) {
+        await tween(H.CLIMB, (t) => setPeel(AUTO_C, autoP(PEEL_MAX * t)));
+        await RTB.wait(H.TOP);
+        return;
+      }
+      card.classList.add('grabbable'); hint.classList.add('on');
+      await new Promise((done) => {
+        finish = done;
+        // Never strand the round: an untouched card turns itself.
+        setTimeout(async () => { if (finish === done) { finish = null; hint.classList.remove('on'); await tween(700, (t) => setPeel(AUTO_C, autoP(PEEL_MAX * t))); done(); } }, GIVE_UP_MS);
+      });
+    },
+    async strike() {
+      hint.classList.remove('on');
+      // The corner drops and the card turns over where it is, shows its face
+      // for a beat, then goes back to its slot.
+      setPeel([0, 0], [0, 0]);
+      await H.turn();
+      await RTB.wait(560);
+      plaque.classList.remove('on'); dark.classList.remove('on'); H.read.style.opacity = '';
+      card.classList.remove('out');
+      await RTB.wait(380);
+    },
+  });
+</script>
+</body></html>

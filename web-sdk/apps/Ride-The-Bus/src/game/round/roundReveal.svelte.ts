@@ -23,8 +23,13 @@ import { applyBust, bookTicket, forgivenessAvailable, quantizeMultiplier, ticket
 import { FREE_CHOICE, isCleanSweep, stageCount } from '../math/modes';
 import { holdClimbMs, lastCardHoldMs, lastCardHolds, lastCardTier, lastCardTunnels } from '../math/winTiers';
 import { familyRules, winTiers } from '../bet/betState.svelte';
-import { DEAL_REST_MS, cueLead, paceMs, pacing, revealWait } from './revealPacing.svelte';
+import { DEAL_REST_MS, cueLead, dealTiming, flipDurSec, paceMs, pacing, revealWait } from './revealPacing.svelte';
+import { reducedMotion } from '../celebration/celebrationGestures';
 import { resetForNewRound, round } from './roundState.svelte';
+import { auto } from './autoplaySettings.svelte';
+import { peel } from './peelSetting.svelte';
+import { squeezeEnd, squeezeListen, squeezeOut, squeezePeel, squeezeTurnAndHome, squeezeWaitForPlayer } from './squeeze.svelte';
+import { stateUrlDerived } from 'state-shared';
 import { settleRound } from './roundSettle.svelte';
 
 // Payout model mirrors math-sdk games/ride_the_bus/game_calculations.py +
@@ -118,8 +123,13 @@ export async function playRevealSequence() {
   // began with a card already landing.
   //
   // Under an instant reveal the per-card cues below fall in behind it at the
-  // same riffle spacing, so the whole round reads as one dealt hand.
-  sound.playDeal();
+  // same riffle spacing, so the whole round reads as one dealt hand. When the
+  // hand is animated, each riffle lands as its card reaches the deck - the
+  // board's own clock, dealTiming - and when it is not, they come at once.
+  const dealSec = Number(flipDurSec());
+  const animated = dealSec > 0 && !reducedMotion();
+  const deal = dealTiming(dealSec);
+  sound.playDeal(animated ? { lead: deal.gatherMs / 1000, spacing: deal.staggerMs / 1000 } : undefined);
 
   let running = 1;
   let busted = false;
@@ -140,6 +150,9 @@ export async function playRevealSequence() {
     // pick, written whether or not the pick lands - so the hold says how much
     // is at stake and nothing about the result. See lastCardHoldMs.
     let releaseHold = () => {};
+    // Whether this card is SQUEEZED (squeeze.svelte.ts): a held card, out in
+    // front, peeled, turned and taken home - in place of rising in its slot.
+    let squeezed = false;
     if (i === last && !busted && mayHold) {
       // On a ticket family the last card has no price (the book writes 1.0)
       // and a right one is paid by the ticket - so what it could land is
@@ -168,23 +181,82 @@ export async function playRevealSequence() {
           // The voices and the strike scale with the same tier, and the hum is
           // tuned to this card's own stage-win chime.
           const heldTier = lastCardTier(landing, fullGameWin, winTiers()) ?? 'big';
-          releaseHold = sound.playLastCardHold(round.holdClimbMs / 1000, heldTier, i);
+          // THE SQUEEZE, unless motion is reduced (then the card rises as it
+          // always did). The player peels it only if they asked to, never on
+          // autoplay and never in a replay - those always peel themselves.
+          if (!reducedMotion()) {
+            squeezed = true;
+            const manual = !auto.running && (stateUrlDerived.replay() ? devPeelInReplay() : peel.myself);
+            await squeezeOut(i, event.card, {
+              manual,
+              dark: round.holdTunnel,
+              // What it must be: the suit picked, or on Three of a Kind (whose
+              // pick is Equal) card 1's rank. And what it wins if it does.
+              ...(event.choice === 'equal'
+                ? { need: round.revealedCards[0]?.rank ?? '', needIsSuit: false }
+                : { need: event.choice, needIsSuit: true }),
+              wins: landing * round.initialBet,
+              upTo: topTicket(familyRules()) > 1,
+            });
+            if (manual) {
+              // The player's hand drives the hum ("Follows your hand", the
+              // owner, 2026-10-20): silent until the corner first lifts, as
+              // loud as it is lifted, stopped when it is put down again.
+              const hum = sound.peelHum(heldTier, i, round.holdClimbMs / 1000);
+              releaseHold = () => hum.release();
+              squeezeListen((share) => hum.follow(share));
+              // Space plays the automatic peel, on its own clock.
+              await squeezeWaitForPlayer(round.holdClimbMs, paceMs(hold, 0) + paceMs(650, 0) - round.holdClimbMs);
+              squeezeListen(null);
+            } else {
+              // The hum starts once the card is in front, with the peel.
+              releaseHold = sound.playLastCardHold(round.holdClimbMs / 1000, heldTier, i);
+              await squeezePeel(round.holdClimbMs, paceMs(hold, 0) + paceMs(650, 0));
+            }
+          } else {
+            releaseHold = sound.playLastCardHold(round.holdClimbMs / 1000, heldTier, i);
+          }
         }
-        await revealWait(hold, 0);
+        if (!squeezed) await revealWait(hold, 0);
       }
     }
-    await revealWait(650, 0);
-    releaseHold();
-    round.holdIndex = null;
-    round.revealedCards[i] = event.card;
-    // Spaced, not skipped, when the reveal is instant - see cueLead.
-    sound.playCardFlip(cueLead(i));
+    // The plain turn first, so the hold above ends at its beat: whether the
+    // card lands is read only at the turn, never in the hold's own block
+    // (winTiers.test.ts slices it).
+    if (!squeezed) {
+      await revealWait(650, 0);
+      releaseHold();
+      round.holdIndex = null;
+      round.revealedCards[i] = event.card;
+      // Spaced, not skipped, when the reveal is instant - see cueLead.
+      sound.playCardFlip(cueLead(i));
+    } else {
+      // The strike lands on the turn, in front, and so does the card's own
+      // answer - its win chime, or the bust or the forgiven cue - the moment
+      // its face shows (the owner, 2026-10-20), not when it is home again.
+      // The board's own card takes over face up once this one is home, and
+      // the branches below then sound nothing a second time.
+      await squeezeTurnAndHome(() => {
+        releaseHold();
+        sound.playCardFlip(cueLead(i));
+        if (event.correct) {
+          if (event.choice !== FREE_CHOICE) sound.playStageWin(i, cueLead(i));
+        } else if (forgivenessAvailable(familyRules(), i, forgivenessSpent)) {
+          sound.playForgiven(cueLead(i));
+        } else {
+          sound.playBust(cueLead(i));
+        }
+      });
+      round.holdIndex = null;
+      round.revealedCards[i] = event.card;
+      squeezeEnd();
+    }
     if (!busted && event.correct) {
       running *= event.payout;
       // A free card (Three of a Kind's card 1) is dealt, not won: it
       // gets the flip and nothing else. A stage-win cue on a 1.00x would tell
       // the player they had just got something right.
-      if (event.choice !== FREE_CHOICE) sound.playStageWin(i, cueLead(i));
+      if (event.choice !== FREE_CHOICE && !squeezed) sound.playStageWin(i, cueLead(i));
     } else if (!busted) {
       // A forgiven miss keeps its fraction and the round plays on - no bust
       // marker, no decay term (that stands in for stages a bust skips, and
@@ -198,7 +270,7 @@ export async function playRevealSequence() {
         // differ - "a red cross says the round ended here, and this one carried
         // on". Sounding them identically threw that away, and with it the only
         // thing Second Chance does that the other two families do not.
-        sound.playForgiven(cueLead(i));
+        if (!squeezed) sound.playForgiven(cueLead(i));
       } else {
         round.bustedIndex = i;
         // The stages never played, counted from the round's own length -
@@ -206,7 +278,7 @@ export async function playRevealSequence() {
         // settles with.
         running = applyBust(running, familyRules(), i, round.revealEvents.length);
         busted = true;
-        sound.playBust(cueLead(i));
+        if (!squeezed) sound.playBust(cueLead(i));
       }
     }
     // A right suit on Last Stop has not paid yet - the ticket is its price - so
@@ -240,6 +312,17 @@ export async function playRevealSequence() {
   }
 
   await settleRound();
+}
+
+/**
+ * DEV ONLY: ?dev_peel=me lets a local replay's squeezed card be peeled by hand
+ * (the replay RGS's link builder sets it - the owner, 2026-10-20). A replay
+ * otherwise always peels itself, since it cannot open the autoplay menu where
+ * the switch lives. Behind an `import.meta.env.DEV` literal, which Vite
+ * replaces with false in production, so a real replay can never wait on a hand.
+ */
+function devPeelInReplay(): boolean {
+  return import.meta.env.DEV && typeof location !== 'undefined' && new URLSearchParams(location.search).get('dev_peel') === 'me';
 }
 
 /** The pause before the ticket turns - longer than a card's own 650ms beat, so

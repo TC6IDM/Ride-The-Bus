@@ -15,6 +15,7 @@
      win. -->
 <script lang="ts">
   import BoltMeter from '../icons/BoltMeter.svelte';
+  import { squeezeSpaceDown, squeezeSpaceUp } from '../../game/round/squeeze.svelte';
   import ChoiceIcon from '../icons/ChoiceIcon.svelte';
   import MarkIcon from '../icons/MarkIcon.svelte';
   import SoundIcon from '../icons/SoundIcon.svelte';
@@ -372,6 +373,11 @@ function onKeyDown(event: KeyboardEvent) {
   if (event.repeat || spaceDown) return;
   spaceDown = true;
 
+  // A last card waiting for the player's hand (squeeze.svelte.ts): Space
+  // peels it - a tap plays the automatic peel through, a hold peels while
+  // held - instead of slamming the reveal (the owner, 2026-10-20).
+  if (squeezeSpaceDown()) return;
+
   // A live auto run treats Space like the Stop button.
   if (auto.running) { sound.playPress('primary'); onSpin(); return; }
   if (spinDisabled()) return;
@@ -437,6 +443,8 @@ function onKeyUp(event: KeyboardEvent) {
 
 function releaseSpace() {
   spaceDown = false;
+  // A Space peel let go (or focus lost mid-hold): a tap runs on, a hold falls back.
+  squeezeSpaceUp();
   if (spaceHoldTimer !== null) {
     clearTimeout(spaceHoldTimer);
     spaceHoldTimer = null;
@@ -534,11 +542,17 @@ $effect(() => {
        at 2.2 the stroke fills the stem and the shape read as a zigzag glyph,
        not a bolt. This is the symmetric bolt every icon set draws - a point,
        two shoulders, a tail - which outlines cleanly, and BoltMeter fills the
-       same path so the two are still one silhouette. -->
+       same path so the two are still one silhouette.
+
+       FILLED AT INSTANT (the owner's call, 2026-10-18): the one exception to
+       "controls are lines". At the top of the scale the outline fills in, so
+       the button says the reveal is off without the panel being opened. Where
+       super turbo is barred the scale stops at Fast and the bolt stays an
+       outline. -->
   {#if !jurisdiction.turboDisabled()}
     <button class="cb-float cb-turbo" class:active={pacing.turboSpeed > 0 || openPopup === 'turbo'} onclick={() => togglePopup('turbo')} aria-label={t('Turbo speed')}>
       <svg class="cb-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M13.5 2.2 4.5 13.4h7.3l-1.3 8.4 9-11.2h-7.3Z" />
+        <path d="M13.5 2.2 4.5 13.4h7.3l-1.3 8.4 9-11.2h-7.3Z" fill={pacing.turboSpeed >= 1 ? 'currentColor' : 'none'} />
       </svg>
     </button>
   {/if}
@@ -868,6 +882,7 @@ $effect(() => {
           {#key bet.family}
             <span
               class="cb-blind-name face-{titleFaceFor(familyName)}"
+              style:--name-ink={volatilityColorVar(bet.family)}
               use:fitBlock={familyName}
               in:roll={{ leaving: false }}
               out:roll={{ leaving: true }}

@@ -1,0 +1,95 @@
+/* The BUMP: a panel grown out of the control that opened it.
+ *
+ * The owner's picks T1 / S1 / B1 (2026-10-17). A menu that holds one control -
+ * turbo's slider, the two sound levels, the bet chips - opens over its own
+ * button instead of in the middle of the screen, with a pointer at that
+ * button, and the board stays in view (the backdrop behind a bump is clear:
+ * it only catches the tap that closes it). A menu people READ - How to Play,
+ * the mode picker, autoplay, recent rounds - stays a full panel.
+ *
+ * Imported by TurboPopup, SoundPopup and BetPopup, after popup-base.css, and
+ * nowhere else: Svelte scopes a sheet to its importer, and a rule here in a
+ * component that never renders .bump would be an unused selector in the gate.
+ *
+ * Placement is game/ui/bumpAnchor.ts: it writes left / top / max-height inline
+ * and --bump-pointer-x, the pointer's distance from the panel's left edge.
+ * Everything else - the material, the --tint contract, the type - is the
+ * panel's, unchanged.
+ */
+.popup.bump {
+  /* bumpAnchor places the panel; .popup's centring transform goes. */
+  transform: none;
+  /* A panel's own --bump-w widens it (the bet tray). A fallback rather than a
+     declaration here, because .popup.bump outranks the panel's own class and
+     would win the custom property it is meant to read. */
+  width: min(var(--bump-w, calc(var(--ui-bar) * 24)), calc(100vw - 20px));
+  display: flex;
+  flex-direction: column;
+  /* NOT the panel's scroller: the pointer hangs below the box and a scroller
+     would clip it. A bump that can outgrow its space (the chip tray) scrolls
+     inside, on the one part that can grow. */
+  overflow: visible;
+  padding: calc(var(--ui-bar) * 1.09) calc(var(--ui-bar) * 1.27);
+  /* Grows OUT of the control: from the pointer's foot. */
+  transform-origin: var(--bump-pointer-x, 50%) calc(100% + var(--bump-pointer) * 0.7);
+  animation: bump-in 180ms var(--ease-out) both;
+  --bump-pointer: max(calc(var(--ui-bar) * 1.1), 10px);
+}
+
+/* The pointer: the panel's own corner, turned to point down at the control.
+   Same material as the panel's foot, and its lower edges carry the panel's
+   rule, so it reads as part of the slab and not as a sticker on it. */
+.popup.bump::after {
+  content: '';
+  position: absolute;
+  left: var(--bump-pointer-x, 50%);
+  bottom: calc(var(--bump-pointer) * -0.5);
+  width: var(--bump-pointer);
+  height: var(--bump-pointer);
+  margin-left: calc(var(--bump-pointer) * -0.5);
+  transform: rotate(45deg);
+  background: var(--panel);
+  border-right: 1px solid var(--panel-edge);
+  border-bottom: 1px solid var(--panel-edge);
+  box-shadow: 3px 3px 6px rgba(var(--shadow-rgb), 0.35);
+}
+
+@keyframes bump-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* No header on a bump, so the focus ring the header carries on a full panel
+   (popup-base.css) goes on the slab's own edge: an inset line in the tint,
+   never transitioned, and no layout cost. */
+.popup.bump:focus-visible {
+  box-shadow: var(--panel-elevation), inset 0 0 0 2px var(--tint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popup.bump {
+    animation: popup-fade 120ms var(--ease-out) both;
+  }
+}
+
+/* ---- A phone held upright: the bump takes the type floor as one unit ------
+   On a phone the bar's unit is about 8px (6.6 at 320px), and every size in a
+   panel is a multiple of it, so the bump's labels printed at 6.7-8.7px under
+   the 9px phone floor (responsive.css), and turbo's track was 82-100px long
+   for a thumb (measured, 2026-10-17). The panels always had this; a bump fixes
+   it the way Popout S does (popup-base.css): it floors its OWN unit, so type,
+   track and padding grow together and the panel stays in proportion. 9.8px
+   puts the smallest label (1.02 units) at 10px, and turbo at 235px wide. The
+   formula is the phone bar's own (responsive.css), restated because a custom
+   property cannot read the value it is replacing. */
+@media (max-width: 620px) and (orientation: portrait) {
+  .popup.bump {
+    --ui-bar: max(9.8px, clamp(6px, min(2.05vw, 2.4vh), 11px));
+  }
+}

@@ -8,11 +8,13 @@
 	 * also dismiss - that would hide the number the player stopped to read.
 	 *
 	 * The count-up is SEGMENTED, one leg per tier the win passes through (see
-	 * countUpSegments). Every celebration opens at the figure the board last
-	 * showed, under that figure's tier (never at zero after the board printed $20,
-	 * and never on a lower tier's ceiling), and climbs to the top of that band,
-	 * then restarts at the next tier's floor and climbs
-	 * through that one, until the leg that ends on the amount actually won. Each
+	 * countUpSegments). Every celebration opens at zero under the FIRST tier and
+	 * climbs Big, Huge, Mega, Epic, Max as far as the win reaches (the owner's
+	 * call, 2026-10-18: a max win always climbs the whole ladder). It used to open
+	 * on the board's last figure and skip the bands below it; the board's figures
+	 * are hidden under the takeover, so nothing on screen disagrees with a count
+	 * from zero. Each leg climbs to the top of its band, then the next starts at
+	 * its floor, until the leg that ends on the amount actually won. Each
 	 * leg eases in and out, so the number accelerates away from the floor and
 	 * settles into the ceiling rather than running at a constant rate.
 	 *
@@ -38,28 +40,24 @@
 	 * so a sprite sheet for one screen would be a bad trade.
 	 */
 	import { currencyFractionDigits, numberToCurrencyString } from 'utils-shared/amount';
-	import { labelEms } from '../../game/ui/typeFit';
 	import { titleFaceFor } from '../../game/ui/displayFace';
+	import { fitValue } from '../../game/ui/fitValue';
 	import { fingerPointer } from '../../game/ui/pointerWords';
 
 	import MarkIcon from '../icons/MarkIcon.svelte';
-	import SuitIcon from '../icons/SuitIcon.svelte';
 	import CardFace from '../cards/CardFace.svelte';
+	import SplitFlap from './SplitFlap.svelte';
 	import TicketFace from '../cards/TicketFace.svelte';
 	import type { Card } from '../../game/round/roundContract';
 	import { t } from '../../i18n/i18nDerived';
 	import { sound } from '../../game/audio/sound';
 	import { CEILING_PAUSE_MS, countUpSegments, type WinTier } from '../../game/math/winTiers';
 	import { FAMILY_RULES, stageCount, type ModeFamily } from '../../game/math/modes';
-	import { BURST, fanFor } from '../../game/celebration/celebrationScene';
+	import { fanFor } from '../../game/celebration/celebrationScene';
+	import { chipStream, type ChipStream } from '../../game/celebration/chipStream';
 	import { formatMultiplier } from '../../game/ui/formatMultiplier';
-	import {
-		hopFan,
-		pop,
-		popAmount,
-		promoteTitle,
-		reducedMotion,
-	} from '../../game/celebration/celebrationGestures';
+	import { breatheHand, hopFan, reducedMotion } from '../../game/celebration/celebrationGestures';
+	import { flyHand } from '../../game/celebration/handFlight';
 
 	type Props = {
 		tier: WinTier;
@@ -81,11 +79,6 @@
 		 * never turned.
 		 */
 		family: ModeFamily;
-		/**
-		 * Where the count starts: the board's figure before the last card, as a
-		 * multiple of the base bet. See countUpSegments.
-		 */
-		startMultiplier: number;
 		/**
 		 * The four card slots of the round being celebrated, in deal order, with
 		 * null for any the player never reached.
@@ -123,25 +116,72 @@
 	 * The legs of the climb. Built once - the props for a given celebration never
 	 * change, and rebuilding mid-count would restart it.
 	 */
-	const segments = countUpSegments(props.multiplier, props.tier, props.tiers, props.startMultiplier);
+	const segments = countUpSegments(props.multiplier, props.tier, props.tiers);
 
 	/** Display units per 1x, for converting a leg's multipliers into money. */
 	const perX = props.multiplier > 0 ? props.amount / props.multiplier : 0;
 
 	/** Which leg is running. */
 	let segmentIndex = $state(0);
-	/** Amount currently on screen - from the first frame, where the count starts. */
-	let shown = $state(segments.length ? segments[0]!.fromMultiplier * perX : 0);
+	/** Where the count starts: the first leg's floor (zero, since 2026-10-18). */
+	const startAmount = segments.length ? segments[0]!.fromMultiplier * perX : 0;
+	/** The count's value, every frame. The board prints `printed`, below. */
+	let shown = $state(startAmount);
 	/** True until the final leg lands - drives which prompt shows. */
 	let counting = $state(true);
+
 	/**
-	 * Resting on a band's ceiling, between one leg finishing and the next
-	 * starting. Every tier gets the same pause - see CEILING_PAUSE_MS.
+	 * WHAT THE FLAPS PRINT (W1, 2026-10-18: the amount is a split-flap board,
+	 * SplitFlap.svelte, the running total's own). The count changes every frame
+	 * and a flap needs about 120ms to turn, so a flap re-keyed every frame would
+	 * restart its turn forever and never show a digit. The board takes the
+	 * latest figure at most every FLAP_STEP_MS, and the trailing timer means the
+	 * last one always lands - a ceiling, the settled total. The multiple under
+	 * it reads the same value, so the two never disagree mid-count.
 	 */
-	let holding = $state(false);
+	const FLAP_STEP_MS = 70;
+	let printed = $state(startAmount);
+	let printedAt = 0;
+	/** The figure the flaps last showed, to hear how many of them turned. */
+	let printedText: string | null = null;
+	/**
+	 * How many flaps a change turns: characters compared FROM THE RIGHT, the
+	 * way SplitFlap keys them, so a new digit arriving on the left is one flap
+	 * dropping in rather than every flap moving along.
+	 */
+	const flapsTurned = (before: string, after: string) => {
+		const a = Array.from(before).reverse();
+		const b = Array.from(after).reverse();
+		let turned = 0;
+		for (let i = 0; i < Math.max(a.length, b.length); i += 1) if (a[i] !== b[i]) turned += 1;
+		return turned;
+	};
+	$effect(() => {
+		const value = shown;
+		const wait = FLAP_STEP_MS - (performance.now() - printedAt);
+		const print = () => {
+			printed = value;
+			printedAt = performance.now();
+			// The board's own clack, once per new figure (sound.playFlapClatter).
+			// Not on the first figure: the takeover's fanfare is opening then.
+			const text = numberToCurrencyString(value, amountDigits);
+			const turned = printedText === null ? 0 : flapsTurned(printedText, text);
+			printedText = text;
+			if (turned > 0 && !leaving) sound.playFlapClatter(turned);
+		};
+		if (wait <= 0) return print();
+		const timer = setTimeout(print, wait);
+		return () => clearTimeout(timer);
+	});
 
 	/** Name and colours currently displayed. */
 	const activeTier = $derived<WinTier>(segments[segmentIndex]?.tier ?? props.tier);
+	/**
+	 * Which stop the sign has rolled to: the active tier's place on the
+	 * family's ladder. The count climbs from the first rung (countUpSegments),
+	 * so this walks 0, 1, 2 ... as the win is promoted.
+	 */
+	const stopIndex = $derived(Math.max(0, props.tiers.findIndex((tier) => tier.id === activeTier.id)));
 
 	/** How many cards the round dealt - see `family` in Props. */
 	const dealt = $derived(stageCount(FAMILY_RULES[props.family]));
@@ -155,38 +195,9 @@
 	 */
 	const ticketDelay = $derived(fanFor(dealt)[dealt - 1]!.delay + 0.14);
 
-	/** Multiplier matching what is on screen, so it never runs ahead of the title. */
-	const shownMultiplier = $derived(perX > 0 ? shown / perX : props.multiplier);
+	/** Multiplier matching what the board prints, so it never runs ahead of the title. */
+	const shownMultiplier = $derived(perX > 0 ? printed / perX : props.multiplier);
 
-	let titleEl: HTMLElement | undefined = $state(undefined);
-	/**
-	 * How wide the SETTLED figure prints, so the CSS can size the amount to fit
-	 * the screen rather than to a constant.
-	 *
-	 * Measured before this existed: High Stakes' 1910.20x cap on a
-	 * high-denomination currency gives "NGN 3,820,400,000.00", and at Mobile M
-	 * that ran off BOTH edges of the viewport - the one figure the whole screen
-	 * exists to hand over, unreadable.
-	 *
-	 * Taken from props.amount and NOT from `shown`, which is the climbing value.
-	 * Sizing off the live string would re-solve the font on every frame of the
-	 * count-up and visibly pump the headline; sizing off the final one means the
-	 * type is chosen once, for the widest string that will ever appear, and the
-	 * count grows into it.
-	 */
-	/**
-	 * The tier name, and the face that can draw ALL of it.
-	 *
-	 * Derived rather than called twice in the markup because t() is reactive and
-	 * the face has to be decided from the SAME string that gets rendered - call
-	 * it twice and a locale change between the two lands a class chosen for the
-	 * previous language. game/ui/displayFace.ts has the argument for why this is
-	 * a three-way answer rather than "display or not".
-	 */
-	const titleText = $derived(t(activeTier.label));
-	const titleFace = $derived(titleFaceFor(titleText));
-
-	const amountEms = $derived(labelEms(numberToCurrencyString(props.amount)));
 	/**
 	 * The count-up prints every frame at the FINAL amount's precision. Money is
 	 * shown exactly now, so a frame on its way to $0.711 would otherwise print
@@ -196,8 +207,17 @@
 	 */
 	const amountDigits = $derived(currencyFractionDigits(props.amount));
 
-	let amountEl: HTMLElement | undefined = $state(undefined);
 	let fanEl: HTMLElement | undefined = $state(undefined);
+	let overlayEl: HTMLElement | undefined = $state(undefined);
+	let chipsEl: HTMLElement | undefined = $state(undefined);
+	/** The chips (chipStream.ts), once the hand is down. See the effect below. */
+	let chips: ChipStream | null = null;
+	let streaming = $state(false);
+	/**
+	 * Continue was pressed and the hand is flying home: the overlay is going, so
+	 * a second tap or key must not dismiss it twice. See dismiss().
+	 */
+	let leaving = $state(false);
 
 	/**
 	 * When the celebration reached its final state, and how long a dismiss tap is
@@ -238,7 +258,6 @@
 
 	/** Mark the celebration finished: nothing left to count, only to dismiss. */
 	function settle() {
-		holding = false;
 		counting = false;
 		settledAt = performance.now();
 	}
@@ -246,17 +265,6 @@
 	let autoTimer: ReturnType<typeof setTimeout> | null = null;
 	let holdTimer: ReturnType<typeof setTimeout> | null = null;
 
-	/**
-	 * The pop the title gets when it is promoted.
-	 *
-	 * Driven imperatively rather than by a CSS class, because re-adding a class
-	 * does not restart an animation that has already run - the usual workarounds
-	 * are removing it, forcing a reflow and adding it back, or keying the
-	 * element. Keying is what caused the bug this replaces: it tore the title
-	 * down and rebuilt it, replaying the full entrance so the word disappeared
-	 * and rose back up between every tier. element.animate() restarts cleanly and
-	 * leaves the element alone.
-	 */
 	function clearHold() {
 		if (holdTimer) clearTimeout(holdTimer);
 		holdTimer = null;
@@ -284,8 +292,6 @@
 	 * at 40x as it does at 300x.
 	 */
 	function holdThenAdvance(index: number) {
-		holding = true;
-		popAmount(amountEl);
 		clearHold();
 		holdTimer = setTimeout(() => advanceTo(index + 1), CEILING_PAUSE_MS);
 	}
@@ -293,11 +299,9 @@
 	/** Leave the ceiling and start the next leg climbing. */
 	function advanceTo(index: number) {
 		clearHold();
-		holding = false;
 		sound.playWinTierUp(segments[index]!.tier.id);
 		runSegment(index);
-		// After runSegment, so the new word is what pops.
-		promoteTitle(titleEl);
+		// The sign rolls to the new stop off stopIndex; the hand hops with it.
 		hopFan(fanEl);
 	}
 
@@ -332,7 +336,6 @@
 		if (segment.isHold) {
 			shown = to;
 			settle();
-			popAmount(amountEl);
 			sound.playWinCountEnd(props.tier.id);
 			return;
 		}
@@ -401,6 +404,7 @@
 	 * unpredictable.
 	 */
 	function onTap() {
+		if (leaving) return;
 		if (!counting) {
 			// Swallow a tap that arrives on the heels of the celebration settling -
 			// see DISMISS_GRACE_MS.
@@ -427,12 +431,57 @@
 		onTap();
 	}
 
+	/**
+	 * Leave the way the hand came: the cards fly back to their board slots while
+	 * the words and the veil fade, and only then does the round hear the
+	 * takeover is gone (handFlight.ts). Under reduced motion the flight resolves
+	 * at once and the overlay simply goes.
+	 */
 	function dismiss() {
+		if (leaving) return;
 		if (autoTimer) clearTimeout(autoTimer);
 		clearHold();
 		cancelAnimationFrame(frame);
-		props.ondismiss();
+		leaving = true;
+		chips?.stop();
+		void flyHand(fanEl, 'out').then(() => props.ondismiss());
 	}
+
+	/** The takeover's --ui in px, read off a fan card (7.4 units wide). */
+	const unitPx = () => (fanEl?.querySelector<HTMLElement>('.wc-fan-card')?.offsetWidth ?? 0) / 7.4 || 8;
+
+	/**
+	 * The hand is dealt OUT of the board's slots, once, as the takeover opens.
+	 * When it is down it starts to breathe and the chips start to stream from
+	 * behind it (the owner's W1 notes, 2026-10-18).
+	 */
+	$effect(() => {
+		if (!fanEl) return;
+		const stream = chipStream(chipsEl, unitPx);
+		chips = stream;
+		void flyHand(fanEl, 'in').then(() => {
+			if (leaving) return;
+			breatheHand(fanEl);
+			stream.start();
+			streaming = true;
+		});
+		return () => stream.stop();
+	});
+
+	/**
+	 * Every promotion sets the stream to the new tier and throws its burst. The
+	 * numbers are the tier's own knobs in win-celebration.css, read off the
+	 * overlay after the tier class has changed (an effect runs after the DOM
+	 * update), so the ladder stays one table in one place.
+	 */
+	$effect(() => {
+		void activeTier.id;
+		if (!streaming || !overlayEl || !chips) return;
+		const css = getComputedStyle(overlayEl);
+		const knob = (name: string, fallback: number) => parseFloat(css.getPropertyValue(name)) || fallback;
+		const share = knob('--wc-chip-share', 1);
+		chips.level(knob('--wc-chip-rate', 3) * share, Math.round(knob('--wc-chip-burst', 6) * share), knob('--wc-throw', 1));
+	});
 
 	/**
 	 * Keys are taken on `window`, not on the element.
@@ -494,38 +543,23 @@
      would announce on every frame. -->
 <div
 	class="wc-overlay tier-{activeTier.id}"
+	class:is-leaving={leaving}
+	bind:this={overlayEl}
 	role="button"
 	tabindex="0"
 	aria-label={ariaLabel()}
 	onclick={onTap}
 	onkeydown={onKey}
 >
+	<!-- The veil, its own layer so it can fade out on Continue while the hand
+	     flies home over it. One veil for the whole ladder (--wc-veil). -->
+	<div class="wc-veil" aria-hidden="true"></div>
 	<!-- One wide soft beam from the upper right - the same light the table is lit
 	     by. Every tier draws it; the tier sets how bright. -->
 	<div class="wc-beam" aria-hidden="true"></div>
 	<!-- Max Win only, and the one thing no other tier draws. See the note in
 	     win-celebration.css. -->
 	<div class="wc-deck-sweep" aria-hidden="true"></div>
-
-	<!-- KEYED, and unlike the title that is the whole point.
-	     A burst is an event: it should fire when the tier is promoted and be
-	     over. The marks used to loop forever on independent delays, which meant
-	     they never shared a start and the ring only ever drifted. Keying tears
-	     the container down and rebuilds it on each promotion, which restarts the
-	     one-shot animation - the exact behaviour that was WRONG for .wc-title
-	     (see promoteTitle) and is right here. -->
-	{#key activeTier.id}
-		<div class="wc-burst" aria-hidden="true">
-			{#each BURST as mark}
-				<span
-					class="wc-mark"
-					style={`--angle: ${mark.angle}deg; --dist: calc(var(--ui) * ${mark.dist}); --spin: ${mark.spin}deg; font-size: calc(var(--ui) * ${mark.size}); animation-delay: ${mark.delay}s`}
-				>
-					<SuitIcon suit={mark.suit} scale={1} />
-				</span>
-			{/each}
-		</div>
-	{/key}
 
 	<div class="wc-body" aria-hidden="true">
 		<!-- The round's own hand, dealt above the figure.
@@ -542,6 +576,10 @@
 		     promotion would re-deal the hand four times during one count-up. It
 		     widens instead, off --wc-fan-spread. -->
 		<div class="wc-fan" bind:this={fanEl} aria-hidden="true">
+			<!-- The chips leave from here: a point under the cards, so they come
+			     out from behind the hand and pass behind the words. chipStream.ts
+			     fills it; win-celebration.css draws them. -->
+			<div class="wc-chips" bind:this={chipsEl}></div>
 			{#each fan as slot}
 				{@const card = props.cards[slot.index] ?? null}
 				<!-- is-face carries NO styling and is not meant to: scripts/shoot.mjs
@@ -551,6 +589,7 @@
 				     visual driver's fan check with it silently. -->
 				<div
 					class="wc-fan-card"
+					data-slot={slot.index}
 					class:is-face={card !== null}
 					class:is-busted={slot.index === props.bustedIndex}
 					class:is-forgiven={slot.index === props.forgivenIndex}
@@ -598,22 +637,65 @@
 			{/if}
 		</div>
 
-		<!-- NOT keyed on the tier. Keying it destroys and recreates the element,
-		     which replays the entrance animation, so the title vanished and rose
-		     back up on every promotion. It stays put now; the word swaps in place,
-		     the colour cross-fades, and promoteTitle gives it a pop. -->
-		<div class="wc-title face-{titleFace}" bind:this={titleEl}>{titleText}</div>
+		<!-- THE TIER IS A DESTINATION BLIND (the owner's pick W1, 2026-10-18): the
+		     loader's sign, rolling one stop per rung as the count is promoted, and
+		     under it the route, a stop per rung, the bus riding to the one reached
+		     and Max as the end of the line. Every rung of the family's ladder is a
+		     stop on the blind, each lettered in its own tier's colours (the stop
+		     carries its tier's class, which sets only custom properties).
 
-		<!-- is-holding only letters the figure in the tier colour; the pop is applied through
-		     popAmount(amountEl) so it cannot clobber the entrance animation. -->
-		<div
-			class="wc-amount"
-			class:is-counting={counting}
-			class:is-holding={holding}
-			style="--amount-ems: {amountEms}"
-			bind:this={amountEl}
-		>
-			{numberToCurrencyString(shown, amountDigits)}
+		     NOT keyed on the tier. Keying it destroys and recreates the element,
+		     which replays the entrance, so the title vanished and rose back up on
+		     every promotion (the reason promoteTitle once existed). The blind is
+		     built once and rolls. -->
+		<div class="wc-title" style="--stop: {stopIndex}; --stops: {props.tiers.length}">
+			<div class="wc-sign">
+				<div class="wc-roll">
+					{#each props.tiers as tier (tier.id)}
+						{@const word = t(tier.label)}
+						<div
+							class="wc-stop tier-{tier.id} face-{titleFaceFor(word)}"
+							class:is-terminus={tier.id === 'max'}
+							use:fitValue={word}
+						>
+							{word}
+						</div>
+					{/each}
+				</div>
+			</div>
+			<!-- A one-rung ladder (Three of a Kind) has nowhere to ride: no route. -->
+			{#if props.tiers.length > 1}
+				<div class="wc-route">
+					<span class="wc-route-line"></span>
+					<span class="wc-route-lit"></span>
+					{#each props.tiers as tier, at (tier.id)}
+						<span
+							class="wc-route-dot"
+							class:is-lit={at <= stopIndex}
+							class:is-end={at === props.tiers.length - 1}
+							style="--at: {at}"
+						></span>
+					{/each}
+					<svg class="wc-route-bus" viewBox="0 0 26 14">
+						<rect class="wc-bus-body" x="1" y="1" width="24" height="10" rx="2.5" />
+						<rect class="wc-bus-glass" x="4" y="3" width="4" height="3" />
+						<rect class="wc-bus-glass" x="10" y="3" width="4" height="3" />
+						<rect class="wc-bus-glass" x="16" y="3" width="6" height="3" />
+						<circle class="wc-bus-wheel" cx="7" cy="11.5" r="2" />
+						<circle class="wc-bus-wheel" cx="19" cy="11.5" r="2" />
+					</svg>
+				</div>
+			{/if}
+		</div>
+
+		<!-- THE AMOUNT ON A SPLIT-FLAP BOARD (W1, 2026-10-18): the running total's
+		     own board (RW1) at the takeover's scale, so the figure the player
+		     watched climb under the cards is the figure handed over here. Each
+		     character flips as it changes; a long currency shares the room out
+		     rather than clipping (SplitFlap's own fit). The digits take the
+		     element's colour: the tier's while counting, cream when it lands. -->
+		<div class="wc-amount" class:is-counting={counting}>
+			<SplitFlap text={numberToCurrencyString(printed, amountDigits)} />
 		</div>
 
 		<!-- Climbs with the amount, so the multiplier and the title agree at

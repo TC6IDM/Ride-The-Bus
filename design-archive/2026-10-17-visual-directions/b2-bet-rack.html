@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>B2 Dealer's rack</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* The bet menu as a dealer's chip rack: the chips stand on edge in wooden slots,
+     each column a stack seen from the front; the chosen stack rises out of its slot. */
+  .veil { position: absolute; inset: 0; background: rgba(4,9,6,0.55); opacity: 0; transition: opacity 200ms; }
+  .veil.in { opacity: 1; }
+  .rack { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -46%) scale(0.96); opacity: 0; transition: transform 220ms var(--ease-out), opacity 200ms; padding: 16px; width: min(560px, calc(100vw - 28px)); }
+  .rack.in { transform: translate(-50%, -50%); opacity: 1; }
+  .rack h4 { margin: 0 0 12px; font: 700 18px/1 var(--font-body); color: var(--ink-strong); display: flex; justify-content: space-between; }
+  .rack h4 span:last-child { font: 400 18px/1 var(--font-body); color: var(--ink-dim); }
+  .wood { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; padding: 12px 10px 8px; border-radius: 10px;
+    background: repeating-linear-gradient(90deg, rgba(0,0,0,0.25) 0 1px, transparent 1px 9px), linear-gradient(180deg, #6b3a12, #4a280c); box-shadow: inset 0 2px 4px rgba(255,220,170,0.2), inset 0 -3px 8px rgba(0,0,0,0.6); }
+  .slot { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 0 6px; border-radius: 30px 30px 8px 8px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.2)); box-shadow: inset 0 3px 6px rgba(0,0,0,0.7); transition: transform 200ms var(--ease-out); }
+  .stackfront { width: 78%; height: 66px; border-radius: 6px; background: repeating-linear-gradient(180deg, var(--face) 0 5px, var(--edge) 5px 6px, var(--face) 6px 7px, rgba(0,0,0,0.25) 7px 8px); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.3); }
+  .slot b { font: 900 16px/1 var(--font-display); color: var(--ink); }
+  .slot.on { transform: translateY(-10px); }
+  .slot.on b { color: #f2d27a; }
+  .other { margin-top: 12px; display: flex; gap: 8px; align-items: center; }
+  .other label { font: 600 12.5px/1 var(--font-body); color: var(--ink-dim); }
+  .other .field { flex: 1; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.35); box-shadow: inset 0 1px 3px rgba(0,0,0,0.6); font: 700 15px/1 var(--font-body); color: var(--ink); }
+  @media (max-width: 600px) { .wood { grid-template-columns: repeat(4, minmax(0, 1fr)); row-gap: 14px; } .stackfront { height: 48px; } }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div><div class="veil" id="veil"></div></div>
+<script src="kit/kit.js"></script><script src="kit/bar.js"></script><script src="kit/chips.js"></script>
+<script>
+  const { wait, loop, size, el } = RTB, s = document.getElementById('s');
+  document.getElementById('board').style.backgroundImage = `url('kit/board-${size()}.webp')`;
+  const rack = el('div', 'rack panel', `<h4><span>Bet</span><span>×</span></h4><div class="wood">${CHIPS.CHIPS.map((c) =>
+    `<div class="slot" style="--face:${c[1]};--edge:${c[2]}"><div class="stackfront"></div><b>${c[0]}</b></div>`).join('')}</div>
+    <div class="other"><label>Other amount</label><span class="field">$1.00</span></div>`);
+  s.appendChild(rack);
+  const veil = document.getElementById('veil'), slots = [...rack.querySelectorAll('.slot')], f = BAR.finger(s);
+  loop(6200, async () => {
+    rack.classList.remove('in'); veil.classList.remove('in'); slots.forEach((k) => k.classList.remove('on')); slots[0].classList.add('on'); rack.querySelector('.field').textContent = '$1.00';
+    await wait(600);
+    const [x, y] = BAR.centre('bet'); await f.press(x, y); veil.classList.add('in'); rack.classList.add('in');
+    await wait(1000);
+    const c = slots[5].getBoundingClientRect(); await f.press(c.x + c.width / 2, c.y + c.height / 2);
+    slots.forEach((k) => k.classList.remove('on')); slots[5].classList.add('on'); rack.querySelector('.field').textContent = '$100.00';
+    await wait(1700); rack.classList.remove('in'); veil.classList.remove('in');
+  });
+</script>
+</body></html>

@@ -1,0 +1,980 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ride The Bus — Motion Audit · design-motion-principles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Public+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* ——— Fixed identity: COOL slate-graphite + chalk (near-achromatic) ——— */
+    --ink:        oklch(0.155 0.006 255);
+    --surface:    oklch(0.195 0.007 255);
+    --surface-2:  oklch(0.235 0.008 255);
+    --paper:      oklch(0.945 0.004 255);
+    --paper-dim:  oklch(0.800 0.006 255);
+    --muted:      oklch(0.680 0.008 255);
+    --faint:      oklch(0.505 0.008 255);
+    --line:       oklch(0.95 0.01 255 / 0.09);
+    --line-strong:oklch(0.95 0.01 255 / 0.16);
+
+    /* ——— Accent (NEUTRAL BY DEFAULT) ———
+       The report has no primary color. --accent aliases the contrast
+       neutral (--paper) so any element that historically wanted a brand
+       splash now reads as quiet chrome. An individual audit can repoint
+       these three to a sampled brand color if appropriate, but the
+       default — and the worked example — keeps the chrome neutral and
+       lets severity be the only color in the report. */
+    --accent:      var(--paper);
+    --accent-soft: var(--paper-dim);
+    --accent-tint: color-mix(in oklch, var(--paper) 12%, transparent);
+
+    /* ——— Severity (FIXED — never adaptive) ——— */
+    --crit:      oklch(0.655 0.185 25);
+    --crit-tint: oklch(0.655 0.185 25 / 0.15);
+    --imp:       oklch(0.805 0.125 78);
+    --imp-tint:  oklch(0.805 0.125 78 / 0.15);
+    --opp:       oklch(0.745 0.135 152);
+    --opp-tint:  oklch(0.745 0.135 152 / 0.15);
+
+    /* ——— Timing-budget ramp (FIXED — diagram + its legend only) ——— */
+    --t-good:  oklch(0.745 0.135 152);  /* instant + responsive */
+    --t-mid:   oklch(0.805 0.125 78);   /* deliberate           */
+    --t-slow:  oklch(0.655 0.185 25);   /* sluggish             */
+
+    /* ——— Verdict (FIXED — lens table) ——— */
+    --strong:  var(--opp);
+    --concern: var(--imp);
+    --problem: var(--crit);
+
+    /* ——— Spacing (4pt scale, semantic) ——— */
+    --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px;
+    --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+
+    --display: "Familjen Grotesk", "Hanken Grotesk", system-ui, sans-serif;
+    --sans: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  /* ═══════════════ LIGHT-MODE OVERRIDES ═══════════════
+     Activated when the global theme toggle is set to Light. Every token
+     above gets a counterpart here — same hue, mirrored L — so the report
+     reads cleanly on light backgrounds. Hue stays 255 (cool slate) so the
+     identity is the same character, just inverted. */
+  :root:has(#theme-light:checked) {
+    --ink:        oklch(0.985 0.003 255);  /* light page bg */
+    --surface:    oklch(0.965 0.004 255);
+    --surface-2:  oklch(0.940 0.005 255);
+    --paper:      oklch(0.180 0.006 255);  /* dark text */
+    --paper-dim:  oklch(0.330 0.008 255);
+    --muted:      oklch(0.475 0.010 255);
+    --faint:      oklch(0.640 0.009 255);
+    --line:       oklch(0.180 0.010 255 / 0.12);
+    --line-strong:oklch(0.180 0.010 255 / 0.22);
+
+    /* Accent stays aliased to --paper (now the dark ink in light mode),
+       so chrome inverts automatically. No additional override needed. */
+
+    /* Severity: same hues, deeper L for legibility on light bg */
+    --crit:      oklch(0.555 0.195 25);
+    --crit-tint: oklch(0.555 0.195 25 / 0.12);
+    --imp:       oklch(0.580 0.155 78);
+    --imp-tint:  oklch(0.580 0.155 78 / 0.14);
+    --opp:       oklch(0.555 0.140 152);
+    --opp-tint:  oklch(0.555 0.140 152 / 0.13);
+
+    /* Timing ramp follows severity */
+    --t-good: oklch(0.555 0.140 152);
+    --t-mid:  oklch(0.580 0.155 78);
+    --t-slow: oklch(0.555 0.195 25);
+  }
+
+  /* SVG dot label: light text in light-mode (deeper dots), dark text in dark-mode (lighter dots) */
+  :root:has(#theme-light:checked) .tf-dot-text { fill: oklch(0.985 0.003 255); }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection { background: var(--accent-tint); }
+  a { color: var(--accent-soft); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: clamp(40px, 6vw, 72px) clamp(20px, 5vw, 40px) 96px; }
+
+  /* shared micro-label */
+  .mono-label {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  code { font-family: var(--mono); font-size: 0.86em; color: var(--paper-dim); }
+
+  /* visually-hidden (theme + stage radios) */
+  .vh { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+  /* ───────────── Global theme switch ───────────── */
+  .theme-switch { display: flex; justify-content: flex-end; margin-bottom: var(--s5); }
+  .theme-switch__pill { display: inline-flex; align-items: center; gap: 0; border: 1px solid var(--line-strong); border-radius: 100px; overflow: hidden; }
+  .theme-switch__pill label { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); padding: 6px 14px; cursor: pointer; user-select: none; transition: background 0.15s ease, color 0.15s ease; }
+  #theme-dark:checked  ~ .theme-switch__pill label[for="theme-dark"],
+  #theme-light:checked ~ .theme-switch__pill label[for="theme-light"] { background: var(--accent-tint); color: var(--accent-soft); }
+
+  /* ───────────── Header ───────────── */
+  header.doc { padding-bottom: var(--s7); margin-bottom: var(--s8); border-bottom: 1px solid var(--line); }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--muted); display: inline-flex; align-items: center; gap: var(--s3);
+  }
+  .eyebrow::before { content: ""; width: 22px; height: 2px; background: var(--accent); display: inline-block; }
+  h1.title {
+    font-family: var(--display);
+    font-size: clamp(38px, 6vw, 60px);
+    font-weight: 700; letter-spacing: -0.025em; line-height: 1.02;
+    margin: var(--s5) 0 var(--s4); color: var(--paper); max-width: 17ch;
+  }
+  .lede { font-size: clamp(17px, 2.2vw, 19px); color: var(--paper-dim); max-width: 66ch; line-height: 1.6; }
+  .meta-row { display: flex; flex-wrap: wrap; gap: var(--s6); margin-top: var(--s6); }
+  .meta-row .k { display: block; margin-bottom: 4px; }
+  .meta-row .v { font-size: 15px; color: var(--paper); }
+
+  .stats { display: flex; gap: clamp(20px, 4vw, 44px); margin-top: var(--s7); flex-wrap: wrap; }
+  .stat .num { font-family: var(--display); font-size: 40px; font-weight: 600; letter-spacing: -0.02em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .stat.crit .num { color: var(--crit); }
+  .stat.imp .num  { color: var(--imp); }
+  .stat.opp .num  { color: var(--opp); }
+  .stat .lbl { margin-top: var(--s2); }
+  .stat a { color: inherit; text-decoration: none; }
+  .stat a:hover .num { text-decoration: underline; text-underline-offset: 5px; text-decoration-thickness: 2px; }
+
+  /* ───────────── Section scaffolding ───────────── */
+  section { margin-bottom: var(--s9); }
+  .sec-index { font-family: var(--mono); font-size: 12px; letter-spacing: 0.16em; color: var(--accent-soft); }
+  h2.section-title {
+    font-family: var(--display);
+    font-size: clamp(24px, 3.4vw, 32px);
+    font-weight: 600; letter-spacing: -0.02em; line-height: 1.1;
+    margin: var(--s2) 0 var(--s4); color: var(--paper);
+  }
+  .section-sub { color: var(--paper-dim); max-width: 74ch; margin: 0 0 var(--s6); }
+  .section-sub em { color: var(--paper); font-style: italic; }
+
+  /* ───────────── Overall assessment ───────────── */
+  .assessment { border-top: 1px solid var(--line); padding-top: var(--s6); }
+  .assessment .mono-label { color: var(--accent-soft); }
+  .assessment p { font-family: var(--display); font-weight: 400; font-size: clamp(20px, 2.8vw, 26px); line-height: 1.42; letter-spacing: -0.01em; color: var(--paper); max-width: 34ch; margin: var(--s4) 0 0; }
+  .assessment p em { font-style: italic; color: var(--accent-soft); }
+
+  /* ───────────── Lens summary table ───────────── */
+  .lens-table { width: 100%; border-collapse: collapse; border: 1px solid var(--line); }
+  .lens-table th, .lens-table td { padding: var(--s4) var(--s5); text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .lens-table tr:last-child td { border-bottom: none; }
+  .lens-table thead th { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--faint); font-weight: 500; }
+  .lens-table tbody tr:hover { background: oklch(0.95 0.01 255 / 0.018); }
+  .lens-name { font-weight: 600; color: var(--paper); width: 28%; }
+  .lens-name .who { display: block; margin-top: 2px; color: var(--muted); font-weight: 400; font-size: 13.5px; }
+  .lens-name .weight { display: inline-block; margin-top: 6px; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-soft); }
+  .lens-read { color: var(--paper-dim); }
+  .lens-read em { color: var(--paper); font-style: italic; }
+  .verdict { display: inline-flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 500; }
+  .verdict::before { content: ""; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .v-strong  { color: var(--strong); }  .v-strong::before  { background: var(--strong); }
+  .v-concern { color: var(--concern); } .v-concern::before { background: var(--concern); }
+  .v-problem { color: var(--problem); } .v-problem::before { background: var(--problem); }
+  .v-mixed   { color: var(--muted); }   .v-mixed::before   { background: var(--muted); }
+
+  /* ───────────── Timing-budget diagram ───────────── */
+  .timing-grid { display: grid; grid-template-columns: 1fr 320px; gap: clamp(28px, 5vw, 56px); align-items: start; }
+  @media (max-width: 860px) { .timing-grid { grid-template-columns: 1fr; } }
+  .timing-figure { width: 100%; height: auto; }
+  .timing-key h4 { margin: 0 0 var(--s4); }
+  .key-list { list-style: none; margin: 0 0 var(--s6); padding: 0; display: grid; gap: 2px; }
+  .key-list li { display: grid; grid-template-columns: 22px 1fr auto; align-items: baseline; gap: var(--s3); padding: var(--s2) 0; border-bottom: 1px solid var(--line); }
+  .key-list li:last-child { border-bottom: none; }
+  .key-list .kn { font-family: var(--mono); font-size: 12px; color: var(--paper); font-variant-numeric: tabular-nums; }
+  .key-list .ka { color: var(--paper-dim); }
+  .key-list .kt { font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+  .kt.good { color: var(--t-good); }
+  .kt.mid  { color: var(--t-mid); }
+  .kt.slow { color: var(--t-slow); }
+  .kt.none { color: var(--faint); }
+  .zone-defs { display: grid; gap: var(--s3); margin-top: var(--s5); }
+  .zone-def { display: grid; grid-template-columns: 12px 1fr; gap: var(--s3); align-items: start; }
+  .zone-def .dot { width: 11px; height: 11px; border-radius: 50%; margin-top: 6px; }
+  .zone-def .zt { font-weight: 600; color: var(--paper); }
+  .zone-def .zd { font-size: 13.5px; color: var(--muted); }
+  .whats-off { margin-top: var(--s5); padding-top: var(--s5); border-top: 1px solid var(--line); }
+  .whats-off .mono-label { color: var(--accent-soft); }
+  .whats-off p { margin: var(--s2) 0 0; color: var(--paper-dim); font-size: 14px; max-width: 60ch; }
+
+  /* ───────────── Per-lens sections ───────────── */
+  .lens-sec { margin-bottom: var(--s9); padding-top: var(--s6); border-top: 1px solid var(--line); }
+  .lens-sec__head { display: flex; align-items: baseline; gap: var(--s4); flex-wrap: wrap; margin-bottom: var(--s2); }
+  .lens-sec__head h3 { font-family: var(--display); font-size: clamp(22px, 3vw, 28px); font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; margin: 0; color: var(--paper); }
+  .lens-sec__weight { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-soft); border: 1px solid var(--line-strong); border-radius: 100px; padding: 4px 10px; }
+  .lens-sec__verdict { margin: 0 0 var(--s6); }
+
+  .lens-block { margin: var(--s6) 0; }
+  .lens-block > .mono-label { display: block; margin-bottom: var(--s4); }
+  .lens-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s3); max-width: 78ch; }
+  .lens-list li { display: grid; grid-template-columns: 22px 1fr; gap: var(--s2); align-items: start; color: var(--paper-dim); }
+  .lens-list .mk { font-family: var(--mono); font-size: 13px; line-height: 1.5; }
+  .lens-list.good .mk { color: var(--strong); }
+  .lens-list.opp .mk  { color: var(--accent-soft); }
+  .lens-list li em { color: var(--paper); font-style: italic; }
+
+  .lens-take { margin-top: var(--s6); background: var(--surface-2); border-radius: 10px; padding: var(--s5); }
+  .lens-take .mono-label { color: var(--accent-soft); display: block; margin-bottom: var(--s2); }
+  .lens-take p { margin: 0; color: var(--paper); max-width: 70ch; }
+
+  .lens-empty { font-style: italic; color: var(--faint); padding: var(--s3) 0; }
+
+  /* ───────────── Finding rows (prose + live demo card) ───────────── */
+  .findings { display: flex; flex-direction: column; gap: var(--s5); }
+  .finding-row { display: grid; grid-template-columns: 1fr 380px; gap: clamp(24px, 3vw, 36px); align-items: start; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: clamp(22px, 3vw, 30px); }
+  .finding-row[data-sev="crit"] { border-color: var(--crit-tint); }
+  @media (max-width: 860px) { .finding-row { grid-template-columns: 1fr; } }
+
+  .find-tags { display: flex; flex-wrap: wrap; gap: var(--s2); align-items: center; margin-bottom: var(--s3); }
+  .severity { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 500; padding: 4px 9px; border-radius: 100px; }
+  .severity.crit { background: var(--crit-tint); color: var(--crit); }
+  .severity.imp  { background: var(--imp-tint);  color: var(--imp); }
+  .severity.opp  { background: var(--opp-tint);  color: var(--opp); }
+  .lens-chip { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 4px 9px; border: 1px solid var(--line-strong); border-radius: 100px; }
+  .find-title { font-family: var(--display); font-size: clamp(19px, 2.4vw, 23px); font-weight: 600; letter-spacing: -0.015em; line-height: 1.22; margin: 0 0 var(--s4); color: var(--paper); }
+  .find-body { display: grid; gap: var(--s4); }
+  .find-body p { margin: 0; color: var(--paper-dim); }
+  .find-body p em { color: var(--paper); font-style: italic; }
+  .find-body .label { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 3px; }
+  .fix { background: var(--surface-2); border-radius: 8px; padding: var(--s4) var(--s5); }
+  .fix .label { color: var(--accent-soft); }
+  .fix p { color: var(--paper); }
+  .find-loc { font-size: 13px; }
+
+  /* ───────────── Demo card (the centerpiece) ───────────── */
+  .demo { position: relative; align-self: start; position: sticky; top: var(--s5); }
+  @media (max-width: 860px) { .demo { position: static; } }
+  .demo__bar { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s3); margin-bottom: var(--s3); }
+  .demo__meta { min-width: 0; }
+  .demo__title { display: block; font-size: 13.5px; font-weight: 600; color: var(--paper); line-height: 1.3; }
+  .demo__timing { display: block; font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .demo__controls { display: flex; align-items: center; gap: var(--s3); flex-shrink: 0; }
+  .demo__loop { font-family: var(--mono); font-size: 12px; color: var(--faint); }
+
+  /* segmented Auto/Light/Dark stage toggle (pure CSS).
+     Auto = follow global theme via theme tokens. Light/Dark = locked overrides. */
+  .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 100px; overflow: hidden; }
+  .seg label { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 4px 9px; cursor: pointer; user-select: none; transition: background 0.15s ease, color 0.15s ease; }
+  .demo input[id$="-a"]:checked ~ .demo__bar .seg label[for$="-a"],
+  .demo input[id$="-l"]:checked ~ .demo__bar .seg label[for$="-l"],
+  .demo input[id$="-d"]:checked ~ .demo__bar .seg label[for$="-d"] { background: var(--accent-tint); color: var(--accent-soft); }
+
+  .demo__stage {
+    /* AUTO default — stage uses the report's elevated surface, follows theme */
+    --st-bg: var(--surface-2);
+    --st-fg: var(--paper);
+    --st-line: var(--line-strong);
+    --st-dim: color-mix(in oklch, var(--paper) 55%, transparent);
+    background: var(--st-bg); color: var(--st-fg);
+    border: 1px solid var(--line); border-radius: 10px;
+    padding: var(--s6) var(--s5); min-height: 168px;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+  }
+  /* Locked Light: hardcoded light, regardless of report theme */
+  .demo input[id$="-l"]:checked ~ .demo__stage {
+    --st-bg: oklch(0.985 0.003 255);
+    --st-fg: oklch(0.180 0.006 255);
+    --st-line: oklch(0.180 0.010 255 / 0.18);
+    --st-dim: oklch(0.180 0.010 255 / 0.45);
+  }
+  /* Locked Dark: hardcoded dark, regardless of report theme */
+  .demo input[id$="-d"]:checked ~ .demo__stage {
+    --st-bg: oklch(0.180 0.006 255);
+    --st-fg: oklch(0.985 0.003 255);
+    --st-line: oklch(0.985 0.010 255 / 0.18);
+    --st-dim: oklch(0.985 0.010 255 / 0.50);
+  }
+
+  /* generic demo primitives, themed by the stage vars
+     (intentionally follow --st-fg/--st-bg, NOT the page accent — so they
+     contrast correctly even when a stage is locked to a different theme
+     than the page). */
+  .ui-btn { display: inline-flex; align-items: center; justify-content: center; padding: 9px 18px; border-radius: 8px; background: var(--st-fg); color: var(--st-bg); font-family: var(--sans); font-size: 13px; font-weight: 600; }
+  .ui-card { background: var(--st-bg); border: 1px solid var(--st-line); border-radius: 10px; padding: 14px 16px; min-width: 180px; box-shadow: 0 8px 24px oklch(0 0 0 / 0.12); }
+  .ui-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--st-fg); }
+  .ui-check { width: 22px; height: 22px; border-radius: 7px; background: var(--st-fg); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .ui-check svg { width: 13px; height: 13px; stroke: var(--st-bg); }
+  .ui-num { font-family: var(--display); font-size: 34px; font-weight: 700; color: var(--st-fg); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+  .ui-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--st-dim); }
+  /* milestone badge + sparks read off stage tokens (--st-fg disc, --st-bg ink),
+     set inline on the elements — same contract as every other stage primitive,
+     never --accent, correct in any locked stage. */
+
+  /* ───────────── Combined recommendations ───────────── */
+  .rec { margin-bottom: var(--s7); }
+  .rec .tier-label { display: flex; align-items: center; gap: var(--s4); margin: 0 0 var(--s4); }
+  .rec .tier-label .mono-label { white-space: nowrap; }
+  .rec .tier-label .rule { height: 1px; background: var(--line); flex: 1; }
+  .rec .tier-label .count { font-family: var(--mono); font-size: 11px; color: var(--faint); }
+  .rec.crit .mono-label { color: var(--crit); }
+  .rec.imp  .mono-label { color: var(--imp); }
+  .rec.opp  .mono-label { color: var(--opp); }
+  .rec-table { width: 100%; border-collapse: collapse; border: 1px solid var(--line); font-size: 14px; }
+  .rec-table th, .rec-table td { text-align: left; padding: var(--s3) var(--s4); border-bottom: 1px solid var(--line); vertical-align: top; }
+  .rec-table tr:last-child td { border-bottom: none; }
+  .rec-table thead th { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); font-weight: 500; }
+  .rec-table td:first-child { color: var(--paper); }
+  .rec-table td:nth-child(2) { white-space: nowrap; }
+  .rec-table td { color: var(--paper-dim); }
+
+  /* ───────────── Reference summary (closing) ───────────── */
+  .ref-summary { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: clamp(24px, 4vw, 40px); }
+  .ref-summary .big { font-family: var(--display); font-size: clamp(18px, 2.4vw, 22px); font-weight: 600; letter-spacing: -0.015em; color: var(--paper); margin: var(--s2) 0 0; }
+  .ref-summary .why { color: var(--paper-dim); margin: var(--s3) 0 var(--s6); max-width: 64ch; }
+  .ref-lean { display: grid; gap: var(--s3); margin: 0; padding: 0; list-style: none; }
+  .ref-lean li { display: grid; grid-template-columns: 130px 1fr; gap: var(--s4); padding: var(--s3) 0; border-top: 1px solid var(--line); color: var(--paper-dim); font-size: 14px; }
+  .ref-lean .nm { font-weight: 600; color: var(--paper); }
+
+  footer.doc { margin-top: var(--s8); padding-top: var(--s5); border-top: 1px solid var(--line); font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; color: var(--faint); display: flex; justify-content: space-between; flex-wrap: wrap; gap: var(--s3); }
+
+  /* ───────────── Narrow screens ───────────── */
+  @media (max-width: 600px) {
+    .lens-table { display: block; padding: var(--s2) var(--s4); }
+    .lens-table thead { display: none; }
+    .lens-table tbody, .lens-table tr, .lens-table td { display: block; }
+    .lens-table tr { padding: var(--s4) 0; border-bottom: 1px solid var(--line); }
+    .lens-table tr:last-child { border-bottom: none; }
+    .lens-table td { padding: 0; border: none; }
+    .lens-table .lens-name { width: auto; margin-bottom: var(--s2); }
+    .lens-table .verdict { margin-bottom: var(--s2); }
+    .ref-lean li { grid-template-columns: 1fr; gap: var(--s1); }
+  }
+
+  /* ───────────── The ONLY animation in the report: the demo cards ───────────── */
+  /* Shared demo props for this audit: a card back, a slot, a deck, a sign. Drawn
+     off the stage tokens so they read on every stage. The two family colours in
+     demo 5 are DATA (Classic's yellow, Second Chance's green), on a fixed dark
+     sign like the game's own, so they read on either stage. */
+  .rtb-row { display: flex; gap: 10px; align-items: flex-end; }
+  .rtb-slot { width: 34px; height: 48px; border-radius: 5px; border: 1px dashed var(--st-line); position: relative; }
+  .rtb-card { width: 34px; height: 48px; border-radius: 5px; background: var(--st-fg); opacity: 0.92; box-shadow: inset 0 0 0 3px var(--st-bg), inset 0 0 0 4px var(--st-line); }
+  .rtb-deck { width: 34px; height: 48px; border-radius: 5px; background: var(--st-fg); opacity: 0.55; box-shadow: 2px 2px 0 var(--st-line), 4px 4px 0 var(--st-line); }
+  .rtb-sign { background: oklch(0.2 0.01 60); border-radius: 8px; padding: 10px 18px; width: 170px; height: 52px; overflow: hidden; position: relative; box-shadow: inset 0 2px 6px oklch(0 0 0 / 0.5); }
+  .rtb-name { position: absolute; left: 0; right: 0; text-align: center; top: 12px; font-family: var(--display); font-weight: 700; font-size: 22px; letter-spacing: -0.01em; }
+  .rtb-mark { position: absolute; left: 50%; top: 50%; font-size: 22px; line-height: 1; color: var(--st-fg); font-family: var(--sans); font-weight: 700; text-shadow: -2px 2px 0 var(--st-line); }
+  .rtb-name.leaving { transform: translateY(-120%); }
+  .demo-6__mt { position: relative; width: 220px; height: 120px; }
+  .demo-6__mt .rtb-mark { opacity: 0; }
+  .rtb-fan { display: flex; gap: 4px; }
+  .rtb-fan .rtb-card { width: 30px; height: 42px; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .lens-table tbody tr, .finding-row { transition: border-color 0.2s ease; }
+
+    /* 01 · intro panels collect into the four card slots — 420ms ease-in-out, 60ms stagger */
+    @keyframes m1 {
+      0%   { opacity: 0.35; transform: translateY(-46px) scale(1.5); }
+      45%  { opacity: 1;    transform: translateY(0) scale(1); }
+      100% { opacity: 1;    transform: translateY(0) scale(1); }
+    }
+    .demo-1__mt .rtb-card { animation: m1 3s cubic-bezier(0.45, 0, 0.25, 1) infinite; transform-origin: 50% 100%; }
+    .demo-1__mt .rtb-card:nth-child(2) { animation-delay: 0.06s; }
+    .demo-1__mt .rtb-card:nth-child(3) { animation-delay: 0.12s; }
+    .demo-1__mt .rtb-card:nth-child(4) { animation-delay: 0.18s; }
+
+    /* 02 · the loader's four backs deal onto the table's slots — 520ms ease-out, 90ms stagger */
+    @keyframes m2 {
+      0%   { transform: translate(var(--fx), -44px) rotate(var(--fr)); }
+      50%  { transform: translate(0, 0) rotate(0deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+    .demo-2__mt .rtb-card { animation: m2 3s cubic-bezier(0.2, 0.8, 0.3, 1) infinite; }
+    .demo-2__mt .rtb-card:nth-child(1) { --fx: 66px;  --fr: -8deg; }
+    .demo-2__mt .rtb-card:nth-child(2) { --fx: 22px;  --fr: -3deg; animation-delay: 0.09s; }
+    .demo-2__mt .rtb-card:nth-child(3) { --fx: -22px; --fr: 3deg;  animation-delay: 0.18s; }
+    .demo-2__mt .rtb-card:nth-child(4) { --fx: -66px; --fr: 8deg;  animation-delay: 0.27s; }
+
+    /* 03 · gather 220ms ease-in-out, rest 300ms, deal out 430ms ease-out */
+    @keyframes m3 {
+      0%   { transform: translateX(0) scale(1); opacity: 1; animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+      12%  { transform: translateX(-118px) scale(0.92); opacity: 0; }
+      26%  { transform: translateX(-118px) scale(0.92); opacity: 0; animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1); }
+      28%  { opacity: 1; }
+      55%  { transform: translateX(0) scale(1); opacity: 1; }
+      100% { transform: translateX(0) scale(1); opacity: 1; }
+    }
+    .demo-3__mt .rtb-card { animation: m3 3s linear infinite; }
+
+    /* 04 · one riffle while waiting, then rest — no breathing loop */
+    @keyframes m4l { 0% { transform: translateX(0) rotate(0); } 18% { transform: translateX(-22px) rotate(-7deg); } 38% { transform: translateX(0) rotate(0); } 100% { transform: translateX(0) rotate(0); } }
+    @keyframes m4r { 0% { transform: translateX(0) rotate(0); } 18% { transform: translateX(22px) rotate(7deg); } 38% { transform: translateX(0) rotate(0); } 100% { transform: translateX(0) rotate(0); } }
+    .demo-4__mt .rtb-deck:first-child { animation: m4l 3s cubic-bezier(0.45, 0, 0.25, 1) infinite; }
+    .demo-4__mt .rtb-deck:last-child  { animation: m4r 3s cubic-bezier(0.45, 0, 0.25, 1) infinite; }
+
+    /* 05 · the leaving name keeps ITS colour — 340ms ease-in-out roll */
+    @keyframes m5out { 0% { transform: translateY(0); } 22% { transform: translateY(-120%); } 100% { transform: translateY(-120%); } }
+    @keyframes m5in  { 0% { transform: translateY(120%); } 22% { transform: translateY(0); } 100% { transform: translateY(0); } }
+    .demo-5__mt .rtb-name.leaving  { animation: m5out 3s cubic-bezier(0.65, 0, 0.35, 1) infinite; }
+    .demo-5__mt .rtb-name.arriving { animation: m5in  3s cubic-bezier(0.65, 0, 0.35, 1) infinite; }
+
+    /* 06 · six marks on a thrown arc, rotating, out by ~900ms */
+    @keyframes m6x { 0% { translate: 0 0; } 34% { translate: var(--dx) 0; } 100% { translate: var(--dx) 0; } }
+    @keyframes m6y { 0% { margin-top: 0; } 14% { margin-top: var(--up); } 34% { margin-top: var(--fall); } 100% { margin-top: var(--fall); } }
+    @keyframes m6o { 0% { opacity: 0; rotate: 0deg; scale: 0.6; } 6% { opacity: 1; scale: 1; } 26% { opacity: 1; } 34% { opacity: 0; rotate: var(--spin); } 100% { opacity: 0; rotate: var(--spin); } }
+    .demo-6__mt .rtb-mark {
+      animation: m6x 3s cubic-bezier(0.2, 0.8, 0.3, 1) infinite, m6y 3s cubic-bezier(0.3, 0, 0.6, 1) infinite, m6o 3s linear infinite;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .demo__loop { display: none; }
+    [class*="__mt"], [class*="__mt"] * { animation: none !important; transition: none !important; }
+    .demo-5__mt .rtb-name.leaving { display: none; }
+    .demo-6__mt .rtb-mark { opacity: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="theme-switch" role="radiogroup" aria-label="Report theme">
+    <input class="vh" type="radio" name="theme" id="theme-dark" checked>
+    <input class="vh" type="radio" name="theme" id="theme-light">
+    <div class="theme-switch__pill">
+      <label for="theme-dark">Dark</label>
+      <label for="theme-light">Light</label>
+    </div>
+  </div>
+
+  <header class="doc">
+    <div class="eyebrow">Motion audit · design-motion-principles</div>
+    <h1 class="title">Ride The Bus: the round moves well, the rooms between don't</h1>
+    <p class="lede">
+      A pass over the loader, the hand-offs from loader to intro to board, the deal, the flip, the held
+      last card, the win takeover and the panel arrivals. Weighted for a casino card game: polish first,
+      delight on the rare moments, and restraint on the deal and the flip, which run every round.
+    </p>
+    <div class="meta-row">
+      <div><span class="mono-label k">What it is</span><span class="v">A four-guess card game on Stake Engine, played in short repeated sessions</span></div>
+      <div><span class="mono-label k">Stack</span><span class="v">Svelte 5 · CSS keyframes and transitions · Web Animations API</span></div>
+      <div><span class="mono-label k">Audited</span><span class="v">2026-10-16 · main @ 619403e8</span></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="num">12</div><div class="mono-label lbl">Findings</div></div>
+      <div class="stat crit"><a href="#rec-crit"><div class="num">2</div><div class="mono-label lbl">Critical</div></a></div>
+      <div class="stat imp"><a href="#rec-imp"><div class="num">4</div><div class="mono-label lbl">Important</div></a></div>
+      <div class="stat opp"><a href="#rec-opp"><div class="num">6</div><div class="mono-label lbl">Opportunities</div></a></div>
+    </div>
+  </header>
+
+  <section class="assessment">
+    <span class="mono-label">Overall</span>
+    <p>
+      Inside a round the motion is unusually well made: results wait for the card to turn, a slam
+      <em>finishes</em> everything in flight, turbo scales every clock, and the held last card is one gesture on
+      one clock. The problem is the space <em>between</em> rounds and screens. The intro leaves in a single frame,
+      the loader's cards never land anywhere, and the deal spends its time on the part the eye cannot see.
+    </p>
+  </section>
+
+  <section>
+    <div class="sec-index">01</div>
+    <h2 class="section-title">How each practitioner reads the motion</h2>
+    <p class="section-sub">
+      Weighted for a game: Jakub first, because players see every transition hundreds of times; Jhey second,
+      for the rare moments (the loader, the takeover, the hold), where delight is the point; Emil only for the
+      high-frequency loop (the deal, the flip, picks, panels).
+    </p>
+    <table class="lens-table">
+      <thead><tr><th>Lens</th><th>Verdict</th><th>One-line read</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="lens-name">Production Polish <span class="who">Jakub Krehel</span><span class="weight">Primary</span></td>
+          <td><span class="verdict v-problem">Problem</span></td>
+          <td class="lens-read">The round is polished; the <em>hand-offs</em> are not. One screen cuts to the next, and one roll repaints itself mid-flight.</td>
+        </tr>
+        <tr>
+          <td class="lens-name">Experimentation &amp; Delight <span class="who">Jhey Tompkins</span><span class="weight">Secondary</span></td>
+          <td><span class="verdict v-concern">Concern</span></td>
+          <td class="lens-read">The hold is a real set piece. The loader and the burst are the two rare moments still waiting for an idea.</td>
+        </tr>
+        <tr>
+          <td class="lens-name">Restraint &amp; Speed <span class="who">Emil Kowalski</span><span class="weight">Selective</span></td>
+          <td><span class="verdict v-mixed">Mixed</span></td>
+          <td class="lens-read">Frequency discipline is mostly right (instant closes, turbo, slam). One loop exists only to look busy.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="sec-index">02</div>
+    <h2 class="section-title">Where the timings land</h2>
+    <p class="section-sub">
+      A game spends its time differently from a tool. A 1.24s takeover title is right for a moment a player sees
+      once in seventy rounds. What matters is whether each leg gets the time its <em>job</em> needs.
+    </p>
+    <div class="timing-grid">
+      <svg class="timing-figure" viewBox="0 0 660 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Duration scale from 0 to 600 milliseconds showing where Ride The Bus's animations fall">
+        <style>
+          .tf-track-stop-good { stop-color: var(--t-good); }
+          .tf-track-stop-mid  { stop-color: var(--t-mid); }
+          .tf-track-stop-slow { stop-color: var(--t-slow); }
+          .tf-track-stroke { stroke: var(--line-strong); }
+          .tf-grid { stroke: var(--line-strong); }
+          .tf-axis { fill: var(--faint); }
+          .tf-freq { fill: var(--muted); }
+          .tf-bracket { stroke: var(--faint); fill: none; }
+          .tf-zone-good { fill: var(--t-good); }
+          .tf-zone-mid  { fill: var(--t-mid); }
+          .tf-zone-slow { fill: var(--t-slow); }
+          .tf-dot-good  { fill: var(--t-good); }
+          .tf-dot-mid   { fill: var(--t-mid); }
+          .tf-dot-slow  { fill: var(--t-slow); }
+          .tf-dot-text  { fill: oklch(0.165 0.006 255); }
+          .tf-missing-ring { stroke: var(--faint); }
+          .tf-missing-text { fill: var(--muted); }
+        </style>
+        <defs>
+          <linearGradient id="track" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%"   class="tf-track-stop-good" stop-opacity="0.30"/>
+            <stop offset="50%"  class="tf-track-stop-good" stop-opacity="0.22"/>
+            <stop offset="58%"  class="tf-track-stop-mid"  stop-opacity="0.26"/>
+            <stop offset="83%"  class="tf-track-stop-mid"  stop-opacity="0.26"/>
+            <stop offset="90%"  class="tf-track-stop-slow" stop-opacity="0.36"/>
+            <stop offset="100%" class="tf-track-stop-slow" stop-opacity="0.42"/>
+          </linearGradient>
+        </defs>
+        <rect x="40" y="118" width="600" height="58" rx="10" fill="url(#track)" class="tf-track-stroke"/>
+        <g class="tf-grid" stroke-dasharray="2 5">
+          <line x1="140" y1="112" x2="140" y2="182"/>
+          <line x1="340" y1="112" x2="340" y2="182"/>
+          <line x1="540" y1="112" x2="540" y2="182"/>
+        </g>
+        <g font-family="Geist Mono, monospace" font-size="11" class="tf-axis" text-anchor="middle">
+          <text x="40"  y="204">0</text>
+          <text x="140" y="204">100</text>
+          <text x="340" y="204">300</text>
+          <text x="540" y="204">500</text>
+          <text x="636" y="204" text-anchor="end">600ms+</text>
+        </g>
+        <g font-family="Geist Mono, monospace" font-size="9.5" letter-spacing="1.6">
+          <text x="90"  y="106" text-anchor="middle" class="tf-zone-good">INSTANT</text>
+          <text x="240" y="106" text-anchor="middle" class="tf-zone-good">RESPONSIVE</text>
+          <text x="440" y="106" text-anchor="middle" class="tf-zone-mid">DELIBERATE</text>
+          <text x="592" y="106" text-anchor="middle" class="tf-zone-slow">SLUGGISH</text>
+        </g>
+        <circle cx="40" cy="147" r="11" fill="none" class="tf-missing-ring" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <text x="40" y="151" font-family="Geist Mono, monospace" font-size="11" font-weight="600" text-anchor="middle" class="tf-missing-text">1</text>
+        <g font-family="Geist Mono, monospace" font-size="11" font-weight="600" text-anchor="middle">
+          <circle cx="85"  cy="147" r="12" class="tf-dot-good"/><text x="85"  y="151" class="tf-dot-text">5</text>
+          <circle cx="150" cy="147" r="12" class="tf-dot-good"/><text x="150" y="151" class="tf-dot-text">3</text>
+          <circle cx="260" cy="147" r="12" class="tf-dot-good"/><text x="260" y="151" class="tf-dot-text">6</text>
+          <circle cx="360" cy="147" r="12" class="tf-dot-mid"/><text x="360" y="151" class="tf-dot-text">2</text>
+          <circle cx="388" cy="132" r="12" class="tf-dot-mid"/><text x="388" y="136" class="tf-dot-text">8</text>
+          <circle cx="540" cy="147" r="12" class="tf-dot-mid"/><text x="540" y="151" class="tf-dot-text">7</text>
+          <circle cx="600" cy="147" r="12" class="tf-dot-slow"/><text x="600" y="151" class="tf-dot-text">4</text>
+          <circle cx="632" cy="132" r="12" class="tf-dot-slow"/><text x="632" y="136" class="tf-dot-text">9</text>
+        </g>
+        <path class="tf-bracket" stroke-width="1" d="M85 218 L85 224 L150 224 L150 218 M117 224 L117 230"/>
+        <text x="117" y="244" font-family="Public Sans, sans-serif" font-size="11" text-anchor="middle" class="tf-freq">the deal's legs</text>
+      </svg>
+
+      <div class="timing-key">
+        <h4 class="mono-label">The animations</h4>
+        <ol class="key-list">
+          <li><span class="kn">1</span><span class="ka">Intro → board</span><span class="kt none">none</span></li>
+          <li><span class="kn">2</span><span class="ka">Loader fade-out</span><span class="kt mid">320ms</span></li>
+          <li><span class="kn">3</span><span class="ka">Deal: gather into the deck</span><span class="kt good">110ms</span></li>
+          <li><span class="kn">4</span><span class="ka">Deal: whole, plus 300ms rest</span><span class="kt slow">650ms</span></li>
+          <li><span class="kn">5</span><span class="ka">Deal: stagger between cards</span><span class="kt good">45ms</span></li>
+          <li><span class="kn">6</span><span class="ka">Panel arrival</span><span class="kt good">220ms</span></li>
+          <li><span class="kn">7</span><span class="ka">Card flip (<code>--flip-dur</code>)</span><span class="kt mid">500ms</span></li>
+          <li><span class="kn">8</span><span class="ka">MODE sign roll</span><span class="kt mid">340ms</span></li>
+          <li><span class="kn">9</span><span class="ka">Takeover title (rare)</span><span class="kt slow">1,240ms</span></li>
+        </ol>
+        <div class="zone-defs">
+          <div class="zone-def"><span class="dot" style="background:var(--t-good)"></span><div><span class="zt">Instant / Responsive</span> · 0–300ms: <span class="zd">picks, panels, presses.</span></div></div>
+          <div class="zone-def"><span class="dot" style="background:var(--t-mid)"></span><div><span class="zt">Deliberate</span> · 300–500ms: <span class="zd">a card turning, a sign rolling, a screen handing over.</span></div></div>
+          <div class="zone-def"><span class="dot" style="background:var(--t-slow)"></span><div><span class="zt">Sluggish</span> · 500ms+: <span class="zd">only where a game earns it: the takeover, the hold.</span></div></div>
+        </div>
+        <div class="whats-off">
+          <span class="mono-label">What's off</span>
+          <p>The deal's budget is upside down. The leg the eye has to follow (cards swept back to the deck) gets 110ms and reads as a teleport. The leg nobody can see (the 300ms rest inside the deck) gets the most. And the intro-to-board hand-off (1) has no transition at all.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 · JAKUB (primary) -->
+  <section class="lens-sec">
+    <div class="sec-index">03</div>
+    <div class="lens-sec__head">
+      <h3>Jakub Krehel — Production Polish</h3>
+      <span class="lens-sec__weight">Primary lens</span>
+    </div>
+    <p class="lens-sec__verdict"><span class="verdict v-problem">Problem</span></p>
+
+    <div class="lens-block">
+      <span class="mono-label">What's working well</span>
+      <ul class="lens-list good">
+        <li><span class="mk">✓</span><span>Results land <em>after</em> the turn: chips, the running total and the bust cross all wait for 0.9 of <code>--flip-dur</code>. <code>styles/board/cards.css</code></span></li>
+        <li><span class="mk">✓</span><span>Panels arrive at 220ms from 0.96 scale with the backdrop 20ms ahead, and close instantly. Reduced motion becomes a 120ms fade. <code>styles/popups/popup-base.css:101</code></span></li>
+        <li><span class="mk">✓</span><span>The deal is measured AT REST and a slam calls <code>finish()</code>, so nothing is ever left mid-flight under fast play. <code>components/board/GameBoard.svelte:431</code></span></li>
+        <li><span class="mk">✓</span><span>Reduced motion is handled in every animated sheet; the loader, the takeover and the deal all have explicit fallbacks.</span></li>
+      </ul>
+    </div>
+
+    <div class="lens-block">
+      <span class="mono-label">Issues to address</span>
+      <div class="findings">
+
+        <div class="finding-row" data-sev="crit" id="finding-1">
+          <div class="finding-row__prose">
+            <div class="find-tags"><span class="severity crit">Critical</span><span class="lens-chip">Jakub</span><span class="lens-chip">Jhey</span></div>
+            <h4 class="find-title">The intro leaves in a single frame</h4>
+            <div class="find-body">
+              <p><span class="label">What</span><code>StartScreen</code> is mounted by a bare <code>{#if introPhase === 'start'}</code> with no transition, and <code>.ss-overlay</code> has no exit. Continue sets <code>introPhase = 'playing'</code> and the four dealt panels, the logo and the dim are gone on the next paint.</p>
+              <p><span class="label">Why it matters</span>It is the first thing a new player presses. The intro arrives with a deal (<code>ss-step-in</code>) and leaves with a cut, so the most-seen transition in a session is half-built. The four panels <em>teach the four cards</em>, and they vanish rather than becoming them.</p>
+              <div class="fix"><p><span class="label">Recommended motion</span>Let the four step panels collect down into the board's four card slots (shrink and travel, 420ms <code>--ease-in-out</code>, 60ms apart) while the overlay's dim lifts. The lesson becomes the table. Under reduced motion, a 150ms crossfade. This is item C's spine.</p></div>
+              <p class="find-loc"><code>components/Game.svelte:715</code> · <code>styles/intro/start-screen-shell.css</code></p>
+            </div>
+          </div>
+          <div class="demo">
+            <input class="vh" type="radio" name="st1" id="st1-a" checked>
+            <input class="vh" type="radio" name="st1" id="st1-l">
+            <input class="vh" type="radio" name="st1" id="st1-d">
+            <div class="demo__bar">
+              <div class="demo__meta"><span class="demo__title">Panels collect into the slots</span><span class="demo__timing">420ms · ease-in-out · 60ms apart</span></div>
+              <div class="demo__controls">
+                <div class="seg"><label for="st1-a">Auto</label><label for="st1-l">Light</label><label for="st1-d">Dark</label></div>
+                <span class="demo__loop">↻</span>
+              </div>
+            </div>
+            <div class="demo__stage">
+              <div class="demo-1__mt rtb-row"><div class="rtb-card"></div><div class="rtb-card"></div><div class="rtb-card"></div><div class="rtb-card"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="finding-row" data-sev="imp" id="finding-3">
+          <div class="finding-row__prose">
+            <div class="find-tags"><span class="severity imp">Important</span><span class="lens-chip">Jakub</span><span class="lens-chip">Emil</span></div>
+            <h4 class="find-title">The deal spends its time where nobody can see it</h4>
+            <div class="find-body">
+              <p><span class="label">What</span>The travel is <code>flipDur × 1300</code> (650ms at 0.5s). The gather leg is 17% of that (110ms), the stagger is <code>flipDur × 90</code> (45ms), then a 300ms <code>DEAL_REST_MS</code> spent invisible inside the deck, then 540ms back out. Last Stop's ticket rides the same curve.</p>
+              <p><span class="label">Why it matters</span>At 110ms a card crossing a third of the table reads as a teleport, and with 45ms between them the four cards move as one block. The owner reports "too fast". The time is there, but it sits on the rest, not the travel.</p>
+              <div class="fix"><p><span class="label">Recommended motion</span>Re-balance, don't lengthen. Move the split, not the total: gather in about 220ms on the game's <code>--ease-in-out</code> (a card moving across the table), keep your 300ms rest, deal out over about 430ms ease-out, 80ms apart, and give the ticket its own beat after the last card. Card 1 still lands inside the reveal's 950ms hold-back. Turbo and the slam keep cutting it, and <code>playDeal</code> is re-timed against <code>npm run audio</code>.</p></div>
+              <p class="find-loc"><code>components/board/GameBoard.svelte:478-536</code> · <code>game/round/revealPacing.svelte.ts:82</code></p>
+            </div>
+          </div>
+          <div class="demo">
+            <input class="vh" type="radio" name="st3" id="st3-a" checked>
+            <input class="vh" type="radio" name="st3" id="st3-l">
+            <input class="vh" type="radio" name="st3" id="st3-d">
+            <div class="demo__bar">
+              <div class="demo__meta"><span class="demo__title">Gather, rest, deal</span><span class="demo__timing">220 ease-in-out · 300 rest · 430 ease-out</span></div>
+              <div class="demo__controls">
+                <div class="seg"><label for="st3-a">Auto</label><label for="st3-l">Light</label><label for="st3-d">Dark</label></div>
+                <span class="demo__loop">↻</span>
+              </div>
+            </div>
+            <div class="demo__stage">
+              <div class="demo-3__mt rtb-row" style="gap:84px;"><div class="rtb-deck"></div><div class="rtb-card"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="finding-row" data-sev="imp" id="finding-5">
+          <div class="finding-row__prose">
+            <div class="find-tags"><span class="severity imp">Important</span><span class="lens-chip">Jakub</span></div>
+            <h4 class="find-title">The MODE sign's leaving name repaints in the arriving colour</h4>
+            <div class="find-body">
+              <p><span class="label">What</span>Each <code>.cb-blind-name</code> is keyed on <code>bet.family</code> and rolls 340ms, but its colour is <code>var(--mode-ink)</code>, published once on the whole control bar. The moment the family changes, both names (the one leaving and the one arriving) read the new family's colour.</p>
+              <p><span class="label">Why it matters</span>A destination blind rolls one printed name away and the next one in. Here the old name changes ink as it leaves, which looks like a glitch on the one control the owner asked to be special.</p>
+              <div class="fix"><p><span class="label">Recommended motion</span>Same roll, same timing. Give each keyed name its own <code>--name-ink</code> from its family when it is created (an inline style on the <code>{#key}</code> element), so the leaving element keeps the colour it was printed in.</p></div>
+              <p class="find-loc"><code>components/board/ControlBar.svelte:868-874</code> · <code>styles/board/control-bar.css:842</code></p>
+            </div>
+          </div>
+          <div class="demo">
+            <input class="vh" type="radio" name="st5" id="st5-a" checked>
+            <input class="vh" type="radio" name="st5" id="st5-l">
+            <input class="vh" type="radio" name="st5" id="st5-d">
+            <div class="demo__bar">
+              <div class="demo__meta"><span class="demo__title">Each name keeps its own ink</span><span class="demo__timing">340ms · ease-in-out</span></div>
+              <div class="demo__controls">
+                <div class="seg"><label for="st5-a">Auto</label><label for="st5-l">Light</label><label for="st5-d">Dark</label></div>
+                <span class="demo__loop">↻</span>
+              </div>
+            </div>
+            <div class="demo__stage">
+              <div class="demo-5__mt rtb-sign">
+                <span class="rtb-name leaving" style="color: oklch(0.85 0.15 85);">CLASSIC</span>
+                <span class="rtb-name arriving" style="color: oklch(0.8 0.17 152);">SECOND CHANCE</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="lens-block">
+      <span class="mono-label">Opportunities</span>
+      <ul class="lens-list opp">
+        <li><span class="mk">💡</span><span>Panels could grow from the control that opened them (the mode picker out of the MODE sign, the chips out of the bet display) by setting <code>transform-origin</code> per panel, keeping the 220ms. <code>styles/popups/popup-base.css:101</code></span></li>
+        <li><span class="mk">💡</span><span>Last Stop's ticket is dealt on the cards' curve, 45ms behind card 4. Give it a slip off the stack with a small paper rotation, after the cards have settled. <code>GameBoard.svelte:535</code></span></li>
+      </ul>
+    </div>
+
+    <div class="lens-take">
+      <span class="mono-label">Through Jakub's lens</span>
+      <p>Everything a player watches inside a round is finished, measured and reversible; the transitions <em>between</em> rounds and screens are not. Fix the cut and the repaint first. They are small, and they are seen most.</p>
+    </div>
+  </section>
+
+  <!-- 04 · JHEY (secondary) -->
+  <section class="lens-sec">
+    <div class="sec-index">04</div>
+    <div class="lens-sec__head">
+      <h3>Jhey Tompkins — Experimentation &amp; Delight</h3>
+      <span class="lens-sec__weight">Secondary lens</span>
+    </div>
+    <p class="lens-sec__verdict"><span class="verdict v-concern">Concern</span></p>
+
+    <div class="lens-block">
+      <span class="mono-label">What's working well</span>
+      <ul class="lens-list good">
+        <li><span class="mk">✓</span><span>The held last card is a real set piece. It rises, the crowd swells, the tunnel closes and the card slams down on the turn, all on one clock (<code>holdClimbMs</code>), scaled by what it could land. <code>game/round/roundReveal.svelte.ts</code></span></li>
+        <li><span class="mk">✓</span><span>The takeover's hand hops with <code>composite: 'add'</code> over its own fan transform, and the fan is dealt with an overshoot that only a rare moment earns. <code>game/celebration/celebrationGestures.ts</code></span></li>
+        <li><span class="mk">✓</span><span>The table die rolls and lands with knocks; it is an object, not a button. <code>components/board/TableDie.svelte:75</code></span></li>
+      </ul>
+    </div>
+
+    <div class="lens-block">
+      <span class="mono-label">Issues to address</span>
+      <div class="findings">
+
+        <div class="finding-row" data-sev="crit" id="finding-2">
+          <div class="finding-row__prose">
+            <div class="find-tags"><span class="severity crit">Critical</span><span class="lens-chip">Jhey</span><span class="lens-chip">Jakub</span></div>
+            <h4 class="find-title">The loader deals four cards that never land</h4>
+            <div class="find-body">
+              <p><span class="label">What</span>The loader deals four card backs into a row (<code>loader-deal</code>, 0.52s, 110ms apart), floats them, and then the whole loader fades for 320ms. At that moment the table's own four face-down cards and the intro are mounting underneath. The cards are not related to anything the player sees next.</p>
+              <p><span class="label">Why it matters</span>It is the first second of the game, and the owner's top priority. A deal that leads nowhere reads as a splash screen. The same four backs a moment later in different places read as two unrelated screens, which is item C.</p>
+              <div class="fix"><p><span class="label">Recommended motion</span>Keep one world. The table is drawn from the first frame and the loader's cards are dealt onto the board's four slots (measured, as the deal already does) once ready. The progress lives on the table, not under it. 520ms ease-out, 90ms apart, the slot rects measured at rest.</p></div>
+              <p class="find-loc"><code>styles/intro/loader.css:120-207</code> · <code>components/intro/GameLoader.svelte:136</code></p>
+            </div>
+          </div>
+          <div class="demo">
+            <input class="vh" type="radio" name="st2" id="st2-a" checked>
+            <input class="vh" type="radio" name="st2" id="st2-l">
+            <input class="vh" type="radio" name="st2" id="st2-d">
+            <div class="demo__bar">
+              <div class="demo__meta"><span class="demo__title">Loader cards deal onto the table</span><span class="demo__timing">520ms · ease-out · 90ms apart</span></div>
+              <div class="demo__controls">
+                <div class="seg"><label for="st2-a">Auto</label><label for="st2-l">Light</label><label for="st2-d">Dark</label></div>
+                <span class="demo__loop">↻</span>
+              </div>
+            </div>
+            <div class="demo__stage">
+              <div class="demo-2__mt rtb-row"><div class="rtb-card"></div><div class="rtb-card"></div><div class="rtb-card"></div><div class="rtb-card"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="finding-row" data-sev="imp" id="finding-6">
+          <div class="finding-row__prose">
+            <div class="find-tags"><span class="severity imp">Important</span><span class="lens-chip">Jhey</span></div>
+            <h4 class="find-title">The takeover's suit-mark burst reads as debris</h4>
+            <div class="find-body">
+              <p><span class="label">What</span>Ten suit marks travel outward on straight lines over 1.5s (<code>wc-mark-out</code>, ease-out), low in contrast against the veil, and fade while still drifting.</p>
+              <p><span class="label">Why it matters</span>A straight, slow, faint drift is how dust moves. Thrown things arc, spin and land. The burst should be the hand's thrown chips, the one beat that says "something left the hand".</p>
+              <div class="fix"><p><span class="label">Recommended motion</span>Fewer, bigger, harder. Six marks thrown on an arc (an x track on ease-out and a separate y track that rises then falls), turning as they go and gone by about 900ms, in full ink with the title's block shadow. Keyed on the tier as now.</p></div>
+              <p class="find-loc"><code>styles/scene/win-celebration.css:720</code> · <code>game/celebration/celebrationScene.ts</code></p>
+            </div>
+          </div>
+          <div class="demo">
+            <input class="vh" type="radio" name="st6" id="st6-a" checked>
+            <input class="vh" type="radio" name="st6" id="st6-l">
+            <input class="vh" type="radio" name="st6" id="st6-d">
+            <div class="demo__bar">
+              <div class="demo__meta"><span class="demo__title">Six marks thrown, not drifting</span><span class="demo__timing">~900ms · split x/y easing · rotate</span></div>
+              <div class="demo__controls">
+                <div class="seg"><label for="st6-a">Auto</label><label for="st6-l">Light</label><label for="st6-d">Dark</label></div>
+                <span class="demo__loop">↻</span>
+              </div>
+            </div>
+            <div class="demo__stage">
+              <div class="demo-6__mt">
+                <span class="rtb-mark" style="--dx:-96px; --up:-40px; --fall:10px; --spin:-160deg;">♠</span>
+                <span class="rtb-mark" style="--dx:-58px; --up:-56px; --fall:-14px; --spin:-90deg;">♥</span>
+                <span class="rtb-mark" style="--dx:-18px; --up:-62px; --fall:-30px; --spin:-40deg;">♦</span>
+                <span class="rtb-mark" style="--dx:22px; --up:-62px; --fall:-28px; --spin:50deg;">♣</span>
+                <span class="rtb-mark" style="--dx:60px; --up:-54px; --fall:-12px; --spin:110deg;">♠</span>
+                <span class="rtb-mark" style="--dx:98px; --up:-38px; --fall:12px; --spin:170deg;">♥</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="lens-block">
+      <span class="mono-label">Opportunities</span>
+      <ul class="lens-list opp">
+        <li><span class="mk">💡</span><span>The mode picker as a rack of five family cards (item G) can be <em>dealt</em> up, one stagger moment of about 40ms, the same vocabulary as the intro's <code>ss-step-in</code>.</span></li>
+        <li><span class="mk">💡</span><span>A room around the table (item B) could carry one slow, fixed light, the takeover's beam idea at rest, instead of a gradient that never changes.</span></li>
+      </ul>
+    </div>
+
+    <div class="lens-take">
+      <span class="mono-label">Through Jhey's lens</span>
+      <p>The game already has its best idea, the hold. Give the first second of the game an idea of the same quality: the loader is a deal, so let it deal onto the table.</p>
+    </div>
+  </section>
+
+  <!-- 05 · EMIL (selective) -->
+  <section class="lens-sec">
+    <div class="sec-index">05</div>
+    <div class="lens-sec__head">
+      <h3>Emil Kowalski — Restraint &amp; Speed</h3>
+      <span class="lens-sec__weight">Selective lens</span>
+    </div>
+    <p class="lens-sec__verdict"><span class="verdict v-mixed">Mixed</span></p>
+
+    <div class="lens-block">
+      <span class="mono-label">What's working well</span>
+      <ul class="lens-list good">
+        <li><span class="mk">✓</span><span>Turbo scales every clock through <code>--flip-dur</code> and <code>paceMs</code>; a slam finishes the deal and every flip outright.</span></li>
+        <li><span class="mk">✓</span><span>Panels close instantly on purpose: arrival carries information, leaving carries none. <code>popup-base.css:97</code></span></li>
+        <li><span class="mk">✓</span><span>Keys 1-4 and Space never animate a pick; the only motion is the card's own turn.</span></li>
+      </ul>
+    </div>
+
+    <div class="lens-block">
+      <span class="mono-label">Issues to address</span>
+      <div class="findings">
+        <div class="finding-row" data-sev="imp" id="finding-4">
+          <div class="finding-row__prose">
+            <div class="find-tags"><span class="severity imp">Important</span><span class="lens-chip">Emil</span></div>
+            <h4 class="find-title">The loader's cards breathe forever, over a bar that runs on a timer</h4>
+            <div class="find-body">
+              <p><span class="label">What</span>After the deal, all four cards loop <code>loader-breathe</code> (1.9s, infinite). The bar creeps to 90% on elapsed time against <code>MIN_MS</code>, not on anything actually loading.</p>
+              <p><span class="label">Why it matters</span>A breathing loop is the pulsing-indicator pattern. It says "busy" without saying what is happening, and over a time-based bar it is decoration over a placeholder.</p>
+              <div class="fix"><p><span class="label">Recommended motion</span>One gesture with a meaning: a single riffle of the deck while something is outstanding, then stillness. If the load is slow, the riffle repeats every few seconds rather than breathing continuously. Fold it into finding 2's new loader rather than patching the old one.</p></div>
+              <p class="find-loc"><code>styles/intro/loader.css:150</code> · <code>components/intro/GameLoader.svelte:74-79</code></p>
+            </div>
+          </div>
+          <div class="demo">
+            <input class="vh" type="radio" name="st4" id="st4-a" checked>
+            <input class="vh" type="radio" name="st4" id="st4-l">
+            <input class="vh" type="radio" name="st4" id="st4-d">
+            <div class="demo__bar">
+              <div class="demo__meta"><span class="demo__title">One riffle, then still</span><span class="demo__timing">~1.1s · ease-in-out · no loop</span></div>
+              <div class="demo__controls">
+                <div class="seg"><label for="st4-a">Auto</label><label for="st4-l">Light</label><label for="st4-d">Dark</label></div>
+                <span class="demo__loop">↻</span>
+              </div>
+            </div>
+            <div class="demo__stage">
+              <div class="demo-4__mt rtb-row" style="gap:0;"><div class="rtb-deck"></div><div class="rtb-deck" style="margin-left:-30px;"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lens-block">
+      <span class="mono-label">Opportunities</span>
+      <ul class="lens-list opp">
+        <li><span class="mk">💡</span><span>"Tap to continue" on the takeover breathes on a 3.6s loop until ready. It has a stated reason, but it could stop after three cycles and stay legible. <code>win-celebration.css:982</code></span></li>
+        <li><span class="mk">💡</span><span>The takeover's light beam loops for as long as the takeover is up (7.2s). On autoplay runs it is seen often; consider letting it settle after one pass. <code>win-celebration.css:299</code></span></li>
+      </ul>
+    </div>
+
+    <div class="lens-take">
+      <span class="mono-label">Through Emil's lens</span>
+      <p>The high-frequency loop is disciplined. The deal is the one exception, and its fix is re-timing, not more time. Remove the loop that only exists to look busy.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-index">06</div>
+    <h2 class="section-title">Combined recommendations</h2>
+
+    <div class="rec crit" id="rec-crit">
+      <div class="tier-label"><span class="mono-label">Critical · must fix</span><span class="rule"></span><span class="count">2</span></div>
+      <table class="rec-table">
+        <thead><tr><th>Issue</th><th>File</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td>Intro leaves in one frame</td><td><code>Game.svelte:715</code></td><td>Panels collect into the four card slots, 420ms; a crossfade under reduced motion (item C)</td></tr>
+          <tr><td>Loader cards never land</td><td><code>loader.css:120</code></td><td>One world: deal the loader's cards onto the board's slots (items A + C)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rec imp" id="rec-imp">
+      <div class="tier-label"><span class="mono-label">Important · should fix</span><span class="rule"></span><span class="count">4</span></div>
+      <table class="rec-table">
+        <thead><tr><th>Issue</th><th>File</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td>Deal budget upside down</td><td><code>GameBoard.svelte:478</code></td><td>Gather 220 ease-in-out, keep the 300 rest, deal 430 ease-out, 80ms apart; re-time <code>playDeal</code> (touch-up 6, plan 001)</td></tr>
+          <tr><td>Loader breathing loop and timer bar</td><td><code>loader.css:150</code></td><td>One riffle while waiting, then still (into A)</td></tr>
+          <tr><td>MODE leaving name repaints</td><td><code>ControlBar.svelte:868</code></td><td>Per-name <code>--name-ink</code> captured at creation (touch-up 4)</td></tr>
+          <tr><td>Burst reads as debris</td><td><code>win-celebration.css:720</code></td><td>Six marks on a thrown arc, full ink, about 900ms (touch-up 8)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rec opp" id="rec-opp">
+      <div class="tier-label"><span class="mono-label">Opportunities · could enhance</span><span class="rule"></span><span class="count">6</span></div>
+      <table class="rec-table">
+        <thead><tr><th>Enhancement</th><th>Where</th><th>Impact</th></tr></thead>
+        <tbody>
+          <tr><td>Panels grow from their control</td><td><code>popup-base.css:101</code></td><td>"This came from that button", at no extra time</td></tr>
+          <tr><td>Ticket gets its own beat</td><td><code>GameBoard.svelte:535</code></td><td>Last Stop's prize reads as dealt, not dragged</td></tr>
+          <tr><td>Mode rack dealt up</td><td><code>ModePopup.svelte</code></td><td>One stagger moment, the intro's vocabulary (item G)</td></tr>
+          <tr><td>A light in the room</td><td>new (item B)</td><td>The table sits in a place, not a gradient</td></tr>
+          <tr><td>Prompt stops breathing</td><td><code>win-celebration.css:982</code></td><td>Less loop on autoplay runs</td></tr>
+          <tr><td>Beam settles after one pass</td><td><code>win-celebration.css:299</code></td><td>Less ambient motion on repeat takeovers</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section style="margin-bottom: var(--s6);">
+    <div class="sec-index">07</div>
+    <h2 class="section-title">Lens reference summary</h2>
+    <div class="ref-summary">
+      <span class="mono-label">Lens referenced most</span>
+      <p class="big">Jakub Krehel — Production Polish</p>
+      <p class="why">A casino game is a production surface seen in long repeated sessions: almost every finding is a transition that is half-built (a cut, a repaint, a mistimed leg) rather than one that should not exist.</p>
+      <ul class="ref-lean">
+        <li><span class="nm">Emil, stricter</span><span>Cut the loader's loop and the takeover's two ambient loops outright; keep the deal inside card 1's 950ms hold-back and let turbo cut it.</span></li>
+        <li><span class="nm">Jakub, stricter</span><span>Give every screen hand-off an exit subtler than its entrance; animate the panels' origin from their controls.</span></li>
+        <li><span class="nm">Jhey, stricter</span><span>Treat the loader, the hand-offs and the burst as set pieces: one continuous deal from the first frame to the board.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="doc">
+    <span>ride-the-bus · motion audit · 2026-10-16</span>
+    <span>2 critical · 4 important · 6 opportunities</span>
+  </footer>
+</div>
+</body>
+</html>

@@ -9,19 +9,22 @@
      component imports it (see the note atop ChoiceIcon.svelte), so
      styles/popup-turbo.css is imported here and nowhere else. Colour still comes
      in through the one --tint contract every menu wears; nothing below names a
-     colour of its own. -->
+     colour of its own.
+
+     A BUMP (the owner's pick T1, 2026-10-17): the slider is the whole menu, so
+     it opens over the turbo button rather than as a dialog in the middle of the
+     screen, and has no header - its name is the dialog's label, and a tap
+     anywhere else or Escape closes it. See popup-bump.css. -->
 <script lang="ts">
-  import MarkIcon from '../icons/MarkIcon.svelte';
   import RangeSlider from './RangeSlider.svelte';
   import { t } from '../../i18n/i18nDerived';
   import { jurisdiction, TURBO_CAP_WITHOUT_SUPER } from '../../game/jurisdiction/jurisdiction.svelte';
   import { onTurboInput, pacing } from '../../game/round/revealPacing.svelte';
+  import { bump } from '../../game/ui/bumpAnchor';
 
-  let { onclose }: { onclose: () => void } = $props();
 </script>
 
-  <div class="popup popup-turbo" role="dialog" aria-modal="true" tabindex="-1" aria-label={t('Turbo speed')}>
-    <div class="popup-head"><span>{t('Turbo speed')}</span><button class="popup-close" onclick={onclose} aria-label={t('Close')}><MarkIcon name="cross" /></button></div>
+  <div class="popup bump popup-turbo" role="dialog" aria-modal="true" tabindex="-1" aria-label={t('Turbo speed')} use:bump={'.cb-turbo'}>
     <div class="turbo-body">
       <div class="turbo-track">
         <span class="turbo-end">{t('Normal')}</span>
@@ -45,5 +48,6 @@
 
 <style>
   @import '../../styles/popups/popup-base.css';
+  @import '../../styles/popups/popup-bump.css';
   @import '../../styles/popups/popup-turbo.css';
 </style>

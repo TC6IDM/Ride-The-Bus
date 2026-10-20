@@ -1,0 +1,46 @@
+{
+ "seconds": 9.05,
+ "peakDb": -12.19,
+ "rmsDb": -33.25,
+ "crestDb": 21.06,
+ "quietDb": -50.62,
+ "loudDb": -28.94,
+ "movementDb": 21.69,
+ "clipped": 0,
+ "centroidHz": 2199,
+ "flatness": 0.1337,
+ "bands": [
+  {
+   "band": "0-60Hz",
+   "pct": 4.5
+  },
+  {
+   "band": "60-120Hz",
+   "pct": 16.8
+  },
+  {
+   "band": "120-250Hz",
+   "pct": 4.3
+  },
+  {
+   "band": "250-500Hz",
+   "pct": 3.6
+  },
+  {
+   "band": "500-1000Hz",
+   "pct": 49.8
+  },
+  {
+   "band": "1000-2000Hz",
+   "pct": 19.8
+  },
+  {
+   "band": "2000-4000Hz",
+   "pct": 0.8
+  },
+  {
+   "band": "4000-24000Hz",
+   "pct": 0.4
+  }
+ ]
+}

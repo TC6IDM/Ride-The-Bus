@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A3 The chip</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  .full { opacity: 0; transition: opacity 600ms var(--ease-out); }
+  .full.on { opacity: 1; }
+  .pitch { position: absolute; left: 50%; perspective: 700px; transform: translateX(-50%); transition: left 700ms var(--ease-in-out), top 700ms var(--ease-in-out), width 700ms var(--ease-in-out); }
+  .chip { width: 100%; aspect-ratio: 1; background: url('kit/logo.webp') center / contain no-repeat; transform-style: preserve-3d; }
+  .shadow { position: absolute; left: 10%; right: 10%; bottom: -10%; height: 16%; border-radius: 50%; background: radial-gradient(closest-side, rgba(0,0,0,0.55), transparent); }
+  /* Dropped: falls in, then spins on its edge for as long as loading lasts. */
+  .chip.drop { animation: drop 380ms cubic-bezier(0.55, 0, 1, 0.45) both, spin 900ms linear 380ms infinite; }
+  /* Ready: the spin slows, wobbles and lies flat - a coin settling, one clack. */
+  .chip.settle { animation: settle 1100ms cubic-bezier(0.2, 0.8, 0.3, 1) both; }
+  @keyframes drop { from { transform: translateY(-160px) scale(1.25); opacity: 0; } 60% { opacity: 1; } to { transform: none; } }
+  @keyframes spin { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
+  @keyframes settle {
+    0% { transform: rotateY(0deg); }
+    35% { transform: rotateY(300deg); }
+    55% { transform: rotateY(360deg) rotateX(28deg); }
+    72% { transform: rotateY(360deg) rotateX(-14deg); }
+    86% { transform: rotateY(360deg) rotateX(6deg); }
+    100% { transform: rotateY(360deg); }
+  }
+  .title { position: absolute; left: 0; right: 0; text-align: center; opacity: 0; transition: opacity 500ms var(--ease-out), transform 700ms var(--ease-in-out); }
+  .title.on { opacity: 1; }
+</style></head>
+<body>
+<div class="stage" id="s">
+  <div class="layer bg" id="bare"></div>
+  <div class="layer bg full" id="full"></div>
+</div>
+<script src="kit/kit.js"></script>
+<script>
+  const { g, el, scene, lockup, loop, wait, size } = RTB;
+  const s = document.getElementById('s');
+  const phone = size() === 'phone';
+  scene(document.getElementById('bare'), false); scene(document.getElementById('full'), true);
+  const big = phone ? 150 : 190, top0 = phone ? 190 : 150;
+  const pitch = el('div', 'pitch', '<div class="shadow"></div><div class="chip"></div>');
+  s.appendChild(pitch);
+  const chip = pitch.querySelector('.chip');
+  const lock = lockup(s); lock.classList.add('title');
+  // The red stack's top chip on the table (measured off the scene).
+  const STACK = phone ? { x: 300, y: 104, w: 30 } : { x: 858, y: 132, w: 40 };
+
+  async function run() {
+    document.getElementById('full').classList.remove('on'); lock.classList.remove('on');
+    pitch.style.transition = 'none'; Object.assign(pitch.style, { left: '50%', top: top0 + 'px', width: big + 'px', opacity: 1 });
+    void pitch.offsetWidth; pitch.style.transition = '';
+    chip.className = 'chip'; void chip.offsetWidth; chip.classList.add('drop');
+    await wait(3000);                                  // spinning: as long as the load takes
+    chip.className = 'chip'; void chip.offsetWidth; chip.classList.add('settle');
+    await wait(1100); lock.classList.add('on');         // flat: the name arrives at its board place
+    await wait(900);
+    // The house chip goes on the house's stack; the table fills in around it.
+    Object.assign(pitch.style, { left: (STACK.x + STACK.w / 2) + 'px', top: (STACK.y - STACK.w * 0.4) + 'px', width: STACK.w + 'px' });
+    document.getElementById('full').classList.add('on');
+    await wait(700); pitch.style.opacity = 0;
+  }
+  loop(8500, run);
+</script>
+</body></html>

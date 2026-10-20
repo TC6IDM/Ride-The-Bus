@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>X3 Quiet strip</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* The lightest bar: one slim strip that fades up into the room, bare glyphs,
+     plain figures. No pills, no wells, no discs except the deal. */
+  .xbar.quiet { height: 70px; background: linear-gradient(180deg, rgba(10, 8, 6, 0), rgba(10, 8, 6, 0.86) 40%); }
+  .quiet .cap { letter-spacing: 0.12em; }
+  .quiet .deal { width: 56px; height: 56px; }
+  .quiet .sign { background: rgba(0,0,0,0.4); box-shadow: none; }
+  @media (max-width: 600px) { .xbar.quiet { height: 116px; background: linear-gradient(180deg, rgba(10,8,6,0), rgba(10,8,6,0.9) 25%); } }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div></div>
+<script src="kit/kit.js"></script><script src="kit/glyphs.js"></script><script src="kit/barmock.js"></script>
+<script>
+  document.getElementById('board').style.backgroundImage = `url('kit/board-nobar-${RTB.size()}.webp')`;
+  BARMOCK.mount(document.getElementById('s'), 'quiet');
+</script>
+</body></html>

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>G3 The dealt hand</title>
+<link rel="stylesheet" href="kit/kit.css">
+<link rel="stylesheet" href="kit/rack.css">
+<style>
+  .rack { width: 100%; left: 0; transform: none; top: 10px; padding: 0 24px; }
+  /* Five oversized playing cards in the card's own paper, fanned like a hand. */
+  .hand { position: relative; height: 520px; perspective: 1400px; }
+  .mcard { position: absolute; left: 50%; bottom: 10px; width: 200px; height: 384px; margin-left: -100px; transform-style: preserve-3d;
+    transform-origin: 50% 160%; transition: transform 460ms var(--ease-in-out), opacity 240ms; }
+  .side { position: absolute; inset: 0; border-radius: 14px; backface-visibility: hidden; overflow: hidden; }
+  .front { background: linear-gradient(170deg, #fbf7ec, var(--card-paper) 60%, #ece3cf); box-shadow: inset 0 0 0 1.5px var(--card-edge), 0 10px 22px rgba(0,0,0,0.5), 0 2px 3px rgba(0,0,0,0.45);
+    display: grid; grid-template-rows: auto 96px auto 1fr auto; gap: 8px; padding-bottom: 12px; color: var(--card-ink); }
+  .band { background: var(--fam); padding: 11px 10px 9px; display: flex; flex-direction: column; align-items: center; gap: 6px; box-shadow: inset 0 -2.5px 0 rgba(0,0,0,0.18); }
+  .band .nm { font: 900 25px/1 var(--font-display); color: var(--on-vol-ink); white-space: nowrap; }
+  .band .bolts svg { fill: var(--on-vol-ink) !important; }
+  .band .bolts svg[style*="255,240,220"], .band .bolts svg[style*="255, 240, 220"] { fill: rgba(20,17,10,0.25) !important; }
+  .front .vig { margin: 0 10px; }
+  .front .bl { margin: 0 12px; font: 400 11.5px/1.38 var(--font-body); color: rgba(var(--card-ink-rgb), 0.82); }
+  .front .fg { margin: 0 12px; align-self: end; }
+  .front .fg span { display: block; font: 700 11px/1 var(--font-body); color: rgba(var(--card-ink-rgb), 0.6); }
+  .front .fg b { font: 900 32px/1 var(--font-display); color: var(--card-ink); }
+  .front .fg em { display: block; font: 800 12px/1.3 var(--font-body); font-style: normal; color: var(--card-red); margin-top: 3px; }
+  .front .ac { margin: 0 12px; }
+  .front .ac .action { width: 100%; --tint-rgb: var(--fam-rgb); padding: 11px; }
+  .front .ac .now { display: block; text-align: center; font: 800 12.5px/1 var(--font-body); padding: 11px 0; border-radius: 10px; border: 1.5px solid var(--fam); color: rgba(var(--card-ink-rgb), 0.8); }
+  /* The back: turning the card over IS the confirmation step Stake asks for. */
+  .backside { transform: rotateY(180deg); background: var(--panel-face), var(--panel); box-shadow: inset 0 0 0 2px rgba(var(--fam-rgb), 0.55), 0 10px 22px rgba(0,0,0,0.5);
+    padding: 18px 14px; display: flex; flex-direction: column; gap: 10px; color: var(--ink-strong); }
+  .backside .nm { font: 900 26px/1 var(--font-display); color: var(--fam); }
+  .backside p { margin: 0; font: 400 12.5px/1.4 var(--font-body); color: var(--ink-body); }
+  .backside .mx { font: 800 15px/1.2 var(--font-body); color: var(--ink); }
+  .backside .row { margin-top: auto; display: flex; gap: 8px; }
+  .backside .cancel { padding: 11px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: none; color: var(--ink-body); font: 700 13px/1 var(--font-body); }
+  .backside .go { flex: 1; --tint-rgb: var(--fam-rgb); padding: 11px; }
+  .mcard.flip { transform: translateY(-40px) rotate(0deg) rotateY(180deg) !important; z-index: 9; }
+  .rack.confirming .mcard:not(.flip) { opacity: 0.35; }
+  @media (max-width: 600px) {
+    .rack { padding: 0; top: 0; bottom: 0; overflow: hidden; }
+    .rack .head { margin: 14px 14px 6px; }
+    .hand { height: auto; display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 26px 64px 30px; scroll-behavior: smooth; scrollbar-width: none; }
+    .mcard { position: relative; left: 0; bottom: 0; margin: 0; flex: 0 0 236px; height: 380px; scroll-snap-align: center; transform: none !important; }
+    .mcard.lift { transform: translateY(-10px) !important; }
+    .mcard.flip { transform: rotateY(180deg) !important; }
+    .front { grid-template-rows: auto 120px auto 1fr auto; }
+    .rack .note { margin: 0 14px; }
+  }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div></div>
+<script src="kit/kit.js"></script><script src="kit/modes.js"></script>
+<script>
+  const { el, loop, wait, size } = RTB; const { F, LIVE, bolts, vignette } = MODES;
+  const phone = size() === 'phone', s = document.getElementById('s');
+  document.getElementById('board').style.backgroundImage = `url('kit/board-${size()}.webp')`;
+  document.head.insertAdjacentHTML('beforeend', `<style>${MODES.CSS}</style>`);
+  const veil = el('div', 'veil'); s.appendChild(veil);
+  const rack = el('div', 'rack'); s.appendChild(rack);
+  rack.innerHTML = `<div class="head"><span>Game mode</span><button class="x" aria-label="Close">×</button></div><div class="hand">${F.map((f) => `
+    <div class="mcard" data-id="${f.id}" style="--fam:rgb(${f.rgb});--fam-rgb:${f.rgb}">
+      <div class="side front"><div class="band"><span class="nm">${f.name}</span>${bolts(f, phone ? 11 : 11)}</div>
+        <div class="vig">${vignette(f)}</div><p class="bl">${f.blurb}</p>
+        <div class="fg"><span>Max win</span><b>${f.max}</b>${f.cost ? `<em>Costs ${f.cost} your bet</em>` : ''}</div>
+        <div class="ac">${f.id === LIVE ? '<span class="now">Playing now</span>' : '<button class="action">Switch</button>'}</div></div>
+      <div class="side backside"><span class="nm">${f.name}</span><p class="mx">Switch mode?</p><p>Max win ${f.max} your bet.</p><p>Your four guesses top out at 95.4× your bet.</p>
+        <div class="row"><button class="cancel">Cancel</button><button class="action go">Switch</button></div></div>
+    </div>`).join('')}</div><p class="note">This mode costs 1× your bet. Every mode returns the same 96.00% over many rounds; what changes is how often a round pays and how much it can pay.</p>`;
+  const cards = [...rack.querySelectorAll('.mcard')], hand = rack.querySelector('.hand');
+  // Desktop: a fan, the middle cards lifted, the live family lifted further.
+  const FAN = [-14, -7, 0, 7, 14], SPREAD = [-400, -200, 0, 200, 400];
+  function fan(dealt) {
+    cards.forEach((c, i) => {
+      if (phone) { c.classList.toggle('lift', c.dataset.id === LIVE); return; }
+      const lift = (c.dataset.id === LIVE ? -26 : 0) - (2 - Math.abs(i - 2)) * 6;
+      c.style.transform = dealt ? `translateX(${SPREAD[i]}px) translateY(${lift}px) rotate(${FAN[i] * 0.45}deg)` : 'translateX(-520px) translateY(120px) rotate(-30deg)';
+      c.style.transitionDelay = dealt ? (200 + i * 60) + 'ms' : '0ms';
+    });
+  }
+  loop(8400, async () => {
+    rack.classList.remove('confirming'); cards.forEach((c) => c.classList.remove('flip'));
+    veil.classList.remove('in'); rack.style.opacity = 0; if (phone) hand.scrollLeft = 0;
+    cards.forEach((c) => (c.style.transition = 'none')); fan(false); void s.offsetWidth; cards.forEach((c) => (c.style.transition = ''));
+    await wait(400); veil.classList.add('in'); rack.style.opacity = 1; rack.style.transition = 'opacity 200ms'; fan(true);
+    await wait(2600);
+    const hs = rack.querySelector('[data-id="hs"]');
+    if (phone) { hand.scrollLeft = hs.offsetLeft - (hand.clientWidth - hs.clientWidth) / 2; await wait(700); }
+    cards.forEach((c) => (c.style.transitionDelay = '0ms'));
+    rack.classList.add('confirming'); hs.classList.add('flip');
+  });
+</script>
+</body></html>

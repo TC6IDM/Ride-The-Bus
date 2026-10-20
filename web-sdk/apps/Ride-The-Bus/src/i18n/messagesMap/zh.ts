@@ -170,8 +170,6 @@ export default {
 		'查看最近几局',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'加减按钮设定投注。单击金额可打开快速投注菜单。',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'闪电表示选择“相同”之前的各模式。每选一个“相同”就加一个。',
 	'Click to continue':
 		'单击继续',
 	'Click to skip':
@@ -329,6 +327,14 @@ export default {
 		'亏损达到时停止',
 	'Stop on a single win of':
 		'单次赢取达到时停止',
+	'Limits':
+		'限额',
+	'None set':
+		'未设置',
+	'Loss %s':
+		'亏损 %s',
+	'Win %s':
+		'单次赢得 %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'使用键盘时，按 1 至 4 键可切换四项预测。',
 	'It can stop by itself on a full game win, a loss limit or one big win.':
@@ -357,4 +363,10 @@ export default {
 		'掷骰子随机选择预测',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'预测旁边的骰子会随机选择全部四项。在你发牌之前，不会进行任何游戏。',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': '自己翻开最后一张牌',
+	'Drag any corner to peel': '拖动任意一角来翻开',
+	'or press space bar to skip': '或按空格键跳过',
+	'Wins': '赢得',
+	'Wins up to': '最高赢得',
 };

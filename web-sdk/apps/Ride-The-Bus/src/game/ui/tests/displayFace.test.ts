@@ -193,13 +193,15 @@ describe('the takeover title is wired to it', () => {
   test('WinCelebration picks the face rather than hardcoding one', () => {
     const comp = read('../../../components/board/WinCelebration.svelte');
     assert.match(comp, /titleFaceFor/, 'WinCelebration no longer calls titleFaceFor');
-    assert.match(comp, /class="wc-title face-\{titleFace\}"/, '.wc-title lost its face class');
+    // Since 2026-10-18 the tier is a blind of stops, one word each, so the
+    // face is picked per STOP from the word that stop prints.
+    assert.match(comp, /class="wc-stop tier-\{tier\.id\} face-\{titleFaceFor\(word\)\}"/, 'a sign stop lost its face class');
   });
 
   test('the stylesheet defines the two fallbacks the function can return', () => {
     const css = read('../../../styles/scene/win-celebration.css');
-    assert.match(css, /\.wc-title\.face-body\s*\{/, 'no .face-body rule');
-    assert.match(css, /\.wc-title\.face-system\s*\{/, 'no .face-system rule');
+    assert.match(css, /\.wc-stop\.face-body\s*\{/, 'no .face-body rule');
+    assert.match(css, /\.wc-stop\.face-system\s*\{/, 'no .face-system rule');
   });
 });
 

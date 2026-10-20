@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DL1 Today's disc</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  .disc { width: 100%; height: 100%; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 40% 30%, #2a4d74, #12233a);
+    box-shadow: inset 0 0 0 3px #3d6b9e, inset 0 2px 0 rgba(255,255,255,0.18), 0 6px 14px rgba(0,0,0,0.5); transition: transform 90ms; }
+  .disc svg { width: 56%; height: 56%; }
+  .down .disc { transform: translateY(1px) scale(0.97); }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div></div>
+<script src="kit/kit.js"></script><script src="kit/bar.js"></script><script src="kit/glyphs.js"></script><script src="kit/dealmock.js"></script>
+<script>
+  document.getElementById('board').style.backgroundImage = `url('kit/board-${RTB.size()}.webp')`;
+  DEALMOCK.mount(document.getElementById('s'), () => `<div class="disc">${GLYPHS.G.deal}</div>`, (n, d) => n.classList.toggle('down', d), 'Today');
+</script>
+</body></html>

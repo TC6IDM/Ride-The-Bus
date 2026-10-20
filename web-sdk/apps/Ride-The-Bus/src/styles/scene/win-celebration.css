@@ -47,14 +47,13 @@
  * and Huge where the veil is lightest. THREE AMBIENT CIRCLES ON ONE CENTRE IS
  * NOT DEPTH. Do not put them back.
  *
- * THE BURST IS SUITS, NOT SPARKS, and it is now a MOMENT rather than a loop.
- * Glowing dots are the particle burst every casino template ships; these are
- * the four suits, drawn by SuitIcon. They used to run on independent infinite
- * loops with delays up to 2.1s, so they never shared a t=0 and nothing ever
- * burst - at any frame they sat at ten unrelated radii, which is dust, not a
- * gesture. One origin, one instant, fired on each promotion (WinCelebration
- * keys the container), fading before they reach the frame edge so none of them
- * lands in a corner or over the control bar.
+ * THE CHIPS ARE THE TABLE'S (the owner's W1, 2026-10-18). Flat chips in the
+ * table's own colours stream out from behind the hand for as long as the win
+ * is up, thicker at every tier, with a burst as each tier lands
+ * (chipStream.ts). They replaced a burst of suit marks, which the takeover
+ * audit found read as debris on a still frame - and before that, glowing
+ * particle dots, the burst every casino template ships. The stream is a loop
+ * BY THE OWNER'S REQUEST; it stops the moment Continue is pressed.
  *
  * THE LIGHT IS ONE BEAM, NOT A SPINNING CONE. table.css lights the whole game
  * from the upper right; the takeover borrows the same light instead of rotating
@@ -69,7 +68,9 @@
  *   --wc-cool       the outer falloff
  *   --wc-beam-op    beam brightness
  *   --wc-fan-spread how wide the hand opens - THE VISIBLE LADDER
- *   --wc-throw      how far the suit marks are thrown
+ *   --wc-throw      how far the chips are thrown
+ *   --wc-chip-rate  chips a second in the stream
+ *   --wc-chip-burst chips thrown at once as the tier lands
  *
  * Each tier is declared as an RGB TRIPLET with the hex derived from it, the way
  * --gold-rgb and the repaired --ctl-turbo-rgb are. --wc-ray used to be a
@@ -118,6 +119,9 @@
 	   nothing suggests it is a tier's to change.
 	   Kept at Big Win's original value. */
 	--wc-veil: 0.6;
+	/* How much of each tier's chip stream this screen gets. Trimmed on phones
+	   and Popout S, where the same count reads as a swarm. */
+	--wc-chip-share: 1;
 
 	/* Derived once, from the triplet, so a fill and a wash cannot drift apart.
 	   Fallbacks are Classic's gold: the element always carries a tier class, but
@@ -132,51 +136,31 @@
 	   generic dark vignette. The player won WITH those cards; hiding them at
 	   the moment of payoff is the wrong edit.
 
-	   The scrim is a veil rather than a lid, and the blur is what keeps the text
-	   legible over a busy scene instead of sheer darkness doing it. */
+	   The scrim is a veil rather than a lid. It is drawn by .wc-veil, below. */
+}
+
+/* THE VEIL, ITS OWN LAYER (2026-10-18) so it can fade out on Continue while the
+   hand flies home over it - the overlay itself cannot fade without taking the
+   cards with it.
+
+   NO BLUR. It was blur(2px) under the veil on fine pointers and none on coarse
+   ones: a full-viewport backdrop-filter repaints every frame anything moves
+   over it, and at this veil it could not be seen (the takeover audit,
+   2026-10-17). What the coarse-pointer copy used - the veil a step stronger to
+   stand in for the blur - is now the only veil. */
+.wc-veil {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
 	background: radial-gradient(
 		ellipse at center,
-		rgba(var(--wc-veil-lit-rgb), calc(var(--wc-veil, 0.6) * 0.62)) 0%,
-		rgba(var(--wc-veil-deep-rgb), var(--wc-veil, 0.6)) 72%
+		rgba(var(--wc-veil-lit-rgb), calc(var(--wc-veil, 0.6) * 0.78)) 0%,
+		rgba(var(--wc-veil-deep-rgb), calc(var(--wc-veil, 0.6) + 0.1)) 72%
 	);
-	/* Was blur(5px) saturate(0.72), which turned the hand-sampled table into
-	   brown mush - the same loss the scrim above refuses, taken by another route.
-	   The text no longer depends on it: .wc-body sits on its own shadow band now,
-	   so the blur only has to stop the table competing with the fan, and 2px
-	   does that while leaving the felt, the chips and the cups readable. */
-	backdrop-filter: blur(2px) saturate(0.86);
-	-webkit-backdrop-filter: blur(2px) saturate(0.86);
-	animation: wc-fade-in 0.44s var(--ease-out) both;
-}
-
-/* A full-viewport backdrop-filter on transform loops is the one thing here that
-   could drop frames on the older Android and iOS devices Stake tests, and it is
-   now the layer we can most afford to lose: the band under the text and the
-   veil carry legibility between them. Coarse pointer is the proxy for those
-   devices, and the veil steps up slightly to cover the difference. */
-@media (pointer: coarse) {
-	.wc-overlay {
-		backdrop-filter: none;
-		-webkit-backdrop-filter: none;
-		background: radial-gradient(
-			ellipse at center,
-			rgba(var(--wc-veil-lit-rgb), calc(var(--wc-veil, 0.6) * 0.78)) 0%,
-			rgba(var(--wc-veil-deep-rgb), calc(var(--wc-veil, 0.6) + 0.1)) 72%
-		);
-	}
-}
-
-/* Without backdrop-filter the scene behind stays sharp and the text has to
-   fight it, so the veil does the work instead. Safari on older iOS and every
-   Android WebView below 76 land here. */
-@supports not ((backdrop-filter: blur(5px)) or (-webkit-backdrop-filter: blur(5px))) {
-	.wc-overlay {
-		background: radial-gradient(
-			ellipse at center,
-			rgba(var(--wc-veil-lit-rgb), calc(var(--wc-veil, 0.6) * 0.86)) 0%,
-			rgba(var(--wc-veil-deep-rgb), calc(var(--wc-veil, 0.6) + 0.18)) 72%
-		);
-	}
+	/* backwards, not both: once it has arrived the static opacity rules, so the
+	   fade-out on Continue is a plain transition. */
+	animation: wc-veil-in 0.44s var(--ease-out) backwards;
+	transition: opacity 0.42s var(--ease-in-out);
 }
 
 /* The overlay is the button, so a full-viewport outline would be a rectangle
@@ -229,6 +213,8 @@
 	--wc-beam-op: 0.3;
 	--wc-fan-spread: 0.82;
 	--wc-throw: 1;
+	--wc-chip-rate: 3;
+	--wc-chip-burst: 6;
 }
 .tier-huge {
 	--wc-hot-rgb: var(--vol-base-rgb);
@@ -236,6 +222,8 @@
 	--wc-beam-op: 0.42;
 	--wc-fan-spread: 0.98;
 	--wc-throw: 1.15;
+	--wc-chip-rate: 5;
+	--wc-chip-burst: 8;
 }
 .tier-mega {
 	--wc-hot-rgb: var(--vol-hs-rgb);
@@ -243,6 +231,8 @@
 	--wc-fan-spread: 1.14;
 	--wc-beam-op: 0.54;
 	--wc-throw: 1.32;
+	--wc-chip-rate: 8;
+	--wc-chip-burst: 10;
 }
 /* The purple, and the last stop before Max steps off the scale. */
 .tier-epic {
@@ -251,6 +241,8 @@
 	--wc-beam-op: 0.68;
 	--wc-fan-spread: 1.3;
 	--wc-throw: 1.5;
+	--wc-chip-rate: 11;
+	--wc-chip-burst: 12;
 }
 /* Max win INVERTS rather than continuing: a cream core on the brand crimson from
    logo.png, so the ceiling reads as the game's own moment rather than one more
@@ -264,6 +256,8 @@
 	--wc-beam-op: 0.85;
 	--wc-fan-spread: 1.48;
 	--wc-throw: 1.75;
+	--wc-chip-rate: 14;
+	--wc-chip-burst: 16;
 }
 
 /* ---- The light ----
@@ -296,7 +290,11 @@
 	mask-image: radial-gradient(ellipse at 68% 26%, #000 0%, transparent 72%);
 	-webkit-mask-image: radial-gradient(ellipse at 68% 26%, #000 0%, transparent 72%);
 	opacity: var(--wc-beam-op, 0.5);
-	animation: wc-beam-breathe 7.2s var(--ease-in-out) infinite;
+	/* Arrives once and holds. It breathed on a 7.2s loop for as long as the
+	   screen was up - a pulsing indicator, on the motion audit's list
+	   (2026-10-17). Its tier steps are a transition now. */
+	animation: wc-beam-in 0.6s var(--ease-out) backwards;
+	transition: opacity 0.45s var(--ease-out);
 }
 
 /* ---- The deck's own crosshatch, sweeping once. MAX WIN ONLY. ----
@@ -397,7 +395,12 @@
 	left: 50%;
 	width: 0;
 	height: 0;
-	margin-bottom: calc(var(--ui) * -3.6);
+	/* CLEAR of the words, never under them (the owner's call, 2026-10-18:
+	   "no cover"). It hung 3.6 units into the text block - 1.4 in landscape -
+	   so the title sat over the bottom of the cards. The outer pair drop and
+	   turn with the spread, and at Max their lower corners reach about a unit
+	   below the hand's line (measured, 2026-10-18), which this margin clears. */
+	margin-bottom: calc(var(--ui) * 1.6);
 	pointer-events: none;
 	z-index: -2;
 }
@@ -489,8 +492,16 @@
 	--fan-x: calc(var(--ui) * var(--shift, 0) * var(--wc-fan-spread, 1) * var(--wc-hand, 1));
 	--fan-y: calc(var(--ui) * var(--drop, 0) * var(--wc-fan-spread, 1));
 	transform: translate(var(--fan-x), var(--fan-y)) rotate(var(--fan-tilt));
+	/* handFlight.ts reads this origin (FAN_ORIGIN_Y). The cards are dealt OUT
+	   of the board's slots and flown back into them on Continue - by the
+	   Web Animations API, so there is no CSS deal here to fight it. */
 	transform-origin: 50% 130%;
-	animation: wc-fan-deal 0.72s var(--ease-pop) both;
+}
+
+/* Last Stop's ticket is not on the board's card row, so it is not flown: it
+   rises into place after the last card lands. Ease-out, no overshoot. */
+.wc-fan-ticket {
+	animation: wc-ticket-in 0.42s var(--ease-out) backwards;
 }
 
 /* LAST STOP'S TICKET, laid ON the hand: over the middle of the four cards and
@@ -677,56 +688,75 @@
 	filter: none;
 }
 
-/* ---- The suit burst ----
-   --angle, --dist, --spin and animation-delay are set inline per mark; see the
-   BURST constant in WinCelebration.svelte for why they are not computed here.
-
-   SuitIcon is a CHILD COMPONENT, so nothing in this file can style its internals
-   - a `.suit-icon` rule here would compile to `.suit-icon.svelte-<parent>` and
-   match nothing. It inherits instead: `color` feeds its `fill: currentColor` and
-   `font-size` feeds its em-based size. See the note atop ChoiceIcon.svelte. */
-.wc-burst {
+/* ---- The chips ----
+   The table's own chips, flat and seen from above, thrown out from behind the
+   hand (chipStream.ts flies them). The host is a point under the cards, inside
+   .wc-fan, so a chip leaves from behind the hand and passes behind the words.
+   The chips are made in script, so they carry no scope class: hence :global()
+   under the scoped host. The face is the guess chip's (and, since
+   2026-10-18, the table's): a cream ring, cream spots round the rim, and the
+   chip's own thickness as a hard shadow under it. */
+.wc-chips {
 	position: absolute;
-	inset: 0;
+	top: 0;
+	left: 0;
+	width: 0;
+	height: 0;
+	z-index: -1;
 	pointer-events: none;
-	/* Thrown off the CARDS, not off the dead centre of the viewport - originating
-	   them at the centre put half the ring behind the figure and the rest in the
-	   corners. Roughly the fan's height above centre; it does not have to be
-	   exact, because a burst that lined up perfectly with anything would look
-	   placed rather than thrown. */
-	transform: translateY(calc(var(--ui) * -9));
 }
 
-.wc-mark {
+.wc-chips :global(.wc-chip) {
 	position: absolute;
-	top: 50%;
-	left: 50%;
-	display: block;
-	/* The mark takes the tier colour rather than card red/black: a black club on
-	   a dark scrim is invisible, and a red one fights the Max tier's crimson.
-	   One colour also keeps the burst reading as a single gesture. */
-	color: var(--wc-hot);
-	/* A cast shadow, not a glow: thrown things in a lit room. A coloured halo
-	   round each mark made the burst the particle-glow every casino template
-	   ships, which is what the suit shapes were chosen to get away from. */
-	filter: drop-shadow(calc(var(--ui) * -0.15) calc(var(--ui) * 0.3) calc(var(--ui) * 0.25) rgba(var(--shadow-rgb), 0.75));
-	opacity: 0;
-	/* ONCE, not infinite - `both` so the mark holds at the keyframe's cleared-out
-	   end state rather than snapping back to the origin. WinCelebration keys the
-	   container on the tier id, which rebuilds these elements on every promotion
-	   and so re-fires the shot. That is deliberately the opposite of what
-	   .wc-title needs (see promoteTitle): the title must NOT replay, the burst
-	   must. */
-	animation: wc-mark-out var(--wc-mark-dur, 1.5s) var(--ease-out) both;
+	width: var(--d);
+	height: var(--d);
+	margin: calc(var(--d) / -2) 0 0 calc(var(--d) / -2);
+	border-radius: 50%;
+	/* The guess chip's face (PickChip.svelte), as the table's chips now are. */
+	background:
+		linear-gradient(56deg, rgba(0, 0, 0, 0.2) 0%, transparent 34%, rgba(255, 255, 255, 0.14) 100%),
+		radial-gradient(closest-side, var(--cf) 0 52.3%, var(--cc) 53.7% 59.4%, var(--cf) 60.8% 83.4%, transparent 84.9%),
+		repeating-conic-gradient(from -6.5deg, var(--cc) 0 13deg, var(--cf) 13deg 45deg);
+	box-shadow:
+		inset 0 0 0 1px rgba(0, 0, 0, 0.3),
+		0 calc(var(--d) * 0.07) 0 var(--ck),
+		0 calc(var(--d) * 0.16) calc(var(--d) * 0.3) rgba(var(--shadow-rgb), 0.4);
 }
 
-/* The tumble slows as the tier climbs even though the throw grows - a mark that
-   both flew further AND spun faster read as frantic rather than as bigger. */
-.tier-epic .wc-mark {
-	--wc-mark-dur: 1.65s;
+/* The rack's five, from tokens.css: rim, face, edge, spots. */
+.wc-chips :global(.wc-chip[data-set='red']) {
+	--c: var(--chip-red);
+	--cf: var(--chip-red-face);
+	--ck: var(--chip-red-dark);
+	--cc: var(--chip-red-cream);
 }
-.tier-max .wc-mark {
-	--wc-mark-dur: 1.8s;
+
+.wc-chips :global(.wc-chip[data-set='green']) {
+	--c: var(--chip-green);
+	--cf: var(--chip-green-face);
+	--ck: var(--chip-green-dark);
+	--cc: var(--chip-green-cream);
+}
+
+.wc-chips :global(.wc-chip[data-set='black']) {
+	--c: var(--chip-black);
+	--cf: var(--chip-black-face);
+	--ck: var(--chip-black-dark);
+	--cc: var(--chip-black-cream);
+}
+
+.wc-chips :global(.wc-chip[data-set='blue']) {
+	--c: var(--chip-blue);
+	--cf: var(--chip-blue-face);
+	--ck: var(--chip-blue-dark);
+	--cc: var(--chip-blue-cream);
+}
+
+.wc-chips :global(.wc-chip[data-set='white']) {
+	--c: var(--chip-white);
+	--cf: var(--chip-white-face);
+	--ck: var(--chip-white-dark);
+	--cc: var(--chip-white-cream);
 }
 
 /* ---- Text stack ---- */
@@ -769,179 +799,265 @@
 	/* Reaches UP over the bottom of the fan - that is the whole reason the band
 	   exists here rather than under the text alone. Horizontal blown out past the
 	   viewport so it has no side edges. */
-	inset: calc(var(--ui) * -6.5) -50vw calc(var(--ui) * -3.4);
+	inset: calc(var(--ui) * -3) -50vw calc(var(--ui) * -3.4);
 	z-index: -1;
+	/* Lighter and shorter than it was (0.66 at its deepest, from 6.5 units
+	   above the text): with the hand clear of the words it only has to seat
+	   them, and the cards fade into it a little rather than under it. */
 	background: linear-gradient(
 		to bottom,
 		transparent 0%,
-		rgba(var(--wc-veil-deep-rgb), 0.44) 16%,
-		rgba(var(--wc-veil-deep-rgb), 0.66) 38%,
-		rgba(var(--wc-veil-deep-rgb), 0.62) 76%,
+		rgba(var(--wc-veil-deep-rgb), 0.34) 18%,
+		rgba(var(--wc-veil-deep-rgb), 0.56) 40%,
+		rgba(var(--wc-veil-deep-rgb), 0.54) 76%,
 		transparent 100%
 	);
 }
 
+/* ---- The sign: the tier on a destination blind (W1, 2026-10-18) ----
+   The loader's blind at the takeover's scale: a recessed dark sign whose roll
+   holds every rung of the family's ladder, rolled one stop per promotion, and
+   under it the route - a stop per rung, the bus riding to the one reached,
+   Max the end of the line. loader.css has the recipe this repeats; the two
+   are one object seen twice, so change them together. */
 .wc-title {
-	/* THE GAME'S OWN FACE. This was var(--font-body) - the body face at 900 with
-	   POSITIVE tracking and uppercase - which made the biggest type in the game
-	   the one screen not wearing the lockup CLAUDE.md defines across the loader,
-	   the intro and the board. Big Shoulders at negative tracking in title case
-	   is that lockup; the win title is its fourth instance now, not a foreign
-	   screen.
+	--sign-w: min(calc(var(--ui) * 44), 86vw);
+	--sign-h: calc(var(--ui) * 7.6);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: calc(var(--ui) * 1.3);
+	/* Runs once, on mount. The blind is never rebuilt between tiers, so this
+	   cannot replay; a promotion is the roll below. */
+	animation: wc-title-in 0.42s var(--ease-out) backwards;
+}
 
-	   Dropping uppercase also retires two responsive faults at once: uppercase
-	   at line-height 1 collides cap-tops with the line above when it wraps, and
-	   "Kemenangan Mega" at 33px DID wrap inside a 320px viewport. Big Shoulders
-	   is condensed, which buys the width back on top of that. */
+.wc-sign {
+	position: relative;
+	width: var(--sign-w);
+	height: var(--sign-h);
+	overflow: hidden;
+	box-sizing: content-box;
+	/* A BORDER, not padding: overflow clips inside a border, and as padding
+	   the next stop up showed through the frame (loader.css found this). */
+	border: calc(var(--ui) * 0.8) solid var(--flap-well);
+	border-radius: calc(var(--ui) * 1.2);
+	background: linear-gradient(180deg, var(--flap-well), var(--flap-top) 50%, var(--flap-well)) padding-box;
+	box-shadow:
+		inset 0 calc(var(--ui) * 0.3) calc(var(--ui) * 1) rgba(var(--shadow-rgb), 0.85),
+		inset 0 -1px 0 rgba(var(--ink-rgb), 0.08),
+		0 1px 0 rgba(var(--ink-rgb), 0.12),
+		0 calc(var(--ui) * 1.4) calc(var(--ui) * 3) rgba(var(--shadow-rgb), 0.5);
+}
+
+/* The sign's own shade top and bottom, where the blind winds round its
+   rollers: a stop arrives out of the dark and leaves into it. */
+.wc-sign::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background: linear-gradient(
+		180deg,
+		rgba(var(--shadow-rgb), 0.6),
+		transparent 22%,
+		transparent 78%,
+		rgba(var(--shadow-rgb), 0.6)
+	);
+}
+
+.wc-roll {
+	display: flex;
+	flex-direction: column;
+	transform: translateY(calc(var(--stop, 0) * var(--sign-h) * -1));
+	transition: transform 340ms var(--ease-in-out);
+}
+
+.wc-stop {
+	/* Re-derived HERE: --wc-hot is computed on the overlay from the CURRENT
+	   tier, so without this every stop would wear the tier being shown rather
+	   than its own. The stop's tier class sets the triplet and --wc-cool. */
+	--wc-hot: rgb(var(--wc-hot-rgb, 245, 215, 140));
+	flex: 0 0 var(--sign-h);
+	height: var(--sign-h);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	padding-inline: calc(var(--ui) * 1.4);
+	/* One line, always; fitValue shrinks a long name to the sign rather than
+	   letting it wrap into the next stop. */
+	white-space: nowrap;
+	overflow: hidden;
+	/* THE GAME'S OWN FACE, the lockup's: Big Shoulders at negative tracking,
+	   title case. The face is picked per STRING by titleFaceFor()
+	   (game/ui/displayFace.ts), because unicode-range falls back per
+	   character: Polish "Duza Wygrana" once drew its z-dot from the body face
+	   mid-word. DO NOT set font-family here without reading that file;
+	   .face-body and .face-system below are the two other answers. */
 	font-family: var(--font-display);
-	font-size: min(calc(var(--ui) * 5.6), 11vw);
+	font-size: min(calc(var(--ui) * 5.2), 10vw);
 	font-weight: 900;
-	line-height: 1.04;
+	line-height: 1;
 	letter-spacing: -0.015em;
 	color: var(--wc-hot);
-	/* Five of the 16 locales (ar hi ja ko zh) fall outside both self-hosted
-	   faces' declared unicode-range and drop to the OS font, where 900 is
-	   usually synthesised. Nothing CSS can do about that without shipping CJK
-	   webfonts, which the bundle budget will not take - but overflow-wrap is
-	   what keeps the synthesised, wider result inside the viewport.
-
-	   Those five were the half of this that was already understood, and a whole
-	   string in one OS font is a fair price. The other half is that
-	   unicode-range falls back PER CHARACTER, which makes an ALMOST-covered
-	   locale worse off than an uncovered one: Polish "Duza Wygrana" drew its
-	   z-dot from the body face - which ships latin-ext, where Big Shoulders does not -
-	   in the middle of a Big Shoulders word, and Vietnamese broke twice against
-	   a gap that reaches neither file. The face is picked per string now, by
-	   titleFaceFor() in game/ui/displayFace.ts. DO NOT set font-family on
-	   .wc-title without reading that file; .face-body and .face-system below
-	   are the two answers that are not this one. */
-	overflow-wrap: anywhere;
-	min-width: 0;
-	/* LETTERED, NOT LIT FROM INSIDE. A sign-painter's block: a hard step in the
-	   tier's own deep colour, set down and left the way the room's light from
-	   the upper right would cast it, then the contact shadow under that.
-	   Until 2026-09-26 this was a two-colour glow - --wc-hot blurred at 1.6
-	   units, --wc-cool at 4 - which made the title the neon "BIG WIN" of every
-	   slot template, and was the one thing on this screen that still looked
-	   generated. The tier still reads in both of its colours; neither blooms.
-	   design.md: "Lit, not haloed". */
+	/* LETTERED, NOT LIT. A sign-painter's block in the tier's own deep
+	   colour, cast down and left as the room's light from the upper right
+	   would cast it. It was a two-colour neon glow until 2026-09-26, the stock
+	   slot "BIG WIN". design.md: "Lit, not haloed". */
 	text-shadow:
 		calc(var(--ui) * -0.16) calc(var(--ui) * 0.24) 0 var(--wc-cool),
 		calc(var(--ui) * -0.4) calc(var(--ui) * 0.6) calc(var(--ui) * 0.7) rgba(var(--shadow-rgb), 0.65);
-	/* Runs once, on mount. The element is no longer torn down and rebuilt between
-	   tiers, so this cannot replay - promotions are a scale pop applied through
-	   element.animate(), see promoteTitle. */
-	animation: wc-title-in 1.24s var(--ease-pop) both;
-	/* The palette variables change under the element as the tier climbs, so
-	   ease the colour across instead of letting it snap mid-pop. */
-	transition:
-		color 0.45s var(--ease-out),
-		text-shadow 0.45s var(--ease-out);
 }
 
-/* The two faces .wc-title falls back to, chosen per string - see the note above
-   and game/ui/displayFace.ts.
-
-   Neither restates size, weight, colour, tracking or shadow. They change the
-   font FILE and nothing else, so the tier ladder, the lettering and the entrance all
-   stay exactly where the rule above put them. */
-.wc-title.face-body {
+/* The faces a stop falls back to - see the note above. They change the font
+   FILE (and the cap, since the body face is wider) and nothing else. */
+.wc-stop.face-body {
 	font-family: var(--font-body);
-	/* Big Shoulders is condensed and the body face is not, so the same word is
-	   wider here. The title already carries overflow-wrap: anywhere and a vw
-	   cap; this pulls the cap down a step so a Latin-ext, Vietnamese or Cyrillic
-	   tier name has the same amount of room as the display face had, rather
-	   than the same font-size. Verified at Mobile S with "Thắng tối đa". */
-	font-size: min(calc(var(--ui) * 4.9), 9.6vw);
+	font-size: min(calc(var(--ui) * 4.6), 9vw);
 	letter-spacing: -0.01em;
 }
 
-/* No webfont covers this string, so the OS picks - and the OS face could be
-   anything. Nothing is asserted about its metrics beyond giving it the room the
-   widest plausible answer needs; 900 is very often synthesised here, which is
-   the case overflow-wrap on the rule above exists for. */
-.wc-title.face-system {
+.wc-stop.face-system {
 	font-family: sans-serif;
-	font-size: min(calc(var(--ui) * 4.6), 9.2vw);
+	font-size: min(calc(var(--ui) * 4.3), 8.6vw);
 	letter-spacing: 0;
 }
 
-.wc-amount {
-	/* Stays on the BODY face on purpose: the display face is for the word, the
-	   body face for the number. That split is the lockup's own rule - the
-	   wordmark is display, the credit line under it is body.
-
-	   STABLE DIGIT WIDTHS COME FROM THE FACE, and that has to stay true. Overpass
-	   ships `tnum`, so the tabular-nums declared below holds every digit at
-	   0.616em and the count-up turns its cents over without the figure moving.
-	   Under Poppins that declaration was inert (measured: no tnum, "1" at
-	   0.387em against "0" at 0.657em) and this note claimed the opposite; for
-	   one commit the game boxed each digit in a component (Figure.svelte,
-	   c2a13a74) to hold it still. If the body face is ever swapped for one
-	   without tabular figures, that component is the fallback - and it was
-	   retired rather than kept because a box that matches the advance exactly
-	   is dead machinery nobody would remember the purpose of.
-
-	   Was --ui * 4, a full third smaller than the title above it: the word
-	   describing the win outranked the win. They are co-leads now - the title
-	   still wins on face and weight, the amount on presence - which is the right
-	   way round for a screen whose entire job is to hand over a figure. The vw
-	   cap matches the title's so neither can outgrow the other on a wide,
-	   short window.
-
-	   THE THIRD TERM IS THE ONE THAT MATTERS ON A PHONE. The first two cap the
-	   font size and say nothing about the LINE's width, so a long currency
-	   string overflows however small the cap is. High Stakes' 1910.20x on a
-	   high-denomination currency settles at "NGN 3,820,400,000.00", and at
-	   Mobile M that ran off both edges of the viewport - the one figure this
-	   screen exists to hand over, clipped at both ends.
-
-	   --amount-ems is how wide the SETTLED figure prints, published by
-	   WinCelebration from props.amount (not from the climbing value, or the
-	   headline would re-size on every frame of the count). Dividing the width
-	   available by it gives the size at which the whole string fits. 88vw
-	   rather than 100 leaves the margin the body already wants. */
-	font-size: min(calc(var(--ui) * 5.2), 11vw, calc(88vw / var(--amount-ems, 8)));
-	font-weight: 800;
-	line-height: 1.1;
-	color: var(--ink-cream);
-	/* LIVE, and load-bearing: this is what holds the digits still during the
-	   count (see the note at the top of this rule). The font-size is also solved
-	   once from the settled string above, so the block is as wide as it will
-	   ever need to be before the count starts. */
-	font-variant-numeric: tabular-nums;
-	/* The contact shadow the title stands on, without its coloured block. It was
-	   a pale halo (--ink at 1.4 units, all round) - a glow, however neutral. */
+/* THE TERMINUS. Max is the end of the line, and the ladder's one inversion:
+   crimson cloth with cream letters, the block in the cloth's own deep red. */
+.wc-stop.is-terminus {
+	background: linear-gradient(180deg, var(--brand-red-lit), var(--brand-red) 55%, var(--brand-red-deep));
 	text-shadow:
-		0 0 0 transparent,
-		calc(var(--ui) * -0.25) calc(var(--ui) * 0.4) calc(var(--ui) * 0.5) rgba(var(--shadow-rgb), 0.65);
-	/* Runs once, on mount - nothing below may set `animation` on this element or
-	   it will replay. See .wc-amount.is-holding. */
-	animation: wc-amount-in 1s var(--ease-out) 0.32s both;
+		calc(var(--ui) * -0.16) calc(var(--ui) * 0.24) 0 var(--brand-red-deep),
+		calc(var(--ui) * -0.4) calc(var(--ui) * 0.6) calc(var(--ui) * 0.7) rgba(var(--shadow-rgb), 0.5);
+}
+
+/* ---- The route ----
+   A stop per rung, lit from the reading start as the blind passes each, the
+   bus riding to the one reached. LOGICAL, so in Arabic it runs from the right
+   like the board's own route line, and the bus faces the way it travels. */
+.wc-route {
+	position: relative;
+	width: calc(var(--sign-w) - var(--ui) * 4);
+	height: calc(var(--ui) * 1.6);
+}
+
+.wc-route-line,
+.wc-route-lit {
+	position: absolute;
+	inset-inline-start: 0;
+	top: 50%;
+	height: 2px;
+	margin-top: -1px;
+}
+
+.wc-route-line {
+	inset-inline-end: 0;
+	background: rgba(var(--ink-rgb), 0.3);
+}
+
+.wc-route-lit {
+	width: calc(var(--stop) / (var(--stops) - 1) * 100%);
+	background: var(--gold);
+	transition: width 340ms var(--ease-in-out);
+}
+
+.wc-route-dot {
+	position: absolute;
+	top: 50%;
+	inset-inline-start: calc(var(--at) / (var(--stops) - 1) * 100%);
+	width: calc(var(--ui) * 0.9);
+	aspect-ratio: 1;
+	border-radius: 50%;
+	translate: -50% -50%;
+	box-sizing: border-box;
+	background: var(--panel);
+	border: 2px solid rgba(var(--ink-rgb), 0.5);
 	transition:
-		color 0.45s var(--ease-out),
-		text-shadow 0.35s var(--ease-out);
+		background 200ms var(--ease-out),
+		border-color 200ms var(--ease-out);
+}
+
+.wc-route-dot.is-end {
+	width: calc(var(--ui) * 1.25);
+}
+
+.wc-route-dot.is-lit {
+	background: var(--gold);
+	border-color: var(--gold);
+}
+
+/* Reaching the end of the line takes the terminus's colours. */
+.wc-route-dot.is-end.is-lit {
+	background: var(--brand-red);
+	border-color: var(--ink-cream);
+}
+
+.wc-route-bus {
+	position: absolute;
+	bottom: calc(50% + var(--ui) * 0.55);
+	inset-inline-start: calc(var(--stop) / (var(--stops) - 1) * 100%);
+	width: calc(var(--ui) * 2.4);
+	translate: -50% 0;
+	transition: inset-inline-start 340ms var(--ease-in-out);
+}
+
+.wc-bus-body {
+	fill: var(--choice-equal);
+}
+
+.wc-bus-glass {
+	fill: var(--panel);
+}
+
+.wc-bus-wheel {
+	fill: var(--on-vol-ink);
+}
+
+/* translate is physical; from the inline start in Arabic it runs the other way. */
+:global([dir='rtl']) .wc-route-dot {
+	translate: 50% -50%;
+}
+
+:global([dir='rtl']) .wc-route-bus {
+	translate: 50% 0;
+	transform: scaleX(-1);
+}
+
+.wc-amount {
+	/* A SPLIT-FLAP BOARD (SplitFlap.svelte, the running total's own, W1
+	   2026-10-18). The component draws the flaps and fits them; this hands it
+	   the two sizes it reads, because a parent's sheet never reaches a child's
+	   elements:
+
+	   --flap-base is one flap at full size. The figure used to be type solved
+	   from 88vw / its width in ems, because High Stakes' cap in a
+	   high-denomination currency ("NGN 3,820,400,000.00") ran off both edges of
+	   Mobile M. The flaps carry that rule now: --flap-room is the most the row
+	   may take, and a long figure shares it out across its characters.
+
+	   --flip-dur sets the flap's turn (half of it). The board's flaps take the
+	   card's turn; the takeover is not inside the board, and its count changes
+	   far faster than a card turns, so it sets its own short one. */
+	--flap-base: min(calc(var(--ui) * 4), 8.4vw);
+	/* SplitFlap shares this across the flaps alone; the gaps between them and
+	   the well's padding add about an eighth again. 76vw lands the longest
+	   figure - "TZS 2,237,300,000.00", High Stakes' cap - at about 86vw on a
+	   320px phone, where 86vw ran the row to within 2px of both edges. */
+	--flap-room: min(76vw, calc(var(--ui) * 46));
+	--flip-dur: 0.24s;
+	display: flex;
+	justify-content: center;
+	color: var(--ink-cream);
+	/* Runs once, on mount - nothing below may set `animation` on this element or
+	   it will replay. */
+	animation: wc-amount-in 0.42s var(--ease-out) 0.12s backwards;
+	transition: color 0.45s var(--ease-out);
 }
 
 .wc-amount.is-counting {
 	color: var(--wc-hot);
-}
-
-/* Resting on a band ceiling between legs: the figure takes the title's lettered
-   block in the tier's deep colour, so the pause reads as the number being
-   presented rather than the count stalling. It used to take a two-colour glow
-   here, the same neon the title gave up. Two shadows in both states, so the
-   transition eases one into the other rather than popping.
-
-   Only the shadow. The scale pop is applied through element.animate() instead,
-   because setting `animation` here would REPLACE the entrance animation above -
-   and then removing the class restores it, restarting a 1s rise from
-   translateY+opacity:0. The number visibly dropped and climbed back after every
-   pause. A transition cannot collide that way. */
-.wc-amount.is-holding {
-	text-shadow:
-		calc(var(--ui) * -0.14) calc(var(--ui) * 0.22) 0 var(--wc-cool),
-		calc(var(--ui) * -0.25) calc(var(--ui) * 0.4) calc(var(--ui) * 0.5) rgba(var(--shadow-rgb), 0.65);
 }
 
 /* The multiplier and the amount are the same fact in two units, stacked - a
@@ -958,7 +1074,7 @@
 	color: var(--wc-hot);
 	opacity: 0.72;
 	font-variant-numeric: tabular-nums;
-	animation: wc-amount-in 1s var(--ease-out) 0.56s both;
+	animation: wc-amount-in 0.42s var(--ease-out) 0.2s backwards;
 }
 
 /* The one instruction on a full-screen modal. It used to blink between
@@ -978,26 +1094,18 @@
 	font-size: max(calc(var(--ui) * 1.3), var(--type-floor-figure));
 	font-weight: 600;
 	color: var(--ink-warm-dim);
-	opacity: 0.72;
-	animation: wc-breathe 3.6s var(--ease-in-out) infinite;
+	/* Still. It pulsed between 0.62 and 0.92 every 3.6s for as long as the
+	   screen was up - the "pulsing indicator" the motion audit flags
+	   (2026-10-17). It sits at the legible end of that range now. */
+	opacity: 0.86;
 }
 
 .wc-prompt.is-ready {
 	color: var(--wc-hot);
 	opacity: 0.95;
-	animation: none;
 }
 
 /* ---- Keyframes ---- */
-@keyframes wc-fade-in {
-	from {
-		opacity: 0;
-	}
-	to {
-		opacity: 1;
-	}
-}
-
 @keyframes wc-deck-sweep {
 	from {
 		transform: translate3d(55%, 55%, 0);
@@ -1017,113 +1125,70 @@
 
 /* Travel out along --angle while counter-rotating by the same amount, so the
    mark stays upright as it goes, then add --spin on top for the tumble. */
-/* One throw. Fast out of the origin, then decelerating and fading well before
-   the mark could reach a frame edge - the old version held 0.9 opacity to 74%
-   of a 3.6s loop, which is why marks were still fully lit out in the corners
-   and over the control bar, where a suit reads as a speck of dirt. */
-@keyframes wc-mark-out {
-	0% {
-		transform: rotate(var(--angle)) translateX(0) rotate(calc(var(--angle) * -1))
-			scale(0.2);
-		opacity: 0;
-	}
-	12% {
-		opacity: 1;
-	}
-	55% {
-		opacity: 0.85;
-	}
-	100% {
-		transform: rotate(var(--angle)) translateX(calc(var(--dist) * var(--wc-throw, 1)))
-			rotate(calc(var(--angle) * -1 + var(--spin))) scale(0.7);
-		opacity: 0;
-	}
-}
-
-/* The beam swells rather than turns. See .wc-beam. */
-@keyframes wc-beam-breathe {
-	0%,
-	100% {
-		opacity: calc(var(--wc-beam-op, 0.5) * 0.78);
-	}
-	50% {
-		opacity: var(--wc-beam-op, 0.5);
-	}
-}
-
-/* Each card deals up into the fan on its own short delay, so the hand arrives
-   as four cards rather than as one block. Rotation is the card's final tilt
-   from the start - a card that ALSO rotates into place spins, and a dealt card
-   does not spin. */
-@keyframes wc-fan-deal {
+@keyframes wc-veil-in {
 	from {
-		transform: translate(0, calc(var(--ui) * 3.2)) rotate(var(--fan-tilt)) scale(0.82);
 		opacity: 0;
-	}
-	to {
-		transform: translate(var(--fan-x), var(--fan-y)) rotate(var(--fan-tilt));
-		opacity: 1;
 	}
 }
 
+@keyframes wc-beam-in {
+	from {
+		opacity: 0;
+	}
+}
+
+/* The ticket settles onto the hand from just below its place. */
+@keyframes wc-ticket-in {
+	from {
+		transform: translate(var(--fan-x), calc(var(--fan-y) + var(--ui) * 1.2)) rotate(var(--fan-tilt));
+		opacity: 0;
+	}
+}
+
+/* From-only keyframes: each lands on the element's own static values, which
+   is what lets a `backwards` fill hand back to the stylesheet when it ends.
+   The title used to open from scale(0.55) on --ease-pop over 1.24s - an
+   overshoot on the one screen whose job is to be read (the motion audit,
+   2026-10-17), and the amount took a full second to reach full ink. */
 @keyframes wc-title-in {
 	from {
-		transform: scale(0.55);
+		transform: scale(0.92);
 		opacity: 0;
-	}
-	to {
-		transform: scale(1);
-		opacity: 1;
 	}
 }
 
 @keyframes wc-amount-in {
 	from {
-		transform: translateY(calc(var(--ui) * 1.2));
+		transform: translateY(calc(var(--ui) * 0.6));
 		opacity: 0;
-	}
-	to {
-		transform: translateY(0);
-		opacity: 1;
-	}
-}
-
-/* Floored at 0.62 - roughly 4.8:1 over the body vignette, which clears the
-   4.5:1 this text size needs. The old wc-blink bottomed out at 0.35. */
-@keyframes wc-breathe {
-	0%,
-	100% {
-		opacity: 0.62;
-	}
-	50% {
-		opacity: 0.92;
 	}
 }
 
 /* ---- Short viewports ----
    Popout S is 400x225. The stack has to shrink or the prompt falls off the
    bottom and the player cannot see how to dismiss it. */
-/* LANDSCAPE: THE HAND CLEARS THE TITLE. The fan hangs 3.6 units down into the
-   text block, which buries a third of each 10.4-unit card behind the title -
-   the court figures and the bottom indices of the very cards the round was
-   won with, the centrepiece this screen is "made of", on a landscape window
-   with a band of empty table above the hand (UI review, 2026-09-27). 1.4
-   leaves the title over the bottom corner only, which is enough for the band
-   to seat the hand on the text. Portrait keeps the deeper tuck: it has the
-   height and wants the stack as one block (below). The short-window rule that
-   follows is later and wins on Popout S, which has no room to spare. */
+/* LANDSCAPE: THE STACK SITS LOWER. The blind and its route made the stack
+   taller than the one-line title did, and centred in the window the hand rode
+   up over the lockup while the table below the prompt stood empty. Pushing
+   the centre down 4 units puts the hand under the lockup and leaves the
+   prompt clear of the rail (measured at the four landscape sizes,
+   2026-10-18). Portrait has the height already. */
 @media (orientation: landscape) {
-	.wc-fan {
-		margin-bottom: calc(var(--ui) * -1.4);
+	.wc-overlay {
+		padding-top: calc(var(--ui) * 8);
 	}
 }
 
 @media (max-height: 380px) {
 	.wc-title {
-		font-size: min(calc(var(--ui) * 3.9), 9vw);
+		--sign-h: calc(var(--ui) * 6);
+		gap: calc(var(--ui) * 0.9);
+	}
+	.wc-stop {
+		font-size: min(calc(var(--ui) * 4.2), 9vw);
 	}
 	.wc-amount {
-		font-size: min(calc(var(--ui) * 3.7), 9vw);
+		--flap-base: min(calc(var(--ui) * 3.4), 8vw);
 	}
 	.wc-mult {
 		font-size: max(calc(var(--ui) * 1.5), var(--type-floor-figure));
@@ -1131,10 +1196,9 @@
 	.wc-prompt {
 		margin-top: calc(var(--ui) * 0.9);
 	}
-	/* The burst would otherwise throw straight through the text on a 225px-tall
-	   viewport, where the marks' radius is a big fraction of the screen. */
-	.wc-mark {
-		--wc-throw: 0.8;
+	/* A 225px-tall window: the same chips read as a swarm. */
+	.wc-overlay {
+		--wc-chip-share: 0.6;
 	}
 	/* Popout S is 400x225 and --ui bottoms out at 4px there, so the layout stops
 	   scaling and starts overflowing - the floor is where every Popout S defect
@@ -1142,7 +1206,7 @@
 	   cards closer together, because at 225px tall a Max Win's 2x spread would
 	   put the outer two off the top corners. */
 	.wc-fan {
-		margin-bottom: calc(var(--ui) * -3);
+		margin-bottom: calc(var(--ui) * 0.9);
 		scale: 0.74;
 	}
 	.wc-fan-card,
@@ -1162,9 +1226,40 @@
 	   its 11vw arm at ~41px, so the cards come out small beside type they have to
 	   share a composition with. Scaling the fan rather than resizing the card
 	   keeps one set of numbers for the geometry. */
+	.wc-overlay {
+		--wc-chip-share: 0.6;
+	}
 	.wc-fan {
+		/* The scaled hand's turned corners reach further below its line. */
+		margin-bottom: calc(var(--ui) * 2.4);
 		scale: 1.22;
 	}
+}
+
+/* ---- Leaving ----
+   Continue: the hand flies back to the board's slots (handFlight.ts) and
+   everything else fades under it, so the board's own cards and figures come
+   back where the takeover's were. Plain transitions, which is why every
+   entrance above fills backwards only. */
+.wc-overlay.is-leaving {
+	pointer-events: none;
+}
+
+.is-leaving .wc-veil {
+	opacity: 0;
+}
+
+.is-leaving .wc-beam,
+.is-leaving .wc-chips,
+.is-leaving .wc-deck-sweep,
+.is-leaving .wc-fan-ticket,
+.is-leaving .wc-title,
+.is-leaving .wc-amount,
+.is-leaving .wc-mult,
+.is-leaving .wc-prompt,
+.is-leaving .wc-body::before {
+	opacity: 0;
+	transition: opacity 0.22s var(--ease-out);
 }
 
 /* ---- Reduced motion ----
@@ -1172,27 +1267,26 @@
    payout, so suppressing it entirely would hide information. Only the moving
    parts stop. The count-up is skipped in the component for the same reason. */
 @media (prefers-reduced-motion: reduce) {
-	/* The burst and the sweep are pure motion - a thrown mark that cannot be
-	   thrown is nothing - so they go. The BEAM and the FAN stay: they are the
+	/* The chips and the sweep are pure motion - a thrown chip that cannot be
+	   thrown is nothing - so they go (chipStream.ts throws none anyway). The BEAM and the FAN stay: they are the
 	   scene, and a celebration stripped back to text on a scrim would be exactly
 	   the "grey rectangle" this file opens by warning against. They just stop
 	   moving: the beam holds its lit opacity, the fan is dealt already. */
-	.wc-burst,
+	.wc-chips,
 	.wc-deck-sweep,
 	.tier-max .wc-deck-sweep {
 		display: none;
 	}
 
 	.wc-overlay,
+	.wc-veil,
 	.wc-beam,
 	.wc-fan-card,
 	.wc-fan-ticket,
 	.wc-title,
 	.wc-amount,
-	.wc-amount.is-holding,
 	.wc-mult,
-	.wc-prompt,
-	.wc-mark {
+	.wc-prompt {
 		animation: none;
 	}
 
@@ -1207,12 +1301,11 @@
 		opacity: var(--wc-beam-op, 0.5);
 	}
 
-	.wc-title {
+	.wc-roll,
+	.wc-route-lit,
+	.wc-route-dot,
+	.wc-route-bus {
 		transition: none;
 	}
 
-	/* The breathing prompt stops at its legible end, not at its dim one. */
-	.wc-prompt {
-		opacity: 0.92;
-	}
 }

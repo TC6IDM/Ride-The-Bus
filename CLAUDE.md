@@ -227,20 +227,53 @@ reading before proposing it again.
   not referenced. The fan marks what happened: a `--loss` cross on the busted
   card (desaturated), a `--forgiven` arrow on a Second Chance one (**not**
   dimmed). Exactly three shapes can reach it; the fourth is defensive only.
-- **One veil for the whole ladder.** `--wc-veil` on `.wc-overlay`, never per tier.
+- **One veil for the whole ladder.** `--wc-veil` on `.wc-overlay`, never per tier,
+  drawn by its own `.wc-veil` layer, with no backdrop blur (2026-10-18).
+- **The hand comes off the board and goes back to it** (W1, 2026-10-18,
+  `game/celebration/handFlight.ts`): each fan card is dealt OUT of its board
+  slot when the takeover opens and flown back INTO it on Continue, and only
+  then does `ondismiss` fire, so the board's cards reappear exactly where the
+  fan's landed (measured within 1px at all seven sizes). It is a FLIP across
+  two trees: the board's row is only hidden under `.takeover-open`, so its
+  slots can be measured. The fan stands CLEAR of the words ("no cover"), and
+  nothing on the takeover loops (the beam and the prompt used to pulse
+  forever). `handFlight.test.ts`.
 - **Lettered, not lit: nothing on the takeover glows.** The title is a hard
   block shadow in the tier's deep colour (`--wc-cool`), cast down and left; the
   amount takes the same block while it holds; the fan's cards carry a thin rim
-  in the tier colour and no bloom; the burst marks cast shadows. The two-colour
+  in the tier colour and no bloom; the chips cast shadows. The two-colour
   neon title and the haloed hand were the stock slot "BIG WIN" look - the third
   Hallmark audit's top finding (2026-09-26).
 - **Every tier draws the whole celebration. Escalation is intensity, never
   presence.** `.tier-*` rules may set nothing but custom properties, and
   `winCelebration.test.ts` fails if one does. `--wc-fan-spread` is the rung,
   because it is the only one anyone could see; a test pins it monotonic.
-- **The burst is suit marks, not sparks, and a moment rather than a loop** — ten
-  one-shot marks off the fan, keyed on `activeTier.id`. Keying is right there and
-  **wrong for `.wc-title`**, which is what `promoteTitle` exists to replace.
+- **The chips are the table's, and they stream** (the owner's W1 notes,
+  2026-10-18; `game/celebration/chipStream.ts`). Flat chips in the `--chip-*`
+  colours fly from a point under the cards, so they leave from behind the hand
+  and pass behind the words. They stream for as long as the win is up, thicker
+  at every tier, with a burst as each tier lands; the tier's own knobs
+  (`--wc-chip-rate`, `--wc-chip-burst`, `--wc-throw`) set the numbers, and
+  `--wc-chip-share` trims phones and Popout S to 60%. They REPLACED the
+  suit-mark burst (a moment keyed on the tier), which the takeover audit found
+  read as debris. The stream and the hand's slow breath (`breatheHand`,
+  composite 'add') are the takeover's only loops, both by the owner's request;
+  Continue stops the stream. Measured: 60fps on desktop and phone, and with the
+  CPU slowed 4x the frame times are the same with the chips hidden, so they
+  cost next to nothing. **The title must still never be keyed** - it would
+  replay its entrance on every promotion.
+- **The tier is a destination blind** (W1, 2026-10-18): `.wc-title` is the
+  loader's sign at the takeover's scale. Its roll holds every rung of the
+  family's ladder, each stop lettered in its OWN tier's colours (the stop
+  carries its `tier-*` class and re-derives `--wc-hot` - computed on the
+  overlay, it would wear the current tier). It rolls one stop per promotion,
+  and that roll replaced `promoteTitle`'s pop. Max is the terminus: crimson
+  cloth, cream letters. Under it the route lights a stop per rung, with the bus
+  at the one reached; a one-rung ladder (Three of a Kind) draws no route. Each
+  stop's face is picked per word (`titleFaceFor`) and the word is fitted on one
+  line (`fitValue`). Every locale fits at 320px (smallest 24.2px, Russian) and
+  at Popout S (15.5px). On landscape the stack sits 4 units lower so the hand
+  clears the lockup. `loader.css` is the same object; change them together.
 - **The light is one beam, not a spinning cone**, from the upper right, on an
   edge-to-edge shadow band. Three ambient circles on one centre is not depth.
 - **The board's numeric readouts are hidden while the takeover counts** —
@@ -365,7 +398,8 @@ reading before proposing it again.
   `MarkIcon`'s voice (round caps, ~2.2 on a 24 grid); a glyph that is read
   (the bolt meter) is filled. The turbo bolt and the meter share a silhouette
   and differ by exactly this. The spin button's shapes are the stated
-  exception.
+  exception, and the turbo bolt FILLS at Instant (the owner's call,
+  2026-10-18; `turboBolt.test.ts`), so the button reads its setting.
 - **A panel opened from the keyboard shows its own ring, not the browser's** —
   `.popup:focus-visible { outline: none }` plus the header's rule thickening in
   `--tint`. Chrome's default double ring around a whole dialog was live on all
@@ -377,8 +411,10 @@ reading before proposing it again.
 
 ### Money and the control bar — `references/currency-and-control-bar.md`
 
-- **Money is fitted to its box, everywhere** — chips and the takeover amount
-  estimate via `labelEms()`; the bar's three readouts measure with `use:fitValue`.
+- **Money is fitted to its box, everywhere** — chips estimate via `labelEms()`;
+  the takeover amount is a split-flap board sharing `--flap-room` (W1,
+  2026-10-18; the room is 76vw because `SplitFlap` leaves its gaps out of the
+  share); the bar's three readouts measure with `use:fitValue`.
   **All three** need `max-width` (`.cb-bet-display` was the one missed), `.cb-val`
   needs `nowrap` and `max-width: 100%`, and the re-fit runs on a
   **MutationObserver** watching `characterData` + `childList`, never `attributes`.
@@ -386,6 +422,14 @@ reading before proposing it again.
 - **On a phone the light pill is ONE line** and takes a bar row of its own; a
   share of the row (`flex: 1 1 0`), not a reservation. Popout S opts out and must
   restate `.cb-balance`, `.cb-lastwin` and `.cb-readouts.solo`.
+- **The bar is the table's front rail (X1, 2026-10-17)** - a material layer;
+  every pinned width below is unchanged. On a phone (<=620px) row two is a
+  GRID centred on the deal: `bet | autoplay | DEAL | turbo | MODE`, the two
+  outer columns equal shares and the two inner a fixed equal key, so the deal
+  is on the middle (swept 320-620 every 10px in en/ru/fi: 0px off, nothing off
+  an edge, every MODE name >= 9px). `.cb-actions` is `display: contents` there;
+  Popout S restores `display: flex` on both. Upright phones have no +/- pair
+  (the chip tray sets the bet), and How to Play's PHONE_BAR reads that query.
 - **Replay hides the balance, and that is a different layout** — `.solo` pushes
   Last Win right; its 26-unit floor is cleared on phones. Under a replay's
   takeover the pill KEEPS its width with Last Win faded out in place; it used
@@ -487,8 +531,9 @@ reading before proposing it again.
   ranks are ASCII and deliberately NOT drawn; every suit mark is ONE drawing,
   `game/ui/suitPaths.ts`, which `SuitIcon` and the card pips both read.
 - **Every dealt card wears one face: `components/cards/CardFace.svelte`** - the
-  board's four and the takeover's fan (the intro's and How to Play's minis are
-  glyph tokens, not faces). A casino deck's layout in a 200 x 298 SVG
+  board's four, the takeover's fan, and since 2026-10-17 How to Play's guide
+  and example round and the recent-rounds stubs, at its compact size (the
+  intro's minis are still glyph tokens, not faces). A casino deck's layout in a 200 x 298 SVG
   (`game/ui/cardFaceLayout.ts`): 2-10 in pips on the standard grid with the
   lower half inverted, the Ace of Spades as the house card, the English-pattern
   courts. **One colour family per card** - red/maroon/rose or ink/slate/stone,
@@ -613,6 +658,34 @@ reading before proposing it again.
   gain stage of its own, never the swell's envelope; `sound.test.ts` fails if
   the shape, the vowel, the tuning, the scaling or the strike drifts, or the
   release moves after the flip.
+- **The held card is SQUEEZED, not raised** (the owner's pick CL3, built
+  2026-10-20; `game/round/squeeze.svelte.ts`, the fold in `game/ui/cardFold.ts`,
+  `styles/board/squeeze.css`). It goes out in front of the board and NOTHING
+  peels until it has arrived; then the default (automatic) squeeze lifts the
+  **bottom-left** corner - whose underside is the face's index - on the hum's
+  climb, the fold showing the real face, never a drawn corner. It turns over
+  in front, holds, and goes home to a slot that is already face up
+  (`instant-turn`: no second reveal). **"Peel the last card myself"** is a
+  switch in the **autoplay panel** (the owner's call), stored on the device,
+  off by default: the player drags any corner, past `PEEL_DONE_AT` (a third)
+  it turns. **Space** peels too ("or press space bar to skip" under the hint,
+  hidden on touch-only screens and where the operator bars the spacebar): a
+  TAP plays the automatic peel through, a HOLD peels at its pace while held
+  and falls back if let go early. **Nothing turns it on a timer** - the round
+  waits for the player (the owner, 2026-10-20) - and the deal button still
+  slams it. **Autoplay and replays always
+  peel for the player** (a LOCAL replay can be peeled by hand: the replay
+  page's "Last card: I peel it" adds `?dev_peel=me`, read behind an
+  `import.meta.env.DEV` literal only), and reduced motion keeps the plain
+  rise. The win chime (or bust / forgiven cue) sounds ON THE TURN, with the
+  strike, not when the card is home. The hum is the crowd, unchanged, on the
+  hold's clock for the automatic squeeze; **for a manual peel it follows the
+  hand** (`sound.peelHum`, `follower()`): NO voice exists until the corner
+  first lifts, its level follows the lift, putting the card down STOPS it, and
+  the next peel starts a fresh one (the owner, 2026-10-20). The sign under it reads "wins", never "pays" (pay is
+  restricted in social mode; win is the replacement). `squeeze.test.ts` pins
+  the corner, the arrival, the defaults and the switch's home;
+  `sound.test.ts` holds both hold paths to the release order.
 - **The board never moves under the player.** The card row, the readout and
   the guess row hold their positions through picks, deals, holds and settles
   (0.0 px, measured every frame across a session at three sizes). The
@@ -877,8 +950,9 @@ function of `round.source`.
 `BURST` and `FAN` geometry, pure) and `game/celebrationGestures.ts` (`pop`,
 `easePop`, `hopFan`, `reducedMotion`). The geometry being a plain module means
 `winCelebration.test.ts` now **imports and asserts on it** — the fan's symmetry,
-its centre falling between cards, the outer pair riding lower, the burst's suit
-spread — instead of grepping the component for `length: 4 }`.
+its centre falling between cards, the outer pair riding lower (and, since
+2026-10-18, `chipStream.ts`'s chip flight) — instead of grepping the component
+for `length: 4 }`.
 
 **The count-up state machine deliberately stayed in the component.**
 `<WinCelebration>` is `{#key}`'d so it remounts per celebration; its state
@@ -887,8 +961,9 @@ are, and behind a factory it needs about six callbacks injected, which reads
 worse than the 200 lines do. Its pure half is already `countUpSegments` in
 `winTiers.ts`.
 
-**`sound.ts` (751) is deliberately NOT split.** It is a flat catalogue of 18
-independent cues in one object. Splitting a catalogue means looking in more
+**`sound.ts` (751) is deliberately NOT split.** It is a flat catalogue of
+independent cues in one object (19 since the takeover's flap clatter,
+2026-10-18). Splitting a catalogue means looking in more
 places to find one cue, and every change costs an `npm run audio` pass. Size
 there is not complexity.
 
@@ -1081,12 +1156,13 @@ the code; the test that pins it is named):
   kept nothing shows no chip; Three of a Kind's live total is "At stake" (social
   "In play"). Screen readers get `aria-pressed` picks, named cards and the bust
   card in the announcement. `announce.test.ts`.
-- **The count-up starts at the board's last figure** (`countUpSegments`'
-  `startMultiplier`) and its progress is clamped - the live build opened on
-  "-$0.00001". A leg whose ceiling the board had already passed is DROPPED, so
-  the count opens on the board's figure under that figure's tier: v72 kept those
-  legs as holds and opened a max win on "Big Win $40.00" over a $430.10 board
-  (after v72, not uploaded; `winTiers.test.ts`).
+- **The count-up starts at ZERO under Big and climbs every tier the win
+  reaches** (the owner's call, 2026-10-18: a max win always shows the whole
+  ladder). It used to start at the board's last figure and drop the legs below
+  it (`countUpSegments`' `startMultiplier`, kept and tested, no longer passed);
+  that was safe to reverse because the board's figures are hidden under the
+  takeover. Progress is still clamped - the live build once opened on
+  "-$0.00001" (`winTiers.test.ts`).
 - **The board and the bar are inert behind the loader, the intro and Round
   details** (`behindIntro`): Tab went from Continue onto the board's Black square
   under the intro (after v72, not uploaded; `launchGuards.test.ts`).

@@ -170,8 +170,6 @@ export default {
 		'Показать последние раунды',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'Плюс и минус задают ставку. Щёлкните по сумме, чтобы открыть меню быстрых ставок.',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'Молнии показывают каждый режим до ваших выборов «Равно». Каждый выбор «Равно» добавляет одну.',
 	'Click to continue':
 		'Щёлкните, чтобы продолжить',
 	'Click to skip':
@@ -334,6 +332,14 @@ export default {
 		'Остановить при проигрыше',
 	'Stop on a single win of':
 		'Остановить при разовом выигрыше',
+	'Limits':
+		'Лимиты',
+	'None set':
+		'Не заданы',
+	'Loss %s':
+		'Проигрыш %s',
+	'Win %s':
+		'Выигрыш %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'На клавиатуре клавиши 1–4 меняют четыре прогноза.',
 	'It can stop by itself on a full game win, a loss limit or one big win.':
@@ -362,4 +368,10 @@ export default {
 		'Бросить кубик для случайных прогнозов',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'Кубик рядом с прогнозами выбирает все четыре случайно. Ничего не разыгрывается, пока вы не сдадите карты.',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': 'Открывать последнюю карту самому',
+	'Drag any corner to peel': 'Потяните за любой угол',
+	'or press space bar to skip': 'или нажмите пробел, чтобы пропустить',
+	'Wins': 'Выигрыш',
+	'Wins up to': 'Выигрыш до',
 };

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>S1 Sound bump</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  .srow { display: grid; grid-template-columns: 34px 1fr 30px; align-items: center; gap: 10px; }
+  .srow + .srow { margin-top: 12px; }
+  .srow .lab { grid-column: 2 / 4; font: 600 12.5px/1 var(--font-body); color: var(--ink-body); margin-bottom: -4px; }
+  .srow .val { font: 700 13px/1 var(--font-body); color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; }
+  /* A bare speaker, MarkIcon's voice: no box. Struck through when muted. */
+  .spk { width: 34px; height: 34px; border: 0; padding: 0; background: none; color: var(--ink); display: grid; place-items: center; }
+  .spk svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; }
+  .spk .strike { opacity: 0; transition: opacity 120ms; }
+  .spk.muted { color: var(--ink-dim); }
+  .spk.muted .strike { opacity: 1; }
+  .spk.muted .waves { opacity: 0; }
+  .muted-row .slider { opacity: 0.4; }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div></div>
+<script src="kit/kit.js"></script><script src="kit/bar.js"></script>
+<script>
+  const { wait, loop, size } = RTB, s = document.getElementById('s'), phone = size() === 'phone';
+  document.getElementById('board').style.backgroundImage = `url('kit/board-${size()}.webp')`;
+  const CREAM = '255, 253, 245';
+  const SPK = `<svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><g class="waves"><path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18 6.5a7.5 7.5 0 0 1 0 11"/></g><path class="strike" d="M16 9.5l5 5m0-5-5 5"/></svg>`;
+  const row = (name, v) => `<div class="srow" data-r="${name}"><span></span><span class="lab">${name}</span><button class="spk">${SPK}</button>
+    <div class="slider"><div class="track"></div><div class="fill" style="width:${v}%"></div><div class="knob" style="left:${v}%"></div></div><span class="val">${v}</span></div>`;
+  const b = BAR.bump(s, 'sound', phone ? 280 : 300, row('Music', 75) + row('Game sounds', 75), CREAM);
+  const ring = BAR.ring(s, 'sound', CREAM), f = BAR.finger(s);
+  const music = b.querySelector('[data-r="Music"]'), game = b.querySelector('[data-r="Game sounds"]');
+  const setv = (r, v) => { r.querySelector('.fill').style.width = r.querySelector('.knob').style.left = v + '%'; r.querySelector('.val').textContent = v; };
+  loop(7000, async () => {
+    b.classList.remove('in'); ring.classList.remove('on'); setv(music, 75); setv(game, 75);
+    [music, game].forEach((r) => { r.classList.remove('muted-row'); r.querySelector('.spk').classList.remove('muted'); });
+    await wait(600);
+    const [x, y] = BAR.centre('sound'); await f.press(x, y); ring.classList.add('on'); b.classList.add('in');
+    await wait(700);
+    const k = music.querySelector('.knob').getBoundingClientRect(), sl = music.querySelector('.slider').getBoundingClientRect();
+    f.at(k.x + 10, k.y + 10); f.on(); await wait(250); setv(music, 40); f.at(sl.x + sl.width * 0.4, k.y + 10); await wait(700); f.off();
+    await wait(400);
+    const sp = game.querySelector('.spk').getBoundingClientRect(); await f.press(sp.x + 17, sp.y + 17);
+    game.querySelector('.spk').classList.add('muted'); game.classList.add('muted-row');
+    await wait(1400); await f.press(phone ? 200 : 640, 300); b.classList.remove('in'); ring.classList.remove('on');
+  });
+</script>
+</body></html>

@@ -171,8 +171,6 @@ export default {
 		'Letzte Runden anzeigen',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'Plus und Minus legen deinen Einsatz fest. Klicke auf den Betrag für das Schnelleinsatz-Menü.',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'Die Blitze zeigen jeden Modus vor deinen Gleich-Tipps. Jeder Gleich-Tipp fügt einen hinzu.',
 	'Click to continue':
 		'Zum Fortfahren klicken',
 	'Click to skip':
@@ -337,6 +335,14 @@ export default {
 		'Stopp bei einem Verlust von',
 	'Stop on a single win of':
 		'Stopp bei einem Einzelgewinn von',
+	'Limits':
+		'Grenzen',
+	'None set':
+		'Keine gesetzt',
+	'Loss %s':
+		'Verlust %s',
+	'Win %s':
+		'Gewinn %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'Auf der Tastatur ändern die Tasten 1 bis 4 die vier Tipps.',
 	'It can stop by itself on a full game win, a loss limit or one big win.':
@@ -365,4 +371,10 @@ export default {
 		'Würfeln für zufällige Tipps',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'Der Würfel neben den Tipps wählt alle vier zufällig. Gespielt wird erst, wenn du austeilst.',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': 'Letzte Karte selbst aufbiegen',
+	'Drag any corner to peel': 'Zieh an einer Ecke, um sie aufzubiegen',
+	'or press space bar to skip': 'oder Leertaste drücken zum Überspringen',
+	'Wins': 'Gewinnt',
+	'Wins up to': 'Gewinnt bis zu',
 };

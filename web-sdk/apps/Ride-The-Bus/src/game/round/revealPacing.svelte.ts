@@ -81,6 +81,22 @@ export const cueLead = (index: number) => (revealIsInstant() ? index * INSTANT_C
  */
 export const DEAL_REST_MS = 300;
 
+/**
+ * The deal's clock, from the flip's duration in seconds (flipDurSec), so turbo
+ * shrinks it with everything else. ONE source for the cards (GameBoard's
+ * dealFromDeck) and the riffles under them (playDeal), which used to be timed
+ * apart and only agreed at normal speed.
+ *
+ * The gather is a third of the travel, not the 17% it was: at 110ms a card
+ * crossing a third of the table read as a teleport, and the four left 45ms
+ * apart, as one block (the owner, 2026-10-16: "too fast"). The total is
+ * unchanged, so card 1 still lands inside the reveal's hold-back.
+ */
+export const dealTiming = (seconds: number) => {
+  const travelMs = seconds * 1300;
+  return { travelMs, gatherMs: travelMs * 0.34, staggerMs: seconds * 160 };
+};
+
 // Card flip duration (seconds) for the --flip-dur CSS var; shrinks to 0 as
 // turbo approaches instant, and snaps to 0 on a slam.
 export const flipDurSec = () =>

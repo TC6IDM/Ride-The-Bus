@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>X2 Bus dashboard</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* A bus driver's dash: charcoal, a curved top edge, the money in odometer
+     drums that roll when they change, the deal as the big stop-request button. */
+  .xbar.dash { height: 96px; border-radius: 50% 50% 0 0 / 26px 26px 0 0; background: linear-gradient(180deg, #2a2724, #15130f 60%); box-shadow: 0 -6px 20px rgba(0,0,0,0.55), inset 0 2px 0 rgba(255,240,220,0.12); }
+  .dash .cap { color: rgba(255, 176, 80, 0.9); letter-spacing: 0.18em; }
+  .dash .val { display: inline-flex; gap: 1px; }
+  .dash .val i { font-style: normal; display: inline-grid; place-items: center; min-width: 0.78em; padding: 3px 1px; border-radius: 3px; background: linear-gradient(180deg, #0a0908, #23201c 50%, #0a0908); color: #f4efe6; box-shadow: inset 0 1px 2px rgba(0,0,0,0.9); }
+  .dash .val i.p { background: none; box-shadow: none; min-width: 0.3em; }
+  .dash .val.roll i:last-child, .dash .val.roll i:nth-last-child(2) { animation: roll 520ms var(--ease-in-out); }
+  @keyframes roll { 0% { transform: translateY(0); } 45% { transform: translateY(-60%); opacity: 0.2; } 55% { transform: translateY(60%); opacity: 0.2; } 100% { transform: none; } }
+  .dash .deal { width: 66px; height: 66px; background: radial-gradient(circle at 40% 30%, #ff6b5a, #c4283f 55%, #7a0f1e); box-shadow: 0 0 0 5px #f2c94c, 0 0 0 7px #3a2a06, 0 6px 14px rgba(0,0,0,0.5); }
+  .dash .deal svg { filter: drop-shadow(0 1px 0 rgba(0,0,0,0.5)); }
+  .dash .g { color: #e9e2d4; }
+  @media (max-width: 600px) { .xbar.dash { height: 136px; } .dash .deal { width: 54px; height: 54px; } }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div></div>
+<script src="kit/kit.js"></script><script src="kit/glyphs.js"></script><script src="kit/barmock.js"></script>
+<script>
+  document.getElementById('board').style.backgroundImage = `url('kit/board-nobar-${RTB.size()}.webp')`;
+  const bar = BARMOCK.mount(document.getElementById('s'), 'dash');
+  const drum = (n) => [...n.textContent].map((c) => /[0-9]/.test(c) ? `<i>${c}</i>` : `<i class="p">${c}</i>`).join('');
+  bar.querySelectorAll('.val').forEach((v) => (v.innerHTML = drum(v)));
+  // The balance rolls on its drums when it changes (mock: every few seconds).
+  const bal = bar.querySelector('.val');
+  RTB.loop(3200, async () => { await RTB.wait(1200); bal.classList.remove('roll'); void bal.offsetWidth; bal.classList.add('roll'); });
+</script>
+</body></html>

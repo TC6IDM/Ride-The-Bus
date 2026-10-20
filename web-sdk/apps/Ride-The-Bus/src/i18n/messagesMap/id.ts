@@ -171,8 +171,6 @@ export default {
 		'Tampilkan ronde terbaru',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'Plus dan minus mengatur taruhan Anda. Klik jumlahnya untuk membuka menu taruhan cepat.',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'Petir menunjukkan tiap mode sebelum pilihan Sama Anda. Setiap pilihan Sama menambah satu.',
 	'Click to continue':
 		'Klik untuk melanjutkan',
 	'Click to skip':
@@ -336,6 +334,14 @@ export default {
 		'Berhenti saat rugi sebesar',
 	'Stop on a single win of':
 		'Berhenti saat satu kemenangan sebesar',
+	'Limits':
+		'Batas',
+	'None set':
+		'Belum diatur',
+	'Loss %s':
+		'Rugi %s',
+	'Win %s':
+		'Menang %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'Di keyboard, tombol 1 sampai 4 mengubah keempat tebakan.',
 	'It can stop by itself on a full game win, a loss limit or one big win.':
@@ -364,4 +370,10 @@ export default {
 		'Lempar dadu untuk tebakan acak',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'Dadu di samping tebakan memilih keempatnya secara acak. Tidak ada yang dimainkan sampai Anda membagikan kartu.',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': 'Buka sendiri kartu terakhir',
+	'Drag any corner to peel': 'Seret sudut mana pun untuk membuka',
+	'or press space bar to skip': 'atau tekan spasi untuk melewati',
+	'Wins': 'Menang',
+	'Wins up to': 'Menang hingga',
 };

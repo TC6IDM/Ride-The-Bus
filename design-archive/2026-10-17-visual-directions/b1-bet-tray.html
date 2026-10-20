@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>B1 Chip tray bump</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* A baize chip tray with a brass lip, grown out of the bet display. The chips
+     sit in a row; the chosen one lifts. "Other amount" types any bet. */
+  .tray { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding: 14px 10px 12px; border-radius: 10px;
+    background: radial-gradient(rgba(255,255,255,0.035) 0.6px, transparent 0.8px) 0 0 / 3px 3px, radial-gradient(120% 140% at 70% 0%, var(--felt-lit), var(--felt-mid) 60%, var(--felt-deep));
+    box-shadow: inset 0 0 0 2px #b88a25, inset 0 4px 10px rgba(0,0,0,0.6); }
+  .other { margin-top: 10px; display: flex; gap: 8px; align-items: center; }
+  .other label { font: 600 12.5px/1 var(--font-body); color: var(--ink-dim); white-space: nowrap; }
+  .other .field { flex: 1; padding: 9px 10px; border-radius: 8px; background: rgba(0,0,0,0.35); box-shadow: inset 0 1px 3px rgba(0,0,0,0.6); font: 700 14px/1 var(--font-body); color: var(--ink); }
+  .betfig { position: absolute; z-index: 22; display: grid; place-items: end; padding: 0 12px; font: 800 18px/1 var(--font-body); color: var(--ink); background: rgba(23,12,10,0.95); border-radius: 8px; }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div></div>
+<script src="kit/kit.js"></script><script src="kit/bar.js"></script><script src="kit/chips.js"></script>
+<script>
+  const { wait, loop, size, el } = RTB, s = document.getElementById('s'), phone = size() === 'phone';
+  document.getElementById('board').style.backgroundImage = `url('kit/board-${size()}.webp')`;
+  const YELLOW = '255, 201, 60';
+  const d = phone ? 40 : 48;
+  const b = BAR.bump(s, 'bet', phone ? 300 : 520, `<div class="tray">${CHIPS.CHIPS.map((c) => CHIPS.chip(c, d)).join('')}</div>
+    <div class="other"><label>Other amount</label><span class="field">$1.00</span></div>`, YELLOW);
+  const ring = BAR.ring(s, 'bet', YELLOW), f = BAR.finger(s);
+  const a = BAR.R('bet'); const fig = el('div', 'betfig', '$1.00');
+  Object.assign(fig.style, { left: a.x + 6 + 'px', top: a.y + a.h * 0.42 + 'px', width: a.w - 12 + 'px', height: a.h * 0.5 + 'px', alignContent: 'center', opacity: 0 }); s.appendChild(fig);
+  const chips = [...b.querySelectorAll('.chip')];
+  loop(6400, async () => {
+    b.classList.remove('in'); ring.classList.remove('on'); chips.forEach((c) => c.classList.remove('on')); chips[0].classList.add('on'); fig.style.opacity = 0;
+    await wait(600);
+    const [x, y] = BAR.centre('bet'); await f.press(x, y); ring.classList.add('on'); b.classList.add('in');
+    await wait(900);
+    const c = chips[2].getBoundingClientRect(); await f.press(c.x + c.width / 2, c.y + c.height / 2);
+    chips.forEach((k) => k.classList.remove('on')); chips[2].classList.add('on');
+    fig.textContent = '$25.00'; fig.style.opacity = 1; b.querySelector('.field').textContent = '$25.00';
+    await wait(1600); await f.press(phone ? 200 : 640, 300); b.classList.remove('in'); ring.classList.remove('on');
+  });
+</script>
+</body></html>

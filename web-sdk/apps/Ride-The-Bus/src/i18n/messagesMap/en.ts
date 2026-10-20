@@ -211,8 +211,6 @@ export default {
 		'Show recent rounds',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'Plus and minus set your bet. Click the amount for the quick-bet menu.',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'Bolts show each mode before your Equal picks. Each Equal pick adds one.',
 	'Click to continue':
 		'Click to continue',
 	'Click to skip':
@@ -400,6 +398,15 @@ export default {
 		'Stop on a loss of',
 	'Stop on a single win of':
 		'Stop on a single win of',
+	// The autoplay panel's limits fold: its heading, its state with nothing armed, and an armed limit (%s is the figure, e.g. "20.0×").
+	'Limits':
+		'Limits',
+	'None set':
+		'None set',
+	'Loss %s':
+		'Loss %s',
+	'Win %s':
+		'Win %s',
 	// How to Play, on a desk only: the keyboard's way to make the four picks (ControlBar.svelte, game/bet/guessKeys.ts).
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'On a keyboard, keys 1 to 4 change the four guesses.',
@@ -445,4 +452,10 @@ export default {
 	// How to Play, Controls: the line for the table die. Each locale's own words for 'guesses' and 'deal'.
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'The die beside the guesses picks all four at random. Nothing is played until you deal.',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': 'Peel the last card myself',
+	'Drag any corner to peel': 'Drag any corner to peel',
+	'or press space bar to skip': 'or press space bar to skip',
+	'Wins': 'Wins',
+	'Wins up to': 'Wins up to',
 };

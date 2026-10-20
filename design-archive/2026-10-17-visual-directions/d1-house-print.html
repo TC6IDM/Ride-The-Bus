@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>D1 House print</title>
+<link rel="stylesheet" href="kit/kit.css">
+</head>
+<body>
+<div class="stage" id="s"></div>
+<script src="kit/kit.js"></script><script src="kit/faces.js"></script>
+<script>
+  /* A fine inner frame in the card's OWN colour family, notched at the corners
+     around the index, and the Takeover crown as a faint gold watermark. */
+  FACES.mount(document.getElementById('s'), {
+    under: (ink, deep, rank) => /^(J|Q|K|A)$/.test(rank) ? '' :
+      `<path d="M58 24H176V214M142 274H24V84" fill="none" stroke="${ink}" stroke-opacity="0.42" stroke-width="1.3" stroke-linecap="round"/>` +
+      `<path d="M64 30H170V208M136 268H30V90" fill="none" stroke="${ink}" stroke-opacity="0.18" stroke-width="0.8" stroke-linecap="round"/>` +
+      `<g opacity="0.07">${RTB.crown(100, 149, 120, false)}</g>`,
+  });
+</script>
+</body></html>

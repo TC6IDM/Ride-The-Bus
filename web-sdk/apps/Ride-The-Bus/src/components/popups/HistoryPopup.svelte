@@ -10,17 +10,24 @@
      same pair the bar's Last Win and the takeover print. A partial return is
      neutral ink, never win colour (isNetWin, decided at settle).
 
+     TICKET STUBS (the owner's pick R1, 2026-10-17): each round is a stub of
+     the card stock, dimmed a step so the hand printed on it reads first - the
+     cards are the real CardFace at their compact size, with the board's own
+     marks (the cross, the forgiven arrow). Every stub says how the round
+     ended in the board's four words, so a kept share is "Kept $0.50", never a
+     bare figure that looked like a win.
+
      STYLES TRAVEL WITH THE MARKUP - styles/popups/popup-history.css, imported
      here and nowhere else; the colour comes in through the --tint contract. -->
 <script lang="ts">
   import MarkIcon from '../icons/MarkIcon.svelte';
-  import SuitIcon from '../icons/SuitIcon.svelte';
+  import CardFace from '../cards/CardFace.svelte';
   import { t, type MessageKey } from '../../i18n/i18nDerived';
   import { numberToCurrencyString } from 'utils-shared/amount';
   import { formatMultiplier, formatTicket } from '../../game/ui/formatMultiplier';
   import { FAMILY_RULES, parseModeName } from '../../game/math/modes';
   import { volatilityColorVar } from '../../game/math/volatility';
-  import { isRedSuit, suitName } from '../../game/ui/suitPaths';
+  import { suitName } from '../../game/ui/suitPaths';
   import { history } from '../../game/round/roundHistory.svelte';
   import type { HistoryEntry } from '../../game/round/historyList';
 
@@ -58,6 +65,19 @@
     return key ? ` ${t(key)}` : '';
   };
 
+  /**
+   * How the round ended, in the board's four words (GameBoard's resultLabel):
+   * every guess right, a ride that finished with a miss forgiven, a bust that
+   * kept a share, or a bust that kept nothing. `sweep` is isCleanSweep, taken
+   * at settle; a round that paid without one either busted and kept a share
+   * or was forgiven and finished.
+   */
+  function resultWord(entry: HistoryEntry): string {
+    if (entry.won <= 0) return t('Busted');
+    if (entry.sweep) return t('Full game win');
+    return entry.bustedIndex !== null ? t('Kept') : t('Won');
+  }
+
   /** The cost, as the bar's bet display prints it: "$250.00 ($1.00 × 250)" on Three of a Kind. */
   function cost(entry: HistoryEntry): string {
     const rules = FAMILY_RULES[entry.family];
@@ -77,11 +97,11 @@
     <p class="history-empty">{t('No rounds yet this session.')}</p>
   {:else}
     <ol class="history-list">
-      {#each history.rounds as entry (entry.id)}
+      {#each history.rounds as entry, order (entry.id)}
         {@const named = picks(entry)}
-        <li class="history-row" class:is-net={entry.net}>
+        <li class="history-row" class:is-net={entry.net} style={`--fam: ${volatilityColorVar(entry.family)}; --i: ${order}`}>
           <div class="history-head">
-            <span class="history-family" style={`--fam: ${volatilityColorVar(entry.family)}`}>{t(FAMILY_RULES[entry.family].label)}</span>
+            <span class="history-family">{t(FAMILY_RULES[entry.family].label)}</span>
             <span class="history-cost"><span class="history-cap">{t('Bet')}</span> <span class="history-cost-figure">{cost(entry)}</span></span>
           </div>
           <div class="history-hand">
@@ -89,21 +109,28 @@
               {#if card}
                 <span
                   class="history-card"
-                  class:is-red={isRedSuit(card.suit)}
                   class:is-bust={index === entry.bustedIndex}
                   class:is-forgiven={index === entry.forgivenIndex}
-                  >{card.rank}<SuitIcon suit={card.suit} scale={0.9} /><span class="visually-hidden">{suitSpoken(card.suit)}</span>{#if index === entry.bustedIndex}<span class="visually-hidden">, {t('Busted')}</span>{:else if index === entry.forgivenIndex}<span class="visually-hidden">, {t('Forgiven')}</span>{/if}<span class="visually-hidden">{', '}</span></span
                 >
+                  <CardFace rank={card.rank} suit={card.suit} />
+                  {#if index === entry.bustedIndex}
+                    <span class="history-mark is-bust" aria-hidden="true"><MarkIcon name="cross" /></span>
+                  {:else if index === entry.forgivenIndex}
+                    <span class="history-mark is-forgiven" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.34-5.66" /><path d="M20 3v5h-5" /></svg>
+                    </span>
+                  {/if}
+                  <span class="visually-hidden">{card.rank}{suitSpoken(card.suit)}{#if index === entry.bustedIndex}, {t('Busted')}{:else if index === entry.forgivenIndex}, {t('Forgiven')}{/if}{', '}</span>
+                </span>
               {/if}
             {/each}
             {#if entry.ticket !== null}
               <span class="history-ticket"><span class="visually-hidden">{t('Ticket')} </span>{formatTicket(entry.ticket)}</span>
             {/if}
             <span class="history-paid">
+              <span class="history-word">{resultWord(entry)}</span>
               {#if entry.won > 0}
                 <span class="history-amount">{numberToCurrencyString(entry.won)}</span> <span class="history-mult">{formatMultiplier(entry.multiplier)}</span>
-              {:else}
-                {t('Busted')}
               {/if}
             </span>
           </div>
@@ -120,5 +147,6 @@
 
 <style>
   @import '../../styles/popups/popup-base.css';
+  @import '../../styles/popups/popup-head.css';
   @import '../../styles/popups/popup-history.css';
 </style>

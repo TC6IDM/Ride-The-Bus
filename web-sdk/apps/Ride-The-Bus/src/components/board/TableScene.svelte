@@ -72,6 +72,19 @@
      cylinder (elliptical top + side wall), the table has a real edge, and
      everything casts to the lower-left from a light at the upper right. -->
 <div class="scene" aria-hidden="true">
+  <!-- The back room's one picture: the route the game is named for. -->
+  <div class="room-print">
+    <svg viewBox="0 0 160 100">
+      <rect class="print-frame" x="1" y="1" width="158" height="98" rx="2" />
+      <rect class="print-paper" x="9" y="9" width="142" height="82" />
+      <path class="print-route" d="M20 70 C45 70 50 30 80 34 S118 66 140 30" />
+      <circle class="print-stop" cx="20" cy="70" r="3.4" />
+      <circle class="print-stop" cx="52" cy="44" r="3.4" />
+      <circle class="print-stop" cx="80" cy="34" r="3.4" />
+      <circle class="print-stop" cx="110" cy="55" r="3.4" />
+      <circle class="print-end" cx="140" cy="30" r="5" />
+    </svg>
+  </div>
   <div class="table">
     <div class="table-edge"></div>
     <div class="table-surface">

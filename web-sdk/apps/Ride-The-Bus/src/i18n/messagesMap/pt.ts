@@ -170,8 +170,6 @@ export default {
 		'Mostrar rodadas recentes',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'Mais e menos definem sua aposta. Clique no valor para abrir o menu de apostas rápidas.',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'Os raios mostram cada modo antes das suas escolhas de Igual. Cada Igual soma um.',
 	'Click to continue':
 		'Clique para continuar',
 	'Click to skip':
@@ -335,6 +333,14 @@ export default {
 		'Parar com uma perda de',
 	'Stop on a single win of':
 		'Parar com um único ganho de',
+	'Limits':
+		'Limites',
+	'None set':
+		'Nenhum',
+	'Loss %s':
+		'Perda %s',
+	'Win %s':
+		'Ganho %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'No teclado, as teclas 1 a 4 mudam os quatro palpites.',
 	'It can stop by itself on a full game win, a loss limit or one big win.':
@@ -363,4 +369,10 @@ export default {
 		'Lance o dado para palpites aleatórios',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'O dado ao lado dos palpites escolhe os quatro ao acaso. Nada é jogado até você distribuir.',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': 'Levantar eu mesmo a última carta',
+	'Drag any corner to peel': 'Arraste um canto para levantar',
+	'or press space bar to skip': 'ou pressione a barra de espaço para pular',
+	'Wins': 'Ganha',
+	'Wins up to': 'Ganha até',
 };

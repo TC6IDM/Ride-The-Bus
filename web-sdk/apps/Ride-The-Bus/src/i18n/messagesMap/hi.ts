@@ -171,8 +171,6 @@ export default {
 		'हाल के राउंड दिखाएँ',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'प्लस और माइनस आपका दांव तय करते हैं। त्वरित दांव मेनू के लिए राशि पर क्लिक करें।',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'बिजली के निशान हर मोड को आपके बराबर चुनावों से पहले दिखाते हैं। हर बराबर चुनाव एक जोड़ता है।',
 	'Click to continue':
 		'जारी रखने के लिए क्लिक करें',
 	'Click to skip':
@@ -334,6 +332,14 @@ export default {
 		'इतने नुकसान पर रोकें',
 	'Stop on a single win of':
 		'एक ही जीत इतनी होने पर रोकें',
+	'Limits':
+		'सीमाएँ',
+	'None set':
+		'कोई तय नहीं',
+	'Loss %s':
+		'हानि %s',
+	'Win %s':
+		'जीत %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'कीबोर्ड पर, 1 से 4 तक की कुंजियाँ चारों अनुमान बदलती हैं।',
 	'It can stop by itself on a full game win, a loss limit or one big win.':
@@ -362,4 +368,10 @@ export default {
 		'यादृच्छिक अनुमानों के लिए पासा फेंकें',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'अनुमानों के पास रखा पासा चारों को यादृच्छिक रूप से चुनता है। जब तक आप बाँटते नहीं, कुछ भी खेला नहीं जाता।',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': 'आख़िरी कार्ड ख़ुद खोलें',
+	'Drag any corner to peel': 'खोलने के लिए कोई भी कोना खींचें',
+	'or press space bar to skip': 'या छोड़ने के लिए स्पेस बार दबाएँ',
+	'Wins': 'जीत',
+	'Wins up to': 'अधिकतम जीत',
 };

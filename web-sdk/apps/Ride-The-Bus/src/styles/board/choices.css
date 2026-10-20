@@ -50,7 +50,13 @@
   box-shadow:
     0 2px 4px rgba(var(--shadow-rgb), 0.4),
     0 10px 22px rgba(var(--shadow-rgb), 0.3),
-    0 0 0 1px rgba(var(--ink-rgb), 0.18);
+    0 0 0 1.5px var(--guess-ink);
+  /* PRINTED IN GOLD INK (the owner's pick E3, 2026-10-17): each guess is a box
+     on a betting layout, its edge and its seams in the layout's gold. The
+     square's own edge was a faint white hairline, needed because the Color
+     square's black half vanished against the wood; the gold does that job and
+     says what the square is - a place to set a bet down. */
+  --guess-ink: rgba(var(--gold-rgb), 0.78);
 }
 
 /* LIT FROM THE UPPER RIGHT, like everything else on the table. The squares
@@ -82,6 +88,30 @@
     inset 0 -1px 0 rgba(var(--shadow-rgb), 0.4);
 }
 
+/* The seams, in the same gold ink as the edge: where one choice ends and the
+   next begins, printed on the layout rather than left as a change of colour.
+   Drawn in the sheen layer (above the fills, under the badge), so they cost no
+   layout and never take a tap. Centred, so they need no right-to-left flip. */
+.color-square::after,
+.io-square::after {
+  background:
+    linear-gradient(90deg, transparent calc(50% - 0.75px), var(--guess-ink) calc(50% - 0.75px) calc(50% + 0.75px), transparent calc(50% + 0.75px)),
+    linear-gradient(168deg, rgba(var(--panel-lit-rgb), 0.16) 0%, transparent 34%, transparent 66%, rgba(var(--shadow-rgb), 0.18) 100%);
+}
+
+.hl-square::after {
+  background:
+    linear-gradient(180deg, transparent calc(50% - 0.75px), var(--guess-ink) calc(50% - 0.75px) calc(50% + 0.75px), transparent calc(50% + 0.75px)),
+    linear-gradient(168deg, rgba(var(--panel-lit-rgb), 0.16) 0%, transparent 34%, transparent 66%, rgba(var(--shadow-rgb), 0.18) 100%);
+}
+
+.suit-square::after {
+  background:
+    linear-gradient(90deg, transparent calc(50% - 0.75px), var(--guess-ink) calc(50% - 0.75px) calc(50% + 0.75px), transparent calc(50% + 0.75px)),
+    linear-gradient(180deg, transparent calc(50% - 0.75px), var(--guess-ink) calc(50% - 0.75px) calc(50% + 0.75px), transparent calc(50% + 0.75px)),
+    linear-gradient(168deg, rgba(var(--panel-lit-rgb), 0.16) 0%, transparent 34%, transparent 66%, rgba(var(--shadow-rgb), 0.18) 100%);
+}
+
 .half-btn,
 .third-btn,
 .quad-btn {
@@ -100,7 +130,7 @@
   font-size: var(--choice-fs);
   font-weight: 800;
   line-height: 1;
-  transition: filter var(--dur-control) var(--ease-out), transform var(--dur-control) var(--ease-out);
+  transition: filter var(--dur-control) var(--ease-out), transform var(--dur-control) var(--ease-out), background-color var(--dur-control) var(--ease-out);
 }
 
 /* Hover: a lighter version of the selected treatment, so it reads as a
@@ -135,11 +165,40 @@
   }
 }
 
+/* The section a bet is set down on is LIT and ringed in the layout's gold
+   (E3): brighter from within, the ring in --gold-bright. Nothing else in the
+   row changes - a pick dims nothing (the owner's call, 2026-10-06). On the
+   board a chip is set down on it too (choices-board.css); the intro has no
+   chips, and the ring alone says it there. */
 .half-btn.selected,
 .third-btn.selected,
 .quad-btn.selected {
-  filter: brightness(1.3);
-  box-shadow: inset 0 0 0 3px var(--ink), inset 0 0 16px rgba(var(--ink-rgb), 0.5);
+  /* LIT WITHOUT A FILTER ON THE SEGMENT. This was filter: brightness(1.22)
+     saturate(1.06) on the whole button - and the button holds its pick chip,
+     which lies over the seam. Some GPU compositors cut a filtered box's output
+     at its own edge, so on the owner's machine the suit chip was sliced off at
+     the seam (2026-10-19) while every headless and headed capture here drew it
+     whole. So the lift is split: the fill is the segment's own colour times
+     1.22, the same arithmetic brightness() does, and the icon takes the filter
+     itself. The chip is in neither, so nothing can clip it, and it shows its
+     true colours - the same as the table's chips. A browser without relative
+     colour keeps the plain fill; the gold ring still says which is chosen. */
+  background-color: rgb(from var(--seg) calc(r * 1.22) calc(g * 1.22) calc(b * 1.22));
+  box-shadow: inset 0 0 0 2.5px var(--gold-bright), inset 0 0 calc(var(--choice-size) * 0.16) rgba(var(--gold-rgb), 0.4);
+  /* ABOVE THE SEAMS AND ITS NEIGHBOURS, for its chip (the owner, 2026-10-18:
+     the suit chip "should always be over" the borders). Lifted to 2, the whole
+     segment - chip included - sits over the gold seam layer
+     (.choice-square::after, z 1) and over the segment after it in the markup.
+     The "=" badge is also 2 and comes later, so it still sits on top, and the
+     gold ring above outlines the segment where the seam no longer draws over
+     it. */
+  z-index: 2;
+}
+
+.half-btn.selected > :global(svg),
+.third-btn.selected > :global(svg),
+.quad-btn.selected > :global(svg) {
+  filter: brightness(1.22) saturate(1.06);
 }
 
 /* Held down.
@@ -149,9 +208,9 @@
  * hover to preserve and this is the only feedback a tap can produce. It is now
  * the primary press state, and it is brighter than hover on purpose: on touch
  * it is the first thing the player sees happen. */
-.half-btn:active:not(:disabled):not(.unavailable):not([aria-disabled='true']),
-.third-btn:active:not(:disabled):not([aria-disabled='true']),
-.quad-btn:active:not(:disabled):not([aria-disabled='true']),
+.half-btn:active:not(:disabled):not(.unavailable):not(.selected):not([aria-disabled='true']),
+.third-btn:active:not(:disabled):not(.selected):not([aria-disabled='true']),
+.quad-btn:active:not(:disabled):not(.selected):not([aria-disabled='true']),
 .equal-btn:active:not(.selected) {
   filter: brightness(1.34);
 }
@@ -293,11 +352,13 @@
 }
 
 .black-half {
-  background: var(--choice-black);
+  --seg: var(--choice-black);
+  background: var(--seg);
 }
 
 .red-half {
-  background: var(--choice-red);
+  --seg: var(--choice-red);
+  background: var(--seg);
 }
 
 /* Higher/Lower square: top/bottom halves + center equal square */
@@ -307,11 +368,13 @@
 }
 
 .higher-third {
-  background: var(--choice-higher);
+  --seg: var(--choice-higher);
+  background: var(--seg);
 }
 
 .lower-third {
-  background: var(--choice-lower);
+  --seg: var(--choice-lower);
+  background: var(--seg);
 }
 
 /* Inside/Outside square: left/right halves */
@@ -321,11 +384,13 @@
 }
 
 .inside-half {
-  background: var(--choice-inside);
+  --seg: var(--choice-inside);
+  background: var(--seg);
 }
 
 .outside-half {
-  background: var(--choice-outside);
+  --seg: var(--choice-outside);
+  background: var(--seg);
 }
 
 /* Nudge the arrows away from the seam so the equal badge cannot sit on top of
@@ -468,7 +533,9 @@
      A 14px white halo used to sit outside it, and on a badge this small the
      halo was wider than the badge: a glow, not a selection. The missed-guess
      ring round Three of a Kind's badge clears these 3px (choices-board.css,
-     .choice-column .equal-slot) - change one, change both. */
+     .choice-column .equal-slot) - change one, change both. It stays the warm
+     white when the sections went gold (E3): a gold ring on a gold badge does
+     not read. */
   box-shadow:
     0 4px 12px rgba(var(--shadow-rgb), 0.5),
     0 0 0 3px var(--ink),
@@ -483,10 +550,17 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
+  /* NOT CLIPPED (the owner's call, 2026-10-18): a quarter is small, so its
+     pick chip lies near the quarter's edge, and the square's clip cut it in
+     half. The quarters round their own outer corners (above) and the sheen
+     inherits the radius, so nothing else needed the clip - a chip may now sit
+     over the border and still read as a whole chip. */
+  overflow: visible;
 }
 
 .quad-btn {
-  background: var(--choice-black);
+  --seg: var(--choice-black);
+  background: var(--seg);
   font-size: var(--quad-fs);
 }
 

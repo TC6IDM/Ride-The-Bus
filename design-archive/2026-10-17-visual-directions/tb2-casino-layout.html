@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TB2 Casino layout</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* A printed casino layout: a baize inlay set into the wood, edged in brass, the
+     game's name printed in gold along its top and a gold box under each card. */
+  .inlay { position: absolute; z-index: 1; border-radius: 50%;
+    background: radial-gradient(rgba(255,255,255,0.03) 0.6px, transparent 0.8px) 0 0 / 3px 3px, radial-gradient(90% 90% at 60% 30%, var(--felt-lit), var(--felt-mid) 60%, var(--felt-deep));
+    box-shadow: 0 0 0 3px #b88a25, 0 0 0 5px #5a3f07, inset 0 6px 18px rgba(0,0,0,0.55); }
+  .print { position: absolute; z-index: 2; font: 900 var(--fs, 22px)/1 var(--font-display); color: rgba(var(--gold-rgb), 0.85); letter-spacing: 0.06em; text-align: center; }
+  .box { position: absolute; z-index: 2; border: 1.5px solid rgba(var(--gold-rgb), 0.7); border-radius: 8px; }
+  .shoe { position: absolute; z-index: 3; border-radius: 6px 18px 4px 4px; background: linear-gradient(170deg, #6b3a12, #3a1f08); box-shadow: 0 5px 10px rgba(0,0,0,0.5), inset 0 2px 0 rgba(255,220,170,0.3); }
+  .rackx { position: absolute; z-index: 3; display: flex; gap: 3px; padding: 5px; border-radius: 6px; background: linear-gradient(180deg, #6b3a12, #3a1f08); box-shadow: 0 5px 10px rgba(0,0,0,0.5); }
+  .rackx i { flex: 1; border-radius: 4px; background: repeating-linear-gradient(180deg, var(--c) 0 4px, rgba(255,255,255,0.7) 4px 5px, var(--c) 5px 7px, rgba(0,0,0,0.3) 7px 8px); }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div></div>
+<script src="kit/kit.js"></script><script src="kit/props.js"></script>
+<script>
+  const s = document.getElementById('s'), { g, el } = RTB, { deck, die, at } = PROPS, phone = RTB.size() === 'phone';
+  document.getElementById('board').style.backgroundImage = `url('kit/board-noprops-${RTB.size()}.webp')`;
+  const a = g.slots[0], z = g.slots[3];
+  // The inlay sits under the cards only; the guesses stay on the wood.
+  s.appendChild(at(el('div', 'inlay'), phone ? [8, 120, 374, 210] : [300, 104, 600, 240]));
+  const pr = el('div', 'print', 'RIDE THE BUS'); pr.style.setProperty('--fs', phone ? '15px' : '20px'); s.appendChild(at(pr, phone ? [95, 140, 200, 20] : [450, 126, 300, 26]));
+  g.slots.forEach((r) => s.appendChild(at(el('div', 'box'), [r.x - 5, r.y - 5, r.w + 10, r.h + 10])));
+  // The deck in a dealing shoe; the chips in the dealer's rack across the table.
+  const sh = el('div', 'shoe'); s.appendChild(at(sh, phone ? [70, 92, 54, 40] : [270, 160, 92, 66]));
+  deck(s, phone ? [82, 84, 30, 34] : [296, 142, 50, 58]);
+  const rk = el('div', 'rackx', ['#a80828', '#2a5ea8', '#2f8a4a', '#16181c', '#f2ede2'].map((c) => `<i style="--c:${c}"></i>`).join(''));
+  s.appendChild(at(rk, phone ? [282, 96, 92, 26] : [880, 150, 120, 44]));
+  die(s);
+  // The four face-down cards, back on top of the new surface.
+  g.slots.forEach((r) => { const b = el('div', 'back'); b.style.zIndex = 4; b.style.setProperty('--wm', phone ? '6.2px' : '7.6px'); s.appendChild(at(b, [r.x, r.y, r.w, r.h])); });
+</script>
+</body></html>

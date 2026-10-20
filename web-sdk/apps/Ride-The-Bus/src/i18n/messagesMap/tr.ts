@@ -171,8 +171,6 @@ export default {
 		'Son turları göster',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'Artı ve eksi bahsinizi belirler. Hızlı bahis menüsü için tutara tıklayın.',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'Şimşekler her modu Eşit seçimlerinizden önceki hâliyle gösterir. Her Eşit seçimi bir tane ekler.',
 	'Click to continue':
 		'Devam etmek için tıklayın',
 	'Click to skip':
@@ -335,6 +333,14 @@ export default {
 		'Şu kadar kayıpta dur',
 	'Stop on a single win of':
 		'Tek seferde şu kadar kazançta dur',
+	'Limits':
+		'Limitler',
+	'None set':
+		'Ayarlanmadı',
+	'Loss %s':
+		'Kayıp %s',
+	'Win %s':
+		'Kazanç %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'Klavyede 1–4 tuşları dört tahmini değiştirir.',
 	'It can stop by itself on a full game win, a loss limit or one big win.':
@@ -363,4 +369,10 @@ export default {
 		'Rastgele tahminler için zar atın',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'Tahminlerin yanındaki zar dördünü de rastgele seçer. Siz dağıtana kadar hiçbir şey oynanmaz.',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': 'Son kartı kendim açayım',
+	'Drag any corner to peel': 'Açmak için bir köşeyi sürükle',
+	'or press space bar to skip': 'veya atlamak için boşluk tuşuna bas',
+	'Wins': 'Kazanç',
+	'Wins up to': 'En fazla kazanç',
 };

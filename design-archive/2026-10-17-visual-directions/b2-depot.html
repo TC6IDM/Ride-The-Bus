@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>B2 The depot at night</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* The bus depot after hours: dark brick, a sodium lamp from the upper right,
+     a painted bay line on the floor and the route mural faded on the wall. */
+  .room {
+    background:
+      radial-gradient(55% 60% at 78% 10%, rgba(255, 176, 80, 0.22), rgba(255, 150, 60, 0.07) 45%, transparent 72%),
+      linear-gradient(180deg, transparent 0 70%, rgba(0,0,0,0.0) 70%, rgba(214, 167, 51, 0.0) 70%),
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.45) 0 1.5px, transparent 1.5px 22px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.38) 0 1.5px, transparent 1.5px 46px),
+      linear-gradient(180deg, #16201d 0%, #111916 62%, #0c100e 62.3%, #070908 100%);
+  }
+  .bricks-offset { background: repeating-linear-gradient(90deg, rgba(0,0,0,0.38) 0 1.5px, transparent 1.5px 46px) 23px 0 / auto 22px repeat-x;
+    -webkit-mask: repeating-linear-gradient(0deg, #000 0 22px, transparent 22px 44px); mask: repeating-linear-gradient(0deg, #000 0 22px, transparent 22px 44px); }
+  .floor { background:
+      linear-gradient(180deg, transparent 0 86%, rgba(214, 167, 51, 0.35) 86% 87.4%, transparent 87.4%),
+      linear-gradient(180deg, transparent 0 62.3%, rgba(255,255,255,0.025) 62.3%, transparent 100%); }
+  .mural { position: absolute; opacity: 0.13; }
+  .vignette { background: radial-gradient(90% 90% at 60% 45%, transparent 50%, rgba(0,0,0,0.6) 100%); }
+  .table, .ui { background-size: 100% 100%; }
+</style></head>
+<body>
+<div class="stage">
+  <div class="layer room"></div>
+  <div class="layer bricks-offset"></div>
+  <svg class="mural" id="mural" viewBox="0 0 600 60" aria-hidden="true">
+    <path d="M10 30H590" stroke="#e8dcc0" stroke-width="6"/>
+    <g fill="#16201d" stroke="#e8dcc0" stroke-width="5"><circle cx="40" cy="30" r="12"/><circle cx="170" cy="30" r="12"/><circle cx="300" cy="30" r="12"/><circle cx="430" cy="30" r="12"/></g>
+    <circle cx="560" cy="30" r="19" fill="#d6a733"/>
+  </svg>
+  <div class="layer floor"></div>
+  <div class="layer vignette"></div>
+  <div class="layer table" id="table"></div>
+  <div class="layer ui" id="ui"></div>
+</div>
+<script src="kit/kit.js"></script>
+<script>
+  const { size } = RTB, phone = size() === 'phone';
+  RTB.table(document.getElementById('table'), true);
+  document.getElementById('ui').style.backgroundImage = `url('kit/ui-${size()}.webp')`;
+  Object.assign(document.getElementById('mural').style, phone ? { display: 'none' } : { left: '34px', top: '30px', width: '360px' });
+</script>
+</body></html>

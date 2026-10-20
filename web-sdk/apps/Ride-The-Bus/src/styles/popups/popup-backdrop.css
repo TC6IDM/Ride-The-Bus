@@ -38,6 +38,21 @@
   animation: backdrop-in 200ms var(--ease-out) both;
 }
 
+/* Behind a bump (popup-bump.css) the board stays in view: the backdrop is
+   still there, because a tap anywhere else is how a bump closes, but it no
+   longer dims the table under one slider. */
+/* Behind the mode picker's dealt hand (popup-mode.css) it goes deeper: the
+   cards have no slab of their own to stand them off the table, and the
+   stepped-back hand behind a turned card is see-through, so at the panels'
+   0.5 the board and the bar read through them. */
+.popup-backdrop.deep {
+  background: rgba(var(--shadow-rgb), 0.8);
+}
+
+.popup-backdrop.clear {
+  background: transparent;
+  animation: none;
+}
 @keyframes backdrop-in {
   from {
     opacity: 0;

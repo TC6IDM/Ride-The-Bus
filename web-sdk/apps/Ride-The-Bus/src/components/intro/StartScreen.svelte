@@ -8,6 +8,8 @@
 	 * ReplayDetails.svelte, and what is left here is the part they really do
 	 * share: the overlay, the table behind it, and the phase that picks one.
 	 */
+	import { fade } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
 	import { logoAsset } from '../../game/ui/logoAsset.svelte';
 	import TableScene from '../board/TableScene.svelte';
 	import IntroPanels from './IntroPanels.svelte';
@@ -32,7 +34,17 @@
 	const props: Props = $props();
 </script>
 
-<div class="ss-overlay" style={`--logo-url: url(${logoAsset.url})`}>
+<!-- It LEAVES, rather than vanishing in one frame: a 240ms fade while its four
+     squares fly down to the board's (introHandoff.ts, the owner's pick C1).
+     |global, because the {#if} that removes it is the parent's. The overlay
+     stops taking taps the moment it starts to go, so a tap during the fade
+     reaches the board, not a screen that is leaving. -->
+<div
+	class="ss-overlay"
+	style={`--logo-url: url(${logoAsset.url})`}
+	out:fade|global={{ duration: 240, easing: cubicOut }}
+	onoutrostart={(event) => ((event.currentTarget as HTMLElement).style.pointerEvents = 'none')}
+>
 	<!-- The same table the game is played on, so the first thing a player sees
 	     is the place rather than a green gradient standing in for one. Its props
 	     are off: the intro card is wider than the table at every landscape size,

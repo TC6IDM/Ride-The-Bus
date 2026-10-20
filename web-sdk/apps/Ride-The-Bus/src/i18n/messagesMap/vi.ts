@@ -171,8 +171,6 @@ export default {
 		'Xem các vòng gần đây',
 	'Plus and minus set your bet. Click the amount for the quick-bet menu.':
 		'Cộng và trừ đặt tiền cược. Nhấp vào số tiền để mở menu cược nhanh.',
-	'Bolts show each mode before your Equal picks. Each Equal pick adds one.':
-		'Tia sét cho thấy mỗi chế độ trước các lựa chọn Bằng nhau của bạn. Mỗi lựa chọn Bằng nhau thêm một.',
 	'Click to continue':
 		'Nhấp để tiếp tục',
 	'Click to skip':
@@ -336,6 +334,14 @@ export default {
 		'Dừng khi thua',
 	'Stop on a single win of':
 		'Dừng khi một lần thắng đạt',
+	'Limits':
+		'Giới hạn',
+	'None set':
+		'Chưa đặt',
+	'Loss %s':
+		'Thua %s',
+	'Win %s':
+		'Thắng %s',
 	'On a keyboard, keys 1 to 4 change the four guesses.':
 		'Trên bàn phím, phím 1 đến 4 đổi bốn dự đoán.',
 	'It can stop by itself on a full game win, a loss limit or one big win.':
@@ -364,4 +370,10 @@ export default {
 		'Gieo xúc xắc để chọn dự đoán ngẫu nhiên',
 	'The die beside the guesses picks all four at random. Nothing is played until you deal.':
 		'Xúc xắc cạnh các dự đoán chọn ngẫu nhiên cả bốn. Không có gì được chơi cho đến khi bạn chia bài.',
+	// The squeeze (squeeze.svelte.ts): the autoplay panel's switch, the hint, and the sign's caption.
+	'Peel the last card myself': 'Tự lật lá bài cuối',
+	'Drag any corner to peel': 'Kéo một góc bất kỳ để lật',
+	'or press space bar to skip': 'hoặc nhấn phím cách để bỏ qua',
+	'Wins': 'Thắng',
+	'Wins up to': 'Thắng tới',
 };

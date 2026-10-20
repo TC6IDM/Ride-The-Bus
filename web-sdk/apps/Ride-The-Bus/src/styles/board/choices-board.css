@@ -92,6 +92,37 @@
   justify-content: center;
   gap: var(--gap);
   margin: 0;
+  /* Its own stacking context, so the layout below (z-index -1) lies under the
+     columns and never under the table behind the row. */
+  isolation: isolate;
+}
+
+/* ---- The betting layout (the owner's pick E3, 2026-10-17) -----------------
+   The four guesses are printed on a strip of baize set into the table, edged
+   in brass: a betting layout, where the squares are the boxes a bet is set
+   down in. Drawn by the FIRST column, out under all four, so it is one
+   continuous strip that costs no layout, no markup and no part of the die's
+   place beside the row; logical, so it starts from the right in Arabic. The
+   table's own felt tokens and the gold the badge and the frames share. Not on
+   Three of a Kind, whose two badges are made picks, not a layout. */
+.choice-row:not(.trips-row) > .choice-column:first-child::before {
+  --pad: calc(var(--ui) * 0.95);
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset-block: calc(var(--pad) * -1);
+  inset-inline-start: calc(var(--pad) * -1);
+  width: calc(var(--choice-size) * 4 + var(--gap) * 3 + var(--pad) * 2);
+  border-radius: calc(var(--ui) * 1.1);
+  background:
+    radial-gradient(rgba(var(--ink-rgb), 0.035) 0.6px, transparent 0.8px) 0 0 / 3px 3px,
+    radial-gradient(120% 140% at 70% 0%, var(--felt-lit), var(--felt-mid) 55%, var(--felt-deep));
+  box-shadow:
+    inset 0 0 0 2px rgba(var(--gold-rgb), 0.62),
+    inset 0 0 0 3px rgba(var(--shadow-rgb), 0.5),
+    inset 0 calc(var(--ui) * 0.35) calc(var(--ui) * 1.1) rgba(var(--shadow-rgb), 0.6),
+    0 1px 0 rgba(var(--ink-rgb), 0.18);
+  pointer-events: none;
 }
 
 /* Pin the column to the square's width. Otherwise the longest labels
@@ -132,10 +163,10 @@
   align-items: center;
   justify-content: center;
   min-height: 2.4em;
-  /* Was #fff6df, a fifth warm white kept in no token. --ink-cream is the warm
-     near-white the takeover prints its amount in; a hair lighter here, and one
-     value instead of two. */
-  color: var(--ink-cream);
+  /* Printed on the layout in its gold ink (E3), like the boxes' edges. It was
+     --ink-cream, the takeover amount's warm white; on the baize the labels are
+     part of what is printed, not captions floating over the table. */
+  color: var(--gold);
   text-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.7);
 }
 

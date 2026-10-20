@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>R2 Ledger drawer</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* A ledger that slides in from the right edge (a bottom sheet on phones), so the
+     board stays in view beside it. Each round reads at a glance as the bus route:
+     four stops, right / wrong / forgiven / never reached. */
+  .drawer { position: absolute; top: 0; right: 0; bottom: 0; width: 340px; padding: 18px 16px; border-radius: 16px 0 0 16px; transform: translateX(105%); transition: transform 320ms var(--ease-out); z-index: 20; }
+  .drawer.in { transform: none; }
+  @media (max-width: 600px) { .drawer { top: auto; left: 0; width: auto; height: 62%; border-radius: 16px 16px 0 0; transform: translateY(105%); } }
+  .drawer h4 { margin: 0 0 12px; font: 700 18px/1 var(--font-body); color: var(--ink-strong); display: flex; justify-content: space-between; }
+  .drawer h4 span:last-child { font-weight: 400; color: var(--ink-dim); }
+  .row { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; padding: 12px 2px; border-top: 1px solid var(--panel-edge); }
+  .fam { display: flex; align-items: center; gap: 8px; font: 800 13.5px/1 var(--font-body); color: var(--ink-strong); }
+  .fam i { width: 9px; height: 9px; border-radius: 50%; background: rgb(var(--fam)); }
+  .res { text-align: right; font: 800 13.5px/1 var(--font-body); color: var(--ink); }
+  .res small { display: block; margin-top: 4px; font: 700 12px/1 var(--font-body); color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+  .res.won { color: #3ddc84; }
+  .res.busted { color: var(--ink-dim); }
+  .route { position: relative; display: flex; justify-content: space-between; width: 150px; margin: 4px 0 2px; }
+  .route::before { content: ''; position: absolute; left: 6px; right: 6px; top: 6px; height: 2px; background: rgba(255,236,200,0.22); }
+  .route s { position: relative; width: 14px; height: 14px; border-radius: 50%; background: #1c1917; border: 2px solid rgba(255,236,200,0.3); text-decoration: none; font: 900 9px/10px var(--font-body); text-align: center; color: #0b0907; }
+  .route s.ok { background: #3ddc84; border-color: #3ddc84; }
+  .route s.no { background: #e0485c; border-color: #e0485c; }
+  .route s.fg { background: #f2d27a; border-color: #f2d27a; }
+  .picks { grid-column: 1 / -1; font: 600 11.5px/1 var(--font-body); color: var(--ink-dim); }
+  .ex { font: 700 10px/1 var(--font-body); color: #d6a733; }
+</style></head>
+<body>
+<div class="stage" id="s"><div class="layer bg" id="board"></div></div>
+<script src="kit/kit.js"></script><script src="kit/bar.js"></script><script src="kit/rounds.js"></script>
+<script>
+  const { wait, loop, size, el } = RTB, s = document.getElementById('s');
+  document.getElementById('board').style.backgroundImage = `url('kit/board-${size()}.webp')`;
+  const dot = (m) => `<s class="${m || ''}">${m === 'ok' ? '✓' : m === 'no' ? '×' : m === 'fg' ? '↺' : ''}</s>`;
+  const drawer = el('div', 'drawer panel', `<h4><span>Recent rounds</span><span>×</span></h4>${ROUNDS.map((r) => `
+    <div class="row" style="--fam:${r.rgb}"><span class="fam"><i></i>${r.fam} <span class="ex">${r.example ? 'example' : ''}</span></span>
+      <span class="res ${r.word === 'Won' ? 'won' : r.word === 'Busted' ? 'busted' : ''}">${r.word}${r.amt ? `<small>${r.amt} ${r.mult}</small>` : ''}</span>
+      <div class="route">${[0, 1, 2, 3].map((k) => dot(r.marks[k])).join('')}</div><span class="res"><small>Bet ${r.bet}</small></span>
+      <span class="picks">${r.picks}</span></div>`).join('')}`);
+  s.appendChild(drawer);
+  const f = BAR.finger(s);
+  loop(5600, async () => {
+    drawer.classList.remove('in'); await wait(600);
+    const [x, y] = BAR.centre('lastwin'); await f.press(x, y); drawer.classList.add('in');
+    await wait(3600); drawer.classList.remove('in');
+  });
+</script>
+</body></html>

@@ -12,12 +12,14 @@
      parts only the board draws - the row, the columns, the labels, the tip and
      the disabled state. responsive-board last. -->
 <script lang="ts">
+  import SplitFlap from './SplitFlap.svelte';
   import ChoiceIcon from '../icons/ChoiceIcon.svelte';
   import MarkIcon from '../icons/MarkIcon.svelte';
   import SuitIcon from '../icons/SuitIcon.svelte';
   import CardFace from '../cards/CardFace.svelte';
   import TicketFace from '../cards/TicketFace.svelte';
   import TableDie from './TableDie.svelte';
+  import PickChip from './PickChip.svelte';
   import {
     familyRules,
     guesses,
@@ -27,9 +29,15 @@
     setIoChoice,
     setSuitChoice,
     allChoicesMade,
+    betLevels,
+    betValue,
   } from '../../game/bet/betState.svelte';
+  import { chipForBet } from '../../game/bet/betChips';
+  import { chipAt, clickIn, placeChip, type ChipColumn, type ChipSpot } from '../../game/ui/chipSpot';
   import { FREE_CHOICE, isCleanSweep, stageCount } from '../../game/math/modes';
   import { round } from '../../game/round/roundState.svelte';
+  import { peelable, squeeze } from '../../game/round/squeeze.svelte';
+  import { jurisdiction } from '../../game/jurisdiction/jurisdiction.svelte';
   import type { Card } from '../../game/platform/typesBookEvent';
   import { t, type MessageKey } from '../../i18n/i18nDerived';
   import { suitName } from '../../game/ui/suitPaths';
@@ -37,7 +45,7 @@
   import { formatMultiplier, formatTicket } from '../../game/ui/formatMultiplier';
 
   import { choicesLocked } from '../../game/round/roundState.svelte';
-  import { DEAL_REST_MS, flipDurSec, paceMs, pacing } from '../../game/round/revealPacing.svelte';
+  import { DEAL_REST_MS, dealTiming, flipDurSec, paceMs, pacing } from '../../game/round/revealPacing.svelte';
   import { reducedMotion } from '../../game/celebration/celebrationGestures';
   import { sound } from '../../game/audio/sound';
   import { untrack } from 'svelte';
@@ -72,9 +80,9 @@
     insideTipTimer = setTimeout(() => { insideBlockedHover = false; }, INSIDE_TIP_MS);
   }
 
-  function onInsideClick() {
+  function onInsideClick(event: MouseEvent) {
     if (!insideIsPossible()) { sound.playBlocked(); flashInsideTip(); return; }
-    pick(setIoChoice, 'inside');
+    pick(setIoChoice, 'inside', 'io', event);
   }
 
   /**
@@ -341,6 +349,25 @@
       !(insideBlockedHover && !insideIsPossible()),
   );
 
+  /**
+   * WHERE EACH CHIP LIES - game/ui/chipSpot.ts has the rules (the owner's E3,
+   * 2026-10-17, and the notes of 2026-10-18). A pointer pick lands the chip
+   * near the click, inside the rules; anything else throws it by hand. Each
+   * column's spot is its own $derived on that column's pick, and the spot is
+   * remembered per pick, so the intro's chip and the board's are one.
+   */
+  const colorSpot = $derived(chipAt('color', guesses.color));
+  const hlSpot = $derived(chipAt('hl', guesses.hl));
+  const ioSpot = $derived(chipAt('io', guesses.io));
+  const suitSpot = $derived(chipAt('suit', guesses.suit));
+
+  /**
+   * WHICH CHIP: the bet's own (the owner's call, 2026-10-18). The bet menu's
+   * chip for the level the bet stands on, a typed amount rounding down - so a
+   * $25 bet sets down the $25 chip.
+   */
+  const betChip = $derived(chipForBet(betValue(), betLevels()));
+
   /** A card the round will never reach, once it has busted before it. */
   const isDead = (index: number) => round.bustedIndex !== null && index > round.bustedIndex;
 
@@ -388,10 +415,11 @@
    *
    * Two legs with a REST between them (DEAL_REST_MS, the owner's call on
    * 2026-10-01): each card is swept onto the deck, sits there a beat, and is
-   * dealt back out. The legs keep the split the single curve used to make -
-   * that curve passed the deck about 17% of the way through - and each eases
-   * out, because both now end at rest. The reveal holds card 1's turn back by
-   * the same beat.
+   * dealt back out. The gather is a third of the travel on the game's
+   * ease-in-out, the deal the rest on its ease-out, and the cards leave a
+   * clear beat apart (dealTiming, revealPacing): at the old 17% the gather
+   * read as a teleport and the four moved as one block (the owner,
+   * 2026-10-16). The reveal holds card 1's turn back by the same beat.
    *
    * ON THE PILE, NOT OVER IT (2026-10-01). A fixed scale(0.62) fitted the deck
    * at one size and hovered over it at others, and a full-brightness card on a
@@ -479,13 +507,15 @@
     settleDeal('cancel');
     const seconds = Number(flipDurSec());
     if (!(seconds > 0) || reducedMotion()) return;
-    const travel = seconds * 1300;
-    const gather = travel * 0.17;
+    const { travelMs: travel, gatherMs: gather, staggerMs: stagger } = dealTiming(seconds);
     const rest = paceMs(DEAL_REST_MS, 0);
     const duration = travel + rest;
     const landed = gather / duration;
     const leaves = (gather + rest) / duration;
-    const ease = 'cubic-bezier(0.3, 0.7, 0.3, 1)';
+    // tokens.css's --ease-in-out for a card crossing the table, --ease-out for
+    // one coming to rest in its slot. WAAPI cannot read a custom property.
+    const gatherEase = 'cubic-bezier(0.45, 0, 0.25, 1)';
+    const dealEase = 'cubic-bezier(0.2, 0.8, 0.3, 1)';
     /** Onto the pile's face, a beat there out of sight, and back out to where it stands. */
     const viaPile = (element: HTMLElement, pile: ReturnType<typeof pileFace>, delay: number) => {
       const at = restCentre(element);
@@ -501,9 +531,9 @@
       dealAnimations.push(
         element.animate(
           [
-            { transform: 'none', easing: ease },
+            { transform: 'none', easing: gatherEase },
             { transform: atPile, offset: landed },
-            { transform: atPile, offset: leaves, easing: ease },
+            { transform: atPile, offset: leaves, easing: dealEase },
             { transform: 'none' },
           ],
           { duration, delay },
@@ -527,12 +557,12 @@
       const pile = pileFace(deckFace, deck);
       slotEls.slice(0, slots).forEach((slot, index) => {
         const block = slot?.querySelector<HTMLElement>('.card-block');
-        if (block) viaPile(block, pile, index * seconds * 90);
+        if (block) viaPile(block, pile, index * stagger);
       });
     }
     const stack = document.querySelector('.p-tickets');
     const stackFace = stack?.querySelector('.tickets-face');
-    if (stack && stackFace && ticketEl) viaPile(ticketEl, pileFace(stackFace, stack), slots * seconds * 90);
+    if (stack && stackFace && ticketEl) viaPile(ticketEl, pileFace(stackFace, stack), slots * stagger);
   }
 
   /**
@@ -542,6 +572,38 @@
    */
   const slotEls: HTMLElement[] = $state([]);
   let tunnelAt = $state<{ x: number; y: number } | null>(null);
+
+  /**
+   * The squeeze (game/round/squeeze.svelte.ts): where the held card lies, and
+   * where it goes in front - centred over the board, a little under the card
+   * row, half as big again (a third on a portrait phone), with the sign that
+   * says what it needs and wins under it. Measured once, with the card at
+   * rest, as the squeeze begins; the controller is told the card's size for
+   * the fold.
+   */
+  type SqueezeBox = { x: number; y: number; w: number; h: number; dx: number; dy: number; k: number; cx: number; signY: number };
+  let squeezeBox = $state<SqueezeBox | null>(null);
+  $effect(() => {
+    const index = squeeze.index;
+    if (index === null) return;
+    const block = slotEls[index]?.querySelector('.card-block');
+    const rowEl = document.querySelector('.card-row');
+    const guesses = document.querySelector('.choice-row');
+    if (!block || !rowEl) return;
+    const b = block.getBoundingClientRect();
+    const r = rowEl.getBoundingClientRect();
+    const below = guesses ? guesses.getBoundingClientRect().top : b.bottom + b.height * 0.8;
+    const k = window.innerHeight > window.innerWidth ? 1.32 : 1.5;
+    const cx = r.left + r.width / 2;
+    const cy = b.bottom + (below - b.bottom) * 0.12;
+    squeeze.w = b.width;
+    squeeze.h = b.height;
+    squeezeBox = {
+      x: b.left, y: b.top, w: b.width, h: b.height,
+      dx: cx - (b.left + b.width / 2), dy: cy - (b.top + b.height / 2), k,
+      cx, signY: cy + (b.height * k) / 2 + b.height * 0.07,
+    };
+  });
   $effect(() => {
     const index = round.holdIndex;
     if (index === null) return;
@@ -560,8 +622,14 @@
    * round state and should not acquire one, so the guard belongs at the call
    * site, which is here.
    */
-  function pick<T>(set: (value: T) => void, value: T) {
+  function pick<T>(set: (value: T) => void, value: T, column?: ChipColumn, event?: MouseEvent) {
     if (choicesLocked()) { sound.playBlocked(); return; }
+    // A pointer pick sets its chip down where it was clicked (chipSpot.ts),
+    // BEFORE the pick changes, so the column's $derived reads the new spot.
+    if (column && event) {
+      const click = clickIn(event);
+      if (click) placeChip(column, String(value), click);
+    }
     set(value);
   }
 </script>
@@ -605,7 +673,9 @@
       <div
         class="card-slot"
         bind:this={slotEls[index]}
-        class:is-held={round.holdIndex === index}
+        class:is-held={round.holdIndex === index && squeeze.index !== index}
+        class:is-squeezed={squeeze.index === index}
+        class:instant-turn={squeeze.landed === index && card !== null}
         class:is-lit={round.lastCardHeld && index === slots - 1}
         style:--hold-climb={round.holdIndex === index ? `${round.holdClimbMs}ms` : undefined}
         class:is-dead={isDead(index)}
@@ -698,6 +768,10 @@
   </div>
 {/snippet}
 
+{#snippet pickChip(spot: ChipSpot | null)}
+  {#if spot}<PickChip {spot} chip={betChip} />{/if}
+{/snippet}
+
 {#snippet runningWinBar()}
   <!-- Every figure and state here is `readout`, the round a card-flip behind
        - see the note on it in the script. -->
@@ -709,6 +783,7 @@
     class:is-partial={readout.state === 'won' && !readout.lastWinNet}
     class:is-loss={readout.state === 'lost'}
     class:is-at-stake={readout.state === 'playing' && keepsNothing}
+    class:is-covered={squeeze.out}
   >
     <!-- "At stake" on a family that keeps nothing on a miss: Three of a Kind's
          $916.60 after card 2 read as money won, in win green, when a miss on
@@ -724,7 +799,9 @@
     <!-- No ceiling figure here before the first deal: "Pays up to X your bet"
          sat in this slot from 2026-09-27 and came out on the owner's call
          (2026-10-01). The picks' ceiling is stated in How to Play. -->
-    <span class="running-win-amount">{numberToCurrencyString(readout.runningWin)}</span>
+    <!-- On a split-flap board (SplitFlap.svelte): each character flips as it
+         changes, paced by the card's own turn. -->
+    <span class="running-win-amount"><SplitFlap text={numberToCurrencyString(readout.runningWin)} /></span>
     <!-- Always rendered (a non-breaking space when there is nothing to say) so
          the multiplier appearing at the end of a round never grows the bar and
          shoves the cards / choices around. WRITTEN AS '\u00a0', NOT AS THE
@@ -776,8 +853,8 @@
          high. See .choice-label in choices-board.css. -->
     <span class="choice-label"><span>{t('Color')}</span></span>
     <div class="choice-square color-square" role="group" aria-label={t('Pick a color')}>
-      <button type="button" class="half-btn black-half" class:selected={guesses.color === 'black'} aria-pressed={guesses.color === 'black'} onclick={() => pick(setColorChoice, 'black')} aria-disabled={choicesLocked()} aria-label={t('Black')}></button>
-      <button type="button" class="half-btn red-half" class:selected={guesses.color === 'red'} aria-pressed={guesses.color === 'red'} onclick={() => pick(setColorChoice, 'red')} aria-disabled={choicesLocked()} aria-label={t('Red')}></button>
+      <button type="button" class="half-btn black-half" class:selected={guesses.color === 'black'} aria-pressed={guesses.color === 'black'} onclick={(event) => pick(setColorChoice, 'black', 'color', event)} aria-disabled={choicesLocked()} aria-label={t('Black')}>{#if guesses.color === 'black'}{@render pickChip(colorSpot)}{/if}</button>
+      <button type="button" class="half-btn red-half" class:selected={guesses.color === 'red'} aria-pressed={guesses.color === 'red'} onclick={(event) => pick(setColorChoice, 'red', 'color', event)} aria-disabled={choicesLocked()} aria-label={t('Red')}>{#if guesses.color === 'red'}{@render pickChip(colorSpot)}{/if}</button>
     </div>
   </div>
 
@@ -787,9 +864,9 @@
          reads "Higher /" over "Lower", never "Higher" over "/ Lower". -->
     <span class="choice-label"><span>{t('Higher')}&nbsp;/ {t('Lower')}</span></span>
     <div class="choice-square hl-square" role="group" aria-label={t('Higher, lower, or equal')}>
-      <button type="button" class="third-btn higher-third" class:selected={guesses.hl === 'higher'} aria-pressed={guesses.hl === 'higher'} onclick={() => pick(setHlChoice, 'higher')} aria-disabled={choicesLocked()} aria-label={t('Higher')}>{@render iconTriangleUp()}</button>
-      <button type="button" class="third-btn lower-third" class:selected={guesses.hl === 'lower'} aria-pressed={guesses.hl === 'lower'} onclick={() => pick(setHlChoice, 'lower')} aria-disabled={choicesLocked()} aria-label={t('Lower')}>{@render iconTriangleDown()}</button>
-      <button type="button" class="equal-btn" class:selected={guesses.hl === 'equal'} aria-pressed={guesses.hl === 'equal'} onclick={() => pick(setHlChoice, 'equal')} aria-disabled={choicesLocked()} aria-label={t('Equal')}>{@render iconEquals()}</button>
+      <button type="button" class="third-btn higher-third" class:selected={guesses.hl === 'higher'} aria-pressed={guesses.hl === 'higher'} onclick={(event) => pick(setHlChoice, 'higher', 'hl', event)} aria-disabled={choicesLocked()} aria-label={t('Higher')}>{@render iconTriangleUp()}{#if guesses.hl === 'higher'}{@render pickChip(hlSpot)}{/if}</button>
+      <button type="button" class="third-btn lower-third" class:selected={guesses.hl === 'lower'} aria-pressed={guesses.hl === 'lower'} onclick={(event) => pick(setHlChoice, 'lower', 'hl', event)} aria-disabled={choicesLocked()} aria-label={t('Lower')}>{@render iconTriangleDown()}{#if guesses.hl === 'lower'}{@render pickChip(hlSpot)}{/if}</button>
+      <button type="button" class="equal-btn" class:selected={guesses.hl === 'equal'} aria-pressed={guesses.hl === 'equal'} onclick={(event) => pick(setHlChoice, 'equal', 'hl', event)} aria-disabled={choicesLocked()} aria-label={t('Equal')}>{@render iconEquals()}{#if guesses.hl === 'equal'}{@render pickChip(hlSpot)}{/if}</button>
     </div>
   </div>
 
@@ -808,9 +885,9 @@
         onmouseleave={() => (insideBlockedHover = false)}
         onfocus={() => (insideBlockedHover = true)}
         onblur={() => (insideBlockedHover = false)}
-      >{@render iconInside()}</button>
-      <button type="button" class="half-btn outside-half" class:selected={guesses.io === 'outside'} aria-pressed={guesses.io === 'outside'} onclick={() => pick(setIoChoice, 'outside')} aria-disabled={choicesLocked()} aria-label={t('Outside')}>{@render iconOutside()}</button>
-      <button type="button" class="equal-btn" class:selected={guesses.io === 'equal'} aria-pressed={guesses.io === 'equal'} onclick={() => pick(setIoChoice, 'equal')} aria-disabled={choicesLocked()} aria-label={t('Equal')}>{@render iconEquals()}</button>
+      >{@render iconInside()}{#if guesses.io === 'inside'}{@render pickChip(ioSpot)}{/if}</button>
+      <button type="button" class="half-btn outside-half" class:selected={guesses.io === 'outside'} aria-pressed={guesses.io === 'outside'} onclick={(event) => pick(setIoChoice, 'outside', 'io', event)} aria-disabled={choicesLocked()} aria-label={t('Outside')}>{@render iconOutside()}{#if guesses.io === 'outside'}{@render pickChip(ioSpot)}{/if}</button>
+      <button type="button" class="equal-btn" class:selected={guesses.io === 'equal'} aria-pressed={guesses.io === 'equal'} onclick={(event) => pick(setIoChoice, 'equal', 'io', event)} aria-disabled={choicesLocked()} aria-label={t('Equal')}>{@render iconEquals()}{#if guesses.io === 'equal'}{@render pickChip(ioSpot)}{/if}</button>
     </div>
     <!-- Why Inside is off, in words. Rendered here rather than inside the
          square because .choice-square is overflow:hidden and would clip it
@@ -825,10 +902,10 @@
   <div class="choice-column" class:is-missed={round.bustedIndex === 3} class:is-forgiven={round.forgivenIndex === 3}>
     <span class="choice-label"><span>{t('Suit')}</span></span>
     <div class="choice-square suit-square" role="group" aria-label={t('Pick a suit')}>
-      <button type="button" class="quad-btn red-suit" class:selected={guesses.suit === 'heart'} aria-pressed={guesses.suit === 'heart'} onclick={() => pick(setSuitChoice, 'heart')} aria-disabled={choicesLocked()} aria-label={t('Heart')}><SuitIcon suit="heart" /></button>
-      <button type="button" class="quad-btn" class:selected={guesses.suit === 'spade'} aria-pressed={guesses.suit === 'spade'} onclick={() => pick(setSuitChoice, 'spade')} aria-disabled={choicesLocked()} aria-label={t('Spade')}><SuitIcon suit="spade" /></button>
-      <button type="button" class="quad-btn" class:selected={guesses.suit === 'club'} aria-pressed={guesses.suit === 'club'} onclick={() => pick(setSuitChoice, 'club')} aria-disabled={choicesLocked()} aria-label={t('Club')}><SuitIcon suit="club" /></button>
-      <button type="button" class="quad-btn red-suit" class:selected={guesses.suit === 'diamond'} aria-pressed={guesses.suit === 'diamond'} onclick={() => pick(setSuitChoice, 'diamond')} aria-disabled={choicesLocked()} aria-label={t('Diamond')}><SuitIcon suit="diamond" /></button>
+      <button type="button" class="quad-btn red-suit" class:selected={guesses.suit === 'heart'} aria-pressed={guesses.suit === 'heart'} onclick={(event) => pick(setSuitChoice, 'heart', 'suit', event)} aria-disabled={choicesLocked()} aria-label={t('Heart')}><SuitIcon suit="heart" />{#if guesses.suit === 'heart'}{@render pickChip(suitSpot)}{/if}</button>
+      <button type="button" class="quad-btn" class:selected={guesses.suit === 'spade'} aria-pressed={guesses.suit === 'spade'} onclick={(event) => pick(setSuitChoice, 'spade', 'suit', event)} aria-disabled={choicesLocked()} aria-label={t('Spade')}><SuitIcon suit="spade" />{#if guesses.suit === 'spade'}{@render pickChip(suitSpot)}{/if}</button>
+      <button type="button" class="quad-btn" class:selected={guesses.suit === 'club'} aria-pressed={guesses.suit === 'club'} onclick={(event) => pick(setSuitChoice, 'club', 'suit', event)} aria-disabled={choicesLocked()} aria-label={t('Club')}><SuitIcon suit="club" />{#if guesses.suit === 'club'}{@render pickChip(suitSpot)}{/if}</button>
+      <button type="button" class="quad-btn red-suit" class:selected={guesses.suit === 'diamond'} aria-pressed={guesses.suit === 'diamond'} onclick={(event) => pick(setSuitChoice, 'diamond', 'suit', event)} aria-disabled={choicesLocked()} aria-label={t('Diamond')}><SuitIcon suit="diamond" />{#if guesses.suit === 'diamond'}{@render pickChip(suitSpot)}{/if}</button>
     </div>
   </div>
   <!-- The table die: all four picks at random, dealt only when the player
@@ -846,15 +923,74 @@
      stay lit. -->
 <div
   class="tunnel"
-  class:is-closing={round.holdIndex !== null && round.holdTunnel}
+  class:is-closing={round.holdIndex !== null && round.holdTunnel && squeeze.index === null}
   style:--tv-x={tunnelAt ? `${tunnelAt.x}px` : undefined}
   style:--tv-y={tunnelAt ? `${tunnelAt.y}px` : undefined}
   style:--hold-climb={`${round.holdClimbMs}ms`}
   aria-hidden="true"
 ></div>
 
+<!-- The squeeze (squeeze.svelte.ts, squeeze.css): the held card out in front,
+     a corner lifted to show the real face underneath (cardFold.ts), then
+     turned and taken home. Drawn with the slots' own card classes, so it is
+     the same card. Decorative to a screen reader: the slot's card, and the
+     round's announcement, say what it is once it lands. -->
+{#if squeeze.index !== null && squeezeBox}
+  <div class="squeeze-dark" class:on={squeeze.dark && squeeze.out} aria-hidden="true"></div>
+  <div
+    class="squeeze"
+    class:out={squeeze.out}
+    class:grabbable={squeeze.grabbable}
+    style:left={`${squeezeBox.x}px`}
+    style:top={`${squeezeBox.y}px`}
+    style:width={`${squeezeBox.w}px`}
+    style:height={`${squeezeBox.h}px`}
+    style:--sq-dx={`${squeezeBox.dx}px`}
+    style:--sq-dy={`${squeezeBox.dy}px`}
+    style:--sq-k={squeezeBox.k}
+    style:--flip-dur={`${squeeze.turnMs}ms`}
+    style:--sq-home={`${squeeze.homeMs}ms`}
+    use:peelable
+    aria-hidden="true"
+  >
+    <div class="card-inner" class:flipped={squeeze.turned}>
+      <div class="card-back" style:clip-path={squeeze.fold.back ?? undefined}></div>
+      <div class="card-front">
+        {#if squeeze.card}<CardFace rank={squeeze.card.rank} suit={squeeze.card.suit} />{/if}
+      </div>
+    </div>
+    {#if squeeze.fold.flap && squeeze.card}
+      <div class="squeeze-flapwrap">
+        <div class="squeeze-flap" style:transform={squeeze.fold.flap.transform} style:clip-path={squeeze.fold.flap.clip}>
+          <CardFace rank={squeeze.card.rank} suit={squeeze.card.suit} />
+        </div>
+      </div>
+    {/if}
+  </div>
+  <!-- What it needs, and what it wins if it does: from the stake, in money,
+       the readout's unit. "Wins", never "pays" - Stake's social table bans
+       pay/pays, and win/wins is its replacement, so one word serves both. -->
+  <div class="squeeze-sign" class:on={squeeze.out && !squeeze.turned} style:left={`${squeezeBox.cx}px`} style:top={`${squeezeBox.signY}px`} aria-hidden="true">
+    <span class="squeeze-need">
+      {#if squeeze.needIsSuit}<span class="squeeze-suit" class:red={squeeze.need === 'heart' || squeeze.need === 'diamond'}><SuitIcon suit={squeeze.need} /></span>{:else}<b class="squeeze-rank">{squeeze.need}</b>{/if}
+      {squeeze.upTo ? t('Wins up to') : t('Wins')}
+    </span>
+    <b class="squeeze-wins">{numberToCurrencyString(squeeze.wins)}</b>
+  </div>
+  {#if squeeze.grabbable}
+    <!-- Space peels it too (squeeze.svelte.ts) - said only where there is a
+         spacebar the game may use: not on a touch-only screen, and not where
+         the operator has barred the shortcut. -->
+    <p class="squeeze-hint" style:left={`${squeezeBox.cx}px`} style:top={`${squeezeBox.signY + squeezeBox.h * 0.32}px`}>
+      <span>{t('Drag any corner to peel')}</span>
+      {#if !jurisdiction.spacebarDisabled()}<span class="squeeze-hint-key">{t('or press space bar to skip')}</span>{/if}
+    </p>
+  {/if}
+{/if}
+
 <style>
   @import '../../styles/board/cards.css';
+  @import '../../styles/board/squeeze.css';
   @import '../../styles/board/choices.css';
   @import '../../styles/board/choices-board.css';
   /* Board only: the start screen never disables a choice. */

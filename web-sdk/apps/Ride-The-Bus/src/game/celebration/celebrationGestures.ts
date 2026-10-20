@@ -1,5 +1,8 @@
 /**
- * How the takeover MOVES: the pop, the hand's hop, and the reduced-motion gate.
+ * How the takeover MOVES: the hand's hop and its breath, and the reduced-motion
+ * gate. (The
+ * title's and the amount's scale pops went with the sign and the split-flap
+ * board, 2026-10-18: the sign rolls and the flaps turn instead.)
  *
  * Every one of these takes an element or nothing, so none of them needed to be
  * inside the component. Two carry an argument worth keeping intact:
@@ -15,20 +18,10 @@
  *   property. See the note on hopFan itself.
  */
 
-export function promoteTitle(titleEl: HTMLElement | undefined) {
-	pop(titleEl, 1.22, 560);
-}
-
-/** The same treatment for the amount as it settles on a band ceiling. */
-export function popAmount(amountEl: HTMLElement | undefined) {
-	pop(amountEl, 1.12, 520);
-}
-
 /**
  * The hand hops on every promotion.
  *
- * Driven through element.animate() for the same reason promoteTitle is, and
- * it is the same trap: the cards are already carrying wc-fan-deal with
+ * Driven through element.animate(), because it is a trap: the cards are already carrying wc-fan-deal with
  * `both`, so setting `animation` on them from a class would REPLACE that fill
  * and drop each card back to its undealt transform the moment the hop ended.
  * A Web Animations call composites over the CSS animation instead of
@@ -71,6 +64,42 @@ export function hopFan(fanEl: HTMLElement | undefined) {
 }
 
 /**
+ * THE HAND BREATHES (the owner's call, 2026-10-18): a slow rise and fall for
+ * as long as the takeover is up, each card a little behind the one before so
+ * the hand moves as a held thing rather than as one block. It starts once the
+ * hand has been dealt out of the board's slots, and handFlight cancels it
+ * before flying the hand home.
+ *
+ * Through the same composite: 'add' as the hop and for the same reason - the
+ * fan's tilt and offset live in the transform this layers on, and the hop and
+ * the breath add to each other rather than fighting over it. The ticket on a
+ * Last Stop hand breathes with the middle of it, as it hops.
+ */
+export function breatheHand(fanEl: HTMLElement | undefined) {
+	if (!fanEl || reducedMotion()) return;
+	const breathe = (element: HTMLElement, delay: number) =>
+		element.animate(
+			[{ transform: 'translateY(0)' }, { transform: 'translateY(calc(var(--ui) * -0.45))' }],
+			{
+				duration: BREATH_MS,
+				delay,
+				direction: 'alternate',
+				iterations: Infinity,
+				easing: 'cubic-bezier(0.45, 0, 0.55, 1)',
+				composite: 'add',
+			},
+		);
+	const cards = fanEl.querySelectorAll<HTMLElement>('.wc-fan-card');
+	cards.forEach((card, i) => breathe(card, i * BREATH_STAGGER_MS));
+	const ticket = fanEl.querySelector<HTMLElement>('.wc-fan-ticket');
+	if (ticket) breathe(ticket, ((cards.length - 1) / 2) * BREATH_STAGGER_MS);
+}
+
+/** One way of the breath, and the beat between one card and the next. */
+export const BREATH_MS = 1700;
+export const BREATH_STAGGER_MS = 210;
+
+/**
  * Read from the stylesheet rather than restated here. The literal that used
  * to sit in this call was a second, slightly different overshoot living one
  * file away from --ease-pop - the same near-duplicate-value drift that made
@@ -83,19 +112,6 @@ export function easePop(): string {
 		.trim();
 	return declared || 'ease-out';
 }
-
-export function pop(element: HTMLElement | undefined, scale: number, duration: number) {
-	if (!element || reducedMotion()) return;
-	element.animate(
-		[
-			{ transform: 'scale(1)' },
-			{ transform: `scale(${scale})`, offset: 0.38 },
-			{ transform: 'scale(1)' },
-		],
-		{ duration, easing: easePop() },
-	);
-}
-
 
 export const reducedMotion = () =>
 	typeof window !== 'undefined' &&

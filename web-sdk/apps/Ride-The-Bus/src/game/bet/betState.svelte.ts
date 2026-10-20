@@ -321,6 +321,21 @@ export function setAllGuesses(next: {
   guesses.suit = next.suit;
 }
 
+/**
+ * The intro's picks become the board's (the owner's call, 2026-10-18: "when
+ * the user presses click to continue, their default selected options are the
+ * ones that they selected in this help screen"). Unlike setAllGuesses, a
+ * column may be left empty - the player cleared it on the intro, and the
+ * board shows it empty too. Equal-then-Inside is refused here as everywhere:
+ * Inside is dropped rather than the pair kept.
+ */
+export function adoptGuesses(next: { color: string | null; hl: string | null; io: string | null; suit: string | null }) {
+  guesses.color = next.color as ColorChoice;
+  guesses.hl = next.hl as HigherLowerChoice;
+  guesses.io = (isCombinationPlayable(guesses.hl, next.io as InsideOutsideChoice) ? next.io : null) as InsideOutsideChoice;
+  guesses.suit = next.suit as SuitChoice;
+}
+
 // Bring a raw bet into what the RGS will actually accept.
 //
 // Per the RGS spec ("Bet Levels") the predefined betLevels are only
