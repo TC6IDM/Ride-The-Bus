@@ -17,11 +17,11 @@ Filenames are **mandated** by Stake and must not be changed.
 
 | File | Requirement | Ours |
 |---|---|---|
-| `RideTheBus-BG.jpg` | Environmental background, high-resolution PNG or JPG | 1920 × 1280, 152 KB |
+| `RideTheBus-BG.jpg` | Environmental background, high-resolution PNG or JPG | 1920 × 1280, 173 KB |
 | `RideTheBus-FG.png` | Feature character / key item, transparent PNG | 1600 × 1600, 1.2 MB |
 | `TakeoverCasino-Logo.png` | Provider logo, transparent PNG, legible small | 710 × 710, 726 KB |
 
-**Background + foreground must not exceed 3 MB combined.** Ours are 1.32 MB,
+**Background + foreground must not exceed 3 MB combined.** Ours are 1.34 MB,
 and `scripts/tile-art.mjs` refuses to write a pair over the limit. There is no
 documented cap on the provider logo.
 
@@ -30,7 +30,9 @@ documented cap on the provider logo.
 photographs `?dev_tile=fg` - the J, Q, K and house Ace the board deals, the
 deck's back and two chips, on a transparent ground - and the live table with
 the board's furniture hidden. Change the cards or the table and re-run it; the
-tile cannot drift from the game. `--out <dir>` renders somewhere else to look
+tile cannot drift from the game. Last rendered 2026-10-20, after the visual
+overhaul: the back room behind the table, and the chips in the guess chip's
+face. `--out <dir>` renders somewhere else to look
 first; `--cups` puts the party cups back on the table (left off by default:
 drinking props on the one image a player sees before choosing the game sit
 closest to Stake's underage-appeal line). The generated pair these replaced is
