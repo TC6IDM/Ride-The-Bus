@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Ride The Bus Directions</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -112,7 +113,8 @@
   </section>
 
   <nav class="tabs" role="tablist" aria-label="Pieces">
-    <button role="tab" data-tab="W" aria-selected="true">New · Win takeover<span>4+1</span></button>
+    <button role="tab" data-tab="CL" aria-selected="true">New · Close-call hold<span>4+1</span></button>
+    <button role="tab" data-tab="W" aria-selected="false">Win takeover<span>4+1</span></button>
     <button role="tab" data-tab="EQ" aria-selected="false">New · E3's "=" pick<span>5+1</span></button>
     <button role="tab" data-tab="A" aria-selected="false">A · Loader<span>3+1</span></button>
     <button role="tab" data-tab="C" aria-selected="false">C + F · Hand-offs<span>2+1</span></button>
@@ -135,6 +137,7 @@
   <main id="panes"></main>
 </div>
 
+<script src="kit/clitems.js"></script>
 <script>
   const ITEMS = {
     EQ: { title: 'E3: where the chip goes, and four ways to mark "="', intro: 'Your rule, applied to every half: a pick lights its section (brighter, ringed in gold) and the chip sits on that section\'s outer corner, half over the frame, never on the symbol. "=" is the open question, so here are four ways. Each plays two passes: Red, "=" on Higher/Lower, Outside, Spade; then Black, Higher, "=" on Inside/Outside, Heart. The badge is the board\'s own rounded square, half a guess square.',
@@ -529,12 +532,14 @@
           risk: 'On Last Stop a ticket already sits on the hand (your call, 2026-09-30), which makes two tickets on one screen, so one has to give. Stamp words in 17 languages (German, Finnish and Russian run long in capitals). "× your bet" may be a new string. Sound: a punch click per rung and a stamp thump at the end.' },
       ] },
   });
+  Object.assign(ITEMS, window.CL_ITEMS || {});
   const panes = document.getElementById('panes');
   // Every tab opens on the game as it is today, captured off the live build.
   const ORIG = { EQ: 'e3-chip-on-box.html', A: 'today.html?f=loader', C: 'today.html?f=intro:1800,board:2200', E: 'today.html?f=board', G: 'today.html?f=mode', B: 'today.html?f=board',
     D: 'd0-faces-today.html', T: 'today.html?f=turbo', S: 'today.html?f=sound', BT: 'today.html?f=bet', R: 'today.html?f=history', P: 'today.html?f=autospin',
     H: 'today.html?f=info', X: 'today.html?f=board', TB: 'today.html?f=board', RW: 'today.html?f=midround', W: 'today.html?ext=png&f=tk-epic:1500,tk-max:2600' };
   const ORIG_NOTE = { W: 'Today, captured off the live build: the same Classic hand opening on Epic, then promoted to Max. Continue cuts back to the board in one frame.', EQ: 'E3 as you picked it, before your chip rule. Its chips land on the marks.', C: 'The intro, then a hard cut to the board, as it plays now.', D: 'Today\'s faces as CardFace draws them: the same hand the D directions deal.' };
+  Object.entries(window.CL_ORIG || {}).forEach(([k, o]) => ITEMS[k].dirs.unshift({ code: 'Original', name: 'Today', src: o.src, orig: true, note: o.note }));
   Object.entries(ORIG).forEach(([k, src]) => ITEMS[k].dirs.unshift({ code: 'Original', name: 'Today', src, orig: true, note: ORIG_NOTE[k] || 'The game as it is now, captured from the live build at both sizes.' }));
   Object.assign(ITEMS.EQ.dirs[0], { name: 'E3 as you picked it' });
   Object.assign(ITEMS.DL.dirs[0], { code: 'Original', name: 'Today: the blue disc', orig: true, note: 'Your settled call (2026-10-06), unchanged and being pressed. My pick.' });
@@ -573,7 +578,7 @@
     render(b.dataset.tab);
     try { localStorage.setItem('rtb-p2-tab', b.dataset.tab); } catch (e) {}
   }));
-  let start = 'W';
+  let start = 'CL';
   if (/^#[A-Z]{1,2}$/.test(location.hash) && ITEMS[location.hash.slice(1)]) start = location.hash.slice(1);
   document.querySelectorAll('.tabs button').forEach((x) => x.setAttribute('aria-selected', String(x.dataset.tab === start)));
   render(start);

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CL2 House lights down</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* The room's lights go down and two things stay lit: the card, under one
+     beam from the upper right (the takeover's beam), and the pick it has to
+     match, the Hearts quarter with its chip, in a pool of its own. The
+     readout stays lit too and turns over to what the card pays. Lighting
+     only: no new object on the table. On the strike the house lights come
+     straight back up. */
+  .hm-card { transition: transform 130ms cubic-bezier(0.55, 0, 1, 0.45); }
+  .hm-card.held { transform: translateY(calc(var(--u) * -2.5)) rotate(-1deg); transition: transform var(--climb) linear; }
+
+  .dark { position: absolute; inset: 0; z-index: 5; pointer-events: none; background: rgba(4, 3, 2, 0.84); opacity: 0;
+    transition: opacity 170ms var(--ease-out); clip-path: inset(0 0 calc(100% - var(--pb)) 0); }
+  .dark.on { opacity: 1; transition: opacity calc(var(--climb) * 0.6) linear; }
+
+  /* The pool on the needed pick: the board itself, re-shown over the dark
+     through a soft round mask, so it is the real square, lit. */
+  .pool { position: absolute; inset: 0; z-index: 6; pointer-events: none; background: center / 100% 100% no-repeat; opacity: 0;
+    -webkit-mask-image: radial-gradient(circle var(--pr) at var(--px) var(--py), #000 55%, transparent 100%);
+            mask-image: radial-gradient(circle var(--pr) at var(--px) var(--py), #000 55%, transparent 100%);
+    transition: opacity 170ms var(--ease-out); }
+  .pool.on { opacity: 1; transition: opacity calc(var(--climb) * 0.6) linear; }
+
+  /* One beam from the upper right onto the card: warm, low, straight-edged. */
+  .beam { position: absolute; inset: 0; z-index: 5; pointer-events: none; opacity: 0;
+    background: linear-gradient(200deg, rgba(255, 236, 200, 0.16), rgba(255, 236, 200, 0.05) 60%, rgba(255, 236, 200, 0));
+    clip-path: polygon(var(--b1) 0, var(--b2) 0, var(--b4) var(--by), var(--b3) var(--by));
+    transition: opacity 170ms var(--ease-out); }
+  .beam.on { opacity: 1; transition: opacity calc(var(--climb) * 0.6) linear; }
+  .floor { position: absolute; z-index: 5; pointer-events: none; border-radius: 50%; opacity: 0; transform: translate(-50%, -50%);
+    background: radial-gradient(closest-side, rgba(255, 236, 200, 0.2), rgba(255, 236, 200, 0)); transition: opacity 170ms var(--ease-out); }
+  .floor.on { opacity: 1; transition: opacity calc(var(--climb) * 0.6) linear; }
+  .hm-read, .hm-bus { z-index: 7 !important; }
+</style></head>
+<body>
+<div class="stage" id="s"></div>
+<script src="kit/kit.js"></script><script src="kit/holdmock.js"></script>
+<script>
+  const H = HOLDMOCK, { G, card, s, phone } = H, el = RTB.el, root = document.documentElement.style;
+  root.setProperty('--u', G.u + 'px'); root.setProperty('--climb', H.CLIMB + 'ms'); root.setProperty('--pb', G.playBottom + 'px');
+  const dark = el('div', 'dark'); s.appendChild(dark);
+  const cx = G.slot.x + G.slot.w / 2, foot = G.slot.y + G.slot.h;
+  const beam = el('div', 'beam'); s.appendChild(beam);
+  Object.entries({ '--b1': cx + G.slot.w * 0.9 + 'px', '--b2': cx + G.slot.w * 1.9 + 'px', '--b3': cx - G.slot.w * 0.85 + 'px', '--b4': cx + G.slot.w * 0.85 + 'px', '--by': foot + G.slot.h * 0.12 + 'px' })
+    .forEach(([k, v]) => beam.style.setProperty(k, v));
+  const floor = el('div', 'floor'); Object.assign(floor.style, { left: cx + 'px', top: foot + 6 + 'px', width: G.slot.w * 2.1 + 'px', height: G.slot.w * 0.6 + 'px' }); s.appendChild(floor);
+  const pool = el('div', 'pool'); pool.style.backgroundImage = `url('kit/hold-bg-${RTB.size()}.webp')`;
+  pool.style.setProperty('--px', G.heart.x + G.heart.w / 2 + 'px'); pool.style.setProperty('--py', G.heart.y + G.heart.h / 2 + 'px');
+  pool.style.setProperty('--pr', G.heart.w * 1.15 + 'px'); s.appendChild(pool);
+  const lit = [dark, beam, floor, pool];
+  H.play({
+    reset() { card.classList.remove('held'); lit.forEach((n) => n.classList.remove('on')); },
+    hold() {
+      card.classList.add('held'); lit.forEach((n) => n.classList.add('on'));
+      H.label('♥ pays'); H.flaps('$1,354.20');
+    },
+    strike() { card.classList.remove('held'); lit.forEach((n) => n.classList.remove('on')); },
+  });
+</script>
+</body></html>

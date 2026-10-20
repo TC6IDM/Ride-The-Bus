@@ -34,6 +34,7 @@ been superseded by C and A.
 | Deal button | **Original** (`dl1-deal-today.html`) | none | DL2 `dl2-deal-bell`, DL3 `dl3-deal-shoe`, DL4 `dl4-deal-puck` |
 | Table props | **Original** | none | TB1 `tb1-fewer-props`, TB2 `tb2-casino-layout`, TB3 `tb3-fare-route` |
 | Running total | **RW1** `rw1-splitflap.html` | none | RW2 `rw2-bus-carries`, original `today.html?f=midround` |
+| Close-call hold (2026-10-19) | **CL3, the squeeze**, *modified* and **built 2026-10-20**: `cl3b-squeeze-peel.html` is the latest mock | The peel shows the real card. The squeeze waits until the card is in front. Auto turn by default, peeling from the bottom-left. A setting in the autoplay menu lets the player peel it from any corner: past the line it turns, shows the face, and goes home | CL1 `cl1-last-stop`, CL2 `cl2-house-lights`, original `today.html?f=hold0:640,hold1:450,hold2:470,hold3:460,hold4:520,hold5:1900` |
 | Win takeover (2026-10-18) | **W1 + chips**, *modified* (`w1d-chips-flat.html` is the last mock) | See "The win takeover" below: four rounds of notes | W1 without chips `w1-departures`, W2 `w2-payout`, W3 `w3-ticket`, the earlier chip passes `w1b-chips` and `w1c-chips-stream`, original `today.html?ext=png&f=tk-epic:1500,tk-max:2600` |
 
 The mock-ups are scratch HTML on a copy of the tokens and photographs of the
@@ -166,3 +167,48 @@ Passed on in this round:
 - **The bet-coloured chip on the intro:** passed on for plain red.
 - **A future idea (not to be built yet):** a cigar-smoking mobster character
   in a chair on the right, with idle smoke and a puff on big rounds.
+
+## The close-call hold (2026-10-19 to 2026-10-20)
+
+The held last card, studied the way the overhaul's directions were: today's
+hold captured frame by frame and measured with `npm run audio`, then three
+playable mock-ups in the comparison page's "Close-call hold" tab, then a
+refinement round, then a sound audition (`hum-audition.html`, published as
+https://claude.ai/artifact/U6wF182WQ6SQzY1Zmpv54W).
+
+**Picked:**
+- **CL3, the squeeze**, *modified* (`cl3b-squeeze-peel.html`): the card comes
+  out in front, and only once it has arrived does its bottom-left corner peel
+  to show the real face, then it turns and goes home. Built 2026-10-20.
+- **Auto by default, with a setting** in the autoplay menu to peel it by hand
+  from any corner.
+- **The win chime lands on the turn**, with the strike, not when the card is
+  home again.
+- **The sound: the crowd** (today's "ohhh", unchanged).
+- **While a player peels it: "Follows your hand"**, modified: SILENT until the
+  corner first lifts (never playing quietly before), its level follows the
+  peel, and putting the card back down STOPS it; it starts afresh on the next
+  peel.
+
+**Passed on (all still playable in the archive):**
+- **CL1, the last stop** (`cl1-last-stop.html`): the readout turns over to
+  "Next stop ♥ $1,354.20" and the bus pulls toward a lit terminus.
+- **CL2, house lights down** (`cl2-house-lights.html`): the room goes dark but
+  for a beam on the card and a pool on the needed pick.
+- **CL3 as first drawn** (`cl3-squeeze.html`): the peel showed blank paper
+  rather than the face, and the corner began lifting while the card was still
+  travelling.
+- **The original hold**: the card rising 1.5 units in its slot under the
+  tunnel (`today.html?f=hold0:640,...`). Kept for reduced motion only.
+- **The other five suspense sounds** (`hum-audition.html`): held breath
+  (breath only through the "oh"), drum roll, heartbeat, rising strings, and
+  the endless Shepard rise.
+- **The other four ways to wait during a manual peel**: holds at the top
+  (what shipped first, and what the owner found annoying), settles to a
+  hush, fades into a heartbeat, and goes quiet.
+- **The first "Follows your hand"** in the audition: the hum was started on
+  the deal and only gated to silence until touched; the owner wants it not
+  started at all until the peel begins, and stopped (not faded to quiet) when
+  the card is put back.
+- **Where the setting lives:** I first proposed the Turbo bump; passed on for
+  the autoplay menu.

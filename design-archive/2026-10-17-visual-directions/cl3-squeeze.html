@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CL3 The squeeze</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* The baccarat squeeze. The last card comes out of its slot toward the
+     player, tipped back as if lifted at the near edge, and its near corner
+     peels up over the climb in a straight line - the owner's shape: up, hold
+     at the top, then the slam, which here snaps the corner flat and turns the
+     card over where it is before it goes back to its slot. The peel shows
+     only blank paper, never an index. A plaque under it says what it pays. */
+  @property --p { syntax: '<length>'; inherits: true; initial-value: 0px; }
+  .hm-card { perspective: 600px; transition: transform 380ms var(--ease-in-out); }
+  .hm-card.out { transform: translate(var(--dx), var(--dy)) scale(var(--k)); transition: transform 420ms var(--ease-out); }
+  .hm-card .back { transform-origin: 50% 100%; transition: transform 420ms var(--ease-out); }
+  .hm-card.out .back { transform: rotateX(14deg); }
+  .hm-card.out.turning > .back, .hm-card.turned > .back { transform: rotateX(14deg) scaleX(0); }
+
+  /* The peel: the back loses its near corner along the fold, and the flap -
+     plain paper, shaded toward the fold - lies over it. */
+  .hm-card { --p: 0px; }
+  .hm-card.peel { --p: calc(var(--pw) * 0.34); transition: --p var(--peel) linear, transform 420ms var(--ease-out); }
+  .hm-card.snap { transition: --p 90ms cubic-bezier(0.55, 0, 1, 0.45), transform 420ms var(--ease-out); }
+  .hm-card .back { clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--p)), calc(100% - var(--p)) 100%, 0 100%); }
+  .flap { position: absolute; right: 0; bottom: 0; width: var(--p); height: var(--p); z-index: 2; pointer-events: none;
+    clip-path: polygon(100% 0, 0 100%, 0 0);
+    background: linear-gradient(135deg, #f7f2e6 0%, #efe6d3 55%, #cdbf9f 100%);
+    filter: drop-shadow(-3px -2px 3px rgba(0,0,0,0.35)); transform-origin: 50% 100%; }
+  .hm-card.out .flap { transform: rotateX(14deg); }
+  .hm-card.turning .flap, .hm-card.turned .flap { display: none; }
+
+  .dark { position: absolute; inset: 0; z-index: 5; pointer-events: none; background: rgba(4, 3, 2, 0.8); opacity: 0;
+    transition: opacity 200ms var(--ease-out); clip-path: inset(0 0 calc(100% - var(--pb)) 0); }
+  .dark.on { opacity: 1; transition: opacity 420ms var(--ease-out); }
+
+  .plaque { position: absolute; z-index: 7; transform: translate(-50%, 0); display: flex; align-items: baseline; gap: 8px; padding: 6px 12px 5px;
+    border-radius: 8px; opacity: 0; translate: 0 6px; transition: opacity 200ms var(--ease-out), translate 200ms var(--ease-out); white-space: nowrap; }
+  .plaque.on { opacity: 1; translate: 0 0; transition-delay: 260ms; }
+  .plaque .cap { display: flex; align-items: center; gap: 4px; font: 700 11px/1 var(--font-body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-dim); }
+  .plaque .cap svg { width: 12px; height: 12px; fill: #e0524f; }
+  .plaque .fig { font: 900 22px/1 var(--font-display); color: var(--ink-cream); letter-spacing: 0.01em; }
+</style></head>
+<body>
+<div class="stage" id="s"></div>
+<script src="kit/kit.js"></script><script src="kit/holdmock.js"></script>
+<script>
+  const H = HOLDMOCK, { G, card, back, s, phone } = H, el = RTB.el, root = document.documentElement.style;
+  root.setProperty('--pb', G.playBottom + 'px');
+  const dark = el('div', 'dark'); s.appendChild(dark);
+  // Out of the slot to the middle of the board, over the readout.
+  const k = phone ? 1.32 : 1.5;
+  const toX = phone ? 195 : 600, toY = phone ? 318 : 312;
+  card.style.setProperty('--dx', toX - (G.slot.x + G.slot.w / 2) + 'px');
+  card.style.setProperty('--dy', toY - (G.slot.y + G.slot.h / 2) + 'px');
+  card.style.setProperty('--k', k); card.style.setProperty('--pw', G.slot.w + 'px');
+  card.style.setProperty('--peel', H.CLIMB - 420 + 'ms');
+  const flap = el('div', 'flap'); card.appendChild(flap);
+  const plaque = el('div', 'panel plaque', `<span class="cap">${H.heartSvg} pays</span><span class="fig">$1,354.20</span>`);
+  Object.assign(plaque.style, { left: toX + 'px', top: toY + (G.slot.h * k) / 2 + (phone ? 10 : 12) + 'px' }); s.appendChild(plaque);
+  card.style.zIndex = 8;
+  H.play({
+    ownTurn: true,
+    reset() { card.classList.remove('out', 'peel', 'snap'); dark.classList.remove('on'); plaque.classList.remove('on'); H.read.style.opacity = ''; },
+    async hold() {
+      card.classList.add('out'); dark.classList.add('on'); plaque.classList.add('on');
+      // The card lies over the readout; the plaque under it says the same.
+      H.read.style.transition = 'opacity 200ms'; H.read.style.opacity = '0';
+      await RTB.wait(420);
+      card.classList.add('peel');
+    },
+    async strike() {
+      // The slam: the corner snaps flat, the card turns where it is, shows
+      // its face for a beat, then goes back to its slot.
+      card.classList.add('snap'); card.classList.remove('peel');
+      await RTB.wait(90);
+      await H.turn();
+      await RTB.wait(560);
+      plaque.classList.remove('on'); dark.classList.remove('on'); H.read.style.opacity = '';
+      card.classList.remove('out', 'snap');
+      await RTB.wait(380);
+    },
+  });
+</script>
+</body></html>

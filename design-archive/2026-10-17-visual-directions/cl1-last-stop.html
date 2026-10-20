@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CL1 The last stop</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* The route tells the hold. The readout turns over to where the round is
+     going and what it pays there; stop 4 becomes the terminus, and the bus
+     pulls toward it over the climb and waits at the kerb. The card rises
+     twice as far as today, under today's tunnel. */
+  .hm-card { transition: transform 130ms cubic-bezier(0.55, 0, 1, 0.45); }
+  .hm-card.held { transform: translateY(calc(var(--u) * -3)) rotate(-1deg); transition: transform var(--climb) linear; }
+  .hm-card.held > .back { box-shadow: inset 0 0 0 3px var(--brand-paper), inset 0 0 0 4.5px var(--brand-chrome), 0 10px 18px rgba(0,0,0,0.42), 0 30px 46px rgba(0,0,0,0.5); transition: box-shadow var(--climb) linear; }
+
+  /* Inside the play area, as in the game: the bar stays lit. */
+  .tun-wrap { position: absolute; left: 0; right: 0; top: 0; height: var(--pb); overflow: hidden; z-index: 5; pointer-events: none; }
+  .tunnel { position: absolute; inset: 0 0 -40px 0; pointer-events: none; opacity: 0;
+    background: radial-gradient(ellipse 225px 230px at var(--tx) var(--ty), rgba(0,0,0,0) 34%, rgba(0,0,0,0.72) 100%);
+    transform-origin: var(--tx) var(--ty); transform: translateY(0) scale(2.4); transition: opacity 170ms var(--ease-out), transform 170ms var(--ease-out); }
+  .tunnel.on { opacity: 1; transform: translateY(calc(var(--u) * -3)) scale(1); transition: opacity calc(var(--climb) * 0.4) linear, transform var(--climb) linear; }
+
+  /* The terminus: stop 4 ringed in gold with the needed pick hung over it. */
+  .term { position: absolute; z-index: 6; transform: translate(-50%, -50%); width: 22px; height: 22px; border-radius: 50%;
+    border: 2px solid var(--gold); background: radial-gradient(circle, #1a130c 0 45%, transparent 46%); opacity: 0; scale: 0.6;
+    transition: opacity 220ms var(--ease-out), scale 220ms var(--ease-out); }
+  .term.on { opacity: 1; scale: 1; }
+  .term-sign { position: absolute; z-index: 6; transform: translate(-50%, 0); display: flex; align-items: center; gap: 3px; padding: 3px 6px 2px;
+    border-radius: 4px; background: #0b0907; box-shadow: inset 0 1px 3px rgba(0,0,0,0.9), 0 1px 0 rgba(255,240,220,0.12);
+    font: 900 11px/1 var(--font-display); letter-spacing: 0.06em; color: var(--gold-bright); text-transform: uppercase; opacity: 0; translate: 0 -4px;
+    transition: opacity 220ms var(--ease-out), translate 220ms var(--ease-out); }
+  .term-sign svg { width: 11px; height: 11px; fill: #e0524f; }
+  .term-sign.on { opacity: 1; translate: 0 0; }
+  .term.dark { border-color: rgba(255,255,255,0.25); transition-duration: 300ms; }
+  .term-sign.dark { opacity: 0.35; }
+  /* The route and the readout carry the hold, so they stay over the dark. */
+  .hm-read, .hm-bus, .hm-stop, .term, .term-sign { z-index: 7 !important; }
+</style></head>
+<body>
+<div class="stage" id="s"></div>
+<script src="kit/kit.js"></script><script src="kit/holdmock.js"></script>
+<script>
+  const H = HOLDMOCK, { G, card, bus, s, phone } = H, el = RTB.el;
+  document.documentElement.style.setProperty('--u', G.u + 'px');
+  document.documentElement.style.setProperty('--climb', H.CLIMB + 'ms');
+  document.documentElement.style.setProperty('--pb', G.playBottom + 'px');
+  const wrap = el('div', 'tun-wrap'); s.appendChild(wrap);
+  const tunnel = el('div', 'tunnel'); wrap.appendChild(tunnel);
+  tunnel.style.setProperty('--tx', G.slot.x + G.slot.w / 2 + 'px'); tunnel.style.setProperty('--ty', G.slot.y + G.slot.h / 2 + 'px');
+  const term = el('div', 'term'); Object.assign(term.style, { left: G.stops[3] + 'px', top: G.routeY + 'px' }); s.appendChild(term);
+  const sign = el('div', 'term-sign', `Last stop ${H.heartSvg}`); Object.assign(sign.style, { left: G.stops[3] + (phone ? -14 : 8) + 'px', top: G.routeY + 13 + 'px' });
+  s.appendChild(sign);
+  H.play({
+    reset() { card.classList.remove('held'); tunnel.classList.remove('on'); term.classList.remove('on', 'dark'); sign.classList.remove('on', 'dark'); },
+    hold() {
+      card.classList.add('held'); tunnel.classList.add('on');
+      term.classList.add('on'); sign.classList.add('on');
+      // The readout turns over to the destination and its fare: what the
+      // card pays if it lands. From the stake, never the result.
+      H.label('Next stop ♥'); H.flaps('$1,354.20');
+      // The bus pulls toward the terminus over the climb and waits short of it.
+      bus.style.transition = `left ${H.CLIMB}ms linear`;
+      bus.style.left = G.stops[2] + (G.stops[3] - G.stops[2]) * 0.82 + 'px';
+    },
+    strike() { card.classList.remove('held'); tunnel.classList.remove('on'); },
+    land(r) {
+      if (r.win) { term.classList.remove('on'); sign.classList.remove('on'); }
+      else {
+        term.classList.add('dark'); sign.classList.add('dark');
+        // It brakes: a small jolt back from the kerb.
+        bus.style.transition = 'left 220ms var(--ease-out)'; bus.style.left = G.stops[2] + (G.stops[3] - G.stops[2]) * 0.72 + 'px';
+      }
+    },
+  });
+</script>
+</body></html>

@@ -1,0 +1,480 @@
+<meta charset="utf-8">
+<title>Last-Card Hum</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Overpass:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Layout: one column on the game's dark wood - the sound picker first, the
+     manual-peel bench under it. Single dark look on purpose: it is the game's. */
+  :root {
+    color-scheme: dark;
+    --bg: #15110d;
+    --panel: #201a15;
+    --panel-hi: #2a231c;
+    --edge: rgba(255, 236, 200, 0.12);
+    --ink: #f2ebdf;
+    --body: #d6cdbf;
+    --dim: #a89e8f;
+    --gold: #f2cf7a;
+    --gold-ink: #1d1508;
+    --red: #b3252b;
+    --green: #63e39c;
+    --font-display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+    --font-body: "Overpass", "Segoe UI", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: radial-gradient(ellipse 110% 60% at 75% 0%, #2a1d12 0%, var(--bg) 60%) fixed, var(--bg);
+    color: var(--body);
+    font: 16px/1.55 var(--font-body);
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding-block: 36px 80px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 34px; }
+  h1 { margin: 0; font: 900 clamp(40px, 7vw, 68px)/0.95 var(--font-display); color: var(--gold); letter-spacing: -0.01em; text-wrap: balance; }
+  h2 { margin: 0; font: 900 30px/1.05 var(--font-display); color: var(--ink); text-wrap: balance; }
+  p { margin: 0; max-width: 68ch; }
+  .lede { font-size: 17px; }
+  .small { font-size: 14px; color: var(--dim); }
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+
+  .settings { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; padding: 12px 14px; background: rgba(21, 17, 13, 0.94); border: 1px solid var(--edge); border-radius: 12px; }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+  .seg { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--dim); }
+  .seg .opts { display: inline-flex; padding: 3px; border-radius: 999px; background: #0d0a08; border: 1px solid var(--edge); }
+  .seg button { font: 700 13px/1 var(--font-body); color: var(--body); background: none; border: 0; border-radius: 999px; padding: 8px 12px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--gold); color: var(--gold-ink); }
+  .stop { margin-left: auto; font: 700 13px/1 var(--font-body); color: var(--ink); background: none; border: 1px solid var(--edge); border-radius: 999px; padding: 9px 14px; cursor: pointer; }
+
+  section { display: grid; gap: 14px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 12px; }
+  .opt { display: grid; grid-template-rows: auto 1fr auto; gap: 8px; padding: 16px; background: var(--panel); border: 1px solid var(--edge); border-radius: 12px; }
+  .opt.chosen { border-color: rgba(242, 207, 122, 0.6); box-shadow: inset 0 0 0 1px rgba(242, 207, 122, 0.25); }
+  .opt h3 { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; font: 800 18px/1.2 var(--font-body); color: var(--ink); }
+  .opt h3 .tag { font: 700 11px/1 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold-ink); background: var(--gold); border-radius: 999px; padding: 4px 8px; }
+  .opt h3 .tag.now { background: #3a3128; color: var(--body); }
+  .opt p { font-size: 14.5px; }
+  .opt .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .play { font: 800 14px/1 var(--font-body); color: var(--gold-ink); background: linear-gradient(180deg, #f6d98e, #d9b45a); border: 0; border-radius: 9px; padding: 10px 14px; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 2px 6px rgba(0,0,0,0.4); }
+  .play:active { transform: translateY(1px); }
+  .pick { font: 700 13px/1 var(--font-body); color: var(--body); background: none; border: 1px solid var(--edge); border-radius: 9px; padding: 9px 12px; cursor: pointer; }
+  .pick[aria-pressed="true"] { border-color: var(--gold); color: var(--gold); }
+
+  .bench { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 22px; align-items: center; padding: 20px; background: var(--panel-hi); border: 1px solid var(--edge); border-radius: 14px; }
+  @media (max-width: 640px) { .bench { grid-template-columns: minmax(0, 1fr); justify-items: center; } }
+  .card { position: relative; width: 150px; aspect-ratio: 200 / 298; max-width: 100%; }
+  .card .back, .card .face { position: absolute; inset: 0; border-radius: 9px; }
+  .card .back {
+    background: repeating-linear-gradient(45deg, rgba(255,255,255,0.12) 0 2px, transparent 2px 6px), repeating-linear-gradient(-45deg, rgba(255,255,255,0.12) 0 2px, transparent 2px 6px), linear-gradient(160deg, #b81030, #a80828 55%, #78061e);
+    box-shadow: inset 0 0 0 4px #f8f8f8, inset 0 0 0 5.5px #c8c8c8, 0 10px 24px rgba(0,0,0,0.55);
+  }
+  .card .face { background: #f7f2e6; box-shadow: inset 0 0 0 1.5px #cfc4ad, 0 10px 24px rgba(0,0,0,0.55); display: grid; place-items: center; font: 900 64px/1 var(--font-display); color: var(--red); opacity: 0; }
+  .card .face.black { color: #16130f; }
+  .card.turned .face { opacity: 1; } .card.turned .back { opacity: 0; }
+  .card .flap { position: absolute; left: 0; bottom: 0; width: var(--p, 0px); height: var(--p, 0px); background: linear-gradient(45deg, #cdbf9f, #f7f2e6 60%); clip-path: polygon(0 0, 100% 100%, 100% 0); border-radius: 0 0 0 9px; filter: drop-shadow(2px -2px 2px rgba(0,0,0,0.4)); display: grid; place-items: start end; }
+  .card .flap span { font: 900 18px/1 var(--font-display); color: var(--red); transform: rotate(90deg); padding: 6px; opacity: var(--show, 0); }
+  .card .flap span.black { color: #16130f; }
+  .controls { display: grid; gap: 12px; min-width: 0; }
+  .status { font: 700 15px/1.4 var(--font-body); color: var(--ink); min-height: 1.4em; }
+  .peel { display: grid; gap: 6px; }
+  .peel label { font-size: 14px; color: var(--dim); }
+  .peel input { width: 100%; accent-color: var(--gold); }
+  .buttons { display: flex; flex-wrap: wrap; gap: 10px; }
+  .meter { font: 600 12px/1.3 var(--font-body); color: var(--dim); font-variant-numeric: tabular-nums; }
+  @media (prefers-reduced-motion: reduce) { .play:active { transform: none; } }
+</style>
+
+<div class="wrap">
+  <header style="display:grid;gap:12px">
+    <h1>The last-card hum</h1>
+    <p class="lede">The suspense sound under the squeezed last card, six ways. Each plays at the game's real timing for the stake you pick: on Max, 1.65 seconds up, 0.4 at the top, then the card turns and the strike and the card's own chime land together. Everything is synthesised live through the game's own chain (the sound at 75%, the small room, the limiter), so use speakers or headphones.</p>
+    <p class="small">Below them, the part you said was annoying: what the hum does while a player peels the card by hand, which can take as long as they like. Pick a sound above, then try each waiting style with it.</p>
+  </header>
+
+  <div class="settings" role="group" aria-label="Round">
+    <span class="seg">Stake <span class="opts" id="tier"><button type="button" data-v="big" aria-pressed="false">Big</button><button type="button" data-v="max" aria-pressed="true">Max</button></span></span>
+    <span class="seg">The card <span class="opts" id="land"><button type="button" data-v="win" aria-pressed="true">Lands (win)</button><button type="button" data-v="miss" aria-pressed="false">Misses</button></span></span>
+    <button type="button" class="stop" id="stop">Stop</button>
+  </div>
+
+  <section aria-labelledby="sounds-h">
+    <h2 id="sounds-h">The sound</h2>
+    <div class="grid" id="sounds"></div>
+  </section>
+
+  <section aria-labelledby="wait-h">
+    <h2 id="wait-h">While a player peels it</h2>
+    <p class="small">The squeeze waits for the player's hand. Today the hum climbs and then holds at the top for the whole wait, up to 12 seconds. Pick a waiting style, press Deal, then drag the slider like the card's corner: past a third it turns. Turn it now is the deal button or Space.</p>
+    <div class="grid" id="waits"></div>
+    <div class="bench">
+      <div class="card" id="card"><div class="back"></div><div class="face" id="face">3♥</div><div class="flap" id="flap"><span id="flapIndex">3♥</span></div></div>
+      <div class="controls">
+        <div class="status" id="status" aria-live="polite">Press Deal to bring the card out.</div>
+        <div class="peel"><label for="peelRange">Peel the corner (turns at 32%)</label><input type="range" id="peelRange" min="0" max="40" step="0.5" value="0" disabled></div>
+        <div class="buttons"><button type="button" class="play" id="deal">Deal</button><button type="button" class="pick" id="turnNow" disabled>Turn it now</button></div>
+        <div class="meter" id="meter"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+  /* ---- The game's audio chain (audioContext.ts / audioMixer.ts) ---------- */
+  let ctx, sfx, send, meterNode;
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const drift = (cents) => Math.pow(2, rand(-cents, cents) / 1200);
+  function ensure() {
+    if (ctx) return ctx;
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const limiter = ctx.createDynamicsCompressor();
+    limiter.threshold.value = -10; limiter.knee.value = 6; limiter.ratio.value = 12; limiter.attack.value = 0.003; limiter.release.value = 0.18;
+    meterNode = ctx.createAnalyser(); meterNode.fftSize = 2048;
+    limiter.connect(meterNode); meterNode.connect(ctx.destination);
+    const master = ctx.createGain(); master.gain.value = 0.56; master.connect(limiter);
+    sfx = ctx.createGain(); sfx.gain.value = 0.75; sfx.connect(master);
+    const frames = Math.floor(ctx.sampleRate * 0.32);
+    const ir = ctx.createBuffer(2, frames, ctx.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < frames; i++) { const p = i / frames; d[i] = (Math.random() * 2 - 1) * Math.pow(1 - p, 2.6) * Math.min(1, p / 0.08); } }
+    const verb = ctx.createConvolver(); verb.buffer = ir;
+    const damp = ctx.createBiquadFilter(); damp.type = 'lowpass'; damp.frequency.value = 3200;
+    const wet = ctx.createGain(); wet.gain.value = 0.5;
+    send = ctx.createGain(); send.connect(verb); verb.connect(damp); damp.connect(wet); wet.connect(sfx);
+    return ctx;
+  }
+  const out = () => sfx;
+  function tap(node, space) { if (space > 0) { const g = ctx.createGain(); g.gain.value = space; node.connect(g); g.connect(send); } }
+
+  /* tone / noise / thud, as audioVoices.ts writes them. `at` is an absolute time. */
+  function tone({ from, to, duration, type = 'triangle', gain = 0.6, at, attack, space = 0.25, jitter = 12, dest }) {
+    const start = at ?? ctx.currentTime + 0.005, w = drift(jitter);
+    const osc = ctx.createOscillator(), env = ctx.createGain();
+    osc.type = type; osc.frequency.setValueAtTime(from * w, start);
+    if (to !== undefined) osc.frequency.exponentialRampToValueAtTime(Math.max(1, to * w), start + duration);
+    const rise = attack ?? Math.min(0.02, duration / 4);
+    env.gain.setValueAtTime(0.0001, start); env.gain.exponentialRampToValueAtTime(gain, start + rise); env.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    osc.connect(env); env.connect(dest || out()); tap(env, space);
+    osc.start(start); osc.stop(start + duration + 0.02);
+  }
+  function noiseBuffer(duration, curve, pink) {
+    const frames = Math.max(1, Math.floor(ctx.sampleRate * duration));
+    const buf = ctx.createBuffer(1, frames, ctx.sampleRate), d = buf.getChannelData(0);
+    const attack = Math.max(1, Math.min(Math.round(ctx.sampleRate * 0.005), Math.floor(frames * 0.25)));
+    const shape = (i) => (i < attack ? 0.5 - 0.5 * Math.cos((Math.PI * i) / attack) : 1) * Math.pow(1 - i / frames, curve);
+    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+    for (let i = 0; i < frames; i++) {
+      const w = Math.random() * 2 - 1;
+      if (pink) {
+        b0 = 0.99886 * b0 + w * 0.0555179; b1 = 0.99332 * b1 + w * 0.0750759; b2 = 0.969 * b2 + w * 0.153852;
+        b3 = 0.8665 * b3 + w * 0.3104856; b4 = 0.55 * b4 + w * 0.5329522; b5 = -0.7616 * b5 - w * 0.016898;
+        d[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.11 * shape(i); b6 = w * 0.115926;
+      } else d[i] = w * shape(i);
+    }
+    return buf;
+  }
+  function noise({ duration = 0.09, gain = 0.35, from = 1800, to, q = 0.8, at, space = 0.3, curve = 1, pink = false, dest }) {
+    const start = at ?? ctx.currentTime + 0.005;
+    const src = ctx.createBufferSource(); src.buffer = noiseBuffer(duration, curve, pink);
+    const band = ctx.createBiquadFilter(); band.type = 'bandpass'; band.frequency.setValueAtTime(from, start);
+    if (to !== undefined) band.frequency.exponentialRampToValueAtTime(Math.max(20, to), start + duration);
+    band.Q.value = q;
+    const env = ctx.createGain(); env.gain.value = gain;
+    src.connect(band); band.connect(env); env.connect(dest || out()); tap(env, space);
+    src.start(start);
+  }
+  const thud = ({ from = 180, to = 60, duration = 0.13, gain = 0.3, at, attack, dest }) => tone({ from, to, duration, type: 'sine', gain, at, attack, space: 0.1, jitter: 30, dest });
+
+  /* The strike (sound.ts strike()), the flip, and the card's answer. */
+  function strike(weight, at) {
+    const t = at ?? ctx.currentTime + 0.005, level = weight === 'crack' ? 0.5 : 0.72;
+    [0, 0.018, 0.043].forEach((d, i) => noise({ duration: 0.16, gain: (0.21 - i * 0.05) * level, from: rand(5200, 7600), to: rand(2200, 3000), q: 0.45, curve: 3.2, at: t + d, space: 0.55 }));
+    noise({ duration: 0.6, gain: 0.16 * level, from: 1700, to: 380, q: 0.55, curve: 2.1, at: t, space: 0.65 });
+    if (weight === 'crack') return;
+    noise({ duration: 1.6, gain: 0.3 * level, from: 190, to: 50, q: 0.8, pink: true, curve: 1.2, space: 0.45, at: t + 0.02 });
+    noise({ duration: 1.1, gain: 0.2 * level, from: 420, to: 170, q: 0.7, pink: true, curve: 1.5, space: 0.5, at: t + 0.03 });
+    if (weight === 'full') thud({ from: rand(100, 115), to: 34, duration: 0.6, gain: 0.1, attack: 0.001, at: t });
+  }
+  function flip(at) {
+    noise({ duration: rand(0.07, 0.1), gain: rand(0.12, 0.165), from: rand(2600, 3400), to: rand(800, 1200), q: rand(0.6, 1.1), curve: 1.4, space: 0.35, at });
+    tone({ from: rand(300, 360), to: rand(480, 560), duration: 0.055, type: 'triangle', gain: 0.094, space: 0.3, jitter: 40, at });
+    thud({ from: rand(150, 200), to: 65, duration: 0.11, gain: 0.105, at: at + rand(0.01, 0.025) });
+  }
+  const ROOT4 = 523.25 * Math.pow(2, 6 / 12);
+  function answer(win, at) {
+    if (win) {
+      tone({ from: ROOT4, duration: 0.16, type: 'triangle', gain: 0.3, space: 0.45, attack: 0.008, at });
+      tone({ from: ROOT4 * 1.5, duration: 0.19, type: 'sine', gain: 0.2, at: at + 0.035, space: 0.5 });
+      tone({ from: ROOT4 * 2, duration: 0.22, type: 'sine', gain: 0.13, at: at + 0.07, space: 0.55 });
+    } else {
+      const r = 523.25, f = [1, Math.pow(2, -4 / 12), Math.pow(2, -7 / 12)];
+      tone({ from: r * f[0], duration: 0.17, type: 'triangle', gain: 0.165, space: 0.45, attack: 0.008, at });
+      tone({ from: r * f[1], duration: 0.2, type: 'sine', gain: 0.14, at: at + 0.085, space: 0.5 });
+      tone({ from: r * f[2], duration: 0.28, type: 'triangle', gain: 0.125, at: at + 0.17, space: 0.55 });
+      tone({ from: r * f[2] * 0.5, duration: 0.34, type: 'sine', gain: 0.082, at: at + 0.17, space: 0.4 });
+    }
+  }
+
+  /* A little scheduler for the sounds made of repeated hits. */
+  function every(step, fn) {
+    let next = ctx.currentTime + 0.05, alive = true, n = 0;
+    const id = setInterval(() => { if (!alive) return; while (next < ctx.currentTime + 0.12) { const dt = fn(next, n++); next += dt; } }, 25);
+    return () => { alive = false; clearInterval(id); };
+  }
+  function pinkLoop(seconds) { const src = ctx.createBufferSource(); src.buffer = noiseBuffer(seconds, 0, true); src.loop = true; return src; }
+
+  /* ---- The six sounds. Each plays into `bus` and returns stop(at). ------- */
+  const TOP = ROOT4 / 4;
+  const CROWD = [[0.985, 1], [0.996, 1], [1.004, 1], [1.014, 1], [1.993, 0.65], [2.009, 0.65]];
+  const SMALL = [[0.992, 1], [1.008, 1], [2.0, 0.65]];
+  const OH = [[450, 3.5, 1], [800, 5, 0.6], [2800, 7, 0.2]];
+  function crowdSwell(bus, { climb, voices, gain, breath, floor = 0.1, from = TOP / 2, to = TOP, vibrato = true, body = 0.22, saw = true, singerLevel = 1 }) {
+    const start = ctx.currentTime + 0.005, top = start + Math.max(climb, 0.05);
+    const mix = ctx.createGain(), env = ctx.createGain(), gate = ctx.createGain();
+    const attack = Math.min(0.12, climb / 4);
+    env.gain.setValueAtTime(0.0001, start); env.gain.exponentialRampToValueAtTime(gain * floor, start + attack); env.gain.setValueAtTime(gain * floor, start + attack); env.gain.linearRampToValueAtTime(gain, top);
+    for (const [f, q, level] of OH) { const b = ctx.createBiquadFilter(); b.type = 'bandpass'; b.frequency.value = f; b.Q.value = q; const w = ctx.createGain(); w.gain.value = level; mix.connect(b); b.connect(w); w.connect(env); }
+    if (body > 0) { const lo = ctx.createBiquadFilter(); lo.type = 'lowpass'; lo.frequency.value = 320; lo.Q.value = 0.7; const w = ctx.createGain(); w.gain.value = body; mix.connect(lo); lo.connect(w); w.connect(env); }
+    const held = [];
+    const wob = drift(8);
+    const singers = voices.map(([ratio, level]) => {
+      const o = ctx.createOscillator(); o.type = saw ? 'sawtooth' : 'sine';
+      o.frequency.setValueAtTime(from * ratio * wob, start); o.frequency.linearRampToValueAtTime(to * ratio * wob, top);
+      const w = ctx.createGain(); w.gain.value = level * singerLevel; o.connect(w); w.connect(mix); held.push(o); return o;
+    });
+    if (vibrato) {
+      const lfo = ctx.createOscillator(); lfo.frequency.setValueAtTime(rand(4.4, 4.8), start); lfo.frequency.linearRampToValueAtTime(rand(6, 6.6), top);
+      const depth = ctx.createGain(); depth.gain.setValueAtTime(6, start); depth.gain.linearRampToValueAtTime(20, top);
+      lfo.connect(depth); singers.forEach((o) => depth.connect(o.detune)); held.push(lfo);
+    }
+    if (breath > 0) { const air = pinkLoop(2.5); const w = ctx.createGain(); w.gain.value = breath; air.connect(w); w.connect(mix); held.push(air); }
+    env.connect(gate); gate.connect(bus);
+    held.forEach((n) => n.start(start));
+    return (at, dive = true) => {
+      const now = at ?? ctx.currentTime + 0.005, s = 0.18, hold = dive ? s * 0.25 : 0;
+      if (dive) singers.forEach((o) => { o.detune.cancelScheduledValues(now); o.detune.setValueAtTime(0, now); o.detune.linearRampToValueAtTime(-1200, now + s); });
+      gate.gain.setValueAtTime(1, now + hold); gate.gain.setTargetAtTime(0, now + hold, (s - hold) / 5);
+      held.forEach((n) => { try { n.stop(now + s + 0.05); } catch (e) {} });
+    };
+  }
+
+  const SOUNDS = [
+    { id: 'crowd', name: 'The crowd', tag: 'Today',
+      text: `What ships now: a crowd's "ohhh" climbing an octave to two octaves under the card's chime, held at the top, then the lightning strike. A few voices on Big, the whole crowd and thunder on Max.`,
+      start(bus, climb, tier) { const s = tier === 'max' ? { voices: CROWD, gain: 0.2, breath: 1.2 } : { voices: SMALL, gain: 0.15, breath: 0.8 }; return crowdSwell(bus, { climb, ...s }); },
+      accent(tier, at) { strike(tier === 'max' ? 'full' : 'crack', at); } },
+    { id: 'whisper', name: 'Held breath',
+      text: `The crowd with its voice taken out: only breath through the same "oh", and a faint tone under it. The room inhaling rather than calling out. Ends on the crack alone, so the chime is the loudest thing.`,
+      start(bus, climb, tier) { return crowdSwell(bus, { climb, voices: [[1, 1], [2, 0.5]], gain: tier === 'max' ? 0.23 : 0.17, breath: 3.2, saw: false, singerLevel: 0.18, vibrato: false, body: 0.1 }); },
+      accent(tier, at) { strike('crack', at); } },
+    { id: 'drums', name: 'Drum roll',
+      text: `A snare roll that tightens and swells as the corner lifts, keeps rolling at the top, and stops dead on a cymbal and a kick as the card turns. The most familiar suspense sound there is.`,
+      start(bus, climb, tier) {
+        const t0 = ctx.currentTime, lvl = tier === 'max' ? 1 : 0.7;
+        const stop = every(0, (t) => {
+          const p = Math.min(1, (t - t0) / Math.max(climb, 0.05));
+          noise({ duration: 0.07, gain: (0.05 + 0.15 * p) * lvl * rand(0.85, 1.1), from: rand(2600, 3400), q: 0.7, curve: 2.4, at: t, space: 0.3, dest: bus });
+          if (Math.random() < 0.5) tone({ from: 190, to: 150, duration: 0.04, type: 'triangle', gain: (0.02 + 0.04 * p) * lvl, at: t, space: 0, dest: bus });
+          return 0.11 - 0.075 * p + rand(-0.006, 0.006);
+        });
+        return (at) => { const t = (at ?? ctx.currentTime) - ctx.currentTime; setTimeout(stop, Math.max(0, t * 1000)); };
+      },
+      accent(tier, at) { noise({ duration: tier === 'max' ? 1.8 : 1.1, gain: tier === 'max' ? 0.2 : 0.14, from: 7000, to: 4500, q: 0.35, curve: 1.6, at, space: 0.6 }); thud({ from: 120, to: 42, duration: 0.42, gain: tier === 'max' ? 0.3 : 0.2, attack: 0.002, at }); } },
+    { id: 'heart', name: 'Heartbeat',
+      text: `A heartbeat that quickens from resting to racing over the climb, with a low hum under it, and a single heavy beat as the card turns. Intimate rather than loud: it is the player's pulse, not the room's.`,
+      start(bus, climb, tier) {
+        const t0 = ctx.currentTime, lvl = tier === 'max' ? 1 : 0.75;
+        const drone = ctx.createOscillator(); drone.frequency.value = TOP / 2; const dg = ctx.createGain(); dg.gain.setValueAtTime(0.0001, t0); dg.gain.exponentialRampToValueAtTime(0.015 * lvl, t0 + 0.3); dg.gain.linearRampToValueAtTime(0.03 * lvl, t0 + climb);
+        drone.connect(dg); dg.connect(bus); drone.start(t0);
+        const stop = every(0, (t) => {
+          const p = Math.min(1, (t - t0) / Math.max(climb, 0.05)), bpm = 66 + 64 * p;
+          thud({ from: 78, to: 40, duration: 0.17, gain: (0.16 + 0.1 * p) * lvl, attack: 0.004, at: t, dest: bus });
+          thud({ from: 66, to: 38, duration: 0.14, gain: (0.1 + 0.07 * p) * lvl, attack: 0.004, at: t + 0.13, dest: bus });
+          return 60 / bpm;
+        });
+        return (at) => { const t = at ?? ctx.currentTime; setTimeout(stop, Math.max(0, (t - ctx.currentTime) * 1000)); dg.gain.cancelScheduledValues(t); dg.gain.setTargetAtTime(0, t, 0.05); drone.stop(t + 0.4); };
+      },
+      accent(tier, at) { thud({ from: 95, to: 30, duration: 0.7, gain: tier === 'max' ? 0.5 : 0.36, attack: 0.002, at }); strike('crack', at); } },
+    { id: 'strings', name: 'Rising strings',
+      text: `A tremolo string section rising a fifth and opening up from muffled to bright, the film-score build, held trembling at the top, cut off by a short stab and the crack.`,
+      start(bus, climb, tier) {
+        const t0 = ctx.currentTime + 0.005, top = t0 + Math.max(climb, 0.05), lvl = tier === 'max' ? 1 : 0.75;
+        const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 0.8; lp.frequency.setValueAtTime(500, t0); lp.frequency.exponentialRampToValueAtTime(3400, top);
+        const trem = ctx.createGain(); trem.gain.value = 0.65; const lfo = ctx.createOscillator(); lfo.frequency.value = 11; const lg = ctx.createGain(); lg.gain.value = 0.35; lfo.connect(lg); lg.connect(trem.gain);
+        const env = ctx.createGain(); env.gain.setValueAtTime(0.0001, t0); env.gain.exponentialRampToValueAtTime(0.015 * lvl, t0 + 0.08); env.gain.linearRampToValueAtTime(0.065 * lvl, top);
+        const base = TOP * 2, oscs = [];
+        for (const [r, l] of [[1, 1], [1.004, 1], [0.996, 1], [1.5, 0.7], [1.503, 0.7], [2, 0.5]]) {
+          const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(base * r, t0); o.frequency.linearRampToValueAtTime(base * 1.5 * r, top);
+          const g = ctx.createGain(); g.gain.value = l; o.connect(g); g.connect(lp); oscs.push(o);
+        }
+        lp.connect(trem); trem.connect(env); env.connect(bus); tap(env, 0.4);
+        [...oscs, lfo].forEach((o) => o.start(t0));
+        return (at) => { const t = at ?? ctx.currentTime + 0.005; env.gain.cancelScheduledValues(t); env.gain.setValueAtTime(env.gain.value, t); env.gain.setTargetAtTime(0, t, 0.03); [...oscs, lfo].forEach((o) => o.stop(t + 0.3)); };
+      },
+      accent(tier, at) { for (const r of [2, 3, 4]) tone({ from: TOP * 3 * r / 2, duration: 0.32, type: 'sawtooth', gain: tier === 'max' ? 0.05 : 0.035, attack: 0.004, at, space: 0.5 }); strike('crack', at); } },
+    { id: 'shepard', name: 'Endless rise',
+      text: `A Shepard tone: a chord that seems to climb forever without ever arriving. It never reaches a top, so a long wait never turns into a held note - built for the player peeling by hand. Ends on the crack.`,
+      start(bus, climb, tier) {
+        const t0 = ctx.currentTime, lvl = tier === 'max' ? 1 : 0.75, N = 7, lo = 55, rate = 1 / Math.max(climb * 1.6, 1.2);
+        const env = ctx.createGain(); env.gain.setValueAtTime(0.0001, t0); env.gain.exponentialRampToValueAtTime(0.05 * lvl, t0 + 0.2); env.gain.linearRampToValueAtTime(0.12 * lvl, t0 + climb);
+        env.connect(bus); tap(env, 0.45);
+        const parts = Array.from({ length: N }, () => { const o = ctx.createOscillator(); o.type = 'sine'; const g = ctx.createGain(); g.gain.value = 0; o.connect(g); g.connect(env); o.start(t0); return { o, g }; });
+        let alive = true;
+        const tick = () => {
+          if (!alive) return;
+          const t = ctx.currentTime, phase = ((t - t0) * rate) % 1;
+          parts.forEach((p, k) => {
+            const oct = k + phase, f = lo * Math.pow(2, oct), x = (oct - N / 2) / (N / 4);
+            p.o.frequency.setTargetAtTime(f, t, 0.01); p.g.gain.setTargetAtTime(Math.exp(-x * x) * 0.5, t, 0.01);
+          });
+          requestAnimationFrame(tick);
+        };
+        tick();
+        return (at) => { const t = at ?? ctx.currentTime + 0.005; env.gain.cancelScheduledValues(t); env.gain.setValueAtTime(env.gain.value, t); env.gain.setTargetAtTime(0, t, 0.04); setTimeout(() => { alive = false; parts.forEach((p) => p.o.stop()); }, Math.max(0, (t - ctx.currentTime) * 1000) + 400); };
+      },
+      accent(tier, at) { strike(tier === 'max' ? 'storm' : 'crack', at); } },
+  ];
+
+  /* ---- Waiting styles for the manual peel -------------------------------- */
+  const WAITS = [
+    { id: 'hold', name: 'Holds at the top', tag: 'Today', text: `The hum climbs and then sits at full level for the whole wait, until the card turns. What you heard as annoying.` },
+    { id: 'hush', name: 'Settles to a hush', text: `It climbs, holds for a breath, then sinks to a quiet, muffled bed and waits there. The strike still lands at full size on the turn.` },
+    { id: 'hand', name: 'Follows your hand', tag: 'My pick', text: `Silent until the player touches a corner. Then it rises as far as they peel and falls back if they let go, so the sound is the player's own and never plays on its own.` },
+    { id: 'pulse', name: 'Fades into a heartbeat', text: `The hum climbs and fades away, and a slow, quiet heartbeat keeps time until the turn. Something is still happening, but it is soft.` },
+    { id: 'quiet', name: 'Goes quiet', text: `The hum climbs once and fades out completely. Only the music bed is left until the player turns it.` },
+  ];
+
+  /* ---- State, and the page ------------------------------------------------ */
+  let tier = 'max', win = true, soundId = 'crowd', waitId = 'hand';
+  let run = null; // { stopHum, bus, lp, stopExtras, timers }
+  const $ = (id) => document.getElementById(id);
+  function seg(id, set) { const el = $(id); el.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; el.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); set(b.dataset.v); }); }
+  seg('tier', (v) => (tier = v)); seg('land', (v) => { win = v === 'win'; paintCard(); });
+  const climbFor = () => (tier === 'max' ? 1.65 : 0.715);
+  const topFor = () => (tier === 'max' ? 0.4 : 0.385);
+
+  function makeBus() {
+    const bus = ctx.createGain(), lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 18000; lp.Q.value = 0.5;
+    bus.connect(lp); lp.connect(out()); tap(lp, 0.35); return { bus, lp };
+  }
+  function stopAll() {
+    if (!run) return;
+    try { run.stopHum(ctx.currentTime + 0.01); } catch (e) {}
+    (run.stopExtras || []).forEach((f) => f());
+    (run.timers || []).forEach(clearTimeout);
+    run.bus.gain.setTargetAtTime(0, ctx.currentTime, 0.03);
+    run = null;
+  }
+  $('stop').addEventListener('click', () => { if (ctx) stopAll(); resetBench(); });
+
+  function turnAt(t, sound) {
+    run && run.stopHum(t);
+    sound.accent(tier, t); flip(t); answer(win, t);
+  }
+
+  function playAuto(sound) {
+    ensure(); ctx.resume(); stopAll(); resetBench();
+    const { bus, lp } = makeBus(), climb = climbFor();
+    run = { bus, lp, stopHum: sound.start(bus, climb, tier), timers: [] };
+    const t = ctx.currentTime + climb + topFor();
+    const me = run;
+    run.timers.push(setTimeout(() => { if (run === me) { turnAt(ctx.currentTime + 0.005, sound); run = null; } }, (climb + topFor()) * 1000));
+  }
+
+  const soundsEl = $('sounds');
+  SOUNDS.forEach((s) => {
+    const card = document.createElement('article'); card.className = 'opt'; card.dataset.id = s.id;
+    card.innerHTML = `<h3>${s.name}${s.tag ? `<span class="tag now">${s.tag}</span>` : ''}</h3><p>${s.text}</p><div class="row"><button type="button" class="play">Play the hold</button><button type="button" class="pick" aria-pressed="false">Use for the peel</button></div>`;
+    card.querySelector('.play').addEventListener('click', () => { choose(s.id); playAuto(s); });
+    card.querySelector('.pick').addEventListener('click', () => choose(s.id));
+    soundsEl.appendChild(card);
+  });
+  function choose(id) { soundId = id; soundsEl.querySelectorAll('.opt').forEach((c) => { const on = c.dataset.id === id; c.classList.toggle('chosen', on); c.querySelector('.pick').setAttribute('aria-pressed', String(on)); }); }
+  choose('crowd');
+
+  const waitsEl = $('waits');
+  WAITS.forEach((w) => {
+    const card = document.createElement('article'); card.className = 'opt'; card.dataset.id = w.id;
+    card.innerHTML = `<h3>${w.name}${w.tag ? `<span class="tag${w.tag === 'Today' ? ' now' : ''}">${w.tag}</span>` : ''}</h3><p>${w.text}</p><div class="row"><button type="button" class="pick" aria-pressed="false">Wait this way</button></div>`;
+    card.querySelector('.pick').addEventListener('click', () => chooseWait(w.id));
+    waitsEl.appendChild(card);
+  });
+  function chooseWait(id) { waitId = id; waitsEl.querySelectorAll('.opt').forEach((c) => { const on = c.dataset.id === id; c.classList.toggle('chosen', on); c.querySelector('.pick').setAttribute('aria-pressed', String(on)); }); }
+  chooseWait('hand');
+
+  /* ---- The bench: deal, peel by hand, turn -------------------------------- */
+  const range = $('peelRange'), cardEl = $('card'), flapEl = $('flap'), status = $('status');
+  let waiting = false, dealtAt = 0, giveUp = 0;
+  function paintCard() {
+    const label = win ? '3♥' : '7♣';
+    $('face').textContent = label; $('flapIndex').textContent = label;
+    $('face').classList.toggle('black', !win); $('flapIndex').classList.toggle('black', !win);
+  }
+  function setPeel(v) {
+    range.value = v;
+    const w = cardEl.clientWidth, reach = Math.sqrt((v / 100) * 2 * w * cardEl.clientHeight);
+    flapEl.style.setProperty('--p', `${Math.min(reach, w * 0.9)}px`);
+    flapEl.style.setProperty('--show', v > 6 ? '1' : '0');
+    if (run && waitId === 'hand') {
+      const share = Math.min(1, v / 32);
+      run.bus.gain.setTargetAtTime(share < 0.02 ? 0 : 0.15 + 0.85 * share, ctx.currentTime, 0.06);
+      run.lp.frequency.setTargetAtTime(500 + 9000 * share * share, ctx.currentTime, 0.06);
+    }
+  }
+  function resetBench() {
+    waiting = false; clearTimeout(giveUp); range.disabled = true; $('turnNow').disabled = true; $('deal').disabled = false;
+    cardEl.classList.remove('turned'); setPeel(0); status.textContent = 'Press Deal to bring the card out.';
+  }
+  paintCard();
+  $('deal').addEventListener('click', () => {
+    ensure(); ctx.resume(); stopAll(); resetBench(); paintCard();
+    const sound = SOUNDS.find((s) => s.id === soundId);
+    $('deal').disabled = true; status.textContent = 'The card comes out in front...';
+    setTimeout(() => {
+      const { bus, lp } = makeBus(), climb = climbFor();
+      run = { bus, lp, stopHum: sound.start(bus, climb, tier), timers: [], stopExtras: [], sound };
+      const me = run;
+      if (waitId === 'hand') { bus.gain.value = 0; }
+      const settle = (climb + topFor()) * 1000;
+      if (waitId === 'hush') run.timers.push(setTimeout(() => { if (run !== me) return; bus.gain.setTargetAtTime(0.16, ctx.currentTime, 0.5); lp.frequency.setTargetAtTime(700, ctx.currentTime, 0.5); }, settle));
+      if (waitId === 'quiet' || waitId === 'pulse') run.timers.push(setTimeout(() => {
+        if (run !== me) return; bus.gain.setTargetAtTime(0, ctx.currentTime, 0.25);
+        if (waitId === 'pulse') {
+          const stop = every(0, (t) => { thud({ from: 74, to: 40, duration: 0.16, gain: 0.22, attack: 0.004, at: t }); thud({ from: 64, to: 38, duration: 0.13, gain: 0.13, attack: 0.004, at: t + 0.14 }); return 60 / 62; });
+          me.stopExtras.push(stop);
+        }
+      }, settle));
+      waiting = true; dealtAt = performance.now(); range.disabled = false; $('turnNow').disabled = false;
+      status.textContent = 'Drag the slider to peel the corner.';
+      giveUp = setTimeout(() => { if (waiting) { status.textContent = 'Untouched for 12 seconds: it turns itself.'; finish(); } }, 12000);
+    }, 420);
+  });
+  function finish() {
+    if (!waiting || !run) return;
+    waiting = false; clearTimeout(giveUp); range.disabled = true; $('turnNow').disabled = true;
+    const sound = run.sound;
+    turnAt(ctx.currentTime + 0.01, sound);
+    (run.stopExtras || []).forEach((f) => f());
+    run = null;
+    setPeel(0); cardEl.classList.add('turned');
+    status.textContent = `Turned after ${((performance.now() - dealtAt) / 1000).toFixed(1)} s.`;
+    setTimeout(() => { $('deal').disabled = false; }, 600);
+  }
+  range.addEventListener('input', () => { if (!waiting) return; setPeel(+range.value); if (+range.value >= 32) finish(); });
+  range.addEventListener('change', () => {
+    if (!waiting || +range.value >= 32) return;
+    // Let go too early: the corner falls back flat, and the sound with it.
+    const from = +range.value, t0 = performance.now();
+    const back = (now) => { const p = Math.min(1, (now - t0) / 180); if (!waiting) return; setPeel(from * (1 - p)); if (p < 1) requestAnimationFrame(back); };
+    requestAnimationFrame(back);
+  });
+  $('turnNow').addEventListener('click', finish);
+
+  /* Level meter: peak of the whole chain, so no rendition outshouts the win. */
+  let peak = 0;
+  const buf = new Float32Array(2048);
+  (function meter() {
+    if (meterNode) { meterNode.getFloatTimeDomainData(buf); let m = 0; for (const v of buf) m = Math.max(m, Math.abs(v)); peak = Math.max(peak * 0.995, m); $('meter').textContent = `Output peak ${peak > 0 ? (20 * Math.log10(peak)).toFixed(1) : '-∞'} dBFS`; window.__peak = peak; }
+    requestAnimationFrame(meter);
+  })();
+  window.__hum = { SOUNDS, playAuto, setTier: (v) => (tier = v), setWin: (v) => (win = v), resetPeak: () => (peak = 0), state: () => ctx && ctx.state };
+})();
+</script>
