@@ -59,6 +59,31 @@
 
   let handEl = $state<HTMLElement>();
 
+  /**
+   * A click OFF the cards closes the panel, like the backdrop does for every
+   * other panel. This one fills the screen (it scrolls under its heading on a
+   * small one), so it sits over its own backdrop and swallowed every click
+   * meant for it - the owner: "clicking outside the bet modes should dismiss
+   * it", 2026-10-23. A click inside a card, the heading or the notes stays.
+   *
+   * A pointer convenience, attached here rather than as an onclick on the
+   * dialog: its keyboard equivalent is Escape, which Game.svelte already
+   * gives every panel, and a click handler in the markup made svelte-check
+   * ask for a second, redundant key handler on a non-interactive element.
+   */
+  let panelEl = $state<HTMLElement>();
+  $effect(() => {
+    const panel = panelEl;
+    if (!panel) return;
+    const closeOnEmpty = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target || target.closest('.mcard, .mode-head, .mode-notes')) return;
+      onclose();
+    };
+    panel.addEventListener('click', closeOnEmpty);
+    return () => panel.removeEventListener('click', closeOnEmpty);
+  });
+
   // A card asked to confirm takes focus to its safe answer, Cancel - so a
   // keyboard player lands on the confirmation, and a stray Enter does not switch.
   $effect(() => {
@@ -75,6 +100,7 @@
     aria-modal="true"
     tabindex="-1"
     aria-label={t('Game mode')}
+    bind:this={panelEl}
     style={`--tint: ${volatilityColorVar(bet.family)}; --tint-rgb: ${volatilityColorRgbVar(bet.family)}; --tint-strong: ${volatilityColorVar(bet.family)}`}
   >
     <div class="popup-head mode-head">
