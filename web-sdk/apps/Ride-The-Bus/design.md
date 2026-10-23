@@ -19,6 +19,14 @@ drawn over the table is lit by that light: a lit top edge, a shaded bottom
 edge, a shadow that falls down and left. A uniform 1px hairline all the way
 round a box is the tell that it was drawn rather than lit.
 
+The room has a floor and two people in it (2026-10-22): the Floorman standing
+at the left of the table, the Boss in the far right corner with his cigar.
+They are PAINTED - the one place the game ships painted figures - so they are
+graded down into the room's light, darkened by its vignette like the wall
+behind them, and stand on contact shadows; nothing about them glows. They are
+scenery: behind the table, quiet, and they never react to a result before the
+cards show it.
+
 ## The material
 
 One panel. Three tokens — `--panel-face`, `--panel-elevation`,

@@ -75,6 +75,8 @@
   import { MUSIC_BED } from '../game/audio/bedAsset';
   import { COURT_ART_URL } from '../game/ui/courtAsset';
   import { loadCourtArt } from '../game/ui/courtArt.svelte';
+  import { CAST_ART_BASE } from '../game/scene/castAsset';
+  import { loadCast } from '../game/scene/cast.svelte';
   import {
     ceilingFor,
   } from '../game/math/modes';
@@ -587,6 +589,11 @@
   // court looks like if this never lands.
   loadCourtArt(COURT_ART_URL);
 
+  // The two men in the back room (BackRoomCast.svelte), fetched behind the
+  // loader the same way; the room is drawn without them until every frame has
+  // decoded, and for good if one never does.
+  loadCast(CAST_ART_BASE);
+
   // DEV ONLY: ?dev_deck=1 lays every card face out at every size it is drawn
   // (components/dev/DevDeck.svelte). Behind the same `import.meta.env.DEV`
   // literal as devOverrides, so a production build drops the import with it.
@@ -772,7 +779,7 @@
 >
 
   <!-- The table and its props. Decorative only - see TableScene.svelte. -->
-  <TableScene />
+  <TableScene showCast />
 
   <SessionReadouts />
 

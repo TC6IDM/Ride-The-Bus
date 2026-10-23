@@ -1,11 +1,12 @@
 # Licence evidence
 
-The documents behind the music-bed rows in [`ASSET_LICENCES.md`](../ASSET_LICENCES.md).
+The documents behind the music-bed and character-art rows in [`ASSET_LICENCES.md`](../ASSET_LICENCES.md).
 
 | File | Committed? | Why |
 |---|---|---|
 | `terms/suno-tos-2026-03-26.pdf` | **yes** | The Terms in force when the ten tracks were generated and downloaded on 2026-09-02. Replaced on Suno's site on 2026-09-03, so it cannot be re-fetched. |
 | `terms/suno-tos-2026-09-03.pdf` | **yes** | The Terms effective the following day, which govern the tracks going forward and contain the perpetual-rights clause. |
+| `terms/openai-terms-of-use-2026-10-22.pdf` | **yes** | OpenAI's Terms of Use (effective 2026-01-01), saved by the owner on 2026-10-22, the day the back room's characters were generated with ChatGPT. "Ownership of content" assigns the Output to the user. |
 | `private/Invoice-ZKHGT4B9-0001.pdf` | **no** | Billing name, home address, email. This repository is public. |
 | `private/Receipt-2187-0616-9413.pdf` | **no** | As above, plus a partial card number. |
 

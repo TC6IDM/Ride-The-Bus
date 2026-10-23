@@ -85,6 +85,15 @@ export const round = $state({
    *  could land a Huge win or bigger (lastCardTunnels in winTiers.ts). */
   holdTunnel: false,
   /**
+   * The Boss puffs at the DEAL this round (the owner's call, 2026-10-23): set
+   * at the start of the reveal on half the rounds whose last card WILL be
+   * held (willHoldLastCard in roundReveal). Rare by design - "a sign the game
+   * is going long". Unlike everything else the back room does, this one reads
+   * ahead of the cards: a puff at the deal says cards 1-3 will survive. The
+   * owner accepted that knowingly; see CHARACTER.MD.
+   */
+  bossPuffsEarly: false,
+  /**
    * Cumulative (quantized) win multiplier shown above each card as it is
    * revealed - climbs while the streak holds, then shows the banked value on
    * the bust card. null = not revealed yet.
@@ -225,6 +234,7 @@ export function resetForNewRound() {
   round.holdClimbMs = 0;
   round.lastCardHeld = false;
   round.holdTunnel = false;
+  round.bossPuffsEarly = false;
   round.wonAmount = 0;
   round.state = 'playing';
 }
@@ -254,6 +264,7 @@ export function clearBoard() {
   round.holdClimbMs = 0;
   round.lastCardHeld = false;
   round.holdTunnel = false;
+  round.bossPuffsEarly = false;
   round.wonAmount = 0;
   round.state = 'start';
   round.hasPlayed = false;

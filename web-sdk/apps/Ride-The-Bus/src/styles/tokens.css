@@ -586,6 +586,25 @@
   --room-lamp-rgb: 255, 210, 140;
   --room-print-paper-rgb: 217, 204, 176;
 
+  /* The floor the room stands on (2026-10-22, with the two characters - they
+     need something to stand on, and before it the panelling ran to the bottom
+     of the screen). Oak boards laid toward the far wall, five tones so no two
+     neighbours match; a skirting board where they meet the wall; a rug under
+     the table, its border the house crimson darkened to a dyed wool, with the
+     rail's brass for its stripe. All of it darker than the table in front of
+     it, so the table stays the brightest wood in the room. */
+  --floor-board-a: #4b2e1b;
+  --floor-board-b: #553520;
+  --floor-board-c: #432817;
+  --floor-board-d: #50311d;
+  --floor-board-e: #472b19;
+  --floor-seam-rgb: 10, 5, 2;
+  --floor-skirting: #24140a;
+  --floor-skirting-deep: #170c05;
+  --rug-field: #2b1a14;
+  --rug-border-rgb: 92, 10, 24;
+  --rug-border: rgb(var(--rug-border-rgb));
+
   /* Courts and aces. The court figures are the English pattern
      (art-masters/courts/), which prints every court in red, blue, yellow and
      black whatever its suit. Here card 1's guess is RED OR BLACK and a card is

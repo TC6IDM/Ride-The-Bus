@@ -1,0 +1,461 @@
+/* The two men in the back room and the Boss's bar cart (BackRoomCast.svelte).
+ *
+ * PLACED IN TABLE UNITS. .cast is the table's own box - the same width,
+ * aspect and centre as .table in table.css, which must change with it - and a
+ * container, so 1cqw here is 1% of the table's width wherever the window puts
+ * it. The numbers were set on the 1200x675 table (877.5 px wide) from the
+ * mocks the owner approved on 2026-10-22: the Floorman at the left edge, the
+ * Boss in the far right corner, 300 px tall, his cigar just clear of the chip
+ * stacks, the cart below him. Where the window is narrower than 16:9 the room
+ * beside the table shrinks, so each man's OUTER edge stops short of the screen
+ * edge ((100% - 100vw) / 2 is minus the room beside the table) and he moves in
+ * behind the table instead of off the screen.
+ *
+ * EVERY FRAME IS A WHOLE PAINTING, each locked to its master by the art
+ * script, so a pose change is a swap: the new frame fades in ON TOP over a
+ * tenth of a second, and only then does the old one go - fading both at once
+ * would show the wall through the figure halfway.
+ */
+
+.cast {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(96vw, 130vh);
+  aspect-ratio: 1.479 / 1;
+  transform: translate(-50%, -50%);
+  container-type: inline-size;
+  --cq: 1cqw;
+  pointer-events: none;
+}
+
+/* The same two fallbacks as .table, for engines without container units or
+   aspect-ratio (Safari < 16 and < 15). */
+@supports not (width: 1cqw) {
+  .cast {
+    --cq: min(0.96vw, 1.3vh);
+  }
+}
+@supports not (aspect-ratio: 1 / 1) {
+  .cast {
+    height: calc(min(96vw, 130vh) / 1.479);
+  }
+}
+
+/* A portrait screen has no room beside the table: the table overhangs the
+   sides there (table.css). Mobile is where the layout may change. */
+@media (orientation: portrait) {
+  .cast {
+    display: none;
+  }
+}
+
+.figure {
+  position: absolute;
+  aspect-ratio: var(--aspect);
+}
+
+/* THE FLOORMAN: head to shoe, standing at the left of the table on the floor,
+   in front of the wall print. */
+.floorman {
+  height: calc(57.55 * var(--cq));
+  left: max(calc(-17 * var(--cq)), calc((100% - 100vw) / 2 + 1.4 * var(--cq)));
+  top: calc(2.25 * var(--cq));
+}
+
+/* THE BOSS: the far right corner, behind the table's far rim - its edge and
+   the chips cover his near knee and the chair's front corner, which is what
+   says "behind" - his cigar hand and its smoke in clear view. */
+.boss {
+  height: calc(34.19 * var(--cq));
+  right: max(calc(-17.46 * var(--cq)), calc((100% - 100vw) / 2 + 0.9 * var(--cq)));
+  top: calc(-2.19 * var(--cq));
+}
+
+/* THE CART: his, below him, on the floor; its left end behind the table rim. */
+.cart {
+  height: calc(21.65 * var(--cq));
+  right: max(calc(-17.46 * var(--cq)), calc((100% - 100vw) / 2 + 0.9 * var(--cq)));
+  top: calc(38.15 * var(--cq));
+}
+
+.body {
+  position: absolute;
+  inset: 0;
+}
+
+.frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  /* Leaving: held a beat, then gone at once - after the new frame is up. */
+  transition: opacity 0s linear 110ms;
+  user-select: none;
+}
+
+.frame.on {
+  opacity: 1;
+  z-index: 1;
+  transition: opacity 100ms ease-out;
+}
+
+/* BREATHING. A slow rise of a fraction of a percent, from where each man's
+   weight rests - the Floorman's feet, the Boss's seat - so the chest and
+   shoulders lift and the feet stay put. The two are out of step. Scale, so it
+   composites. */
+.floorman .body {
+  transform-origin: 50% 99%;
+  animation: cast-breathe 4.8s ease-in-out infinite;
+  /* THE LEAN: while a held card is out he tips a couple of degrees toward
+     the table, from the ankles, and straightens when it turns. */
+  transition: rotate 0.9s cubic-bezier(0.3, 0.6, 0.3, 1);
+}
+
+.floorman.lean .body {
+  rotate: 2.4deg;
+}
+
+.boss .body {
+  transform-origin: 50% 74%;
+  animation: cast-breathe 5.3s ease-in-out -1.7s infinite;
+}
+
+@keyframes cast-breathe {
+  0%,
+  100% {
+    scale: 1 1;
+  }
+  42% {
+    scale: 1.003 1.006;
+  }
+}
+
+/* GROUNDING (reworked 2026-10-22: "he's floating off the floor"). Three
+   layers, all static, all outside .body so they stay on the floor while he
+   breathes and leans:
+
+   1. THE POOL - the floor darkening under the whole footprint, between the
+      feet and under the chair, the way a body occludes the light above it.
+      A point shadow per foot left a lit gap between the shoes, and an object
+      with light under it floats.
+   2. CONTACTS - where a shoe, a chair foot or a wheel actually touches: the
+      table's two-part recipe, a tight dark patch and a wide soft one, thrown
+      a little down and to the left, away from the lamp. Measured off each
+      figure by the art script (castGeometry.ts `feet`).
+   3. THE CAST SHADOW (the Boss) - his own silhouette, blurred, on the
+      panelling beside him and a little below, away from the lamp at the
+      upper right. He sits against the wall; with no shadow on it he was a
+      cut-out pasted on it. Static: the filter is drawn once. */
+.pool {
+  position: absolute;
+  left: calc(var(--px) * 100%);
+  top: calc(var(--py) * 100%);
+  width: calc(var(--pw) * 100%);
+  height: calc(var(--ph) * var(--cq));
+  translate: -50% -55%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.3) 55%, transparent);
+}
+
+/* Each footprint, as a share of the figure's box. */
+/* The Floorman's shade runs foot to foot (BackRoomCast's bridge): a long soft
+   ellipse along the line between his soles, thrown a little toward the
+   lower left, away from the lamp. */
+.bridge {
+  position: absolute;
+  left: calc(var(--bx) * 100%);
+  top: calc(var(--by) * 100%);
+  width: calc(var(--bl) * 100% + 7 * var(--cq));
+  height: calc(4 * var(--cq));
+  translate: -54% -38%;
+  rotate: calc(var(--ba) * 1deg);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.32) 55%, transparent);
+}
+
+.boss .pool {
+  --px: 0.6;
+  --py: 0.95;
+  --pw: 0.86;
+  --ph: 4.2;
+}
+
+.cart .pool {
+  --px: 0.46;
+  --py: 0.88;
+  --pw: 1;
+  --ph: 3.4;
+}
+
+/* Laid ALONG each sole, heel to toe, at its own angle (`a` from the art
+   script): a point under the lowest corner left a shoe's raised heel in the
+   air. */
+/* Most of each one lies BELOW its sole line (translate -20%, not -50%): the
+   half above it is under the shoe, where it shows nothing, and the first
+   version, centred on the line, left a sliver too thin to see. */
+.contact {
+  position: absolute;
+  left: calc(var(--x) * 100%);
+  top: calc(var(--y) * 100%);
+  width: calc(var(--w) * 100% + 2.4 * var(--cq));
+  height: calc(1.9 * var(--cq));
+  translate: -55% -22%;
+  rotate: calc(var(--a) * 1deg);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.5) 50%, transparent);
+}
+
+.contact::after {
+  content: '';
+  position: absolute;
+  inset: -90% -55%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.38), transparent);
+}
+
+/* HIS LEFT FOOT - the far one, on the right of the picture - stands further
+   back and catches the lamp, so the boards round it read lit: it gets a wider,
+   deeper shade of its own (the owner, 2026-10-23: "a little more shadow
+   around the left foot"). */
+.floorman .contact.c1 {
+  width: calc(var(--w) * 100% + 4.2 * var(--cq));
+  height: calc(2.6 * var(--cq));
+  translate: -56% -24%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.58) 50%, transparent);
+}
+
+.floorman .contact.c1::after {
+  inset: -110% -60%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.5), transparent);
+}
+
+/* The OCCLUSION LINE: where the sole actually meets the boards, the floor
+   goes nearly black in a thin band that hugs the sole from heel to toe. The
+   soft shadows above cannot make it - they are too wide to be that dark -
+   and without it the floor just under the heel and the arch read as lit. */
+.contact::before {
+  content: '';
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  top: 4%;
+  height: 34%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.92), rgba(0, 0, 0, 0.55) 60%, transparent);
+}
+
+.cast-shadow {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  translate: -6% 2.5%;
+  filter: brightness(0) blur(calc(0.9 * var(--cq)));
+  opacity: 0.4;
+}
+
+/* THE SCONCE (2026-10-23): a brass wall lamp with a fabric shade, on the
+   panelling left of the Boss's hat - the room's one light, which every
+   shadow on the table already places up there on the right. Placed in the
+   Boss's own box so it stays beside him at every window shape. Drawn, not
+   painted: brass plate and arm, a cup, and an empire shade lit from inside.
+   Its WASH is light falling on the wall - a soft scallop, brightest above
+   and below the shade, as a shaded lamp throws it - not a halo round it. */
+.sconce {
+  position: absolute;
+  left: 7%;
+  top: -3%;
+  width: 13%;
+  height: 25%;
+}
+
+.sconce > span {
+  position: absolute;
+}
+
+.sconce-wash {
+  left: -150%;
+  right: -150%;
+  top: -60%;
+  bottom: -110%;
+  background:
+    radial-gradient(28% 34% at 50% 22%, rgba(var(--room-lamp-rgb), 0.2), transparent 72%),
+    radial-gradient(22% 46% at 50% 62%, rgba(var(--room-lamp-rgb), 0.12), transparent 70%),
+    radial-gradient(44% 40% at 50% 40%, rgba(var(--room-lamp-rgb), 0.06), transparent 70%);
+}
+
+.sconce-plate {
+  left: 36%;
+  width: 28%;
+  top: 52%;
+  height: 34%;
+  border-radius: 50%;
+  background: radial-gradient(60% 55% at 62% 36%, #e2b85c, #a07428 55%, #5e4012 100%);
+  box-shadow: calc(-0.25 * var(--cq)) calc(0.3 * var(--cq)) calc(0.35 * var(--cq)) rgba(0, 0, 0, 0.55);
+}
+
+.sconce-arm {
+  left: 46%;
+  width: 8%;
+  top: 34%;
+  height: 32%;
+  border-radius: 40%;
+  background: linear-gradient(90deg, #5e4012, #c99a44 55%, #7a5418);
+}
+
+.sconce-cup {
+  left: 32%;
+  width: 36%;
+  top: 30%;
+  height: 9%;
+  border-radius: 0 0 50% 50% / 0 0 100% 100%;
+  background: linear-gradient(90deg, #5e4012, #d8ad55 60%, #8a611c);
+}
+
+/* An empire shade: narrow at the top, flared at the bottom, the bulb behind
+   the fabric making its lower half the brightest. */
+.sconce-shade {
+  left: 6%;
+  width: 88%;
+  top: 0;
+  height: 32%;
+  clip-path: polygon(26% 0, 74% 0, 100% 100%, 0 100%);
+  background:
+    linear-gradient(90deg, rgba(90, 50, 10, 0.4), transparent 30%, transparent 70%, rgba(90, 50, 10, 0.3)),
+    linear-gradient(180deg, #e7c88c 0%, #f6dfae 70%, #fbe9c4 100%);
+}
+
+/* THE CIGAR'S SMOKE: painted wisps (the art script cut them off the smoke
+   sheet) rising off the ember, drifting left and widening as they fade -
+   moved by transform and opacity only, so the compositor does all of it.
+   Three, out of step, so there is always one rising and never a crowd. Only
+   while the cigar rests: in his hand at his mouth, the ember is elsewhere. */
+.wisps {
+  position: absolute;
+  left: calc(var(--ex) * 100%);
+  top: calc(var(--ey) * 100%);
+  transition: opacity 0.35s;
+}
+
+.boss:not(.smoking) .wisps {
+  opacity: 0;
+}
+
+.wisp {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: calc(8.5 * var(--cq));
+  width: auto;
+  transform-origin: 50% 100%;
+  opacity: 0;
+  animation: cast-wisp 6.6s linear infinite;
+}
+
+.wisp:nth-child(2) {
+  animation-delay: -2.2s;
+}
+
+.wisp:nth-child(3) {
+  animation-delay: -4.4s;
+}
+
+@keyframes cast-wisp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 4%) scale(0.5);
+  }
+  14% {
+    opacity: 0.5;
+  }
+  65% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-78%, -55%) scale(1.15);
+  }
+}
+
+/* WHILE HE PUFFS: a small breath of smoke from his lips, rising and drifting
+   the way he faces, every second and a half until the turn. */
+.breath {
+  position: absolute;
+  left: calc(var(--mx) * 100%);
+  top: calc(var(--my) * 100%);
+  height: calc(5.2 * var(--cq));
+  width: auto;
+  transform-origin: 100% 60%;
+  /* The plume is cut out at about half strength (the art script); a breath
+     this small needs it all, and a little more. */
+  filter: brightness(1.25);
+  opacity: 0;
+  animation: cast-breath 1.7s ease-out forwards;
+}
+
+/* The exhale's own painted plume, small: a mouthful, not a lungful. */
+@keyframes cast-breath {
+  0% {
+    opacity: 0;
+    transform: translate(-100%, -55%) scale(0.3);
+  }
+  22% {
+    opacity: 1;
+  }
+  55% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-125%, -85%) scale(0.75);
+  }
+}
+
+/* THE EXHALE: one plume out of his lips as the held card turns, drifting the
+   way he faces (left) and thinning out. */
+.plume {
+  position: absolute;
+  left: calc(var(--mx) * 100%);
+  top: calc(var(--my) * 100%);
+  height: calc(14 * var(--cq));
+  width: auto;
+  transform-origin: 100% 50%;
+  opacity: 0;
+  animation: cast-plume 2.6s ease-out forwards;
+}
+
+@keyframes cast-plume {
+  0% {
+    opacity: 0;
+    transform: translate(-100%, -50%) scale(0.3);
+  }
+  16% {
+    opacity: 0.75;
+  }
+  45% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-135%, -62%) scale(1.2);
+  }
+}
+
+/* Reduced motion: both stand still on their idle frames - the moves are
+   switched off in cast.svelte.ts, the breath, the lean and the smoke here. */
+@media (prefers-reduced-motion: reduce) {
+  .floorman .body,
+  .boss .body {
+    animation: none;
+  }
+  .floorman.lean .body {
+    rotate: none;
+  }
+  .wisps,
+  .plume,
+  .breath {
+    display: none;
+  }
+}

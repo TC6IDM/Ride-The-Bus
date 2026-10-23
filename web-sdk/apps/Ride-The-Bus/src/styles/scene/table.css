@@ -59,18 +59,12 @@
      dado rail a third of the way down, dark boards below, and ONE lamp, from
      the upper right, which is where every shadow on the table already says the
      light is. Still: nothing here moves. --room-* in tokens.css. */
+  /* The vignette was the top layer of this stack until 2026-10-22. It is
+     .room-shade now, an element of its own over the floor and the two
+     characters, because a layer of THIS background can only darken what is
+     under .scene's children, and the characters are children: they stood at
+     the screen edge as bright as the middle of the room. */
   background:
-    /* The vignette proper, kept as its own layer over the room so the falloff
-       can bite hard at the frame edge without dragging the middle down with
-       it. Flat until 56% out - past that it closes down to near black in the
-       corners, which pushes the eye into the table and reads as a lit room. */
-    radial-gradient(
-      ellipse 76% 70% at 50% 46%,
-      transparent 0%,
-      rgba(0, 0, 0, 0.1) 56%,
-      rgba(0, 0, 0, 0.4) 80%,
-      rgba(0, 0, 0, 0.74) 100%
-    ),
     /* The lamp: a warm pool high on the right-hand wall. */
     radial-gradient(60% 55% at 76% 14%, rgba(var(--room-lamp-rgb), 0.18), rgba(var(--room-lamp-rgb), 0.05) 45%, transparent 70%),
     /* The dado rail: a lit brass edge over its own shadow. */
@@ -91,7 +85,11 @@
   left: max(14px, 5.3vw);
   top: max(14px, 5.9vh);
   width: clamp(56px, 12.5vw, 170px);
-  opacity: 0.55;
+  /* 0.55 until 2026-10-22, when the vignette moved from .scene's background
+     to .room-shade above it: the corner now darkens the print by about 28%,
+     the way it darkens the Floorman standing in front of it, and this puts
+     back what that took. */
+  opacity: 0.72;
 }
 
 .room-print svg {
@@ -106,6 +104,18 @@
 .room-print .print-stop { fill: var(--rail-wood-deep); stroke: var(--choice-equal); stroke-width: 1.6; }
 .room-print .print-end { fill: var(--choice-equal); }
 
+/* Where the door is on the wall (see THE FAR WALLS), the print takes its slot
+   beside it, measured off the table like the door, so the two can never
+   meet. */
+@media (orientation: landscape) and (min-aspect-ratio: 221/100) {
+  .room-print {
+    --t: min(96vw, 130vh);
+    left: calc(50vw - var(--t) / 2 - 0.33 * var(--t));
+    width: calc(0.11 * var(--t));
+    top: 14vh;
+  }
+}
+
 /* A phone held upright: the corner is small and the title wide; the print
    steps down to a thumbnail. */
 @media (max-width: 620px) and (orientation: portrait) {
@@ -114,6 +124,332 @@
     left: 3.6vw;
     top: 2.7vh;
   }
+}
+
+/* ---- the floor (2026-10-22) -------------------------------------------- */
+
+/* Where the wall meets the floor, below the dado rail: everything under this
+   line used to be more wall, so the table and the characters stood on nothing.
+   41% of the height, under the rail's 33% - the band between them is the dark
+   lower panelling. Set by the Boss's chair: its feet end at 44-46% of the
+   height at 16:9, 16:10 and 5:4 (his place is table-relative and the table's
+   height tracks the viewport's), so at 41% the chair stands a little in front
+   of the wall. At 46% - the first cut - the line ran just BELOW the chair's
+   feet, and he sat on the panelling (the owner: "his chair isnt on the
+   ground", 2026-10-22). */
+.room-floor {
+  position: absolute;
+  inset: 41% 0 0 0;
+  overflow: hidden;
+}
+
+/* The boards: one plane laid back in perspective so the seams run toward the
+   far wall, which is what the table's own ellipse says the camera sees. In
+   viewport-height units so the boards keep their width as the window scales.
+   Static - painted once, never animated. */
+.room-floor-plane {
+  position: absolute;
+  left: -80%;
+  right: -80%;
+  bottom: 0;
+  height: 420%;
+  transform-origin: 50% 100%;
+  transform: perspective(355vh) rotateX(58deg);
+  background:
+    /* The seam between boards, with the lamp catching its far lip. */
+    repeating-linear-gradient(
+      90deg,
+      rgba(var(--floor-seam-rgb), 0.85) 0 0.74vh,
+      rgba(var(--room-lamp-rgb), 0.1) 0.74vh 1.04vh,
+      transparent 1.04vh 13.6vh
+    ),
+    /* Five tones, one per board, so no two neighbours are the same plank. */
+    repeating-linear-gradient(
+      90deg,
+      var(--floor-board-a) 0 13.6vh,
+      var(--floor-board-b) 13.6vh 27.2vh,
+      var(--floor-board-c) 27.2vh 40.8vh,
+      var(--floor-board-d) 40.8vh 54.4vh,
+      var(--floor-board-e) 54.4vh 68vh
+    );
+}
+
+/* The butt joints, every other board, at two staggered lengths - without
+   them the floor read as one ribbed sheet. */
+.room-floor-plane::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 62vh, rgba(0, 0, 0, 0.45) 62vh 62.45vh, transparent 62.45vh 124vh),
+    repeating-linear-gradient(0deg, transparent 0 34vh, rgba(0, 0, 0, 0.4) 34vh 34.45vh, transparent 34.45vh 102vh);
+  -webkit-mask: repeating-linear-gradient(90deg, #000 0 13.6vh, transparent 13.6vh 27.2vh);
+  mask: repeating-linear-gradient(90deg, #000 0 13.6vh, transparent 13.6vh 27.2vh);
+}
+
+/* The rug under the table: a dark field inside the house crimson, with a
+   brass stripe set in from the edge. Mostly under the table; what shows is
+   its border either side, which is what says "a room someone furnished". */
+.room-rug {
+  position: absolute;
+  left: 50%;
+  bottom: 2%;
+  width: 30%;
+  height: 62%;
+  translate: -50% 0;
+  background:
+    linear-gradient(90deg, transparent 0 3.2%, rgba(var(--rail-brass-rgb), 0.55) 3.2% 3.8%, transparent 3.8% 96.2%, rgba(var(--rail-brass-rgb), 0.55) 96.2% 96.8%, transparent 96.8%),
+    linear-gradient(0deg, transparent 0 2.2%, rgba(var(--rail-brass-rgb), 0.55) 2.2% 2.7%, transparent 2.7% 97.3%, rgba(var(--rail-brass-rgb), 0.55) 97.3% 97.8%, transparent 97.8%),
+    linear-gradient(90deg, var(--rug-border) 0 6%, var(--rug-field) 6% 94%, var(--rug-border) 94%),
+    var(--rug-field);
+  box-shadow: inset 0 0 0 1.4vh var(--rug-border);
+}
+
+/* The light on the floor: the lamp's warmth toward the right, the boards
+   darkening as they come toward the camera and away from it. */
+.room-floor-light {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(70% 90% at 72% 0%, rgba(var(--room-lamp-rgb), 0.08), transparent 70%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.08) 30%, rgba(0, 0, 0, 0.4) 100%);
+}
+
+/* The skirting board along the foot of the wall: a lit top edge, then dark. */
+.room-skirting {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1.3vh;
+  background: linear-gradient(180deg, rgba(var(--rail-brass-rgb), 0.3) 0 1px, var(--floor-skirting) 1px, var(--floor-skirting-deep) 100%);
+  box-shadow: 0 0.3vh 0.9vh rgba(0, 0, 0, 0.6);
+}
+
+/* THE FAR WALLS (2026-10-23). At 21:9 a table-height window leaves about
+   580 px of bare wall either side; at 16:9, 16:10 and 5:4 there is none.
+ *
+ * EVERY PIECE HAS A SLOT, MEASURED OFF THE TABLE, AND IS SHOWN ONLY WHERE ITS
+ * WHOLE SLOT IS ON SCREEN. --t is the table's width, min(96vw, 130vh) as
+ * .table states it; on every window wider than about 1.35:1 that is 130vh, so
+ * at aspect ratio a each slot's outer edge is a fixed function of a, and the
+ * threshold below is where that edge clears the screen's own edge (1.2% in).
+ * The first version placed the door off the table and left the route print
+ * where it was, off the screen edge - and between 2:1 and 21:9 the two ran
+ * into each other (the owner, 2026-10-23). Now the print joins the slots too,
+ * so nothing on these walls can meet anything else:
+ *
+ *   left wall,  from the table out:  door      tl - 0.19t .. tl - 0.08t   (a >= 2.21)
+ *                                    print     tl - 0.33t .. tl - 0.22t   (a >= 2.21)
+ *   right wall, from the table out:  painting  tr + 0.19t .. tr + 0.29t   (a >= 2.11)
+ *                                    ace       tr + 0.31t .. tr + 0.385t  (a >= 2.36)
+ *
+ * The Floorman stands in front of the door (he guards it); the Boss ends at
+ * tr + 0.175t, so the painting clears him. Below 2.21 the print keeps its
+ * corner and the left wall shows nothing else. */
+.room-dressing {
+  position: absolute;
+  inset: 0;
+  --t: min(96vw, 130vh);
+  --table-left: calc(50vw - var(--t) / 2);
+  --table-right: calc(50vw + var(--t) / 2);
+}
+
+.room-door,
+.room-painting,
+.room-ace {
+  display: none;
+}
+
+@media (orientation: landscape) and (min-aspect-ratio: 211/100) {
+  .room-painting {
+    display: block;
+  }
+}
+
+@media (orientation: landscape) and (min-aspect-ratio: 221/100) {
+  .room-door {
+    display: block;
+  }
+}
+
+@media (orientation: landscape) and (min-aspect-ratio: 236/100) {
+  .room-ace {
+    display: block;
+  }
+}
+
+.room-door {
+  position: absolute;
+  left: calc(var(--table-left) - 0.19 * var(--t));
+  width: calc(0.11 * var(--t));
+  top: 13vh;
+  bottom: 59vh;
+  /* The architrave, in the panelling wood, a shade lighter. */
+  background: linear-gradient(90deg, #3a2213, #4a2c18 50%, #2e1a0e);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), -0.3vh 0.4vh 1.2vh rgba(0, 0, 0, 0.5);
+}
+
+.door-slab {
+  position: absolute;
+  inset: 5% 8% 0 8%;
+  background: linear-gradient(90deg, #1c0f08, #2a170c 60%, #1a0d06);
+  box-shadow: inset 0.3vh 0 0.6vh rgba(0, 0, 0, 0.55);
+}
+
+/* Four recessed panels: two tall above, two short below. A recess lit from
+   the upper right: its right inner edge in shade, its left one catching the
+   light, its top edge in shade. */
+.door-panel {
+  position: absolute;
+  background: #1f1109;
+  box-shadow:
+    inset -0.25vh 0.3vh 0.3vh rgba(0, 0, 0, 0.6),
+    inset 0.15vh -0.1vh 0 rgba(var(--room-lamp-rgb), 0.08);
+}
+
+.door-panel.p1 { left: 12%; width: 32%; top: 6%; height: 50%; }
+.door-panel.p2 { right: 12%; width: 32%; top: 6%; height: 50%; }
+.door-panel.p3 { left: 12%; width: 32%; top: 62%; height: 32%; }
+.door-panel.p4 { right: 12%; width: 32%; top: 62%; height: 32%; }
+
+.door-knob {
+  position: absolute;
+  right: 6%;
+  top: 56%;
+  width: 0.9vh;
+  height: 0.9vh;
+  border-radius: 50%;
+  background: radial-gradient(circle at 65% 35%, #f0cf7a, #a87a2a 60%, #4e3510);
+}
+
+/* The light from the room beyond, under the door, and its spill onto the
+   boards in front of it. */
+.door-light {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: -0.3vh;
+  height: 0.35vh;
+  background: rgba(var(--room-lamp-rgb), 0.55);
+  box-shadow: 0 0.6vh 1.6vh 0.4vh rgba(var(--room-lamp-rgb), 0.12);
+}
+
+/* The night city, on the right wall between the Boss and the house card. */
+.room-painting {
+  position: absolute;
+  left: calc(var(--table-right) + 0.19 * var(--t));
+  width: calc(0.1 * var(--t));
+  top: 13vh;
+  aspect-ratio: 120 / 84;
+  box-shadow: -0.3vh 0.5vh 1.2vh rgba(0, 0, 0, 0.55);
+  opacity: 0.85;
+}
+
+.room-painting svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.painting-frame {
+  fill: var(--rail-wood-deep);
+  stroke: var(--rail-brass);
+  stroke-width: 1.4;
+}
+
+.painting-moon { fill: #e6dcc0; opacity: 0.8; }
+.painting-city { fill: #07090e; }
+.painting-windows rect { fill: #e0a650; opacity: 0.75; }
+
+/* The frame: walnut with a brass lip, a dark mat, and the deck's card on its
+   own paper (--card-paper, --card-edge, --card-radius - .card-front's). The
+   card is 200 x 298, as CardFace draws it. */
+.room-ace {
+  position: absolute;
+  left: calc(var(--table-right) + 0.31 * var(--t));
+  width: calc(0.075 * var(--t));
+  top: 10vh;
+  aspect-ratio: 70 / 100;
+  box-sizing: border-box;
+  /* In the table's units: a percentage padding is a share of the PARENT's
+     width - here the whole screen - and squeezed the card to nothing. */
+  padding: calc(0.0098 * var(--t)) calc(0.0112 * var(--t));
+  background: #241510;
+  border: calc(0.006 * var(--t)) solid var(--rail-wood-deep);
+  outline: 1px solid var(--rail-brass);
+  outline-offset: -2px;
+  box-shadow: -0.3vh 0.5vh 1.2vh rgba(0, 0, 0, 0.55);
+  opacity: 0.85;
+}
+
+.ace-paper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 200 / 298;
+  border-radius: var(--card-radius, 6%);
+  overflow: hidden;
+  background: var(--card-paper);
+  color: var(--card-ink);
+  box-shadow: inset 0 0 0 1px var(--card-edge);
+}
+
+/* SMOKE UNDER THE CEILING (2026-10-23): three long, soft banks of haze in the
+   top third of the room, drifting very slowly back and forth - the Boss has
+   been at it all night. Grey, faint, no colour of its own; moved by
+   transform only, so the compositor does it. Still under reduced motion. */
+.room-haze {
+  position: absolute;
+  inset: 0 0 60% 0;
+  overflow: hidden;
+}
+
+.haze {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(200, 192, 180, 0.095), rgba(200, 192, 180, 0.04) 55%, transparent);
+  animation: room-haze 90s ease-in-out infinite alternate;
+}
+
+.haze.h1 { left: -10%; top: 2%; width: 70%; height: 46%; }
+.haze.h2 { left: 38%; top: 18%; width: 64%; height: 38%; animation-duration: 118s; animation-delay: -40s; }
+.haze.h3 { left: 12%; top: 40%; width: 52%; height: 34%; animation-duration: 104s; animation-delay: -70s; opacity: 0.8; }
+
+@keyframes room-haze {
+  from {
+    transform: translateX(-6%) scale(1, 1);
+  }
+  to {
+    transform: translateX(8%) scale(1.08, 0.94);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .haze {
+    animation: none;
+  }
+}
+
+/* THE VIGNETTE, over the floor and the characters and under the table. It
+   was the top layer of .scene's own background - see the note there. Same
+   gradient, unchanged: flat until 56% out, then closing to near black in the
+   corners, which pushes the eye into the table and reads as a lit room. */
+.room-shade {
+  position: absolute;
+  inset: 0;
+  --t: min(96vw, 130vh);
+  background:
+    /* The far walls fall into the dark (2026-10-23). Beyond the table's own
+       width the room fades toward black at the screen edges: nothing at 16:9,
+       where max() leaves no band, and a deep fall-off at 21:9, where there is
+       a wide strip of wall to lose. */
+    linear-gradient(90deg, rgba(0, 0, 0, 0.62) 0, transparent max(0px, calc(50vw - 0.7 * var(--t)))),
+    linear-gradient(270deg, rgba(0, 0, 0, 0.62) 0, transparent max(0px, calc(50vw - 0.7 * var(--t)))),
+    radial-gradient(
+    ellipse 76% 70% at 50% 46%,
+    transparent 0%,
+    rgba(0, 0, 0, 0.1) 56%,
+    rgba(0, 0, 0, 0.4) 80%,
+    rgba(0, 0, 0, 0.74) 100%
+  );
 }
 
 /* ---- the table ---------------------------------------------------------- */
@@ -353,7 +689,6 @@
    the contact point and a wide soft one further out. One blurred ellipse alone
    made every prop look pasted on. */
 .chip-shadow,
-.cup-shadow,
 .deck-shadow,
 .tickets-shadow {
   position: absolute;
@@ -363,7 +698,6 @@
 }
 
 .chip-shadow::after,
-.cup-shadow::after,
 .deck-shadow::after,
 .tickets-shadow::after {
   content: '';
@@ -595,260 +929,75 @@
   --chip-cream: var(--chip-white-cream);
 }
 
-/* ---- cup ---------------------------------------------------------------- */
+/* ---- the whiskey glass ---------------------------------------------------- */
 
-.cup {
-  /* Anchored on its BASE: a standing object sits at a point on the table and
-     rises from it, so centre-anchoring pushed the cup's mouth off the near edge
-     and onto the felt.
-   *
-   * Built from the camera rather than from the photograph. A party cup is about
-   * 1.26 mouth-diameters tall, so on screen it takes 1.26 * --upright = 0.93
-   * of its own width, plus the top half of the mouth ellipse above that and the
-   * front half of the base ellipse below - 1.49 in all. The mouth is then
-   * --flat of the width, which is 45.4% of that box, against the 19% the first
-   * version used. Those two numbers are the whole difference between a cup
-   * standing on this table and a cup photographed from the side. */
+/* A cut-crystal tumbler with a finger of whiskey (2026-10-23, the owner:
+   "change the party cup to a whiskey glass, almost identical to the one on
+   the bar cart", then "as detailed as possible", "less whiskey", "the entire
+   glass has that diamond pattern all around", "tilted exactly as the table
+   and the chips are"). It replaced a red party cup, whose comments are in git
+   history.
+ *
+ * The glass itself is TumblerGlass.svelte: geometry, a cylinder in this
+ * table's camera with the cut laid on its surface (game/ui/tumblerGeometry.ts
+ * has the argument). Its box is 100 x 133.9 in the glass's own units - half
+ * the mouth's --flat ellipse, the side at --upright, half the foot's - so it
+ * is anchored on its BASE, like every standing prop.
+ *
+ * Sized against the chips: an old-fashioned glass is about twice a chip's
+ * width (8 cm against 3.9), and the chips here are 5% of the table, so the
+ * glass is 8.4% - the 6.4% first drawn stood like a shot glass beside them.
+ *
+ * What is on the wood stays here, with every other prop's shadow: the
+ * table's two-part shadow thrown down and to the left, the lamp's light
+ * through the whiskey focused into it, and a faint reflection in the polish. */
+.tumbler {
   transform: translate(-50%, -100%);
-  --cup-w: calc(8.8 * var(--cq));
-  --mouth: calc(var(--cup-w) * var(--flat)); /* the mouth ellipse's height */
-  width: var(--cup-w);
-  height: calc(var(--cup-w) * 1.49);
+  --glass-w: calc(8.4 * var(--cq));
+  width: var(--glass-w);
+  height: calc(var(--glass-w) * 1.339);
 }
 
-/* The cup is the tallest prop, so its shadow is the longest and the softest -
-   at the chips' blur radius it read as a hard dark puddle stuck to the base.
-   It lies flat on the wood, so it is foreshortened like everything else. */
-.cup-shadow {
-  left: -42%;
-  bottom: -9%;
+.tumbler > span {
+  position: absolute;
+  display: block;
+}
+
+.tumbler-shadow {
+  left: -50%;
+  bottom: -12%;
   width: 128%;
-  height: 38%;
-  filter: blur(calc(1 * var(--cq)));
+  height: 36%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(26, 9, 0, 0.5), rgba(26, 9, 0, 0.26) 60%, transparent);
+  filter: blur(calc(0.35 * var(--cq)));
 }
 
-/* Tapered body, lit from the right: sampled #660E01 on the left, #7F1302 in
-   the middle, #6E1203 on the right - so the brightest band is just left of
-   centre, where a matte cylinder's terminator sits under a light this high. */
-.cup-body {
-  position: absolute;
-  left: 0;
-  /* Starts exactly on the mouth ellipse's widest chord - half the mouth's own
-     height down, i.e. 22.7% of the box. Any higher and the body is full width
-     ABOVE that chord, which puts a square shoulder either side of the rim: the
-     top of a cup has to come to the ellipse's leftmost and rightmost points,
-     not to a corner. */
-  top: 22.7%;
-  width: 100%;
-  height: 77.3%;
-  /* A cone with a rounded foot. The sides are straight, as a cone's silhouette
-     is, but the bottom is the front half of the base ellipse rather than a
-     straight cut: thirteen points stepped 15deg round it, x = 50 + 33*cos and
-     y = 80.6 + 19.4*sin, in the body's own percentages. The base is 66% of the
-     mouth's width and foreshortened by the same --flat, which at this camera
-     leaves a deep curve - the earlier 6.25% bulge belonged to the near-side-on
-     cup and read as a flat cut across the bottom. */
-  clip-path: polygon(
-    0 0,
-    100% 0,
-    83% 80.6%,
-    81.88% 85.62%,
-    78.58% 90.3%,
-    73.33% 94.32%,
-    66.5% 97.4%,
-    58.54% 99.34%,
-    50% 100%,
-    41.46% 99.34%,
-    33.5% 97.4%,
-    26.67% 94.32%,
-    21.42% 90.3%,
-    18.12% 85.62%,
-    17% 80.6%
-  );
-  /* NOTE - no apostrophes in any comment inside a declaration value: Svelte 5
-     scans a value for its end without skipping comments, so a lone ' opens a
-     string it never closes and the whole stylesheet fails to parse. */
+/* The lamp's light, through the whiskey and the thick base, focused onto the
+   wood inside the shadow: the whiskey's own amber, close to the foot, with a
+   brighter caustic in it where the base's curve gathers the light. */
+.tumbler-caustic {
+  left: -30%;
+  bottom: -9%;
+  width: 82%;
+  height: 26%;
+  border-radius: 50%;
   background:
-    /* Vertical fade: the near wall of a cone catches noticeably more light at
-       the top than at the base, and the whole thing sits down in the shade
-       cast across the wood. The moulded rings that used to live here as flat
-       180deg bands moved to ::before - a ring round a cone is a circle seen at
-       an angle, and drawing it as a horizontal line across the taper was the
-       thing making the cup look like a printed shape. */
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 40%, rgba(0, 0, 0, 0.22) 100%),
-    /* Glossy red plastic. Brighter and cleaner than the first pass, which was
-       nearly maroon - a party cup is a saturated red, and the narrow blown
-       highlight is most of what says "shiny" about it.
-       Mirrored about the centre from where it started: the highlight sat at 36%,
-       left of centre, which put the cups lit from the upper LEFT while every
-       shadow in the scene fell to the lower left. It now sits at 64% - right of
-       centre, where a light over the right shoulder puts it - and both
-       silhouette edges fall away, the left one hardest. */
-    linear-gradient(
-      90deg,
-      #430700 0%,
-      #6b0f03 13%,
-      #a01a07 34%,
-      #ae1d09 56%,
-      #cc3418 64%,
-      #b21f0c 70%,
-      #85160a 88%,
-      #4c0a01 100%
-    );
+    radial-gradient(48% 30% at 58% 52%, rgba(240, 173, 76, 0.45), transparent 70%),
+    radial-gradient(closest-side, rgba(190, 90, 26, 0.42), rgba(161, 66, 18, 0.18) 60%, transparent);
+  filter: blur(calc(0.12 * var(--cq)));
+  mix-blend-mode: screen;
 }
 
-/* The moulded ribs. Each is the front arc of a circle round the cone, so each
-   gets its own width and its own squash: at a height y down the body the cone
-   has half-width w = 50 - 17*(y/80.6), and that circle draws as an ellipse
-   2w wide and 2w * --flat tall (converted from the body's width into its height
-   because the two are not the same length).
-   The 17 is the whole taper: the clip-path narrows from 50% half-width at the
-   mouth to 33% at the base, a drop of 17 points. An earlier pass used 33 - the
-   x of the polygon's base corner rather than the change in half-width - and
-   every ring came out too small for the cup, badly so low down where the error
-   compounds.
-   Drawn as a full elliptical ring with the top half masked off, which strokes
-   the whole front arc from one silhouette to the other. An inset box-shadow
-   only reaches a short way either side of the very bottom, and border-bottom
-   thins to nothing well before the sides - both left the rib looking like a
-   smile floating on the middle of the cup instead of a band going round it. */
-.cup-rib {
-  position: absolute;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, transparent 0 96.5%, rgba(58, 6, 0, 0.4) 96.5% 100%);
-  filter: drop-shadow(0 calc(0.1 * var(--cq)) 0 rgba(255, 170, 142, 0.15));
-  /* Two masks, intersected.
-   *
-   * The first keeps the visible part of the ring. Cutting it at the ellipse's
-   * own midline - the obvious 50% - is what made every rib finish well short of
-   * the cup's edge and read as a ring too small for the cup it was on. A cone's
-   * silhouette does NOT touch each of its circles at the 90deg point the way a
-   * cylinder's does: it touches where cos(a) = R' * --flat / --upright, which
-   * for this taper is about 83deg, a little way BEHIND the widest point and so
-   * a little way above the midline. Cutting at 43.5% includes that, and the
-   * body's own clip-path then trims whatever falls outside the true silhouette.
-   *
-   * The second is a 4% taper at each end. A radial-gradient band is measured
-   * along each ray, so it is at its thickest exactly where it meets the edge;
-   * without the taper each rib ended in a blunt blob, and where the clip-path
-   * caught one it left a stray tick beside the cup. Keep it short - at 13% the
-   * ribs visibly fell short of the cup's own edge. */
-  -webkit-mask-image:
-    linear-gradient(180deg, transparent 43%, #000 43.5%),
-    linear-gradient(90deg, transparent 0, #000 4%, #000 96%, transparent 100%);
-  mask-image:
-    linear-gradient(180deg, transparent 43%, #000 43.5%),
-    linear-gradient(90deg, transparent 0, #000 4%, #000 96%, transparent 100%);
-  -webkit-mask-composite: source-in;
-  mask-composite: intersect;
-}
-
-/* Three close together below the lip at 13%, 19% and 26% of the real cup, then
-   the two lower steps at 72% and 91%. */
-.rib-1 { left: 2.21%; right: 2.21%; top: -17.54%; height: 56.08%; }
-.rib-2 { left: 3.23%; right: 3.23%; top: -12.14%; height: 54.89%; }
-.rib-3 { left: 4.43%; right: 4.43%; top: -5.74%; height: 53.48%; }
-.rib-4 { left: 12.23%; right: 12.23%; top: 35.84%; height: 44.32%; }
-.rib-5 { left: 15.46%; right: 15.46%; top: 53.03%; height: 40.53%; }
-
-/* Where the base meets the wood. A fade, not an ellipse: an ellipse's top edge
-   arced up into the body and read as a hole cut in the bottom of the cup. */
-.cup-body::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 24%;
-  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.42));
-}
-
-/* The mouth, read from the outside in. A red party cup is a two-shot moulding:
-   red on the outside, white all the way through the rolled lip and down the
-   whole inside. So there is only a sliver of red at the silhouette, then the
-   bright white lip, and then white wall running down to the drink. */
-.cup-rim {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  /* The mouth is a circle the width of the cup, so at this camera it is exactly
-     --flat of that - 45.4% of the box, not the 19% of a side-on view. */
-  height: var(--mouth);
-  border-radius: 50%;
-  /* The whole wall is 20% of the radius, not the 30% it started at: a party cup
-     is thin-walled, and the thick ring read as a plant pot. */
-  background: radial-gradient(
-    closest-side,
-    /* The white inside, seen down the far wall above the drink. The opening
-       runs out to 82% of the radius - a party cup is thin-walled, and at 72%
-       the whole rim read as a heavy collar. */
-    #cfc9c0 0 78%,
-    #e6e1d9 78% 82%,
-    /* The rolled lip. Still the thickest part of the wall by some way, because
-       it IS a roll - but 10% of the radius rather than 18%. */
-    #fcfaf6 82% 90%,
-    #f2eee7 90% 93%,
-    /* the roll turning over and away, still white but shaded */
-    #ddd7cc 93% 96.5%,
-    /* only now the red outside, and only as the sliver you can see of it */
-    #bf2f10 96.5% 98.5%,
-    #8c1a04 98.5% 100%
-  );
-  /* Biased right: the light comes over the right shoulder, so it reaches down
-     the far LEFT of the inside and the right inner wall is the part in shade. */
-  box-shadow: inset calc(-0.06 * var(--cq)) calc(0.12 * var(--cq)) calc(0.28 * var(--cq)) rgba(0, 0, 0, 0.34);
-}
-
-/* The drink, filling the rim's inner opening (70% of the mouth) and nudged
-   down, so a crescent of shadowed inner wall shows along the far side and none
-   along the near. It is the same circle as the mouth at 70% scale, so its
-   height is 70% of the mouth's - it foreshortens with everything else. */
-/* The hole in the top of the cup: exactly the rim's inner opening, 80% of the
-   mouth. It exists to CLIP the drink. A liquid surface sits below the rim, so
-   the near wall hides the front of it - without that the drink was simply a
-   disc laid over the cup, and any attempt to lower it pushed the front of the
-   disc out over the lip. It paints after .cup-rim so the drink covers the rim's
-   pale inner wall wherever there is liquid, and the wall shows through where
-   there is not. */
-.cup-inside {
-  position: absolute;
-  left: 9%;
-  right: 9%;
-  top: calc(var(--mouth) * 0.09);
-  height: calc(var(--mouth) * 0.82);
-  border-radius: 50%;
-  overflow: hidden;
-}
-
-/* The surface itself, in the opening's own percentages. A hair narrower than
-   the opening and dropped 10% of it, which leaves a thin crescent of white
-   wall along the far side and none along the near. */
-.cup-drink {
-  position: absolute;
-  left: 2%;
-  right: 2%;
-  top: 12%;
-  height: 96%;
-  border-radius: 50%;
-  /* A flat surface, so a flat gradient. The radial that was here read as a
-     dome of liquid bulging out of the cup once the mouth opened up to its real
-     ellipse - it was only ever hidden by how narrow the old one was. */
-  background: linear-gradient(180deg, #4a1902 0%, #6b2703 24%, #8a3806 60%, #722d08 100%);
-  box-shadow: inset calc(-0.07 * var(--cq)) calc(0.16 * var(--cq)) calc(0.3 * var(--cq)) rgba(0, 0, 0, 0.5);
-}
-
-/* A cup somebody has got further through. The level drops, so the surface sits
-   lower AND is narrower - the cup tapers, so less drink is a smaller circle -
-   and it is deeper in the cup's own shade. Dropping it 34% of the opening puts
-   most of a white far wall on show above the liquid and lets the near wall cut
-   off the front of it, which is what an emptier cup looks like from up here. */
-.cup-low .cup-drink {
+/* Its reflection in the polished table, just under the foot, fading. */
+.tumbler-reflection {
   left: 6%;
-  right: 6%;
-  top: 40%;
-  height: 88%;
-  background: linear-gradient(180deg, #2a0c01 0%, #451601 28%, #5e2304 64%, #4c1b05 100%);
+  width: 88%;
+  top: 84%;
+  height: 26%;
+  border-radius: 0 0 50% 50% / 0 0 70% 70%;
+  background: linear-gradient(180deg, rgba(161, 66, 18, 0.2), rgba(255, 240, 220, 0.05) 40%, transparent 85%);
+  filter: blur(calc(0.15 * var(--cq)));
 }
 
 /* ---- deck --------------------------------------------------------------- */
@@ -1061,7 +1210,7 @@
    flat stack is far shorter than a standing cup, so its centre sits a little
    above that base. The left cup keeps its place under the deck. */
 .p-tickets { left: 88%; top: 62%; } /* right, low */
-.p-cup-2 { left: 12%; top: 58%; } /* left, higher - under the deck */
+.p-glass { left: 12%; top: 58%; } /* left, higher - under the deck */
 
 /* Bottom left, on the matching arc round the near edge, and kept left of the
    Color square (x 26%). It stops short of the bottom of the wood: on a phone
@@ -1084,7 +1233,7 @@
   .p-chip-6,
   .p-chip-7,
   .p-chip-8,
-  .p-cup-2 {
+  .p-glass {
     display: none;
   }
 }
@@ -1147,7 +1296,7 @@
   .p-tickets { left: 57%; top: 12.8%; }
   /* No room beside the deck in the top band, so the left cup goes to the near
      edge instead - near the middle, where the rim runs lowest. */
-  .p-cup-2 { left: 42%; top: 97%; }
+  .p-glass { left: 42%; top: 97%; }
 
   /* The same two arcs, pulled in: on a phone the table is wider than the screen
      and the play column reaches further out, so the far ends of both arcs would

@@ -140,6 +140,10 @@ export async function playRevealSequence() {
   // Whether the last card may be held at all: only on a round with an Equal
   // pick behind it (lastCardHolds). From the choices the book was bet on.
   const mayHold = lastCardHolds(round.revealEvents.map((e) => e.choice));
+  // The Boss's early puff: on half the rounds whose last card WILL be held,
+  // he draws on his cigar at the deal (the owner's call, 2026-10-23 - a rare
+  // sign "the game is going long"). It reads ahead of the cards, knowingly.
+  round.bossPuffsEarly = mayHold && willHoldLastCard() && Math.random() < BOSS_EARLY_PUFF_SHARE;
   for (let i = 0; i < round.revealEvents.length; i++) {
     const event = round.revealEvents[i];
     // The hand rests on the deck before it is dealt (GameBoard's dealFromDeck),
@@ -312,6 +316,48 @@ export async function playRevealSequence() {
   }
 
   await settleRound();
+}
+
+/** Of the rounds whose last card will be held, the share the Boss puffs at
+ *  the deal ("only do it half of the time", the owner, 2026-10-23). */
+const BOSS_EARLY_PUFF_SHARE = 0.5;
+
+/**
+ * Whether this round's last card WILL be held - asked at the deal, for the
+ * Boss's early puff, and only for that. It walks cards 1 to n-1 exactly as the
+ * reveal loop below does (a right card multiplies, a forgivable miss keeps its
+ * share, any other miss ends the round before the last card) and then asks the
+ * hold the same questions the loop asks at the last card: lastCardHoldMs on
+ * what it could land, and a climb long enough to be felt. Unlike the loop it
+ * reads `.correct` - it is the one place that looks ahead, by the owner's
+ * choice - which is why it is its own function, outside the hold block the
+ * tests slice.
+ */
+export function willHoldLastCard(): boolean {
+  const events = round.revealEvents;
+  const last = events.length - 1;
+  if (last < 1) return false;
+  const rules = familyRules();
+  let running = 1;
+  let spent = false;
+  const bustedIndex: number | null = null;
+  let forgivenIndex: number | null = null;
+  for (let i = 0; i < last; i++) {
+    if (events[i]!.correct) {
+      running *= events[i]!.payout;
+    } else if (forgivenessAvailable(rules, i, spent)) {
+      running *= rules.forgive!;
+      spent = true;
+      forgivenIndex = i;
+    } else {
+      return false;
+    }
+  }
+  const landing = quantizeMultiplier(running * events[last]!.payout * topTicket(rules) * rules.cost);
+  const fullGameWin = isCleanSweep(bustedIndex, forgivenIndex) && rules.celebrateEveryFullWin;
+  const hold = lastCardHoldMs(landing, fullGameWin, winTiers());
+  if (hold <= 0) return false;
+  return holdClimbMs(paceMs(hold, 0) + paceMs(650, 0)) >= HOLD_MIN_CLIMB * 1000;
 }
 
 /**
