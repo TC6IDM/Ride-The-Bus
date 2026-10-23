@@ -22,6 +22,7 @@ export default {
 	Stop: '停止',
 	left: '剩余',
 	'Pick all 4 guesses': '请选择全部 4 项预测',
+	'Pick both Equals': '请选择两个相同',
 	'Enter a number of plays': '请输入游戏局数',
 	'Enter a valid bet': '请输入有效的投注额',
 	'Set rounds': '设置局数',

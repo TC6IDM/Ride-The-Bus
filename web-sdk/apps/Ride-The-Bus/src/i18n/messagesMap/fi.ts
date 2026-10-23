@@ -22,6 +22,7 @@ export default {
 	Stop: 'Pysäytä',
 	left: 'jäljellä',
 	'Pick all 4 guesses': 'Valitse kaikki 4 arvausta',
+	'Pick both Equals': 'Valitse molemmat Yhtä suuri',
 	'Enter a number of plays': 'Syötä kierrosten määrä',
 	'Enter a valid bet': 'Syötä kelvollinen panos',
 	'Set rounds': 'Aseta kierrokset',

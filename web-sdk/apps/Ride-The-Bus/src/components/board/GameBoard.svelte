@@ -29,6 +29,9 @@
     setIoChoice,
     setSuitChoice,
     allChoicesMade,
+    choicesNeeded,
+    toggleTripsPick,
+    tripsPicks,
     betLevels,
     betValue,
   } from '../../game/bet/betState.svelte';
@@ -339,7 +342,7 @@
    * on a phone, a band of empty table between the cards and the guesses. Until
    * the four are picked, it says the one thing there is to do. Once they are,
    * or once a round has been dealt, it goes: it is a first-deal prompt, not a
-   * nag. Three of a Kind has nothing to pick, so it never shows there.
+   * nag. On Three of a Kind it asks for the two Equals (2026-10-23).
    */
   const showHint = $derived(
     !readout.hasPlayed &&
@@ -360,6 +363,9 @@
   const hlSpot = $derived(chipAt('hl', guesses.hl));
   const ioSpot = $derived(chipAt('io', guesses.io));
   const suitSpot = $derived(chipAt('suit', guesses.suit));
+  // Three of a Kind's two badges: each its own chip, where it was clicked.
+  const tripsTwoSpot = $derived(chipAt('trips', tripsPicks.two ? 'two' : null));
+  const tripsThreeSpot = $derived(chipAt('trips', tripsPicks.three ? 'three' : null));
 
   /**
    * WHICH CHIP: the bet's own (the owner's call, 2026-10-18). The bet menu's
@@ -795,7 +801,7 @@
          going moves nothing (cards.css). Mounted only while it shows: hidden
          text left in the readout would be read back by anything that reads
          the readout's text. -->
-    {#if showHint}<span class="running-win-hint">{t('Pick all 4 guesses')}</span>{/if}
+    {#if showHint}<span class="running-win-hint">{t(choicesNeeded())}</span>{/if}
     <!-- No ceiling figure here before the first deal: "Pays up to X your bet"
          sat in this slot from 2026-09-27 and came out on the owner's call
          (2026-10-01). The picks' ceiling is stated in How to Play. -->
@@ -825,22 +831,23 @@
 <p class="round-announcer" role="status">{announcement}</p>
 
 {#if fixed}
-  <!-- Three of a Kind: no guesses to make. Two Equal squares under the gaps
-       between the three cards - what the mode plays, stated by the controls
-       themselves rather than by a caption over disabled ones, each labelled
-       the way the four-guess columns are. The squares are read-only - the
-       round is one bet mode, so there is nothing a press could change. -->
+  <!-- Three of a Kind: two Equal badges under the gaps between the three
+       cards - what the mode plays, stated by the controls themselves, each
+       labelled the way the four-guess columns are. The player PICKS each
+       (the owner, 2026-10-23): they start unselected, a press sets a chip
+       down near where it landed, clear of the "=", and the deal waits for
+       both. They change nothing the round buys - it is one bet mode. -->
   <div class="choice-row trips-row" class:locked={choicesLocked()} aria-busy={choicesLocked()}>
     <div class="choice-column" class:is-missed={round.bustedIndex === 1} class:is-forgiven={round.forgivenIndex === 1}>
       <span class="choice-label"><span>{t('Equal')}</span></span>
-      <div class="equal-slot" role="img" aria-label={t('Card 2 must match card 1')}>
-        <span class="equal-btn equal-full selected">{@render iconEquals()}</span>
+      <div class="equal-slot">
+        <button type="button" class="equal-btn equal-full" class:selected={tripsPicks.two} aria-pressed={tripsPicks.two} onclick={(event) => pick(toggleTripsPick, 'two', 'trips', event)} aria-disabled={choicesLocked()} aria-label={t('Card 2 must match card 1')}>{@render iconEquals()}{#if tripsPicks.two}{@render pickChip(tripsTwoSpot)}{/if}</button>
       </div>
     </div>
     <div class="choice-column" class:is-missed={round.bustedIndex === 2} class:is-forgiven={round.forgivenIndex === 2}>
       <span class="choice-label"><span>{t('Equal')}</span></span>
-      <div class="equal-slot" role="img" aria-label={t('Card 3 must match card 1')}>
-        <span class="equal-btn equal-full selected">{@render iconEquals()}</span>
+      <div class="equal-slot">
+        <button type="button" class="equal-btn equal-full" class:selected={tripsPicks.three} aria-pressed={tripsPicks.three} onclick={(event) => pick(toggleTripsPick, 'three', 'trips', event)} aria-disabled={choicesLocked()} aria-label={t('Card 3 must match card 1')}>{@render iconEquals()}{#if tripsPicks.three}{@render pickChip(tripsThreeSpot)}{/if}</button>
       </div>
     </div>
   </div>

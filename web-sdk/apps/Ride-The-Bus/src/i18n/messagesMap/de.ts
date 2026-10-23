@@ -22,6 +22,7 @@ export default {
 	Stop: 'Stopp',
 	left: 'übrig',
 	'Pick all 4 guesses': 'Wähle alle 4 Tipps',
+	'Pick both Equals': 'Wähle beide Gleich',
 	'Enter a number of plays': 'Gib eine Anzahl Spiele ein',
 	'Enter a valid bet': 'Gib einen gültigen Einsatz ein',
 	'Set rounds': 'Runden festlegen',

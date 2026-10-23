@@ -22,6 +22,7 @@ export default {
 	Stop: 'Durdur',
 	left: 'kaldı',
 	'Pick all 4 guesses': '4 tahminin tümünü seçin',
+	'Pick both Equals': 'İki Eşit seçeneğini de seçin',
 	'Enter a number of plays': 'Tur sayısını girin',
 	'Enter a valid bet': 'Geçerli bir bahis girin',
 	'Set rounds': 'Tur sayısını ayarla',

@@ -229,9 +229,9 @@
            action. The second changes only how the next celebration looks,
            never the round. The third is how the held last card is squeezed
            (squeeze.svelte.ts): peeled by the player's own hand rather than
-           peeling itself - here by the owner's call (2026-10-20). It is a
-           setting for the player's own rounds; autoplay always peels for
-           them. -->
+           peeling itself - here by the owner's call (2026-10-20). Since
+           2026-10-23 it holds on autoplay too: a run waits for the player's
+           hand at every held card (the owner asked for exactly that). -->
       <div class="stop-switches">
         <div class="stop-row">
           <span class="control-label">{t('Stop autoplay on full game win')}</span>

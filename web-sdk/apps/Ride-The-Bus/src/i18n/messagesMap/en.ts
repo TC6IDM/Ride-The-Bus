@@ -36,6 +36,7 @@ export default {
 	Stop: 'Stop',
 	left: 'left',
 	'Pick all 4 guesses': 'Pick all 4 guesses',
+	'Pick both Equals': 'Pick both Equals',
 	'Enter a number of plays': 'Enter a number of plays',
 	'Enter a valid bet': 'Enter a valid bet',
 	'Set rounds': 'Set rounds',

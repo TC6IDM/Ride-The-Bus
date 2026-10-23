@@ -22,6 +22,7 @@ export default {
 	Stop: 'रोकें',
 	left: 'शेष',
 	'Pick all 4 guesses': 'चारों अनुमान चुनें',
+	'Pick both Equals': 'दोनों बराबर चुनें',
 	'Enter a number of plays': 'राउंड की संख्या दर्ज करें',
 	'Enter a valid bet': 'मान्य दांव दर्ज करें',
 	'Set rounds': 'राउंड तय करें',

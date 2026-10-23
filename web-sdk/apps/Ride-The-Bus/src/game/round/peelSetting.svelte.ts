@@ -4,8 +4,9 @@
  * itself. Off by default - the automatic squeeze is the game's - and kept on
  * this device, like the sound levels, because it is how this player likes to
  * play rather than part of any one round. The switch is in the autoplay panel
- * (the owner's call), beside the other two; autoplay itself always turns the
- * card for the player (roundReveal.svelte.ts).
+ * (the owner's call), beside the other two. It holds on autoplay too since
+ * 2026-10-23 - a run waits for the hand at each held card (roundReveal's
+ * peelsByHand).
  */
 const KEY = 'ride-the-bus:peel-myself';
 

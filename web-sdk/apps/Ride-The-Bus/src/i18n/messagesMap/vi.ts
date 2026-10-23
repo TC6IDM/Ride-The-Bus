@@ -22,6 +22,7 @@ export default {
 	Stop: 'Dừng',
 	left: 'còn lại',
 	'Pick all 4 guesses': 'Chọn cả 4 dự đoán',
+	'Pick both Equals': 'Chọn cả hai Bằng nhau',
 	'Enter a number of plays': 'Nhập số vòng',
 	'Enter a valid bet': 'Nhập mức cược hợp lệ',
 	'Set rounds': 'Đặt số vòng',

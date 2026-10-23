@@ -23,6 +23,7 @@ export default {
 	Stop: 'إيقاف',
 	left: 'متبقٍ',
 	'Pick all 4 guesses': 'اختر التخمينات الأربعة',
+	'Pick both Equals': 'اختر علامتي التساوي',
 	'Enter a number of plays': 'أدخل عدد الجولات',
 	'Enter a valid bet': 'أدخل رهانًا صالحًا',
 	'Set rounds': 'حدد عدد الجولات',

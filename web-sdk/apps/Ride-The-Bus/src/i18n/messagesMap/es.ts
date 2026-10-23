@@ -22,6 +22,7 @@ export default {
 	Stop: 'Parar',
 	left: 'restantes',
 	'Pick all 4 guesses': 'Elige las 4 predicciones',
+	'Pick both Equals': 'Elige los dos Igual',
 	'Enter a number of plays': 'Introduce un número de jugadas',
 	'Enter a valid bet': 'Introduce una apuesta válida',
 	'Set rounds': 'Definir rondas',

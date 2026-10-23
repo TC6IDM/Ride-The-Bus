@@ -22,6 +22,7 @@ export default {
 	Stop: '停止',
 	left: '残り',
 	'Pick all 4 guesses': '4つすべて選択してください',
+	'Pick both Equals': 'イコールを2つとも選択してください',
 	'Enter a number of plays': 'ラウンド数を入力してください',
 	'Enter a valid bet': '有効なベット額を入力してください',
 	'Set rounds': 'ラウンド数を設定',

@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
 import { readFileSync } from 'node:fs';
 
-import { EQUAL_SPOT, SPOT_DEG, SUIT_CLEAR, chipAt, chipSpot, chipWallStripes, placeChip } from '../chipSpot.ts';
+import { EQUAL_SPOT, SPOT_DEG, SUIT_CLEAR, TRIPS_K, TRIPS_SIGN, chipAt, chipSpot, chipWallStripes, placeChip, tripsSpot } from '../chipSpot.ts';
 import { chipColour, chipForBet, chipInlayAlt } from '../../bet/betChips.ts';
 
 const fixed = (value: number) => () => value;
@@ -53,6 +53,45 @@ describe('a chip lands near the click, inside the rules', () => {
     const placed = placeChip('color', 'black', { x: 0.6, y: 0.3 });
     assert.equal(chipAt('color', 'black'), placed);
     assert.equal(chipAt('color', null), null);
+  });
+});
+
+/**
+ * Three of a Kind's Equal badges (the owner, 2026-10-23): the chip lies as
+ * near the click as it can without covering the sign - its whole disc clear
+ * of the "=" - wherever on the badge the click lands.
+ */
+describe('a chip on a Three of a Kind badge', () => {
+  const clear = (x: number, y: number) =>
+    Math.abs(x - 0.5) >= TRIPS_SIGN.halfW + TRIPS_K - 1e-9 || Math.abs(y - 0.5) >= TRIPS_SIGN.halfH + TRIPS_K - 1e-9;
+
+  test('never covers the sign, wherever the click lands - and the keyboard one does not either', () => {
+    for (let i = 0; i <= 40; i++) {
+      for (let j = 0; j <= 40; j++) {
+        const spot = tripsSpot({ x: i / 40, y: j / 40 }, () => 0.5);
+        assert.ok(clear(spot.x, spot.y), `a click at ${i / 40},${j / 40} put the chip on the sign`);
+      }
+    }
+    for (const r of [0, 0.3, 0.7, 0.999]) {
+      const spot = tripsSpot(null, () => r);
+      assert.ok(clear(spot.x, spot.y));
+    }
+  });
+
+  test('lies where it was clicked when that is clear, and moves the shortest way out when not', () => {
+    assert.deepEqual([tripsSpot({ x: 0.1, y: 0.1 }, () => 0).x, tripsSpot({ x: 0.1, y: 0.1 }, () => 0).y], [0.1, 0.1]);
+    // Just under the sign: out through the bottom, not the side.
+    const under = tripsSpot({ x: 0.5, y: 0.6 }, () => 0);
+    assert.equal(under.x, 0.5);
+    assert.ok(Math.abs(under.y - (0.5 + TRIPS_SIGN.halfH + TRIPS_K)) < 1e-9);
+    // At the sign's left end: out through the left.
+    const left = tripsSpot({ x: 0.2, y: 0.5 }, () => 0);
+    assert.equal(left.y, 0.5);
+    assert.ok(left.x < 0.5 - TRIPS_SIGN.halfW);
+  });
+
+  test('is the badge column of chipSpot', () => {
+    assert.deepEqual(chipSpot('trips', 'two', { x: 0.1, y: 0.9 }, () => 0), tripsSpot({ x: 0.1, y: 0.9 }, () => 0));
   });
 });
 

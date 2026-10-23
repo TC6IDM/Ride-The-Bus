@@ -249,7 +249,32 @@ export function formatBetInput() {
  * on a family whose tokens are fixed (Three of a Kind's three - it has nothing
  * to pick, so its Start button is never waiting on the board).
  */
-export const allChoicesMade = () => modeChoices(bet.family, guesses) !== null;
+/**
+ * Three of a Kind's two Equals, PICKED (the owner, 2026-10-23: "although the
+ * equals are the only options available, they should start unselected, and
+ * the user should be able to select them. They have to select them to start
+ * the round"). They change nothing the round buys - the family has one bet
+ * mode, fixedChoices - so they live beside the guesses rather than in them:
+ * the slug is still built by modeChoices() alone. Cleared each time the
+ * player switches to the family (ModePopup), so they start unselected.
+ */
+export const tripsPicks = $state({ two: false, three: false });
+
+export function toggleTripsPick(which: 'two' | 'three') {
+  tripsPicks[which] = !tripsPicks[which];
+}
+
+export function clearTripsPicks() {
+  tripsPicks.two = false;
+  tripsPicks.three = false;
+}
+
+export const allChoicesMade = () =>
+  modeChoices(bet.family, guesses) !== null && (familyRules().fixedChoices === null || (tripsPicks.two && tripsPicks.three));
+
+/** What the deal button says while the picks are not made. */
+export const choicesNeeded = (): 'Pick all 4 guesses' | 'Pick both Equals' =>
+  familyRules().fixedChoices === null ? 'Pick all 4 guesses' : 'Pick both Equals';
 
 // --- The one impossible pairing --------------------------------------------
 // Stage 2 "equal" ties card 2 to card 1's rank, which leaves nothing strictly

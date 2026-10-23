@@ -41,7 +41,7 @@
     volatilityColorRgbVar,
     volatilityColorVar,
   } from '../../game/math/volatility';
-  import { bet, selectedCeiling, volatilityLabel } from '../../game/bet/betState.svelte';
+  import { bet, clearTripsPicks, selectedCeiling, volatilityLabel } from '../../game/bet/betState.svelte';
   import { titleFaceFor } from '../../game/ui/displayFace';
   import { fitBlock } from '../../game/ui/fitValue';
 
@@ -182,6 +182,8 @@
                   // last round's cards back over - see clearBoard.
                   if (stageCount(FAMILY_RULES[to]) !== stageCount(FAMILY_RULES[bet.family])) clearBoard();
                   bet.family = to;
+                  // Three of a Kind's Equals start unselected each time.
+                  if (to === 'tr') clearTripsPicks();
                   bet.pending = null;
                   onclose();
                 }}
