@@ -32,11 +32,12 @@ export const R = 50;
 export const R_IN = 44;
 export const H = 90;
 export const BASE = 11;
-/** The whiskey's surface, one finger above the base (the owner: "less"). */
-export const SURFACE = BASE + 10;
+/** The whiskey's surface: a finger and a half above the base (the owner:
+ *  "less" from two fingers, then "fill a little more" from one). */
+export const SURFACE = BASE + 15;
 /** The cut runs from just above the foot to a plain band under the rim. */
 const CUT_FROM = 3;
-const CUT_TO = 72;
+export const CUT_TO = 72;
 
 /** The box: half the foot's ellipse, the side, half the mouth's. */
 export const VIEW_H = +(R * FLAT * 2 + H * UPRIGHT).toFixed(2);
@@ -96,6 +97,27 @@ export const WHISKY_BODY = (() => {
 
 export const WHISKY_SURFACE = ellipsePath(SURFACE, R_IN);
 
+/** Half of an ellipse at height h: the FAR half (away from the viewer) or the
+ *  NEAR half, left to right. */
+export function halfEllipse(h: number, r: number, half: 'far' | 'near'): string {
+	const cy = centreY(h);
+	const ry = r * FLAT;
+	return `M ${f(50 - r)} ${f(cy)} A ${r} ${f(ry)} 0 0 ${half === 'far' ? 1 : 0} ${f(50 + r)} ${f(cy)}`;
+}
+
+/** The meniscus where the whiskey climbs the glass, far and near, and the
+ *  near edge of the inside floor, where the light gathers. */
+export const MENISCUS_FAR = halfEllipse(SURFACE, R_IN, 'far');
+export const MENISCUS_NEAR = halfEllipse(SURFACE, R_IN, 'near');
+export const FLOOR_NEAR = halfEllipse(BASE, R_IN - 1, 'near');
+
+/** The glass's rim, mirrored in the whiskey: a ring just inside the far
+ *  meniscus. */
+export const RIM_MIRROR = halfEllipse(SURFACE, R_IN - 3.5, 'far');
+
+/** The surface's own box, for gradients laid across it. */
+export const SURFACE_BOX = { x: 50 - R_IN, y: centreY(SURFACE) - R_IN * FLAT, w: R_IN * 2, h: R_IN * FLAT * 2 };
+
 /** The thick base, seen through the front: from the inside floor down to the
  *  foot. */
 export const BASE_BODY = (() => {
@@ -132,7 +154,22 @@ export type Facet = {
 	h: number;
 	/** Whether it is on the near side of the glass. */
 	front: boolean;
+	/** Where round the glass, as the sine of its angle: -1 the left edge, 0
+	 *  the middle, +1 the right edge - the edges are where the glass is
+	 *  thickest to the eye, and darkest. */
+	side: number;
+	/** A fixed random 0..1 of its own. Real cut crystal does not light up in
+	 *  a tidy pattern: each facet is angled a hair differently by the wheel,
+	 *  so it catches the lamp, or the whiskey, or the dark, at its own whim -
+	 *  the even net of lines the first version drew read as wire mesh. */
+	n: number;
 };
+
+/** A seeded hash, so the cut's scatter is the same on every load. */
+function noise(i: number): number {
+	const x = Math.sin(i * 127.1 + 311.7) * 43758.5453;
+	return x - Math.floor(x);
+}
 
 /**
  * Every facet of the cut, near side and far. A diamond is centred on a point
@@ -172,6 +209,8 @@ export const FACETS: readonly Facet[] = (() => {
 					light: Math.max(-1, Math.min(1, bias + side)),
 					h,
 					front,
+					side: Math.sin(a),
+					n: noise(out.length),
 				});
 			}
 		}
@@ -213,4 +252,25 @@ export const GROOVES = (() => {
 /** The real-height band the whiskey fills, for the facets that sit in it. */
 export function inWhisky(h: number): boolean {
 	return h > BASE - 2 && h < SURFACE + 2;
+}
+
+/** An arc of the circle of radius r at height h, from angle a0 to a1 (0 =
+ *  nearest the viewer, positive toward the right), as a polyline - for the
+ *  rim's highlights, which lie ON the rim rather than floating near it. */
+export function arcPath(h: number, r: number, a0: number, a1: number, steps = 24): string {
+	const pts: string[] = [];
+	for (let i = 0; i <= steps; i++) pts.push(pt(project(a0 + ((a1 - a0) * i) / steps, h, r)));
+	return `M ${pts.join(' L ')}`;
+}
+
+/** A line straight up the outside of the glass at angle a, from height h0 to
+ *  h1 - how a highlight runs on a cylinder: vertical, from foot to rim. */
+export function upTheSide(a: number, h0: number, h1: number, r = R): string {
+	return `M ${pt(project(a, h0, r))} L ${pt(project(a, h1, r))}`;
+}
+
+/** A point on the glass, for the glints that sit exactly on it. */
+export function at(a: number, h: number, r = R): { x: number; y: number } {
+	const [x, y] = project(a, h, r);
+	return { x, y };
 }

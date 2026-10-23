@@ -103,11 +103,15 @@ export const BOTH_STAGGER_MS = 700;
  * takeover "is too basic ... make the salutes feel more special as if the
  * bosses are actually impressed").
  *
- * Keyed on how RARE the win was - the tier's published one-in figure
- * (winTiers.ts), which every family states for its own ladder - not on its
- * name, so it means the same on every family: Three of a Kind's one win comes
- * 1 in 19 and impresses nobody much, Last Stop's Max comes 1 in 283,787 and
- * impresses everyone. With L = log10(oneIn):
+ * A MAX win moves both, always - on every family. That includes Three of a
+ * Kind, whose one win IS its Max: it comes 1 in 19, but it is the most the
+ * mode pays and 4,583x the base bet (the owner, 2026-10-23, after seeing it
+ * go unremarked - the rarity rule below had made it the least impressive win
+ * in the game, a reaction about once in twenty).
+ *
+ * Below Max, keyed on how RARE the win was - the tier's published one-in
+ * figure (winTiers.ts), which every family states for its own ladder - so it
+ * means the same on every ladder. With L = log10(oneIn):
  *
  *   P(anyone reacts)      (L - 1.2) / 3     floored at 5%, capped at 100%
  *   P(both | someone)     (L - 2.3) / 2     0 to 100%
@@ -126,8 +130,13 @@ export const BOTH_STAGGER_MS = 700;
  * And they do not stay impressed: if either reacted to one of the last two
  * takeovers, a win short of Max is only 40% as likely to move them again.
  */
-export function reactionTo(oneIn: number, reactedRecently: boolean, random: () => number = Math.random): Reaction {
-	const L = Math.log10(Math.max(oneIn, 1));
+export function reactionTo(
+	tier: { id: string; oneIn: number },
+	reactedRecently: boolean,
+	random: () => number = Math.random,
+): Reaction {
+	if (tier.id === 'max') return 'both';
+	const L = Math.log10(Math.max(tier.oneIn, 1));
 	const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 	let react = clamp((L - 1.2) / 3, 0.05, 1);
 	if (reactedRecently && L < 4.4) react *= 0.4;

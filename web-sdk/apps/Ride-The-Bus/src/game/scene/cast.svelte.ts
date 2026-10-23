@@ -210,7 +210,7 @@ let sinceReaction = Infinity;
  */
 export function castAfterTakeover(tier: WinTier): void {
 	if (!cast.ready || reducedMotion()) return;
-	const reaction = reactionTo(tier.oneIn, sinceReaction < 2);
+	const reaction = reactionTo(tier, sinceReaction < 2);
 	sinceReaction = reaction === 'none' ? sinceReaction + 1 : 0;
 	if (reaction === 'floorman' || reaction === 'both') play('floorman', FLOORMAN_HATTIP);
 	if (reaction === 'boss') play('boss', BOSS_SALUTE);

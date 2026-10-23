@@ -83,6 +83,30 @@
 	const point = (p: { x: number; y: number }, x: string, y: string) => `${x}: ${p.x}; ${y}: ${p.y}`;
 
 	/**
+	 * The Floorman's cast shadow, as one affine map of his own figure onto the
+	 * floor. He stands three-quarter on, his far foot further back and so
+	 * higher on screen: the line his soles stand on is TILTED, and a shadow
+	 * flipped about one flat line put the far shoe's shadow well below the
+	 * shoe. So every point of the figure is taken as standing at some height
+	 * above that sole line, and lands on the floor from the sole point under
+	 * it, pushed away from the lamp by its height times SHADOW_FALL - left and
+	 * a little toward the viewer, the sconce being off to the right at about
+	 * head height. With k the sole line's slope (screen y per screen x), a
+	 * point (u, y) about the near sole goes to
+	 *   x' = u (1 + sx k) - sx y      y' = u k (1 + sy) - sy y
+	 * which is the CSS matrix below. The feet come from the art script.
+	 */
+	const SHADOW_FALL = { sx: -0.35, sy: 0.075 };
+	const floorCast = (() => {
+		const near = G.floorman.feet[0]!;
+		const far = G.floorman.feet[G.floorman.feet.length - 1]!;
+		const k = (far.y - near.y) / ((far.x - near.x) * G.floorman.aspect);
+		const { sx, sy } = SHADOW_FALL;
+		const m = [1 + sx * k, k * (1 + sy), -sx, -sy].map((v) => +v.toFixed(4));
+		return `transform-origin: ${(near.x * 100).toFixed(2)}% ${(near.y * 100).toFixed(2)}%; transform: matrix(${m.join(', ')}, 0, 0)`;
+	})();
+
+	/**
 	 * The strip from one foot to the other, in the figure's own box: its
 	 * middle (fractions of the box), its length (a fraction of the box's
 	 * WIDTH) and its angle. The box is `aspect` wide per unit tall, so a
@@ -119,6 +143,10 @@
 {#if cast.ready}
 	<div class="cast">
 		<div class="figure floorman" class:lean={cast.lean} style="--aspect: {G.floorman.aspect}">
+			<!-- His shadow on the boards: his own figure laid flat, away from the
+			     lamp. The idle frame - a hat tip's arm in it would be one frame
+			     the eye never looks for in a shadow. -->
+			<img class="floor-cast" style={floorCast} src={castFrameUrl(BASE, 'floorman', 'idle')} alt="" draggable="false" />
 			{@render contacts(G.floorman.feet, G.floorman.aspect, true)}
 			<div class="body">
 				{#each G.floorman.frames as pose (pose)}

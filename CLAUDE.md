@@ -353,8 +353,13 @@ reading before proposing it again.
   survive the round trip; `restoreGuesses` skips them on the way back in;
   `parseModeName` validates a slug against what the family publishes (length
   included), so `any` exists only where a fixed combination puts it. The board
-  renders `stageCount()` slots and, on a fixed family, two read-only Equal
-  badges instead of the guess columns; `roundState` stays four wide.
+  renders `stageCount()` slots and, on a fixed family, two Equal badges
+  instead of the guess columns; `roundState` stays four wide. **The badges
+  are PICKED** (the owner, 2026-10-23): `tripsPicks` in betState, cleared on
+  every switch to the family, both needed for `allChoicesMade()` (the deal
+  says "Pick both Equals"). They buy nothing - the slug is still
+  `modeChoices()` alone. A pick sets a chip down near the click and clear of
+  the "=" (`chipSpot.ts` `tripsSpot`, pinned by `chipSpot.test.ts`).
 - **A switch that changes the card count turns the cards back over.** The
   picker's Switch compares `stageCount()` before and after and calls
   `clearBoard()` — three of a settled four-card round's faces under trips'
@@ -454,7 +459,10 @@ reading before proposing it again.
   colour on a recessed dark sign, the seven bolts (`liveBolts`) under it, no
   coloured outline; it keeps its `.cb-icon` "toggle" press cue, and its
   locked-state tip is hosted on `.cb-mode-slot` and anchored to the slot's inner
-  edge (it sits at the screen edge). FIXED width, paid for by the bet display,
+  edge (it sits at the screen edge). FIXED width (except on an upright phone,
+  where since 2026-10-23 MODE and the bet box both fill their equal grid
+  columns, so row two is level at both ends - swept 320-620px in en/ru/fi),
+  paid for by the bet display,
   which carries money only now: 8.42 / 11.6 units on the one-row bar (6.2 / 13.82
   before), 8.4 on phones at a 36px-or-5-unit height, and 9.4 with a thinner
   frame at 400px and under, where the hidden stepper gives its width back (F-11:
@@ -676,8 +684,11 @@ reading before proposing it again.
   TAP plays the automatic peel through, a HOLD peels at its pace while held
   and falls back if let go early. **Nothing turns it on a timer** - the round
   waits for the player (the owner, 2026-10-20) - and the deal button still
-  slams it. **Autoplay and replays always
-  peel for the player** (a LOCAL replay can be peeled by hand: the replay
+  slams it. **A replay always peels for the player; autoplay does only
+  when the switch is off** - with it on, a run waits for the hand at every
+  held card (the owner, 2026-10-23; `peelsByHand` in roundReveal). The last
+  card goes out `SQUEEZE_LEAD_MS` (850) after the one before it turns, so
+  that card is seen to land first. (A LOCAL replay can be peeled by hand: the replay
   page's "Last card: I peel it" adds `?dev_peel=me`, read behind an
   `import.meta.env.DEV` literal only), and reduced motion keeps the plain
   rise. The win chime (or bust / forgiven cue) sounds ON THE TURN, with the
@@ -753,8 +764,9 @@ reading before proposing it again.
   (`castScript.ts`) rolls on the tier's published one-in: anyone at all
   `(log10(oneIn) - 1.2) / 3`, both `(L - 2.3) / 2`, the Floorman (the easier
   to impress) rather than the Boss on a single. Classic: Big 79% no one, Huge
-  57%, Mega 24%, Epic ~0%, Max always both; Three of a Kind's 1-in-19 win
-  rarely. Within two takeovers of a reaction, short of Max, 40% as likely.
+  57%, Mega 24%, Epic ~0%. EVERY Max win moves both, Three of a Kind's
+  included - its one win comes 1 in 19 but is its Max and 4,583x the base bet
+  (the owner, 2026-10-23). Within two takeovers of a reaction, short of Max, 40% as likely.
   Both: the Floorman first, the Boss 0.7 s after. `cast.test.ts` pins it. **The exception (2026-10-23):** on HALF
   the rounds whose last card WILL be held, the Boss also puffs at the deal
   (`round.bossPuffsEarly`, set in `roundReveal` by `willHoldLastCard()`, which
@@ -776,7 +788,15 @@ reading before proposing it again.
   --upright, the chips' angle) with the diamond cut laid on its surface and
   projected, so it wraps round, squeezes at the edges and curves with the
   rim; 8.4% of the table, about twice a chip, as a real one is. Drawn in code
-  by the owner's choice, not a painted image.
+  by the owner's choice, not a painted image. Every light on it is placed ON
+  the cylinder (`arcPath`, `upTheSide`, `at`) - a glint once floated inside
+  the open mouth - and each facet has a fixed random tilt, so the cut breaks
+  the light irregularly instead of reading as wire mesh.
+- **The Floorman casts a shadow** (`.floor-cast`): his own figure laid onto
+  the floor from the TILTED line his soles stand on (BackRoomCast's
+  `floorCast` matrix, from the art script's feet), falling left, away from the
+  sconce. Flipped about one flat line, the far shoe's shadow landed well below
+  the shoe.
 - **The Boss exhales out loud** (`sound.playBossExhale`, a pink-noise breath
   through `noise()`'s new optional `rise`): on the early puff, and 0.45 s
   after a held card turns. Measured by A/B with `npm run audio`: no clipping,

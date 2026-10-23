@@ -160,6 +160,28 @@
 }
 
 /* Each footprint, as a share of the figure's box. */
+/* THE FLOORMAN'S CAST SHADOW (2026-10-23, the owner: "make it more
+   realistic"). Blobs under the shoes say he touches the floor; a shadow that
+   FALLS says where the light is. The room's lamp is the sconce off to the
+   right at about head height, so his shadow lies long and low across the
+   boards to his left. Built from his own figure, laid onto the floor from
+   the TILTED line his two soles stand on (the matrix is BackRoomCast's
+   floorCast); darkest at the shoes and fading toward where his head would
+   fall, and softer the further it runs (the mask and the blur, in the
+   image's own coordinates, travel with it). Under the contact shadows, which
+   stay the darkest thing at the soles. */
+.floor-cast {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter: brightness(0) blur(calc(0.45 * var(--cq)));
+  opacity: 0.62;
+  -webkit-mask-image: linear-gradient(0deg, #000 0%, rgba(0, 0, 0, 0.55) 30%, transparent 85%);
+  mask-image: linear-gradient(0deg, #000 0%, rgba(0, 0, 0, 0.55) 30%, transparent 85%);
+  pointer-events: none;
+}
+
 /* The Floorman's shade runs foot to foot (BackRoomCast's bridge): a long soft
    ellipse along the line between his soles, thrown a little toward the
    lower left, away from the lamp. */

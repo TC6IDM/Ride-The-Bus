@@ -385,7 +385,11 @@
   position: relative;
   width: 100%;
   aspect-ratio: 200 / 298;
-  border-radius: var(--card-radius, 6%);
+  /* A real card's corner: 3 mm on a 63 x 88 mm poker card, which is 4.8% of
+     the width and 3.4% of the height. A bare percentage takes each from its
+     own side, so the first one (6%) drew tall ovals at the corners (the
+     owner, 2026-10-23: "those giant curved edges"). */
+  border-radius: 4.8% / 3.4%;
   overflow: hidden;
   background: var(--card-paper);
   color: var(--card-ink);
@@ -731,11 +735,22 @@
   transform: translate(-50%, calc(-100% + var(--chip-h) / 2));
 }
 
+/* Thrown down and to the LEFT, away from the lamp, and longer the taller the
+   stack (--stack chips) - a pile of five throws further than a single chip
+   (the owner, 2026-10-23: "a bit of a shadow to the chips on the table";
+   before, the shadow sat tucked under the bottom chip and the stacks looked
+   set on the wood rather than standing on it). */
 .chip-shadow {
-  left: -13%;
-  bottom: calc(var(--chip-h) * -0.14);
-  width: 110%;
-  height: calc(var(--chip-h) * 0.82);
+  left: calc(-20% - var(--stack) * 3%);
+  bottom: calc(var(--chip-h) * -0.22);
+  width: calc(116% + var(--stack) * 3%);
+  height: calc(var(--chip-h) * 0.92);
+  background: rgba(26, 9, 0, 0.55);
+}
+
+.chip-shadow::after {
+  inset: -60% -4% -60% calc(-40% - var(--stack) * 4%);
+  background: rgba(24, 8, 0, 0.24);
 }
 
 /* One chip of the stack, counted from the bottom (--i = 0 is the lowest). Its

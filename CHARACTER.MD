@@ -713,7 +713,7 @@ because each is locked to its master, only the moving part dissolves.
 | At the deal, on HALF the rounds whose last card will be held (the owner's call, 2026-10-23) | the lift, `low` -> `mid` -> `high` -> `puff`, 0.7 s after the deal - and he KEEPS puffing, a small breath of smoke every 1.5 s, through the hold to the turn | - |
 | Last card goes out to be squeezed (the hold) | the raise: `exhale-3-low` -> `exhale-2-mid` -> `exhale-1-high` -> `puff`, ~120 ms each (the exhale frames played backwards ARE the lift); holds `puff` through the hum, the ember warming | the upper body tilts ~4 degrees toward the table over the hum's climb (motion, not a frame) |
 | The card turns, WHATEVER it shows | `exhale-1-high` with the plume leaving his mouth -> `exhale-2-mid` -> `exhale-3-low` -> `idle`, ~700 ms | straightens |
-| A takeover closes - SOMETIMES, more often the rarer the win (`reactionTo`: Classic Big 21% anyone, Huge 43%, Mega 76%, Epic and Max ~always, Max always both) | `salute-1-raise` -> `salute-2-look`, held ~2 s, back the same way - when it is the Boss, or 0.7 s after the Floorman when both | `hattip` (`hattip-mid` if reshot) |
+| A takeover closes - SOMETIMES, more often the rarer the win (`reactionTo`: Classic Big 21% anyone, Huge 43%, Mega 76%, Epic ~always; EVERY Max both, Three of a Kind's one win included) | `salute-1-raise` -> `salute-2-look`, held ~2 s, back the same way - when it is the Boss, or 0.7 s after the Floorman when both | `hattip` (`hattip-mid` if reshot) |
 | Reduced motion | `idle`, still | `idle`, still |
 
 The alternates are not used.

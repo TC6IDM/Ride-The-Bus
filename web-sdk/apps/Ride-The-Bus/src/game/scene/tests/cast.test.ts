@@ -148,7 +148,7 @@ describe('no early tell', () => {
 		assert.match(COMPONENT, /castOnHold\(\)/);
 		assert.match(COMPONENT, /castOnTurn\(\)/);
 		assert.match(COMPONENT, /celebration\.active/);
-		assert.match(MODULE, /reactionTo\(tier\.oneIn/);
+		assert.match(MODULE, /reactionTo\(tier, /);
 	});
 
 	test('once he is puffing he keeps the cigar up until the turn', () => {
@@ -171,25 +171,25 @@ describe('the reactions', () => {
 		seed = (seed * 1103515245 + 12345) % 2147483648;
 		return seed / 2147483648;
 	};
-	const shares = (oneIn: number, recently = false) => {
+	const shares = (oneIn: number, recently = false, id = 'big') => {
 		const random = seeded(7);
 		const n = 20000;
 		const count = { none: 0, floorman: 0, boss: 0, both: 0 };
-		for (let i = 0; i < n; i++) count[reactionTo(oneIn, recently, random)]++;
+		for (let i = 0; i < n; i++) count[reactionTo({ id, oneIn }, recently, random)]++;
 		return Object.fromEntries(Object.entries(count).map(([k, v]) => [k, v / n])) as typeof count;
 	};
 
 	test('Max on every family moves both, always', () => {
 		for (const family of ['sc', 'base', 'ls', 'hs'] as const) {
 			const max = winTiersFor(family).find((t) => t.id === 'max')!;
-			assert.equal(shares(max.oneIn).both, 1, family);
-			assert.equal(shares(max.oneIn, true).both, 1, `${family}, even just after a reaction`);
+			assert.equal(shares(max.oneIn, false, 'max').both, 1, family);
+			assert.equal(shares(max.oneIn, true, 'max').both, 1, `${family}, even just after a reaction`);
 		}
 	});
 
 	test('the rarer the win, the likelier someone is impressed - and both of them', () => {
 		const ladder = winTiersFor('base');
-		const s = ladder.map((t) => shares(t.oneIn));
+		const s = ladder.map((t) => shares(t.oneIn, false, t.id));
 		for (let i = 1; i < s.length; i++) {
 			assert.ok(s[i]!.none <= s[i - 1]!.none, `${ladder[i]!.id} leaves no one impressed more often than ${ladder[i - 1]!.id}`);
 			assert.ok(s[i]!.both >= s[i - 1]!.both, `${ladder[i]!.id} moves both less often than ${ladder[i - 1]!.id}`);
@@ -204,9 +204,11 @@ describe('the reactions', () => {
 		assert.ok(mega.boss > mega.floorman);
 	});
 
-	test('Three of a Kind, whose one win comes 1 in 19, rarely impresses anyone', () => {
+	test('Three of a Kind\'s one win is its Max, and moves both every time - common as it is', () => {
 		const trips = winTiersFor('tr')[0]!;
-		assert.ok(shares(trips.oneIn).none > 0.9);
+		assert.equal(trips.id, 'max');
+		assert.equal(shares(trips.oneIn, false, trips.id).both, 1);
+		assert.equal(shares(trips.oneIn, true, trips.id).both, 1);
 	});
 
 	test('they do not stay impressed: a reaction makes the next one less likely, short of Max', () => {
