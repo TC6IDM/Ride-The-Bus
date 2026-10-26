@@ -3,7 +3,7 @@
  *
  *   node scripts/tile-art.mjs                 -- writes submission/RideTheBus-FG.png and -BG.jpg
  *   node scripts/tile-art.mjs --out <dir>     -- somewhere else, to look before replacing
- *   node scripts/tile-art.mjs --cups          -- keep the party cups on the table
+ *   node scripts/tile-art.mjs --cups          -- keep the whiskey glass on the table
  *
  * Needs the game and the replay RGS running (npm run dev:replay; GAME_PORT
  * picks the port, as for scripts/shoot.mjs).
@@ -97,7 +97,7 @@ try {
   await waitFor(`!!document.querySelector('.scene .table')`);
   await addStyle(`.game-layout * { visibility: hidden !important; }
     .scene, .scene * { visibility: visible !important; }
-    ${CUPS ? '' : '.scene .cup, .scene .cup * { visibility: hidden !important; }'}`);
+    ${CUPS ? '' : '.scene .tumbler, .scene .tumbler * { visibility: hidden !important; }'}`);
   await sleep(800);
   const bg = Buffer.from((await send('Page.captureScreenshot', { format: 'jpeg', quality: 90 })).data, 'base64');
 

@@ -450,10 +450,14 @@ describe('parseModeName', () => {
         /isCleanSweep\(\s*(?:round\.)?bustedIndex\s*,\s*(?:round\.)?forgivenIndex\s*\)/g,
       ) ?? [];
     // Six since 2026-10-05: the history panel's "full game win" mark asks it too.
+    // Seven since 2026-10-23: the Boss's early puff predicts the last-card
+    // hold (willHoldLastCard in roundReveal), so it asks the hold floor's
+    // question. (The back room's salute asked it for a day, then moved to
+    // the win's rarity - castScript.ts reactionTo.)
     assert.equal(
       sweeps.length,
-      6,
-      `expected 6 isCleanSweep call sites in the game's sources, found ${sweeps.length}`,
+      7,
+      `expected 7 isCleanSweep call sites in the game's sources, found ${sweeps.length}`,
     );
 
     // The wrong spelling, gone and staying gone. A forgiven round has no bust

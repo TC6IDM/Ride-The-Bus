@@ -154,6 +154,12 @@ type NoiseOptions = {
 	pink?: boolean;
 	/** Shapes the amplitude decay. >1 snaps shut, <1 lingers. */
 	curve?: number;
+	/**
+	 * A slower rise, in seconds, for a sound that SWELLS in - a breath - rather
+	 * than strikes. Omitted, every burst keeps its 5ms raised-cosine attack;
+	 * nothing that existed before this option changes.
+	 */
+	rise?: number;
 	/** Which bus this voice belongs to. Cues are 'sfx'; music.ts passes 'music'. */
 	bus?: AudioBusName;
 };
@@ -177,6 +183,7 @@ export function noise({
 	curve = 1,
 	pink = false,
 	bus = 'sfx',
+	rise,
 }: NoiseOptions = {}) {
 	const voice = openVoice(bus);
 	if (!voice) return;
@@ -208,7 +215,10 @@ export function noise({
 	 * so the shortest chip - 18ms - keeps its attack and does not turn into a
 	 * swell, which would cost the room its sense of things being SET DOWN.
 	 */
-	const attack = Math.max(1, Math.min(Math.round(audio.sampleRate * 0.005), Math.floor(frames * 0.25)));
+	const attack =
+		rise !== undefined
+			? Math.max(1, Math.min(Math.round(audio.sampleRate * rise), Math.floor(frames * 0.6)))
+			: Math.max(1, Math.min(Math.round(audio.sampleRate * 0.005), Math.floor(frames * 0.25)));
 	const shape = (i: number) => {
 		const rise = i < attack ? 0.5 - 0.5 * Math.cos((Math.PI * i) / attack) : 1;
 		return rise * Math.pow(1 - i / frames, curve);

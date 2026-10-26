@@ -1,0 +1,12 @@
+the "peel" we just made is starting too soon i believe, the third card (or in high stakes the second card) is just flipped then the next card immediately goes to the middle to be peeled, there should be a slight delay so the user can see they got the second last card right, then the last goes to the middle to be peeled
+
+also, when the game moves from the help screen to the actual game screen, the red chips just transform into whatever chips the user's bet is supposed to be. instead of doing that, wait untill the four options settle to the game board, then make the chips flip over, and on the "bottom" side of the chips its actually the user's bet size. so if the user's bet size is blue, the chips settle to the board as red, and once they do, the red chips flip over to reveal blue on the under side, and it stays like that. this is just an animation as making the chip colors change instantly doesnt look good
+
+center the "second row" of items when on mobile
+
+when its on autoplay and I selected "peel the card myself" i should be able to peel the card myself
+
+when switched to "three of a kind" mode, although the equals are the only options available. they should start unselected, and the user should be able to select them. they have to select them to start the round though. and when the equals are selected, a chip should be placed on them, anywhere where it doesnt cover the sign, but still closest to the place where the user clicked
+
+
+table elements and background elements like the characters are just popping in out of nowhere

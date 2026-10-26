@@ -22,6 +22,7 @@ export default {
 	Stop: 'Zatrzymaj',
 	left: 'pozostało',
 	'Pick all 4 guesses': 'Wybierz wszystkie 4 typy',
+	'Pick both Equals': 'Wybierz oba Równo',
 	'Enter a number of plays': 'Podaj liczbę rund',
 	'Enter a valid bet': 'Podaj prawidłową stawkę',
 	'Set rounds': 'Ustaw liczbę rund',

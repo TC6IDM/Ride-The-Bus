@@ -22,6 +22,7 @@ export default {
 	Stop: 'Стоп',
 	left: 'осталось',
 	'Pick all 4 guesses': 'Выберите все 4 прогноза',
+	'Pick both Equals': 'Выберите оба «Равно»',
 	'Enter a number of plays': 'Укажите количество раундов',
 	'Enter a valid bet': 'Введите корректную ставку',
 	'Set rounds': 'Задать раунды',

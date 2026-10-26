@@ -29,9 +29,12 @@ describe('the squeeze, as the owner set it', () => {
     }
   });
 
-  test('automatic by default; the player peels only when they asked, and never on autoplay or in a real replay', () => {
+  test('automatic by default; the player peels when they asked - on autoplay too - and never in a real replay', () => {
     assert.match(SETTING, /localStorage\.getItem\(KEY\) === '1'/, 'the setting is no longer off by default');
-    assert.match(REVEAL, /const manual = !auto\.running && \(stateUrlDerived\.replay\(\) \? devPeelInReplay\(\) : peel\.myself\);/);
+    // On autoplay too, since 2026-10-23 (the owner: "when it's on autoplay
+    // and I selected peel the card myself I should be able to peel").
+    assert.match(REVEAL, /const manual = peelsByHand\(\);/);
+    assert.match(REVEAL, /return stateUrlDerived\.replay\(\) \? devPeelInReplay\(\) : peel\.myself;/);
     // A replay waits on a hand only in a DEV build, asked for by the local
     // replay page (?dev_peel=me) - never on Stake.
     assert.match(REVEAL, /return import\.meta\.env\.DEV && typeof location !== 'undefined' && new URLSearchParams\(location\.search\)\.get\('dev_peel'\) === 'me';/);

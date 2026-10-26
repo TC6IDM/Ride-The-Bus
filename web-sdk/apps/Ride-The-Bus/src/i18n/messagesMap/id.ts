@@ -22,6 +22,7 @@ export default {
 	Stop: 'Berhenti',
 	left: 'tersisa',
 	'Pick all 4 guesses': 'Pilih keempat tebakan',
+	'Pick both Equals': 'Pilih kedua Sama',
 	'Enter a number of plays': 'Masukkan jumlah ronde',
 	'Enter a valid bet': 'Masukkan taruhan yang valid',
 	'Set rounds': 'Atur jumlah ronde',

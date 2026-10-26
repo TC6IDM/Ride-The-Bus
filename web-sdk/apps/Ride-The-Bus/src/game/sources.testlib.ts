@@ -61,6 +61,10 @@ export const SCRIPT_MODULE_PATHS: string[] = [
   at('./round/roundRestore.svelte.ts'),
   at('./round/roundSettle.svelte.ts'),
   at('./round/autoplayLoop.svelte.ts'),
+  // NOT a split of Game.svelte: the back room's characters (2026-10-22).
+  // Listed so the negative greps cover it: modes.test.ts fails on any
+  // `bustedIndex === null` in this net, and the cast reacts to results.
+  at('./scene/cast.svelte.ts'),
 ];
 
 /**

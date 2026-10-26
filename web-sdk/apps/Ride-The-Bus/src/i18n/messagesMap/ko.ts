@@ -22,6 +22,7 @@ export default {
 	Stop: '중지',
 	left: '남음',
 	'Pick all 4 guesses': '4가지 예측을 모두 선택하세요',
+	'Pick both Equals': '이퀄 두 개를 모두 선택하세요',
 	'Enter a number of plays': '라운드 수를 입력하세요',
 	'Enter a valid bet': '유효한 베팅 금액을 입력하세요',
 	'Set rounds': '라운드 수 설정',

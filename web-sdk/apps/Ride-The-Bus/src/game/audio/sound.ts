@@ -747,6 +747,19 @@ export const sound = {
 	},
 
 	/**
+	 * The Boss letting out a lungful of cigar smoke (the back room, 2026-10-23):
+	 * as the plume leaves his lips, on his early puff at the deal and when a
+	 * held card turns. A breath, so it SWELLS in and trails off: pink noise in
+	 * a low, wide band, sliding down as the air runs out, with a fainter band
+	 * of air above it. Quiet - he is across the room, and it must never sit
+	 * on top of a card's own cue.
+	 */
+	playBossExhale(lead = 0) {
+		noise({ pink: true, duration: rand(1.0, 1.2), gain: rand(0.07, 0.085), from: rand(950, 1100), to: rand(480, 560), q: 0.55, rise: 0.22, curve: 1.5, space: 0.55, delay: lead }); // prettier-ignore
+		noise({ pink: true, duration: rand(0.8, 0.95), gain: rand(0.025, 0.032), from: rand(2600, 3000), to: rand(1500, 1800), q: 0.9, rise: 0.18, curve: 1.8, space: 0.6, delay: lead + 0.04 }); // prettier-ignore
+	},
+
+	/**
 	 * Last Stop's ticket, turned over after a clean sweep.
 	 *
 	 * Paper, then a punch, then a chord. The snap is the ticket coming off its

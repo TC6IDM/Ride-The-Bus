@@ -278,6 +278,17 @@
    edge. How to Play's controls guide reads the same query (PHONE_BAR). */
 @media (max-width: 620px) and (orientation: portrait) {
 .cb-betstep { display: none; }
+/* Row two, LEVEL at both ends (the owner, 2026-10-23: "center the second
+   row"). The deal was on the middle, but the bet box filled its column and
+   the MODE sign, narrower, hugged turbo - 27px of rail to the left of the row
+   and 48px to the right on a 375px phone. Both outer pieces now fill their
+   columns, which the grid already makes equal, so the row is the same at
+   either end. MODE only gets wider: its name is fitted to the sign, never the
+   sign to the name, so it can grow and never shrink below its floor. */
+.cb-bet { justify-self: stretch; }
+.cb-bet .cb-bet-display { width: 100%; max-width: none; }
+.cb-mode-slot { justify-self: stretch; }
+.cb-mode-slot .cb-mode-btn { width: 100%; max-width: none; }
 }
 
 /* ==========================================================================

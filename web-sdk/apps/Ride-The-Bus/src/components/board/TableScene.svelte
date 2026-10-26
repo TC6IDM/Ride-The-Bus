@@ -2,8 +2,9 @@
 	/**
 	 * The table and everything sitting on it.
 	 *
-	 * Purely decorative: no props, no state, aria-hidden, and nothing in here
-	 * responds to the game. It was ninety lines in the middle of Game.svelte's
+	 * Decorative, aria-hidden, and nothing in THIS file responds to the game.
+	 * The two characters in the room do, and they live in BackRoomCast.svelte,
+	 * which the game asks for with `showCast`. It was ninety lines in the middle of Game.svelte's
 	 * markup, between the icon snippets and the readouts, which made the board's
 	 * actual structure hard to find.
 	 *
@@ -19,6 +20,9 @@
 	 * a Svelte stylesheet only applies to the component that imports it.
 	 */
 	import TicketFace from '../cards/TicketFace.svelte';
+	import BackRoomCast from './BackRoomCast.svelte';
+	import TumblerGlass from './TumblerGlass.svelte';
+	import CardFace from '../cards/CardFace.svelte';
 	import { familyRules } from '../../game/bet/betState.svelte';
 
 	type Props = {
@@ -37,10 +41,17 @@
 		 * a green gradient of its own.
 		 */
 		showProps?: boolean;
+		/**
+		 * Whether the two characters and the Boss's bar cart are in the room.
+		 * Only the game asks: the loader is up before their frames arrive, and
+		 * the start screen's card covers the room either side of the table.
+		 */
+		showCast?: boolean;
 	};
 
 	const props: Props = $props();
 	const showProps = $derived(props.showProps ?? true);
+	const showCast = $derived(props.showCast ?? false);
 	/** The ticket stack is Last Stop's: on a family without a ticket, a stack
 	 *  printing "x2 - x10" offers a multiplier that cannot be won there (the
 	 *  owner's call, 2026-10-02; a review called it the single-family leak in
@@ -85,6 +96,66 @@
       <circle class="print-end" cx="140" cy="30" r="5" />
     </svg>
   </div>
+  <!-- The floor: boards toward the far wall, the rug under the table, the
+       skirting where they meet the wall (2026-10-22). -->
+  <div class="room-floor">
+    <div class="room-floor-plane"><div class="room-rug"></div></div>
+    <div class="room-floor-light"></div>
+    <div class="room-skirting"></div>
+  </div>
+  <!-- THE FAR WALLS, drawn only where a wide window shows them (2026-10-23):
+       a door behind the Floorman, a night-city painting beside it, and on the
+       right wall a framed Ace of Spades, the house card. -->
+  <div class="room-dressing">
+    <div class="room-door">
+      <div class="door-slab">
+        <span class="door-panel p1"></span>
+        <span class="door-panel p2"></span>
+        <span class="door-panel p3"></span>
+        <span class="door-panel p4"></span>
+        <span class="door-knob"></span>
+      </div>
+      <span class="door-light"></span>
+    </div>
+    <div class="room-painting">
+      <svg viewBox="0 0 120 84" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="room-night" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#0d1420" />
+            <stop offset="1" stop-color="#2a2430" />
+          </linearGradient>
+        </defs>
+        <rect class="painting-frame" x="0" y="0" width="120" height="84" />
+        <rect x="7" y="7" width="106" height="70" fill="url(#room-night)" />
+        <circle class="painting-moon" cx="92" cy="22" r="6" />
+        <path class="painting-city" d="M7 77 V58 H15 V50 H21 V60 H27 V44 H35 V56 H41 V40 H47 V36 H51 V40 H57 V60 H63 V48 H71 V62 H77 V52 H85 V58 H91 V46 H99 V60 H105 V54 H113 V77 Z" />
+        <g class="painting-windows">
+          <rect x="29" y="48" width="2" height="2" /><rect x="43" y="44" width="2" height="2" />
+          <rect x="43" y="52" width="2" height="2" /><rect x="65" y="52" width="2" height="2" />
+          <rect x="93" y="50" width="2" height="2" /><rect x="17" y="54" width="2" height="2" />
+          <rect x="79" y="56" width="2" height="2" />
+        </g>
+      </svg>
+    </div>
+    <!-- The house card, framed: the deck's own Ace of Spades - CardFace, the
+         same face the board turns over, on the same paper - not a lookalike
+         (the owner, 2026-10-23: "the exact same as the ace we have in the
+         deck"). -->
+    <div class="room-ace">
+      <div class="ace-paper"><CardFace rank="A" suit="♠" /></div>
+    </div>
+  </div>
+  {#if showCast}
+    <BackRoomCast />
+  {/if}
+  <!-- Cigar smoke hanging under the ceiling, drifting slowly. -->
+  <div class="room-haze">
+    <span class="haze h1"></span>
+    <span class="haze h2"></span>
+    <span class="haze h3"></span>
+  </div>
+  <!-- The room's vignette, over the floor and the characters, under the table. -->
+  <div class="room-shade"></div>
   <div class="table">
     <div class="table-edge"></div>
     <div class="table-surface">
@@ -114,22 +185,13 @@
             <div class="tickets-face"><TicketFace value={null} /></div>
           </div>
         {/if}
-        <!-- A party cup - it is a drinking game. -->
-        <div class="prop cup cup-low p-cup-2">
-          <div class="cup-shadow"></div>
-          <div class="cup-body">
-            <!-- The three stepped ribs below the lip and the roll above the
-                 base, which is what makes a party cup that shape and not a
-                 plain cone. Each is the front arc of a circle round the cone,
-                 so each has its own width and squash. -->
-            <div class="cup-rib rib-1"></div>
-            <div class="cup-rib rib-2"></div>
-            <div class="cup-rib rib-3"></div>
-            <div class="cup-rib rib-4"></div>
-            <div class="cup-rib rib-5"></div>
-          </div>
-          <div class="cup-rim"></div>
-          <div class="cup-inside"><div class="cup-drink"></div></div>
+        <!-- A whiskey glass, the twin of the one on the Boss's bar cart
+             (2026-10-23; it replaced a red party cup). -->
+        <div class="prop tumbler p-glass">
+          <span class="tumbler-shadow"></span>
+          <span class="tumbler-caustic"></span>
+          <span class="tumbler-reflection"></span>
+          <TumblerGlass />
         </div>
 
         <!-- Two tight clusters, diagonally opposite, each holding all three

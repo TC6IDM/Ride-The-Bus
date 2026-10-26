@@ -22,7 +22,7 @@
  */
 
 export type ChipSpot = { x: number; y: number; k: number; spin: number };
-export type ChipColumn = 'color' | 'hl' | 'io' | 'suit';
+export type ChipColumn = 'color' | 'hl' | 'io' | 'suit' | 'trips';
 /** A click, as fractions of the segment clicked, x from its inline start. */
 export type ChipClick = { x: number; y: number };
 
@@ -52,12 +52,45 @@ export const EQUAL_SPOT: Record<'hl' | 'io', { x: number; y: number }> = {
 const SUIT_CORNER: Record<string, [number, number]> = { heart: [0.2, 0.2], spade: [0.8, 0.2], club: [0.2, 0.8], diamond: [0.8, 0.8] };
 export const SUIT_CLEAR = 0.34;
 
+/**
+ * Three of a Kind's Equal badges (the owner, 2026-10-23: picked by the player,
+ * a chip set down "anywhere where it doesn't cover the sign, but still closest
+ * to the place where the user clicked"). Fractions of the BADGE. The "=" is
+ * 0.61 x 0.3 of the badge (choices-board.css .equal-full), centred; the chip's
+ * centre is kept outside that box grown by the chip's own radius, moved the
+ * shortest way out from where the click landed, and may hang over the
+ * badge's edge as the seam chips do.
+ */
+export const TRIPS_SIGN = { halfW: 0.305, halfH: 0.15 };
+/** The chip's width as a share of the whole guess square (the badge is half
+ *  of one), so its radius on the badge is TRIPS_K. */
+export const TRIPS_K = 0.2;
+
+export function tripsSpot(click: ChipClick | null, rand: () => number = Math.random): ChipSpot {
+  const spin = Math.round(rand() * 90);
+  const r = TRIPS_K;
+  if (!click) return { x: 0.5 + (rand() - 0.5) * 0.3, y: 0.5 + TRIPS_SIGN.halfH + r, k: TRIPS_K, spin };
+  const x = clamp(click.x, 0, 1);
+  const y = clamp(click.y, 0, 1);
+  const dx = x - 0.5;
+  const dy = y - 0.5;
+  const outX = TRIPS_SIGN.halfW + r;
+  const outY = TRIPS_SIGN.halfH + r;
+  if (Math.abs(dx) >= outX || Math.abs(dy) >= outY) return { x, y, k: TRIPS_K, spin };
+  // Inside the sign's keep-out: out through the nearest side.
+  const toSide = outX - Math.abs(dx);
+  const toTopOrBottom = outY - Math.abs(dy);
+  if (toSide < toTopOrBottom) return { x: 0.5 + Math.sign(dx || 1) * outX, y, k: TRIPS_K, spin };
+  return { x, y: 0.5 + Math.sign(dy || 1) * outY, k: TRIPS_K, spin };
+}
+
 /** The spot, from a click if there was one, else thrown by hand. Pure. */
 export function chipSpot(column: ChipColumn, pick: string, click: ChipClick | null, rand: () => number = Math.random): ChipSpot {
   const jitter = (amount: number) => (rand() - 0.5) * 2 * amount;
   const spin = Math.round(rand() * 90);
   const eitherSide = (near: number) => (rand() < 0.5 ? near : 1 - near);
 
+  if (column === 'trips') return tripsSpot(click, rand);
   if (pick === 'equal' && (column === 'hl' || column === 'io')) {
     const { x, y } = EQUAL_SPOT[column];
     if (column === 'hl') return { x: click && click.x < 0.5 ? 1 - x : x, y, k: 0.26, spin };

@@ -26,7 +26,6 @@ import { familyRules, winTiers } from '../bet/betState.svelte';
 import { DEAL_REST_MS, cueLead, dealTiming, flipDurSec, paceMs, pacing, revealWait } from './revealPacing.svelte';
 import { reducedMotion } from '../celebration/celebrationGestures';
 import { resetForNewRound, round } from './roundState.svelte';
-import { auto } from './autoplaySettings.svelte';
 import { peel } from './peelSetting.svelte';
 import { squeezeEnd, squeezeListen, squeezeOut, squeezePeel, squeezeTurnAndHome, squeezeWaitForPlayer } from './squeeze.svelte';
 import { stateUrlDerived } from 'state-shared';
@@ -140,6 +139,10 @@ export async function playRevealSequence() {
   // Whether the last card may be held at all: only on a round with an Equal
   // pick behind it (lastCardHolds). From the choices the book was bet on.
   const mayHold = lastCardHolds(round.revealEvents.map((e) => e.choice));
+  // The Boss's early puff: on half the rounds whose last card WILL be held,
+  // he draws on his cigar at the deal (the owner's call, 2026-10-23 - a rare
+  // sign "the game is going long"). It reads ahead of the cards, knowingly.
+  round.bossPuffsEarly = mayHold && willHoldLastCard() && Math.random() < BOSS_EARLY_PUFF_SHARE;
   for (let i = 0; i < round.revealEvents.length; i++) {
     const event = round.revealEvents[i];
     // The hand rests on the deck before it is dealt (GameBoard's dealFromDeck),
@@ -168,6 +171,16 @@ export async function playRevealSequence() {
         // top together; the release just below is the slam, however the wait
         // ended.
         round.holdClimbMs = holdClimbMs(paceMs(hold, 0) + paceMs(650, 0));
+        // A beat before a SQUEEZED card goes out, so the one before it is SEEN
+        // to land - its face, its chip, the total - before attention moves to
+        // the middle (the owner, 2026-10-23: it went out the instant the card
+        // before it turned). Turbo scales it like every beat. It comes BEFORE
+        // the card is marked held: holdIndex and the hold flags are what raise
+        // the card in its slot and close the tunnel, and in that beat the old
+        // in-slot rise played before the card ever moved (the owner, the same
+        // day). The rise is still the hold under reduced motion, which never
+        // squeezes - so there is no beat there, and nothing changes.
+        if (willSqueeze(round.holdClimbMs)) await revealWait(SQUEEZE_LEAD_MS, 0);
         round.holdIndex = i;
         // The drama only when the hold is long enough to be felt. Near the top
         // of the turbo range the climb shrinks to a blink: the card just hops,
@@ -182,11 +195,11 @@ export async function playRevealSequence() {
           // tuned to this card's own stage-win chime.
           const heldTier = lastCardTier(landing, fullGameWin, winTiers()) ?? 'big';
           // THE SQUEEZE, unless motion is reduced (then the card rises as it
-          // always did). The player peels it only if they asked to, never on
-          // autoplay and never in a replay - those always peel themselves.
+          // always did). The player peels it when they asked to - on autoplay
+          // too (peelsByHand); a replay on Stake always peels itself.
           if (!reducedMotion()) {
             squeezed = true;
-            const manual = !auto.running && (stateUrlDerived.replay() ? devPeelInReplay() : peel.myself);
+            const manual = peelsByHand();
             await squeezeOut(i, event.card, {
               manual,
               dark: round.holdTunnel,
@@ -312,6 +325,69 @@ export async function playRevealSequence() {
   }
 
   await settleRound();
+}
+
+/** Of the rounds whose last card will be held, the share the Boss puffs at
+ *  the deal ("only do it half of the time", the owner, 2026-10-23). */
+const BOSS_EARLY_PUFF_SHARE = 0.5;
+
+/**
+ * Whether this round's last card WILL be held - asked at the deal, for the
+ * Boss's early puff, and only for that. It walks cards 1 to n-1 exactly as the
+ * reveal loop below does (a right card multiplies, a forgivable miss keeps its
+ * share, any other miss ends the round before the last card) and then asks the
+ * hold the same questions the loop asks at the last card: lastCardHoldMs on
+ * what it could land, and a climb long enough to be felt. Unlike the loop it
+ * reads `.correct` - it is the one place that looks ahead, by the owner's
+ * choice - which is why it is its own function, outside the hold block the
+ * tests slice.
+ */
+export function willHoldLastCard(): boolean {
+  const events = round.revealEvents;
+  const last = events.length - 1;
+  if (last < 1) return false;
+  const rules = familyRules();
+  let running = 1;
+  let spent = false;
+  const bustedIndex: number | null = null;
+  let forgivenIndex: number | null = null;
+  for (let i = 0; i < last; i++) {
+    if (events[i]!.correct) {
+      running *= events[i]!.payout;
+    } else if (forgivenessAvailable(rules, i, spent)) {
+      running *= rules.forgive!;
+      spent = true;
+      forgivenIndex = i;
+    } else {
+      return false;
+    }
+  }
+  const landing = quantizeMultiplier(running * events[last]!.payout * topTicket(rules) * rules.cost);
+  const fullGameWin = isCleanSweep(bustedIndex, forgivenIndex) && rules.celebrateEveryFullWin;
+  const hold = lastCardHoldMs(landing, fullGameWin, winTiers());
+  if (hold <= 0) return false;
+  return holdClimbMs(paceMs(hold, 0) + paceMs(650, 0)) >= HOLD_MIN_CLIMB * 1000;
+}
+
+/** The beat between the card before last landing and the last going out to
+ *  be squeezed, in ms at normal pace. */
+const SQUEEZE_LEAD_MS = 850;
+
+/** Whether a hold that climbs this long will be squeezed: felt (the same
+ *  threshold as the hold's own gate), and motion not reduced. */
+function willSqueeze(climbMs: number): boolean {
+  return climbMs >= HOLD_MIN_CLIMB * 1000 && !reducedMotion();
+}
+
+/**
+ * Whether the player peels the held card themselves: when they asked to
+ * ("Peel the last card myself", the autoplay panel) - on autoplay too, since
+ * 2026-10-23 (the owner: "when it's on autoplay and I selected peel the card
+ * myself I should be able to peel the card myself"). A replay never waits on
+ * a hand on Stake; a LOCAL one can be peeled with ?dev_peel=me.
+ */
+function peelsByHand(): boolean {
+  return stateUrlDerived.replay() ? devPeelInReplay() : peel.myself;
 }
 
 /**

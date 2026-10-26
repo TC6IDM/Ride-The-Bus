@@ -292,20 +292,23 @@ reading before proposing it again.
   alone is off the scale and keeps its cream-on-crimson inversion. The hand hops
   through `element.animate()` with `composite: 'add'`; both halves matter.
 - **"A full game win" is `isCleanSweep(bustedIndex, forgivenIndex)`, never
-  "did not bust", and SIX decisions ask it.** A clean sweep is floored onto the
+  "did not bust", and SEVEN decisions ask it.** A clean sweep is floored onto the
   takeover ladder however little it pays; the same question also gates the
   autoplay **Stop on full game win**, the `playFullWin()` sting, the
   running-win bar's **"Full game win"** label, and (since 2026-09-23) the
   **last-card hold's floor** - a card that would complete a clean sweep is held
-  at least the entry tier's length, and (since 2026-10-05) the **history
-  panel's** record of the round. Only the takeover was converted
+  at least the entry tier's length, (since 2026-10-05) the **history
+  panel's** record of the round, and (since 2026-10-23) `willHoldLastCard`,
+  which predicts the hold for the Boss's early puff. (The back room's salute
+  asked it for a day; it now keys on the win's rarity, `reactionTo`.) Only the takeover was converted
   when `isCleanSweep` landed, so a forgiven Second Chance round — three of four
   right, no bust marker — stopped autoplay runs and called itself a full game
-  win for months. `modes.test.ts` greps all six sites and fails if
-  `bustedIndex === null` reappears anywhere in the game's own sources. The six
+  win for months. `modes.test.ts` greps all seven sites and fails if
+  `bustedIndex === null` reappears anywhere in the game's own sources. The first six
   live in four files — the running-win label in `GameBoard.svelte`, the
   takeover floor, the win sting and the history entry in `roundSettle.svelte.ts`, the autoplay stop
-  in `autoplayLoop.svelte.ts`, the hold in `roundReveal.svelte.ts` — which is
+  in `autoplayLoop.svelte.ts`, the hold in `roundReveal.svelte.ts` — and the
+  seventh beside the hold in `roundReveal`, which is
   why the grep reads a MANIFEST rather than a path. All three names have already changed once under a split, and the
   manifest is what kept the grep finding them. See `game/sources.testlib.ts`.
 
@@ -350,8 +353,13 @@ reading before proposing it again.
   survive the round trip; `restoreGuesses` skips them on the way back in;
   `parseModeName` validates a slug against what the family publishes (length
   included), so `any` exists only where a fixed combination puts it. The board
-  renders `stageCount()` slots and, on a fixed family, two read-only Equal
-  badges instead of the guess columns; `roundState` stays four wide.
+  renders `stageCount()` slots and, on a fixed family, two Equal badges
+  instead of the guess columns; `roundState` stays four wide. **The badges
+  are PICKED** (the owner, 2026-10-23): `tripsPicks` in betState, cleared on
+  every switch to the family, both needed for `allChoicesMade()` (the deal
+  says "Pick both Equals"). They buy nothing - the slug is still
+  `modeChoices()` alone. A pick sets a chip down near the click and clear of
+  the "=" (`chipSpot.ts` `tripsSpot`, pinned by `chipSpot.test.ts`).
 - **A switch that changes the card count turns the cards back over.** The
   picker's Switch compares `stageCount()` before and after and calls
   `clearBoard()` — three of a settled four-card round's faces under trips'
@@ -451,7 +459,10 @@ reading before proposing it again.
   colour on a recessed dark sign, the seven bolts (`liveBolts`) under it, no
   coloured outline; it keeps its `.cb-icon` "toggle" press cue, and its
   locked-state tip is hosted on `.cb-mode-slot` and anchored to the slot's inner
-  edge (it sits at the screen edge). FIXED width, paid for by the bet display,
+  edge (it sits at the screen edge). FIXED width (except on an upright phone,
+  where since 2026-10-23 MODE and the bet box both fill their equal grid
+  columns, so row two is level at both ends - swept 320-620px in en/ru/fi),
+  paid for by the bet display,
   which carries money only now: 8.42 / 11.6 units on the one-row bar (6.2 / 13.82
   before), 8.4 on phones at a 36px-or-5-unit height, and 9.4 with a thinner
   frame at 400px and under, where the hidden stepper gives its width back (F-11:
@@ -673,8 +684,11 @@ reading before proposing it again.
   TAP plays the automatic peel through, a HOLD peels at its pace while held
   and falls back if let go early. **Nothing turns it on a timer** - the round
   waits for the player (the owner, 2026-10-20) - and the deal button still
-  slams it. **Autoplay and replays always
-  peel for the player** (a LOCAL replay can be peeled by hand: the replay
+  slams it. **A replay always peels for the player; autoplay does only
+  when the switch is off** - with it on, a run waits for the hand at every
+  held card (the owner, 2026-10-23; `peelsByHand` in roundReveal). The last
+  card goes out `SQUEEZE_LEAD_MS` (850) after the one before it turns, so
+  that card is seen to land first. (A LOCAL replay can be peeled by hand: the replay
   page's "Last card: I peel it" adds `?dev_peel=me`, read behind an
   `import.meta.env.DEV` literal only), and reduced motion keeps the plain
   rise. The win chime (or bust / forgiven cue) sounds ON THE TURN, with the
@@ -725,6 +739,77 @@ reading before proposing it again.
   being absent.** Every read goes through `readFlag`, and **the fallback is
   always the permissive value**. Social mode is read from BOTH `?social=true`
   and the block's `socialCasino`.
+
+### The back room: the floor and the two characters (2026-10-22)
+
+- **The room has a floor and two men in it.** A CSS floor (boards toward the
+  far wall, a rug under the table, a skirting board) in `table.css`; THE
+  FLOORMAN (left, standing) and THE BOSS (far right corner, seated, cigar)
+  with his bar cart, in `components/board/BackRoomCast.svelte`. Briefs and every
+  prompt: `CHARACTER.MD`; masters, picks and rejects:
+  `art-masters/characters/README.md`.
+- **Behind the table, never in front of it** (the owner's call). `.cast` is the
+  table's own box and a container, so the men are placed in table units; their
+  outer edges stop short of the screen when the window is narrower than 16:9.
+  **Not on a portrait screen.** `.cast` copies `.table`'s sizing - change both.
+- **No early tell - with one exception the owner chose.** Their anticipation
+  is the HELD last card (`round.lastCardHeld` while `holdIndex` is set - from
+  the stake, never the result): the Boss puffs, the Floorman leans; the turn,
+  whatever it shows, is the exhale; from the lift to the turn he KEEPS the
+  cigar at his lips, a breath of smoke every 1.5 s (he never puts it down to
+  pick it up for the hold). `cast.test.ts` fails if either cast file reads a
+  card, a payout or a result.
+- **Who is impressed is rarer than every takeover** (the owner, 2026-10-23:
+  saluting every win "is too basic"). When a takeover CLOSES, `reactionTo`
+  (`castScript.ts`) rolls on the tier's published one-in: anyone at all
+  `(log10(oneIn) - 1.2) / 3`, both `(L - 2.3) / 2`, the Floorman (the easier
+  to impress) rather than the Boss on a single. Classic: Big 79% no one, Huge
+  57%, Mega 24%, Epic ~0%. EVERY Max win moves both, Three of a Kind's
+  included - its one win comes 1 in 19 but is its Max and 4,583x the base bet
+  (the owner, 2026-10-23). Within two takeovers of a reaction, short of Max, 40% as likely.
+  Both: the Floorman first, the Boss 0.7 s after. `cast.test.ts` pins it. **The exception (2026-10-23):** on HALF
+  the rounds whose last card WILL be held, the Boss also puffs at the deal
+  (`round.bossPuffsEarly`, set in `roundReveal` by `willHoldLastCard()`, which
+  walks cards 1 to n-1 and asks the hold's own questions). It reads ahead of
+  the cards - a puff at the deal says cards 1-3 survive - and the owner took
+  that knowingly: "a rare animation that would indicate that the game is going
+  long". Checked in the browser: 40 Three of a Kind rounds, 16 held, the
+  prediction matched all 16, 7 early puffs, none on a round that did not hold.
+- **The room, in CSS** (2026-10-23): a brass sconce beside the Boss (in his
+  box, so it moves with him), the far walls for wide windows - a door behind
+  the Floorman, the route print beside it, a night-city painting and a framed
+  Ace on the right - each in a SLOT measured off the table and shown only at
+  the aspect ratio where its whole slot is on screen (2.11 / 2.21 / 2.36:1;
+  swept 1.6-3.2:1 at two heights, no overlaps), a fall to dark past the
+  table's width, and smoke haze under the ceiling. The framed Ace is the
+  deck's own `CardFace`. The party cup is a cut-crystal whiskey glass with a
+  finger of the cart's whiskey (`TumblerGlass.svelte`, geometry in
+  `game/ui/tumblerGeometry.ts`): a cylinder in the table's camera (--flat /
+  --upright, the chips' angle) with the diamond cut laid on its surface and
+  projected, so it wraps round, squeezes at the edges and curves with the
+  rim; 8.4% of the table, about twice a chip, as a real one is. Drawn in code
+  by the owner's choice, not a painted image. Every light on it is placed ON
+  the cylinder (`arcPath`, `upTheSide`, `at`) - a glint once floated inside
+  the open mouth - and each facet has a fixed random tilt, so the cut breaks
+  the light irregularly instead of reading as wire mesh.
+- **The Floorman casts a shadow** (`.floor-cast`): his own figure laid onto
+  the floor from the TILTED line his soles stand on (BackRoomCast's
+  `floorCast` matrix, from the art script's feet), falling left, away from the
+  sconce. Flipped about one flat line, the far shoe's shadow landed well below
+  the shoe.
+- **The Boss exhales out loud** (`sound.playBossExhale`, a pink-noise breath
+  through `noise()`'s new optional `rise`): on the early puff, and 0.45 s
+  after a held card turns. Measured by A/B with `npm run audio`: no clipping,
+  no change in peak or level - and on the held turn it is MASKED by the
+  strike and the chime, so the early puff is where it is heard.
+- **The art is BUILT, never hand-edited**: `scripts/character-art.py` (run it
+  with `math-sdk/.venv/Scripts/python.exe -I`) locks every frame to its master,
+  grades it into the room, writes `static/characters/*.webp` and the GENERATED
+  `game/scene/castGeometry.ts`. Every file there ships and needs its
+  `ASSET_LICENCES.md` row; the test checks both and an 800 kB ceiling.
+- **The vignette is `.room-shade`**, its own layer over the floor and the men,
+  under the table - no longer `.scene`'s top background layer, which could not
+  darken `.scene`'s children.
 
 ## Two bug classes that keep recurring
 

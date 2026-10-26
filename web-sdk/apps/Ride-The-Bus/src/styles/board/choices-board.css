@@ -66,21 +66,32 @@
    It is not wrapped in a .choice-square: the square's own ring and clip made
    it read as an unselected control with a badge inside, which is exactly
    what it is not. Static rather than absolute because there is no seam to
-   centre on, and the select-state scale is dropped - the size is the size. */
+   centre on, and the select-state scale is dropped - the size is the size.
+   A CONTROL since 2026-10-23: the player picks each one (it starts in the
+   unselected state, without the white ring), and its chip is placed against
+   the slot - the badge is static, so the slot is the chip's box. */
 .equal-btn.equal-full {
   --eq-icon-w: calc(var(--choice-size) * 0.305);
   --eq-icon-h: calc(var(--choice-size) * 0.15);
   position: static;
   transform: none;
+  cursor: pointer;
+}
+
+.choice-row.locked .equal-btn.equal-full {
   cursor: default;
 }
 
-/* Inert under a pointer as well: choices.css lifts a badge on hover as a
-   preview of picking it, and there is nothing to pick here. */
-@media (any-hover: hover) {
-  .equal-btn.equal-full:hover {
-    transform: none;
-  }
+/* It STAYS PUT under the pointer (the owner, 2026-10-23: it was moving away
+   from the cursor on hover). choices.css's hover, press and selected states
+   are written for the seam badge, which is centred by translate(-50%, -50%):
+   on this static badge that translate threw it half its own size up and to
+   the left. The hover keeps its light and its ring; only the move goes. */
+.trips-row .equal-btn.equal-full,
+.trips-row .equal-btn.equal-full:hover,
+.trips-row .equal-btn.equal-full:active,
+.trips-row .equal-btn.equal-full.selected {
+  transform: none;
 }
 
 /* Choice squares. Positioned so the table die (TableDie.svelte) can sit

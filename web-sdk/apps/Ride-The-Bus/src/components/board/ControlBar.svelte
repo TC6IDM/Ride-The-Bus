@@ -23,6 +23,7 @@
   import { auto, countDigits } from '../../game/round/autoplaySettings.svelte';
   import {
     allChoicesMade,
+    choicesNeeded,
     bet,
     betBlockedReason,
     betIsValid,
@@ -169,7 +170,7 @@ function spinBlockedReason(): string | null {
     return t('Rounds must be %s seconds apart').replace('%s', cooldownSecondsLabel());
   }
   if (round.state === 'playing' || round.isProcessing || round.resumeInProgress) return t('Round in progress');
-  if (!allChoicesMade()) return t('Pick all 4 guesses');
+  if (!allChoicesMade()) return t(choicesNeeded());
   const betReason = betBlockedReason();
   if (betReason) return betReason;
   if (IS_PROD && resolveRoundSeed().source === 'none') return t('No active game session');
