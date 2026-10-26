@@ -1405,6 +1405,26 @@ on its filename alone.
 
 ---
 
+## Redesigning a part of the game: the `rtb-visual-redesign` skill
+
+Any redesign of a screen, panel, animation, card moment or sound follows the
+2026-10 overhaul's method, written down as the `rtb-visual-redesign` skill:
+capture today (the `rtb-today-capture` subagent), audit it, mock up two or
+three directions plus the original as playable pages in
+`design-archive/2026-10-17-visual-directions/`, publish them side by side, stop
+for the owner's pick, refine, record every passed-over option in
+`DECISIONS.md`, then build in verified sections. Nothing is built on a guess.
+It closes by checking the build against the pick, element by element (built as
+drawn / differently / not built), never from memory. Its
+`scripts/layout-audit.mjs` measures the intro, the board, all six panels, the
+held card and a Max takeover at the seven sizes on the spare 3002/3011 pair
+(each state loaded fresh at each size - a window resized into a started
+moment shows defects no player sees); the `rtb-visual-qa` subagent runs it and
+returns only the findings it confirmed by eye. `references/traps.md` is every
+trap the overhaul already sprang.
+
+---
+
 ## Stake's own requirements live in a skill, not here
 
 The Stake Engine **development contract** and the **verbatim approval guidelines**
